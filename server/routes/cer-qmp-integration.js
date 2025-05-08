@@ -285,4 +285,112 @@ function formatCriticalFactors(factors) {
   return formatted;
 }
 
+/**
+ * Generate a regulatory traceability report for CtQ factors
+ * POST /api/cer-qmp-integration/traceability-report
+ */
+router.post('/traceability-report', async (req, res) => {
+  try {
+    const { deviceName, qmpData, sectionTitles } = req.body;
+    
+    if (!qmpData || !qmpData.ctqFactors || qmpData.ctqFactors.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Critical-to-Quality factors are required for traceability report generation'
+      });
+    }
+    
+    // Format the CtQ factor data for the report
+    const ctqFactorSummary = qmpData.ctqFactors.map(factor => {
+      // Get associated objective
+      const objective = qmpData.objectives ? 
+        qmpData.objectives.find(obj => obj.id === factor.objectiveId) : null;
+      
+      // Check if the factor has linked sections
+      const linkedSections = sectionTitles ? sectionTitles.filter(title => {
+        const sectionTitle = (title || '').toLowerCase();
+        const associatedSection = (factor.associatedSection || '').toLowerCase();
+        return sectionTitle.includes(associatedSection) || associatedSection.includes(sectionTitle);
+      }) : [];
+      
+      return {
+        name: factor.name,
+        description: factor.description,
+        riskLevel: factor.riskLevel,
+        associatedSection: factor.associatedSection,
+        objectiveTitle: objective ? objective.title : 'Unknown objective',
+        status: factor.status || 'pending',
+        complianceStatus: factor.complianceStatus || { ich: 'pending', mdr: 'pending' },
+        linkedSectionCount: linkedSections.length,
+        linkedSections: linkedSections,
+        verificationActivities: factor.verificationActivities || [],
+        controls: factor.controls || []
+      };
+    });
+    
+    // Use OpenAI to generate a comprehensive traceability report
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o", // Using the latest model for comprehensive analysis
+      messages: [
+        {
+          role: "system",
+          content: `You are a regulatory documentation specialist with expertise in clinical evaluation reporting, ICH E6(R3), and EU MDR requirements.
+          
+          Your task is to generate a comprehensive regulatory traceability report section for a Clinical Evaluation Report (CER). This report must document how 
+          Critical-to-Quality (CtQ) factors identified in the Quality Management Plan are traced, monitored, and controlled throughout 
+          the clinical evaluation process.
+          
+          The report should follow these principles:
+          1. It must be written in a formal, regulatory-appropriate language suitable for EU MDR submissions
+          2. It must emphasize the systematic approach to quality management in line with ICH E6(R3) principles
+          3. It must provide clear evidence of traceability between requirements and implemented controls
+          4. It should address both ICH E6(R3) and EU MDR/MEDDEV 2.7/1 Rev 4 requirements
+          5. It should include appropriate section headers and formatting for a professional document
+          
+          The report should include these sections:
+          1. Introduction & Scope
+          2. Quality Management Approach (ICH E6(R3) alignment)
+          3. Critical-to-Quality Factors Identification
+          4. Monitoring & Control Measures
+          5. Regulatory Framework Compliance (EU MDR & ICH E6(R3))
+          6. Verification & Evidence Collection
+          7. Conclusion`
+        },
+        {
+          role: "user",
+          content: `Generate a comprehensive regulatory traceability report for a Clinical Evaluation Report for the device: "${deviceName}".
+          
+          The Critical-to-Quality factors data is provided below:
+          ${JSON.stringify(ctqFactorSummary, null, 2)}
+          
+          The report should demonstrate how these CtQ factors are monitored and controlled throughout the clinical evaluation process,
+          providing clear evidence of traceability for both ICH E6(R3) and EU MDR regulatory frameworks.`
+        }
+      ],
+      temperature: 0.1, // Using lower temperature for more factual output
+      max_tokens: 3000 // Allowing substantial space for a comprehensive report
+    });
+    
+    const reportContent = completion.choices[0].message.content;
+    
+    // Format the response
+    res.json({
+      success: true,
+      reportSection: {
+        title: "Regulatory Traceability Matrix Report",
+        type: "traceability-report",
+        content: reportContent,
+        lastUpdated: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Error generating traceability report:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate traceability report',
+      details: error.message
+    });
+  }
+});
+
 module.exports = router;
