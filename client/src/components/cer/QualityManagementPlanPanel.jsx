@@ -330,10 +330,19 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
       `Device: ${deviceName}${manufacturer ? ` (Manufacturer: ${manufacturer})` : ''}` : 
       `Unnamed Device${manufacturer ? ` (Manufacturer: ${manufacturer})` : ''}`;
 
-    const content = `
-# Quality Management Plan
+    // Include metadata fields in the QMP document
+    const metadataSection = `
+# ${planMetadata.planName}
+Version: ${planMetadata.planVersion}
 
 ${deviceInfo}
+Author: ${planMetadata.authorName}, ${planMetadata.authorRole}
+Created: ${new Date(planMetadata.dateCreated).toLocaleDateString()}
+Last Updated: ${new Date(planMetadata.lastUpdated).toLocaleDateString()}
+Linked CER Version: ${planMetadata.linkedCerVersion}
+`;
+
+    const content = `${metadataSection}
 
 ## 1. Introduction
 
@@ -505,6 +514,94 @@ _Document Generated: ${new Date().toLocaleDateString()}_
 
   return (
     <div className="bg-[#F9F9F9] p-4">
+      {/* QMP Metadata Section */}
+      <div className="mb-6 p-4 bg-white rounded-lg border shadow-sm">
+        <h3 className="text-lg font-semibold text-[#323130] mb-3 flex items-center">
+          <FileText className="mr-2 h-5 w-5 text-[#E3008C]" />
+          Plan Metadata
+          <span className="text-xs font-normal text-[#605E5C] ml-2">ICH E6(R3) Documentation</span>
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Plan Name & Version */}
+          <div>
+            <label className="text-sm font-medium text-[#323130]">Plan Name</label>
+            <Input
+              value={planMetadata.planName}
+              onChange={(e) => setPlanMetadata({...planMetadata, planName: e.target.value, lastUpdated: new Date().toISOString()})}
+              placeholder="Quality Management Plan"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-[#323130]">Plan Version</label>
+            <Input
+              value={planMetadata.planVersion}
+              onChange={(e) => setPlanMetadata({...planMetadata, planVersion: e.target.value, lastUpdated: new Date().toISOString()})}
+              placeholder="1.0.0"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-[#323130]">Linked CER Version</label>
+            <Select
+              value={planMetadata.linkedCerVersion}
+              onValueChange={(value) => setPlanMetadata({...planMetadata, linkedCerVersion: value, lastUpdated: new Date().toISOString()})}
+            >
+              <SelectTrigger className="mt-1">
+                <SelectValue placeholder="Select CER version" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectItem value="Current Draft">Current Draft</SelectItem>
+                  <SelectItem value="v1.0">v1.0</SelectItem>
+                  <SelectItem value="v2.0">v2.0</SelectItem>
+                  <SelectItem value="v2.3">v2.3</SelectItem>
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          {/* Author Info & Dates */}
+          <div>
+            <label className="text-sm font-medium text-[#323130]">Author Name</label>
+            <Input
+              value={planMetadata.authorName}
+              onChange={(e) => setPlanMetadata({...planMetadata, authorName: e.target.value, lastUpdated: new Date().toISOString()})}
+              placeholder="Auto-populated from user profile"
+              className="mt-1"
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-[#323130]">Author Role</label>
+            <Input
+              value={planMetadata.authorRole}
+              onChange={(e) => setPlanMetadata({...planMetadata, authorRole: e.target.value, lastUpdated: new Date().toISOString()})}
+              placeholder="Quality Manager"
+              className="mt-1"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-sm font-medium text-[#323130]">Date Created</label>
+              <Input
+                value={new Date(planMetadata.dateCreated).toLocaleDateString()}
+                readOnly
+                className="mt-1 bg-gray-50"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-[#323130]">Last Updated</label>
+              <Input
+                value={new Date(planMetadata.lastUpdated).toLocaleDateString()}
+                readOnly
+                className="mt-1 bg-gray-50"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+      
       {/* Dashboard Metrics */}
       <div className="mb-6 p-4 bg-white rounded-lg border shadow-sm">
         <h3 className="text-lg font-semibold text-[#323130] mb-3 flex items-center">
