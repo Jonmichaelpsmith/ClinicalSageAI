@@ -10,7 +10,8 @@ import {
   FileOutput, 
   History, 
   Settings, 
-  CheckSquare 
+  CheckSquare,
+  Database
 } from 'lucide-react';
 
 import GenerateFullCerButton from './GenerateFullCerButton';
@@ -21,6 +22,7 @@ import DocumentVaultPanel from './DocumentVaultPanel';
 import CerHistoryPanel from './CerHistoryPanel';
 import TemplateSettingsPanel from './TemplateSettingsPanel';
 import ApprovalsPanel from './ApprovalsPanel';
+import InternalClinicalDataPanel from './InternalClinicalDataPanel';
 
 export default function CerModule() {
   const [activeTab, setActiveTab] = useState('input');
@@ -57,7 +59,7 @@ export default function CerModule() {
           </p>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
               <TabsTrigger value="input" className="flex items-center">
                 <FileText className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Input Data</span>
@@ -67,6 +69,11 @@ export default function CerModule() {
                 <BookOpen className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Literature Review</span>
                 <span className="sm:hidden">Lit Review</span>
+              </TabsTrigger>
+              <TabsTrigger value="internal-data" className="flex items-center">
+                <Database className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Internal Clinical Data</span>
+                <span className="sm:hidden">Internal</span>
               </TabsTrigger>
               <TabsTrigger value="generated-report" className="flex items-center">
                 <FileOutput className="w-4 h-4 mr-2" />
@@ -101,6 +108,10 @@ export default function CerModule() {
 
             <TabsContent value="lit-review" className="space-y-4">
               <LitReviewPanel />
+            </TabsContent>
+            
+            <TabsContent value="internal-data" className="space-y-4">
+              <InternalClinicalDataPanel jobId={currentJobId} />
             </TabsContent>
 
             <TabsContent value="generated-report" className="space-y-4">

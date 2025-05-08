@@ -1409,4 +1409,115 @@ cerApiService.generateFullCER = async ({ deviceInfo, templateId = 'eu-mdr', fdaD
   }
 };
 
+/**
+ * Get all internal clinical data
+ * @returns {Promise<Object>} - All internal clinical data
+ */
+cerApiService.getInternalClinicalData = async () => {
+  try {
+    const response = await fetch('/api/cer/internal-data');
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching internal clinical data: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getInternalClinicalData:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get a summary of all internal clinical data for CER inclusion
+ * @returns {Promise<Object>} - Summary of internal clinical data
+ */
+cerApiService.getInternalClinicalDataSummary = async () => {
+  try {
+    const response = await fetch('/api/cer/internal-data/summary');
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching internal clinical data summary: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getInternalClinicalDataSummary:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get internal clinical data by category
+ * @param {string} category - The category of internal clinical data
+ * @returns {Promise<Object>} - Internal clinical data for the category
+ */
+cerApiService.getInternalClinicalDataByCategory = async (category) => {
+  try {
+    const response = await fetch(`/api/cer/internal-data/category/${category}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching internal clinical data by category: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getInternalClinicalDataByCategory:', error);
+    throw error;
+  }
+};
+
+/**
+ * Add new internal clinical data
+ * @param {Object} data - The internal clinical data to add
+ * @returns {Promise<Object>} - The added internal clinical data
+ */
+cerApiService.addInternalClinicalData = async (data) => {
+  try {
+    const response = await fetch('/api/cer/internal-data/upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error adding internal clinical data: ${response.statusText}`);
+    }
+    
+    const responseData = await response.json();
+    return responseData;
+  } catch (error) {
+    console.error('Error in addInternalClinicalData:', error);
+    throw error;
+  }
+};
+
+/**
+ * Delete internal clinical data
+ * @param {string} id - The ID of the internal clinical data to delete
+ * @returns {Promise<Object>} - Confirmation of deletion
+ */
+cerApiService.deleteInternalClinicalData = async (id) => {
+  try {
+    const response = await fetch(`/api/cer/internal-data/${id}`, {
+      method: 'DELETE',
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error deleting internal clinical data: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in deleteInternalClinicalData:', error);
+    throw error;
+  }
+};
+
 export { cerApiService };
