@@ -5,7 +5,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, AlertTriangle, ArrowRight, BarChart3, Check, CheckCircle, Clipboard, ClipboardCheck, Download, Edit, FilePlus, FileText, LinkIcon, Plus, Save, Shield, Trash2, X } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ArrowRight, BarChart3, Check, CheckCircle, Clock, Clipboard, ClipboardCheck, Download, Edit, FilePlus, FileText, LinkIcon, Plus, Save, Shield, Trash2, X, XCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import CerTooltipWrapper from './CerTooltipWrapper';
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -214,7 +214,9 @@ const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }
       measures: '',
       responsible: '',
       timeline: '',
-      status: 'planned' 
+      status: 'planned',
+      scopeSections: [],
+      mitigationActions: '' 
     });
     setIsEditing(false);
   };
@@ -1045,10 +1047,23 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                 {objectives.length > 0 ? (
                   <div className="space-y-4">
                     {objectives.map((objective) => (
-                      <Card key={objective.id} className="bg-white border rounded-md shadow-sm">
+                      <Card 
+                        key={objective.id} 
+                        className="bg-white border rounded-md shadow-sm"
+                        ref={el => objectiveRefs.current[objective.id] = el}
+                        draggable="true"
+                        onDragStart={(e) => handleDragStart(e, objective)}
+                        onDragEnd={(e) => handleDragEnd(e, objective)}
+                        onDragOver={(e) => handleDragOver(e, objective)}
+                        onDragLeave={(e) => handleDragLeave(e, objective)}
+                        onDrop={(e) => handleDrop(e, objective)}
+                      >
                         <CardHeader className="p-4 pb-2">
                           <div className="flex justify-between items-start">
-                            <CardTitle className="text-md font-medium text-[#323130]">{objective.title}</CardTitle>
+                            <CardTitle className="text-md font-medium text-[#323130] flex items-center">
+                              <span className="cursor-move mr-2 text-gray-400 hover:text-gray-600" title="Drag to reorder">⋮⋮</span>
+                              {objective.title}
+                            </CardTitle>
                             <div className="flex space-x-1">
                               {renderStatusBadge(objective.status)}
                             </div>
@@ -1066,6 +1081,83 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                             <div className="mt-2">
                               <p className="text-xs font-medium text-[#605E5C]">Responsible:</p>
                               <p className="text-xs text-[#605E5C]">{objective.responsible}</p>
+                            </div>
+                          )}
+                          
+                          {/* Inline CtQ form */}
+                          {showInlineCtqForm === objective.id && (
+                            <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                              <h5 className="text-sm font-medium text-[#323130] flex items-center justify-between">
+                                <span>Add New Critical-to-Quality Factor</span>
+                                <Button 
+                                  onClick={handleCancelInlineCtq} 
+                                  variant="ghost" 
+                                  size="sm"
+                                  className="h-6 w-6 p-0"
+                                >
+                                  <X size={14} />
+                                </Button>
+                              </h5>
+                              <div className="space-y-2 mt-2">
+                                <Input
+                                  placeholder="CtQ Factor Name"
+                                  value={currentCtq.name}
+                                  onChange={(e) => setCurrentCtq({...currentCtq, name: e.target.value})}
+                                  className="text-sm"
+                                />
+                                <Textarea
+                                  placeholder="Description"
+                                  value={currentCtq.description}
+                                  onChange={(e) => setCurrentCtq({...currentCtq, description: e.target.value})}
+                                  rows={2}
+                                  className="text-sm"
+                                />
+                                <div className="grid grid-cols-2 gap-2">
+                                  <div>
+                                    <label className="text-xs text-[#323130]">Risk Level</label>
+                                    <Select
+                                      value={currentCtq.riskLevel}
+                                      onValueChange={(value) => setCurrentCtq({...currentCtq, riskLevel: value})}
+                                    >
+                                      <SelectTrigger className="mt-1 h-8 text-xs">
+                                        <SelectValue placeholder="Select risk level" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="low">Low</SelectItem>
+                                        <SelectItem value="medium">Medium</SelectItem>
+                                        <SelectItem value="high">High</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div>
+                                    <label className="text-xs text-[#323130]">CER Section</label>
+                                    <Input
+                                      placeholder="Associated Section"
+                                      value={currentCtq.associatedSection}
+                                      onChange={(e) => setCurrentCtq({...currentCtq, associatedSection: e.target.value})}
+                                      className="mt-1 h-8 text-xs"
+                                    />
+                                  </div>
+                                </div>
+                                <div>
+                                  <label className="text-xs text-[#323130]">Mitigation</label>
+                                  <Textarea
+                                    placeholder="Mitigation actions"
+                                    value={currentCtq.mitigation}
+                                    onChange={(e) => setCurrentCtq({...currentCtq, mitigation: e.target.value})}
+                                    rows={2}
+                                    className="mt-1 text-sm"
+                                  />
+                                </div>
+                                <Button
+                                  size="sm"
+                                  className="w-full mt-2 h-7 text-xs bg-[#0F6CBD] text-white hover:bg-[#0F6CBD]/90"
+                                  onClick={handleSaveInlineCtq}
+                                >
+                                  <Plus size={14} className="mr-1" />
+                                  Add Factor
+                                </Button>
+                              </div>
                             </div>
                           )}
                           
@@ -1087,13 +1179,7 @@ _Document Generated: ${new Date().toLocaleDateString()}_
                             </div>
                           )}
                           
-                          {/* Display Mitigation Actions if available */}
-                          {objective.mitigationActions && (
-                            <div className="mt-3">
-                              <p className="text-xs font-medium text-[#605E5C]">Mitigation / Control Actions:</p>
-                              <p className="text-xs text-[#605E5C] whitespace-pre-line">{objective.mitigationActions}</p>
-                            </div>
-                          )}
+                          {/* Mitigation Actions are already displayed in the main objective fields */}
                         </CardContent>
                         <CardFooter className="p-3 pt-0 flex justify-between items-center">
                           <div className="flex space-x-1">
