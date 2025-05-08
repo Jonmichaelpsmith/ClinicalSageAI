@@ -1,15 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { AlertCircle, Check, Clipboard, ClipboardCheck, Download, Edit, FilePlus, Plus, Save, Trash2, X } from 'lucide-react';
+import { AlertCircle, AlertTriangle, ArrowRight, BarChart3, Check, CheckCircle, Clipboard, ClipboardCheck, Download, Edit, FilePlus, FileText, LinkIcon, Plus, Save, Shield, Trash2, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import CerTooltipWrapper from './CerTooltipWrapper';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 
 // ICH E6(R3) Compliant Quality Management Plan Component
 const QualityManagementPlanPanel = ({ deviceName, manufacturer, onQMPGenerated }) => {
@@ -424,9 +425,187 @@ _Document Generated: ${new Date().toLocaleDateString()}_
       </Badge>
     );
   };
+  
+  // Calculate metrics for dashboard
+  const metrics = useMemo(() => {
+    const totalObjectives = objectives.length;
+    const completedObjectives = objectives.filter(obj => obj.status === 'completed').length;
+    const inProgressObjectives = objectives.filter(obj => obj.status === 'in-progress').length;
+    const atRiskObjectives = objectives.filter(obj => obj.status === 'at-risk').length;
+    
+    const totalCtqFactors = ctqFactors.length;
+    const highRiskFactors = ctqFactors.filter(factor => factor.riskLevel === 'high').length;
+    const mediumRiskFactors = ctqFactors.filter(factor => factor.riskLevel === 'medium').length;
+    const lowRiskFactors = ctqFactors.filter(factor => factor.riskLevel === 'low').length;
+    
+    // Link analysis - checks which CtQ factors have associated sections
+    const linkedFactors = ctqFactors.filter(factor => factor.associatedSection && factor.associatedSection.trim() !== '').length;
+    
+    // Calculate completion percentage
+    const objectivesCompletionPercentage = totalObjectives > 0 
+      ? Math.round((completedObjectives / totalObjectives) * 100) 
+      : 0;
+      
+    const ctqFactorsWithMitigation = ctqFactors.filter(
+      factor => factor.mitigation && factor.mitigation.trim() !== ''
+    ).length;
+    
+    const mitigationCompletionPercentage = totalCtqFactors > 0
+      ? Math.round((ctqFactorsWithMitigation / totalCtqFactors) * 100)
+      : 0;
+      
+    const documentReadiness = totalObjectives > 0 && totalCtqFactors > 0
+      ? Math.round(((objectivesCompletionPercentage + mitigationCompletionPercentage + (linkedFactors / totalCtqFactors * 100)) / 3))
+      : 0;
+    
+    return {
+      totalObjectives,
+      completedObjectives,
+      inProgressObjectives,
+      atRiskObjectives,
+      totalCtqFactors,
+      highRiskFactors,
+      mediumRiskFactors,
+      lowRiskFactors,
+      linkedFactors,
+      objectivesCompletionPercentage,
+      mitigationCompletionPercentage,
+      documentReadiness
+    };
+  }, [objectives, ctqFactors]);
 
   return (
     <div className="bg-[#F9F9F9] p-4">
+      {/* Dashboard Metrics */}
+      <div className="mb-6 p-4 bg-white rounded-lg border shadow-sm">
+        <h3 className="text-lg font-semibold text-[#323130] mb-3 flex items-center">
+          <BarChart3 className="mr-2 h-5 w-5 text-[#E3008C]" />
+          Quality Management Dashboard
+          <span className="text-xs font-normal text-[#605E5C] ml-2">ICH E6(R3) Implementation Status</span>
+        </h3>
+        
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <Card className="shadow-none border-l-4 border-l-blue-500">
+            <CardHeader className="p-3 pb-0">
+              <CardTitle className="text-sm text-[#323130]">
+                Quality Objectives
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 pt-1">
+              <div className="text-2xl font-bold text-[#0F6CBD]">{metrics.totalObjectives}</div>
+              <div className="text-xs text-[#605E5C] mt-1 flex items-center">
+                <CheckCircle className="h-3 w-3 mr-1 text-green-500" /> 
+                {metrics.completedObjectives} Complete
+                {metrics.atRiskObjectives > 0 && (
+                  <span className="ml-2 text-red-500 flex items-center">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    {metrics.atRiskObjectives} At Risk
+                  </span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-none border-l-4 border-l-[#E3008C]">
+            <CardHeader className="p-3 pb-0">
+              <CardTitle className="text-sm text-[#323130]">
+                Critical-to-Quality Factors
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 pt-1">
+              <div className="text-2xl font-bold text-[#E3008C]">{metrics.totalCtqFactors}</div>
+              <div className="text-xs text-[#605E5C] mt-1 flex items-center flex-wrap">
+                {metrics.highRiskFactors > 0 && (
+                  <span className="mr-2 text-red-700 flex items-center">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {metrics.highRiskFactors} High
+                  </span>
+                )}
+                {metrics.mediumRiskFactors > 0 && (
+                  <span className="mr-2 text-amber-700 flex items-center">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    {metrics.mediumRiskFactors} Medium
+                  </span>
+                )}
+                {metrics.lowRiskFactors > 0 && (
+                  <span className="text-green-700 flex items-center">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    {metrics.lowRiskFactors} Low
+                  </span>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-none border-l-4 border-l-green-500">
+            <CardHeader className="p-3 pb-0">
+              <CardTitle className="text-sm text-[#323130]">
+                Traceability Links
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 pt-1">
+              <div className="text-2xl font-bold text-green-600">
+                {metrics.linkedFactors}/{metrics.totalCtqFactors}
+              </div>
+              <div className="text-xs text-[#605E5C] mt-1 flex items-center">
+                <LinkIcon className="h-3 w-3 mr-1 text-[#0F6CBD]" /> 
+                {metrics.totalCtqFactors > 0 
+                  ? Math.round((metrics.linkedFactors / metrics.totalCtqFactors) * 100) 
+                  : 0}% Linked to CER
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-none border-l-4 border-l-purple-500">
+            <CardHeader className="p-3 pb-0">
+              <CardTitle className="text-sm text-[#323130]">
+                Document Readiness
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-3 pt-1">
+              <div className="text-2xl font-bold text-purple-600">{metrics.documentReadiness}%</div>
+              <div className="mt-1">
+                <Progress value={metrics.documentReadiness} className="h-1.5 w-full bg-gray-200" />
+              </div>
+              <div className="text-xs text-[#605E5C] mt-1 flex items-center">
+                <FileText className="h-3 w-3 mr-1 text-purple-500" /> 
+                {metrics.documentReadiness < 50 ? 'Needs attention' : 
+                 metrics.documentReadiness < 80 ? 'Making progress' : 
+                 'Almost ready'}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+        
+        <div className="text-xs text-[#605E5C] flex justify-between items-center">
+          <div className="flex items-center">
+            <Shield className="h-4 w-4 mr-1 text-[#E3008C]" />
+            <span>ICH E6(R3) Quality Management Implementation</span>
+          </div>
+          <div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleGenerateQMP}
+              disabled={isGenerating}
+              className="h-7 text-xs"
+            >
+              {isGenerating ? (
+                <>
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-[#0F6CBD] mr-1"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <FileText className="mr-1 h-3 w-3" />
+                  Export QMP Document
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+      
       <div className="flex flex-col md:flex-row gap-6">
         {/* Left Panel - Quality Objectives */}
         <div className="w-full md:w-1/2">
