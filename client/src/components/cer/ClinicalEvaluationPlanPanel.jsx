@@ -624,14 +624,23 @@ export default function ClinicalEvaluationPlanPanel({
           </div>
           
           <div className="mt-6 border-t border-gray-200 pt-4">
-            <div className="flex items-center mb-3">
+            <div className="flex items-center mb-2">
               <h3 className="text-md font-semibold text-[#323130]">Post-Market Clinical Follow-up (PMCF) Plan</h3>
               <CerTooltipWrapper
-                tooltipContent="PMCF is a continuous process to update the clinical evaluation, required under EU MDR Annex XIV Part B"
+                tooltipContent="PMCF is a continuous process to update the clinical evaluation, required under EU MDR Annex XIV Part B and MDCG 2020-7"
                 whyThisMatters="MDR requires manufacturers to actively and systematically gather clinical data on device use in the real-world setting after market introduction"
               >
                 <Info className="h-4 w-4 ml-2 text-gray-500" />
               </CerTooltipWrapper>
+            </div>
+            
+            <div className="bg-[#EFF6FC] p-3 rounded mb-4 text-sm">
+              <div className="flex items-start space-x-2">
+                <FileCheck className="h-4 w-4 text-[#0F6CBD] mt-0.5" />
+                <p className="text-[#0F6CBD]">
+                  The PMCF Plan is a mandatory document for EU MDR compliance and should align with MDCG 2020-7 requirements.
+                </p>
+              </div>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -646,56 +655,210 @@ export default function ClinicalEvaluationPlanPanel({
                 </Label>
               </div>
               
-              <div className="space-y-2">
-                <Label htmlFor="update-frequency" className="text-sm text-[#323130]">
-                  CER Update Frequency
+              <div className="flex items-center space-x-2">
+                <Checkbox 
+                  id="high-risk-device" 
+                  checked={cepData.highRiskDevice || false}
+                  onCheckedChange={(checked) => handleChange('highRiskDevice', checked)}
+                />
+                <Label htmlFor="high-risk-device" className="text-sm text-[#323130]">
+                  This is a high-risk device (Class III or implantable)
                 </Label>
-                <Select
-                  value={cepData.updateFrequency}
-                  onValueChange={(value) => handleChange('updateFrequency', value)}
-                >
-                  <SelectTrigger className="border-[#E1DFDD] h-9">
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Annual">Annual</SelectItem>
-                    <SelectItem value="Biennial">Every 2 years</SelectItem>
-                    <SelectItem value="Other">Other (specify in plan)</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
             
-            <div className="space-y-2">
-              <Label htmlFor="pmcf-plan" className="text-[#323130]">
-                PMCF Methodology
-              </Label>
-              <Textarea
-                id="pmcf-plan"
-                value={cepData.pmcfPlan}
-                onChange={(e) => handleChange('pmcfPlan', e.target.value)}
-                placeholder="Describe PMCF activities (e.g., registry participation, surveys, etc.) or reference PMCF plan document"
-                className="border-[#E1DFDD] h-20"
-              />
-              <p className="text-xs text-[#605E5C]">Required by MDR Annex XIV, Part B</p>
+            <div className="border border-[#E1DFDD] rounded-md bg-white mb-5">
+              <div className="p-3 bg-[#FAFAFA] border-b border-[#E1DFDD] flex items-center">
+                <CalendarClock className="h-4 w-4 text-[#0F6CBD] mr-2" />
+                <h4 className="text-sm font-medium text-[#323130]">CER Update Schedule</h4>
+              </div>
+              <div className="p-4 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="update-frequency" className="text-sm text-[#323130]">
+                      CER Update Frequency
+                      <span className="text-xs text-[#E3008C] ml-1">*</span>
+                    </Label>
+                    <Select
+                      value={cepData.updateFrequency}
+                      onValueChange={(value) => handleChange('updateFrequency', value)}
+                    >
+                      <SelectTrigger className="border-[#E1DFDD] h-9">
+                        <SelectValue placeholder="Select frequency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Biannual">Every 6 months</SelectItem>
+                        <SelectItem value="Annual">Annual</SelectItem>
+                        <SelectItem value="Biennial">Every 2 years</SelectItem>
+                        <SelectItem value="AnnualWithThreshold">Annual (if threshold criteria met)</SelectItem>
+                        <SelectItem value="Other">Other (specify in plan)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="next-update-date" className="text-sm text-[#323130]">
+                      Next Scheduled Update
+                      <span className="text-xs text-[#E3008C] ml-1">*</span>
+                    </Label>
+                    <Input
+                      id="next-update-date"
+                      type="date"
+                      value={cepData.nextUpdateDate || ''}
+                      onChange={(e) => handleChange('nextUpdateDate', e.target.value)}
+                      className="border-[#E1DFDD] h-9"
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="update-criteria" className="text-sm text-[#323130]">
+                    Criteria Triggering Unscheduled Updates
+                  </Label>
+                  <Textarea
+                    id="update-criteria"
+                    value={cepData.updateCriteria || ''}
+                    onChange={(e) => handleChange('updateCriteria', e.target.value)}
+                    placeholder="E.g., new safety signals, significant changes in benefit-risk ratio, substantial changes to the device..."
+                    className="border-[#E1DFDD] h-16 text-sm"
+                  />
+                </div>
+              </div>
             </div>
             
+            {cepData.usePMCF && (
+              <div className="border border-[#E1DFDD] rounded-md bg-white mb-5">
+                <div className="p-3 bg-[#FAFAFA] border-b border-[#E1DFDD]">
+                  <h4 className="text-sm font-medium text-[#323130]">PMCF Plan Components (MDCG 2020-7)</h4>
+                </div>
+                <div className="p-4 space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="pmcf-objectives" className="text-sm text-[#323130]">
+                      General & Specific Objectives
+                      <span className="text-xs text-[#E3008C] ml-1">*</span>
+                    </Label>
+                    <Textarea
+                      id="pmcf-objectives"
+                      value={cepData.pmcfObjectives || ''}
+                      onChange={(e) => handleChange('pmcfObjectives', e.target.value)}
+                      placeholder="Define the objectives of your PMCF activities in line with MDCG 2020-7 (e.g., confirm safety and performance, identify previously unknown side-effects, identify emerging risks...)"
+                      className="border-[#E1DFDD] h-20 text-sm"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="pmcf-methods" className="text-sm text-[#323130]">
+                      PMCF Methods & Procedures
+                      <span className="text-xs text-[#E3008C] ml-1">*</span>
+                    </Label>
+                    <Textarea
+                      id="pmcf-methods"
+                      value={cepData.pmcfMethods || ''}
+                      onChange={(e) => handleChange('pmcfMethods', e.target.value)}
+                      placeholder="Describe your specific PMCF methodologies (e.g., patient/user surveys, registry studies, clinical follow-up studies, etc.)"
+                      className="border-[#E1DFDD] h-20 text-sm"
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="pmcf-data-analysis" className="text-sm text-[#323130]">
+                        Data Analysis Methodology
+                      </Label>
+                      <Textarea
+                        id="pmcf-data-analysis"
+                        value={cepData.pmcfDataAnalysis || ''}
+                        onChange={(e) => handleChange('pmcfDataAnalysis', e.target.value)}
+                        placeholder="Describe how PMCF data will be analyzed, including statistical methodology if applicable"
+                        className="border-[#E1DFDD] h-16 text-sm"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="pmcf-indicators" className="text-sm text-[#323130]">
+                        Criteria & Indicators
+                      </Label>
+                      <Textarea
+                        id="pmcf-indicators"
+                        value={cepData.pmcfIndicators || ''}
+                        onChange={(e) => handleChange('pmcfIndicators', e.target.value)}
+                        placeholder="List specific indicators that will be monitored (e.g., adverse event rates, specific clinical outcomes, etc.)"
+                        className="border-[#E1DFDD] h-16 text-sm"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="pmcf-timelines" className="text-sm text-[#323130]">
+                      Timeline & Reporting Schedule
+                      <span className="text-xs text-[#E3008C] ml-1">*</span>
+                    </Label>
+                    <Textarea
+                      id="pmcf-timelines"
+                      value={cepData.pmcfTimelines || ''}
+                      onChange={(e) => handleChange('pmcfTimelines', e.target.value)}
+                      placeholder="Specify the timelines for PMCF activities and when PMCF evaluation reports will be generated"
+                      className="border-[#E1DFDD] h-16 text-sm"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+            
             {!cepData.usePMCF && (
-              <div className="space-y-2 mt-4">
-                <Label htmlFor="pmcf-justification" className="text-[#323130] flex items-center">
-                  Justification for Not Conducting PMCF 
-                  <AlertCircle className="h-4 w-4 ml-2 text-amber-500" />
-                </Label>
-                <Textarea
-                  id="pmcf-justification"
-                  value={cepData.pmcfJustification}
-                  onChange={(e) => handleChange('pmcfJustification', e.target.value)}
-                  placeholder="If PMCF is not required, provide a scientifically valid justification (per MDCG 2020-7)"
-                  className="border-[#E1DFDD] h-20"
-                />
-                <p className="text-xs text-amber-500">
-                  Note: EU MDR strongly requires PMCF. Exceptions must be thoroughly justified and are scrutinized by Notified Bodies.
-                </p>
+              <div className="border border-[#F2C811] bg-[#FFFCE5] rounded-md p-4 space-y-3 mb-5">
+                <div className="flex items-start space-x-3">
+                  <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-medium text-[#323130] mb-1">PMCF Exemption Justification</h4>
+                    <p className="text-xs text-[#605E5C] mb-3">
+                      According to MDCG 2020-7, PMCF may be exempted only in exceptional cases with a strong scientific justification. 
+                      Notified Bodies scrutinize these justifications very carefully.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="pmcf-justification" className="text-sm text-[#323130] flex items-center">
+                    Scientific Justification for PMCF Exemption
+                    <span className="text-xs text-[#E3008C] ml-1">*</span>
+                  </Label>
+                  <Textarea
+                    id="pmcf-justification"
+                    value={cepData.pmcfJustification}
+                    onChange={(e) => handleChange('pmcfJustification', e.target.value)}
+                    placeholder="Provide a detailed scientific justification explaining why PMCF is not required. Reference MDCG 2020-7 specifically and address all related exemption criteria."
+                    className="border-[#E1DFDD] h-24 text-sm"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="alternative-pms" className="text-sm text-[#323130]">
+                      Alternative PMS Activities
+                    </Label>
+                    <Textarea
+                      id="alternative-pms"
+                      value={cepData.alternativePMS || ''}
+                      onChange={(e) => handleChange('alternativePMS', e.target.value)}
+                      placeholder="Describe alternative post-market surveillance activities that will be used instead of PMCF"
+                      className="border-[#E1DFDD] h-16 text-sm"
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="exemption-references" className="text-sm text-[#323130]">
+                      Supporting References
+                    </Label>
+                    <Textarea
+                      id="exemption-references"
+                      value={cepData.exemptionReferences || ''}
+                      onChange={(e) => handleChange('exemptionReferences', e.target.value)}
+                      placeholder="List published literature, clinical data or other references supporting the exemption"
+                      className="border-[#E1DFDD] h-16 text-sm"
+                    />
+                  </div>
+                </div>
               </div>
             )}
           </div>
