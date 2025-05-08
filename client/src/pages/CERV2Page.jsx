@@ -11,6 +11,7 @@ import EquivalenceBuilderPanel from '@/components/cer/EquivalenceBuilderPanel';
 import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
 import ClinicalEvaluationPlanPanel from '@/components/cer/ClinicalEvaluationPlanPanel';
 import QualityManagementPlanPanel from '@/components/cer/QualityManagementPlanPanel';
+import RegulatoryTraceabilityMatrix from '@/components/cer/RegulatoryTraceabilityMatrix';
 import GSPRMappingPanel from '@/components/cer/GSPRMappingPanel';
 import LiteratureReviewWorkflow from '@/components/cer/LiteratureReviewWorkflow';
 import NotificationBanner from '@/components/cer/NotificationBanner';
@@ -157,6 +158,10 @@ export default function CERV2Page() {
         tabs: [
           { id: "equivalence", label: "Equivalence", icon: <GitCompare className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "gspr-mapping", label: "GSPR Mapping", icon: <BarChart className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "traceability", label: <div className="flex flex-col items-center leading-tight">
+            <span>Regulatory Traceability</span>
+            <span className="text-[0.65rem] text-gray-600">ICH E6(R3) & MDR</span>
+          </div>, icon: <ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "compliance", label: "Compliance", icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5" /> },
           { id: "assistant", label: "Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5" /> }
         ]
@@ -448,6 +453,50 @@ ${qmpData.date}
     
     // Add other tab content handlers for literature-review, internal-clinical-data, 
     // documents, data-retrieval, equivalence, gspr-mapping, sota, compliance, assistant
+    
+    if (activeTab === 'traceability') {
+      return (
+        <RegulatoryTraceabilityMatrix
+          deviceName={deviceName}
+          manufacturer={manufacturer}
+          onGenerateReport={(reportData) => {
+            // Find if a traceability report already exists
+            const existingIndex = sections.findIndex(
+              section => section.type === 'traceability-report' || 
+              (section.title && section.title.toLowerCase().includes('traceability'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: reportData.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "Traceability Report Updated",
+                description: "Regulatory Traceability Matrix Report has been updated in your CER.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, reportData]);
+              
+              toast({
+                title: "Traceability Report Added",
+                description: "Regulatory Traceability Matrix Report has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+          onTraceabilityDataChange={(data) => {
+            console.log("Traceability data updated:", data);
+            // Save the traceability data for use in other components
+          }}
+        />
+      );
+    }
     
     if (activeTab === 'export') {
       return (
