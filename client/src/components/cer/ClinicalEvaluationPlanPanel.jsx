@@ -4,10 +4,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ClipboardList, BookMarked, FilePlus2, CheckSquare, AlertCircle, Info, CalendarClock, FileCheck } from 'lucide-react';
+import { ClipboardList, BookMarked, FilePlus2, CheckSquare, AlertCircle, Info, CalendarClock, FileCheck, FolderOpen, FileText } from 'lucide-react';
 import CerTooltipWrapper from './CerTooltipWrapper';
 
 // GSPRs based on MDR
@@ -64,16 +65,42 @@ export default function ClinicalEvaluationPlanPanel({
     dataAnalysisMethods: '',
     clinicalEvaluationTeam: '',
     evaluationCriteria: '',
-    // New fields for MDR Annex XIV compliance
+    // Base MDR Annex XIV compliance fields
     deviceClass: '',
     mdrClassificationRule: '',
     referenceStandards: '',
     stateOfArt: '',
+    
+    // CER Update Schedule fields
     updateFrequency: 'Annual',
+    nextUpdateDate: '',
+    updateCriteria: '',
+    enableReminders: false,
+    reminderLeadTime: '30',
+    reminderRecipients: '',
+    
+    // PMCF Plan fields (MDCG 2020-7 compliant)
     pmcfPlan: '',
     pmcfJustification: '',
+    highRiskDevice: false,
+    pmcfObjectives: '',
+    pmcfMethods: '',
+    pmcfDataAnalysis: '',
+    pmcfIndicators: '',
+    pmcfTimelines: '',
+    pmcfReportFrequency: 'Annual',
+    firstPmcfReportDate: '',
+    
+    // PMCF Related Documents
+    pmcfPlanDocId: '',
+    psurReference: '',
+    referenceDocuments: '',
+    
+    // Other fields
     clinicalDataGaps: '',
-    summaryOfSafetyAndPerformance: ''
+    summaryOfSafetyAndPerformance: '',
+    alternativePMS: '',
+    exemptionReferences: ''
   };
   
   const [cepData, setCepData] = useState(initialData || defaultCEPData);
@@ -668,9 +695,17 @@ export default function ClinicalEvaluationPlanPanel({
             </div>
             
             <div className="border border-[#E1DFDD] rounded-md bg-white mb-5">
-              <div className="p-3 bg-[#FAFAFA] border-b border-[#E1DFDD] flex items-center">
-                <CalendarClock className="h-4 w-4 text-[#0F6CBD] mr-2" />
-                <h4 className="text-sm font-medium text-[#323130]">CER Update Schedule</h4>
+              <div className="p-3 bg-[#FAFAFA] border-b border-[#E1DFDD] flex items-center justify-between">
+                <div className="flex items-center">
+                  <CalendarClock className="h-4 w-4 text-[#0F6CBD] mr-2" />
+                  <h4 className="text-sm font-medium text-[#323130]">CER Update Schedule</h4>
+                </div>
+                <CerTooltipWrapper
+                  tooltipContent="Under EU MDR, the CER must be a 'living document' that is updated throughout the device lifecycle"
+                  whyThisMatters="Regular CER updates are essential for maintaining regulatory compliance and ensuring continued device safety and performance"
+                >
+                  <Info className="h-4 w-4 text-[#605E5C]" />
+                </CerTooltipWrapper>
               </div>
               <div className="p-4 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -722,6 +757,63 @@ export default function ClinicalEvaluationPlanPanel({
                     placeholder="E.g., new safety signals, significant changes in benefit-risk ratio, substantial changes to the device..."
                     className="border-[#E1DFDD] h-16 text-sm"
                   />
+                </div>
+                
+                <div className="bg-[#F5F5F5] p-3 rounded-md">
+                  <div className="flex items-center justify-between mb-2">
+                    <Label htmlFor="enable-reminders" className="flex items-center text-sm text-[#323130] cursor-pointer">
+                      <div className="flex items-center mr-2">
+                        <Checkbox 
+                          id="enable-reminders" 
+                          checked={cepData.enableReminders || false}
+                          onCheckedChange={(checked) => handleChange('enableReminders', checked)}
+                          className="mr-2"
+                        />
+                        Enable Update Reminders
+                      </div>
+                      <Badge variant="outline" className="ml-1 bg-[#E8F5FC] text-[#0F6CBD] border-[#85C6E8] px-2 py-0.5">
+                        MDR Recommendation
+                      </Badge>
+                    </Label>
+                  </div>
+                  
+                  {cepData.enableReminders && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                      <div className="space-y-2">
+                        <Label htmlFor="reminder-lead-time" className="text-xs text-[#323130]">
+                          Send Reminder (days before deadline)
+                        </Label>
+                        <Select
+                          value={cepData.reminderLeadTime || '30'}
+                          onValueChange={(value) => handleChange('reminderLeadTime', value)}
+                        >
+                          <SelectTrigger className="border-[#E1DFDD] h-8 text-sm">
+                            <SelectValue placeholder="Select days" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="15">15 days</SelectItem>
+                            <SelectItem value="30">30 days</SelectItem>
+                            <SelectItem value="45">45 days</SelectItem>
+                            <SelectItem value="60">60 days</SelectItem>
+                            <SelectItem value="90">90 days</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="reminder-recipients" className="text-xs text-[#323130]">
+                          Notification Recipients
+                        </Label>
+                        <Input
+                          id="reminder-recipients"
+                          value={cepData.reminderRecipients || ''}
+                          onChange={(e) => handleChange('reminderRecipients', e.target.value)}
+                          placeholder="Email addresses (comma separated)"
+                          className="border-[#E1DFDD] h-8 text-sm"
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -788,18 +880,115 @@ export default function ClinicalEvaluationPlanPanel({
                     </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="pmcf-timelines" className="text-sm text-[#323130]">
-                      Timeline & Reporting Schedule
-                      <span className="text-xs text-[#E3008C] ml-1">*</span>
-                    </Label>
-                    <Textarea
-                      id="pmcf-timelines"
-                      value={cepData.pmcfTimelines || ''}
-                      onChange={(e) => handleChange('pmcfTimelines', e.target.value)}
-                      placeholder="Specify the timelines for PMCF activities and when PMCF evaluation reports will be generated"
-                      className="border-[#E1DFDD] h-16 text-sm"
-                    />
+                  <div className="border-t border-dashed border-gray-200 pt-4 mt-4">
+                    <h5 className="text-sm font-medium text-[#323130] mb-3 flex items-center">
+                      <FileText className="h-4 w-4 mr-2 text-[#0F6CBD]" />
+                      PMCF Reporting Schedule
+                      <Badge variant="outline" className="ml-2 bg-[#FCF4FF] text-[#8F7098] border-[#E6BEEE] px-2 py-0.5 text-xs">
+                        MDCG 2020-7
+                      </Badge>
+                    </h5>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="pmcf-report-frequency" className="text-xs text-[#323130]">
+                          PMCF Report Frequency
+                          <span className="text-xs text-[#E3008C] ml-1">*</span>
+                        </Label>
+                        <Select
+                          value={cepData.pmcfReportFrequency || 'Annual'}
+                          onValueChange={(value) => handleChange('pmcfReportFrequency', value)}
+                        >
+                          <SelectTrigger className="border-[#E1DFDD] h-8 text-sm">
+                            <SelectValue placeholder="Select frequency" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Biannual">Every 6 months</SelectItem>
+                            <SelectItem value="Annual">Annual</SelectItem>
+                            <SelectItem value="Biennial">Every 2 years</SelectItem>
+                            <SelectItem value="Other">Other (specify below)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="first-pmcf-report-date" className="text-xs text-[#323130]">
+                          First PMCF Report Due
+                        </Label>
+                        <Input
+                          id="first-pmcf-report-date"
+                          type="date"
+                          value={cepData.firstPmcfReportDate || ''}
+                          onChange={(e) => handleChange('firstPmcfReportDate', e.target.value)}
+                          className="border-[#E1DFDD] h-8 text-sm"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="pmcf-timelines" className="text-sm text-[#323130]">
+                        Detailed Timeline & Activities
+                        <span className="text-xs text-[#E3008C] ml-1">*</span>
+                      </Label>
+                      <Textarea
+                        id="pmcf-timelines"
+                        value={cepData.pmcfTimelines || ''}
+                        onChange={(e) => handleChange('pmcfTimelines', e.target.value)}
+                        placeholder="Specify the detailed timelines for PMCF activities (data collection periods, interim analyses, etc.) and when PMCF evaluation reports will be generated"
+                        className="border-[#E1DFDD] h-16 text-sm"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* PMCF Reference Documents */}
+                  <div className="border-t border-dashed border-gray-200 pt-4 mt-4">
+                    <h5 className="text-sm font-medium text-[#323130] mb-3 flex items-center">
+                      <FolderOpen className="h-4 w-4 mr-2 text-[#0F6CBD]" />
+                      Related PMCF Documents
+                    </h5>
+                    
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="pmcf-plan-doc-id" className="text-xs text-[#323130]">
+                            PMCF Plan Document ID
+                          </Label>
+                          <Input
+                            id="pmcf-plan-doc-id"
+                            value={cepData.pmcfPlanDocId || ''}
+                            onChange={(e) => handleChange('pmcfPlanDocId', e.target.value)}
+                            placeholder="e.g., PMCF-PLAN-001"
+                            className="border-[#E1DFDD] h-8 text-sm"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor="psur-ref" className="text-xs text-[#323130]">
+                            PSUR Reference
+                          </Label>
+                          <Input
+                            id="psur-ref"
+                            value={cepData.psurReference || ''}
+                            onChange={(e) => handleChange('psurReference', e.target.value)}
+                            placeholder="e.g., PSUR-2024-001"
+                            className="border-[#E1DFDD] h-8 text-sm"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="reference-docs" className="text-xs text-[#323130]">
+                          Additional Reference Documents
+                        </Label>
+                        <Textarea
+                          id="reference-docs"
+                          value={cepData.referenceDocuments || ''}
+                          onChange={(e) => handleChange('referenceDocuments', e.target.value)}
+                          placeholder="List any additional documents related to this PMCF plan (e.g., survey templates, registry documentation, etc.)"
+                          className="border-[#E1DFDD] h-16 text-sm"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
