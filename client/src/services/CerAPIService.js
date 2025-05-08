@@ -1979,4 +1979,46 @@ cerApiService.submitReviewRequest = async (reviewRequest) => {
   }
 };
 
+/**
+ * Generate a regulatory traceability report for CtQ factors
+ * This function creates a comprehensive report documenting how Critical-to-Quality
+ * factors are traced, monitored, and controlled throughout the CER process,
+ * providing essential evidence for ICH E6(R3) and MDR audits.
+ * 
+ * @param {Object} params - Parameters for generating the traceability report
+ * @param {string} params.deviceName - The device name
+ * @param {Object} params.qmpData - QMP data with objectives and CtQ factors
+ * @param {Array} params.sections - All CER sections for mapping
+ * @returns {Promise<Object>} - The generated traceability report section
+ */
+cerApiService.generateQmpTraceabilityReport = async ({ deviceName, qmpData, sections = [] }) => {
+  try {
+    // Prepare the context for the traceability report
+    const context = {
+      deviceName,
+      qmpData,
+      sectionTitles: sections.map(s => s.title || s.name || 'Untitled Section')
+    };
+    
+    // Make the API request to generate the traceability report
+    const response = await fetch('/api/cer-qmp-integration/traceability-report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(context),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating traceability report: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in generateQmpTraceabilityReport:', error);
+    throw error;
+  }
+};
+
 export { cerApiService };
