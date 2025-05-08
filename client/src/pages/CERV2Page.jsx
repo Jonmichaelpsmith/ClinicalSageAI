@@ -346,6 +346,26 @@ export default function CERV2Page() {
     
     // Add other tab content handlers for literature-review, internal-clinical-data, 
     // documents, data-retrieval, equivalence, gspr-mapping, sota, compliance, assistant
+    
+    if (activeTab === 'export') {
+      return (
+        <div className="bg-[#F9F9F9] py-4">
+          <div className="px-4">
+            <h2 className="text-xl font-semibold text-[#323130] mb-4">Export Options</h2>
+            <ExportModule 
+              title={title}
+              sections={sections}
+              deviceName={deviceName}
+              manufacturer={manufacturer}
+              deviceType={deviceType}
+              isComplete={sections.length > 5}
+              lastModified={new Date().toISOString()}
+              onExport={handleExport}
+            />
+          </div>
+        </div>
+      );
+    }
 
     if (activeTab === 'sota') {
       return (
