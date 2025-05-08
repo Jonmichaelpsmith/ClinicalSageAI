@@ -402,6 +402,72 @@ cerApiService.generateStateOfArt = async ({ deviceName, deviceType, indication, 
 };
 
 /**
+ * Generate a comparative State of the Art analysis with focus on standard of care
+ * and competitor device comparison
+ * 
+ * This function connects to the enhanced SOTA API endpoint to generate a comprehensive
+ * comparative analysis that specifically compares the subject device's safety and 
+ * performance characteristics against established therapies and competitor devices.
+ * The analysis follows BSI Group and MEDDEV 2.7/1 Rev 4 requirements for EU/UK 
+ * regulatory submissions.
+ * 
+ * @param {Object} params - Parameters for the comparative SOTA analysis
+ * @param {string} params.deviceName - The name of the medical device
+ * @param {string} params.deviceType - The type or classification of the device
+ * @param {string} [params.indication] - The intended use or indication of the device
+ * @param {string} [params.regulatoryFramework='EU MDR'] - The regulatory framework context
+ * @param {Array<string>} [params.manufacturers=[]] - List of manufacturers in the space
+ * @param {Array<string>} [params.competitorDevices=[]] - List of competitor device names
+ * @param {Array<string>} [params.outcomeMetrics=[]] - Key performance/outcome metrics for comparison
+ * @returns {Promise<Object>} - The generated comparative SOTA section
+ */
+cerApiService.generateComparativeSOTA = async ({ 
+  deviceName, 
+  deviceType, 
+  indication, 
+  regulatoryFramework = 'EU MDR',
+  manufacturers = [],
+  competitorDevices = [],
+  outcomeMetrics = []
+}) => {
+  try {
+    console.log('Generating Comparative SOTA analysis for:', deviceName);
+    
+    const response = await fetch('/api/cer/sota/comparative', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        deviceName,
+        deviceType,
+        indication,
+        regulatoryFramework,
+        manufacturers,
+        competitorDevices,
+        outcomeMetrics
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating Comparative SOTA analysis: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    return {
+      title: "Comparative State of the Art Analysis",
+      type: "comparative-sota",
+      content: data.content,
+      lastUpdated: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error('Error in generateComparativeSOTA:', error);
+    throw error;
+  }
+};
+
+/**
  * Get compliance score for CER sections against regulatory standards
  * @param {Object} params - Parameters for compliance scoring
  * @param {Array} params.sections - The sections to analyze
