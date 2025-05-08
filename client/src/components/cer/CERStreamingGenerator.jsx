@@ -109,6 +109,12 @@ const CERStreamingGenerator = ({
     reportId: null
   });
   
+  // AI control and manual editing support
+  const [useAI, setUseAI] = useState(true);
+  const [manualEdits, setManualEdits] = useState({});
+  const [editingSectionId, setEditingSectionId] = useState(null);
+  const [validationWarnings, setValidationWarnings] = useState([]);
+  
   // Refs
   const eventSourceRef = useRef(null);
   const contentRef = useRef(null);
@@ -338,10 +344,8 @@ const CERStreamingGenerator = ({
         }
       };
       
-      // If no real API exists, simulate generation for demo purposes
-      if (!window.location.host.includes('.replit.app')) {
-        simulateGeneration(selectedSectionIds);
-      }
+      // Always use the real GPT-4o API for maximum reliability, never simulate
+      // This ensures we're always using authentic data sources and minimizing human error
       
     } catch (error) {
       console.error('Error starting generation:', error);
@@ -471,110 +475,89 @@ const CERStreamingGenerator = ({
     return null;
   };
   
-  // Simulate generation for demo purposes
-  const simulateGeneration = (selectedSections) => {
-    const sectionTexts = {
-      executive_summary: "This clinical evaluation report evaluates the safety and performance of the Sample Medical Device manufactured by Acme Medical Devices, Inc. Based on the clinical data analysis, the device demonstrates acceptable performance for its intended use with a favorable benefit-risk profile. Post-market surveillance data shows no significant adverse events that would impact the safety profile.",
-      device_description: "The Sample Medical Device is a Class II medical device designed for continuous monitoring of vital signs in clinical settings. The device consists of a sensor array, processing unit, and display interface. It operates using proprietary algorithms to process physiological signals and present actionable clinical information to healthcare providers.",
-      regulatory_history: "The Sample Medical Device received initial FDA clearance in 2020 (K123456) and CE Mark approval in 2021. The device has been marketed in the United States, European Union, and Japan without significant regulatory compliance issues. There have been no recalls or field safety notices issued for this device.",
-      intended_use: "The Sample Medical Device is indicated for continuous monitoring of vital signs including heart rate, blood pressure, respiratory rate, and oxygen saturation in adult patients in hospital settings. It is intended to be used by trained healthcare professionals as an aid in patient assessment and is not intended for home use.",
-      clinical_data: "Clinical evaluation is based on data from three clinical studies involving a total of 450 patients. Study ACME-001 (n=150) demonstrated measurement accuracy compared to reference standards. Study ACME-002 (n=200) evaluated clinical outcomes in an ICU setting. Study ACME-003 (n=100) assessed usability and workflow integration in various clinical environments.",
-      performance_data: "Performance testing demonstrates that the device meets all specified requirements for accuracy, precision, and reliability. Measurement accuracy was within ±2% of reference standards for all vital sign parameters. Bench testing showed device operation for 24 hours on battery power and ability to store up to 72 hours of patient data.",
-      risk_analysis: "Risk analysis identified 12 potential hazards, with comprehensive mitigations implemented for each. Residual risks are considered acceptable according to ISO 14971 principles. The most significant potential risks include inaccurate measurements leading to delayed intervention and potential electrical hazards, both of which have been mitigated through hardware safeguards and software algorithms.",
-      post_market: "Post-market surveillance data from approximately 10,000 devices in clinical use shows a complaint rate of 0.3%. The majority of complaints (85%) were related to user interface issues which have been addressed in software updates. No serious injuries or deaths have been associated with device use. FDA MAUDE database analysis revealed no pattern of systematic failures.",
-      conclusion: "Based on the comprehensive evaluation of clinical data, performance testing, and post-market surveillance information, the Sample Medical Device demonstrates substantial equivalence to predicate devices and meets all applicable essential requirements. The device has a favorable benefit-risk profile when used as intended. Continued post-market surveillance is recommended to monitor long-term performance."
-    };
-    
-    // Simulate evidence sources
-    const demoEvidenceSources = [
-      {
-        id: 'src_001',
-        title: 'Clinical validation of continuous vital signs monitoring in acute care settings',
-        author: 'Johnson et al.',
-        journal: 'Journal of Medical Devices',
-        year: 2022,
-        relevance_score: 0.92
-      },
-      {
-        id: 'src_002',
-        title: 'Comparative analysis of non-invasive monitoring technologies',
-        author: 'Smith et al.',
-        journal: 'Biomedical Engineering Reviews',
-        year: 2021,
-        relevance_score: 0.87
-      },
-      {
-        id: 'src_003',
-        title: 'Patient outcomes with continuous vital sign monitoring: A systematic review',
-        author: 'Garcia et al.',
-        journal: 'Critical Care Medicine',
-        year: 2023,
-        relevance_score: 0.85
-      },
-      {
-        id: 'src_004',
-        title: 'Risk assessment methodologies for medical monitoring devices',
-        author: 'Williams et al.',
-        journal: 'Journal of Patient Safety',
-        year: 2020,
-        relevance_score: 0.79
-      },
-      {
-        id: 'src_005',
-        title: 'FDA adverse event reporting for monitoring devices: A 10-year review',
-        author: 'Chen et al.',
-        journal: 'Regulatory Affairs Professionals Journal',
-        year: 2023,
-        relevance_score: 0.88
-      }
-    ];
-    
-    // Set evidence sources
-    setTimeout(() => {
-      setEvidenceSources(demoEvidenceSources);
-    }, 2000);
-    
-    // Generate each section with a typing effect
-    let sectionIndex = 0;
-    const generateNextSection = () => {
-      if (sectionIndex >= selectedSections.length) {
-        // All sections completed
-        setTimeout(() => {
-          setGenerationState('completed');
-          toast({
-            title: 'Generation Complete',
-            description: 'CER has been successfully generated',
-          });
-          onGenerated(generatedContent);
-        }, 1000);
-        return;
+  // Advanced AI-powered validation to ensure content accuracy
+  const performContentValidation = async (sectionId, content) => {
+    try {
+      // Call real-time validation API with GPT-4o
+      const response = await fetch('/api/cer/validate-section-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sectionId,
+          content,
+          regulatoryFramework: deviceData?.regulatoryPath || 'eu-mdr',
+          deviceType: deviceData?.deviceType || 'generic',
+          model: 'gpt-4o', // Always use the latest OpenAI model
+          validationMode: 'strict' // Enhanced validation mode for maximum error reduction
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Validation API error');
       }
       
-      const sectionId = selectedSections[sectionIndex];
-      setCurrentlyGeneratingSection(sectionId);
+      const validationResult = await response.json();
       
-      const text = sectionTexts[sectionId] || `Content for ${sectionId} would be generated here.`;
-      let currentText = '';
-      const textArray = text.split('');
+      // If there are validation issues, add them to the warnings/insights
+      if (validationResult.issues && validationResult.issues.length > 0) {
+        setValidationWarnings(prev => ([
+          ...prev,
+          {
+            sectionId,
+            issues: validationResult.issues,
+            timestamp: new Date().toISOString()
+          }
+        ]));
+      }
       
-      // Simulate typing effect
-      const interval = setInterval(() => {
-        if (textArray.length > 0) {
-          currentText += textArray.shift();
-          setGeneratedContent(prev => ({
-            ...prev,
-            [sectionId]: currentText
-          }));
-        } else {
-          clearInterval(interval);
-          sectionIndex++;
-          setTimeout(generateNextSection, 1000);
-        }
-      }, 20);
-    };
-    
-    // Start generation
-    setTimeout(generateNextSection, 1000);
+      // Return the enhanced content if AI made corrections
+      return validationResult.enhancedContent || content;
+    } catch (error) {
+      console.error('Error validating content:', error);
+      // Continue with original content if validation fails
+      return content;
+    }
+  };
+  
+  // Real-time fetch of evidence sources based on content for reliable citations
+  const fetchEvidenceSources = async (sectionId, content) => {
+    try {
+      const response = await fetch('/api/cer/get-evidence-sources', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sectionId,
+          content,
+          deviceName: deviceData?.deviceName,
+          deviceType: deviceData?.deviceType,
+          regulatoryPath: deviceData?.regulatoryPath,
+          model: 'gpt-4o',
+          searchDepth: 'comprehensive', // Enhanced search for maximum evidence reliability
+          verifySourceAvailability: true // Verify that all sources actually exist
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Evidence sources API error');
+      }
+      
+      const result = await response.json();
+      
+      // Update evidence sources
+      setEvidenceSources(prevSources => {
+        // Filter out any duplicates based on source ID
+        const existingIds = new Set(prevSources.map(s => s.id));
+        const newSources = result.sources.filter(s => !existingIds.has(s.id));
+        
+        return [...prevSources, ...newSources];
+      });
+    } catch (error) {
+      console.error('Error fetching evidence sources:', error);
+    }
   };
   
   // Render section selector
