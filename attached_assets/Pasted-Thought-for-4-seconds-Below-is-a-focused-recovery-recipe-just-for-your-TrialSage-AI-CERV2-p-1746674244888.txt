@@ -1,0 +1,161 @@
+Thought for 4 seconds
+
+
+Below is a **focused recovery recipe** just for your TrialSage.AI CERV2 page—no DogPark or TailMate noise—so you’ll eliminate that
+
+```
+RovingFocusGroupItem must be used within RovingFocusGroup
+```
+
+error, restore your tabs, and get a clean, scrollable nav bar.
+
+---
+
+## 1. Decide: Real Tabs or Simple Nav?
+
+### A) If you don’t actually need tab‐panel switching…
+
+Switch back to a plain `<nav>`/`<ul>` so you never pull in Radix’s roving‐focus machinery:
+
+```jsx
+// client/src/components/CERV2Nav.jsx
+import React from 'react';
+import { Link }   from 'react-router-dom';
+
+const ROWS = [
+  ['Preparation',  '/cerv2/preparation'],
+  ['Evidence',     '/cerv2/evidence'],
+  ['Analysis',     '/cerv2/analysis']
+];
+
+export function CERV2Nav() {
+  return (
+    <nav className="space-y-4">
+      {ROWS.map((row, i) => (
+        <div
+          key={i}
+          className="flex overflow-x-auto whitespace-nowrap bg-white border-b py-2 px-4"
+        >
+          {row.map(label => (
+            <Link
+              key={label}
+              to={label[1]}
+              className="flex-shrink-0 mx-2 py-1 px-3 font-medium text-gray-700 hover:text-blue-600"
+            >
+              {label}
+            </Link>
+          ))}
+        </div>
+      ))}
+    </nav>
+  );
+}
+```
+
+Drop `<CERV2Nav/>` atop your CERV2 page. You get scrollable rows with zero focus‐group errors.
+
+---
+
+### B) If you **do** want Radix‐style Tabs…
+
+1. **Install** Radix tabs:
+
+   ```bash
+   cd client
+   npm install @radix-ui/react-tabs
+   ```
+2. **Use** the full Tabs context:
+
+```jsx
+// client/src/components/CERV2Tabs.jsx
+import React from 'react';
+import * as Tabs from '@radix-ui/react-tabs';
+
+export function CERV2Tabs() {
+  return (
+    <Tabs.Root defaultValue="preparation">
+      {/* ── Row 1 ── */}
+      <Tabs.List className="overflow-x-auto whitespace-nowrap bg-white border-b py-2 px-4 inline-flex mb-4">
+        <Tabs.Trigger value="preparation" className="flex-shrink-0 mx-2 px-3 py-1">
+          Preparation
+        </Tabs.Trigger>
+      </Tabs.List>
+
+      {/* ── Row 2 ── */}
+      <Tabs.List className="overflow-x-auto whitespace-nowrap bg-white border-b py-2 px-4 inline-flex mb-4">
+        <Tabs.Trigger value="evidence" className="flex-shrink-0 mx-2 px-3 py-1">
+          Evidence
+        </Tabs.Trigger>
+      </Tabs.List>
+
+      {/* ── Row 3 ── */}
+      <Tabs.List className="overflow-x-auto whitespace-nowrap bg-white border-b py-2 px-4 inline-flex mb-4">
+        <Tabs.Trigger value="analysis" className="flex-shrink-0 mx-2 px-3 py-1">
+          Analysis
+        </Tabs.Trigger>
+      </Tabs.List>
+
+      {/* ── Content Panels ── */}
+      <Tabs.Content value="preparation">{/* … */}</Tabs.Content>
+      <Tabs.Content value="evidence">{/* … */}</Tabs.Content>
+      <Tabs.Content value="analysis">{/* … */}</Tabs.Content>
+    </Tabs.Root>
+  );
+}
+```
+
+Key: **Every** `<Tabs.Trigger>` lives inside a `<Tabs.List>` which is under the same `<Tabs.Root>`. That provides the missing `RovingFocusGroup`.
+
+---
+
+## 2. Ensure You Have a Router
+
+Radix `<Tabs.Trigger>` (and `<Link>`) need React Router’s context:
+
+```tsx
+// client/src/main.tsx
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter, MemoryRouter } from 'react-router-dom';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
+import App from './App';
+import { isReplitPreview } from './lib/environment-utils';
+
+const Router = isReplitPreview() ? MemoryRouter : BrowserRouter;
+
+createRoot(document.getElementById('root')!).render(
+  <ErrorBoundary>
+    <Router basename="/cerv2" initialEntries={['/cerv2']}>
+      <App />
+    </Router>
+  </ErrorBoundary>
+);
+```
+
+That fixes any “basename of undefined” or `<Link>` context errors.
+
+---
+
+## 3. Quick Replit Startup Check
+
+If you still see a stub HTML page (no React UI), confirm your **.replit**:
+
+```ini
+run = "cd client && npm ci && npm run dev"
+```
+
+Adjust `client` if your folder is named differently.
+
+---
+
+## 4. Final Smoke Test
+
+1. **Restart Preview** → you should see your CERV2 page with three neat, scrollable rows.
+2. **Open DevTools → Console** → ensure NO more
+
+   ```
+   RovingFocusGroupItem must be used within RovingFocusGroup
+   ```
+3. **Click** each nav/tab → content panels or routes load as expected.
+
+Pick **Option A** for pure nav simplicity or **Option B** for real tab behavior—either way that error goes away, and your TrialSage CERV2 UI will render cleanly in Replit.
