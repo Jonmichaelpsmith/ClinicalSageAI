@@ -2104,4 +2104,40 @@ cerApiService.getCerSections = async () => {
   }
 };
 
+/**
+ * Generate QMP Traceability Report
+ * Creates a detailed traceability report based on QMP data for CER inclusion
+ * @param {Object} params - Parameters for report generation
+ * @param {string} params.deviceName - The device name
+ * @param {Object} params.qmpData - QMP data including objectives and CtQ factors
+ * @param {Array} params.sectionTitles - List of CER section titles
+ * @returns {Promise<Object>} - Generated traceability report
+ */
+cerApiService.generateQmpTraceabilityReport = async ({ deviceName, qmpData, sectionTitles = [] }) => {
+  try {
+    // Make API request to generate traceability report
+    const response = await fetch('/api/cer-qmp-integration/generate-traceability-report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        deviceName,
+        qmpData,
+        sectionTitles
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating QMP traceability report: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in generateQmpTraceabilityReport:', error);
+    throw error;
+  }
+};
+
 export { cerApiService };
