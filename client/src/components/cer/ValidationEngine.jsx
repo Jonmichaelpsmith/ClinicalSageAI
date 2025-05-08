@@ -101,6 +101,7 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
   const [qmpAssessment, setQmpAssessment] = useState(null);
   const [isLoadingQmpData, setIsLoadingQmpData] = useState(false);
   const [qmpIntegrationEnabled, setQmpIntegrationEnabled] = useState(true); // Default to enabled
+  const [activeFilter, setActiveFilter] = useState('all'); // Filter for validation issues
   const { toast } = useToast();
   
   // Update cerSections when sections prop changes
@@ -520,6 +521,12 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
                 <RefreshCw className="h-3.5 w-3.5 text-primary mr-2 animate-spin" /> 
                 <span>Analyzing content against {frameworkNames[selectedFramework]} requirements</span>
               </li>
+              {qmpIntegrationEnabled && (
+                <li className="flex items-center opacity-70">
+                  <RefreshCw className="h-3.5 w-3.5 text-[#E3008C] mr-2 animate-spin" /> 
+                  <span>Integrating ICH E6(R3) Quality Management System data</span>
+                </li>
+              )}
               <li className="flex items-center opacity-50">
                 <div className="h-3.5 w-3.5 rounded-full border border-gray-300 mr-2"></div>
                 <span>Generating detailed compliance report</span>
@@ -916,20 +923,79 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
           {/* Issues list */}
           <Card>
             <CardHeader>
-              <CardTitle>Validation Issues</CardTitle>
-              <CardDescription>
-                {validationData.issues.length === 0 
-                  ? 'No issues were found during validation' 
-                  : `${validationData.issues.length} issues require attention`}
-              </CardDescription>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle>Validation Issues</CardTitle>
+                  <CardDescription>
+                    {validationData.issues.length === 0 
+                      ? 'No issues were found during validation' 
+                      : `${validationData.issues.length} issues require attention`}
+                  </CardDescription>
+                </div>
+                
+                {/* ICH E6(R3) tag if QMP integration is enabled */}
+                {qmpIntegrationEnabled && (
+                  <Badge className="bg-[#FDF2F8] hover:bg-[#FDF2F8] text-[#E3008C] border border-[#E3008C]">
+                    <Sparkles className="h-3.5 w-3.5 mr-1" />
+                    ICH E6(R3) Integrated
+                  </Badge>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
+              {/* QMP integration banner */}
+              {qmpIntegrationEnabled && (
+                <div className="mb-4 p-3 bg-[#FDF2F8] border border-[#E3008C] rounded-md">
+                  <div className="flex items-start gap-2">
+                    <Gauge className="h-5 w-5 text-[#E3008C] mt-0.5" />
+                    <div>
+                      <h4 className="font-medium text-[#E3008C]">Quality Management Plan Integration</h4>
+                      <p className="text-sm text-gray-600">
+                        ICH E6(R3) risk-based quality monitoring has been integrated into the validation process.
+                        Critical-to-Quality (CtQ) factors are being tracked across all phases of document development.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Filter by category buttons */}
+              {validationData.issues.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  <Button
+                    variant={activeFilter === 'all' ? 'default' : 'outline'}
+                    onClick={() => setActiveFilter('all')}
+                    className="text-xs h-8"
+                  >
+                    All Issues
+                  </Button>
+                  
+                  {Object.keys(validationData.categories).map((category) => (
+                    <Button
+                      key={category}
+                      variant={activeFilter === category ? 'default' : 'outline'}
+                      onClick={() => setActiveFilter(category)}
+                      className={`text-xs h-8 gap-1 ${category === 'qms_quality' || category === 'ich_compliance' ? 'border-[#E3008C] text-[#E3008C] hover:bg-[#FDF2F8] hover:text-[#E3008C]' : ''}`}
+                    >
+                      {categoryMap[category]?.icon}
+                      {categoryMap[category]?.name || category}
+                      {(category === 'qms_quality' || category === 'ich_compliance') && (
+                        <Badge variant="outline" className="ml-1 bg-[#FDF2F8] text-[#E3008C] border-[#E3008C] text-[10px]">
+                          ICH E6(R3)
+                        </Badge>
+                      )}
+                    </Button>
+                  ))}
+                </div>
+              )}
+              
               {validationData.issues.length === 0 ? (
                 <div className="text-center py-10">
                   <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3" />
                   <h3 className="text-xl font-medium text-green-700 mb-1">All Validation Checks Passed</h3>
                   <p className="text-muted-foreground">
                     Your document complies with {frameworkNames[selectedFramework]} requirements
+                    {qmpIntegrationEnabled && " including ICH E6(R3) Quality Management standards"}
                   </p>
                 </div>
               ) : (
@@ -943,11 +1009,13 @@ const ValidationEngine = ({ documentId, sections = [], onValidationComplete }) =
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {validationData.issues.map((issue) => (
-                      <TableRow key={issue.id} className={severityMap[issue.severity]?.bgColor}>
-                        <TableCell>
-                          {severityMap[issue.severity]?.badge}
-                        </TableCell>
+                    {validationData.issues
+                      .filter(issue => activeFilter === 'all' || issue.category === activeFilter)
+                      .map((issue) => (
+                        <TableRow key={issue.id} className={severityMap[issue.severity]?.bgColor}>
+                          <TableCell>
+                            {severityMap[issue.severity]?.badge}
+                          </TableCell>
                         <TableCell>
                           <div className="font-medium">{issue.message}</div>
                           <div className="text-sm text-muted-foreground mt-1">{issue.suggestion}</div>
