@@ -2,6 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Custom styles for CER V2 tab interface */
+.cer-tab-trigger {
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+/* Fix for tab list spacing */
+.cer-tabs .cer-tabs-list {
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #E1DFDD;
+}
+
+/* SOTA panel specific styles */
+.sota-panel .badge-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.sota-panel .competitor-badge {
+  display: flex;
+  align-items: center;
+  background-color: #F5F5F5;
+  border: 1px solid #E1DFDD;
+  border-radius: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.sota-panel .competitor-badge .remove-btn {
+  margin-left: 0.5rem;
+  cursor: pointer;
+  color: #616161;
+  transition: color 0.2s ease;
+}
+
+.sota-panel .competitor-badge .remove-btn:hover {
+  color: #D83B01;
+}
+
 :root {
   /* Brand Colors */
   --color-primary: #2563eb; /* Blue 600 */
