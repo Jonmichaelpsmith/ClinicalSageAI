@@ -5,8 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { ClipboardList, BookMarked, FilePlus2, CheckSquare, AlertCircle, Info } from 'lucide-react';
+import { ClipboardList, BookMarked, FilePlus2, CheckSquare, AlertCircle, Info, CalendarClock, FileCheck } from 'lucide-react';
 import CerTooltipWrapper from './CerTooltipWrapper';
 
 // GSPRs based on MDR
