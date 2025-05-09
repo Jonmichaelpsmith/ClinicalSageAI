@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { useTenant, Organization } from '../../contexts/TenantContext';
+import { useTenant } from '../../contexts/TenantContext';
+
+// Define the Organization type inline
+interface Organization {
+  id: string;
+  name: string;
+  logo?: string;
+}
 import {
   Popover,
   PopoverContent,
@@ -81,17 +88,24 @@ export function OrganizationSwitcher() {
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0" align="start">
-        <Command>
+      <PopoverContent 
+        className="w-[220px] p-0 z-50 shadow-lg" 
+        align="start" 
+        sideOffset={5}
+        side="bottom"
+        avoidCollisions={true}
+        collisionPadding={10}
+      >
+        <Command className="rounded-lg border border-gray-200">
           <CommandInput placeholder="Search organization..." />
-          <CommandList>
+          <CommandList className="max-h-[300px] overflow-auto">
             <CommandEmpty>No organization found.</CommandEmpty>
             <CommandGroup heading="Organizations">
               {organizations.map((org) => (
                 <CommandItem
                   key={org.id}
                   onSelect={() => handleSelect(org)}
-                  className="text-sm"
+                  className="text-sm py-2 px-3"
                 >
                   <div className="flex items-center gap-2 truncate">
                     {org.logo ? (
@@ -116,7 +130,7 @@ export function OrganizationSwitcher() {
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup>
-              <CommandItem onSelect={handleManageOrganizations}>
+              <CommandItem onSelect={handleManageOrganizations} className="py-2 px-3">
                 <Settings className="mr-2 h-4 w-4" />
                 <span>Manage Organizations</span>
               </CommandItem>
