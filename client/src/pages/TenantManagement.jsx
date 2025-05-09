@@ -465,10 +465,20 @@ export default function TenantManagement() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Industry Type</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        value={field.value}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select industry type" />
+                            <SelectValue>
+                              {field.value === 'biotech' && 'Biotech'}
+                              {field.value === 'cro' && 'CRO'}
+                              {field.value === 'pharma' && 'Pharmaceutical'}
+                              {field.value === 'meddevice' && 'Medical Device'}
+                              {!field.value && 'Select industry type'}
+                            </SelectValue>
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -492,10 +502,19 @@ export default function TenantManagement() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Compliance Level</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select 
+                        onValueChange={field.onChange} 
+                        value={field.value}
+                        defaultValue={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select compliance level" />
+                            <SelectValue>
+                              {field.value === 'base' && 'Base'}
+                              {field.value === 'standard' && 'Standard'}
+                              {field.value === 'enhanced' && 'Enhanced'}
+                              {!field.value && 'Select compliance level'}
+                            </SelectValue>
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -573,7 +592,14 @@ export default function TenantManagement() {
           }}
         >
           <SelectTrigger className="w-[260px]">
-            <SelectValue placeholder="Select an organization" />
+            <SelectValue>
+              {selectedTenant ? (
+                <div className="flex items-center">
+                  <Building className="w-4 h-4 mr-2 opacity-70" />
+                  {selectedTenant.name}
+                </div>
+              ) : 'Select an organization'}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             {tenants.map((tenant) => (
@@ -654,10 +680,20 @@ export default function TenantManagement() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Industry Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          value={field.value}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select industry type" />
+                              <SelectValue>
+                                {field.value === 'biotech' && 'Biotech'}
+                                {field.value === 'cro' && 'CRO'}
+                                {field.value === 'pharma' && 'Pharmaceutical'}
+                                {field.value === 'meddevice' && 'Medical Device'}
+                                {!field.value && 'Select industry type'}
+                              </SelectValue>
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -681,10 +717,19 @@ export default function TenantManagement() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Compliance Level</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          value={field.value}
+                          defaultValue={field.value}
+                        >
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select compliance level" />
+                              <SelectValue>
+                                {field.value === 'base' && 'Base'}
+                                {field.value === 'standard' && 'Standard'}
+                                {field.value === 'enhanced' && 'Enhanced'}
+                                {!field.value && 'Select compliance level'}
+                              </SelectValue>
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
