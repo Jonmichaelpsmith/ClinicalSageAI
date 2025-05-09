@@ -13,7 +13,11 @@ import {
   Users,
   Layers,
   Shield,
+  Cog,
+  FileCode,
 } from 'lucide-react';
+import ClientSecuritySettings from '../components/client/ClientSecuritySettings';
+import ClientWorkspaceSettings from '../components/client/ClientWorkspaceSettings';
 import {
   Card,
   CardContent,
@@ -346,6 +350,8 @@ const ClientManagement = () => {
                   <Tabs defaultValue="overview">
                     <TabsList className="mb-4">
                       <TabsTrigger value="overview">Overview</TabsTrigger>
+                      <TabsTrigger value="workspace-settings">Workspace Settings</TabsTrigger>
+                      <TabsTrigger value="security-settings">Security Settings</TabsTrigger>
                       <TabsTrigger value="quotas">Quotas</TabsTrigger>
                       <TabsTrigger value="users">Users</TabsTrigger>
                       <TabsTrigger value="projects">Projects</TabsTrigger>
@@ -400,25 +406,55 @@ const ClientManagement = () => {
                         </CardHeader>
                         <CardContent>
                           <div className="grid grid-cols-1 sm:grid-cols-4 gap-2">
-                            <Button variant="outline" size="sm" className="h-20 flex flex-col items-center justify-center">
-                              <Settings className="h-5 w-5 mb-1" />
-                              <span>Manage Settings</span>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-20 flex flex-col items-center justify-center"
+                              onClick={() => document.querySelector('[data-value="workspace-settings"]').click()}
+                            >
+                              <Cog className="h-5 w-5 mb-1" />
+                              <span>Workspace Settings</span>
                             </Button>
-                            <Button variant="outline" size="sm" className="h-20 flex flex-col items-center justify-center">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-20 flex flex-col items-center justify-center"
+                              onClick={() => document.querySelector('[data-value="users"]').click()}
+                            >
                               <Users className="h-5 w-5 mb-1" />
                               <span>Manage Users</span>
                             </Button>
-                            <Button variant="outline" size="sm" className="h-20 flex flex-col items-center justify-center">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-20 flex flex-col items-center justify-center"
+                              onClick={() => document.querySelector('[data-value="projects"]').click()}
+                            >
                               <Layers className="h-5 w-5 mb-1" />
                               <span>View Projects</span>
                             </Button>
-                            <Button variant="outline" size="sm" className="h-20 flex flex-col items-center justify-center">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-20 flex flex-col items-center justify-center"
+                              onClick={() => document.querySelector('[data-value="security-settings"]').click()}
+                            >
                               <Shield className="h-5 w-5 mb-1" />
                               <span>Security Settings</span>
                             </Button>
                           </div>
                         </CardContent>
                       </Card>
+                    </TabsContent>
+                    
+                    {/* Workspace Settings Tab */}
+                    <TabsContent value="workspace-settings" className="space-y-4">
+                      <ClientWorkspaceSettings />
+                    </TabsContent>
+                    
+                    {/* Security Settings Tab */}
+                    <TabsContent value="security-settings" className="space-y-4">
+                      <ClientSecuritySettings />
                     </TabsContent>
                     
                     <TabsContent value="quotas" className="space-y-4">
