@@ -13,7 +13,7 @@ import {
   qualityManagementPlans
 } from '../../shared/schema';
 import { authMiddleware } from '../auth';
-import { requireTenantMiddleware } from '../middleware/tenantContext';
+import { requireOrganizationContext } from '../middleware/tenantContext';
 import { getDb } from '../db/tenantDbHelper';
 import { createScopedLogger } from '../utils/logger';
 
@@ -46,7 +46,7 @@ async function tableExists(req: any, tableName: string): Promise<boolean> {
  * 
  * Get the traceability matrix for a QMP
  */
-router.get('/:qmpId', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/:qmpId', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { qmpId } = req.params;
     const { organizationId } = req.tenantContext || {};

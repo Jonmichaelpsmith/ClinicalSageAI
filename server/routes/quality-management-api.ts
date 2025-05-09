@@ -433,7 +433,7 @@ router.get('/metrics/:cerProjectId', authMiddleware, requireOrganizationContext,
 /**
  * Get all quality management plans
  */
-router.get('/plans', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/plans', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { organizationId } = req.tenantContext;
     
@@ -453,7 +453,7 @@ router.get('/plans', authMiddleware, requireTenantMiddleware, async (req, res) =
 /**
  * Get a specific quality management plan
  */
-router.get('/plans/:id', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/plans/:id', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { id } = req.params;
     const { organizationId } = req.tenantContext;
@@ -539,7 +539,7 @@ router.get('/plans/:id', authMiddleware, requireTenantMiddleware, async (req, re
 /**
  * Create a new quality management plan
  */
-router.post('/plans', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/plans', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { organizationId, userId } = req.tenantContext;
     
@@ -588,7 +588,7 @@ router.post('/plans', authMiddleware, requireTenantMiddleware, async (req, res) 
 /**
  * Update a quality management plan
  */
-router.patch('/plans/:id', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.patch('/plans/:id', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { id } = req.params;
     const { organizationId, userId } = req.tenantContext;
@@ -663,7 +663,7 @@ router.patch('/plans/:id', authMiddleware, requireTenantMiddleware, async (req, 
 /**
  * Delete a quality management plan
  */
-router.delete('/plans/:id', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.delete('/plans/:id', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { id } = req.params;
     const { organizationId } = req.tenantContext;

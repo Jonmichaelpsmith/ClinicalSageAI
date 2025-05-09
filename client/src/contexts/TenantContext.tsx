@@ -67,6 +67,10 @@ export const useTenantContext = () => {
   return context;
 };
 
+// Export the same hook with an alternate name to maintain backward compatibility
+// with components using the old name
+export const useTenant = useTenantContext;
+
 interface TenantProviderProps {
   children: ReactNode;
 }
