@@ -4,7 +4,7 @@
  * Handles tenant-specific Critical-to-Quality (CTQ) factors
  * for section gating and quality controls.
  */
-import { Router } from 'express';
+import { Router, Request } from 'express';
 import { z } from 'zod';
 import { eq, and, SQL } from 'drizzle-orm';
 import { ctqFactors } from '../../shared/schema';
@@ -12,6 +12,14 @@ import { authMiddleware } from '../auth';
 import { requireTenantMiddleware } from '../middleware/tenantContext';
 import { TenantDb } from '../db/tenantDb';
 import { createScopedLogger } from '../utils/logger';
+
+// Helper function to ensure db is defined
+function getDb(req: Request) {
+  if (!req.db) {
+    throw new Error('Database connection not available');
+  }
+  return req.db;
+}
 
 const logger = createScopedLogger('tenant-ctq-api');
 const router = Router();
@@ -56,7 +64,7 @@ router.get('/:tenantId/ctq-factors', authMiddleware, requireTenantMiddleware, as
     const { category, riskLevel, sectionCode, active } = req.query;
     
     // Build query with optional filters
-    let query = req.db.select().from(ctqFactors)
+    let query = getDb(req).select().from(ctqFactors)
       .where(eq(ctqFactors.organizationId, tenantId));
     
     if (category) {
@@ -110,7 +118,7 @@ router.get('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantMidd
     }
     
     // Get the factor
-    const factor = await req.db.select().from(ctqFactors)
+    const factor = await getDb(req).select().from(ctqFactors)
       .where(and(
         eq(ctqFactors.id, factorId),
         eq(ctqFactors.organizationId, tenantId)
@@ -199,7 +207,7 @@ router.patch('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantMi
     }
     
     // Check if factor exists
-    const existingFactor = await req.db.select().from(ctqFactors)
+    const existingFactor = await getDb(req).select().from(ctqFactors)
       .where(and(
         eq(ctqFactors.id, factorId),
         eq(ctqFactors.organizationId, tenantId)
@@ -264,7 +272,7 @@ router.delete('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantM
     }
     
     // Check if factor exists
-    const existingFactor = await req.db.select().from(ctqFactors)
+    const existingFactor = await getDb(req).select().from(ctqFactors)
       .where(and(
         eq(ctqFactors.id, factorId),
         eq(ctqFactors.organizationId, tenantId)
@@ -276,7 +284,7 @@ router.delete('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantM
     }
     
     // Check if factor is in use by any section gating rules
-    const isInUse = await req.db.execute(`
+    const isInUse = await getDb(req).execute(`
       SELECT 1 FROM qmp_section_gating
       WHERE organization_id = $1 AND ctq_factors @> $2::jsonb
       LIMIT 1
