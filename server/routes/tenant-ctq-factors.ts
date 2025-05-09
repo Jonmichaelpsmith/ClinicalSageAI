@@ -163,13 +163,11 @@ router.post('/:tenantId/ctq-factors', authMiddleware, requireTenantMiddleware, a
     }
     
     const factorData = validationResult.data;
-    const { organizationId } = req.tenantContext;
     
-    // Create the CTQ factor using the tenant database helper, ensuring correct organization ID
+    // Create the CTQ factor using the tenant database helper
     const tenantDb = getDb(req);
     const createdFactor = await tenantDb.insert(ctqFactors, {
       ...factorData,
-      organizationId,  // Always set the organization ID from tenant context
       createdById: req.userId,
       updatedById: req.userId
     });
@@ -294,12 +292,9 @@ router.delete('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantM
       });
     }
     
-    // Delete the CTQ factor using the tenant database helper with organization isolation
+    // Delete the CTQ factor using the tenant database helper
     const tenantDb = getDb(req);
-    await tenantDb.delete(ctqFactors, and(
-      eq(ctqFactors.id, factorId),
-      eq(ctqFactors.organizationId, tenantId)
-    ));
+    await tenantDb.delete(ctqFactors, eq(ctqFactors.id, factorId));
     
     return res.status(204).end();
   } catch (error) {
@@ -364,10 +359,7 @@ router.post('/:tenantId/ctq-factors/batch', authMiddleware, requireTenantMiddlew
               updatedById: req.userId,
               updatedAt: new Date()
             },
-            and(
-              eq(ctqFactors.id, factorId),
-              eq(ctqFactors.organizationId, tenantId)
-            )
+            eq(ctqFactors.id, factorId)
           );
         }
         
@@ -381,24 +373,9 @@ router.post('/:tenantId/ctq-factors/batch', authMiddleware, requireTenantMiddlew
           return res.status(400).json({ error: 'Missing templateId in data' });
         }
         
-        // Clone factors from a template, enforcing permissions
-        // If super_admin, they can clone from any tenant
-        // Otherwise, only allow cloning from templates in the same organization
-        const templateId = parseInt(data.templateId);
-        let whereClause: SQL<unknown>;
-        
-        if (req.userRole === 'super_admin') {
-          whereClause = eq(ctqFactors.organizationId, templateId);
-        } else {
-          // Regular users can only clone from their own organization's templates
-          whereClause = and(
-            eq(ctqFactors.organizationId, tenantId),
-            eq(ctqFactors.id, templateId)
-          );
-        }
-        
+        // Clone factors from a template
         const templateFactors = await getDb(req).select().from(ctqFactors)
-          .where(whereClause);
+          .where(eq(ctqFactors.organizationId, parseInt(data.templateId)));
         
         const createdFactors = [];
         
@@ -406,10 +383,9 @@ router.post('/:tenantId/ctq-factors/batch', authMiddleware, requireTenantMiddlew
           // Exclude ID and organization-specific fields
           const { id, organizationId, createdById, updatedById, createdAt, updatedAt, ...factorData } = template;
           
-          // Create a new factor based on the template with correct tenant ID
+          // Create a new factor based on the template
           const newFactor = await tenantDb.insert(ctqFactors, {
             ...factorData,
-            organizationId: tenantId, // Always use the current tenant's organization ID
             createdById: req.userId,
             updatedById: req.userId
           });
@@ -433,13 +409,10 @@ router.post('/:tenantId/ctq-factors/batch', authMiddleware, requireTenantMiddlew
         // Apply the factors to multiple sections
         for (const factorId of factorIds) {
           for (const section of data.sections) {
-            // Get the existing factor with tenant isolation
+            // Get the existing factor
             const [existingFactor] = await tenantDb.select(
               ctqFactors,
-              and(
-                eq(ctqFactors.id, factorId),
-                eq(ctqFactors.organizationId, tenantId)
-              )
+              eq(ctqFactors.id, factorId)
             );
             
             if (!existingFactor) continue;
@@ -449,7 +422,6 @@ router.post('/:tenantId/ctq-factors/batch', authMiddleware, requireTenantMiddlew
             
             const newFactor = await tenantDb.insert(ctqFactors, {
               ...factorData,
-              organizationId: tenantId, // Always use the current tenant's organization ID
               sectionCode: section,
               createdById: req.userId,
               updatedById: req.userId
