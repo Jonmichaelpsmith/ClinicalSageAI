@@ -1,7 +1,7 @@
 // /client/src/components/navigation/UnifiedTopNavV3.jsx
 
 import React from 'react';
-import { useLocation } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { OrganizationSwitcher } from '../tenant/OrganizationSwitcher';
 import { ClientWorkspaceSwitcher } from '../tenant/ClientWorkspaceSwitcher';
 import { Settings, Users, Building2, SwitchCamera } from 'lucide-react';
@@ -36,12 +36,11 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
             >
               → Forward
             </button>
-            <button
-              onClick={() => navigate('/client-portal')}
-              className="px-3 py-1 text-xs font-medium bg-indigo-600 text-white rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
-            >
-              🏠 Client Portal
-            </button>
+            <Link href="/client-portal">
+              <span className="px-3 py-1 text-xs font-medium bg-indigo-600 text-white rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 cursor-pointer">
+                🏠 Client Portal
+              </span>
+            </Link>
           </div>
           
           <div className="flex items-center gap-2 mt-2 md:mt-0">
@@ -58,38 +57,34 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
         </div>
 
         <div className="flex flex-wrap justify-center gap-2 mt-2 md:mt-0">
-          <button
-            onClick={() => navigate('/settings')}
-            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center"
-          >
-            <Settings className="h-3 w-3 mr-1" />
-            <span className="hidden sm:inline">Settings</span>
-            <span className="sm:hidden">Set</span>
-          </button>
-          <button
-            onClick={() => navigate('/client-management')}
-            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center"
-          >
-            <Users className="h-3 w-3 mr-1" />
-            <span className="hidden sm:inline">Client Management</span>
-            <span className="sm:hidden">Clients</span>
-          </button>
-          <button
-            onClick={() => navigate('/tenant-management')}
-            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center"
-          >
-            <Building2 className="h-3 w-3 mr-1" />
-            <span className="hidden sm:inline">Organization Settings</span>
-            <span className="sm:hidden">Orgs</span>
-          </button>
-          <button
-            onClick={() => navigate('/switch-module')}
-            className="px-3 py-1 text-xs font-medium bg-indigo-50 rounded text-indigo-600 transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center"
-          >
-            <SwitchCamera className="h-3 w-3 mr-1" />
-            <span className="hidden sm:inline">Switch Module</span>
-            <span className="sm:hidden">Modules</span>
-          </button>
+          <Link href="/settings">
+            <span className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
+              <Settings className="h-3 w-3 mr-1" />
+              <span className="hidden sm:inline">Settings</span>
+              <span className="sm:hidden">Set</span>
+            </span>
+          </Link>
+          <Link href="/client-management">
+            <span className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
+              <Users className="h-3 w-3 mr-1" />
+              <span className="hidden sm:inline">Client Management</span>
+              <span className="sm:hidden">Clients</span>
+            </span>
+          </Link>
+          <Link href="/tenant-management">
+            <span className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
+              <Building2 className="h-3 w-3 mr-1" />
+              <span className="hidden sm:inline">Organization Settings</span>
+              <span className="sm:hidden">Orgs</span>
+            </span>
+          </Link>
+          <Link href="/dashboard">
+            <span className="px-3 py-1 text-xs font-medium bg-indigo-50 rounded text-indigo-600 transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
+              <SwitchCamera className="h-3 w-3 mr-1" />
+              <span className="hidden sm:inline">Switch Module</span>
+              <span className="sm:hidden">Modules</span>
+            </span>
+          </Link>
         </div>
       </div>
 
