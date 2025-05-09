@@ -13,7 +13,7 @@ import {
   qualityManagementPlans
 } from '../../shared/schema';
 import { authMiddleware } from '../auth';
-import { requireTenantMiddleware } from '../middleware/tenantContext';
+import { requireOrganizationContext } from '../middleware/tenantContext';
 import { getDb } from '../db/tenantDbHelper';
 import { createScopedLogger } from '../utils/logger';
 import { storeInCache, getFromCache, invalidateCache } from '../cache/tenantCache';
@@ -35,7 +35,7 @@ router.use('/validation', qualityValidationRouter);
  * Get QMP Dashboard Statistics
  * Provides unified statistics across CTQ factors, section gating, and validation results
  */
-router.get('/dashboard/:qmpId', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/dashboard/:qmpId', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { qmpId } = req.params;
     const { organizationId } = req.tenantContext;
@@ -154,7 +154,7 @@ router.get('/dashboard/:qmpId', authMiddleware, requireTenantMiddleware, async (
 /**
  * Run a batch validation for multiple sections
  */
-router.post('/batch-validate', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/batch-validate', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { organizationId } = req.tenantContext;
     
@@ -381,7 +381,7 @@ router.post('/batch-validate', authMiddleware, requireTenantMiddleware, async (r
 /**
  * Get quality metrics for a CER project
  */
-router.get('/metrics/:cerProjectId', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/metrics/:cerProjectId', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { cerProjectId } = req.params;
     const { organizationId } = req.tenantContext;

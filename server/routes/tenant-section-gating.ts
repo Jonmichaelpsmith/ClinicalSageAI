@@ -15,7 +15,7 @@ import {
   qualityManagementPlans,
   // Note: cerSections is not exported from the schema yet, will be added later
 } from '../../shared/schema';
-import { requireTenantMiddleware } from '../middleware/tenantContext';
+import { requireOrganizationContext } from '../middleware/tenantContext';
 import { getDb } from '../db/tenantDbHelper';
 import { createScopedLogger } from '../utils/logger';
 
@@ -25,7 +25,7 @@ const logger = createScopedLogger('section-gating-routes');
 /**
  * Get section gating rules for a specific CER and QMP
  */
-router.get('/:qmpId/sections', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/:qmpId/sections', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { qmpId } = req.params;
     const { organizationId } = req.tenantContext;
@@ -55,7 +55,7 @@ router.get('/:qmpId/sections', authMiddleware, requireTenantMiddleware, async (r
 /**
  * Get a specific section gating rule by ID
  */
-router.get('/rule/:id', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/rule/:id', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { id } = req.params;
     const { organizationId } = req.tenantContext;
@@ -106,7 +106,7 @@ router.get('/rule/:id', authMiddleware, requireTenantMiddleware, async (req, res
 /**
  * Create a new section gating rule
  */
-router.post('/', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { organizationId, userId } = req.tenantContext;
     
@@ -232,7 +232,7 @@ router.post('/', authMiddleware, requireTenantMiddleware, async (req, res) => {
 /**
  * Update a section gating rule
  */
-router.put('/:id', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.put('/:id', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { id } = req.params;
     const { organizationId, userId } = req.tenantContext;
@@ -346,7 +346,7 @@ router.put('/:id', authMiddleware, requireTenantMiddleware, async (req, res) => 
 /**
  * Delete a section gating rule
  */
-router.delete('/:id', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.delete('/:id', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { id } = req.params;
     const { organizationId } = req.tenantContext;
@@ -392,7 +392,7 @@ router.delete('/:id', authMiddleware, requireTenantMiddleware, async (req, res) 
 /**
  * Validate CER sections against quality gating rules
  */
-router.post('/:qmpId/validate', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/:qmpId/validate', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { qmpId } = req.params;
     const { organizationId } = req.tenantContext;
@@ -551,7 +551,7 @@ router.post('/:qmpId/validate', authMiddleware, requireTenantMiddleware, async (
 /**
  * Handle quality waivers for gating rules
  */
-router.post('/:qmpId/waiver', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/:qmpId/waiver', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { qmpId } = req.params;
     const { organizationId, userId } = req.tenantContext;
