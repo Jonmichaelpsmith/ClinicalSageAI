@@ -610,61 +610,258 @@ const ClientSecuritySettings = () => {
             
             {/* FDA Compliance Tab */}
             <TabsContent value="compliance" className="space-y-6">
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <div className="flex items-start">
-                  <div className="mt-0.5">
-                    <Shield className="h-5 w-5 text-blue-600" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="border p-4 rounded-lg bg-blue-50">
+                  <div className="flex items-start">
+                    <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                      <Shield className="h-5 w-5" />
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-blue-800">FDA 21 CFR Part 11 Compliance</h3>
+                      <p className="text-xs text-blue-700 mt-1">
+                        Requirements for electronic records and electronic signatures
+                      </p>
+                    </div>
                   </div>
-                  <div className="ml-3">
-                    <h3 className="text-sm font-medium text-blue-800">FDA 21 CFR Part 11 Compliance</h3>
-                    <p className="text-sm text-blue-700 mt-1">
-                      These settings configure compliance with FDA 21 CFR Part 11 requirements for electronic records and electronic signatures.
-                    </p>
+                </div>
+                
+                <div className="border p-4 rounded-lg bg-purple-50">
+                  <div className="flex items-start">
+                    <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                        <path d="M8 2h8l4 4v16H4V2h4z"></path>
+                        <path d="M16 2v4h4"></path>
+                        <path d="M8 15h8"></path>
+                        <path d="M8 18h5"></path>
+                        <path d="M8 12h8"></path>
+                        <path d="M8 9h8"></path>
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-purple-800">EU GMP Annex 11 Compliance</h3>
+                      <p className="text-xs text-purple-700 mt-1">
+                        Computerized systems validation requirements for EU markets
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
               
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="enforceElectronicSignatures">Enforce Electronic Signatures</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Require electronic signatures for document approvals and critical actions
-                    </p>
+              <div className="grid grid-cols-1 gap-6">
+                {/* Electronic Signatures Section */}
+                <div className="border rounded-lg p-4 shadow-sm">
+                  <h3 className="text-base font-medium mb-3">Electronic Signatures & Records</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="enforceElectronicSignatures" className="flex items-center">
+                          Enforce Electronic Signatures
+                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Required</span>
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Require dual-factor identity verification for all document approvals and critical actions
+                        </p>
+                      </div>
+                      <Switch 
+                        id="enforceElectronicSignatures" 
+                        checked={formValues.fdaCompliance.enforceElectronicSignatures}
+                        onCheckedChange={() => handleToggleChange('fdaCompliance', 'enforceElectronicSignatures')}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="requireReason">Require Reason for Change</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Users must provide documented reason for all modifications to controlled documents
+                        </p>
+                      </div>
+                      <Switch 
+                        id="requireReason" 
+                        checked={formValues.fdaCompliance.requireReason}
+                        onCheckedChange={() => handleToggleChange('fdaCompliance', 'requireReason')}
+                      />
+                    </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="enableAuditTrails">Comprehensive Audit Trails</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Maintain tamper-evident audit trails for all system activities with cryptographic verification
+                        </p>
+                      </div>
+                      <Switch 
+                        id="enableAuditTrails" 
+                        checked={formValues.fdaCompliance.enableAuditTrails}
+                        onCheckedChange={() => handleToggleChange('fdaCompliance', 'enableAuditTrails')}
+                      />
+                    </div>
                   </div>
-                  <Switch 
-                    id="enforceElectronicSignatures" 
-                    checked={formValues.fdaCompliance.enforceElectronicSignatures}
-                    onCheckedChange={() => handleToggleChange('fdaCompliance', 'enforceElectronicSignatures')}
-                  />
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="requireReason">Require Reason for Change</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Require users to provide reasons for document modifications
-                    </p>
+                {/* New Validation & Documentation Section */}
+                <div className="border rounded-lg p-4 shadow-sm">
+                  <h3 className="text-base font-medium mb-3">System Validation & Documentation</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="validationApproach">System Validation Approach</Label>
+                        <Select 
+                          value={formValues.fdaCompliance?.validationApproach || 'riskBased'} 
+                          onValueChange={(value) => handleInputChange('fdaCompliance', 'validationApproach', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select validation approach" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="riskBased">Risk-Based Approach (GAMP 5)</SelectItem>
+                            <SelectItem value="traditional">Traditional Approach (IQ/OQ/PQ)</SelectItem>
+                            <SelectItem value="agile">Agile CSV Methodology</SelectItem>
+                            <SelectItem value="hybrid">Hybrid Approach</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Determines validation methodology used for this workspace
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="documentRetentionPeriod">Validation Document Retention</Label>
+                        <Select 
+                          value={formValues.fdaCompliance?.documentRetentionPeriod || 'lifeplus10'} 
+                          onValueChange={(value) => handleInputChange('fdaCompliance', 'documentRetentionPeriod', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select retention period" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="standard">Standard (10 years)</SelectItem>
+                            <SelectItem value="extended">Extended (15 years)</SelectItem>
+                            <SelectItem value="lifeplus2">Product Life + 2 years</SelectItem>
+                            <SelectItem value="lifeplus10">Product Life + 10 years</SelectItem>
+                            <SelectItem value="permanent">Permanent</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          How long validation-related documentation will be retained
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="enforceUserTesting">Enforce User Acceptance Testing</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Require formal UAT completion before production use
+                          </p>
+                        </div>
+                        <Switch 
+                          id="enforceUserTesting" 
+                          checked={formValues.fdaCompliance?.enforceUserTesting || false}
+                          onCheckedChange={() => handleToggleChange('fdaCompliance', 'enforceUserTesting')}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="autoGenerateDocumentation">Auto-Generate Validation Documentation</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Automatically generate required compliance documentation templates
+                          </p>
+                        </div>
+                        <Switch 
+                          id="autoGenerateDocumentation" 
+                          checked={formValues.fdaCompliance?.autoGenerateDocumentation || true}
+                          onCheckedChange={() => handleToggleChange('fdaCompliance', 'autoGenerateDocumentation')}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <Switch 
-                    id="requireReason" 
-                    checked={formValues.fdaCompliance.requireReason}
-                    onCheckedChange={() => handleToggleChange('fdaCompliance', 'requireReason')}
-                  />
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="enableAuditTrails">Enable Comprehensive Audit Trails</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Maintain detailed audit trails for all system activities
-                    </p>
+                {/* Regulatory Reporting Section */}
+                <div className="border rounded-lg p-4 shadow-sm">
+                  <h3 className="text-base font-medium mb-3">Regulatory Reporting & Submissions</h3>
+                  
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="reportGeneration">Automated Report Generation</Label>
+                        <Select 
+                          value={formValues.fdaCompliance?.reportGeneration || 'quarterly'} 
+                          onValueChange={(value) => handleInputChange('fdaCompliance', 'reportGeneration', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select report frequency" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="monthly">Monthly</SelectItem>
+                            <SelectItem value="quarterly">Quarterly</SelectItem>
+                            <SelectItem value="biannually">Bi-annually</SelectItem>
+                            <SelectItem value="annually">Annually</SelectItem>
+                            <SelectItem value="manual">Manual Generation Only</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Frequency of automated regulatory compliance reports
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="submissionFormat">Submission Format</Label>
+                        <Select 
+                          value={formValues.fdaCompliance?.submissionFormat || 'ectd'} 
+                          onValueChange={(value) => handleInputChange('fdaCompliance', 'submissionFormat', value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select submission format" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="ectd">eCTD (Electronic Common Technical Document)</SelectItem>
+                            <SelectItem value="nees">FDA NEES Format</SelectItem>
+                            <SelectItem value="cesp">EU CESP Format</SelectItem>
+                            <SelectItem value="mixed">Mixed Format (Market-dependent)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-xs text-muted-foreground">
+                          Default format for regulatory submissions
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4 pt-2">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="inspectionReadiness">Inspection Readiness Mode</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Maintain system in continuously inspection-ready state with proactive monitoring
+                          </p>
+                        </div>
+                        <Switch 
+                          id="inspectionReadiness" 
+                          checked={formValues.fdaCompliance?.inspectionReadiness || true}
+                          onCheckedChange={() => handleToggleChange('fdaCompliance', 'inspectionReadiness')}
+                        />
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="enforceApprovalWorkflows">Enforce Regulatory Approval Workflows</Label>
+                          <p className="text-sm text-muted-foreground">
+                            Require all documents to follow predefined regulatory approval workflows with strict sequencing
+                          </p>
+                        </div>
+                        <Switch 
+                          id="enforceApprovalWorkflows" 
+                          checked={formValues.fdaCompliance?.enforceApprovalWorkflows || true}
+                          onCheckedChange={() => handleToggleChange('fdaCompliance', 'enforceApprovalWorkflows')}
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <Switch 
-                    id="enableAuditTrails" 
-                    checked={formValues.fdaCompliance.enableAuditTrails}
-                    onCheckedChange={() => handleToggleChange('fdaCompliance', 'enableAuditTrails')}
-                  />
                 </div>
               </div>
               
@@ -674,10 +871,9 @@ const ClientSecuritySettings = () => {
                     <AlertTriangle className="h-5 w-5 text-amber-600" />
                   </div>
                   <div className="ml-3">
-                    <h3 className="text-sm font-medium text-amber-800">Compliance Notice</h3>
+                    <h3 className="text-sm font-medium text-amber-800">Regulatory Compliance Notice</h3>
                     <p className="text-sm text-amber-700 mt-1">
-                      Changes to FDA compliance settings may affect your organization's regulatory standing. 
-                      It is recommended to consult with your regulatory affairs team before modifying these settings.
+                      Changes to these settings may impact your organization's regulatory compliance status. It is recommended to consult with your Quality Assurance and Regulatory Affairs teams before modifying these settings.
                     </p>
                   </div>
                 </div>
