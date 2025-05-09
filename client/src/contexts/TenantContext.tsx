@@ -1,181 +1,127 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Define the Organization type
-export interface Organization {
+// Define Tenant and TenantContext interfaces
+export interface Tenant {
   id: number;
   name: string;
   slug: string;
-  domain?: string;
+  logo?: string;
+  settings?: any;
   tier: string;
-  status: string;
-  maxUsers?: number;
-  maxProjects?: number;
-  maxStorage?: number;
-  userCount?: number;
-  projectCount?: number;
-  storageUsed?: number;
-  createdAt?: string;
-  updatedAt?: string;
 }
 
-// Define the context type
 interface TenantContextType {
-  currentTenant: Organization | null;
-  availableTenants: Organization[];
+  currentTenant: Tenant | null;
+  setCurrentTenant: (tenant: Tenant | null) => void;
+  availableTenants: Tenant[];
+  setAvailableTenants: (tenants: Tenant[]) => void;
   isLoading: boolean;
-  switchTenant: (tenantId: number) => Promise<void>;
-  refreshTenants: () => Promise<void>;
+  error: Error | null;
 }
 
-// Create the context with default values
+// Create the context with a default value
 const TenantContext = createContext<TenantContextType>({
   currentTenant: null,
+  setCurrentTenant: () => {},
   availableTenants: [],
+  setAvailableTenants: () => {},
   isLoading: true,
-  switchTenant: async () => {},
-  refreshTenants: async () => {},
+  error: null
 });
 
-// Sample organizations for development
-const sampleOrganizations: Organization[] = [
-  {
-    id: 1,
-    name: 'Acme Pharma',
-    slug: 'acme-pharma',
-    domain: 'acmepharma.com',
-    tier: 'enterprise',
-    status: 'active',
-    maxUsers: 50,
-    maxProjects: 100,
-    maxStorage: 500,
-    userCount: 23,
-    projectCount: 45,
-    storageUsed: 156,
-  },
-  {
-    id: 2,
-    name: 'BioCore Research',
-    slug: 'biocore-research',
-    domain: 'biocore.org',
-    tier: 'professional',
-    status: 'active',
-    maxUsers: 20,
-    maxProjects: 50,
-    maxStorage: 100,
-    userCount: 12,
-    projectCount: 18,
-    storageUsed: 42,
-  },
-  {
-    id: 3,
-    name: 'MedTech Innovations',
-    slug: 'medtech-innovations',
-    domain: 'medtechinnovations.com',
-    tier: 'standard',
-    status: 'active',
-    maxUsers: 10,
-    maxProjects: 25,
-    maxStorage: 50,
-    userCount: 8,
-    projectCount: 12,
-    storageUsed: 28,
-  },
-  {
-    id: 4,
-    name: 'Trial Systems LLC',
-    slug: 'trial-systems',
-    domain: 'trialsystems.io',
-    tier: 'enterprise',
-    status: 'inactive',
-    maxUsers: 30,
-    maxProjects: 75,
-    maxStorage: 250,
-    userCount: 0,
-    projectCount: 0,
-    storageUsed: 0,
-  },
-];
+// Custom hook to use the tenant context
+export const useTenant = () => useContext(TenantContext);
 
 interface TenantProviderProps {
   children: ReactNode;
 }
 
-// Create the Provider component
-export const TenantProvider = ({ children }: TenantProviderProps) => {
-  const [currentTenant, setCurrentTenant] = useState<Organization | null>(null);
-  const [availableTenants, setAvailableTenants] = useState<Organization[]>([]);
+export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
+  const [currentTenant, setCurrentTenant] = useState<Tenant | null>(null);
+  const [availableTenants, setAvailableTenants] = useState<Tenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-  // Load tenants on mount
+  // Load the tenant data on component mount
   useEffect(() => {
-    loadTenants();
-  }, []);
-
-  // Function to load available tenants
-  const loadTenants = async () => {
-    setIsLoading(true);
-    try {
-      // In a production app, we would fetch this from the API
-      // const response = await fetch('/api/organizations');
-      // const data = await response.json();
-      
-      // For development, we'll use sample data
-      const data = sampleOrganizations;
-      
-      setAvailableTenants(data);
-      
-      // If no current tenant is set, set the first active one
-      if (!currentTenant) {
-        const defaultTenant = data.find(tenant => tenant.status === 'active');
-        if (defaultTenant) {
-          setCurrentTenant(defaultTenant);
-          // Store selected tenant in localStorage
-          localStorage.setItem('currentTenantId', defaultTenant.id.toString());
+    const loadTenantData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Get available tenants for the current user
+        const tenantsResponse = await fetch('/api/tenants');
+        if (!tenantsResponse.ok) {
+          throw new Error('Failed to fetch tenant data');
         }
+        
+        const tenantsData = await tenantsResponse.json();
+        setAvailableTenants(tenantsData);
+        
+        // If there are tenants, set the current tenant to the first one or
+        // the one saved in localStorage
+        if (tenantsData.length > 0) {
+          const savedTenantId = localStorage.getItem('currentTenantId');
+          const tenantToSelect = savedTenantId 
+            ? tenantsData.find(t => t.id.toString() === savedTenantId) 
+            : tenantsData[0];
+          
+          if (tenantToSelect) {
+            setCurrentTenant(tenantToSelect);
+            localStorage.setItem('currentTenantId', tenantToSelect.id.toString());
+          }
+        }
+        
+        setIsLoading(false);
+      } catch (err) {
+        setError(err instanceof Error ? err : new Error('Unknown error'));
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error loading tenants:', error);
-    } finally {
-      setIsLoading(false);
+    };
+    
+    loadTenantData();
+  }, []);
+  
+  // Update localStorage and API headers when current tenant changes
+  useEffect(() => {
+    if (currentTenant) {
+      localStorage.setItem('currentTenantId', currentTenant.id.toString());
+      
+      // Update the tenant ID HTTP header for API requests
+      const originalFetch = window.fetch;
+      window.fetch = function(input, init) {
+        init = init || {};
+        init.headers = init.headers || {};
+        
+        // Add tenant header to all API requests
+        if (typeof input === 'string' && input.startsWith('/api/')) {
+          init.headers = {
+            ...init.headers,
+            'X-Tenant-ID': currentTenant.id.toString()
+          };
+        }
+        
+        return originalFetch(input, init);
+      };
+      
+      // Cleanup the fetch override on unmount
+      return () => {
+        window.fetch = originalFetch;
+      };
     }
-  };
-
-  // Function to switch tenants
-  const switchTenant = async (tenantId: number) => {
-    setIsLoading(true);
-    try {
-      const tenant = availableTenants.find(t => t.id === tenantId);
-      if (tenant) {
-        setCurrentTenant(tenant);
-        // Store selected tenant in localStorage
-        localStorage.setItem('currentTenantId', tenantId.toString());
-      }
-    } catch (error) {
-      console.error('Error switching tenant:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // Function to refresh tenants
-  const refreshTenants = async () => {
-    await loadTenants();
-  };
-
+  }, [currentTenant]);
+  
   return (
     <TenantContext.Provider
       value={{
         currentTenant,
+        setCurrentTenant,
         availableTenants,
+        setAvailableTenants,
         isLoading,
-        switchTenant,
-        refreshTenants,
+        error
       }}
     >
       {children}
     </TenantContext.Provider>
   );
 };
-
-// Custom hook to use the tenant context
-export const useTenant = () => useContext(TenantContext);
