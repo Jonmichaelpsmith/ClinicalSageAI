@@ -8,7 +8,7 @@ import { z } from 'zod';
 import { eq, and } from 'drizzle-orm';
 import { organizations } from '../../shared/schema';
 import { authMiddleware, requireAdminRole } from '../auth';
-import { requireTenantMiddleware } from '../middleware/tenantContext';
+import { requireOrganizationContext } from '../middleware/tenantContext';
 import { createScopedLogger } from '../utils/logger';
 
 const logger = createScopedLogger('tenant-config-api');
@@ -85,7 +85,7 @@ const tenantSettingsSchema = z.object({
  * Get tenant settings
  * Organization admins can view their own settings, super admins can view any tenant's settings
  */
-router.get('/:tenantId/settings', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/:tenantId/settings', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const tenantId = parseInt(req.params.tenantId);
     if (isNaN(tenantId)) {
@@ -119,7 +119,7 @@ router.get('/:tenantId/settings', authMiddleware, requireTenantMiddleware, async
  * Update tenant settings
  * Only organization admins and super admins can update settings
  */
-router.patch('/:tenantId/settings', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.patch('/:tenantId/settings', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const tenantId = parseInt(req.params.tenantId);
     if (isNaN(tenantId)) {
@@ -179,7 +179,7 @@ router.patch('/:tenantId/settings', authMiddleware, requireTenantMiddleware, asy
  * Reset tenant settings to defaults
  * Only organization admins and super admins can reset settings
  */
-router.post('/:tenantId/settings/reset', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/:tenantId/settings/reset', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const tenantId = parseInt(req.params.tenantId);
     if (isNaN(tenantId)) {
@@ -270,7 +270,7 @@ router.post('/:tenantId/settings/reset', authMiddleware, requireTenantMiddleware
  * Update a specific setting section
  * Only organization admins and super admins can update settings
  */
-router.patch('/:tenantId/settings/:section', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.patch('/:tenantId/settings/:section', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const tenantId = parseInt(req.params.tenantId);
     if (isNaN(tenantId)) {
