@@ -27,11 +27,11 @@ import {
   Lock, 
   Clock, 
   UserCheck, 
-  FileText, 
-  FileCheck, 
-  ClipboardCheck, 
-  Globe as GlobeIcon,
-  CheckSquare
+  FileText,
+  FileCheck,
+  ClipboardCheck,
+  CheckSquare,
+  Globe as GlobeIcon
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -658,14 +658,7 @@ const ClientSecuritySettings = () => {
                 <div className="border p-4 rounded-lg bg-purple-50">
                   <div className="flex items-start">
                     <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
-                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
-                        <path d="M8 2h8l4 4v16H4V2h4z"></path>
-                        <path d="M16 2v4h4"></path>
-                        <path d="M8 15h8"></path>
-                        <path d="M8 18h5"></path>
-                        <path d="M8 12h8"></path>
-                        <path d="M8 9h8"></path>
-                      </svg>
+                      <GlobeIcon className="h-5 w-5" />
                     </div>
                     <div className="ml-3">
                       <h3 className="text-sm font-medium text-purple-800">EU GMP Annex 11 Compliance</h3>
@@ -680,7 +673,10 @@ const ClientSecuritySettings = () => {
               <div className="grid grid-cols-1 gap-6">
                 {/* Electronic Signatures Section */}
                 <div className="border rounded-lg p-4 shadow-sm">
-                  <h3 className="text-base font-medium mb-3">Electronic Signatures & Records</h3>
+                  <div className="flex items-center mb-3">
+                    <FileCheck className="h-5 w-5 text-blue-600 mr-2" />
+                    <h3 className="text-base font-medium">Electronic Signatures & Records</h3>
+                  </div>
                   
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -727,12 +723,29 @@ const ClientSecuritySettings = () => {
                         onCheckedChange={() => handleToggleChange('fdaCompliance', 'enableAuditTrails')}
                       />
                     </div>
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="enforceApprovalWorkflows">Multi-Level Approval Workflows</Label>
+                        <p className="text-sm text-muted-foreground">
+                          Enforce configurable approval sequences with role-based authorization
+                        </p>
+                      </div>
+                      <Switch 
+                        id="enforceApprovalWorkflows" 
+                        checked={formValues.fdaCompliance.enforceApprovalWorkflows}
+                        onCheckedChange={() => handleToggleChange('fdaCompliance', 'enforceApprovalWorkflows')}
+                      />
+                    </div>
                   </div>
                 </div>
                 
-                {/* New Validation & Documentation Section */}
+                {/* System Validation & Documentation Section */}
                 <div className="border rounded-lg p-4 shadow-sm">
-                  <h3 className="text-base font-medium mb-3">System Validation & Documentation</h3>
+                  <div className="flex items-center mb-3">
+                    <ClipboardCheck className="h-5 w-5 text-green-600 mr-2" />
+                    <h3 className="text-base font-medium">System Validation & Documentation</h3>
+                  </div>
                   
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -814,7 +827,10 @@ const ClientSecuritySettings = () => {
                 
                 {/* Regulatory Reporting Section */}
                 <div className="border rounded-lg p-4 shadow-sm">
-                  <h3 className="text-base font-medium mb-3">Regulatory Reporting & Submissions</h3>
+                  <div className="flex items-center mb-3">
+                    <FileText className="h-5 w-5 text-indigo-600 mr-2" />
+                    <h3 className="text-base font-medium">Regulatory Reporting & Submissions</h3>
+                  </div>
                   
                   <div className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
