@@ -379,7 +379,7 @@ router.post('/:tenantId/ctq-factors/batch', authMiddleware, requireTenantMiddlew
         }
         
         // Clone factors from a template
-        const templateFactors = await req.db.select().from(ctqFactors)
+        const templateFactors = await getDb(req).select().from(ctqFactors)
           .where(eq(ctqFactors.organizationId, parseInt(data.templateId)));
         
         const createdFactors = [];
