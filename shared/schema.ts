@@ -399,6 +399,69 @@ export type QmpAuditTrail = InferSelectModel<typeof qmpAuditTrail>;
 export type InsertQmpAuditTrail = z.infer<typeof insertQmpAuditTrailSchema>;
 
 /**
+ * Quality Waivers Table
+ * 
+ * Handles waiver requests and approvals for quality requirements that cannot be met.
+ */
+export const qualityWaivers = pgTable('quality_waivers', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  qmpId: integer('qmp_id').notNull().references(() => qualityManagementPlans.id),
+  sectionCode: text('section_code').notNull(),
+  justification: text('justification').notNull(),
+  riskAssessment: text('risk_assessment'),
+  status: text('status').default('pending').notNull(), // pending, approved, rejected, expired
+  requestedById: integer('requested_by_id').notNull().references(() => users.id),
+  requestedAt: timestamp('requested_at').defaultNow().notNull(),
+  approvedById: integer('approved_by_id').references(() => users.id),
+  approvedAt: timestamp('approved_at'),
+  rejectedById: integer('rejected_by_id').references(() => users.id),
+  rejectedAt: timestamp('rejected_at'),
+  rejectionReason: text('rejection_reason'),
+  expiresAt: timestamp('expires_at'),
+  metadata: json('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Quality Waiver Insert Schema
+export const insertQualityWaiverSchema = createInsertSchema(qualityWaivers).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Quality Waiver Types
+export type QualityWaiver = InferSelectModel<typeof qualityWaivers>;
+export type InsertQualityWaiver = z.infer<typeof insertQualityWaiverSchema>;
+
+/**
+ * Quality Waiver Factors Junction Table
+ * 
+ * Maps waivers to the specific CTQ factors being waived.
+ */
+export const qualityWaiverFactors = pgTable('quality_waiver_factors', {
+  id: serial('id').primaryKey(),
+  waiverId: integer('waiver_id').notNull().references(() => qualityWaivers.id),
+  factorId: integer('factor_id').notNull().references(() => ctqFactors.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    uniqueWaiverFactor: unique('unique_waiver_factor').on(table.waiverId, table.factorId),
+  };
+});
+
+// Quality Waiver Factor Insert Schema
+export const insertQualityWaiverFactorSchema = createInsertSchema(qualityWaiverFactors).omit({
+  id: true,
+  createdAt: true
+});
+
+// Quality Waiver Factor Types
+export type QualityWaiverFactor = InferSelectModel<typeof qualityWaiverFactors>;
+export type InsertQualityWaiverFactor = z.infer<typeof insertQualityWaiverFactorSchema>;
+
+/**
  * CTQ (Critical-to-Quality) Factors Table
  * 
  * Stores critical quality factors with risk-based categorization.
@@ -509,6 +572,44 @@ export const qualityManagementPlansRelations = relations(qualityManagementPlans,
   sectionGating: many(qmpSectionGating),
   auditTrail: many(qmpAuditTrail),
   traceabilityMatrix: many(qmpTraceabilityMatrix),
+  waivers: many(qualityWaivers),
+}));
+
+// Define relations for quality waivers
+export const qualityWaiversRelations = relations(qualityWaivers, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [qualityWaivers.organizationId],
+    references: [organizations.id],
+  }),
+  qmp: one(qualityManagementPlans, {
+    fields: [qualityWaivers.qmpId],
+    references: [qualityManagementPlans.id],
+  }),
+  requester: one(users, {
+    fields: [qualityWaivers.requestedById],
+    references: [users.id],
+  }),
+  approver: one(users, {
+    fields: [qualityWaivers.approvedById],
+    references: [users.id],
+  }),
+  rejecter: one(users, {
+    fields: [qualityWaivers.rejectedById],
+    references: [users.id],
+  }),
+  waivedFactors: many(qualityWaiverFactors),
+}));
+
+// Define relations for quality waiver factors
+export const qualityWaiverFactorsRelations = relations(qualityWaiverFactors, ({ one }) => ({
+  waiver: one(qualityWaivers, {
+    fields: [qualityWaiverFactors.waiverId],
+    references: [qualityWaivers.id],
+  }),
+  factor: one(ctqFactors, {
+    fields: [qualityWaiverFactors.factorId],
+    references: [ctqFactors.id],
+  }),
 }));
 
 export const ctqFactorsRelations = relations(ctqFactors, ({ one, many }) => ({
