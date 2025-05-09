@@ -59,6 +59,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
+import EnhancedSelect from '../components/ui/select-wrapper';
 import { ScrollArea } from '../components/ui/scroll-area';
 import { Input } from '../components/ui/input';
 import { Button } from '../components/ui/button';
@@ -465,29 +466,19 @@ export default function TenantManagement() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Industry Type</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        value={field.value}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue>
-                              {field.value === 'biotech' && 'Biotech'}
-                              {field.value === 'cro' && 'CRO'}
-                              {field.value === 'pharma' && 'Pharmaceutical'}
-                              {field.value === 'meddevice' && 'Medical Device'}
-                              {!field.value && 'Select industry type'}
-                            </SelectValue>
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="biotech">Biotech</SelectItem>
-                          <SelectItem value="cro">CRO</SelectItem>
-                          <SelectItem value="pharma">Pharmaceutical</SelectItem>
-                          <SelectItem value="meddevice">Medical Device</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <EnhancedSelect
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          placeholder="Select industry type"
+                          options={{
+                            'biotech': 'Biotech',
+                            'cro': 'CRO',
+                            'pharma': 'Pharmaceutical',
+                            'meddevice': 'Medical Device'
+                          }}
+                        />
+                      </FormControl>
                       <FormDescription>
                         Industry-specific features and compliance
                       </FormDescription>
@@ -502,27 +493,18 @@ export default function TenantManagement() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Compliance Level</FormLabel>
-                      <Select 
-                        onValueChange={field.onChange} 
-                        value={field.value}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue>
-                              {field.value === 'base' && 'Base'}
-                              {field.value === 'standard' && 'Standard'}
-                              {field.value === 'enhanced' && 'Enhanced'}
-                              {!field.value && 'Select compliance level'}
-                            </SelectValue>
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="base">Base</SelectItem>
-                          <SelectItem value="standard">Standard</SelectItem>
-                          <SelectItem value="enhanced">Enhanced</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <EnhancedSelect
+                          onValueChange={field.onChange}
+                          value={field.value}
+                          placeholder="Select compliance level"
+                          options={{
+                            'base': 'Base',
+                            'standard': 'Standard',
+                            'enhanced': 'Enhanced'
+                          }}
+                        />
+                      </FormControl>
                       <FormDescription>
                         Level of compliance controls and documentation
                       </FormDescription>
@@ -680,29 +662,19 @@ export default function TenantManagement() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Industry Type</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          value={field.value}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue>
-                                {field.value === 'biotech' && 'Biotech'}
-                                {field.value === 'cro' && 'CRO'}
-                                {field.value === 'pharma' && 'Pharmaceutical'}
-                                {field.value === 'meddevice' && 'Medical Device'}
-                                {!field.value && 'Select industry type'}
-                              </SelectValue>
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="biotech">Biotech</SelectItem>
-                            <SelectItem value="cro">CRO</SelectItem>
-                            <SelectItem value="pharma">Pharmaceutical</SelectItem>
-                            <SelectItem value="meddevice">Medical Device</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <EnhancedSelect
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            placeholder="Select industry type"
+                            options={{
+                              'biotech': 'Biotech',
+                              'cro': 'CRO',
+                              'pharma': 'Pharmaceutical',
+                              'meddevice': 'Medical Device'
+                            }}
+                          />
+                        </FormControl>
                         <FormDescription>
                           Industry-specific features and compliance
                         </FormDescription>
@@ -717,27 +689,18 @@ export default function TenantManagement() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Compliance Level</FormLabel>
-                        <Select 
-                          onValueChange={field.onChange} 
-                          value={field.value}
-                          defaultValue={field.value}
-                        >
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue>
-                                {field.value === 'base' && 'Base'}
-                                {field.value === 'standard' && 'Standard'}
-                                {field.value === 'enhanced' && 'Enhanced'}
-                                {!field.value && 'Select compliance level'}
-                              </SelectValue>
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="base">Base</SelectItem>
-                            <SelectItem value="standard">Standard</SelectItem>
-                            <SelectItem value="enhanced">Enhanced</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormControl>
+                          <EnhancedSelect
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            placeholder="Select compliance level"
+                            options={{
+                              'base': 'Base',
+                              'standard': 'Standard',
+                              'enhanced': 'Enhanced'
+                            }}
+                          />
+                        </FormControl>
                         <FormDescription>
                           Level of compliance controls and documentation
                         </FormDescription>
