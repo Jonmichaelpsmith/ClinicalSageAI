@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
 import {
   Card,
   CardHeader,
@@ -64,12 +65,11 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Checkbox } from '../ui/checkbox';
 import { useToast } from '../../hooks/use-toast';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Textarea } from '../ui/textarea';
 import LoadingSpinner from '../common/LoadingSpinner';
-import { useTenantContext } from '../../contexts/TenantContext';
+import { useTenant } from '../../contexts/TenantContext';
 import { Badge } from '../ui/badge';
 import { Activity, AlertCircle, AlertTriangle, CheckCircle, Filter, Info, Plus, RefreshCw, Settings, ShieldAlert, ShieldCheck, Trash2 } from 'lucide-react';
 import { apiRequest } from '../../lib/queryClient';
@@ -112,7 +112,7 @@ const sectionValidationSchema = z.object({
 const QmpSectionGatingPanel = ({ projectId }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { tenant } = useTenantContext();
+  const { currentTenant: tenant } = useTenant();
   const tenantId = tenant?.id || 1; // Fallback to default tenant if context not available
   
   const [activeTab, setActiveTab] = useState('factors');
