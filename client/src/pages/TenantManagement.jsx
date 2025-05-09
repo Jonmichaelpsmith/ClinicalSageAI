@@ -166,13 +166,16 @@ export default function TenantManagement() {
 
   // Fetch tenants
   const { 
-    data: tenants = availableTenants,
+    data: tenantsData = availableTenants || [],
     isLoading: isLoadingTenants
   } = useQuery({
     queryKey: ['/api/tenants'],
     // In a real app, we'd use a queryFn configured with API calls
     // Using window.fetch overridden by TenantContext to include tenant headers
   });
+  
+  // Ensure tenants is always an array
+  const tenants = Array.isArray(tenantsData) ? tenantsData : [];
 
   // Fetch users for the selected tenant
   const {
