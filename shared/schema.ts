@@ -3,6 +3,10 @@
  * 
  * This file defines the database schema for the application,
  * including all tables, relationships, and types.
+ * 
+ * Multi-tenant architecture with two levels:
+ * 1. Organizations (top-level tenants)
+ * 2. ClientWorkspaces (sub-tenants under an organization)
  */
 import { relations, InferSelectModel } from 'drizzle-orm';
 import { 
@@ -45,6 +49,81 @@ export const insertOrganizationSchema = createInsertSchema(organizations).omit({
 // Organization Types
 export type Organization = InferSelectModel<typeof organizations>;
 export type InsertOrganization = z.infer<typeof insertOrganizationSchema>;
+
+/**
+ * ClientWorkspaces Table
+ * 
+ * Represents client workspaces within an organization.
+ * For CRO use case: different clients that the CRO works with.
+ * For Biotech: could be different divisions or product lines.
+ */
+export const clientWorkspaces = pgTable('client_workspaces', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  name: text('name').notNull(),
+  slug: text('slug').notNull(),
+  description: text('description'),
+  logo: text('logo'),
+  status: text('status').default('active').notNull(), // active, inactive, archived
+  quotaProjects: integer('quota_projects').default(5), // Project quota for this client
+  quotaStorage: integer('quota_storage').default(1), // Storage quota in GB
+  contactName: text('contact_name'),
+  contactEmail: text('contact_email'),
+  contactPhone: text('contact_phone'),
+  industry: text('industry'),
+  settings: json('settings'),
+  metadata: json('metadata'),
+  createdById: integer('created_by_id').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    uniqueOrgSlug: unique('unique_org_slug').on(table.organizationId, table.slug),
+  };
+});
+
+// Client Workspace Insert Schema
+export const insertClientWorkspaceSchema = createInsertSchema(clientWorkspaces).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Client Workspace Types
+export type ClientWorkspace = InferSelectModel<typeof clientWorkspaces>;
+export type InsertClientWorkspace = z.infer<typeof insertClientWorkspaceSchema>;
+
+/**
+ * Client Access (User-Client Workspace Junction Table)
+ * 
+ * Maps users to client workspaces with role information.
+ * Similar to organizationUsers but for the client workspace level.
+ */
+export const clientAccess = pgTable('client_access', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  clientWorkspaceId: integer('client_workspace_id').notNull().references(() => clientWorkspaces.id),
+  userId: integer('user_id').notNull().references(() => users.id),
+  role: text('role').default('viewer').notNull(), // admin, member, viewer
+  permissions: json('permissions'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    uniqueUserClient: unique('unique_user_client').on(table.userId, table.clientWorkspaceId),
+  };
+});
+
+// Client Access Insert Schema
+export const insertClientAccessSchema = createInsertSchema(clientAccess).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Client Access Types
+export type ClientAccess = InferSelectModel<typeof clientAccess>;
+export type InsertClientAccess = z.infer<typeof insertClientAccessSchema>;
 
 /**
  * Users Table
@@ -119,6 +198,7 @@ export type InsertOrganizationUser = z.infer<typeof insertOrganizationUserSchema
 export const cerProjects = pgTable('cer_projects', {
   id: serial('id').primaryKey(),
   organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  clientWorkspaceId: integer('client_workspace_id').references(() => clientWorkspaces.id),
   name: text('name').notNull(),
   deviceName: text('device_name').notNull(),
   deviceManufacturer: text('device_manufacturer').notNull(),
