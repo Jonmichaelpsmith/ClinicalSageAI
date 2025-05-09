@@ -16,7 +16,7 @@ import { db } from '../db';
 import { eq, and } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { tenantContextMiddleware, requireTenantMiddleware } from '../middleware/tenantContext';
+import { tenantContextMiddleware, requireOrganizationContext } from '../middleware/tenantContext';
 import { createScopedLogger } from '../utils/logger';
 
 // Use declaration merging to specify the tenant context and db types
@@ -45,7 +45,7 @@ import { getDb } from '../db/tenantDbHelper';
 
 // Apply tenant context and require a tenant for all routes
 router.use(tenantContextMiddleware);
-router.use(requireTenantMiddleware);
+router.use(requireOrganizationContext);
 
 /**
  * Get all traceability matrix items for a QMP
