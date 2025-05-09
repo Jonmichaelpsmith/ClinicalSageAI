@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useTenant, Organization } from '../../contexts/TenantContext';
+import { useTenant, ClientWorkspace } from '../../contexts/TenantContext';
 import {
   Popover,
   PopoverContent,
@@ -15,24 +15,24 @@ import {
   CommandSeparator,
 } from '../ui/command';
 import { Button } from '../ui/button';
-import { Check, ChevronsUpDown, Building, Settings } from 'lucide-react';
+import { Check, ChevronsUpDown, Users, Settings } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useLocation } from 'wouter';
 import { Skeleton } from '../ui/skeleton';
 
-export function OrganizationSwitcher() {
+export function ClientWorkspaceSwitcher() {
   const { 
-    currentOrganization, 
-    setCurrentOrganization, 
-    availableOrganizations, 
+    currentClientWorkspace, 
+    setCurrentClientWorkspace, 
+    availableClientWorkspaces, 
     isLoading 
   } = useTenant();
   
   const [open, setOpen] = useState(false);
   const [, navigate] = useLocation();
 
-  // If there are no organizations available and we're not loading, we don't show the switcher
-  if (availableOrganizations.length === 0 && !isLoading) return null;
+  // If there are no client workspaces available and we're not loading, we don't show the switcher
+  if (availableClientWorkspaces.length === 0 && !isLoading) return null;
 
   if (isLoading) {
     return (
@@ -43,17 +43,17 @@ export function OrganizationSwitcher() {
     );
   }
 
-  const handleSelect = (org: Organization) => {
-    if (org.id !== currentOrganization?.id) {
-      setCurrentOrganization(org);
+  const handleSelect = (client: ClientWorkspace) => {
+    if (client.id !== currentClientWorkspace?.id) {
+      setCurrentClientWorkspace(client);
       // Close the popover after selection
       setOpen(false);
     }
   };
 
-  const handleManageOrganizations = () => {
+  const handleManageClients = () => {
     setOpen(false);
-    navigate('/tenant-management');
+    navigate('/client-management');
   };
 
   return (
@@ -63,52 +63,36 @@ export function OrganizationSwitcher() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          aria-label="Select an organization"
+          aria-label="Select a client workspace"
           className="flex items-center justify-between w-[200px] px-3"
         >
           <div className="flex items-center gap-2 truncate">
-            {currentOrganization?.logo ? (
-              <img 
-                src={currentOrganization.logo} 
-                alt={currentOrganization.name} 
-                className="h-4 w-4 rounded-sm object-contain"
-              />
-            ) : (
-              <Building className="h-4 w-4 shrink-0 opacity-50" />
-            )}
-            <span className="truncate">{currentOrganization?.name}</span>
+            <Users className="h-4 w-4 shrink-0 opacity-50" />
+            <span className="truncate">{currentClientWorkspace?.name || "Select Client"}</span>
           </div>
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0" align="start">
         <Command>
-          <CommandInput placeholder="Search organization..." />
+          <CommandInput placeholder="Search client..." />
           <CommandList>
-            <CommandEmpty>No organization found.</CommandEmpty>
-            <CommandGroup heading="Organizations">
-              {availableOrganizations.map((org) => (
+            <CommandEmpty>No client workspace found.</CommandEmpty>
+            <CommandGroup heading="Client Workspaces">
+              {availableClientWorkspaces.map((client) => (
                 <CommandItem
-                  key={org.id}
-                  onSelect={() => handleSelect(org)}
+                  key={client.id}
+                  onSelect={() => handleSelect(client)}
                   className="text-sm"
                 >
                   <div className="flex items-center gap-2 truncate">
-                    {org.logo ? (
-                      <img 
-                        src={org.logo} 
-                        alt={org.name} 
-                        className="h-4 w-4 rounded-sm object-contain"
-                      />
-                    ) : (
-                      <Building className="h-4 w-4 shrink-0 opacity-50" />
-                    )}
-                    <span className="truncate">{org.name}</span>
+                    <Users className="h-4 w-4 shrink-0 opacity-50" />
+                    <span className="truncate">{client.name}</span>
                   </div>
                   <Check
                     className={cn(
                       "ml-auto h-4 w-4",
-                      currentOrganization?.id === org.id ? "opacity-100" : "opacity-0"
+                      currentClientWorkspace?.id === client.id ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>
@@ -116,9 +100,9 @@ export function OrganizationSwitcher() {
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup>
-              <CommandItem onSelect={handleManageOrganizations}>
+              <CommandItem onSelect={handleManageClients}>
                 <Settings className="mr-2 h-4 w-4" />
-                <span>Manage Organizations</span>
+                <span>Manage Clients</span>
               </CommandItem>
             </CommandGroup>
           </CommandList>

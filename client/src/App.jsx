@@ -90,6 +90,10 @@ const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 // Tenant Management
 const TenantManagement = lazy(() => import('./pages/TenantManagement'));
 
+// Client Management and Settings Pages
+const ClientManagement = lazy(() => import('./pages/ClientManagement'));
+const Settings = lazy(() => import('./pages/Settings'));
+
 function App() {
   // Default tab for the UnifiedTopNavV3 component
   const [activeTab, setActiveTab] = useState('RiskHeatmap');
@@ -204,6 +208,10 @@ function App() {
           
           {/* Tenant Management Route */}
           <Route path="/tenant-management" component={TenantManagement} />
+          
+          {/* Client Management & Settings Routes */}
+          <Route path="/client-management" component={ClientManagement} />
+          <Route path="/settings" component={Settings} />
 
           {/* Error fallback and catch-all routes for specific modules */}
           <Route path="/cer-*">
