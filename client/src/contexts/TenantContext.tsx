@@ -1,30 +1,81 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Define Tenant and TenantContext interfaces
-export interface Tenant {
-  id: number;
+// Define the interfaces for our multi-tenant model
+export interface Organization {
+  id: string;
   name: string;
   slug: string;
   logo?: string;
-  settings?: any;
-  tier: string;
+  subscriptionTier: string;
+  maxUsers: number;
+  maxProjects: number;
+  maxStorageGB: number;
+  billingContact?: string;
+}
+
+export interface ClientWorkspace {
+  id: string;
+  orgId: string;
+  name: string;
+  slug: string;
+  quotaProjects: number;
+  quotaStorageGB: number;
+  activeProjects?: number;
+  storageUsedGB?: number;
+  lastActivity?: string;
+}
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export interface Module {
+  id: string;
+  name: string;
+  slug: string;
+  isEnabled: boolean;
 }
 
 interface TenantContextType {
-  currentTenant: Tenant | null;
-  setCurrentTenant: (tenant: Tenant | null) => void;
-  availableTenants: Tenant[];
-  setAvailableTenants: (tenants: Tenant[]) => void;
+  // Organization context
+  currentOrganization: Organization | null;
+  setCurrentOrganization: (org: Organization | null) => void;
+  availableOrganizations: Organization[];
+  setAvailableOrganizations: (orgs: Organization[]) => void;
+  
+  // Client workspace context
+  currentClientWorkspace: ClientWorkspace | null;
+  setCurrentClientWorkspace: (client: ClientWorkspace | null) => void;
+  availableClientWorkspaces: ClientWorkspace[];
+  setAvailableClientWorkspaces: (clients: ClientWorkspace[]) => void;
+  
+  // Current module context
+  currentModule: string;
+  setCurrentModule: (moduleName: string) => void;
+  
+  // Loading and error states
   isLoading: boolean;
   error: Error | null;
 }
 
 // Create the context with a default value
 const TenantContext = createContext<TenantContextType>({
-  currentTenant: null,
-  setCurrentTenant: () => {},
-  availableTenants: [],
-  setAvailableTenants: () => {},
+  currentOrganization: null,
+  setCurrentOrganization: () => {},
+  availableOrganizations: [],
+  setAvailableOrganizations: () => {},
+  
+  currentClientWorkspace: null,
+  setCurrentClientWorkspace: () => {},
+  availableClientWorkspaces: [],
+  setAvailableClientWorkspaces: () => {},
+  
+  currentModule: 'cer', // Default module
+  setCurrentModule: () => {},
+  
   isLoading: true,
   error: null
 });
@@ -37,37 +88,50 @@ interface TenantProviderProps {
 }
 
 export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
-  const [currentTenant, setCurrentTenant] = useState<Tenant | null>(null);
-  const [availableTenants, setAvailableTenants] = useState<Tenant[]>([]);
+  // Organization state
+  const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null);
+  const [availableOrganizations, setAvailableOrganizations] = useState<Organization[]>([]);
+  
+  // Client workspace state
+  const [currentClientWorkspace, setCurrentClientWorkspace] = useState<ClientWorkspace | null>(null);
+  const [availableClientWorkspaces, setAvailableClientWorkspaces] = useState<ClientWorkspace[]>([]);
+  
+  // Current module state
+  const [currentModule, setCurrentModule] = useState<string>('cer');
+  
+  // Loading and error states
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Load the tenant data on component mount
+  // Load the organization data on component mount
   useEffect(() => {
-    const loadTenantData = async () => {
+    const loadOrganizationsData = async () => {
       try {
         setIsLoading(true);
         
-        // Get available tenants for the current user
-        const tenantsResponse = await fetch('/api/tenants');
-        if (!tenantsResponse.ok) {
-          throw new Error('Failed to fetch tenant data');
+        // Get available organizations for the current user
+        const orgsResponse = await fetch('/api/organizations');
+        if (!orgsResponse.ok) {
+          throw new Error('Failed to fetch organization data');
         }
         
-        const tenantsData = await tenantsResponse.json();
-        setAvailableTenants(tenantsData);
+        const orgsData = await orgsResponse.json();
+        setAvailableOrganizations(orgsData);
         
-        // If there are tenants, set the current tenant to the first one or
+        // If there are organizations, set the current organization to the first one or
         // the one saved in localStorage
-        if (tenantsData.length > 0) {
-          const savedTenantId = localStorage.getItem('currentTenantId');
-          const tenantToSelect = savedTenantId 
-            ? tenantsData.find(t => t.id.toString() === savedTenantId) 
-            : tenantsData[0];
+        if (orgsData.length > 0) {
+          const savedOrgId = localStorage.getItem('currentOrgId');
+          const orgToSelect = savedOrgId 
+            ? orgsData.find(o => o.id.toString() === savedOrgId) 
+            : orgsData[0];
           
-          if (tenantToSelect) {
-            setCurrentTenant(tenantToSelect);
-            localStorage.setItem('currentTenantId', tenantToSelect.id.toString());
+          if (orgToSelect) {
+            setCurrentOrganization(orgToSelect);
+            localStorage.setItem('currentOrgId', orgToSelect.id.toString());
+            
+            // Now load client workspaces for this organization
+            await loadClientWorkspaces(orgToSelect.id);
           }
         }
         
@@ -78,25 +142,77 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
       }
     };
     
-    loadTenantData();
+    loadOrganizationsData();
   }, []);
   
-  // Update localStorage and API headers when current tenant changes
-  useEffect(() => {
-    if (currentTenant) {
-      localStorage.setItem('currentTenantId', currentTenant.id.toString());
+  // Load client workspaces when organization changes
+  const loadClientWorkspaces = async (orgId: string) => {
+    try {
+      // Get available client workspaces for the selected organization
+      const clientsResponse = await fetch(`/api/organizations/${orgId}/clients`);
+      if (!clientsResponse.ok) {
+        throw new Error('Failed to fetch client workspace data');
+      }
       
-      // Update the tenant ID HTTP header for API requests
+      const clientsData = await clientsResponse.json();
+      setAvailableClientWorkspaces(clientsData);
+      
+      // If there are client workspaces, set the current client workspace to the first one or
+      // the one saved in localStorage
+      if (clientsData.length > 0) {
+        const savedClientId = localStorage.getItem('currentClientId');
+        const clientToSelect = savedClientId 
+          ? clientsData.find(c => c.id.toString() === savedClientId) 
+          : clientsData[0];
+        
+        if (clientToSelect) {
+          setCurrentClientWorkspace(clientToSelect);
+          localStorage.setItem('currentClientId', clientToSelect.id.toString());
+        }
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+    }
+  };
+  
+  // Update when organization changes
+  useEffect(() => {
+    if (currentOrganization) {
+      localStorage.setItem('currentOrgId', currentOrganization.id.toString());
+      loadClientWorkspaces(currentOrganization.id);
+    }
+  }, [currentOrganization]);
+  
+  // Update localStorage when client workspace changes
+  useEffect(() => {
+    if (currentClientWorkspace) {
+      localStorage.setItem('currentClientId', currentClientWorkspace.id.toString());
+    }
+  }, [currentClientWorkspace]);
+
+  // Update localStorage when module changes
+  useEffect(() => {
+    if (currentModule) {
+      localStorage.setItem('currentModule', currentModule);
+    }
+  }, [currentModule]);
+  
+  // Update API headers with tenant context information
+  useEffect(() => {
+    if (currentOrganization && currentClientWorkspace) {
+      // Update the organization and client ID HTTP headers for API requests
       const originalFetch = window.fetch;
       window.fetch = function(input, init) {
         init = init || {};
         init.headers = init.headers || {};
         
-        // Add tenant header to all API requests
+        // Add organization and client headers to all API requests
         if (typeof input === 'string' && input.startsWith('/api/')) {
           init.headers = {
             ...init.headers,
-            'X-Tenant-ID': currentTenant.id.toString()
+            'X-Org-ID': currentOrganization.id.toString(),
+            'X-Client-ID': currentClientWorkspace.id.toString(),
+            'X-Module': currentModule
           };
         }
         
@@ -108,15 +224,24 @@ export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
         window.fetch = originalFetch;
       };
     }
-  }, [currentTenant]);
+  }, [currentOrganization, currentClientWorkspace, currentModule]);
   
   return (
     <TenantContext.Provider
       value={{
-        currentTenant,
-        setCurrentTenant,
-        availableTenants,
-        setAvailableTenants,
+        currentOrganization,
+        setCurrentOrganization,
+        availableOrganizations,
+        setAvailableOrganizations,
+        
+        currentClientWorkspace,
+        setCurrentClientWorkspace,
+        availableClientWorkspaces,
+        setAvailableClientWorkspaces,
+        
+        currentModule,
+        setCurrentModule,
+        
         isLoading,
         error
       }}

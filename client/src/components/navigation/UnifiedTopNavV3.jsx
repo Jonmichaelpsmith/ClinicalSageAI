@@ -3,6 +3,7 @@
 import React from 'react';
 import { useLocation } from 'wouter';
 import { OrganizationSwitcher } from '../tenant/OrganizationSwitcher';
+import { ClientWorkspaceSwitcher } from '../tenant/ClientWorkspaceSwitcher';
 import { Settings, Users, Building2, SwitchCamera } from 'lucide-react';
 
 export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = [] }) {
@@ -44,6 +45,11 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
           {/* Organization Switcher */}
           <div className="ml-2">
             <OrganizationSwitcher />
+          </div>
+          
+          {/* Client Workspace Switcher */}
+          <div className="ml-2">
+            <ClientWorkspaceSwitcher />
           </div>
         </div>
 
