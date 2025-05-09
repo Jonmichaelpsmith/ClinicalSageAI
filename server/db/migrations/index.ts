@@ -5,6 +5,7 @@
  * New migrations should be imported here and added to the migrations array.
  */
 import { createScopedLogger } from '../../utils/logger';
+import { getDirectDb } from '../directDb';
 import addQualityWaiverTables from './add_quality_waiver_tables';
 
 const logger = createScopedLogger('migrations-manager');
@@ -15,10 +16,52 @@ const migrations = [
 ];
 
 /**
+ * Check if database tables exist
+ */
+async function checkDatabaseExists() {
+  try {
+    const dbConnection = await getDirectDb();
+    if (!dbConnection) {
+      logger.error('Failed to get database connection');
+      return false;
+    }
+    
+    const { execute, close } = dbConnection;
+    
+    try {
+      // Check if organizations table exists (basic check)
+      const query = {
+        text: `SELECT EXISTS (
+          SELECT FROM information_schema.tables
+          WHERE table_schema = 'public'
+          AND table_name = 'organizations'
+        );`,
+        params: []
+      };
+      const result = await execute(query);
+      
+      return result?.rows?.[0]?.exists || false;
+    } finally {
+      await close();
+    }
+  } catch (error) {
+    logger.error('Error checking database existence', { error });
+    return false;
+  }
+}
+
+/**
  * Run all database migrations in order
  */
 export async function runAllMigrations() {
   logger.info('Starting database migrations');
+  
+  // Check if database exists
+  const databaseExists = await checkDatabaseExists();
+  if (!databaseExists) {
+    logger.info('Database tables do not exist yet, skipping migrations');
+    return;
+  }
   
   for (const migration of migrations) {
     try {
@@ -32,6 +75,19 @@ export async function runAllMigrations() {
   }
   
   logger.info('All database migrations completed successfully');
+}
+
+// Check if this module is being run directly
+if (process.argv[1]?.endsWith('index.ts')) {
+  runAllMigrations()
+    .then(() => {
+      console.log('All migrations completed successfully');
+      process.exit(0);
+    })
+    .catch(error => {
+      console.error('Migration process failed:', error);
+      process.exit(1);
+    });
 }
 
 export default runAllMigrations;
