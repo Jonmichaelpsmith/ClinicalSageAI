@@ -2,7 +2,7 @@
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Switch, Route, useLocation } from 'wouter';
-import { useState, lazy } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import queryClient from './lib/queryClient';
 import { TenantProvider } from './contexts/TenantContext';
@@ -87,10 +87,8 @@ const StabilityStudiesStubPage = lazy(() => import('./pages/StabilityStudiesStub
 const ShelfLifePredictorStubPage = lazy(() => import('./pages/ShelfLifePredictorStubPage'));
 const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 
-// Tenant Management - Eagerly loaded to prevent route issues
-import TenantManagement from './pages/TenantManagement';
-
-// Client Management and Settings Pages
+// Tenant Management, Client Management and Settings Pages
+const TenantManagement = lazy(() => import('./pages/TenantManagement'));
 const ClientManagement = lazy(() => import('./pages/ClientManagement'));
 const Settings = lazy(() => import('./pages/Settings'));
 
@@ -208,11 +206,29 @@ function App() {
           <Route path="/cerv2/reports" component={ReportsPage} />
           
           {/* Tenant Management Route */}
-          <Route path="/tenant-management" component={TenantManagement} />
+          <Route path="/tenant-management">
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <TenantManagement />
+              </Suspense>
+            )}
+          </Route>
           
           {/* Client Management & Settings Routes */}
-          <Route path="/client-management" component={ClientManagement} />
-          <Route path="/settings" component={Settings} />
+          <Route path="/client-management">
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <ClientManagement />
+              </Suspense>
+            )}
+          </Route>
+          <Route path="/settings">
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <Settings />
+              </Suspense>
+            )}
+          </Route>
 
           {/* Error fallback and catch-all routes for specific modules */}
           <Route path="/cer-*">
