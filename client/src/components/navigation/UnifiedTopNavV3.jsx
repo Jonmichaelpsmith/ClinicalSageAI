@@ -3,6 +3,7 @@
 import React from 'react';
 import { useLocation } from 'wouter';
 import { OrganizationSwitcher } from '../tenant/OrganizationSwitcher';
+import { Settings, Users, Building2, SwitchCamera } from 'lucide-react';
 
 export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = [] }) {
   const [, navigate] = useLocation();
@@ -48,16 +49,32 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
 
         <div className="flex items-center gap-2">
           <button
-            onClick={() => navigate('/tenant-management')}
-            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
+            onClick={() => navigate('/settings')}
+            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center"
           >
+            <Settings className="h-3 w-3 mr-1" />
+            Settings
+          </button>
+          <button
+            onClick={() => navigate('/client-management')}
+            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center"
+          >
+            <Users className="h-3 w-3 mr-1" />
+            Client Management
+          </button>
+          <button
+            onClick={() => navigate('/tenant-management')}
+            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center"
+          >
+            <Building2 className="h-3 w-3 mr-1" />
             Organization Settings
           </button>
           <button
             onClick={() => navigate('/switch-module')}
-            className="px-4 py-1 text-xs font-medium bg-indigo-50 rounded text-indigo-600 transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
+            className="px-3 py-1 text-xs font-medium bg-indigo-50 rounded text-indigo-600 transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center"
           >
-            🔍 Switch Module
+            <SwitchCamera className="h-3 w-3 mr-1" />
+            Switch Module
           </button>
         </div>
       </div>
@@ -74,17 +91,17 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
 
       {/* Functional Tabs Row */}
       <div className="flex justify-center overflow-x-auto whitespace-nowrap gap-4 sm:gap-8 border-b border-gray-100 bg-white py-2 px-1">
-        {['RiskHeatmap', 'TimelineSimulator', 'AskLumenAI'].map((tabKey) => (
+        {['Risk Heatmap', 'Timeline Simulator', 'Ask Lumen AI'].map((tabKey) => (
           <button
             key={tabKey}
-            onClick={() => onTabChange(tabKey)}
+            onClick={() => onTabChange(tabKey.replace(/ /g, ''))}
             className={`text-sm font-semibold px-3 py-1 rounded ${
-              activeTab === tabKey
+              activeTab === tabKey.replace(/ /g, '')
                 ? 'text-indigo-600 border-b-2 border-indigo-600'
                 : 'text-gray-600 hover:text-indigo-600 hover:bg-indigo-50'
             } transition-all duration-200 ease-in-out focus:ring-2 focus:ring-indigo-300 active:scale-95`}
           >
-            {formatTabName(tabKey)}
+            {tabKey}
           </button>
         ))}
       </div>

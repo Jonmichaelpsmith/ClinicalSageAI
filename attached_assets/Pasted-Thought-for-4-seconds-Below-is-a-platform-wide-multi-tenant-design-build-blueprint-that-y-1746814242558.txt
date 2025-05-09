@@ -1,0 +1,157 @@
+Thought for 4 seconds
+
+
+Below is a **platform-wide multi-tenant design & build blueprint** that you can apply to **every module** in TrialSage (not just the CER Generator). It gives you a single, consistent tenancy model—Organizations → ClientWorkspaces → Module Context—that all features, pages, and APIs will share.
+
+---
+
+## 1. Core Tenancy Model
+
+### 1.1 Entities
+
+* **Organization**
+
+  * One per paying account (e.g. Acme Biotech, Acme CRO)
+  * Fields: `org_id`, `name`, `slug`, `subscriptionTier`, `maxUsers`, `maxProjects`, `maxStorageGB`, `billingContact`
+* **ClientWorkspace**
+
+  * Logical sub-tenant under an Org (for CROs managing multiple end-clients)
+  * Fields: `client_id`, `org_id`, `name`, `slug`, `quotaProjects`, `quotaStorageGB`
+* **Project**
+
+  * A unit of work in any module (CER, Literature Review, Regulatory, etc.)
+  * Fields: `project_id`, `org_id`, `client_id`, `moduleName`, `title`, `status`, `createdBy`
+* **User & Roles**
+
+  * **Org-Admin** (manage Org, all Clients)
+  * **Client-Admin** (manage one ClientWorkspace)
+  * **Module-User** (access projects in assigned ClientWorkspace)
+
+### 1.2 Permissions
+
+* Middleware injects `org_id` and `client_id` from JWT/session
+* Every API route enforces:
+
+  * Org-scoped: `/api/orgs/:orgId/...`
+  * Client-scoped: `/api/clients/:clientId/...`
+  * Module-scoped: `/api/:moduleName/:projectId/...`
+
+---
+
+## 2. Global UI Patterns
+
+### 2.1 Top-Level Layout
+
+* **Header**:
+
+  * Org selector (for Org-Admins only)
+  * ClientWorkspace selector (for Org- and Client-Admins)
+  * “Switch Module” menu (CER, Literature, Regulatory, Data Hub, etc.)
+* **Sidebar**:
+
+  * Contextual navigation showing modules available for the current ClientWorkspace
+  * “Administration” section for Org & Client settings
+
+### 2.2 Administration Screens (in Client Portal)
+
+* **Organizations List**
+
+  * Table with columns: Name, Tier, #Clients, #Active Projects, Actions
+* **Organization Detail** (Tabs)
+
+  1. **Settings** (edit name, slug, tier, quotas, billing)
+  2. **Clients** (list + add/edit ClientWorkspaces)
+  3. **Users & Roles** (assign Org-Admin, Client-Admin, Module-User)
+* **ClientWorkspace Detail** (Tabs)
+
+  1. **Overview** (usage, last activity)
+  2. **Quotas** (projects/storage)
+  3. **Users** (Client-Admins, Member invites)
+  4. **Projects** (filter by module)
+
+---
+
+## 3. Module Integration Pattern
+
+Every module—CER Generator, Literature Review, Regulatory Scoring, Timeline Simulator—will follow the same integration steps:
+
+### 3.1 Project Scope
+
+* **Create New Project** UI: automatically include `org_id` & `client_id` when calling `POST /api/:module/projects`
+* **Project List**: only show projects scoped to your `client_id`
+
+### 3.2 API Routing
+
+* Prefix all module routes with `/api/:orgId/:clientId/:moduleName/...`
+* Example:
+
+  ```text
+  GET  /api/123/org/456/client/789/cer/projects
+  POST /api/123/org/456/client/789/cer/projects
+  ```
+
+### 3.3 Frontend State
+
+* Use a global context provider (e.g., React Context or Zustand) to store:
+
+  ```js
+  { orgId, clientId, moduleName }
+  ```
+* All API hooks automatically include these values
+
+### 3.4 Quota Enforcement
+
+* On any “create” action—new project, upload, data fetch—backend checks against:
+
+  * Org-level quotas (if Org-Admin context)
+  * Client-level quotas (always)
+* Return clear `403 QuotaExceeded` errors for frontend to handle
+
+---
+
+## 4. Implementation Steps in Replit
+
+1. **Schema Migration**
+
+   * Add tables: `organizations`, `client_workspaces`, `projects` (with `module_name`), `memberships`, `access_controls`
+
+2. **Auth & Middleware**
+
+   * Enhance JWT/session to carry `org_id` & `client_id`
+   * Build `ensureOrg` and `ensureClient` middleware
+
+3. **API Endpoints**
+
+   * CRUD for Orgs and Clients in `/server/routes/orgs.js` and `/routes/clients.js`
+   * Wrap module routes under `/api/:orgId/:clientId/:moduleName`
+
+4. **Frontend Scaffolding**
+
+   * Create `/client/src/pages/admin/OrgList.jsx`, `OrgDetail.jsx`, `ClientList.jsx`, `ClientDetail.jsx`
+   * Build a `TenantContext` that holds current org/client/module
+   * Update top-level `App.jsx` to include Org/Client selectors
+
+5. **Module Adaptation**
+
+   * In each module’s “Create” and “List” pages, replace hard-coded context with `TenantContext` values
+   * Example: In CER2Page, change `/api/cer/...` → `/api/${orgId}/${clientId}/cer/...`
+
+6. **Testing & QA**
+
+   * Seed two Orgs (one Biotech, one CRO) with multiple Clients
+   * Verify Org-Admin can manage all, Client-Admin sees only their client
+   * Attempt to exceed quotas to ensure enforcement
+
+---
+
+## 5. Example User Journeys
+
+| Scenario                           | Flow                                                                                        |
+| ---------------------------------- | ------------------------------------------------------------------------------------------- |
+| **Biotech (single-tenant)**        | Org “AcmeBio” → one ClientWorkspace “AcmeBio” → user logs in → sees modules for AcmeBio     |
+| **CRO w/ multiple device-clients** | Org “TopCRO” → Clients “DevA”, “DevB” → CRO-Admin picks “DevA” → runs CER, Lit, Reg modules |
+| **Module-User (client-scoped)**    | Invited to DevA as Module-User → logs in → automatically scoped to DevA in TenantContext    |
+
+---
+
+This **platform-wide tenancy blueprint** ensures **every module** in TrialSage shares the same consistent, secure, and quota-aware multi-tenant model. You can now implement this exactly once—then simply slot in each module’s pages and routes under the `/api/:org/:client/:module` pattern and reuse the Org/Client management screens globally.
