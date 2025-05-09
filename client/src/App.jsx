@@ -3,7 +3,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Switch, Route, useRoute, useLocation } from 'wouter';
 import { useState, lazy, Suspense } from 'react';
-import { Button } from '@/components/ui/button';
+//import { Button } from '@/components/ui/button';
 
 // Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
@@ -208,12 +208,12 @@ function App() {
               <div className="flex flex-col items-center justify-center p-8">
                 <h2 className="text-2xl font-bold mb-4 text-indigo-700">Redirecting to CER Generator</h2>
                 <p className="mb-4 text-gray-600">The URL you're trying to access is being redirected to the CER Generator module.</p>
-                <Button 
+                <button 
                   onClick={() => window.location.href = '/cerv2'}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
                 >
                   Go to CER Generator
-                </Button>
+                </button>
               </div>
             )}
           </Route>
