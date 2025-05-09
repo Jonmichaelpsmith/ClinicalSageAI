@@ -110,7 +110,10 @@ const ClientSecuritySettings = () => {
         reportGeneration: data?.fdaCompliance?.reportGeneration || 'quarterly',
         submissionFormat: data?.fdaCompliance?.submissionFormat || 'ectd',
         inspectionReadiness: data?.fdaCompliance?.inspectionReadiness || true,
-        enforceApprovalWorkflows: data?.fdaCompliance?.enforceApprovalWorkflows || true
+        enforceApprovalWorkflows: data?.fdaCompliance?.enforceApprovalWorkflows || true,
+        enableEuGmpCompliance: data?.fdaCompliance?.enableEuGmpCompliance || false,
+        enableIchGcpCompliance: data?.fdaCompliance?.enableIchGcpCompliance || false,
+        industryType: data?.fdaCompliance?.industryType || 'pharma'
       }
     })
   });
@@ -157,7 +160,10 @@ const ClientSecuritySettings = () => {
       reportGeneration: 'quarterly',
       submissionFormat: 'ectd',
       inspectionReadiness: true,
-      enforceApprovalWorkflows: true
+      enforceApprovalWorkflows: true,
+      enableEuGmpCompliance: false,
+      enableIchGcpCompliance: false,
+      industryType: 'pharma'
     }
   });
 
@@ -906,6 +912,89 @@ const ClientSecuritySettings = () => {
                           onCheckedChange={() => handleToggleChange('fdaCompliance', 'enforceApprovalWorkflows')}
                         />
                       </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* International Regulatory Compliance Section */}
+                <div className="border rounded-lg p-4 shadow-sm">
+                  <div className="flex items-center mb-3">
+                    <GlobeIcon className="h-5 w-5 text-indigo-600 mr-2" />
+                    <h3 className="text-base font-medium">International Regulatory Compliance</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="p-3 border rounded-md bg-sky-50">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center">
+                            <Badge variant="outline" className="mr-2 bg-sky-100 text-sky-700 border-sky-200">EU</Badge>
+                            <h4 className="text-sm font-medium">EU GMP Annex 11</h4>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">Computerized Systems for EU Markets</p>
+                        </div>
+                        <Switch 
+                          id="enableEuGmpCompliance" 
+                          checked={formValues.fdaCompliance.enableEuGmpCompliance || false}
+                          onCheckedChange={() => handleToggleChange('fdaCompliance', 'enableEuGmpCompliance')}
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="p-3 border rounded-md bg-amber-50">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="flex items-center">
+                            <Badge variant="outline" className="mr-2 bg-amber-100 text-amber-700 border-amber-200">ICH</Badge>
+                            <h4 className="text-sm font-medium">ICH GCP E6(R2)</h4>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">Good Clinical Practice Guidelines</p>
+                        </div>
+                        <Switch 
+                          id="enableIchGcpCompliance" 
+                          checked={formValues.fdaCompliance.enableIchGcpCompliance || false}
+                          onCheckedChange={() => handleToggleChange('fdaCompliance', 'enableIchGcpCompliance')}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 space-y-4">
+                    <h4 className="text-sm font-medium text-muted-foreground">Industry-Specific Regulations</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <button 
+                        type="button"
+                        onClick={() => handleInputChange('fdaCompliance', 'industryType', 'pharma')}
+                        className={`rounded-md py-1.5 text-sm font-medium justify-center flex items-center ${
+                          formValues.fdaCompliance.industryType === 'pharma' 
+                            ? 'bg-indigo-100 border border-indigo-200 text-indigo-800' 
+                            : 'border border-indigo-100 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
+                        }`}
+                      >
+                        Biotech / Pharma
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => handleInputChange('fdaCompliance', 'industryType', 'device')}
+                        className={`rounded-md py-1.5 text-sm font-medium justify-center flex items-center ${
+                          formValues.fdaCompliance.industryType === 'device' 
+                            ? 'bg-blue-100 border border-blue-200 text-blue-800' 
+                            : 'border border-blue-100 bg-blue-50 text-blue-700 hover:bg-blue-100'
+                        }`}
+                      >
+                        Medical Device
+                      </button>
+                      <button 
+                        type="button"
+                        onClick={() => handleInputChange('fdaCompliance', 'industryType', 'cro')}
+                        className={`rounded-md py-1.5 text-sm font-medium justify-center flex items-center ${
+                          formValues.fdaCompliance.industryType === 'cro' 
+                            ? 'bg-green-100 border border-green-200 text-green-800' 
+                            : 'border border-green-100 bg-green-50 text-green-700 hover:bg-green-100'
+                        }`}
+                      >
+                        CRO Services
+                      </button>
                     </div>
                   </div>
                 </div>
