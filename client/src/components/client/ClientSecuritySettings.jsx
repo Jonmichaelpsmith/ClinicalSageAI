@@ -505,7 +505,13 @@ const ClientSecuritySettings = () => {
                     onValueChange={(value) => handleInputChange('dataProtection', 'sensitiveDataScanFrequency', value)}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select frequency" />
+                      <SelectValue>
+                        {formValues.dataProtection.sensitiveDataScanFrequency === 'daily' && 'Daily'}
+                        {formValues.dataProtection.sensitiveDataScanFrequency === 'weekly' && 'Weekly'}
+                        {formValues.dataProtection.sensitiveDataScanFrequency === 'monthly' && 'Monthly'}
+                        {formValues.dataProtection.sensitiveDataScanFrequency === 'quarterly' && 'Quarterly'}
+                        {!formValues.dataProtection.sensitiveDataScanFrequency && 'Select frequency'}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="daily">Daily</SelectItem>
