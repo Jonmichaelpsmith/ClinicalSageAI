@@ -365,6 +365,38 @@ export const insertCerApprovalSchema = createInsertSchema(cerApprovals).omit({
 export type CerApproval = InferSelectModel<typeof cerApprovals>;
 export type InsertCerApproval = z.infer<typeof insertCerApprovalSchema>;
 
+/**
+ * CER Documents Table
+ * 
+ * Represents documents associated with CER projects.
+ */
+export const cerDocuments = pgTable('cer_documents', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  cerProjectId: integer('cer_project_id').notNull().references(() => cerProjects.id),
+  documentType: text('document_type').notNull(),
+  title: text('title').notNull(),
+  version: text('version').notNull(),
+  status: text('status').notNull(),
+  content: json('content'),
+  metadata: json('metadata'),
+  createdById: integer('created_by_id').references(() => users.id),
+  updatedById: integer('updated_by_id').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// CER Document Insert Schema
+export const insertCerDocumentSchema = createInsertSchema(cerDocuments).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// CER Document Types
+export type CerDocument = InferSelectModel<typeof cerDocuments>;
+export type InsertCerDocument = z.infer<typeof insertCerDocumentSchema>;
+
 // CER Approvals Relations
 export const cerApprovalsRelations = relations(cerApprovals, ({ one }) => ({
   organization: one(organizations, {
@@ -375,9 +407,9 @@ export const cerApprovalsRelations = relations(cerApprovals, ({ one }) => ({
     fields: [cerApprovals.projectId],
     references: [cerProjects.id],
   }),
-  document: one(projectDocuments, {
+  document: one(cerDocuments, {
     fields: [cerApprovals.documentId],
-    references: [projectDocuments.id],
+    references: [cerDocuments.id],
   }),
   requestedBy: one(users, {
     fields: [cerApprovals.requestedById],
