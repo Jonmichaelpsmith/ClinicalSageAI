@@ -16,7 +16,6 @@ import { db } from '../db';
 import { eq, and } from 'drizzle-orm';
 import { tenantContextMiddleware, requireTenantMiddleware } from '../middleware/tenantContext';
 import { createScopedLogger } from '../utils/logger';
-import { IStorage } from '../storage';
 
 // Extend the Request type to include tenant context
 declare global {
@@ -57,15 +56,13 @@ router.get('/:qmpId', async (req, res) => {
     }
     
     // Get traceability items with tenant isolation
-    const traceabilityItems = await tenantDb(req).query.qmpTraceabilityMatrix.findMany({
-      where: and(
+    const traceabilityItems = await req.db.select().from(qmpTraceabilityMatrix)
+      .where(and(
         eq(qmpTraceabilityMatrix.organizationId, organizationId),
         eq(qmpTraceabilityMatrix.qmpId, qmpIdNumber)
-      ),
-      with: {
-        ctqFactor: true
-      }
-    });
+      ))
+      // Join with CTQ factors
+      .leftJoin(ctqFactors, eq(qmpTraceabilityMatrix.ctqFactorId, ctqFactors.id));
     
     return res.json({ items: traceabilityItems });
   } catch (error) {
@@ -89,15 +86,16 @@ router.get('/item/:id', async (req, res) => {
     }
     
     // Get traceability item with tenant isolation
-    const traceabilityItem = await tenantDb(req).query.qmpTraceabilityMatrix.findFirst({
-      where: and(
+    const traceabilityItem = await req.db
+      .select()
+      .from(qmpTraceabilityMatrix)
+      .where(and(
         eq(qmpTraceabilityMatrix.organizationId, organizationId),
         eq(qmpTraceabilityMatrix.id, itemId)
-      ),
-      with: {
-        ctqFactor: true
-      }
-    });
+      ))
+      .leftJoin(ctqFactors, eq(qmpTraceabilityMatrix.ctqFactorId, ctqFactors.id))
+      .limit(1)
+      .then(results => results[0] || null);
     
     if (!traceabilityItem) {
       return res.status(404).json({ error: 'Traceability item not found' });
@@ -133,27 +131,33 @@ router.post('/', async (req, res) => {
     const itemData = validationResult.data;
     
     // Verify the QMP belongs to the tenant
-    const qmp = await tenantDb(req).query.qualityManagementPlans.findFirst({
-      where: and(
+    const qmpResults = await req.db
+      .select()
+      .from(qualityManagementPlans)
+      .where(and(
         eq(qualityManagementPlans.organizationId, organizationId),
         eq(qualityManagementPlans.id, itemData.qmpId)
-      )
-    });
+      ))
+      .limit(1);
     
+    const qmp = qmpResults[0];
     if (!qmp) {
       return res.status(404).json({ error: 'QMP not found or access denied' });
     }
     
     // Verify the CTQ factor belongs to the tenant and QMP if provided
     if (itemData.ctqFactorId) {
-      const ctqFactor = await tenantDb(req).query.ctqFactors.findFirst({
-        where: and(
+      const ctqFactorResults = await req.db
+        .select()
+        .from(ctqFactors)
+        .where(and(
           eq(ctqFactors.organizationId, organizationId),
           eq(ctqFactors.id, itemData.ctqFactorId),
           eq(ctqFactors.qmpId, itemData.qmpId)
-        )
-      });
+        ))
+        .limit(1);
       
+      const ctqFactor = ctqFactorResults[0];
       if (!ctqFactor) {
         return res.status(404).json({ error: 'CTQ factor not found or access denied' });
       }
@@ -166,16 +170,22 @@ router.post('/', async (req, res) => {
     };
     
     // Create traceability item
-    const result = await tenantDb(req).insert(qmpTraceabilityMatrix).values(newItem);
+    const result = await req.db
+      .insert(qmpTraceabilityMatrix)
+      .values(newItem)
+      .returning();
     
-    // Get the newly created item with its ID
-    const createdItem = await tenantDb(req).query.qmpTraceabilityMatrix.findFirst({
-      where: and(
+    // Get the newly created item or use the returned item
+    const createdItem = result[0] ?? await req.db
+      .select()
+      .from(qmpTraceabilityMatrix)
+      .where(and(
         eq(qmpTraceabilityMatrix.organizationId, organizationId),
         eq(qmpTraceabilityMatrix.requirementId, itemData.requirementId),
         eq(qmpTraceabilityMatrix.qmpId, itemData.qmpId)
-      )
-    });
+      ))
+      .limit(1)
+      .then(results => results[0]);
     
     return res.status(201).json(createdItem);
   } catch (error) {
@@ -214,34 +224,40 @@ router.put('/:id', async (req, res) => {
     const updateData = validationResult.data;
     
     // Check if item exists and belongs to tenant
-    const existingItem = await tenantDb(req).query.qmpTraceabilityMatrix.findFirst({
-      where: and(
+    const existingItemResults = await req.db
+      .select()
+      .from(qmpTraceabilityMatrix)
+      .where(and(
         eq(qmpTraceabilityMatrix.organizationId, organizationId),
         eq(qmpTraceabilityMatrix.id, itemId)
-      )
-    });
+      ))
+      .limit(1);
     
+    const existingItem = existingItemResults[0];
     if (!existingItem) {
       return res.status(404).json({ error: 'Traceability item not found or access denied' });
     }
     
     // If CTQ factor ID is being updated, verify it belongs to the tenant and QMP
     if (updateData.ctqFactorId) {
-      const ctqFactor = await tenantDb(req).query.ctqFactors.findFirst({
-        where: and(
+      const ctqFactorResults = await req.db
+        .select()
+        .from(ctqFactors)
+        .where(and(
           eq(ctqFactors.organizationId, organizationId),
           eq(ctqFactors.id, updateData.ctqFactorId),
           eq(ctqFactors.qmpId, existingItem.qmpId)
-        )
-      });
+        ))
+        .limit(1);
       
+      const ctqFactor = ctqFactorResults[0];
       if (!ctqFactor) {
         return res.status(404).json({ error: 'CTQ factor not found or access denied' });
       }
     }
     
     // Update the item
-    await tenantDb(req)
+    await req.db
       .update(qmpTraceabilityMatrix)
       .set({ 
         ...updateData,
@@ -253,15 +269,17 @@ router.put('/:id', async (req, res) => {
       ));
     
     // Get the updated item
-    const updatedItem = await tenantDb(req).query.qmpTraceabilityMatrix.findFirst({
-      where: and(
+    const updatedItemResults = await req.db
+      .select()
+      .from(qmpTraceabilityMatrix)
+      .where(and(
         eq(qmpTraceabilityMatrix.organizationId, organizationId),
         eq(qmpTraceabilityMatrix.id, itemId)
-      ),
-      with: {
-        ctqFactor: true
-      }
-    });
+      ))
+      .leftJoin(ctqFactors, eq(qmpTraceabilityMatrix.ctqFactorId, ctqFactors.id))
+      .limit(1);
+      
+    const updatedItem = updatedItemResults[0];
     
     return res.json(updatedItem);
   } catch (error) {
@@ -285,19 +303,22 @@ router.delete('/:id', async (req, res) => {
     }
     
     // Check if item exists and belongs to tenant
-    const existingItem = await tenantDb(req).query.qmpTraceabilityMatrix.findFirst({
-      where: and(
+    const existingItemResults = await req.db
+      .select()
+      .from(qmpTraceabilityMatrix)
+      .where(and(
         eq(qmpTraceabilityMatrix.organizationId, organizationId),
         eq(qmpTraceabilityMatrix.id, itemId)
-      )
-    });
+      ))
+      .limit(1);
     
+    const existingItem = existingItemResults[0];
     if (!existingItem) {
       return res.status(404).json({ error: 'Traceability item not found or access denied' });
     }
     
     // Delete the item
-    await tenantDb(req)
+    await req.db
       .delete(qmpTraceabilityMatrix)
       .where(and(
         eq(qmpTraceabilityMatrix.organizationId, organizationId),
@@ -336,12 +357,13 @@ router.put('/verify-batch/:qmpId', async (req, res) => {
     }
     
     // Check if all items exist and belong to tenant and QMP
-    const existingItems = await tenantDb(req).query.qmpTraceabilityMatrix.findMany({
-      where: and(
+    const existingItems = await req.db
+      .select()
+      .from(qmpTraceabilityMatrix)
+      .where(and(
         eq(qmpTraceabilityMatrix.organizationId, organizationId),
         eq(qmpTraceabilityMatrix.qmpId, qmpIdNumber)
-      )
-    });
+      ));
     
     const existingItemIds = existingItems.map((item: any) => item.id);
     const invalidItemIds = itemIds.filter((id: number) => !existingItemIds.includes(id));
@@ -356,7 +378,7 @@ router.put('/verify-batch/:qmpId', async (req, res) => {
     // Update all items in a transaction
     const now = new Date();
     const updatePromises = itemIds.map(itemId => 
-      tenantDb(req)
+      req.db
         .update(qmpTraceabilityMatrix)
         .set({ 
           verificationStatus,
