@@ -5,6 +5,12 @@ import { useLocation, Link } from 'wouter';
 import { OrganizationSwitcher } from '../tenant/OrganizationSwitcher';
 import { ClientWorkspaceSwitcher } from '../tenant/ClientWorkspaceSwitcher';
 import { Settings, Users, Building2, SwitchCamera } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = [] }) {
   const [, navigate] = useLocation();
@@ -57,34 +63,67 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
         </div>
 
         <div className="flex flex-wrap justify-center gap-2 mt-2 md:mt-0">
-          <Link href="/settings">
-            <span className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
-              <Settings className="h-3 w-3 mr-1" />
-              <span className="hidden sm:inline">Settings</span>
-              <span className="sm:hidden">Set</span>
-            </span>
-          </Link>
-          <Link href="/client-management">
-            <span className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
-              <Users className="h-3 w-3 mr-1" />
-              <span className="hidden sm:inline">Client Management</span>
-              <span className="sm:hidden">Clients</span>
-            </span>
-          </Link>
-          <Link href="/tenant-management">
-            <span className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
-              <Building2 className="h-3 w-3 mr-1" />
-              <span className="hidden sm:inline">Organization Settings</span>
-              <span className="sm:hidden">Orgs</span>
-            </span>
-          </Link>
-          <Link href="/dashboard">
-            <span className="px-3 py-1 text-xs font-medium bg-indigo-50 rounded text-indigo-600 transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
-              <SwitchCamera className="h-3 w-3 mr-1" />
-              <span className="hidden sm:inline">Switch Module</span>
-              <span className="sm:hidden">Modules</span>
-            </span>
-          </Link>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/settings">
+                  <span className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
+                    <Settings className="h-3 w-3 mr-1" />
+                    <span className="hidden sm:inline">Settings</span>
+                    <span className="sm:hidden">Set</span>
+                  </span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs max-w-xs">Personal account settings, preferences, and appearance options</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/client-management">
+                  <span className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
+                    <Users className="h-3 w-3 mr-1" />
+                    <span className="hidden sm:inline">Client Management</span>
+                    <span className="sm:hidden">Clients</span>
+                  </span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs max-w-xs">Manage client workspaces, set quotas, configure security settings, and define workspace-specific permissions</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/tenant-management">
+                  <span className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
+                    <Building2 className="h-3 w-3 mr-1" />
+                    <span className="hidden sm:inline">Organization Settings</span>
+                    <span className="sm:hidden">Orgs</span>
+                  </span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs max-w-xs">Configure organization-wide policies, branding, compliance settings, and user permissions</p>
+              </TooltipContent>
+            </Tooltip>
+
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Link href="/dashboard">
+                  <span className="px-3 py-1 text-xs font-medium bg-indigo-50 rounded text-indigo-600 transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
+                    <SwitchCamera className="h-3 w-3 mr-1" />
+                    <span className="hidden sm:inline">Switch Module</span>
+                    <span className="sm:hidden">Modules</span>
+                  </span>
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="text-xs max-w-xs">Switch between platform modules (CER, IND Wizard, VAULT, etc.)</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </div>
 
