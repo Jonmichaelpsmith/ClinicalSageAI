@@ -20,7 +20,7 @@ import { tenantContextMiddleware, requireOrganizationContext } from '../middlewa
 import { createScopedLogger } from '../utils/logger';
 
 // Use declaration merging to specify the tenant context and db types
-// The requireTenantMiddleware guarantees these will be available
+// The requireOrganizationContext guarantees these will be available
 declare global {
   namespace Express {
     interface Request {
