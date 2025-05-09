@@ -52,7 +52,18 @@ const ClientWorkspaceSettings = () => {
     error 
   } = useQuery({
     queryKey: ['/api/clients', clientId, 'settings'],
-    queryFn: () => apiRequest(`/api/clients/${clientId}/settings`),
+    queryFn: () => {
+      if (!clientId) {
+        console.warn('No client workspace selected. Cannot fetch workspace settings.');
+        return Promise.resolve(null);
+      }
+      return apiRequest(`/api/clients/${clientId}/settings`)
+        .catch(err => {
+          console.error('Error fetching workspace settings:', err);
+          // Return default settings on error instead of throwing
+          return null;
+        });
+    },
     enabled: !!clientId,
     // Fallback to default values if no settings are returned
     select: (data) => ({
