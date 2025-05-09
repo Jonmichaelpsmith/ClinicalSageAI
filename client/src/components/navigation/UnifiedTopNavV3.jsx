@@ -89,8 +89,18 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
                   </span>
                 </Link>
               </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs max-w-xs">Manage client workspaces, set quotas, configure security settings, and define workspace-specific permissions</p>
+              <TooltipContent className="max-w-[350px] p-3">
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-primary">Client Management</p>
+                  <p className="text-xs">Comprehensive client workspace administration for CROs and regulatory consultants:</p>
+                  <ul className="text-xs list-disc pl-4 space-y-1">
+                    <li>Create and configure client workspaces with industry-specific settings (Biotech, Pharma, Medical Device)</li>
+                    <li>Set regulatory compliance levels, governance controls, and risk management thresholds</li>
+                    <li>Configure security controls, audit trails, and 21 CFR Part 11 compliance settings</li>
+                    <li>Manage workspace-specific permissions, roles, and access restrictions</li>
+                    <li>Enable/disable modules and set resource quotas on a per-client basis</li>
+                  </ul>
+                </div>
               </TooltipContent>
             </Tooltip>
 
@@ -104,8 +114,19 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
                   </span>
                 </Link>
               </TooltipTrigger>
-              <TooltipContent>
-                <p className="text-xs max-w-xs">Configure organization-wide policies, branding, compliance settings, and user permissions</p>
+              <TooltipContent className="max-w-[350px] p-3">
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold text-primary">Organization Settings</p>
+                  <p className="text-xs">Enterprise-grade organization-wide administration for pharmaceutical, biotech, and medical device companies:</p>
+                  <ul className="text-xs list-disc pl-4 space-y-1">
+                    <li>Define organization-wide compliance and validation frameworks (21 CFR Part 11, GxP, IDMP, etc.)</li>
+                    <li>Manage organization structure, reporting hierarchies, and global permissions</li>
+                    <li>Configure tenant isolation and cross-workspace controls for multi-client CROs</li>
+                    <li>Set up regulatory intelligence distribution, change control, and deviation management</li>
+                    <li>Define Quality Management System (QMS) integration and Critical-to-Quality (CtQ) factors</li>
+                    <li>Deploy enterprise-wide security policies and regulatory authority submission templates</li>
+                  </ul>
+                </div>
               </TooltipContent>
             </Tooltip>
 
