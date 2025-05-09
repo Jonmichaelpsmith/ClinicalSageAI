@@ -14,6 +14,8 @@ import {
 } from '../../shared/schema';
 import { db } from '../db';
 import { eq, and } from 'drizzle-orm';
+import { NodePgDatabase } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
 import { tenantContextMiddleware, requireTenantMiddleware } from '../middleware/tenantContext';
 import { createScopedLogger } from '../utils/logger';
 
@@ -433,7 +435,7 @@ router.get('/stats/:qmpId', async (req, res) => {
     }
     
     // Get all traceability items for the QMP
-    const traceabilityItems = await req.db
+    const traceabilityItems = await getDb(req)
       .select()
       .from(qmpTraceabilityMatrix)
       .where(and(
