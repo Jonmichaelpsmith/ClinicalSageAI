@@ -41,7 +41,18 @@ const ClientSecuritySettings = () => {
     error 
   } = useQuery({
     queryKey: ['/api/clients', clientId, 'security-settings'],
-    queryFn: () => apiRequest(`/api/clients/${clientId}/security-settings`),
+    queryFn: () => {
+      if (!clientId) {
+        console.warn('No client workspace selected. Cannot fetch security settings.');
+        return Promise.resolve(null);
+      }
+      return apiRequest(`/api/clients/${clientId}/security-settings`)
+        .catch(err => {
+          console.error('Error fetching security settings:', err);
+          // Return default settings on error instead of throwing
+          return null;
+        });
+    },
     enabled: !!clientId,
     // Fallback to default values if no settings are returned
     select: (data) => ({
