@@ -7,7 +7,7 @@ import { Router } from 'express';
 import { z } from 'zod';
 import { eq, and } from 'drizzle-orm';
 import { organizations, organizationUsers, users, insertOrganizationSchema } from '../../shared/schema';
-import { requireTenantMiddleware, validateTenantAccessMiddleware } from '../middleware/tenantContext';
+import { requireOrganizationContext, validateTenantAccessMiddleware } from '../middleware/tenantContext';
 import { authMiddleware, requireAdminRole, requireSuperAdminRole } from '../auth';
 import { createScopedLogger } from '../utils/logger';
 import { db } from '../db';

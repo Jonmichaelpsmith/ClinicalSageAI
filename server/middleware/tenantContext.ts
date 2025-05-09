@@ -103,10 +103,25 @@ export function getTenantContext(req: Request): TenantContext {
   return req.tenantContext;
 }
 
+/**
+ * Backward Compatibility Aliases
+ * 
+ * These aliases maintain compatibility with existing code while we transition
+ * to the more semantically accurate function names. This allows us to gradually
+ * update route files without breaking existing functionality.
+ * 
+ * Long-term plan: Once all files have been updated to use the new function names,
+ * these aliases can be removed in a future release.
+ */
+export const requireTenantMiddleware = requireOrganizationContext;
+export const validateTenantAccessMiddleware = requireOrganizationContext;
+
 export default {
   tenantContextMiddleware,
   requireOrganizationContext,
   requireClientWorkspaceContext,
   requireModuleContext,
-  getTenantContext
+  getTenantContext,
+  requireTenantMiddleware, // Alias for backward compatibility
+  validateTenantAccessMiddleware // Alias for backward compatibility
 };
