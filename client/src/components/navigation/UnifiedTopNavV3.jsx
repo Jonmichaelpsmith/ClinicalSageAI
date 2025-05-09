@@ -18,69 +18,77 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
   };
 
   return (
-    <div className="w-full sticky top-0 z-50 bg-white shadow-md flex flex-col">
+    <div className="w-full sticky top-0 z-[100] bg-white shadow-md flex flex-col">
 
       {/* Top Row - Navigation and Module Switcher */}
-      <div className="flex flex-col sm:flex-row justify-between items-center px-4 py-2 border-b">
-        <div className="flex flex-wrap items-center gap-2 mb-2 sm:mb-0">
-          <button
-            onClick={() => window.history.back()}
-            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
-          >
-            ← Back
-          </button>
-          <button
-            onClick={() => window.history.forward()}
-            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
-          >
-            → Forward
-          </button>
-          <button
-            onClick={() => navigate('/client-portal')}
-            className="px-3 py-1 text-xs font-medium bg-indigo-600 text-white rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
-          >
-            🏠 Client Portal
-          </button>
-          
-          {/* Organization Switcher */}
-          <div className="ml-2">
-            <OrganizationSwitcher />
+      <div className="flex flex-col md:flex-row justify-between items-center px-4 py-2 border-b">
+        <div className="flex flex-wrap items-center gap-2 mb-2 md:mb-0">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.history.back()}
+              className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
+            >
+              ← Back
+            </button>
+            <button
+              onClick={() => window.history.forward()}
+              className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
+            >
+              → Forward
+            </button>
+            <button
+              onClick={() => navigate('/client-portal')}
+              className="px-3 py-1 text-xs font-medium bg-indigo-600 text-white rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
+            >
+              🏠 Client Portal
+            </button>
           </div>
           
-          {/* Client Workspace Switcher */}
-          <div className="ml-2">
-            <ClientWorkspaceSwitcher />
+          <div className="flex items-center gap-2 mt-2 md:mt-0">
+            {/* Organization Switcher */}
+            <div className="relative z-20">
+              <OrganizationSwitcher />
+            </div>
+            
+            {/* Client Workspace Switcher */}
+            <div className="relative z-10 ml-2">
+              <ClientWorkspaceSwitcher />
+            </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap justify-center gap-2 mt-2 md:mt-0">
           <button
             onClick={() => navigate('/settings')}
             className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center"
           >
             <Settings className="h-3 w-3 mr-1" />
-            Settings
+            <span className="hidden sm:inline">Settings</span>
+            <span className="sm:hidden">Set</span>
           </button>
           <button
             onClick={() => navigate('/client-management')}
             className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center"
           >
             <Users className="h-3 w-3 mr-1" />
-            Client Management
+            <span className="hidden sm:inline">Client Management</span>
+            <span className="sm:hidden">Clients</span>
           </button>
           <button
             onClick={() => navigate('/tenant-management')}
             className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center"
           >
             <Building2 className="h-3 w-3 mr-1" />
-            Organization Settings
+            <span className="hidden sm:inline">Organization Settings</span>
+            <span className="sm:hidden">Orgs</span>
           </button>
           <button
             onClick={() => navigate('/switch-module')}
             className="px-3 py-1 text-xs font-medium bg-indigo-50 rounded text-indigo-600 transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center"
           >
             <SwitchCamera className="h-3 w-3 mr-1" />
-            Switch Module
+            <span className="hidden sm:inline">Switch Module</span>
+            <span className="sm:hidden">Modules</span>
           </button>
         </div>
       </div>
