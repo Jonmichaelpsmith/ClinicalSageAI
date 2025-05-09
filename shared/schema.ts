@@ -365,17 +365,23 @@ export type InsertClientUserPermission = z.infer<typeof insertClientUserPermissi
 export const organizationsRelations = relations(organizations, ({ many }) => ({
   users: many(organizationUsers),
   projects: many(cerProjects),
+  clientWorkspaces: many(clientWorkspaces),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
   organizations: many(organizationUsers),
   permissions: many(clientUserPermissions),
+  clientAccess: many(clientAccess),
 }));
 
 export const cerProjectsRelations = relations(cerProjects, ({ one, many }) => ({
   organization: one(organizations, {
     fields: [cerProjects.organizationId],
     references: [organizations.id],
+  }),
+  clientWorkspace: one(clientWorkspaces, {
+    fields: [cerProjects.clientWorkspaceId],
+    references: [clientWorkspaces.id],
   }),
   documents: many(projectDocuments),
   activities: many(projectActivities),
@@ -514,6 +520,7 @@ export const cerApprovalsRelations = relations(cerApprovals, ({ one }) => ({
 export const qualityManagementPlans = pgTable('quality_management_plans', {
   id: serial('id').primaryKey(),
   organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  clientWorkspaceId: integer('client_workspace_id').references(() => clientWorkspaces.id),
   name: text('name').notNull(),
   description: text('description'),
   version: text('version').default('1.0.0').notNull(),
@@ -681,6 +688,10 @@ export const qualityManagementPlansRelations = relations(qualityManagementPlans,
   organization: one(organizations, {
     fields: [qualityManagementPlans.organizationId],
     references: [organizations.id],
+  }),
+  clientWorkspace: one(clientWorkspaces, {
+    fields: [qualityManagementPlans.clientWorkspaceId],
+    references: [clientWorkspaces.id],
   }),
   ctqFactors: many(ctqFactors),
   sectionGating: many(qmpSectionGating),
