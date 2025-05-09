@@ -76,7 +76,8 @@ const tenantFormSchema = z.object({
   slug: z.string().min(2, { message: "Slug must be at least 2 characters" })
     .regex(/^[a-z0-9-]+$/, { message: "Slug can only contain lowercase letters, numbers, and hyphens" }),
   domain: z.string().optional(),
-  tier: z.enum(["standard", "professional", "enterprise"]),
+  industryType: z.enum(["biotech", "cro", "pharma", "meddevice"]),
+  complianceLevel: z.enum(["base", "standard", "enhanced"]).optional(),
   maxUsers: z.coerce.number().int().positive().optional(),
   maxProjects: z.coerce.number().int().positive().optional(),
   maxStorage: z.coerce.number().int().positive().optional()
@@ -108,7 +109,8 @@ export default function TenantManagement() {
       name: '',
       slug: '',
       domain: '',
-      tier: 'standard',
+      industryType: 'pharma',
+      complianceLevel: 'standard',
       maxUsers: 5,
       maxProjects: 10,
       maxStorage: 5
@@ -122,7 +124,8 @@ export default function TenantManagement() {
       name: selectedTenant?.name || '',
       slug: selectedTenant?.slug || '',
       domain: selectedTenant?.domain || '',
-      tier: selectedTenant?.tier || 'standard',
+      industryType: selectedTenant?.industryType || 'pharma',
+      complianceLevel: selectedTenant?.complianceLevel || 'standard',
       maxUsers: selectedTenant?.maxUsers || 5,
       maxProjects: selectedTenant?.maxProjects || 10,
       maxStorage: selectedTenant?.maxStorage || 5
@@ -149,7 +152,8 @@ export default function TenantManagement() {
         name: selectedTenant.name,
         slug: selectedTenant.slug,
         domain: selectedTenant.domain || '',
-        tier: selectedTenant.tier,
+        industryType: selectedTenant.industryType || 'pharma',
+        complianceLevel: selectedTenant.complianceLevel || 'standard',
         maxUsers: selectedTenant.maxUsers,
         maxProjects: selectedTenant.maxProjects,
         maxStorage: selectedTenant.maxStorage
@@ -457,22 +461,52 @@ export default function TenantManagement() {
                 />
                 <FormField
                   control={addTenantForm.control}
-                  name="tier"
+                  name="industryType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Subscription Tier</FormLabel>
+                      <FormLabel>Industry Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Select a tier" />
+                            <SelectValue placeholder="Select industry type" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="standard">Standard</SelectItem>
-                          <SelectItem value="professional">Professional</SelectItem>
-                          <SelectItem value="enterprise">Enterprise</SelectItem>
+                          <SelectItem value="biotech">Biotech</SelectItem>
+                          <SelectItem value="cro">CRO</SelectItem>
+                          <SelectItem value="pharma">Pharmaceutical</SelectItem>
+                          <SelectItem value="meddevice">Medical Device</SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormDescription>
+                        Industry-specific features and compliance
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={addTenantForm.control}
+                  name="complianceLevel"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Compliance Level</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select compliance level" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="base">Base</SelectItem>
+                          <SelectItem value="standard">Standard</SelectItem>
+                          <SelectItem value="enhanced">Enhanced</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Level of compliance controls and documentation
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -616,22 +650,52 @@ export default function TenantManagement() {
                   />
                   <FormField
                     control={editTenantForm.control}
-                    name="tier"
+                    name="industryType"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Subscription Tier</FormLabel>
+                        <FormLabel>Industry Type</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select a tier" />
+                              <SelectValue placeholder="Select industry type" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="standard">Standard</SelectItem>
-                            <SelectItem value="professional">Professional</SelectItem>
-                            <SelectItem value="enterprise">Enterprise</SelectItem>
+                            <SelectItem value="biotech">Biotech</SelectItem>
+                            <SelectItem value="cro">CRO</SelectItem>
+                            <SelectItem value="pharma">Pharmaceutical</SelectItem>
+                            <SelectItem value="meddevice">Medical Device</SelectItem>
                           </SelectContent>
                         </Select>
+                        <FormDescription>
+                          Industry-specific features and compliance
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={editTenantForm.control}
+                    name="complianceLevel"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Compliance Level</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select compliance level" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="base">Base</SelectItem>
+                            <SelectItem value="standard">Standard</SelectItem>
+                            <SelectItem value="enhanced">Enhanced</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Level of compliance controls and documentation
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -829,25 +893,25 @@ export default function TenantManagement() {
               
               <Card>
                 <CardHeader>
-                  <CardTitle>Subscription Details</CardTitle>
-                  <CardDescription>Current plan and billing information</CardDescription>
+                  <CardTitle>Organization Details</CardTitle>
+                  <CardDescription>Industry and compliance information</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Current Plan</span>
-                    <Badge variant="outline" className="capitalize">{selectedTenant.tier}</Badge>
+                    <span className="text-sm font-medium">Industry Type</span>
+                    <Badge variant="outline" className="capitalize">{selectedTenant.industryType || 'N/A'}</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Billing Cycle</span>
-                    <span className="text-sm">Monthly</span>
+                    <span className="text-sm font-medium">Compliance Level</span>
+                    <Badge variant="secondary" className="capitalize">{selectedTenant.complianceLevel || 'standard'}</Badge>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium">Next Billing Date</span>
-                    <span className="text-sm">June 1, 2025</span>
+                    <span className="text-sm font-medium">Established Date</span>
+                    <span className="text-sm">{new Date(selectedTenant.createdAt || Date.now()).toLocaleDateString()}</span>
                   </div>
                   <div className="pt-2">
                     <Button variant="outline" className="w-full">
-                      Manage Subscription
+                      Manage Organization
                     </Button>
                   </div>
                 </CardContent>
