@@ -4,6 +4,7 @@ import { createServer as createHttpServer } from 'http';
 import registerRoutes from './routes_fixed';
 import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
+import { initializeQualityApi } from './initializers/qualityApiInitializer';
 
 // Load environment variables
 dotenv.config();
@@ -73,6 +74,11 @@ console.log('Reports API routes registered');
 import tenantSectionGatingRoutes from './routes/tenant-section-gating.js';
 app.use('/api/tenant-section-gating', tenantSectionGatingRoutes);
 console.log('Tenant Section Gating routes registered');
+
+// Import and register Quality Management API routes
+import { registerQualityManagementRoutes } from './routes/quality-management-routes';
+registerQualityManagementRoutes(app);
+console.log('Quality Management API routes registered');
 
 // Serve the marketing landing page at the root URL
 app.get('/', (req, res) => {
