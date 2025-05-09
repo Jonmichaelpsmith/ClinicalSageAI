@@ -709,23 +709,20 @@ const ClientWorkspaceSettings = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className={`space-y-3 ${formValues.integration.connectToCTMS ? '' : 'opacity-50'}`}>
                   <Label htmlFor="ctmsProvider">CTMS Provider</Label>
-                  <Select
+                  <EnhancedSelect
                     value={formValues.integration.ctmsProvider}
                     onValueChange={(value) => handleInputChange('integration', 'ctmsProvider', value)}
                     disabled={!formValues.integration.connectToCTMS}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select CTMS provider" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="veeva">Veeva Vault CTMS</SelectItem>
-                      <SelectItem value="medidata">Medidata Rave CTMS</SelectItem>
-                      <SelectItem value="oracle">Oracle Clinical</SelectItem>
-                      <SelectItem value="ibm">IBM Clinical Development</SelectItem>
-                      <SelectItem value="bioclinica">Bioclinica CTMS</SelectItem>
-                      <SelectItem value="custom">Custom/Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    placeholder="Select CTMS provider"
+                    options={{
+                      'veeva': 'Veeva Vault CTMS',
+                      'medidata': 'Medidata Rave CTMS',
+                      'oracle': 'Oracle Clinical',
+                      'ibm': 'IBM Clinical Development',
+                      'bioclinica': 'Bioclinica CTMS',
+                      'custom': 'Custom/Other'
+                    }}
+                  />
                 </div>
                 
                 <div className={`space-y-3 ${formValues.integration.enableApiAccess ? '' : 'opacity-50'}`}>
@@ -763,19 +760,16 @@ const ClientWorkspaceSettings = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
                   <Label htmlFor="theme">Theme Preference</Label>
-                  <Select
+                  <EnhancedSelect
                     value={formValues.appearance.theme}
                     onValueChange={(value) => handleInputChange('appearance', 'theme', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select theme preference" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="light">Light</SelectItem>
-                      <SelectItem value="dark">Dark</SelectItem>
-                      <SelectItem value="system">System (Follow device setting)</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    placeholder="Select theme preference"
+                    options={{
+                      'light': 'Light',
+                      'dark': 'Dark',
+                      'system': 'System (Follow device setting)'
+                    }}
+                  />
                 </div>
                 
                 <div className="space-y-3">
@@ -930,21 +924,18 @@ const ClientWorkspaceSettings = () => {
               
               <div className={`space-y-3 ${formValues.notifications.emailNotifications ? '' : 'opacity-50'}`}>
                 <Label htmlFor="digestFrequency">Notification Digest Frequency</Label>
-                <Select
+                <EnhancedSelect
                   value={formValues.notifications.digestFrequency}
                   onValueChange={(value) => handleInputChange('notifications', 'digestFrequency', value)}
                   disabled={!formValues.notifications.emailNotifications}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select frequency" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="immediate">Immediate</SelectItem>
-                    <SelectItem value="hourly">Hourly Digest</SelectItem>
-                    <SelectItem value="daily">Daily Digest</SelectItem>
-                    <SelectItem value="weekly">Weekly Digest</SelectItem>
-                  </SelectContent>
-                </Select>
+                  placeholder="Select frequency"
+                  options={{
+                    'immediate': 'Immediate',
+                    'hourly': 'Hourly Digest',
+                    'daily': 'Daily Digest',
+                    'weekly': 'Weekly Digest'
+                  }}
+                />
                 <p className="text-sm text-muted-foreground">
                   How often users receive notification digests for non-urgent updates
                 </p>
