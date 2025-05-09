@@ -24,7 +24,7 @@ export function ClientWorkspaceSwitcher() {
   const { 
     currentClientWorkspace, 
     setCurrentClientWorkspace, 
-    availableClientWorkspaces, 
+    filteredClientWorkspaces, 
     isLoading 
   } = useTenant();
   
@@ -32,7 +32,7 @@ export function ClientWorkspaceSwitcher() {
   const [, navigate] = useLocation();
 
   // If there are no client workspaces available and we're not loading, we don't show the switcher
-  if (availableClientWorkspaces.length === 0 && !isLoading) return null;
+  if (filteredClientWorkspaces.length === 0 && !isLoading) return null;
 
   if (isLoading) {
     return (
@@ -79,7 +79,7 @@ export function ClientWorkspaceSwitcher() {
           <CommandList>
             <CommandEmpty>No client workspace found.</CommandEmpty>
             <CommandGroup heading="Client Workspaces">
-              {availableClientWorkspaces.map((client) => (
+              {filteredClientWorkspaces.map((client) => (
                 <CommandItem
                   key={client.id}
                   onSelect={() => handleSelect(client)}

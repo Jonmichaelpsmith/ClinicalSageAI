@@ -24,7 +24,7 @@ export function OrganizationSwitcher() {
   const { 
     currentOrganization, 
     setCurrentOrganization, 
-    availableOrganizations, 
+    organizations, 
     isLoading 
   } = useTenant();
   
@@ -32,7 +32,7 @@ export function OrganizationSwitcher() {
   const [, navigate] = useLocation();
 
   // If there are no organizations available and we're not loading, we don't show the switcher
-  if (availableOrganizations.length === 0 && !isLoading) return null;
+  if (organizations.length === 0 && !isLoading) return null;
 
   if (isLoading) {
     return (
@@ -87,7 +87,7 @@ export function OrganizationSwitcher() {
           <CommandList>
             <CommandEmpty>No organization found.</CommandEmpty>
             <CommandGroup heading="Organizations">
-              {availableOrganizations.map((org) => (
+              {organizations.map((org) => (
                 <CommandItem
                   key={org.id}
                   onSelect={() => handleSelect(org)}
