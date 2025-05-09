@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import EnhancedSelect from '@/components/ui/select-wrapper';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
 import { 
@@ -351,58 +352,49 @@ const ClientWorkspaceSettings = () => {
                 
                 <div className="space-y-3">
                   <Label htmlFor="industry">Industry</Label>
-                  <Select
+                  <EnhancedSelect
                     value={formValues.general.industry}
                     onValueChange={(value) => handleInputChange('general', 'industry', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select industry" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pharmaceutical">Pharmaceutical</SelectItem>
-                      <SelectItem value="biotech">Biotech</SelectItem>
-                      <SelectItem value="medical-device">Medical Device</SelectItem>
-                      <SelectItem value="diagnostics">Diagnostics</SelectItem>
-                      <SelectItem value="cro">Contract Research Organization</SelectItem>
-                      <SelectItem value="regulatory">Regulatory Consulting</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    placeholder="Select industry"
+                    options={{
+                      'pharmaceutical': 'Pharmaceutical',
+                      'biotech': 'Biotech',
+                      'medical-device': 'Medical Device',
+                      'diagnostics': 'Diagnostics',
+                      'cro': 'Contract Research Organization',
+                      'regulatory': 'Regulatory Consulting'
+                    }}
+                  />
                 </div>
                 
                 <div className="space-y-3">
                   <Label htmlFor="tier">Subscription Tier</Label>
-                  <Select
+                  <EnhancedSelect
                     value={formValues.general.tier}
                     onValueChange={(value) => handleInputChange('general', 'tier', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select tier" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="basic">Basic</SelectItem>
-                      <SelectItem value="standard">Standard</SelectItem>
-                      <SelectItem value="professional">Professional</SelectItem>
-                      <SelectItem value="enterprise">Enterprise</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    placeholder="Select tier"
+                    options={{
+                      'basic': 'Basic',
+                      'standard': 'Standard',
+                      'professional': 'Professional',
+                      'enterprise': 'Enterprise'
+                    }}
+                  />
                 </div>
                 
                 <div className="space-y-3">
                   <Label htmlFor="status">Workspace Status</Label>
-                  <Select
+                  <EnhancedSelect
                     value={formValues.general.status}
                     onValueChange={(value) => handleInputChange('general', 'status', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Active</SelectItem>
-                      <SelectItem value="trial">Trial</SelectItem>
-                      <SelectItem value="inactive">Inactive</SelectItem>
-                      <SelectItem value="suspended">Suspended</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    placeholder="Select status"
+                    options={{
+                      'active': 'Active',
+                      'trial': 'Trial',
+                      'inactive': 'Inactive',
+                      'suspended': 'Suspended'
+                    }}
+                  />
                 </div>
                 
                 <div className="space-y-3">
