@@ -118,15 +118,25 @@ if (isDev) {
   });
 }
 
-// Start server
-httpServer.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-  console.log(`Health check available at http://localhost:${port}/api/health`);
-  
-  // Initialize performance optimizations after server has started
-  initializePerformanceOptimizations()
-    .catch(err => console.error('Error initializing performance optimizations:', err));
-});
+// Import database setup
+import setupDatabase from './db/setup';
+
+// Start server after setting up the database
+setupDatabase()
+  .then(() => {
+    httpServer.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+      console.log(`Health check available at http://localhost:${port}/api/health`);
+      
+      // Initialize performance optimizations after server has started
+      initializePerformanceOptimizations()
+        .catch(err => console.error('Error initializing performance optimizations:', err));
+    });
+  })
+  .catch(err => {
+    console.error('Database setup failed:', err);
+    process.exit(1);
+  });
 
 // Handle graceful shutdown
 process.on('SIGTERM', () => {
