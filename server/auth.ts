@@ -92,25 +92,44 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction) 
 /**
  * Require admin role middleware
  * Ensures the user has an admin role
+ * Can be called directly as middleware or as a factory function with specific role requirements
  */
-export function requireAdminRole(req: Request, res: Response, next: NextFunction) {
-  if (!req.userRole || (req.userRole !== 'admin' && req.userRole !== 'super_admin')) {
-    return res.status(403).json({ error: 'Admin permissions required' });
+export function requireAdminRole(reqOrRole: Request | string, res?: Response, next?: NextFunction) {
+  // If called as factory function with role parameter
+  if (typeof reqOrRole === 'string') {
+    const requiredRole = reqOrRole;
+    
+    // Return the actual middleware function
+    return (req: Request, res: Response, next: NextFunction) => {
+      if (!req.userRole || 
+         (requiredRole === 'super_admin' && req.userRole !== 'super_admin') ||
+         (requiredRole === 'admin' && req.userRole !== 'admin' && req.userRole !== 'super_admin')) {
+        return res.status(403).json({ 
+          error: `${requiredRole === 'super_admin' ? 'Super admin' : 'Admin'} permissions required` 
+        });
+      }
+      
+      next();
+    };
   }
   
-  next();
+  // If called directly as middleware
+  const req = reqOrRole;
+  if (!req.userRole || (req.userRole !== 'admin' && req.userRole !== 'super_admin')) {
+    return res!.status(403).json({ error: 'Admin permissions required' });
+  }
+  
+  next!();
 }
 
 /**
  * Require super admin role middleware
  * Ensures the user has a super admin role
+ * For consistency, just reuse requireAdminRole with super_admin parameter
  */
 export function requireSuperAdminRole(req: Request, res: Response, next: NextFunction) {
-  if (!req.userRole || req.userRole !== 'super_admin') {
-    return res.status(403).json({ error: 'Super admin permissions required' });
-  }
-  
-  next();
+  // Reuse the factory pattern from requireAdminRole
+  return requireAdminRole('super_admin')(req, res, next);
 }
 
 /**

@@ -34,7 +34,15 @@ export async function getDirectDb() {
       client,
       execute: async (query: { text: string, params: any[] }) => {
         try {
-          return await client.unsafe(query.text, query.params);
+          const result = await client.unsafe(query.text, query.params);
+          // Convert postgres.js result to a format consistent with node-postgres
+          // so that existing code expecting rows property works correctly
+          return {
+            rows: Array.isArray(result) ? result : [],
+            rowCount: Array.isArray(result) ? result.length : 0,
+            command: '',
+            fields: []
+          };
         } catch (error) {
           logger.error('Error executing query', { error });
           throw error;
