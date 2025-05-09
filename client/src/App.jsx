@@ -5,6 +5,7 @@ import { Switch, Route, useLocation } from 'wouter';
 import { useState, lazy } from 'react';
 import { Button } from '@/components/ui/button';
 import queryClient from './lib/queryClient';
+import { TenantProvider } from './contexts/TenantContext';
 
 // Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
@@ -110,18 +111,19 @@ function App() {
   
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Only show the UnifiedTopNavV3 if we're not on the landing page, regulatory hub, or dashboard */}
-      {shouldShowNav && (
-        <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
-      )}
-      <div className={
-        isLandingPage ? "p-4" : 
-        isRegulatoryHub ? "p-0" : 
-        isCoAuthorPage ? "p-0" : // No padding for CoAuthor pages
-        isDashboardPage ? "p-0" : // No padding for Dashboard page
-        "p-4 mt-24"
-      }>
-        <Switch>
+      <TenantProvider>
+        {/* Only show the UnifiedTopNavV3 if we're not on the landing page, regulatory hub, or dashboard */}
+        {shouldShowNav && (
+          <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
+        )}
+        <div className={
+          isLandingPage ? "p-4" : 
+          isRegulatoryHub ? "p-0" : 
+          isCoAuthorPage ? "p-0" : // No padding for CoAuthor pages
+          isDashboardPage ? "p-0" : // No padding for Dashboard page
+          "p-4 mt-24"
+        }>
+          <Switch>
           {/* Main Portal Landing Pages - both root and /client-portal go to same component */}
           <Route path="/" component={ClientPortalLanding} />
           <Route path="/client-portal" component={ClientPortalLanding} />
@@ -248,6 +250,7 @@ function App() {
           </Route>
         </Switch>
       </div>
+      </TenantProvider>
     </QueryClientProvider>
   );
 }
