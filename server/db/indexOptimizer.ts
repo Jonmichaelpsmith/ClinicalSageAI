@@ -31,11 +31,11 @@ const TENANT_TABLES = [
  * Additional column indexes for frequently queried fields
  */
 const COLUMN_INDEXES = [
-  { table: 'ctq_factors', column: 'section_code' },
+  { table: 'ctq_factors', column: 'applicable_section' },
   { table: 'ctq_factors', column: 'risk_level' },
   { table: 'ctq_factors', column: 'category' },
   { table: 'qmp_section_gating', column: 'qmp_id' },
-  { table: 'qmp_section_gating', column: 'section_code' },
+  { table: 'qmp_section_gating', column: 'section_key' },
   { table: 'qmp_traceability', column: 'qmp_id' },
   { table: 'cer_projects', column: 'status' },
   { table: 'cer_documents', column: 'cer_project_id' }
@@ -45,9 +45,9 @@ const COLUMN_INDEXES = [
  * Composite indexes for frequent query patterns
  */
 const COMPOSITE_INDEXES = [
-  { table: 'qmp_section_gating', columns: ['organization_id', 'qmp_id', 'section_code'] },
-  { table: 'ctq_factors', columns: ['organization_id', 'section_code', 'risk_level'] },
-  { table: 'qmp_traceability', columns: ['organization_id', 'qmp_id', 'requirement_code'] }
+  { table: 'qmp_section_gating', columns: ['organization_id', 'qmp_id', 'section_key'] },
+  { table: 'ctq_factors', columns: ['organization_id', 'applicable_section', 'risk_level'] },
+  { table: 'qmp_traceability', columns: ['organization_id', 'qmp_id', 'source_type'] }
 ];
 
 /**
