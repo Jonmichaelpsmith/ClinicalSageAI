@@ -13,7 +13,7 @@ import {
   qualityManagementPlans
 } from '../../shared/schema';
 import { authMiddleware } from '../auth';
-import { requireTenantMiddleware } from '../middleware/tenantContext';
+import { requireOrganizationContext } from '../middleware/tenantContext';
 import { getDb } from '../db/tenantDbHelper';
 import { createScopedLogger } from '../utils/logger';
 
@@ -46,7 +46,7 @@ async function tableExists(req: any, tableName: string): Promise<boolean> {
  * 
  * Validates a single section against quality gating rules
  */
-router.post('/validate-section', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/validate-section', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { organizationId } = req.tenantContext || {};
     
@@ -210,7 +210,7 @@ router.post('/validate-section', authMiddleware, requireTenantMiddleware, async 
  * 
  * Validates multiple sections at once
  */
-router.post('/batch-validate', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/batch-validate', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { organizationId } = req.tenantContext || {};
     
@@ -419,7 +419,7 @@ router.post('/batch-validate', authMiddleware, requireTenantMiddleware, async (r
  * 
  * Get validation statistics for a QMP
  */
-router.get('/stats/:qmpId', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/stats/:qmpId', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { qmpId } = req.params;
     const { organizationId } = req.tenantContext || {};
