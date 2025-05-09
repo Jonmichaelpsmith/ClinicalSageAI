@@ -13,13 +13,8 @@ import { requireTenantMiddleware } from '../middleware/tenantContext';
 import { TenantDb } from '../db/tenantDb';
 import { createScopedLogger } from '../utils/logger';
 
-// Helper function to ensure db is defined
-function getDb(req: Request) {
-  if (!req.db) {
-    throw new Error('Database connection not available');
-  }
-  return req.db;
-}
+// Import the getDb helper from the tenantDbHelper
+import { getDb } from '../db/tenantDbHelper';
 
 const logger = createScopedLogger('tenant-ctq-api');
 const router = Router();
@@ -169,8 +164,8 @@ router.post('/:tenantId/ctq-factors', authMiddleware, requireTenantMiddleware, a
     
     const factorData = validationResult.data;
     
-    // Create the CTQ factor
-    const tenantDb = new TenantDb(tenantId);
+    // Create the CTQ factor using the tenant database helper
+    const tenantDb = getDb(req);
     const createdFactor = await tenantDb.insert(ctqFactors, {
       ...factorData,
       createdById: req.userId,
@@ -230,8 +225,8 @@ router.patch('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantMi
     
     const factorData = validationResult.data;
     
-    // Update the CTQ factor
-    const tenantDb = new TenantDb(tenantId);
+    // Update the CTQ factor using the tenant database helper
+    const tenantDb = getDb(req);
     const updatedFactor = await tenantDb.update(
       ctqFactors,
       {
@@ -297,8 +292,8 @@ router.delete('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantM
       });
     }
     
-    // Delete the CTQ factor
-    const tenantDb = new TenantDb(tenantId);
+    // Delete the CTQ factor using the tenant database helper
+    const tenantDb = getDb(req);
     await tenantDb.delete(ctqFactors, eq(ctqFactors.id, factorId));
     
     return res.status(204).end();
@@ -346,7 +341,7 @@ router.post('/:tenantId/ctq-factors/batch', authMiddleware, requireTenantMiddlew
     }
     
     const { operation, factorIds, data } = validationResult.data;
-    const tenantDb = new TenantDb(tenantId);
+    const tenantDb = getDb(req);
     
     // Perform the batch operation
     switch (operation) {

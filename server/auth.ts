@@ -19,6 +19,12 @@ declare global {
       userId?: number;
       userRole?: string;
       userEmail?: string;
+      tenantId?: number;
+      tenantContext?: {
+        organizationId: number;
+        userId?: number;
+        role?: string;
+      };
       db: typeof db;
     }
   }
