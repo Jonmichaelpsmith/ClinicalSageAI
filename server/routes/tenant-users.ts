@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { eq, and } from 'drizzle-orm';
 import { users, organizationUsers } from '../../shared/schema';
 import { authMiddleware, requireAdminRole } from '../auth';
-import { requireTenantMiddleware, validateTenantAccessMiddleware } from '../middleware/tenantContext';
+import { requireOrganizationContext, validateTenantAccessMiddleware } from '../middleware/tenantContext';
 import { createScopedLogger } from '../utils/logger';
 import { db } from '../db';
 import crypto from 'crypto';
@@ -42,7 +42,7 @@ router.use(authMiddleware);
  * Get all users for the current tenant
  * Requires tenant context
  */
-router.get('/', requireTenantMiddleware, async (req, res) => {
+router.get('/', requireOrganizationContext, async (req, res) => {
   try {
     // For development, return mock data
     if (process.env.NODE_ENV === 'development') {
@@ -129,7 +129,7 @@ router.get('/', requireTenantMiddleware, async (req, res) => {
  * Add a user to the tenant
  * Requires admin role
  */
-router.post('/', requireTenantMiddleware, requireAdminRole, async (req, res) => {
+router.post('/', requireOrganizationContext, requireAdminRole, async (req, res) => {
   try {
     // Validate request body
     const validatedData = addUserSchema.parse(req.body);

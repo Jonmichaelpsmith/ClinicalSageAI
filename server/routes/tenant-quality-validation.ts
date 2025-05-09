@@ -23,7 +23,7 @@ const router = Router();
 /**
  * Validate a document section against quality gating rules
  */
-router.post('/validate-section', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/validate-section', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { organizationId } = req.tenantContext;
     
@@ -216,7 +216,7 @@ router.post('/validate-section', authMiddleware, requireTenantMiddleware, async 
 /**
  * Request quality override/waiver for a gating rule
  */
-router.post('/request-waiver', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/request-waiver', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { organizationId, userId } = req.tenantContext;
     
@@ -304,7 +304,7 @@ router.post('/request-waiver', authMiddleware, requireTenantMiddleware, async (r
 /**
  * Get all quality validation statistics for a QMP
  */
-router.get('/stats/:qmpId', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/stats/:qmpId', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { qmpId } = req.params;
     const { organizationId } = req.tenantContext;
