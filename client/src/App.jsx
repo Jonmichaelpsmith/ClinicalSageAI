@@ -85,6 +85,9 @@ const StabilityStudiesStubPage = lazy(() => import('./pages/StabilityStudiesStub
 const ShelfLifePredictorStubPage = lazy(() => import('./pages/ShelfLifePredictorStubPage'));
 const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 
+// Tenant Management
+const TenantManagement = lazy(() => import('./pages/TenantManagement'));
+
 // IND Wizard step components
 // Advanced IND Wizard implementation is now used exclusively
 
@@ -201,6 +204,9 @@ function App() {
           <Route path="/reports" component={ReportsPage} />
           <Route path="/cer-reports" component={ReportsPage} />
           <Route path="/cerv2/reports" component={ReportsPage} />
+          
+          {/* Tenant Management Route */}
+          <Route path="/tenant-management" component={TenantManagement} />
 
           {/* Error fallback and catch-all routes for specific modules */}
           <Route path="/cer-*">
