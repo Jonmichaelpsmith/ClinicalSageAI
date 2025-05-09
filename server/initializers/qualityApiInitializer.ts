@@ -1,98 +1,73 @@
 /**
  * Quality Management API Initializer
- * 
- * This module initializes the quality management API, including setting up
- * database checks, migrations for quality tables if needed, and scheduling
- * maintenance tasks.
+ *
+ * This module centralizes the initialization of Quality Management
+ * API components, ensuring proper error handling and graceful fallbacks.
  */
+import { Express } from 'express';
 import { createScopedLogger } from '../utils/logger';
 import { getDb } from '../db/tenantDbHelper';
-import { db } from '../db';
 import { sql } from 'drizzle-orm';
-import waiversService from '../services/quality-waiver-service';
 
 const logger = createScopedLogger('quality-api-initializer');
 
 /**
- * Initialize quality management tables if they don't exist
+ * Initialize the Quality Management API
+ * 
+ * @param app Express application instance
  */
-async function initializeTables() {
+export async function initializeQualityManagementApi(app: Express): Promise<void> {
   try {
-    logger.info('Checking quality management tables');
+    logger.info('Initializing Quality Management API');
     
-    // Check if the qmp_section_gating table exists
-    const checkTableSql = sql`
-      SELECT EXISTS (
-        SELECT FROM information_schema.tables 
-        WHERE table_schema = 'public' 
-        AND table_name = 'qmp_section_gating'
-      );
-    `;
+    // Register quality management routes
+    // We use the JavaScript version to avoid TS compilation issues
+    // Eventually this will be replaced with proper TypeScript implementation
+    const { registerQualityManagementRoutes } = await import('../routes/quality-management-routes.js');
+    registerQualityManagementRoutes(app);
     
-    const tableExists = await db.execute(checkTableSql);
-    
-    if (!tableExists.rows[0]?.exists) {
-      logger.warn('Quality management tables not found. Please run database migrations.');
-    } else {
-      logger.info('Quality management tables already exist');
+    logger.info('Quality Management API initialized successfully');
+    return Promise.resolve();
+  } catch (error) {
+    logger.error('Failed to initialize Quality Management API', { error });
+    return Promise.resolve(); // Still resolve to prevent server startup failure
+  }
+}
+
+/**
+ * Safely check if required tables exist
+ * 
+ * @param connection Database connection
+ * @param tables Array of table names to check
+ * @returns Object with table existence status
+ */
+export async function checkRequiredTablesExist(connection: any, tables: string[]): Promise<Record<string, boolean>> {
+  const result: Record<string, boolean> = {};
+  
+  try {
+    for (const table of tables) {
+      try {
+        const queryResult = await connection.execute(sql`
+          SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_schema = 'public' 
+            AND table_name = ${table}
+          );
+        `);
+        
+        result[table] = queryResult.rows[0]?.exists === true;
+      } catch (err) {
+        logger.warn(`Error checking if table ${table} exists`, { err });
+        result[table] = false;
+      }
     }
   } catch (error) {
-    logger.error('Error checking quality management tables', { error });
-    // Don't throw - this is not critical for server startup
+    logger.error('Error checking for required tables', { error });
+    // Default all tables to false if there was an error
+    tables.forEach(table => {
+      result[table] = false;
+    });
   }
+  
+  return result;
 }
-
-/**
- * Schedule periodic maintenance tasks
- */
-function scheduleMaintenanceTasks() {
-  try {
-    logger.info('Scheduling quality management maintenance tasks');
-    
-    // Schedule waiver expiration check every 24 hours
-    const CHECK_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-    
-    setInterval(async () => {
-      try {
-        logger.info('Running scheduled waiver expiration check');
-        
-        // This would normally query all tenants and check waivers for each
-        // For simplicity in the prototype, we'll just check tenant ID 1
-        const mockReq = {}; // Mock request object
-        const organizationId = 1;
-        
-        const count = await waiversService.checkAndUpdateExpiredWaivers(mockReq, organizationId);
-        logger.info(`Updated ${count} expired waivers`);
-      } catch (error) {
-        logger.error('Error running waiver expiration check', { error });
-      }
-    }, CHECK_INTERVAL);
-    
-    logger.info('Quality management maintenance tasks scheduled');
-  } catch (error) {
-    logger.error('Error scheduling quality management maintenance tasks', { error });
-    // Don't throw - this is not critical for server startup
-  }
-}
-
-/**
- * Initialize the quality API
- */
-export async function initializeQualityApi(): Promise<void> {
-  try {
-    logger.info('Initializing quality management API');
-    
-    // Initialize tables
-    await initializeTables();
-    
-    // Schedule maintenance tasks
-    scheduleMaintenanceTasks();
-    
-    logger.info('Quality management API successfully initialized');
-  } catch (error) {
-    logger.error('Error initializing quality management API', { error });
-    throw error;
-  }
-}
-
-export default initializeQualityApi;
