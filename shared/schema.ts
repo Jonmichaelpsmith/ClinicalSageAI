@@ -530,3 +530,68 @@ export const cerProjectsQmpRelation = relations(cerProjects, ({ one }) => ({
     references: [qualityManagementPlans.id],
   }),
 }));
+
+/**
+ * Document Folder Table
+ * 
+ * Represents a folder in the document management system.
+ */
+export const documentFolders = pgTable('document_folders', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  name: text('name').notNull(),
+  description: text('description'),
+  parentId: integer('parent_id').references(() => documentFolders.id),
+  path: text('path'),
+  createdById: integer('created_by_id').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Document Folder Insert Schema
+export const insertDocumentFolderSchema = createInsertSchema(documentFolders).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Document Folder Types
+export type DocumentFolder = InferSelectModel<typeof documentFolders>;
+export type InsertDocumentFolder = z.infer<typeof insertDocumentFolderSchema>;
+
+/**
+ * Documents Table
+ * 
+ * Represents a document in the system.
+ */
+export const documents = pgTable('documents', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  folderId: integer('folder_id').references(() => documentFolders.id),
+  name: text('name').notNull(),
+  description: text('description'),
+  type: text('type').notNull(), // report, protocol, publication, etc.
+  status: text('status').default('draft').notNull(), // draft, review, approved, published
+  version: text('version').default('1.0.0'),
+  fileName: text('file_name'),
+  fileType: text('file_type'),
+  fileSize: integer('file_size'),
+  filePath: text('file_path'),
+  content: json('content'),
+  metadata: json('metadata'),
+  tags: text('tags').array(),
+  createdById: integer('created_by_id').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Document Insert Schema
+export const insertDocumentSchema = createInsertSchema(documents).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Document Types
+export type Document = InferSelectModel<typeof documents>;
+export type InsertDocument = z.infer<typeof insertDocumentSchema>;
