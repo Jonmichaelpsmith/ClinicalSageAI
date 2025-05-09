@@ -300,6 +300,7 @@ export const cerProjectsRelations = relations(cerProjects, ({ one, many }) => ({
   documents: many(projectDocuments),
   activities: many(projectActivities),
   milestones: many(projectMilestones),
+  approvals: many(cerApprovals),
 }));
 
 export const projectDocumentsRelations = relations(projectDocuments, ({ one }) => ({
@@ -324,6 +325,70 @@ export const projectActivitiesRelations = relations(projectActivities, ({ one })
   }),
   user: one(users, {
     fields: [projectActivities.userId],
+    references: [users.id],
+  }),
+}));
+
+/**
+ * CER Approvals Table
+ * 
+ * Tracks approval workflow for CER documents and sections.
+ */
+export const cerApprovals = pgTable('cer_approvals', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  projectId: integer('project_id').notNull().references(() => cerProjects.id),
+  documentId: integer('document_id').references(() => projectDocuments.id),
+  sectionKey: text('section_key'),
+  approvalType: text('approval_type').notNull(), // document, section, project
+  status: text('status').default('pending').notNull(), // pending, approved, rejected
+  requestedById: integer('requested_by_id').references(() => users.id),
+  requestedAt: timestamp('requested_at').defaultNow().notNull(),
+  approvedById: integer('approved_by_id').references(() => users.id),
+  approvedAt: timestamp('approved_at'),
+  rejectedById: integer('rejected_by_id').references(() => users.id),
+  rejectedAt: timestamp('rejected_at'),
+  comments: text('comments'),
+  metadata: json('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// CER Approval Insert Schema
+export const insertCerApprovalSchema = createInsertSchema(cerApprovals).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// CER Approval Types
+export type CerApproval = InferSelectModel<typeof cerApprovals>;
+export type InsertCerApproval = z.infer<typeof insertCerApprovalSchema>;
+
+// CER Approvals Relations
+export const cerApprovalsRelations = relations(cerApprovals, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [cerApprovals.organizationId],
+    references: [organizations.id],
+  }),
+  project: one(cerProjects, {
+    fields: [cerApprovals.projectId],
+    references: [cerProjects.id],
+  }),
+  document: one(projectDocuments, {
+    fields: [cerApprovals.documentId],
+    references: [projectDocuments.id],
+  }),
+  requestedBy: one(users, {
+    fields: [cerApprovals.requestedById],
+    references: [users.id],
+  }),
+  approvedBy: one(users, {
+    fields: [cerApprovals.approvedById],
+    references: [users.id],
+  }),
+  rejectedBy: one(users, {
+    fields: [cerApprovals.rejectedById],
     references: [users.id],
   }),
 }));
