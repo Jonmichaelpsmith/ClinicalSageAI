@@ -5,11 +5,12 @@
  */
 import { Router } from 'express';
 import { z } from 'zod';
-import { TenantDb } from '../db/tenantDb';
-import { requireTenantMiddleware } from '../middleware/tenantContext';
-import { authMiddleware, requireAdminRole } from '../auth';
-import { organizations, insertOrganizationSchema } from '../../shared/schema';
+import { eq, and } from 'drizzle-orm';
+import { organizations, organizationUsers, users, insertOrganizationSchema } from '../../shared/schema';
+import { requireTenantMiddleware, validateTenantAccessMiddleware } from '../middleware/tenantContext';
+import { authMiddleware, requireAdminRole, requireSuperAdminRole } from '../auth';
 import { createScopedLogger } from '../utils/logger';
+import { db } from '../db';
 import crypto from 'crypto';
 
 const logger = createScopedLogger('tenant-api');
@@ -22,317 +23,327 @@ const createTenantSchema = z.object({
     message: 'Slug can only contain lowercase letters, numbers, and hyphens',
   }),
   domain: z.string().optional(),
-  tier: z.enum(['standard', 'professional', 'enterprise']).optional(),
+  tier: z.enum(['standard', 'professional', 'enterprise']).default('standard'),
   maxUsers: z.number().int().positive().optional(),
   maxProjects: z.number().int().positive().optional(),
   maxStorage: z.number().int().positive().optional(),
+  settings: z.record(z.any()).optional(),
 });
 
 // Schema for tenant update
 const updateTenantSchema = createTenantSchema.partial();
 
+// Apply auth middleware to all tenant routes
+router.use(authMiddleware);
+
 /**
- * Get all tenants the user has access to
- * Only organization admins and super admins can see multiple tenants
+ * GET /api/tenants
+ * Get all tenants the current user has access to
  */
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    // Check if user is super admin, return all tenants
+    // For development, return mock data
+    if (process.env.NODE_ENV === 'development') {
+      return res.json([
+        {
+          id: 1,
+          name: 'Acme Medical Devices',
+          slug: 'acme-medical',
+          domain: 'acme-medical.example.com',
+          logo: null,
+          tier: 'professional',
+          maxUsers: 10,
+          maxProjects: 20,
+          maxStorage: 50,
+          status: 'active',
+        },
+        {
+          id: 2,
+          name: 'BioTech Solutions',
+          slug: 'biotech',
+          domain: null,
+          logo: null,
+          tier: 'enterprise',
+          maxUsers: 50,
+          maxProjects: 100,
+          maxStorage: 200,
+          status: 'active',
+        },
+        {
+          id: 3,
+          name: 'MedSoft Research',
+          slug: 'medsoft',
+          domain: 'research.medsoft.com',
+          logo: null,
+          tier: 'standard',
+          maxUsers: 5,
+          maxProjects: 10,
+          maxStorage: 5,
+          status: 'active',
+        }
+      ]);
+    }
+
+    // If user is super admin, get all tenants
     if (req.userRole === 'super_admin') {
-      const result = await req.db.select().from(organizations);
-      return res.json(result);
+      const allTenants = await db.select().from(organizations);
+      return res.json(allTenants);
     }
-    
-    // Otherwise, get organizations the user belongs to
-    const result = await req.db.execute(`
-      SELECT o.* 
-      FROM organizations o
-      JOIN organization_users ou ON o.id = ou.organization_id
-      WHERE ou.user_id = $1
-    `, [req.userId]);
-    
-    return res.json(result.rows);
+
+    // Otherwise, get tenants the user has access to
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    // Find all organizations the user belongs to
+    const userOrgs = await db
+      .select({
+        organization: organizations,
+      })
+      .from(organizationUsers)
+      .innerJoin(organizations, eq(organizations.id, organizationUsers.organizationId))
+      .where(eq(organizationUsers.userId, req.userId));
+
+    const tenants = userOrgs.map(row => row.organization);
+    res.json(tenants);
   } catch (error) {
-    logger.error('Error fetching tenants', error);
-    return res.status(500).json({ error: 'Failed to fetch tenants' });
+    logger.error('Error retrieving tenants', error);
+    res.status(500).json({ error: 'Failed to retrieve tenants' });
   }
 });
 
 /**
- * Get a specific tenant by ID
- * User must belong to the tenant or be a super admin
+ * GET /api/tenants/:id
+ * Get details for a specific tenant
  */
-router.get('/:id', authMiddleware, async (req, res) => {
+router.get('/:id', validateTenantAccessMiddleware, async (req, res) => {
+  const tenantId = parseInt(req.params.id);
+  
   try {
-    const tenantId = parseInt(req.params.id);
-    if (isNaN(tenantId)) {
-      return res.status(400).json({ error: 'Invalid tenant ID' });
-    }
-    
-    // Check if user is super admin or belongs to the organization
-    if (req.userRole !== 'super_admin') {
-      const userTenantCheck = await req.db.execute(`
-        SELECT 1 FROM organization_users
-        WHERE organization_id = $1 AND user_id = $2
-      `, [tenantId, req.userId]);
-      
-      if (userTenantCheck.rowCount === 0) {
-        return res.status(403).json({ error: 'You do not have access to this organization' });
-      }
-    }
-    
-    // Get the tenant
-    const tenant = await req.db.select().from(organizations).where(eq(organizations.id, tenantId)).limit(1);
-    
-    if (tenant.length === 0) {
-      return res.status(404).json({ error: 'Tenant not found' });
-    }
-    
-    return res.json(tenant[0]);
-  } catch (error) {
-    logger.error(`Error fetching tenant ${req.params.id}`, error);
-    return res.status(500).json({ error: 'Failed to fetch tenant' });
-  }
-});
-
-/**
- * Create a new tenant
- * Only super admins can create tenants
- */
-router.post('/', authMiddleware, requireAdminRole, async (req, res) => {
-  try {
-    // Validate request body
-    const validationResult = createTenantSchema.safeParse(req.body);
-    if (!validationResult.success) {
-      return res.status(400).json({ 
-        error: 'Invalid tenant data', 
-        details: validationResult.error.format() 
+    // For development, return mock data
+    if (process.env.NODE_ENV === 'development' && tenantId === 1) {
+      return res.json({
+        id: 1,
+        name: 'Acme Medical Devices',
+        slug: 'acme-medical',
+        domain: 'acme-medical.example.com',
+        logo: null,
+        apiKey: 'acme-dev-api-key-12345',
+        tier: 'professional',
+        maxUsers: 10,
+        maxProjects: 20,
+        maxStorage: 50,
+        status: 'active',
+        settings: {
+          brandColor: '#4f46e5',
+          enableNotifications: true,
+          allowGuests: false,
+        },
       });
     }
-    
-    const tenantData = validationResult.data;
-    
-    // Check if slug is already taken
-    const slugCheck = await req.db.select().from(organizations).where(eq(organizations.slug, tenantData.slug)).limit(1);
-    
-    if (slugCheck.length > 0) {
-      return res.status(400).json({ error: 'Slug is already taken' });
-    }
-    
-    // Generate API key
-    const apiKey = crypto.randomBytes(32).toString('hex');
-    
-    // Create the tenant
-    const newTenant = await req.db.insert(organizations).values({
-      name: tenantData.name,
-      slug: tenantData.slug,
-      domain: tenantData.domain,
-      tier: tenantData.tier || 'standard',
-      apiKey: apiKey,
-      maxUsers: tenantData.maxUsers || 5,
-      maxProjects: tenantData.maxProjects || 10,
-      maxStorage: tenantData.maxStorage || 5,
-    }).returning();
-    
-    // Add the creating user to the organization as an admin
-    if (req.userId) {
-      await req.db.execute(`
-        INSERT INTO organization_users (organization_id, user_id, role)
-        VALUES ($1, $2, 'admin')
-      `, [newTenant[0].id, req.userId]);
-    }
-    
-    // Return the created tenant
-    return res.status(201).json(newTenant[0]);
-  } catch (error) {
-    logger.error('Error creating tenant', error);
-    return res.status(500).json({ error: 'Failed to create tenant' });
-  }
-});
 
-/**
- * Update a tenant
- * Organization admins can update their own tenant, super admins can update any tenant
- */
-router.patch('/:id', authMiddleware, requireTenantMiddleware, async (req, res) => {
-  try {
-    const tenantId = parseInt(req.params.id);
-    if (isNaN(tenantId)) {
-      return res.status(400).json({ error: 'Invalid tenant ID' });
-    }
-    
-    // Check permissions
-    if (req.userRole !== 'super_admin' && req.userRole !== 'admin') {
-      return res.status(403).json({ error: 'Only organization admins can update tenant settings' });
-    }
-    
-    // For regular admins, ensure they're updating their own organization
-    if (req.userRole === 'admin' && tenantId !== req.tenantId) {
-      return res.status(403).json({ error: 'You can only update your own organization' });
-    }
-    
-    // Validate request body
-    const validationResult = updateTenantSchema.safeParse(req.body);
-    if (!validationResult.success) {
-      return res.status(400).json({ 
-        error: 'Invalid tenant data', 
-        details: validationResult.error.format() 
-      });
-    }
-    
-    const updateData = validationResult.data;
-    
-    // If slug is being updated, check if it's already taken
-    if (updateData.slug) {
-      const slugCheck = await req.db.select().from(organizations)
-        .where(and(
-          eq(organizations.slug, updateData.slug),
-          ne(organizations.id, tenantId)
-        ))
-        .limit(1);
-      
-      if (slugCheck.length > 0) {
-        return res.status(400).json({ error: 'Slug is already taken' });
-      }
-    }
-    
-    // Update the tenant
-    const updatedTenant = await req.db.update(organizations)
-      .set(updateData)
-      .where(eq(organizations.id, tenantId))
-      .returning();
-    
-    if (updatedTenant.length === 0) {
-      return res.status(404).json({ error: 'Tenant not found' });
-    }
-    
-    // Return the updated tenant
-    return res.json(updatedTenant[0]);
-  } catch (error) {
-    logger.error(`Error updating tenant ${req.params.id}`, error);
-    return res.status(500).json({ error: 'Failed to update tenant' });
-  }
-});
-
-/**
- * Regenerate API key for a tenant
- * Only organization admins and super admins can regenerate API keys
- */
-router.post('/:id/regenerate-api-key', authMiddleware, requireTenantMiddleware, async (req, res) => {
-  try {
-    const tenantId = parseInt(req.params.id);
-    if (isNaN(tenantId)) {
-      return res.status(400).json({ error: 'Invalid tenant ID' });
-    }
-    
-    // Check permissions
-    if (req.userRole !== 'super_admin' && req.userRole !== 'admin') {
-      return res.status(403).json({ error: 'Only organization admins can regenerate API keys' });
-    }
-    
-    // For regular admins, ensure they're updating their own organization
-    if (req.userRole === 'admin' && tenantId !== req.tenantId) {
-      return res.status(403).json({ error: 'You can only manage your own organization' });
-    }
-    
-    // Generate new API key
-    const apiKey = crypto.randomBytes(32).toString('hex');
-    
-    // Update the tenant
-    const updatedTenant = await req.db.update(organizations)
-      .set({ apiKey })
-      .where(eq(organizations.id, tenantId))
-      .returning();
-    
-    if (updatedTenant.length === 0) {
-      return res.status(404).json({ error: 'Tenant not found' });
-    }
-    
-    // Return the new API key
-    return res.json({ apiKey: updatedTenant[0].apiKey });
-  } catch (error) {
-    logger.error(`Error regenerating API key for tenant ${req.params.id}`, error);
-    return res.status(500).json({ error: 'Failed to regenerate API key' });
-  }
-});
-
-/**
- * Get usage statistics for a tenant
- * Organization admins can view their own stats, super admins can view any tenant's stats
- */
-router.get('/:id/usage', authMiddleware, requireTenantMiddleware, async (req, res) => {
-  try {
-    const tenantId = parseInt(req.params.id);
-    if (isNaN(tenantId)) {
-      return res.status(400).json({ error: 'Invalid tenant ID' });
-    }
-    
-    // Check permissions
-    if (req.userRole !== 'super_admin' && tenantId !== req.tenantId) {
-      return res.status(403).json({ error: 'You can only view usage for your own organization' });
-    }
-    
-    // Create tenant DB utility
-    const tenantDb = new TenantDb(tenantId);
-    
-    // Get usage statistics
-    const [
-      userCount,
-      projectCount,
-      documentCount,
-      storageUsed
-    ] = await Promise.all([
-      // Count users in the organization
-      tenantDb.count('organization_users'),
-      
-      // Count projects
-      tenantDb.count('cer_projects'),
-      
-      // Count documents
-      tenantDb.count('project_documents'),
-      
-      // Sum storage used (placeholder query - actual implementation depends on how storage is tracked)
-      req.db.execute(`
-        SELECT COALESCE(SUM(file_size), 0) as total_storage
-        FROM project_documents
-        WHERE organization_id = $1
-      `, [tenantId]).then(result => parseInt(result.rows[0].total_storage || '0', 10) / (1024 * 1024 * 1024)) // Convert to GB
-    ]);
-    
-    // Get tenant limits
-    const tenant = await req.db.select()
+    const tenant = await db
+      .select()
       .from(organizations)
       .where(eq(organizations.id, tenantId))
       .limit(1);
-    
-    if (tenant.length === 0) {
+
+    if (!tenant.length) {
       return res.status(404).json({ error: 'Tenant not found' });
     }
-    
-    // Return usage statistics
-    return res.json({
-      users: {
-        current: userCount,
-        limit: tenant[0].maxUsers,
-        percentage: (userCount / tenant[0].maxUsers) * 100
-      },
-      projects: {
-        current: projectCount,
-        limit: tenant[0].maxProjects,
-        percentage: (projectCount / tenant[0].maxProjects) * 100
-      },
-      storage: {
-        current: storageUsed, // in GB
-        limit: tenant[0].maxStorage, // in GB
-        percentage: (storageUsed / tenant[0].maxStorage) * 100
-      },
-      documents: {
-        count: documentCount
+
+    res.json(tenant[0]);
+  } catch (error) {
+    logger.error('Error retrieving tenant', error);
+    res.status(500).json({ error: 'Failed to retrieve tenant' });
+  }
+});
+
+/**
+ * POST /api/tenants
+ * Create a new tenant
+ * Requires super_admin role
+ */
+router.post('/', requireSuperAdminRole, async (req, res) => {
+  try {
+    // Validate request body
+    const validatedData = createTenantSchema.parse(req.body);
+
+    // Check if slug is already taken
+    const existingTenant = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.slug, validatedData.slug))
+      .limit(1);
+
+    if (existingTenant.length) {
+      return res.status(400).json({ error: 'Organization slug already in use' });
+    }
+
+    // Generate API key if not provided
+    const apiKey = crypto.randomBytes(16).toString('hex');
+
+    // Create new tenant
+    const newTenant = await db.insert(organizations).values({
+      ...validatedData,
+      apiKey,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }).returning();
+
+    res.status(201).json(newTenant[0]);
+  } catch (error) {
+    logger.error('Error creating tenant', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Invalid tenant data', details: error.errors });
+    }
+    res.status(500).json({ error: 'Failed to create tenant' });
+  }
+});
+
+/**
+ * PATCH /api/tenants/:id
+ * Update an existing tenant
+ * Requires admin role or super_admin role
+ */
+router.patch('/:id', validateTenantAccessMiddleware, requireAdminRole, async (req, res) => {
+  const tenantId = parseInt(req.params.id);
+  
+  try {
+    // Validate request body
+    const validatedData = updateTenantSchema.parse(req.body);
+
+    // Mock response for development
+    if (process.env.NODE_ENV === 'development' && tenantId === 1) {
+      return res.json({
+        id: 1,
+        ...validatedData,
+        apiKey: 'acme-dev-api-key-12345',
+        status: 'active',
+        updatedAt: new Date().toISOString(),
+      });
+    }
+
+    // Check if tenant exists
+    const existingTenant = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, tenantId))
+      .limit(1);
+
+    if (!existingTenant.length) {
+      return res.status(404).json({ error: 'Tenant not found' });
+    }
+
+    // If slug is being changed, check if new slug is available
+    if (validatedData.slug && validatedData.slug !== existingTenant[0].slug) {
+      const slugCheck = await db
+        .select()
+        .from(organizations)
+        .where(eq(organizations.slug, validatedData.slug))
+        .limit(1);
+
+      if (slugCheck.length) {
+        return res.status(400).json({ error: 'Organization slug already in use' });
       }
+    }
+
+    // Update tenant
+    const updatedTenant = await db.update(organizations)
+      .set({
+        ...validatedData,
+        updatedAt: new Date(),
+      })
+      .where(eq(organizations.id, tenantId))
+      .returning();
+
+    res.json(updatedTenant[0]);
+  } catch (error) {
+    logger.error('Error updating tenant', error);
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: 'Invalid tenant data', details: error.errors });
+    }
+    res.status(500).json({ error: 'Failed to update tenant' });
+  }
+});
+
+/**
+ * DELETE /api/tenants/:id
+ * Delete a tenant
+ * Requires super_admin role
+ */
+router.delete('/:id', requireSuperAdminRole, async (req, res) => {
+  const tenantId = parseInt(req.params.id);
+  
+  try {
+    // Check if tenant exists
+    const existingTenant = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, tenantId))
+      .limit(1);
+
+    if (!existingTenant.length) {
+      return res.status(404).json({ error: 'Tenant not found' });
+    }
+
+    // Delete tenant
+    await db.delete(organizations).where(eq(organizations.id, tenantId));
+
+    res.status(204).end();
+  } catch (error) {
+    logger.error('Error deleting tenant', error);
+    res.status(500).json({ error: 'Failed to delete tenant' });
+  }
+});
+
+/**
+ * POST /api/tenants/:id/api-key
+ * Generate a new API key for a tenant
+ * Requires admin role
+ */
+router.post('/:id/api-key', validateTenantAccessMiddleware, requireAdminRole, async (req, res) => {
+  const tenantId = parseInt(req.params.id);
+  
+  try {
+    // Mock response for development
+    if (process.env.NODE_ENV === 'development' && tenantId === 1) {
+      return res.json({
+        id: 1,
+        apiKey: 'acme-dev-api-key-' + Math.random().toString(36).substring(2, 15),
+      });
+    }
+
+    // Check if tenant exists
+    const existingTenant = await db
+      .select()
+      .from(organizations)
+      .where(eq(organizations.id, tenantId))
+      .limit(1);
+
+    if (!existingTenant.length) {
+      return res.status(404).json({ error: 'Tenant not found' });
+    }
+
+    // Generate new API key
+    const apiKey = crypto.randomBytes(16).toString('hex');
+
+    // Update tenant with new API key
+    const updatedTenant = await db.update(organizations)
+      .set({
+        apiKey,
+        updatedAt: new Date(),
+      })
+      .where(eq(organizations.id, tenantId))
+      .returning();
+
+    res.json({
+      id: updatedTenant[0].id,
+      apiKey: updatedTenant[0].apiKey,
     });
   } catch (error) {
-    logger.error(`Error fetching usage for tenant ${req.params.id}`, error);
-    return res.status(500).json({ error: 'Failed to fetch tenant usage statistics' });
+    logger.error('Error generating API key', error);
+    res.status(500).json({ error: 'Failed to generate API key' });
   }
 });
 
