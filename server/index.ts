@@ -75,11 +75,6 @@ import tenantSectionGatingRoutes from './routes/tenant-section-gating.js';
 app.use('/api/tenant-section-gating', tenantSectionGatingRoutes);
 console.log('Tenant Section Gating routes registered');
 
-// Import and register organizations API routes
-import organizationsRoutes from './routes/organizations.js';
-app.use('/api/organizations', organizationsRoutes);
-console.log('Organization Management API routes registered');
-
 // Import and register Quality Management API routes
 import { registerQualityManagementRoutes } from './routes/quality-management-routes';
 registerQualityManagementRoutes(app);

@@ -24,16 +24,12 @@ export async function addQualityWaiverTables() {
   
   try {
     // Check if required tables exist
-    const requiredTablesQuery = {
-      text: `
-        SELECT 
-          EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'organizations') as org_exists,
-          EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'users') as users_exists,
-          EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'quality_management_plans') as qmp_exists,
-          EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'ctq_factors') as ctq_exists
-      `,
-      params: []
-    };
+    const requiredTablesQuery = sql`
+      SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'organizations') as org_exists,
+             EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'users') as users_exists,
+             EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'quality_management_plans') as qmp_exists,
+             EXISTS(SELECT 1 FROM information_schema.tables WHERE table_name = 'ctq_factors') as ctq_exists;
+    `;
     
     const requiredTablesCheck = await execute(requiredTablesQuery);
     const tablesExist = requiredTablesCheck.rows[0];
@@ -44,16 +40,13 @@ export async function addQualityWaiverTables() {
     }
     
     // Check if quality_waivers table already exists
-    const checkWaiversTableSql = {
-      text: `
-        SELECT EXISTS (
-          SELECT FROM information_schema.tables 
-          WHERE table_schema = 'public' 
-          AND table_name = 'quality_waivers'
-        );
-      `,
-      params: []
-    };
+    const checkWaiversTableSql = sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'quality_waivers'
+      );
+    `;
     
     const waiversTableExists = await execute(checkWaiversTableSql);
     
@@ -61,31 +54,28 @@ export async function addQualityWaiverTables() {
       logger.info('Creating quality_waivers table');
       
       // Create quality_waivers table
-      await execute({
-        text: `
-          CREATE TABLE quality_waivers (
-            id SERIAL PRIMARY KEY,
-            organization_id INTEGER NOT NULL REFERENCES organizations(id),
-            qmp_id INTEGER NOT NULL REFERENCES quality_management_plans(id),
-            section_code TEXT NOT NULL,
-            justification TEXT NOT NULL,
-            risk_assessment TEXT,
-            status TEXT NOT NULL DEFAULT 'pending',
-            requested_by_id INTEGER NOT NULL REFERENCES users(id),
-            requested_at TIMESTAMP NOT NULL DEFAULT NOW(),
-            approved_by_id INTEGER REFERENCES users(id),
-            approved_at TIMESTAMP,
-            rejected_by_id INTEGER REFERENCES users(id),
-            rejected_at TIMESTAMP,
-            rejection_reason TEXT,
-            expires_at TIMESTAMP,
-            metadata JSONB,
-            created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-            updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-          );
-        `,
-        params: []
-      });
+      await execute(sql`
+        CREATE TABLE quality_waivers (
+          id SERIAL PRIMARY KEY,
+          organization_id INTEGER NOT NULL REFERENCES organizations(id),
+          qmp_id INTEGER NOT NULL REFERENCES quality_management_plans(id),
+          section_code TEXT NOT NULL,
+          justification TEXT NOT NULL,
+          risk_assessment TEXT,
+          status TEXT NOT NULL DEFAULT 'pending',
+          requested_by_id INTEGER NOT NULL REFERENCES users(id),
+          requested_at TIMESTAMP NOT NULL DEFAULT NOW(),
+          approved_by_id INTEGER REFERENCES users(id),
+          approved_at TIMESTAMP,
+          rejected_by_id INTEGER REFERENCES users(id),
+          rejected_at TIMESTAMP,
+          rejection_reason TEXT,
+          expires_at TIMESTAMP,
+          metadata JSONB,
+          created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+          updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+        );
+      `);
       
       // Add RLS policy for quality_waivers
       await execute(sql`
@@ -118,16 +108,13 @@ export async function addQualityWaiverTables() {
     }
     
     // Check if quality_waiver_factors table already exists
-    const checkFactorsTableSql = {
-      text: `
-        SELECT EXISTS (
-          SELECT FROM information_schema.tables 
-          WHERE table_schema = 'public' 
-          AND table_name = 'quality_waiver_factors'
-        );
-      `,
-      params: []
-    };
+    const checkFactorsTableSql = sql`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'quality_waiver_factors'
+      );
+    `;
     
     const factorsTableExists = await execute(checkFactorsTableSql);
     

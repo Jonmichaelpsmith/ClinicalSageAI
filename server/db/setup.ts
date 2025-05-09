@@ -41,13 +41,7 @@ export async function setupDatabase() {
       
       const tableExists = await execute(checkTableSql);
       
-      // Check if the result has rows and whether the first row has a property 'exists'
-      // If none of these are available, assume tables don't exist to be safe
-      const tablesExist = tableExists && tableExists.rows && 
-                         tableExists.rows.length > 0 && 
-                         tableExists.rows[0].exists === true;
-                         
-      if (!tablesExist) {
+      if (!tableExists.rows[0]?.exists) {
         logger.info('Database tables do not exist, creating schema');
         
         try {
