@@ -68,6 +68,11 @@ import reportsRoutes from './routes/reports.js';
 app.use('/api/reports', reportsRoutes);
 console.log('Reports API routes registered');
 
+// Import and register tenant section gating API routes
+import tenantSectionGatingRoutes from './routes/tenant-section-gating.js';
+app.use('/api/tenant-section-gating', tenantSectionGatingRoutes);
+console.log('Tenant Section Gating routes registered');
+
 // Serve the marketing landing page at the root URL
 app.get('/', (req, res) => {
   console.log('Serving marketing landing page');
