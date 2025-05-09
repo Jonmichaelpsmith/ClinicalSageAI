@@ -365,6 +365,45 @@ const ClientWorkspaceSettings = () => {
                       'regulatory': 'Regulatory Consulting'
                     }}
                   />
+                  <div className="pt-1">
+                    <p className="text-sm text-muted-foreground">
+                      Industry-specific compliance frameworks and templates will be automatically applied
+                    </p>
+                    {formValues.general.industry === 'pharmaceutical' && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        <Badge variant="outline" className="bg-blue-50">ICH M4</Badge>
+                        <Badge variant="outline" className="bg-blue-50">ICH E3</Badge>
+                        <Badge variant="outline" className="bg-blue-50">ICH E6(R2)</Badge>
+                        <Badge variant="outline" className="bg-blue-50">EMA Clinical Templates</Badge>
+                        <Badge variant="outline" className="bg-blue-50">eCTD Structure</Badge>
+                      </div>
+                    )}
+                    {formValues.general.industry === 'biotech' && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        <Badge variant="outline" className="bg-emerald-50">ICH S6(R1)</Badge>
+                        <Badge variant="outline" className="bg-emerald-50">CMC Requirements</Badge>
+                        <Badge variant="outline" className="bg-emerald-50">Accelerated Pathways</Badge>
+                        <Badge variant="outline" className="bg-emerald-50">Breakthrough/RMAT Templates</Badge>
+                      </div>
+                    )}
+                    {formValues.general.industry === 'medical-device' && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        <Badge variant="outline" className="bg-amber-50">MDR/IVDR Templates</Badge>
+                        <Badge variant="outline" className="bg-amber-50">ISO 14155</Badge>
+                        <Badge variant="outline" className="bg-amber-50">Technical File Structure</Badge>
+                        <Badge variant="outline" className="bg-amber-50">FDA 510(k) Format</Badge>
+                        <Badge variant="outline" className="bg-amber-50">MEDDEV Guidelines</Badge>
+                      </div>
+                    )}
+                    {formValues.general.industry === 'cro' && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        <Badge variant="outline" className="bg-purple-50">Multi-client Framework</Badge>
+                        <Badge variant="outline" className="bg-purple-50">Sponsor Templates</Badge>
+                        <Badge variant="outline" className="bg-purple-50">TMF Structure</Badge>
+                        <Badge variant="outline" className="bg-purple-50">Trial Master Protocols</Badge>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
                 <div className="space-y-3">
