@@ -518,8 +518,8 @@ router.post('/:qmpId/validate', authMiddleware, requireTenantMiddleware, async (
       const isWaiverRequest = !!requestWaiver;
       
       return {
-        sectionCode,
-        sectionName: rule.cerSections?.name || sectionCode,
+        sectionKey,
+        sectionName: rule.cerSections?.name || sectionKey,
         requiredLevel: rule.qmpSectionGating.requiredLevel,
         valid: isWaiverRequest ? true : !(hasFailedHardFactors || hasFailedSoftFactors),
         factors: factorResults,
@@ -588,7 +588,7 @@ router.post('/:qmpId/waiver', authMiddleware, requireTenantMiddleware, async (re
       const rule = ruleResults[0];
       if (!rule) {
         return {
-          sectionCode,
+          sectionKey: sectionCode, // Using sectionKey for consistency with schema
           status: 'skipped',
           message: 'No gating rule found for this section'
         };
@@ -598,7 +598,7 @@ router.post('/:qmpId/waiver', authMiddleware, requireTenantMiddleware, async (re
       const waiver = {
         organizationId,
         qmpId: qmpIdNumber,
-        sectionCode,
+        sectionKey: sectionCode, // Using sectionKey for consistency with schema
         ruleId: rule.id,
         projectId: projectId || null,
         requestedById: userId || null,
