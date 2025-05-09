@@ -75,10 +75,13 @@ import tenantSectionGatingRoutes from './routes/tenant-section-gating.js';
 app.use('/api/tenant-section-gating', tenantSectionGatingRoutes);
 console.log('Tenant Section Gating routes registered');
 
-// Import and register Quality Management API routes
-import { registerQualityManagementRoutes } from './routes/quality-management-routes';
-registerQualityManagementRoutes(app);
-console.log('Quality Management API routes registered');
+// Import and initialize Quality Management API
+import { initializeQualityManagementApi } from './initializers/qualityApiInitializer';
+// Use async IIFE to initialize safely
+(async () => {
+  await initializeQualityManagementApi(app);
+  console.log('Quality Management API initialized');
+})().catch(err => console.error('Error initializing Quality Management API:', err));
 
 // Serve the marketing landing page at the root URL
 app.get('/', (req, res) => {
