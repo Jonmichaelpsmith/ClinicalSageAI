@@ -1,9 +1,15 @@
-import React, { useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import React, { useState, useEffect, useContext } from 'react';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useToast } from '../../hooks/use-toast';
+import { TenantContext } from '../../contexts/TenantContext';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
+import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { InfoIcon, Shield, Lock, FileText } from 'lucide-react';
 
 const SecuritySettingsPanel = () => {
   const { toast } = useToast();
+  const { currentOrganization } = useContext(TenantContext);
   
   // State for security settings
   const [settings, setSettings] = useState({
@@ -18,15 +24,72 @@ const SecuritySettingsPanel = () => {
     },
     sessionSettings: {
       timeoutMinutes: 30,
-      maxConcurrentSessions: 3
+      maxConcurrentSessions: 3,
+      enforceIPRestriction: false,
+      allowedIPRanges: [],
+      requireMFA: true
     },
     auditSettings: {
       retentionDays: 365,
       enableBlockchainBackup: true,
       realTimeMonitoring: true,
       autoExportFrequency: 24
+    },
+    complianceSettings: {
+      enableFDA21CFRPart11: true,
+      enableFDA21CFRPart820: false,
+      enableHIPAA: false,
+      enableGDPR: false,
+      enableISO13485: false,
+      enableICH: false,
+      enableMDR: false
+    },
+    dataProtection: {
+      encryptionLevel: 'AES-256',
+      dataClassification: true,
+      autoBackup: true,
+      backupFrequency: 24,
+      restrictDocumentExport: false
     }
   });
+  
+  // Load appropriate default compliance settings based on organization type
+  useEffect(() => {
+    if (currentOrganization?.industryType) {
+      const industryDefaults = {
+        pharma: {
+          enableFDA21CFRPart11: true,
+          enableICH: true
+        },
+        biotech: {
+          enableFDA21CFRPart11: true,
+          enableICH: true
+        },
+        meddevice: {
+          enableFDA21CFRPart11: true,
+          enableFDA21CFRPart820: true,
+          enableISO13485: true,
+          enableMDR: true
+        },
+        cro: {
+          enableFDA21CFRPart11: true,
+          enableICH: true,
+          enableHIPAA: true
+        }
+      };
+      
+      // Apply industry specific defaults
+      if (industryDefaults[currentOrganization.industryType]) {
+        setSettings(prev => ({
+          ...prev,
+          complianceSettings: {
+            ...prev.complianceSettings,
+            ...industryDefaults[currentOrganization.industryType]
+          }
+        }));
+      }
+    }
+  }, [currentOrganization?.industryType]);
   
   // Mutation for updating security settings
   const updateSettingsMutation = useMutation({
@@ -286,12 +349,185 @@ const SecuritySettingsPanel = () => {
           </div>
         </div>
         
+        {/* Compliance Settings */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3">Regulatory Compliance</h3>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="enableFDA21CFRPart11"
+                  checked={settings.complianceSettings.enableFDA21CFRPart11}
+                  onChange={() => handleCheckboxChange('complianceSettings', 'enableFDA21CFRPart11')}
+                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                />
+                <label htmlFor="enableFDA21CFRPart11" className="ml-2 block text-sm text-gray-700">
+                  FDA 21 CFR Part 11 (Electronic Records)
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="enableFDA21CFRPart820"
+                  checked={settings.complianceSettings.enableFDA21CFRPart820}
+                  onChange={() => handleCheckboxChange('complianceSettings', 'enableFDA21CFRPart820')}
+                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                />
+                <label htmlFor="enableFDA21CFRPart820" className="ml-2 block text-sm text-gray-700">
+                  FDA 21 CFR Part 820 (Quality System)
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="enableHIPAA"
+                  checked={settings.complianceSettings.enableHIPAA}
+                  onChange={() => handleCheckboxChange('complianceSettings', 'enableHIPAA')}
+                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                />
+                <label htmlFor="enableHIPAA" className="ml-2 block text-sm text-gray-700">
+                  HIPAA Compliance
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="enableGDPR"
+                  checked={settings.complianceSettings.enableGDPR}
+                  onChange={() => handleCheckboxChange('complianceSettings', 'enableGDPR')}
+                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                />
+                <label htmlFor="enableGDPR" className="ml-2 block text-sm text-gray-700">
+                  GDPR Compliance
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="enableISO13485"
+                  checked={settings.complianceSettings.enableISO13485}
+                  onChange={() => handleCheckboxChange('complianceSettings', 'enableISO13485')}
+                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                />
+                <label htmlFor="enableISO13485" className="ml-2 block text-sm text-gray-700">
+                  ISO 13485 (Medical Devices)
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="enableICH"
+                  checked={settings.complianceSettings.enableICH}
+                  onChange={() => handleCheckboxChange('complianceSettings', 'enableICH')}
+                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                />
+                <label htmlFor="enableICH" className="ml-2 block text-sm text-gray-700">
+                  ICH Guidelines (GCP, GLP, GMP)
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="enableMDR"
+                  checked={settings.complianceSettings.enableMDR}
+                  onChange={() => handleCheckboxChange('complianceSettings', 'enableMDR')}
+                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                />
+                <label htmlFor="enableMDR" className="ml-2 block text-sm text-gray-700">
+                  EU MDR (Medical Device Regulation)
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Data Protection Settings */}
+        <div className="mb-6">
+          <h3 className="text-lg font-semibold mb-3">Data Protection</h3>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Encryption Level
+                </label>
+                <select
+                  value={settings.dataProtection.encryptionLevel}
+                  onChange={(e) => handleInputChange('dataProtection', 'encryptionLevel', e.target.value)}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+                >
+                  <option value="AES-128">AES-128</option>
+                  <option value="AES-256">AES-256 (FIPS Compliant)</option>
+                  <option value="AES-256-GCM">AES-256-GCM (FIPS Compliant, Enhanced)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Backup Frequency (Hours)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  max="168"
+                  value={settings.dataProtection.backupFrequency}
+                  onChange={(e) => handleInputChange('dataProtection', 'backupFrequency', parseInt(e.target.value))}
+                  className="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring-pink-500"
+                />
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="dataClassification"
+                  checked={settings.dataProtection.dataClassification}
+                  onChange={() => handleCheckboxChange('dataProtection', 'dataClassification')}
+                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                />
+                <label htmlFor="dataClassification" className="ml-2 block text-sm text-gray-700">
+                  Enable Data Classification
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="autoBackup"
+                  checked={settings.dataProtection.autoBackup}
+                  onChange={() => handleCheckboxChange('dataProtection', 'autoBackup')}
+                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                />
+                <label htmlFor="autoBackup" className="ml-2 block text-sm text-gray-700">
+                  Automatic Backup
+                </label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="restrictDocumentExport"
+                  checked={settings.dataProtection.restrictDocumentExport}
+                  onChange={() => handleCheckboxChange('dataProtection', 'restrictDocumentExport')}
+                  className="h-4 w-4 text-pink-600 focus:ring-pink-500 border-gray-300 rounded"
+                />
+                <label htmlFor="restrictDocumentExport" className="ml-2 block text-sm text-gray-700">
+                  Restrict Document Export
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
         {/* Information */}
         <div className="mb-6 bg-blue-50 p-4 rounded-lg">
-          <h3 className="text-md font-semibold text-blue-800 mb-2">FDA 21 CFR Part 11 Compliance</h3>
+          <h3 className="text-md font-semibold text-blue-800 mb-2">Regulatory Compliance Information</h3>
           <p className="text-sm text-blue-700">
-            These security settings are configured to meet or exceed FDA 21 CFR Part 11 requirements for electronic records and electronic signatures. The blockchain backup feature provides enhanced tamper-evident security that exceeds regulatory requirements.
+            These security settings are configured to meet or exceed FDA 21 CFR Part 11 requirements for electronic records and electronic signatures, as well as other applicable regulations based on your organization type. The blockchain backup feature provides enhanced tamper-evident security that exceeds most regulatory requirements.
           </p>
+          {currentOrganization?.industryType && (
+            <p className="text-sm text-blue-700 mt-2">
+              <strong>Industry-specific defaults applied:</strong> {currentOrganization.industryType === 'pharma' ? 'Pharmaceutical' : 
+                            currentOrganization.industryType === 'biotech' ? 'Biotech' :
+                            currentOrganization.industryType === 'meddevice' ? 'Medical Device' : 
+                            currentOrganization.industryType === 'cro' ? 'CRO' : 'Standard'} compliance profile
+            </p>
+          )}
         </div>
         
         {/* Submit Button */}
