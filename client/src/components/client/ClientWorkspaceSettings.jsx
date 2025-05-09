@@ -588,82 +588,255 @@ const ClientWorkspaceSettings = () => {
             
             {/* Modules Settings Tab */}
             <TabsContent value="modules" className="space-y-6">
-              <div className="space-y-3">
-                <h3 className="text-base font-medium">Module Access Control</h3>
-                <p className="text-sm text-muted-foreground">
-                  Enable or disable access to specific modules for this client workspace
-                </p>
+              <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-100 mb-4">
+                <div className="flex items-start">
+                  <FileBox className="h-5 w-5 text-indigo-600 mt-0.5" />
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-indigo-800">VAULT as Central Document Repository</h3>
+                    <p className="text-sm text-indigo-700 mt-1">
+                      VAULT serves as the central document repository for all modules, ensuring proper document handling, 
+                      version control, and audit trails across the platform. Module permissions are configured below.
+                    </p>
+                  </div>
+                </div>
               </div>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="cerEnabled" className="text-base">Clinical Evaluation Reports (CER)</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Create and manage clinical evaluation reports for medical devices
-                    </p>
+                <div className="border p-4 rounded-lg bg-white shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center">
+                        <Label htmlFor="cerEnabled" className="text-base">Clinical Evaluation Reports (CER)</Label>
+                        <Badge className="ml-2 bg-blue-100 text-blue-800 hover:bg-blue-200">Core Module</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Advanced CER authoring, management and compliance
+                      </p>
+                    </div>
+                    <Switch
+                      id="cerEnabled"
+                      checked={formValues.modules.cerEnabled}
+                      onCheckedChange={() => handleToggleChange('modules', 'cerEnabled')}
+                    />
                   </div>
-                  <Switch
-                    id="cerEnabled"
-                    checked={formValues.modules.cerEnabled}
-                    onCheckedChange={() => handleToggleChange('modules', 'cerEnabled')}
-                  />
+                  
+                  <div className="mt-3 space-y-2 border-t pt-3">
+                    <h4 className="text-xs font-semibold text-gray-700">Critical-to-Quality (CtQ) Factors:</h4>
+                    <ul className="text-xs space-y-1 text-gray-600">
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        MEDDEV 2.7/1 Rev. 4 compliance validation
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        MDR Article 61 clinical evaluation requirements
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-yellow-500 mr-1.5"></div>
+                        Vendor literature surveillance integration
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-red-500 mr-1.5"></div>
+                        PMCF/PSUR implementation (gated section)
+                      </li>
+                    </ul>
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="indEnabled" className="text-base">IND Wizard</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Create and manage Investigational New Drug applications
-                    </p>
+                <div className="border p-4 rounded-lg bg-white shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center">
+                        <Label htmlFor="indEnabled" className="text-base">Investigational New Drug (IND)</Label>
+                        <Badge className="ml-2 bg-green-100 text-green-800 hover:bg-green-200">Regulatory</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        IND application wizards, templates and tracking
+                      </p>
+                    </div>
+                    <Switch
+                      id="indEnabled"
+                      checked={formValues.modules.indEnabled}
+                      onCheckedChange={() => handleToggleChange('modules', 'indEnabled')}
+                    />
                   </div>
-                  <Switch
-                    id="indEnabled"
-                    checked={formValues.modules.indEnabled}
-                    onCheckedChange={() => handleToggleChange('modules', 'indEnabled')}
-                  />
+                  
+                  <div className="mt-3 space-y-2 border-t pt-3">
+                    <h4 className="text-xs font-semibold text-gray-700">Critical-to-Quality (CtQ) Factors:</h4>
+                    <ul className="text-xs space-y-1 text-gray-600">
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        FDA 21 CFR Part 312 compliance checks
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        Protocol and CMC technical review validation
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-yellow-500 mr-1.5"></div>
+                        Pre-clinical data integration completeness
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-red-500 mr-1.5"></div>
+                        Investigator verification (gated section)
+                      </li>
+                    </ul>
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="vaultEnabled" className="text-base">Document Vault</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Secure storage and management of regulatory documents
-                    </p>
+                <div className="border p-4 rounded-lg bg-white shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center">
+                        <Label htmlFor="vaultEnabled" className="text-base">Document Vault (VAULT)</Label>
+                        <Badge className="ml-2 bg-purple-100 text-purple-800 hover:bg-purple-200">Foundation</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        21 CFR Part 11 compliant document management
+                      </p>
+                    </div>
+                    <Switch
+                      id="vaultEnabled"
+                      checked={formValues.modules.vaultEnabled}
+                      onCheckedChange={() => handleToggleChange('modules', 'vaultEnabled')}
+                    />
                   </div>
-                  <Switch
-                    id="vaultEnabled"
-                    checked={formValues.modules.vaultEnabled}
-                    onCheckedChange={() => handleToggleChange('modules', 'vaultEnabled')}
-                  />
+                  
+                  <div className="mt-3 space-y-2 border-t pt-3">
+                    <h4 className="text-xs font-semibold text-gray-700">Critical-to-Quality (CtQ) Factors:</h4>
+                    <ul className="text-xs space-y-1 text-gray-600">
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        21 CFR Part 11 electronic signature validation
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        Complete audit trail implementation
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-yellow-500 mr-1.5"></div>
+                        Document classification & metadata completion
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-red-500 mr-1.5"></div>
+                        Retention policy configuration (gated section)
+                      </li>
+                    </ul>
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="csrEnabled" className="text-base">CSR Builder</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Create and manage Clinical Study Reports
-                    </p>
+                <div className="border p-4 rounded-lg bg-white shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center">
+                        <Label htmlFor="csrEnabled" className="text-base">Clinical Study Reports (CSR)</Label>
+                        <Badge className="ml-2 bg-amber-100 text-amber-800 hover:bg-amber-200">Clinical</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        ICH E3-compliant CSR authoring and management
+                      </p>
+                    </div>
+                    <Switch
+                      id="csrEnabled"
+                      checked={formValues.modules.csrEnabled}
+                      onCheckedChange={() => handleToggleChange('modules', 'csrEnabled')}
+                    />
                   </div>
-                  <Switch
-                    id="csrEnabled"
-                    checked={formValues.modules.csrEnabled}
-                    onCheckedChange={() => handleToggleChange('modules', 'csrEnabled')}
-                  />
+                  
+                  <div className="mt-3 space-y-2 border-t pt-3">
+                    <h4 className="text-xs font-semibold text-gray-700">Critical-to-Quality (CtQ) Factors:</h4>
+                    <ul className="text-xs space-y-1 text-gray-600">
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        ICH E3 guideline compliance checks
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        Statistical analysis plan integration
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-yellow-500 mr-1.5"></div>
+                        Adverse event data reconciliation
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-red-500 mr-1.5"></div>
+                        Regulatory submission readiness (gated section)
+                      </li>
+                    </ul>
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="analyticsEnabled" className="text-base">Analytics & Reporting</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Advanced analytics dashboards and compliance reporting
+                <div className="border p-4 rounded-lg bg-white shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center">
+                        <Label htmlFor="analyticsEnabled" className="text-base">Analytics Dashboard</Label>
+                        <Badge className="ml-2 bg-sky-100 text-sky-800 hover:bg-sky-200">Business</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Risk-based quality metrics and operations insights
+                      </p>
+                    </div>
+                    <Switch
+                      id="analyticsEnabled"
+                      checked={formValues.modules.analyticsEnabled}
+                      onCheckedChange={() => handleToggleChange('modules', 'analyticsEnabled')}
+                    />
+                  </div>
+                  
+                  <div className="mt-3 space-y-2 border-t pt-3">
+                    <h4 className="text-xs font-semibold text-gray-700">Critical-to-Quality (CtQ) Factors:</h4>
+                    <ul className="text-xs space-y-1 text-gray-600">
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        Real-time KPI/metric configuration
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        Data source connectivity validation
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-yellow-500 mr-1.5"></div>
+                        Custom report template creation
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-red-500 mr-1.5"></div>
+                        Advanced predictive analytics (gated section)
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border p-4 rounded-lg bg-white shadow-sm mt-6">
+                <div className="flex items-start">
+                  <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+                      <path d="m9 12 2 2 4-4"/>
+                    </svg>
+                  </div>
+                  <div className="ml-4">
+                    <h3 className="text-sm font-medium">CtQ Factor Legend</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
+                      <div className="flex items-center">
+                        <div className="h-3 w-3 rounded-full bg-green-500 mr-2"></div>
+                        <span className="text-xs">Validated & Complete</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="h-3 w-3 rounded-full bg-yellow-500 mr-2"></div>
+                        <span className="text-xs">In Progress / Needs Review</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="h-3 w-3 rounded-full bg-red-500 mr-2"></div>
+                        <span className="text-xs">Not Started / Gated Features</span>
+                      </div>
+                    </div>
+                    <p className="text-xs text-gray-600 mt-2">
+                      Critical-to-Quality (CtQ) factors are key elements that must be satisfied to ensure regulatory compliance and data quality.
+                      Section-specific gating is applied based on CtQ factor completion status.
                     </p>
                   </div>
-                  <Switch
-                    id="analyticsEnabled"
-                    checked={formValues.modules.analyticsEnabled}
-                    onCheckedChange={() => handleToggleChange('modules', 'analyticsEnabled')}
-                  />
                 </div>
               </div>
               
@@ -686,60 +859,152 @@ const ClientWorkspaceSettings = () => {
             {/* Integration Settings Tab */}
             <TabsContent value="integration" className="space-y-6">
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="enableExternalSharing">External Document Sharing</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Allow users to share documents with external collaborators
-                    </p>
+                <div className="border p-4 rounded-lg bg-white shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center">
+                        <Label htmlFor="enableExternalSharing" className="text-base">External Sharing</Label>
+                        <Badge className="ml-2 bg-blue-100 text-blue-800 hover:bg-blue-200">Enterprise</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Allow secure document sharing with external collaborators
+                      </p>
+                    </div>
+                    <Switch
+                      id="enableExternalSharing"
+                      checked={formValues.integration.enableExternalSharing}
+                      onCheckedChange={() => handleToggleChange('integration', 'enableExternalSharing')}
+                    />
                   </div>
-                  <Switch
-                    id="enableExternalSharing"
-                    checked={formValues.integration.enableExternalSharing}
-                    onCheckedChange={() => handleToggleChange('integration', 'enableExternalSharing')}
-                  />
+                  
+                  <div className="mt-3 space-y-2 border-t pt-3">
+                    <h4 className="text-xs font-semibold text-gray-700">Critical-to-Quality (CtQ) Factors:</h4>
+                    <ul className="text-xs space-y-1 text-gray-600">
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        21 CFR Part 11 compliance verified
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-yellow-500 mr-1.5"></div>
+                        Document watermarking configuration
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-red-500 mr-1.5"></div>
+                        External security assessment
+                      </li>
+                    </ul>
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="enableApiAccess">API Access</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Enable API access for external integrations
-                    </p>
+                <div className="border p-4 rounded-lg bg-white shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center">
+                        <Label htmlFor="enableApiAccess" className="text-base">API Access</Label>
+                        <Badge className="ml-2 bg-purple-100 text-purple-800 hover:bg-purple-200">Developer</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Enable programmatic access through secure REST APIs
+                      </p>
+                    </div>
+                    <Switch
+                      id="enableApiAccess"
+                      checked={formValues.integration.enableApiAccess}
+                      onCheckedChange={() => handleToggleChange('integration', 'enableApiAccess')}
+                    />
                   </div>
-                  <Switch
-                    id="enableApiAccess"
-                    checked={formValues.integration.enableApiAccess}
-                    onCheckedChange={() => handleToggleChange('integration', 'enableApiAccess')}
-                  />
+                  
+                  <div className="mt-3 space-y-2 border-t pt-3">
+                    <h4 className="text-xs font-semibold text-gray-700">Critical-to-Quality (CtQ) Factors:</h4>
+                    <ul className="text-xs space-y-1 text-gray-600">
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        API rate limiting configuration
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-yellow-500 mr-1.5"></div>
+                        Authentication token expiry settings
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-red-500 mr-1.5"></div>
+                        Data validation rule configuration
+                      </li>
+                    </ul>
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="connectToCTMS">Connect to CTMS</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Connect to Clinical Trial Management System
-                    </p>
+                <div className="border p-4 rounded-lg bg-white shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center">
+                        <Label htmlFor="connectToCTMS" className="text-base">CTMS Integration</Label>
+                        <Badge className="ml-2 bg-emerald-100 text-emerald-800 hover:bg-emerald-200">Clinical</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Connect to Clinical Trial Management System
+                      </p>
+                    </div>
+                    <Switch
+                      id="connectToCTMS"
+                      checked={formValues.integration.connectToCTMS}
+                      onCheckedChange={() => handleToggleChange('integration', 'connectToCTMS')}
+                    />
                   </div>
-                  <Switch
-                    id="connectToCTMS"
-                    checked={formValues.integration.connectToCTMS}
-                    onCheckedChange={() => handleToggleChange('integration', 'connectToCTMS')}
-                  />
+                  
+                  <div className="mt-3 space-y-2 border-t pt-3">
+                    <h4 className="text-xs font-semibold text-gray-700">Critical-to-Quality (CtQ) Factors:</h4>
+                    <ul className="text-xs space-y-1 text-gray-600">
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        Data mapping validation
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-yellow-500 mr-1.5"></div>
+                        Bidirectional sync configuration
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-red-500 mr-1.5"></div>
+                        Error reconciliation process
+                      </li>
+                    </ul>
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label htmlFor="allowVendorAccess">Vendor Access</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Allow vendors with limited access to specific projects
-                    </p>
+                <div className="border p-4 rounded-lg bg-white shadow-sm">
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center">
+                        <Label htmlFor="allowVendorAccess" className="text-base">Vendor Access</Label>
+                        <Badge className="ml-2 bg-amber-100 text-amber-800 hover:bg-amber-200">Regulated</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Controlled access for third-party vendors to specific projects
+                      </p>
+                    </div>
+                    <Switch
+                      id="allowVendorAccess"
+                      checked={formValues.integration.allowVendorAccess}
+                      onCheckedChange={() => handleToggleChange('integration', 'allowVendorAccess')}
+                    />
                   </div>
-                  <Switch
-                    id="allowVendorAccess"
-                    checked={formValues.integration.allowVendorAccess}
-                    onCheckedChange={() => handleToggleChange('integration', 'allowVendorAccess')}
-                  />
+                  
+                  <div className="mt-3 space-y-2 border-t pt-3">
+                    <h4 className="text-xs font-semibold text-gray-700">Critical-to-Quality (CtQ) Factors:</h4>
+                    <ul className="text-xs space-y-1 text-gray-600">
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-green-500 mr-1.5"></div>
+                        Vendor qualification status
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-yellow-500 mr-1.5"></div>
+                        Data access limitation settings
+                      </li>
+                      <li className="flex items-center">
+                        <div className="h-2 w-2 rounded-full bg-red-500 mr-1.5"></div>
+                        Vendor access audit trail
+                      </li>
+                    </ul>
+                  </div>
                 </div>
               </div>
               
