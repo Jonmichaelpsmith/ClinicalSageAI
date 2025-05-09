@@ -165,7 +165,7 @@ router.get('/:qmpId', authMiddleware, requireOrganizationContext, async (req, re
  * 
  * Create a new traceability item
  */
-router.post('/:qmpId', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/:qmpId', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { qmpId } = req.params;
     const { organizationId } = req.tenantContext || {};
@@ -279,7 +279,7 @@ router.post('/:qmpId', authMiddleware, requireTenantMiddleware, async (req, res)
  * 
  * Get a specific traceability item
  */
-router.get('/:qmpId/item/:itemId', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/:qmpId/item/:itemId', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { qmpId, itemId } = req.params;
     const { organizationId } = req.tenantContext || {};
@@ -360,7 +360,7 @@ router.get('/:qmpId/item/:itemId', authMiddleware, requireTenantMiddleware, asyn
  * 
  * Update a traceability item
  */
-router.patch('/:qmpId/item/:itemId', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.patch('/:qmpId/item/:itemId', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { qmpId, itemId } = req.params;
     const { organizationId } = req.tenantContext || {};
@@ -483,7 +483,7 @@ router.patch('/:qmpId/item/:itemId', authMiddleware, requireTenantMiddleware, as
  * 
  * Delete a traceability item
  */
-router.delete('/:qmpId/item/:itemId', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.delete('/:qmpId/item/:itemId', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { qmpId, itemId } = req.params;
     const { organizationId } = req.tenantContext || {};
@@ -550,7 +550,7 @@ router.delete('/:qmpId/item/:itemId', authMiddleware, requireTenantMiddleware, a
  * 
  * Get traceability statistics for a QMP
  */
-router.get('/:qmpId/stats', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/:qmpId/stats', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const { qmpId } = req.params;
     const { organizationId } = req.tenantContext || {};
