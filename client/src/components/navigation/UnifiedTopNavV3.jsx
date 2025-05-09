@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useLocation } from 'wouter';
+import { OrganizationSwitcher } from '../tenant/OrganizationSwitcher';
 
 export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = [] }) {
   const [, navigate] = useLocation();
@@ -38,9 +39,20 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
           >
             🏠 Client Portal
           </button>
+          
+          {/* Organization Switcher */}
+          <div className="ml-2">
+            <OrganizationSwitcher />
+          </div>
         </div>
 
-        <div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => navigate('/tenant-management')}
+            className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
+          >
+            Organization Settings
+          </button>
           <button
             onClick={() => navigate('/switch-module')}
             className="px-4 py-1 text-xs font-medium bg-indigo-50 rounded text-indigo-600 transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95"
