@@ -364,8 +364,10 @@ export type InsertClientUserPermission = z.infer<typeof insertClientUserPermissi
 // Define table relationships
 export const organizationsRelations = relations(organizations, ({ many }) => ({
   users: many(organizationUsers),
-  projects: many(cerProjects),
+  cerProjects: many(cerProjects),
+  projects: many(projects),
   clientWorkspaces: many(clientWorkspaces),
+  projectTemplates: many(projectTemplates),
 }));
 
 export const usersRelations = relations(users, ({ many }) => ({
@@ -783,3 +785,290 @@ export const insertDocumentSchema = createInsertSchema(documents).omit({
 // Document Types
 export type Document = InferSelectModel<typeof documents>;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
+
+/**
+ * Projects Table
+ * 
+ * Core project entity that spans across all modules.
+ * This is the central project record that can be linked to module-specific data.
+ */
+export const projects = pgTable('projects', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  clientWorkspaceId: integer('client_workspace_id').notNull().references(() => clientWorkspaces.id),
+  name: text('name').notNull(),
+  code: text('code'), // Project code or identifier
+  description: text('description'),
+  status: text('status').default('planning').notNull(), // planning, active, on-hold, completed, archived
+  priority: text('priority').default('medium').notNull(), // low, medium, high, critical
+  type: text('type').notNull(), // research, clinical, regulatory, commercial, etc.
+  startDate: timestamp('start_date'),
+  targetEndDate: timestamp('target_end_date'),
+  actualEndDate: timestamp('actual_end_date'),
+  progress: integer('progress').default(0), // 0-100 percentage
+  budget: integer('budget'),
+  budgetCurrency: text('budget_currency').default('USD'),
+  budgetStatus: text('budget_status').default('within-budget'), // within-budget, at-risk, over-budget
+  createdById: integer('created_by_id').references(() => users.id),
+  ownerId: integer('owner_id').references(() => users.id),
+  sponsors: text('sponsors').array(), // List of sponsor IDs or names
+  tags: text('tags').array(),
+  criticalToQualityFactors: json('critical_to_quality_factors'), // CtQ factors array
+  riskLevel: text('risk_level').default('medium'), // low, medium, high
+  riskAssessment: json('risk_assessment'),
+  qualityTargets: json('quality_targets'),
+  moduleReferences: json('module_references'), // References to specific module instances
+  settings: json('settings'),
+  metadata: json('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Project Insert Schema
+export const insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Project Types
+export type Project = InferSelectModel<typeof projects>;
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+
+/**
+ * Project Modules Table
+ * 
+ * Associates projects with specific module instances.
+ * Maps the central project to module-specific projects (CER, IND, etc.)
+ */
+export const projectModules = pgTable('project_modules', {
+  id: serial('id').primaryKey(),
+  projectId: integer('project_id').notNull().references(() => projects.id),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  clientWorkspaceId: integer('client_workspace_id').notNull().references(() => clientWorkspaces.id),
+  moduleType: text('module_type').notNull(), // cer, ind, cmc, csr, vault, etc.
+  moduleInstanceId: integer('module_instance_id').notNull(), // ID in the module's specific table
+  status: text('status').default('active').notNull(), // active, inactive, completed
+  settings: json('settings'),
+  metadata: json('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+}, (table) => {
+  return {
+    uniqueProjectModule: unique('unique_project_module').on(
+      table.projectId, table.moduleType, table.moduleInstanceId
+    ),
+  };
+});
+
+// Project Module Insert Schema
+export const insertProjectModuleSchema = createInsertSchema(projectModules).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Project Module Types
+export type ProjectModule = InferSelectModel<typeof projectModules>;
+export type InsertProjectModule = z.infer<typeof insertProjectModuleSchema>;
+
+/**
+ * Project Workflow Stages Table
+ * 
+ * Defines workflow stages for projects with CtQ integration.
+ */
+export const projectWorkflowStages = pgTable('project_workflow_stages', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  projectId: integer('project_id').notNull().references(() => projects.id),
+  name: text('name').notNull(),
+  description: text('description'),
+  order: integer('order').notNull(),
+  status: text('status').default('pending').notNull(), // pending, in-progress, completed, blocked
+  startDate: timestamp('start_date'),
+  endDate: timestamp('end_date'),
+  dueDate: timestamp('due_date'),
+  criticalToQualityFactors: json('critical_to_quality_factors'), // Stage-specific CtQ factors
+  completionCriteria: json('completion_criteria'),
+  autoAdvance: boolean('auto_advance').default(false),
+  assignees: text('assignees').array(), // User IDs assigned to this stage
+  reviewers: text('reviewers').array(), // User IDs who must review/approve
+  approvalStatus: text('approval_status').default('not-started'), // not-started, pending, approved, rejected
+  settings: json('settings'),
+  metadata: json('metadata'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Project Workflow Stage Insert Schema
+export const insertProjectWorkflowStageSchema = createInsertSchema(projectWorkflowStages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Project Workflow Stage Types
+export type ProjectWorkflowStage = InferSelectModel<typeof projectWorkflowStages>;
+export type InsertProjectWorkflowStage = z.infer<typeof insertProjectWorkflowStageSchema>;
+
+/**
+ * Project Tasks Table
+ * 
+ * Tasks associated with projects that span across modules.
+ */
+export const projectTasks = pgTable('project_tasks', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  projectId: integer('project_id').notNull().references(() => projects.id),
+  workflowStageId: integer('workflow_stage_id').references(() => projectWorkflowStages.id),
+  parentTaskId: integer('parent_task_id').references(() => projectTasks.id),
+  name: text('name').notNull(),
+  description: text('description'),
+  status: text('status').default('todo').notNull(), // todo, in-progress, review, done, blocked
+  priority: text('priority').default('medium').notNull(), // low, medium, high, urgent
+  moduleType: text('module_type'), // If task is specific to a module
+  assigneeId: integer('assignee_id').references(() => users.id),
+  reviewerId: integer('reviewer_id').references(() => users.id),
+  estimatedHours: integer('estimated_hours'),
+  actualHours: integer('actual_hours'),
+  startDate: timestamp('start_date'),
+  dueDate: timestamp('due_date'),
+  completedAt: timestamp('completed_at'),
+  completedById: integer('completed_by_id').references(() => users.id),
+  blockedReason: text('blocked_reason'),
+  criticalToQuality: boolean('critical_to_quality').default(false),
+  qualityMetrics: json('quality_metrics'),
+  dependsOn: text('depends_on').array(), // IDs of tasks this depends on
+  settings: json('settings'),
+  metadata: json('metadata'),
+  createdById: integer('created_by_id').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Project Task Insert Schema
+export const insertProjectTaskSchema = createInsertSchema(projectTasks).omit({
+  id: true, 
+  createdAt: true,
+  updatedAt: true
+});
+
+// Project Task Types
+export type ProjectTask = InferSelectModel<typeof projectTasks>;
+export type InsertProjectTask = z.infer<typeof insertProjectTaskSchema>;
+
+/**
+ * Project Templates Table
+ * 
+ * Templates for creating standardized projects with predefined workflows.
+ */
+export const projectTemplates = pgTable('project_templates', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  name: text('name').notNull(),
+  description: text('description'),
+  projectType: text('project_type').notNull(), // research, clinical, regulatory, etc.
+  moduleTypes: text('module_types').array(), // List of modules this template is for
+  industryFocus: text('industry_focus').array(), // MedDevice, Biotech, Pharma, etc.
+  version: text('version').default('1.0.0'),
+  status: text('status').default('active').notNull(), // draft, active, archived
+  workflowStages: json('workflow_stages'), // Predefined workflow stages
+  tasks: json('tasks'), // Predefined task templates
+  criticalToQualityFactors: json('critical_to_quality_factors'), // Default CtQ factors
+  regulatoryFramework: text('regulatory_framework').array(), // MDR, IVDR, FDA, etc.
+  settings: json('settings'),
+  metadata: json('metadata'),
+  createdById: integer('created_by_id').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Project Template Insert Schema
+export const insertProjectTemplateSchema = createInsertSchema(projectTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Project Template Types
+export type ProjectTemplate = InferSelectModel<typeof projectTemplates>;
+export type InsertProjectTemplate = z.infer<typeof insertProjectTemplateSchema>;
+
+// Define relationships for the new project tables
+export const projectsRelations = relations(projects, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [projects.organizationId],
+    references: [organizations.id],
+  }),
+  clientWorkspace: one(clientWorkspaces, {
+    fields: [projects.clientWorkspaceId],
+    references: [clientWorkspaces.id],
+  }),
+  modules: many(projectModules),
+  workflowStages: many(projectWorkflowStages),
+  tasks: many(projectTasks),
+  owner: one(users, {
+    fields: [projects.ownerId],
+    references: [users.id],
+  }),
+  creator: one(users, {
+    fields: [projects.createdById],
+    references: [users.id],
+  }),
+}));
+
+export const projectModulesRelations = relations(projectModules, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectModules.projectId],
+    references: [projects.id],
+  }),
+  organization: one(organizations, {
+    fields: [projectModules.organizationId],
+    references: [organizations.id],
+  }),
+  clientWorkspace: one(clientWorkspaces, {
+    fields: [projectModules.clientWorkspaceId],
+    references: [clientWorkspaces.id],
+  }),
+}));
+
+export const projectWorkflowStagesRelations = relations(projectWorkflowStages, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [projectWorkflowStages.projectId],
+    references: [projects.id],
+  }),
+  organization: one(organizations, {
+    fields: [projectWorkflowStages.organizationId],
+    references: [organizations.id],
+  }),
+  tasks: many(projectTasks, { relationName: 'stageTasks' }),
+}));
+
+export const projectTasksRelations = relations(projectTasks, ({ one, many }) => ({
+  project: one(projects, {
+    fields: [projectTasks.projectId],
+    references: [projects.id],
+  }),
+  organization: one(organizations, {
+    fields: [projectTasks.organizationId],
+    references: [organizations.id],
+  }),
+  workflowStage: one(projectWorkflowStages, {
+    fields: [projectTasks.workflowStageId],
+    references: [projectWorkflowStages.id],
+    relationName: 'stageTasks',
+  }),
+  parentTask: one(projectTasks, {
+    fields: [projectTasks.parentTaskId],
+    references: [projectTasks.id],
+  }),
+  subtasks: many(projectTasks, { relationName: 'taskSubtasks' }),
+  assignee: one(users, {
+    fields: [projectTasks.assigneeId],
+    references: [users.id],
+  }),
+  completer: one(users, {
+    fields: [projectTasks.completedById],
+    references: [users.id],
+  }),
+}));
