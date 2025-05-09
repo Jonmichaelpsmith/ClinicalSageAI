@@ -140,6 +140,7 @@ function App() {
           <Route path="/client-portal/csr-analyzer" component={CSRPage} />
           <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
           <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
+          <Route path="/client-portal/client-management" component={ClientManagement} />
 
           {/* Module Dashboard */}
           <Route path="/dashboard" component={ModuleDashboard} />
