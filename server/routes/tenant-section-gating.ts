@@ -43,8 +43,7 @@ router.get('/:qmpId/sections', authMiddleware, requireTenantMiddleware, async (r
       .where(and(
         eq(qmpSectionGating.organizationId, organizationId),
         eq(qmpSectionGating.qmpId, qmpIdNumber)
-      ))
-      .leftJoin(cerSections, eq(qmpSectionGating.sectionCode, cerSections.code));
+      ));
     
     return res.json({ rules: sectionRules });
   } catch (error) {
@@ -75,7 +74,6 @@ router.get('/rule/:id', authMiddleware, requireTenantMiddleware, async (req, res
         eq(qmpSectionGating.organizationId, organizationId),
         eq(qmpSectionGating.id, ruleId)
       ))
-      .leftJoin(cerSections, eq(qmpSectionGating.sectionCode, cerSections.code))
       .limit(1)
       .then(results => results[0] || null);
     
@@ -115,7 +113,7 @@ router.post('/', authMiddleware, requireTenantMiddleware, async (req, res) => {
     // Validate input
     const ruleSchema = z.object({
       qmpId: z.number(),
-      sectionCode: z.string(),
+      sectionKey: z.string(),
       ctqFactors: z.array(z.number()).optional(),
       requiredLevel: z.enum(['hard', 'soft', 'info']).default('info'),
       customValidations: z.array(z.object({
@@ -157,7 +155,7 @@ router.post('/', authMiddleware, requireTenantMiddleware, async (req, res) => {
     const sectionResults = await getDb(req)
       .select()
       .from(cerSections)
-      .where(eq(cerSections.code, ruleData.sectionCode))
+      .where(eq(cerSections.key, ruleData.sectionKey))
       .limit(1);
     
     const section = sectionResults[0];
@@ -187,7 +185,7 @@ router.post('/', authMiddleware, requireTenantMiddleware, async (req, res) => {
       .where(and(
         eq(qmpSectionGating.organizationId, organizationId),
         eq(qmpSectionGating.qmpId, ruleData.qmpId),
-        eq(qmpSectionGating.sectionCode, ruleData.sectionCode)
+        eq(qmpSectionGating.sectionKey, ruleData.sectionKey)
       ))
       .limit(1);
     
@@ -221,7 +219,6 @@ router.post('/', authMiddleware, requireTenantMiddleware, async (req, res) => {
         eq(qmpSectionGating.organizationId, organizationId),
         eq(qmpSectionGating.id, result[0].id)
       ))
-      .leftJoin(cerSections, eq(qmpSectionGating.sectionCode, cerSections.code))
       .limit(1)
       .then(results => results[0]);
     
@@ -321,7 +318,6 @@ router.put('/:id', authMiddleware, requireTenantMiddleware, async (req, res) => 
         eq(qmpSectionGating.organizationId, organizationId),
         eq(qmpSectionGating.id, ruleId)
       ))
-      .leftJoin(cerSections, eq(qmpSectionGating.sectionCode, cerSections.code))
       .limit(1)
       .then(results => results[0]);
     
@@ -425,9 +421,9 @@ router.post('/:qmpId/validate', authMiddleware, requireTenantMiddleware, async (
         eq(qmpSectionGating.organizationId, organizationId),
         eq(qmpSectionGating.qmpId, qmpIdNumber),
         eq(qmpSectionGating.active, true),
-        sql`${qmpSectionGating.sectionCode} = ANY(${sectionCodes})`
+        sql`${qmpSectionGating.sectionKey} = ANY(${sectionCodes})`
       ))
-      .leftJoin(cerSections, eq(qmpSectionGating.sectionCode, cerSections.code));
+      .leftJoin(cerSections, eq(qmpSectionGating.sectionKey, cerSections.key));
     
     // No rules found
     if (sectionRules.length === 0) {
@@ -463,8 +459,8 @@ router.post('/:qmpId/validate', authMiddleware, requireTenantMiddleware, async (
     
     // Transform data for each section and evaluate CTQ factors
     const sectionResults = await Promise.all(sectionRules.map(async rule => {
-      const sectionCode = rule.qmpSectionGating.sectionCode;
-      const sectionContent = sectionContents[sectionCode] || '';
+      const sectionKey = rule.qmpSectionGating.sectionKey;
+      const sectionContent = sectionContents[sectionKey] || '';
       
       // Get factors for this rule
       const ruleFactorIds = rule.qmpSectionGating.ctqFactors || [];
@@ -585,7 +581,7 @@ router.post('/:qmpId/waiver', authMiddleware, requireTenantMiddleware, async (re
         .where(and(
           eq(qmpSectionGating.organizationId, organizationId),
           eq(qmpSectionGating.qmpId, qmpIdNumber),
-          eq(qmpSectionGating.sectionCode, sectionCode)
+          eq(qmpSectionGating.sectionKey, sectionCode)
         ))
         .limit(1);
       
