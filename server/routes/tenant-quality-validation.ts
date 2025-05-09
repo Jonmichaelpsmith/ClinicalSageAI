@@ -13,7 +13,7 @@ import {
   qualityManagementPlans
 } from '../../shared/schema';
 import { authMiddleware } from '../auth';
-import { requireTenantMiddleware } from '../middleware/tenantContext';
+import { requireOrganizationContext } from '../middleware/tenantContext';
 import { getDb } from '../db/tenantDbHelper';
 import { createScopedLogger } from '../utils/logger';
 

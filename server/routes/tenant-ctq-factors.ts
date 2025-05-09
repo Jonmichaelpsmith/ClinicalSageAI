@@ -9,7 +9,7 @@ import { z } from 'zod';
 import { eq, and, SQL } from 'drizzle-orm';
 import { ctqFactors } from '../../shared/schema';
 import { authMiddleware } from '../auth';
-import { requireTenantMiddleware } from '../middleware/tenantContext';
+import { requireOrganizationContext } from '../middleware/tenantContext';
 import { TenantDb } from '../db/tenantDb';
 import { createScopedLogger } from '../utils/logger';
 
@@ -36,7 +36,7 @@ const ctqFactorSchema = z.object({
 /**
  * Get all CTQ factors for a tenant
  */
-router.get('/:tenantId/ctq-factors', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/:tenantId/ctq-factors', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const tenantId = parseInt(req.params.tenantId);
     if (isNaN(tenantId)) {
@@ -91,7 +91,7 @@ router.get('/:tenantId/ctq-factors', authMiddleware, requireTenantMiddleware, as
 /**
  * Get a single CTQ factor by ID
  */
-router.get('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.get('/:tenantId/ctq-factors/:factorId', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const tenantId = parseInt(req.params.tenantId);
     const factorId = parseInt(req.params.factorId);
@@ -134,7 +134,7 @@ router.get('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantMidd
 /**
  * Create a new CTQ factor
  */
-router.post('/:tenantId/ctq-factors', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/:tenantId/ctq-factors', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const tenantId = parseInt(req.params.tenantId);
     
@@ -182,7 +182,7 @@ router.post('/:tenantId/ctq-factors', authMiddleware, requireTenantMiddleware, a
 /**
  * Update a CTQ factor
  */
-router.patch('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.patch('/:tenantId/ctq-factors/:factorId', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const tenantId = parseInt(req.params.tenantId);
     const factorId = parseInt(req.params.factorId);
@@ -247,7 +247,7 @@ router.patch('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantMi
 /**
  * Delete a CTQ factor
  */
-router.delete('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.delete('/:tenantId/ctq-factors/:factorId', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const tenantId = parseInt(req.params.tenantId);
     const factorId = parseInt(req.params.factorId);
@@ -306,7 +306,7 @@ router.delete('/:tenantId/ctq-factors/:factorId', authMiddleware, requireTenantM
 /**
  * Batch CTQ factor operations
  */
-router.post('/:tenantId/ctq-factors/batch', authMiddleware, requireTenantMiddleware, async (req, res) => {
+router.post('/:tenantId/ctq-factors/batch', authMiddleware, requireOrganizationContext, async (req, res) => {
   try {
     const tenantId = parseInt(req.params.tenantId);
     
