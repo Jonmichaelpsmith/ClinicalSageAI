@@ -56,20 +56,37 @@ export const EnhancedSelect = ({
     // Check in optionsArray or options object
     if (optionsArray.length > 0) {
       const option = optionsArray.find(opt => opt.value === currentValue);
-      return option?.label;
+      if (option) {
+        console.log(`Found label for value ${currentValue}:`, option.label);
+        return option.label;
+      }
     } else if (Object.keys(options).length > 0) {
-      return options[currentValue];
+      const label = options[currentValue];
+      if (label) {
+        console.log(`Found label for value ${currentValue}:`, label);
+        return label;
+      }
     }
     
     // Check in groups
     if (groups.length > 0) {
       for (const group of groups) {
         const option = group.options.find(opt => opt.value === currentValue);
-        if (option) return option.label;
+        if (option) {
+          console.log(`Found label in group for value ${currentValue}:`, option.label);
+          return option.label;
+        }
       }
     }
     
-    // If no label found, return the value itself
+    // If no label found, return the value itself but log the issue
+    console.log(`No label found for value ${currentValue}`, {
+      value, 
+      defaultValue,
+      optionsArray,
+      options,
+      groups
+    });
     return currentValue;
   };
 

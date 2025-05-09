@@ -60,7 +60,13 @@ export function OrganizationSwitcher() {
 
   const handleManageOrganizations = () => {
     setOpen(false);
+    
+    // Navigation path for organization management
+    // This path should match the route defined in App.jsx
     navigate('/tenant-management');
+    
+    // Log navigation for debugging purposes
+    console.log('Navigating to tenant management page');
   };
 
   return (

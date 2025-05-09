@@ -566,34 +566,24 @@ export default function TenantManagement() {
 
       {/* Organization selector */}
       <div className="flex items-center space-x-4">
-        <Select 
+        <EnhancedSelect 
           value={selectedTenant?.id?.toString()} 
           onValueChange={(value) => {
             const tenant = tenants.find(t => t.id.toString() === value);
             setSelectedTenant(tenant);
           }}
-        >
-          <SelectTrigger className="w-[260px]">
-            <SelectValue>
-              {selectedTenant ? (
-                <div className="flex items-center">
-                  <Building className="w-4 h-4 mr-2 opacity-70" />
-                  {selectedTenant.name}
-                </div>
-              ) : 'Select an organization'}
-            </SelectValue>
-          </SelectTrigger>
-          <SelectContent>
-            {tenants.map((tenant) => (
-              <SelectItem key={tenant.id} value={tenant.id.toString()}>
-                <div className="flex items-center">
-                  <Building className="w-4 h-4 mr-2 opacity-70" />
-                  {tenant.name}
-                </div>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          placeholder="Select an organization"
+          className="w-[260px]"
+          optionsArray={tenants.map(tenant => ({
+            value: tenant.id.toString(),
+            label: (
+              <div className="flex items-center">
+                <Building className="w-4 h-4 mr-2 opacity-70" />
+                {tenant.name}
+              </div>
+            )
+          }))}
+        />
         
         {selectedTenant && (
           <Dialog open={isEditTenantOpen} onOpenChange={setIsEditTenantOpen}>
