@@ -42,7 +42,7 @@ const COLUMN_INDEXES = [
 ];
 
 /**
- * Composite indexes for frequently joined queries
+ * Composite indexes for frequent query patterns
  */
 const COMPOSITE_INDEXES = [
   { table: 'qmp_section_gating', columns: ['organization_id', 'qmp_id', 'section_code'] },
@@ -51,9 +51,33 @@ const COMPOSITE_INDEXES = [
 ];
 
 /**
+ * Check if the database connection is available
+ */
+async function isDatabaseAvailable(): Promise<boolean> {
+  try {
+    if (!db) {
+      logger.error('Database connection is not initialized');
+      return false;
+    }
+    
+    // Test the connection with a simple query
+    await db.execute(sql`SELECT 1`);
+    return true;
+  } catch (error) {
+    logger.error('Database connection test failed', error);
+    return false;
+  }
+}
+
+/**
  * Check if an index exists
  */
 async function indexExists(tableName: string, indexName: string): Promise<boolean> {
+  if (!db) {
+    logger.error('Database connection is not initialized when checking if index exists');
+    return false;
+  }
+  
   try {
     const result = await db.execute(sql`
       SELECT 1 FROM pg_indexes 
@@ -74,12 +98,17 @@ async function indexExists(tableName: string, indexName: string): Promise<boolea
 export async function createTenantIndexes(): Promise<void> {
   logger.info('Creating tenant isolation indexes');
   
+  if (!await isDatabaseAvailable()) {
+    logger.error('Skipping tenant index creation due to database connection issues');
+    return;
+  }
+  
   for (const tableName of TENANT_TABLES) {
     const indexName = `idx_${tableName}_org_id`;
     
     try {
       if (!(await indexExists(tableName, indexName))) {
-        await db.execute(sql`
+        await db!.execute(sql`
           CREATE INDEX IF NOT EXISTS ${sql.raw(indexName)} 
           ON ${sql.raw(tableName)} (organization_id)
         `);
@@ -99,12 +128,17 @@ export async function createTenantIndexes(): Promise<void> {
 export async function createColumnIndexes(): Promise<void> {
   logger.info('Creating column-specific indexes');
   
+  if (!await isDatabaseAvailable()) {
+    logger.error('Skipping column index creation due to database connection issues');
+    return;
+  }
+  
   for (const { table, column } of COLUMN_INDEXES) {
     const indexName = `idx_${table}_${column}`;
     
     try {
       if (!(await indexExists(table, indexName))) {
-        await db.execute(sql`
+        await db!.execute(sql`
           CREATE INDEX IF NOT EXISTS ${sql.raw(indexName)} 
           ON ${sql.raw(table)} (${sql.raw(column)})
         `);
@@ -124,6 +158,11 @@ export async function createColumnIndexes(): Promise<void> {
 export async function createCompositeIndexes(): Promise<void> {
   logger.info('Creating composite indexes');
   
+  if (!await isDatabaseAvailable()) {
+    logger.error('Skipping composite index creation due to database connection issues');
+    return;
+  }
+  
   for (const { table, columns } of COMPOSITE_INDEXES) {
     const columnStr = columns.join('_');
     const indexName = `idx_${table}_${columnStr}`;
@@ -131,7 +170,7 @@ export async function createCompositeIndexes(): Promise<void> {
     try {
       if (!(await indexExists(table, indexName))) {
         const columnList = columns.join(', ');
-        await db.execute(sql`
+        await db!.execute(sql`
           CREATE INDEX IF NOT EXISTS ${sql.raw(indexName)} 
           ON ${sql.raw(table)} (${sql.raw(columnList)})
         `);
@@ -146,13 +185,48 @@ export async function createCompositeIndexes(): Promise<void> {
 }
 
 /**
+ * Safely execute index creation with retry logic
+ */
+async function safelyExecuteWithRetry(operation: () => Promise<void>, retries = 3): Promise<void> {
+  let attempts = 0;
+  let lastError: any = null;
+  
+  while (attempts < retries) {
+    try {
+      await operation();
+      return; // Success, exit the retry loop
+    } catch (error) {
+      lastError = error;
+      attempts++;
+      logger.warn(`Operation failed, attempt ${attempts}/${retries}`, { error });
+      
+      // Wait before retrying (exponential backoff)
+      const delay = Math.pow(2, attempts) * 1000;
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  // All retries failed
+  logger.error(`Operation failed after ${retries} attempts`, { lastError });
+  throw lastError;
+}
+
+/**
  * Initialize all database indexes
  */
 export async function initializeIndexes(): Promise<void> {
   try {
-    await createTenantIndexes();
-    await createColumnIndexes();
-    await createCompositeIndexes();
+    // Check database availability before proceeding
+    if (!await isDatabaseAvailable()) {
+      logger.error('Cannot initialize indexes, database is not available');
+      return;
+    }
+    
+    // Use retry logic for each operation
+    await safelyExecuteWithRetry(createTenantIndexes);
+    await safelyExecuteWithRetry(createColumnIndexes);
+    await safelyExecuteWithRetry(createCompositeIndexes);
+    
     logger.info('Database indexes initialized successfully');
   } catch (error) {
     logger.error('Error initializing database indexes', error);
