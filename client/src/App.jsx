@@ -87,8 +87,8 @@ const StabilityStudiesStubPage = lazy(() => import('./pages/StabilityStudiesStub
 const ShelfLifePredictorStubPage = lazy(() => import('./pages/ShelfLifePredictorStubPage'));
 const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 
-// Tenant Management
-const TenantManagement = lazy(() => import('./pages/TenantManagement'));
+// Tenant Management - Eagerly loaded to prevent route issues
+import TenantManagement from './pages/TenantManagement';
 
 // Client Management and Settings Pages
 const ClientManagement = lazy(() => import('./pages/ClientManagement'));
