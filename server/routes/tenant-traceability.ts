@@ -40,13 +40,8 @@ declare global {
 const router = Router();
 const logger = createScopedLogger('traceability-routes');
 
-// Helper function to ensure db is defined
-function getDb(req: Request) {
-  if (!req.db) {
-    throw new Error('Database connection not available');
-  }
-  return req.db;
-}
+// Import the getDb helper from the tenantDbHelper
+import { getDb } from '../db/tenantDbHelper';
 
 // Apply tenant context and require a tenant for all routes
 router.use(tenantContextMiddleware);
