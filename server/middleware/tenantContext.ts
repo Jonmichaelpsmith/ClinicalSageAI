@@ -11,6 +11,7 @@ import { Request, Response, NextFunction } from 'express';
 import { eq } from 'drizzle-orm';
 import { organizations } from '../../shared/schema';
 import { createScopedLogger } from '../utils/logger';
+import { db } from '../db';
 
 const logger = createScopedLogger('tenant-context');
 
@@ -31,6 +32,9 @@ export function tenantContextMiddleware(req: Request, res: Response, next: NextF
     
     if (!isNaN(tenantId)) {
       req.tenantId = tenantId;
+      req.tenantContext = {
+        organizationId: tenantId
+      };
       return next();
     }
   }
@@ -50,6 +54,11 @@ export function tenantContextMiddleware(req: Request, res: Response, next: NextF
       .then(result => {
         if (result.rowCount > 0 && result.rows[0].default_organization_id) {
           req.tenantId = result.rows[0].default_organization_id;
+          req.tenantContext = {
+            organizationId: result.rows[0].default_organization_id,
+            userId: req.userId,
+            role: req.userRole
+          };
         }
         next();
       })
@@ -75,6 +84,10 @@ export function tenantContextMiddleware(req: Request, res: Response, next: NextF
           req.tenantId = tenants[0].id;
           // For API key access, set a service account role
           req.userRole = 'service';
+          req.tenantContext = {
+            organizationId: tenants[0].id,
+            role: 'service'
+          };
         }
         next();
       })
