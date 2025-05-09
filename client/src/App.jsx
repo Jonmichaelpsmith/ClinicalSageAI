@@ -2,61 +2,88 @@
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Switch, Route, useRoute, useLocation } from 'wouter';
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 
-// Import Pages and Modules
-import ClientPortalLanding from './pages/ClientPortalLanding';
-import RegulatoryRiskDashboard from './pages/RegulatoryRiskDashboard';
-import EnhancedRegulatoryDashboard from './pages/EnhancedRegulatoryDashboard';
-import RegulatoryDashboard from './pages/RegulatoryDashboard';
-import RegulatoryIntelligenceHub from './pages/RegulatoryIntelligenceHub';
-import CerGenerator from './modules/CerGenerator';
-import CmcWizard from './modules/CmcWizard';
-import CsrAnalyzer from './modules/CsrAnalyzer';
-import Vault from './modules/Vault';
-import VaultPage from './pages/VaultPage';
-import VaultTestPage from './pages/VaultTestPage'; // Import the test page
-import ContextDemoPage from './pages/ContextDemoPage'; // Import our new context demo page
-import CoAuthor from './pages/CoAuthor'; // Import our new CoAuthor page
-import ModuleDashboard from './pages/ModuleDashboard'; // Import our Module Dashboard page
-import CanvasPage from './pages/CanvasPage'; // Import our Canvas page
-import TimelinePage from './pages/TimelinePage'; // Import our Timeline page
-import ProtocolDesignerPage from './pages/ProtocolDesignerPage'; // Import Protocol Designer page
-import CSRPage from './pages/CSRPage'; // Import CSR Deep Intelligence page
-import CSRLibraryPage from './pages/CSRLibraryPage'; // Import CSR Library page
-import CMCPage from './pages/CMCPage'; // Import CMC Module page
-import CERPage from './pages/CerPage'; // Import CER Generator page
-import CERV2Page from './pages/CERV2Page'; // Import Advanced CER Generator page
-import CerGeneratorLandingPage from './pages/CerGeneratorLandingPage'; // Import CER Generator Landing page
-import BlueprintPage from './pages/BlueprintPage'; // Import Blueprint Generator page
-import CitationManagerPage from './pages/CitationManagerPage'; // Import Citation Manager page
-import AuditPage from './pages/AuditPage'; // Import Audit Trail page
-import SignaturePage from './pages/SignaturePage'; // Import Digital Signature page
-import ModuleSectionEditor from './components/ModuleSectionEditor'; // Import ModuleSectionEditor for co-author page
-import StudyArchitect from './modules/StudyArchitect';
-import StudyArchitectPage from './pages/StudyArchitectPage'; // Import Study Architect page
-import AnalyticsDashboard from './modules/AnalyticsDashboard';
-// !!! CRITICAL: ONLY USE THE INDWIZARDFIXED IMPLEMENTATION - All other implementations have been deleted !!!
-import IndWizard from './pages/INDWizardFixed'; // FINAL VERSION 5.0 - Only correct implementation of IND Wizard
-import INDFullSolution from './pages/INDFullSolution'; // Import the IND Full Solution page
-// Module page imports for IND Wizard
-import Module1AdminPage from './modules/Module1AdminPage';
-import Module2SummaryPage from './modules/Module2SummaryPage';
-import Module3QualityPage from './modules/Module3QualityPage';
-import Module4NonclinicalPage from './modules/Module4NonclinicalPage';
-import Module5ClinicalPage from './modules/Module5ClinicalPage';
-import VaultDocumentViewer from './components/vault/VaultDocumentViewer'; // Import VaultDocumentViewer
-
-// Import new Analytical & Stability modules (Stub versions)
-import AnalyticalMethodsStubPage from './pages/AnalyticalMethodsStubPage'; // Import Analytical Methods page
-import ComparabilityStudiesStubPage from './pages/ComparabilityStudiesStubPage'; // Import Comparability Studies page
-import StabilityStudiesStubPage from './pages/StabilityStudiesStubPage'; // Import Stability Studies page
-import ShelfLifePredictorStubPage from './pages/ShelfLifePredictorStubPage'; // Import Shelf Life Predictor page
-import ReportsPage from './pages/ReportsPage'; // Import comprehensive Reports page
-
-// Import Global Navigation
+// Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
+
+// Loading component for lazy-loaded routes
+const LoadingPage = () => (
+  <div className="flex flex-col items-center justify-center p-8 h-screen">
+    <div className="animate-spin h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+    <p className="text-gray-600">Loading...</p>
+  </div>
+);
+
+// Eagerly load the landing page for faster initial render
+import ClientPortalLanding from './pages/ClientPortalLanding';
+
+// Lazy load all other pages grouped by related functionality
+// CER-related pages
+const CERPage = lazy(() => import('./pages/CerPage'));
+const CERV2Page = lazy(() => import('./pages/CERV2Page'));
+const CerGeneratorLandingPage = lazy(() => import('./pages/CerGeneratorLandingPage'));
+const CerGenerator = lazy(() => import('./modules/CerGenerator'));
+
+// CMC-related pages
+const CmcWizard = lazy(() => import('./modules/CmcWizard'));
+const CMCPage = lazy(() => import('./pages/CMCPage'));
+
+// CSR-related pages
+const CsrAnalyzer = lazy(() => import('./modules/CsrAnalyzer'));
+const CSRPage = lazy(() => import('./pages/CSRPage'));
+const CSRLibraryPage = lazy(() => import('./pages/CSRLibraryPage'));
+
+// Vault-related pages
+const Vault = lazy(() => import('./modules/Vault'));
+const VaultPage = lazy(() => import('./pages/VaultPage'));
+const VaultTestPage = lazy(() => import('./pages/VaultTestPage'));
+const VaultDocumentViewer = lazy(() => import('./components/vault/VaultDocumentViewer'));
+
+// CoAuthor and Canvas-related pages
+const CoAuthor = lazy(() => import('./pages/CoAuthor'));
+const CanvasPage = lazy(() => import('./pages/CanvasPage'));
+const TimelinePage = lazy(() => import('./pages/TimelinePage'));
+const ModuleSectionEditor = lazy(() => import('./components/ModuleSectionEditor'));
+
+// Regulatory-related pages
+const RegulatoryRiskDashboard = lazy(() => import('./pages/RegulatoryRiskDashboard'));
+const EnhancedRegulatoryDashboard = lazy(() => import('./pages/EnhancedRegulatoryDashboard'));
+const RegulatoryDashboard = lazy(() => import('./pages/RegulatoryDashboard'));
+const RegulatoryIntelligenceHub = lazy(() => import('./pages/RegulatoryIntelligenceHub'));
+
+// IND Wizard-related pages
+const IndWizard = lazy(() => import('./pages/INDWizardFixed'));
+const INDFullSolution = lazy(() => import('./pages/INDFullSolution'));
+const Module1AdminPage = lazy(() => import('./modules/Module1AdminPage'));
+const Module2SummaryPage = lazy(() => import('./modules/Module2SummaryPage'));
+const Module3QualityPage = lazy(() => import('./modules/Module3QualityPage'));
+const Module4NonclinicalPage = lazy(() => import('./modules/Module4NonclinicalPage'));
+const Module5ClinicalPage = lazy(() => import('./modules/Module5ClinicalPage'));
+
+// Study and Protocol-related pages
+const StudyArchitect = lazy(() => import('./modules/StudyArchitect'));
+const StudyArchitectPage = lazy(() => import('./pages/StudyArchitectPage'));
+const ProtocolDesignerPage = lazy(() => import('./pages/ProtocolDesignerPage'));
+
+// Analytics and Dashboard pages
+const AnalyticsDashboard = lazy(() => import('./modules/AnalyticsDashboard'));
+const ModuleDashboard = lazy(() => import('./pages/ModuleDashboard'));
+
+// Other utility pages
+const ContextDemoPage = lazy(() => import('./pages/ContextDemoPage'));
+const BlueprintPage = lazy(() => import('./pages/BlueprintPage'));
+const CitationManagerPage = lazy(() => import('./pages/CitationManagerPage'));
+const AuditPage = lazy(() => import('./pages/AuditPage'));
+const SignaturePage = lazy(() => import('./pages/SignaturePage'));
+
+// Analytical and Stability modules
+const AnalyticalMethodsStubPage = lazy(() => import('./pages/AnalyticalMethodsStubPage'));
+const ComparabilityStudiesStubPage = lazy(() => import('./pages/ComparabilityStudiesStubPage'));
+const StabilityStudiesStubPage = lazy(() => import('./pages/StabilityStudiesStubPage'));
+const ShelfLifePredictorStubPage = lazy(() => import('./pages/ShelfLifePredictorStubPage'));
+const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 
 // IND Wizard step components
 // Advanced IND Wizard implementation is now used exclusively
