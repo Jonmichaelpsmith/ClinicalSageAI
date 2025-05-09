@@ -140,16 +140,28 @@ const ClientPortalLanding = () => {
                   </div>
                 </div>
                 
-                <button 
-                  onClick={() => setLocation('/tenant-management')}
-                  className="flex items-center gap-2 border border-gray-200 rounded-lg p-2 bg-gray-50 hover:bg-gray-100 transition-all duration-150"
-                >
-                  <Settings className="h-5 w-5 text-indigo-600" />
-                  <div>
-                    <div className="text-xs text-gray-500">Manage</div>
-                    <div className="text-sm font-medium">Settings</div>
-                  </div>
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => setLocation('/client-portal/client-management')}
+                    className="flex items-center gap-2 border border-gray-200 rounded-lg p-2 bg-gray-50 hover:bg-gray-100 transition-all duration-150"
+                  >
+                    <Users className="h-5 w-5 text-indigo-600" />
+                    <div>
+                      <div className="text-xs text-gray-500">Manage</div>
+                      <div className="text-sm font-medium">Clients</div>
+                    </div>
+                  </button>
+                  <button 
+                    onClick={() => setLocation('/tenant-management')}
+                    className="flex items-center gap-2 border border-gray-200 rounded-lg p-2 bg-gray-50 hover:bg-gray-100 transition-all duration-150"
+                  >
+                    <Settings className="h-5 w-5 text-indigo-600" />
+                    <div>
+                      <div className="text-xs text-gray-500">Manage</div>
+                      <div className="text-sm font-medium">Settings</div>
+                    </div>
+                  </button>
+                </div>
               </div>
             </div>
             
@@ -293,7 +305,15 @@ const ClientPortalLanding = () => {
                   </div>
                 </div>
                 
-                <div className="mt-4 pt-4 border-t border-gray-100">
+                <div className="mt-4 pt-4 border-t border-gray-100 space-y-2">
+                  <Button
+                    onClick={() => setLocation('/client-portal/client-management')}
+                    variant="outline"
+                    className="w-full justify-center"
+                  >
+                    <Users className="mr-2 h-4 w-4" />
+                    Manage Clients
+                  </Button>
                   <Button
                     onClick={() => setLocation('/tenant-management')}
                     variant="outline"
