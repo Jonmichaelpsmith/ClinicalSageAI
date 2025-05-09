@@ -1,252 +1,253 @@
+/**
+ * Tenant Context Provider
+ *
+ * This context manages organization and client workspace selection,
+ * providing tenant context across the entire application.
+ * 
+ * It handles:
+ * - Loading available organizations and client workspaces
+ * - Setting the current organization and client workspace
+ * - Persisting selections to localStorage
+ * - Providing tenant headers for API requests
+ */
+
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
-// Define the interfaces for our multi-tenant model
-export interface Organization {
+interface Organization {
   id: string;
   name: string;
-  slug: string;
   logo?: string;
-  subscriptionTier: string;
-  maxUsers: number;
-  maxProjects: number;
-  maxStorageGB: number;
-  billingContact?: string;
 }
 
-export interface ClientWorkspace {
+interface ClientWorkspace {
   id: string;
-  orgId: string;
   name: string;
-  slug: string;
-  quotaProjects: number;
-  quotaStorageGB: number;
-  activeProjects?: number;
-  storageUsedGB?: number;
-  lastActivity?: string;
+  organizationId: string;
+  logo?: string;
 }
 
-export interface User {
+interface Module {
   id: string;
   name: string;
-  email: string;
-  role: string;
-}
-
-export interface Module {
-  id: string;
-  name: string;
-  slug: string;
-  isEnabled: boolean;
+  path: string;
+  icon?: string;
 }
 
 interface TenantContextType {
-  // Organization context
+  // Organizations
+  organizations: Organization[];
   currentOrganization: Organization | null;
   setCurrentOrganization: (org: Organization | null) => void;
-  availableOrganizations: Organization[];
-  setAvailableOrganizations: (orgs: Organization[]) => void;
   
-  // Client workspace context
+  // Client Workspaces
+  clientWorkspaces: ClientWorkspace[];
   currentClientWorkspace: ClientWorkspace | null;
   setCurrentClientWorkspace: (client: ClientWorkspace | null) => void;
-  availableClientWorkspaces: ClientWorkspace[];
-  setAvailableClientWorkspaces: (clients: ClientWorkspace[]) => void;
+  filteredClientWorkspaces: ClientWorkspace[];
   
-  // Current module context
-  currentModule: string;
-  setCurrentModule: (moduleName: string) => void;
+  // Modules
+  modules: Module[];
+  currentModule: Module | null;
+  setCurrentModule: (module: Module | null) => void;
   
-  // Loading and error states
+  // Loading states
   isLoading: boolean;
-  error: Error | null;
+  
+  // API Headers
+  getTenantHeaders: () => Record<string, string>;
 }
 
-// Create the context with a default value
-const TenantContext = createContext<TenantContextType>({
-  currentOrganization: null,
-  setCurrentOrganization: () => {},
-  availableOrganizations: [],
-  setAvailableOrganizations: () => {},
-  
-  currentClientWorkspace: null,
-  setCurrentClientWorkspace: () => {},
-  availableClientWorkspaces: [],
-  setAvailableClientWorkspaces: () => {},
-  
-  currentModule: 'cer', // Default module
-  setCurrentModule: () => {},
-  
-  isLoading: true,
-  error: null
-});
+const TenantContext = createContext<TenantContextType | undefined>(undefined);
 
-// Custom hook to use the tenant context
-export const useTenant = () => useContext(TenantContext);
+export const useTenantContext = () => {
+  const context = useContext(TenantContext);
+  if (!context) {
+    throw new Error('useTenantContext must be used within a TenantProvider');
+  }
+  return context;
+};
 
 interface TenantProviderProps {
   children: ReactNode;
 }
 
-export const TenantProvider: React.FC<TenantProviderProps> = ({ children }) => {
-  // Organization state
+export const TenantProvider = ({ children }: TenantProviderProps) => {
+  // State for organizations
+  const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null);
-  const [availableOrganizations, setAvailableOrganizations] = useState<Organization[]>([]);
   
-  // Client workspace state
+  // State for client workspaces
+  const [clientWorkspaces, setClientWorkspaces] = useState<ClientWorkspace[]>([]);
   const [currentClientWorkspace, setCurrentClientWorkspace] = useState<ClientWorkspace | null>(null);
-  const [availableClientWorkspaces, setAvailableClientWorkspaces] = useState<ClientWorkspace[]>([]);
   
-  // Current module state
-  const [currentModule, setCurrentModule] = useState<string>('cer');
+  // State for modules
+  const [modules, setModules] = useState<Module[]>([
+    { id: 'cer', name: 'Clinical Evaluation Reports', path: '/cer', icon: 'file-text' },
+    { id: 'ind', name: 'IND Wizard', path: '/ind-wizard', icon: 'wand-2' },
+    { id: 'vault', name: 'Document Vault', path: '/vault', icon: 'archive' },
+    { id: 'csr', name: 'CSR Builder', path: '/csr', icon: 'file-code' }
+  ]);
+  const [currentModule, setCurrentModule] = useState<Module | null>(null);
   
-  // Loading and error states
+  // Loading state
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  // Load the organization data on component mount
+  
+  // Filter client workspaces based on selected organization
+  const filteredClientWorkspaces = currentOrganization
+    ? clientWorkspaces.filter(c => c.organizationId === currentOrganization.id)
+    : [];
+  
+  // Load sample organizations and client workspaces
+  // In a real implementation, this would fetch from an API
   useEffect(() => {
-    const loadOrganizationsData = async () => {
+    const loadTenantData = async () => {
+      setIsLoading(true);
+      
       try {
-        setIsLoading(true);
+        // This would be an API call in a real implementation
+        const orgData: Organization[] = [
+          { id: '1', name: 'Acme Pharmaceuticals', logo: '/logos/acme.png' },
+          { id: '2', name: 'Biotech Innovations', logo: '/logos/biotech.png' },
+          { id: '3', name: 'MedDevice Corp', logo: '/logos/meddevice.png' }
+        ];
         
-        // Get available organizations for the current user
-        const orgsResponse = await fetch('/api/organizations');
-        if (!orgsResponse.ok) {
-          throw new Error('Failed to fetch organization data');
+        const clientData: ClientWorkspace[] = [
+          { id: '101', name: 'Acme Clinical Team', organizationId: '1', logo: '/logos/acme-clinical.png' },
+          { id: '102', name: 'Acme Regulatory Affairs', organizationId: '1', logo: '/logos/acme-regulatory.png' },
+          { id: '201', name: 'Biotech Research Division', organizationId: '2', logo: '/logos/biotech-research.png' },
+          { id: '301', name: 'MedDevice Quality', organizationId: '3', logo: '/logos/meddevice-quality.png' },
+          { id: '302', name: 'MedDevice Compliance', organizationId: '3', logo: '/logos/meddevice-compliance.png' }
+        ];
+        
+        setOrganizations(orgData);
+        setClientWorkspaces(clientData);
+        
+        // Load saved preferences from localStorage
+        const savedOrgId = localStorage.getItem('currentOrganizationId');
+        const savedClientId = localStorage.getItem('currentClientWorkspaceId');
+        const savedModuleId = localStorage.getItem('currentModuleId');
+        
+        if (savedOrgId) {
+          const savedOrg = orgData.find(o => o.id === savedOrgId);
+          if (savedOrg) setCurrentOrganization(savedOrg);
         }
         
-        const orgsData = await orgsResponse.json();
-        setAvailableOrganizations(orgsData);
-        
-        // If there are organizations, set the current organization to the first one or
-        // the one saved in localStorage
-        if (orgsData.length > 0) {
-          const savedOrgId = localStorage.getItem('currentOrgId');
-          const orgToSelect = savedOrgId 
-            ? orgsData.find(o => o.id.toString() === savedOrgId) 
-            : orgsData[0];
-          
-          if (orgToSelect) {
-            setCurrentOrganization(orgToSelect);
-            localStorage.setItem('currentOrgId', orgToSelect.id.toString());
-            
-            // Now load client workspaces for this organization
-            await loadClientWorkspaces(orgToSelect.id);
-          }
+        if (savedClientId) {
+          const savedClient = clientData.find(c => c.id === savedClientId);
+          if (savedClient) setCurrentClientWorkspace(savedClient);
         }
         
-        setIsLoading(false);
-      } catch (err) {
-        setError(err instanceof Error ? err : new Error('Unknown error'));
+        if (savedModuleId) {
+          const savedModule = modules.find(m => m.id === savedModuleId);
+          if (savedModule) setCurrentModule(savedModule);
+        }
+      } catch (error) {
+        console.error('Error loading tenant data:', error);
+      } finally {
         setIsLoading(false);
       }
     };
     
-    loadOrganizationsData();
+    loadTenantData();
   }, []);
   
-  // Load client workspaces when organization changes
-  const loadClientWorkspaces = async (orgId: string) => {
-    try {
-      // Get available client workspaces for the selected organization
-      const clientsResponse = await fetch(`/api/organizations/${orgId}/clients`);
-      if (!clientsResponse.ok) {
-        throw new Error('Failed to fetch client workspace data');
-      }
-      
-      const clientsData = await clientsResponse.json();
-      setAvailableClientWorkspaces(clientsData);
-      
-      // If there are client workspaces, set the current client workspace to the first one or
-      // the one saved in localStorage
-      if (clientsData.length > 0) {
-        const savedClientId = localStorage.getItem('currentClientId');
-        const clientToSelect = savedClientId 
-          ? clientsData.find(c => c.id.toString() === savedClientId) 
-          : clientsData[0];
-        
-        if (clientToSelect) {
-          setCurrentClientWorkspace(clientToSelect);
-          localStorage.setItem('currentClientId', clientToSelect.id.toString());
-        }
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-    }
-  };
-  
-  // Update when organization changes
+  // Save selections to localStorage
   useEffect(() => {
     if (currentOrganization) {
-      localStorage.setItem('currentOrgId', currentOrganization.id.toString());
-      loadClientWorkspaces(currentOrganization.id);
+      localStorage.setItem('currentOrganizationId', currentOrganization.id);
+    } else {
+      localStorage.removeItem('currentOrganizationId');
     }
   }, [currentOrganization]);
   
-  // Update localStorage when client workspace changes
   useEffect(() => {
     if (currentClientWorkspace) {
-      localStorage.setItem('currentClientId', currentClientWorkspace.id.toString());
+      localStorage.setItem('currentClientWorkspaceId', currentClientWorkspace.id);
+    } else {
+      localStorage.removeItem('currentClientWorkspaceId');
     }
   }, [currentClientWorkspace]);
-
-  // Update localStorage when module changes
+  
   useEffect(() => {
     if (currentModule) {
-      localStorage.setItem('currentModule', currentModule);
+      localStorage.setItem('currentModuleId', currentModule.id);
+    } else {
+      localStorage.removeItem('currentModuleId');
     }
   }, [currentModule]);
   
-  // Update API headers with tenant context information
+  // When organization changes, reset client workspace if it doesn't belong to the new organization
   useEffect(() => {
     if (currentOrganization && currentClientWorkspace) {
-      // Update the organization and client ID HTTP headers for API requests
-      const originalFetch = window.fetch;
-      window.fetch = function(input, init) {
-        init = init || {};
-        init.headers = init.headers || {};
-        
-        // Add organization and client headers to all API requests
-        if (typeof input === 'string' && input.startsWith('/api/')) {
-          init.headers = {
-            ...init.headers,
-            'X-Org-ID': currentOrganization.id.toString(),
-            'X-Client-ID': currentClientWorkspace.id.toString(),
-            'X-Module': currentModule
-          };
-        }
-        
-        return originalFetch(input, init);
-      };
-      
-      // Cleanup the fetch override on unmount
-      return () => {
-        window.fetch = originalFetch;
-      };
+      if (currentClientWorkspace.organizationId !== currentOrganization.id) {
+        setCurrentClientWorkspace(null);
+      }
     }
-  }, [currentOrganization, currentClientWorkspace, currentModule]);
+  }, [currentOrganization, currentClientWorkspace]);
+  
+  // Helper to get tenant headers for API requests
+  const getTenantHeaders = () => {
+    const headers: Record<string, string> = {};
+    
+    if (currentOrganization) {
+      headers['X-Org-ID'] = currentOrganization.id;
+    }
+    
+    if (currentClientWorkspace) {
+      headers['X-Client-ID'] = currentClientWorkspace.id;
+    }
+    
+    if (currentModule) {
+      headers['X-Module'] = currentModule.id;
+    }
+    
+    return headers;
+  };
+  
+  // Custom handlers for organization and client workspace selection
+  const handleSetCurrentOrganization = (org: Organization | null) => {
+    setCurrentOrganization(org);
+    
+    // If organization changes, check if current client workspace belongs to it
+    if (org && currentClientWorkspace && currentClientWorkspace.organizationId !== org.id) {
+      // If not, reset client workspace or set to first valid one
+      const firstClientForOrg = clientWorkspaces.find(c => c.organizationId === org.id) || null;
+      setCurrentClientWorkspace(firstClientForOrg);
+    } else if (!org) {
+      // If organization is cleared, clear client workspace too
+      setCurrentClientWorkspace(null);
+    }
+  };
   
   return (
     <TenantContext.Provider
       value={{
+        // Organizations
+        organizations,
         currentOrganization,
-        setCurrentOrganization,
-        availableOrganizations,
-        setAvailableOrganizations,
+        setCurrentOrganization: handleSetCurrentOrganization,
         
+        // Client Workspaces
+        clientWorkspaces,
         currentClientWorkspace,
         setCurrentClientWorkspace,
-        availableClientWorkspaces,
-        setAvailableClientWorkspaces,
+        filteredClientWorkspaces,
         
+        // Modules
+        modules,
         currentModule,
         setCurrentModule,
         
+        // Loading state
         isLoading,
-        error
+        
+        // API Headers
+        getTenantHeaders
       }}
     >
       {children}
     </TenantContext.Provider>
   );
 };
+
+export default TenantContext;

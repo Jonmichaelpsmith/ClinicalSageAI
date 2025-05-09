@@ -5,6 +5,7 @@ import registerRoutes from './routes_fixed';
 import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
 import { initializeQualityApi } from './initializers/qualityApiInitializer';
+import { tenantContextMiddleware } from './middleware/tenantContext';
 
 // Load environment variables
 dotenv.config();
@@ -19,7 +20,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Org-ID, X-Client-ID, X-Module');
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
@@ -32,7 +33,11 @@ app.use((req, res, next) => {
   next();
 });
 
+// Apply JSON parsing middleware
 app.use(express.json());
+
+// Apply tenant context middleware for all requests
+app.use(tenantContextMiddleware);
 
 // Serve static files from the root directory
 import path from 'path';

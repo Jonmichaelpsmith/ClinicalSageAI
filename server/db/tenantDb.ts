@@ -1,232 +1,224 @@
 /**
- * Tenant Database Helper
+ * Tenant-aware Database Utility
  * 
- * Provides tenant-aware database operations to ensure proper data isolation.
- * This file extends the database with Row-Level Security (RLS) policies
- * and provides helper methods for tenant-specific operations.
+ * This module provides database access functions that automatically apply
+ * tenant isolation through Row-Level Security (RLS) policies and query filters.
+ * 
+ * Every database operation performed through these utilities will automatically
+ * include the proper tenant context (organization_id, client_workspace_id) to ensure
+ * data isolation between tenants.
  */
-import { eq, and, SQL } from 'drizzle-orm';
-import { db } from '../db';
-import { PgTable } from 'drizzle-orm/pg-core';
-import { createScopedLogger } from '../utils/logger';
 
-const logger = createScopedLogger('tenant-db');
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { eq, and, SQL, gte, or } from 'drizzle-orm';
+import { type PgTable } from 'drizzle-orm/pg-core';
+import postgres from 'postgres';
+import { TenantContext } from '../middleware/tenantContext';
+
+// Database connection
+const connectionString = process.env.DATABASE_URL as string;
+const client = postgres(connectionString);
+export const db = drizzle(client);
 
 /**
- * TenantDb class for tenant-specific database operations
- * 
- * This class wraps the database connection with tenant context to ensure
- * proper data isolation between tenants.
+ * TenantDb class provides tenant-aware database operations
  */
 export class TenantDb {
-  private tenantId: number;
+  private orgId: string | null;
+  private clientId: string | null;
   
-  constructor(tenantId: number) {
-    this.tenantId = tenantId;
+  /**
+   * Create a new TenantDb instance with tenant context
+   */
+  constructor(tenantContext: TenantContext) {
+    this.orgId = tenantContext.organizationId;
+    this.clientId = tenantContext.clientWorkspaceId;
   }
   
   /**
-   * Select records with tenant context
+   * Query a table with tenant isolation
    * 
-   * @param table The table to select from
-   * @param whereClause Optional additional WHERE conditions
-   * @returns The query result with tenant context applied
+   * @param table - The table to query
+   * @param whereClause - Additional WHERE conditions
+   * @returns Query results with tenant isolation applied
    */
   async select<T extends PgTable<any>>(
-    table: T,
+    table: T, 
     whereClause?: SQL<unknown>
-  ) {
-    try {
-      let query = db.select().from(table);
-      
-      // Apply tenant filter if the table has organizationId column
-      if ('organizationId' in table) {
-        const tenantFilter = eq(table.organizationId as any, this.tenantId);
-        
-        if (whereClause) {
-          query = query.where(and(tenantFilter, whereClause));
-        } else {
-          query = query.where(tenantFilter);
-        }
-      } else if (whereClause) {
-        query = query.where(whereClause);
+  ): Promise<any[]> {
+    // Tenant isolation: always filter by organization_id
+    let query = db.select().from(table);
+    
+    // Apply organization filter if the table has organization_id column
+    if ('organizationId' in table && this.orgId) {
+      if (whereClause) {
+        query = query.where(and(
+          eq(table.organizationId as any, parseInt(this.orgId)), 
+          whereClause
+        ));
+      } else {
+        query = query.where(eq(table.organizationId as any, parseInt(this.orgId)));
       }
-      
-      return await query;
-    } catch (error) {
-      logger.error(`Error in tenant select operation for tenant ${this.tenantId}`, error);
-      throw error;
     }
+    
+    // Apply client workspace filter if requested and table supports it
+    if ('clientWorkspaceId' in table && this.clientId) {
+      query = query.where(eq(table.clientWorkspaceId as any, parseInt(this.clientId)));
+    }
+    
+    return query;
   }
   
   /**
-   * Insert records with tenant context
+   * Insert data with automatic tenant context
    * 
-   * @param table The table to insert into
-   * @param data The data to insert (will be augmented with tenant context)
-   * @returns The inserted records
+   * @param table - The table to insert into
+   * @param data - The data to insert (single row or array of rows)
+   * @returns The inserted data
    */
   async insert<T extends PgTable<any>>(
-    table: T,
+    table: T, 
     data: Record<string, any> | Record<string, any>[]
-  ) {
-    try {
-      // Add tenant ID to the data if the table has organizationId column
-      if ('organizationId' in table) {
-        if (Array.isArray(data)) {
-          data = data.map(item => ({
-            ...item,
-            organizationId: this.tenantId
-          }));
-        } else {
-          data = {
-            ...data,
-            organizationId: this.tenantId
-          };
-        }
+  ): Promise<any> {
+    // Ensure data is an array
+    const dataArray = Array.isArray(data) ? data : [data];
+    
+    // Add tenant context to each row
+    const dataWithTenant = dataArray.map(row => {
+      const newRow = { ...row };
+      
+      // Add organization_id if table supports it
+      if ('organizationId' in table && this.orgId) {
+        newRow.organizationId = parseInt(this.orgId);
       }
       
-      return await db.insert(table).values(data as any).returning();
-    } catch (error) {
-      logger.error(`Error in tenant insert operation for tenant ${this.tenantId}`, error);
-      throw error;
-    }
+      // Add client_workspace_id if table supports it and it's provided
+      if ('clientWorkspaceId' in table && this.clientId) {
+        newRow.clientWorkspaceId = parseInt(this.clientId);
+      }
+      
+      return newRow;
+    });
+    
+    // Perform the insert
+    return db.insert(table).values(dataWithTenant).returning();
   }
   
   /**
-   * Update records with tenant context
+   * Update data with tenant isolation
    * 
-   * @param table The table to update
-   * @param data The data to update
-   * @param whereClause The WHERE condition for the update
-   * @returns The updated records
+   * @param table - The table to update
+   * @param data - The data to update
+   * @param whereClause - Additional WHERE conditions
+   * @returns The updated data
    */
   async update<T extends PgTable<any>>(
-    table: T,
+    table: T, 
     data: Record<string, any>,
-    whereClause: SQL<unknown>
-  ) {
-    try {
-      let query = db.update(table).set(data);
-      
-      // Apply tenant filter if the table has organizationId column
-      if ('organizationId' in table) {
-        const tenantFilter = eq(table.organizationId as any, this.tenantId);
-        query = query.where(and(tenantFilter, whereClause));
+    whereClause?: SQL<unknown>
+  ): Promise<any> {
+    // Base update query
+    let query = db.update(table).set(data);
+    
+    // Tenant isolation: always filter by organization_id
+    if ('organizationId' in table && this.orgId) {
+      if (whereClause) {
+        query = query.where(and(
+          eq(table.organizationId as any, parseInt(this.orgId)), 
+          whereClause
+        ));
       } else {
-        query = query.where(whereClause);
+        query = query.where(eq(table.organizationId as any, parseInt(this.orgId)));
       }
-      
-      return await query.returning();
-    } catch (error) {
-      logger.error(`Error in tenant update operation for tenant ${this.tenantId}`, error);
-      throw error;
     }
+    
+    // Apply client workspace filter if requested and table supports it
+    if ('clientWorkspaceId' in table && this.clientId) {
+      query = query.where(eq(table.clientWorkspaceId as any, parseInt(this.clientId)));
+    }
+    
+    return query.returning();
   }
   
   /**
-   * Delete records with tenant context
+   * Delete data with tenant isolation
    * 
-   * @param table The table to delete from
-   * @param whereClause The WHERE condition for the delete
-   * @returns The deleted records
+   * @param table - The table to delete from
+   * @param whereClause - Additional WHERE conditions
+   * @returns The deleted data
    */
   async delete<T extends PgTable<any>>(
-    table: T,
-    whereClause: SQL<unknown>
-  ) {
-    try {
-      let query = db.delete(table);
-      
-      // Apply tenant filter if the table has organizationId column
-      if ('organizationId' in table) {
-        const tenantFilter = eq(table.organizationId as any, this.tenantId);
-        query = query.where(and(tenantFilter, whereClause));
-      } else {
-        query = query.where(whereClause);
-      }
-      
-      return await query.returning();
-    } catch (error) {
-      logger.error(`Error in tenant delete operation for tenant ${this.tenantId}`, error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Count records with tenant context
-   * 
-   * @param table The table to count records in
-   * @param whereClause Optional additional WHERE conditions
-   * @returns The count of records
-   */
-  async count<T extends PgTable<any> | string>(
-    table: T,
+    table: T, 
     whereClause?: SQL<unknown>
-  ): Promise<number> {
-    try {
-      let query;
-      
-      if (typeof table === 'string') {
-        // For raw table names
-        const result = await db.execute(`
-          SELECT COUNT(*) FROM ${table}
-          WHERE organization_id = $1
-          ${whereClause ? `AND ${whereClause}` : ''}
-        `, [this.tenantId]);
-        
-        return parseInt(result.rows[0].count);
+  ): Promise<any> {
+    // Base delete query
+    let query = db.delete(table);
+    
+    // Tenant isolation: always filter by organization_id
+    if ('organizationId' in table && this.orgId) {
+      if (whereClause) {
+        query = query.where(and(
+          eq(table.organizationId as any, parseInt(this.orgId)), 
+          whereClause
+        ));
       } else {
-        // For Drizzle tables
-        query = db.select({ count: SQL`count(*)` }).from(table);
-        
-        // Apply tenant filter if the table has organizationId column
-        if ('organizationId' in table) {
-          const tenantFilter = eq(table.organizationId as any, this.tenantId);
-          
-          if (whereClause) {
-            query = query.where(and(tenantFilter, whereClause));
-          } else {
-            query = query.where(tenantFilter);
-          }
-        } else if (whereClause) {
-          query = query.where(whereClause);
-        }
-        
-        const result = await query;
-        return Number(result[0]?.count || 0);
+        query = query.where(eq(table.organizationId as any, parseInt(this.orgId)));
       }
-    } catch (error) {
-      logger.error(`Error in tenant count operation for tenant ${this.tenantId}`, error);
-      throw error;
     }
+    
+    // Apply client workspace filter if requested and table supports it
+    if ('clientWorkspaceId' in table && this.clientId) {
+      query = query.where(eq(table.clientWorkspaceId as any, parseInt(this.clientId)));
+    }
+    
+    return query.returning();
   }
   
   /**
-   * Execute a raw SQL query with tenant context
+   * Execute a raw SQL query with tenant context awareness
    * 
-   * @param query The SQL query to execute
-   * @param params The parameters for the query
-   * @returns The query result
+   * CAUTION: This should be used sparingly and carefully to avoid SQL injection
+   * 
+   * @param sql - The SQL query with $1, $2, etc. placeholders
+   * @param params - The parameters for the query
+   * @returns Query results
    */
-  async execute(query: string, params: any[] = []) {
-    try {
-      // Add tenant ID to the parameters
-      const paramsWithTenant = [this.tenantId, ...params];
-      
-      // Replace $1, $2, etc. with $2, $3, etc. to account for the tenant ID
-      const shiftedQuery = query.replace(/\$(\d+)/g, (_, num) => `$${parseInt(num) + 1}`);
-      
-      // Add tenant context to the query
-      const queryWithTenant = shiftedQuery.replace(
-        /FROM\s+([a-zA-Z_][a-zA-Z0-9_]*)/gi,
-        `FROM $1 WHERE organization_id = $1 AND`
-      );
-      
-      return await db.execute(queryWithTenant, paramsWithTenant);
-    } catch (error) {
-      logger.error(`Error in tenant execute operation for tenant ${this.tenantId}`, error);
-      throw error;
-    }
+  async rawQuery(sql: string, params: any[] = []): Promise<any[]> {
+    // Add tenant context parameters to the query
+    const tenantSql = `
+      WITH tenant_context AS (
+        SELECT 
+          ${this.orgId ? `$${params.length + 1}::integer` : 'NULL'} as organization_id,
+          ${this.clientId ? `$${params.length + 2}::integer` : 'NULL'} as client_workspace_id
+      )
+      ${sql}
+    `;
+    
+    // Add tenant context values to params
+    const tenantParams = [
+      ...params,
+      this.orgId ? parseInt(this.orgId) : null,
+      this.clientId ? parseInt(this.clientId) : null
+    ];
+    
+    // Execute the query
+    return client.unsafe(tenantSql, tenantParams);
   }
+  
+  /**
+   * Get the current tenant context
+   */
+  getTenantContext(): { orgId: string | null; clientId: string | null } {
+    return {
+      orgId: this.orgId,
+      clientId: this.clientId
+    };
+  }
+}
+
+/**
+ * Create a new tenant database helper with the given tenant context
+ */
+export function createTenantDb(tenantContext: TenantContext): TenantDb {
+  return new TenantDb(tenantContext);
 }

@@ -1,165 +1,112 @@
 /**
  * Tenant Context Middleware
  * 
- * This middleware establishes the tenant context for the current request.
- * It supports:
- * 1. Tenant context from the authenticated user's token
- * 2. Tenant context from the request path parameter
- * 3. Tenant context from a request header (API key usage)
+ * This middleware extracts tenant context information (organization ID, client workspace ID, 
+ * and module) from HTTP headers and attaches it to the request object for all API routes.
+ * 
+ * It implements the multi-tenant isolation model by ensuring every database operation has
+ * the appropriate tenant context.
  */
-import { Request, Response, NextFunction } from 'express';
-import { eq } from 'drizzle-orm';
-import { organizations } from '../../shared/schema';
-import { createScopedLogger } from '../utils/logger';
-import { db } from '../db';
 
-const logger = createScopedLogger('tenant-context');
+import { Request, Response, NextFunction } from 'express';
+
+// Define the tenant context interface to be attached to the request
+export interface TenantContext {
+  organizationId: string | null;
+  clientWorkspaceId: string | null;
+  module: string | null;
+}
+
+// Extend Express Request type to include tenant context
+declare global {
+  namespace Express {
+    interface Request {
+      tenantContext: TenantContext;
+    }
+  }
+}
 
 /**
- * Middleware to establish the tenant context
- * 
- * This applies the tenant context to the request and sets up the tenant database.
+ * Middleware to extract and attach tenant context to request object
  */
 export function tenantContextMiddleware(req: Request, res: Response, next: NextFunction) {
-  // If the tenant context is already established, continue to the next middleware
-  if (req.tenantId) {
-    return next();
+  // Extract tenant context from headers
+  const organizationId = req.headers['x-org-id'] as string || null;
+  const clientWorkspaceId = req.headers['x-client-id'] as string || null;
+  const module = req.headers['x-module'] as string || null;
+  
+  // Create tenant context object
+  const tenantContext: TenantContext = {
+    organizationId,
+    clientWorkspaceId,
+    module
+  };
+  
+  // Attach to request
+  req.tenantContext = tenantContext;
+  
+  // Log tenant context for debugging (remove in production)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('Tenant Context:', JSON.stringify(tenantContext));
   }
   
-  // Try to establish tenant context from the request path parameter
-  if (req.params.tenantId) {
-    const tenantId = parseInt(req.params.tenantId);
-    
-    if (!isNaN(tenantId)) {
-      req.tenantId = tenantId;
-      req.tenantContext = {
-        organizationId: tenantId
-      };
-      return next();
-    }
-  }
-  
-  // Try to establish tenant context from the authenticated user's token
-  if (req.userRole && req.userId) {
-    // If the user is a super_admin, they may not have a default tenant
-    if (req.userRole === 'super_admin') {
-      // Super admins can access anything, but we don't set a default tenant
-      return next();
-    }
-    
-    // For other roles, try to get their default tenant
-    db.execute(`
-      SELECT default_organization_id FROM users WHERE id = $1
-    `, [req.userId])
-      .then(result => {
-        if (result.rowCount > 0 && result.rows[0].default_organization_id) {
-          req.tenantId = result.rows[0].default_organization_id;
-          req.tenantContext = {
-            organizationId: result.rows[0].default_organization_id,
-            userId: req.userId,
-            role: req.userRole
-          };
-        }
-        next();
-      })
-      .catch(error => {
-        logger.error('Error establishing tenant context from user', error);
-        next();
-      });
-    
-    return;
-  }
-  
-  // Try to establish tenant context from API key in header
-  const apiKey = req.headers['x-api-key'] as string;
-  
-  if (apiKey) {
-    // Look up the tenant by API key
-    db.select()
-      .from(organizations)
-      .where(eq(organizations.apiKey, apiKey))
-      .limit(1)
-      .then(tenants => {
-        if (tenants.length > 0) {
-          req.tenantId = tenants[0].id;
-          // For API key access, set a service account role
-          req.userRole = 'service';
-          req.tenantContext = {
-            organizationId: tenants[0].id,
-            role: 'service'
-          };
-        }
-        next();
-      })
-      .catch(error => {
-        logger.error('Error establishing tenant context from API key', error);
-        next();
-      });
-    
-    return;
-  }
-  
-  // Continue without tenant context
-  // This will be caught by endpoints that require tenant context
+  // Continue to next middleware or route handler
   next();
 }
 
 /**
- * Middleware to require tenant context
- * 
- * This is used to ensure that endpoints that require tenant context
- * have it established before proceeding.
+ * Middleware to require organization context for protected routes
  */
-export function requireTenantMiddleware(req: Request, res: Response, next: NextFunction) {
-  // For super_admin users, we don't require tenant context
-  if (req.userRole === 'super_admin') {
-    return next();
-  }
-  
-  // For other roles, ensure tenant context is established
-  if (!req.tenantId) {
-    return res.status(400).json({ error: 'Tenant context required' });
-  }
-  
-  next();
-}
-
-/**
- * Middleware to validate tenant access
- * 
- * This ensures that the user has access to the specified tenant.
- */
-export function validateTenantAccessMiddleware(req: Request, res: Response, next: NextFunction) {
-  // If user is a super_admin, they have access to all tenants
-  if (req.userRole === 'super_admin') {
-    return next();
-  }
-  
-  // If tenant context is not established, continue to the next middleware
-  // This may be caught by the requireTenantMiddleware later
-  if (!req.tenantId) {
-    return next();
-  }
-  
-  // Ensure the user has access to the tenant
-  if (!req.userId) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
-  
-  // Validate that the user has access to the tenant
-  db.execute(`
-    SELECT 1 FROM organization_users
-    WHERE user_id = $1 AND organization_id = $2
-  `, [req.userId, req.tenantId])
-    .then(result => {
-      if (result.rowCount === 0) {
-        return res.status(403).json({ error: 'Access to this tenant is not authorized' });
-      }
-      
-      next();
-    })
-    .catch(error => {
-      logger.error('Error validating tenant access', error);
-      res.status(500).json({ error: 'Failed to validate tenant access' });
+export function requireOrganizationContext(req: Request, res: Response, next: NextFunction) {
+  if (!req.tenantContext?.organizationId) {
+    return res.status(403).json({ 
+      error: 'Organization context required',
+      message: 'This endpoint requires an organization context'
     });
+  }
+  
+  next();
 }
+
+/**
+ * Middleware to require client workspace context for protected routes
+ */
+export function requireClientWorkspaceContext(req: Request, res: Response, next: NextFunction) {
+  if (!req.tenantContext?.clientWorkspaceId) {
+    return res.status(403).json({ 
+      error: 'Client workspace context required',
+      message: 'This endpoint requires a client workspace context'
+    });
+  }
+  
+  next();
+}
+
+/**
+ * Middleware to require module context for protected routes
+ */
+export function requireModuleContext(req: Request, res: Response, next: NextFunction) {
+  if (!req.tenantContext?.module) {
+    return res.status(403).json({ 
+      error: 'Module context required',
+      message: 'This endpoint requires a module context'
+    });
+  }
+  
+  next();
+}
+
+/**
+ * Helper to get current tenant context from request
+ */
+export function getTenantContext(req: Request): TenantContext {
+  return req.tenantContext;
+}
+
+export default {
+  tenantContextMiddleware,
+  requireOrganizationContext,
+  requireClientWorkspaceContext,
+  requireModuleContext,
+  getTenantContext
+};
