@@ -7,6 +7,8 @@ import { Router } from 'express';
 import tenantsRoutes from './tenants';
 import tenantConfigRoutes from './tenant-config';
 import tenantUsersRoutes from './tenant-users';
+import tenantCtqFactorsRoutes from './tenant-ctq-factors';
+import tenantSectionGatingRoutes from './tenant-section-gating';
 import documentRoutes from './document-routes';
 import { authMiddleware } from '../auth';
 
@@ -27,6 +29,8 @@ router.use('/public', (req, res, next) => {
 router.use('/tenants', tenantsRoutes);
 router.use('/tenant-config', tenantConfigRoutes);
 router.use('/tenant-users', tenantUsersRoutes);
+router.use('/tenant-ctq-factors', tenantCtqFactorsRoutes);
+router.use('/tenant-section-gating', tenantSectionGatingRoutes);
 router.use('/documents', documentRoutes);
 
 // Mount API routes
