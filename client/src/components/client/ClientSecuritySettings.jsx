@@ -14,11 +14,25 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Shield, AlertTriangle, Key, Lock, Clock, UserCheck, FileText } from 'lucide-react';
+import { SelectWrapper } from '@/components/ui/select-wrapper';
+import { 
+  Shield, 
+  AlertTriangle, 
+  Key, 
+  Lock, 
+  Clock, 
+  UserCheck, 
+  FileText, 
+  FileCheck, 
+  ClipboardCheck, 
+  Globe as GlobeIcon,
+  CheckSquare
+} from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
 
