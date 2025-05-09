@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import { createServer as createHttpServer } from 'http';
 import registerRoutes from './routes_fixed';
 import { setupVite } from './vite';
+import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
 
 // Load environment variables
 dotenv.config();
@@ -115,6 +116,10 @@ if (isDev) {
 httpServer.listen(port, () => {
   console.log(`Server running on port ${port}`);
   console.log(`Health check available at http://localhost:${port}/api/health`);
+  
+  // Initialize performance optimizations after server has started
+  initializePerformanceOptimizations()
+    .catch(err => console.error('Error initializing performance optimizations:', err));
 });
 
 // Handle graceful shutdown

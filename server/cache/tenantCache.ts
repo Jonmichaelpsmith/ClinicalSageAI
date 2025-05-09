@@ -38,13 +38,19 @@ interface CacheEntry<T> {
   priority: number; // Higher number = higher priority (less likely to be evicted)
 }
 
-interface CacheStore {
-  [tenantId: string]: {
-    [entityType: string]: {
-      [entityId: string]: CacheEntry<any>;
-    };
+interface EntityTypeStore {
+  [entityId: string]: CacheEntry<any>;
+}
+
+interface TenantStore {
+  [entityType: string]: EntityTypeStore;
+  _meta?: {
     totalSize: number; // Total number of entries for this tenant
   };
+}
+
+interface CacheStore {
+  [tenantId: string]: TenantStore;
 }
 
 // In-memory cache
@@ -126,8 +132,8 @@ export function getFromCache<T>(
         // Update stats
         cacheStats.expired++;
         cacheStats.totalItems--;
-        if (cache[tenantKey].totalSize > 0) {
-          cache[tenantKey].totalSize--;
+        if (cache[tenantKey]._meta && cache[tenantKey]._meta.totalSize > 0) {
+          cache[tenantKey]._meta.totalSize--;
         }
         
         logger.debug('Cache expired', { tenantId, entityType, entityId });
