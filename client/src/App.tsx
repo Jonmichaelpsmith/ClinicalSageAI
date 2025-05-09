@@ -1,7 +1,6 @@
 import React from 'react';
 import { Route, Switch } from 'wouter';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from '@/components/ui/toaster';
 import NotFound from '@/pages/not-found';
 // Import Admin pages
 import AdminDashboard from '@/pages/Admin/Dashboard';
@@ -35,7 +34,6 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TenantProvider>
         <Router />
-        <Toaster />
       </TenantProvider>
     </QueryClientProvider>
   );
