@@ -1,12 +1,15 @@
 // /client/src/App.jsx
 
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { Switch, Route, useRoute, useLocation } from 'wouter';
 import { useState, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 
 // Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
+
+// Import queryClient from our lib
+import queryClient from './lib/queryClient';
 
 // Loading component for lazy-loaded routes
 const LoadingPage = () => (
@@ -91,8 +94,8 @@ const TenantManagement = lazy(() => import('./pages/TenantManagement'));
 // IND Wizard step components
 // Advanced IND Wizard implementation is now used exclusively
 
-// Create a QueryClient instance to use with React Query
-const queryClient = new QueryClient();
+// Import queryClient from our lib
+import queryClient from './lib/queryClient';
 
 function App() {
   // Default tab for the UnifiedTopNavV3 component
@@ -114,7 +117,6 @@ function App() {
   const shouldShowNav = !isLandingPage && !isRegulatoryHub && !isCoAuthorPage && !isDashboardPage;
   
   return (
-    <QueryClientProvider client={queryClient}>
       {/* Only show the UnifiedTopNavV3 if we're not on the landing page, regulatory hub, or dashboard */}
       {shouldShowNav && (
         <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
