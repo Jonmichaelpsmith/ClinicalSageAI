@@ -124,6 +124,9 @@ app.get('/marketing', (req, res) => {
 });
 
 // HIGH PRIORITY - Client Portal route - MUST NOT RETURN 404
+// This is now handled by Vite/React router at runtime
+// Commenting out to avoid conflicts with React router
+/*
 app.get('/client-portal', (req, res) => {
   console.log('CRITICAL: Serving Static Client Portal HTML directly');
   // Always prefer the static client portal file first - this is the user's intended file
@@ -147,6 +150,7 @@ app.get('/client-portal', (req, res) => {
     `);
   }
 });
+*/
 
 // Create HTTP server
 const httpServer = createHttpServer(app);
