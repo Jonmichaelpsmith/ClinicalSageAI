@@ -7,7 +7,7 @@ import { initializePerformanceOptimizations } from './initializers/performanceOp
 import { initializeQualityApi } from './initializers/qualityApiInitializer';
 import { tenantContextMiddleware } from './middleware/tenantContext';
 import errorHandler from './middleware/errorHandlerMiddleware';
-import { setupGlobalErrorHandlers } from './utils/globalErrorHandler';
+import globalErrorHandler from './utils/globalErrorHandler';
 
 // Load environment variables
 dotenv.config();
@@ -16,6 +16,12 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 const isDev = process.env.NODE_ENV !== 'production';
+
+// Create database connection pool
+import { Pool } from 'pg';
+const dbPool = new Pool({
+  connectionString: process.env.DATABASE_URL
+});
 
 // Middleware
 // CORS headers handled manually until cors package is installed
@@ -82,6 +88,10 @@ import tenantSectionGatingRoutes from './routes/tenant-section-gating.js';
 app.use('/api/tenant-section-gating', tenantSectionGatingRoutes);
 console.log('Tenant Section Gating routes registered');
 
+// Import and register health check routes
+import { createHealthCheckRouter } from './routes/healthCheck';
+app.use('/api', createHealthCheckRouter(dbPool));
+
 // Import and initialize Quality Management API
 import { initializeQualityManagementApi } from './initializers/qualityApiInitializer';
 // Use async IIFE to initialize safely
@@ -129,7 +139,7 @@ if (isDev) {
 }
 
 // Initialize global error handlers to catch uncaught exceptions
-setupGlobalErrorHandlers();
+globalErrorHandler.initializeStabilityMeasures();
 
 // Apply the error handler middleware as the last middleware (after all routes)
 // This ensures all errors from routes are caught and handled properly
