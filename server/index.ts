@@ -1,13 +1,15 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import path from 'path';
 import { createServer as createHttpServer } from 'http';
 import registerRoutes from './routes_fixed';
 import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
-import { initializeQualityApi } from './initializers/qualityApiInitializer';
+import { initializeQualityManagementApi } from './initializers/qualityApiInitializer';
 import { tenantContextMiddleware } from './middleware/tenantContext';
 import errorHandler from './middleware/errorHandlerMiddleware';
 import globalErrorHandler from './utils/globalErrorHandler';
+import fs from 'fs';
 
 // Load environment variables
 dotenv.config();
@@ -20,7 +22,7 @@ const isDev = process.env.NODE_ENV !== 'production';
 // Create database connection pool
 import { Pool } from 'pg';
 const dbPool = new Pool({
-  connectionString: process.env.DATABASE_URL
+  connectionString: process.env.DATABASE_URL,
 });
 
 // Middleware
@@ -28,7 +30,10 @@ const dbPool = new Pool({
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Org-ID, X-Client-ID, X-Module');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-Org-ID, X-Client-ID, X-Module'
+  );
   if (req.method === 'OPTIONS') {
     return res.sendStatus(200);
   }
@@ -56,13 +61,16 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Serve static JavaScript files from various directories with proper MIME types
-app.use('/js', express.static(path.join(process.cwd(), 'js'), {
-  setHeaders: (res, filePath) => {
-    if (path.extname(filePath) === '.js') {
-      res.setHeader('Content-Type', 'application/javascript');
-    }
-  }
-}));
+app.use(
+  '/js',
+  express.static(path.join(process.cwd(), 'js'), {
+    setHeaders: (res, filePath) => {
+      if (path.extname(filePath) === '.js') {
+        res.setHeader('Content-Type', 'application/javascript');
+      }
+    },
+  })
+);
 app.use('/public', express.static(path.join(process.cwd(), 'public')));
 
 // Register API routes
@@ -132,7 +140,7 @@ const httpServer = createHttpServer(app);
 // Setup Vite middleware in development mode
 if (isDev) {
   // Setup Vite dev middleware
-  setupVite(app, httpServer).catch((err) => {
+  setupVite(app, httpServer).catch(err => {
     console.error('Error setting up Vite:', err);
     process.exit(1);
   });
@@ -141,18 +149,28 @@ if (isDev) {
 // Initialize global error handlers to catch uncaught exceptions
 globalErrorHandler.initializeStabilityMeasures();
 
-// Apply the error handler middleware as the last middleware (after all routes)
-// This ensures all errors from routes are caught and handled properly
+// Apply the error handler middleware
 app.use(errorHandler);
 
-// Add a catch-all error route as the absolute last route
-app.use((req, res) => {
-  res.status(404).json({
-    error: {
-      message: `Route not found: ${req.method} ${req.path}`,
-      status: 404
-    }
-  });
+// Serve static files from the client/dist directory
+const clientDist = path.resolve(__dirname, '../client/dist');
+app.use(express.static(clientDist));
+
+// All other GET requests not handled above should return index.html
+// This ensures client-side routing works for direct URL access
+app.get('*', (req, res) => {
+  // Skip API routes - let them 404 if they don't exist
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({
+      error: {
+        message: `API route not found: ${req.method} ${req.path}`,
+        status: 404,
+      },
+    });
+  }
+
+  console.log(`Serving index.html for client-side route: ${req.path}`);
+  res.sendFile(path.join(clientDist, 'index.html'));
 });
 
 // Start server with error handling
@@ -160,10 +178,11 @@ httpServer.listen(port, () => {
   console.log(`Server running on port ${port}`);
   console.log(`Health check available at http://localhost:${port}/api/health`);
   console.log('STABILITY MODE ACTIVE: All error handlers initialized');
-  
+
   // Initialize performance optimizations after server has started
-  initializePerformanceOptimizations()
-    .catch(err => console.error('Error initializing performance optimizations:', err));
+  initializePerformanceOptimizations().catch(err =>
+    console.error('Error initializing performance optimizations:', err)
+  );
 });
 
 // Handle graceful shutdown
