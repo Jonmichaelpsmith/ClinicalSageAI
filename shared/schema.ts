@@ -1072,3 +1072,336 @@ export const projectTasksRelations = relations(projectTasks, ({ one, many }) => 
     references: [users.id],
   }),
 }));
+
+/**
+ * Regulatory Submissions Hub - Unified IND/eCTD Module
+ * 
+ * The following tables implement the unified regulatory submissions system
+ * that combines IND and eCTD functionality in a single framework.
+ */
+
+// Enums for Regulatory Submissions
+export const submissionTypeEnum = pgEnum('submission_type', [
+  'IND', 'eCTD', 'NDA', 'BLA', 'ANDA', 'DMF'
+]);
+
+export const submissionStatusEnum = pgEnum('submission_status', [
+  'active', 'archived', 'submitted'
+]);
+
+export const sequenceStatusEnum = pgEnum('sequence_status', [
+  'draft', 'review', 'approved', 'submitted'
+]);
+
+export const moduleStatusEnum = pgEnum('module_status', [
+  'incomplete', 'inProgress', 'complete'
+]);
+
+export const documentStatusEnum = pgEnum('document_status', [
+  'draft', 'final', 'uploaded', 'locked'
+]);
+
+export const validationSeverityEnum = pgEnum('validation_severity', [
+  'info', 'warning', 'error'
+]);
+
+/**
+ * Submission Projects Table
+ * 
+ * Top-level table for regulatory submissions (IND/eCTD)
+ */
+export const submissionProjects = pgTable('submission_projects', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  clientWorkspaceId: integer('client_workspace_id').notNull().references(() => clientWorkspaces.id),
+  name: varchar('name', { length: 255 }).notNull(),
+  submissionType: submissionTypeEnum('submission_type').notNull(),
+  status: submissionStatusEnum('submission_status').notNull().default('active'),
+  fda21CfrPart11Enabled: boolean('fda_21_cfr_part_11_enabled').notNull().default(false),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  createdById: integer('created_by_id').notNull().references(() => users.id),
+  lastModifiedById: integer('last_modified_by_id').notNull().references(() => users.id),
+});
+
+/**
+ * Submission Sequences Table
+ * 
+ * Represents submission sequences (versions) within a submission project
+ */
+export const submissionSequences = pgTable('submission_sequences', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  submissionProjectId: uuid('submission_project_id').notNull().references(() => submissionProjects.id, { onDelete: 'cascade' }),
+  sequenceNumber: varchar('sequence_number', { length: 10 }).notNull(),
+  description: text('description'),
+  status: sequenceStatusEnum('status').notNull().default('draft'),
+  submissionDate: timestamp('submission_date'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+}, (table) => {
+  return {
+    seqNumberIndex: unique('idx_seq_project_number').on(
+      table.submissionProjectId, 
+      table.sequenceNumber
+    )
+  };
+});
+
+/**
+ * Document Modules Table
+ * 
+ * Represents modules within the CTD structure (e.g., Module 1, Module 2, etc.)
+ */
+export const documentModules = pgTable('document_modules', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  submissionSequenceId: uuid('submission_sequence_id').notNull().references(() => submissionSequences.id, { onDelete: 'cascade' }),
+  moduleType: varchar('module_type', { length: 50 }).notNull(),
+  displayName: varchar('display_name', { length: 255 }).notNull(),
+  status: moduleStatusEnum('status').notNull().default('incomplete'),
+  compiledDocumentId: uuid('compiled_document_id'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+/**
+ * Document Granules Table
+ * 
+ * Represents individual document components within modules
+ */
+export const documentGranules = pgTable('document_granules', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  moduleId: uuid('module_id').notNull().references(() => documentModules.id, { onDelete: 'cascade' }),
+  sequenceId: uuid('sequence_id').notNull().references(() => submissionSequences.id, { onDelete: 'cascade' }),
+  path: varchar('path', { length: 1000 }).notNull(),
+  fileName: varchar('file_name', { length: 255 }).notNull(),
+  displayName: varchar('display_name', { length: 255 }).notNull(),
+  documentType: varchar('document_type', { length: 50 }).notNull(),
+  mimeType: varchar('mime_type', { length: 100 }).notNull(),
+  status: documentStatusEnum('status').notNull().default('draft'),
+  isActive: boolean('is_active').notNull().default(true),
+  isAppendix: boolean('is_appendix').notNull().default(false),
+  currentVersionId: uuid('current_version_id'),
+  metadataJson: json('metadata_json'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+  lastModifiedById: integer('last_modified_by_id').notNull().references(() => users.id),
+});
+
+/**
+ * Document Versions Table
+ * 
+ * Tracks versions of document granules
+ */
+export const documentVersions = pgTable('document_versions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  granuleId: uuid('granule_id').notNull().references(() => documentGranules.id, { onDelete: 'cascade' }),
+  versionNumber: integer('version_number').notNull(),
+  documentBlobId: uuid('document_blob_id').notNull(),
+  fileName: varchar('file_name', { length: 255 }).notNull(),
+  status: documentStatusEnum('status').notNull().default('draft'),
+  comment: text('comment'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdById: integer('created_by_id').notNull().references(() => users.id),
+}, (table) => {
+  return {
+    versionIndex: unique('idx_granule_version_number').on(
+      table.granuleId, 
+      table.versionNumber
+    )
+  };
+});
+
+/**
+ * Document Blobs Table
+ * 
+ * Stores actual document content (or references to external storage)
+ */
+export const documentBlobs = pgTable('document_blobs', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  vaultDocumentId: uuid('vault_document_id'), // Reference to VAULT for actual storage
+  contentHash: varchar('content_hash', { length: 64 }).notNull(),
+  size: integer('size').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+/**
+ * Compiled Documents Table
+ * 
+ * Tracks compiled document modules
+ */
+export const compiledDocuments = pgTable('compiled_documents', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  moduleId: uuid('module_id').notNull().references(() => documentModules.id, { onDelete: 'cascade' }),
+  compiledBlobId: uuid('compiled_blob_id').notNull().references(() => documentBlobs.id, { onDelete: 'cascade' }),
+  status: text('status').notNull().default('compiling'),
+  atomizedAt: timestamp('atomized_at'),
+  componentsJson: json('components_json').notNull(),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  createdById: integer('created_by_id').notNull().references(() => users.id),
+});
+
+/**
+ * Validation Results Table
+ * 
+ * Stores validation issues for regulatory submissions
+ */
+export const validationResults = pgTable('validation_results', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  submissionSequenceId: uuid('submission_sequence_id').notNull().references(() => submissionSequences.id, { onDelete: 'cascade' }),
+  moduleId: uuid('module_id').references(() => documentModules.id, { onDelete: 'cascade' }),
+  granuleId: uuid('granule_id').references(() => documentGranules.id, { onDelete: 'cascade' }),
+  validationType: varchar('validation_type', { length: 50 }).notNull(),
+  severity: validationSeverityEnum('severity').notNull(),
+  message: text('message').notNull(),
+  locationPath: varchar('location_path', { length: 1000 }),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+/**
+ * Submission Events Table
+ * 
+ * Tracks all events for audit trail purposes
+ */
+export const submissionEvents = pgTable('submission_events', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  submissionProjectId: uuid('submission_project_id').notNull().references(() => submissionProjects.id, { onDelete: 'cascade' }),
+  sequenceId: uuid('sequence_id').references(() => submissionSequences.id, { onDelete: 'cascade' }),
+  moduleId: uuid('module_id').references(() => documentModules.id, { onDelete: 'cascade' }),
+  granuleId: uuid('granule_id').references(() => documentGranules.id, { onDelete: 'cascade' }),
+  eventType: varchar('event_type', { length: 100 }).notNull(),
+  details: json('details'),
+  userId: integer('user_id').notNull().references(() => users.id),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+});
+
+/**
+ * Feature Toggles Table
+ * 
+ * Controls access to new features during migration
+ */
+export const featureToggles = pgTable('feature_toggles', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  featureKey: varchar('feature_key', { length: 100 }).notNull().unique(),
+  description: text('description'),
+  enabled: boolean('enabled').notNull().default(false),
+  enabledForOrganizationIds: json('enabled_for_organization_ids').default([]),
+  enabledForClientWorkspaceIds: json('enabled_for_client_workspace_ids').default([]),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+  updatedAt: timestamp('updated_at').notNull().defaultNow(),
+});
+
+// Insert schemas for validation
+export const insertSubmissionProjectSchema = createInsertSchema(submissionProjects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertSubmissionSequenceSchema = createInsertSchema(submissionSequences).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertDocumentModuleSchema = createInsertSchema(documentModules).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+export const insertDocumentGranuleSchema = createInsertSchema(documentGranules).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Type definitions
+export type SubmissionProjectInsert = z.infer<typeof insertSubmissionProjectSchema>;
+export type SubmissionProjectSelect = typeof submissionProjects.$inferSelect;
+
+export type SubmissionSequenceInsert = z.infer<typeof insertSubmissionSequenceSchema>;
+export type SubmissionSequenceSelect = typeof submissionSequences.$inferSelect;
+
+export type DocumentModuleInsert = z.infer<typeof insertDocumentModuleSchema>;
+export type DocumentModuleSelect = typeof documentModules.$inferSelect;
+
+export type DocumentGranuleInsert = z.infer<typeof insertDocumentGranuleSchema>;
+export type DocumentGranuleSelect = typeof documentGranules.$inferSelect;
+
+// Relationships
+export const submissionProjectsRelations = relations(submissionProjects, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [submissionProjects.organizationId],
+    references: [organizations.id],
+  }),
+  clientWorkspace: one(clientWorkspaces, {
+    fields: [submissionProjects.clientWorkspaceId],
+    references: [clientWorkspaces.id],
+  }),
+  sequences: many(submissionSequences),
+  createdBy: one(users, {
+    fields: [submissionProjects.createdById],
+    references: [users.id],
+  }),
+  lastModifiedBy: one(users, {
+    fields: [submissionProjects.lastModifiedById],
+    references: [users.id],
+  }),
+}));
+
+export const submissionSequencesRelations = relations(submissionSequences, ({ one, many }) => ({
+  project: one(submissionProjects, {
+    fields: [submissionSequences.submissionProjectId],
+    references: [submissionProjects.id],
+  }),
+  modules: many(documentModules),
+  granules: many(documentGranules),
+  validationResults: many(validationResults),
+}));
+
+export const documentModulesRelations = relations(documentModules, ({ one, many }) => ({
+  sequence: one(submissionSequences, {
+    fields: [documentModules.submissionSequenceId],
+    references: [submissionSequences.id],
+  }),
+  granules: many(documentGranules),
+  compiledDocument: one(compiledDocuments, {
+    fields: [documentModules.compiledDocumentId],
+    references: [compiledDocuments.id],
+  }),
+}));
+
+export const documentGranulesRelations = relations(documentGranules, ({ one, many }) => ({
+  module: one(documentModules, {
+    fields: [documentGranules.moduleId],
+    references: [documentModules.id],
+  }),
+  sequence: one(submissionSequences, {
+    fields: [documentGranules.sequenceId],
+    references: [submissionSequences.id],
+  }),
+  versions: many(documentVersions),
+  currentVersion: one(documentVersions, {
+    fields: [documentGranules.currentVersionId],
+    references: [documentVersions.id],
+  }),
+  lastModifiedBy: one(users, {
+    fields: [documentGranules.lastModifiedById],
+    references: [users.id],
+  }),
+}));
+
+export const documentVersionsRelations = relations(documentVersions, ({ one }) => ({
+  granule: one(documentGranules, {
+    fields: [documentVersions.granuleId],
+    references: [documentGranules.id],
+  }),
+  documentBlob: one(documentBlobs, {
+    fields: [documentVersions.documentBlobId],
+    references: [documentBlobs.id],
+  }),
+  createdBy: one(users, {
+    fields: [documentVersions.createdById],
+    references: [users.id],
+  }),
+}));
