@@ -1,126 +1,136 @@
 import React from 'react';
-import { Database, FileText, FileCheck, Clock, Plus } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Database, Folder, FileText, Search, Plus, Calendar, Clock } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 
-// VaultQuickAccess component for providing quick access to vault documents
-const VaultQuickAccess = ({ orgId, clientId }) => {
-  // Mock data for demonstration - in a real app this would come from an API
+/**
+ * VaultQuickAccess Component
+ * 
+ * Provides quick access to key documents stored in the TrialSage Vault.
+ */
+const VaultQuickAccess = ({ clientId }) => {
+  // Sample recent documents - in a real app, these would come from an API call
   const recentDocuments = [
     {
       id: 'doc-1',
-      name: 'Protocol v2.1 Final.pdf',
-      status: 'approved',
-      updatedAt: '2025-04-24T15:30:00Z',
-      type: 'protocol'
+      title: 'BTX-112 Clinical Protocol v2.0',
+      type: 'Protocol',
+      dateModified: '2025-05-08T14:30:00Z',
+      icon: 'file-text',
+      status: 'approved'
     },
     {
       id: 'doc-2',
-      name: 'Investigator Brochure.docx',
-      status: 'in_review',
-      updatedAt: '2025-04-22T11:20:00Z',
-      type: 'brochure'
+      title: 'CER Report XR-24 Final',
+      type: 'CER',
+      dateModified: '2025-05-07T11:15:00Z',
+      icon: 'file-check',
+      status: 'final'
     },
     {
       id: 'doc-3',
-      name: 'Statistical Analysis Plan.pdf',
-      status: 'approved',
-      updatedAt: '2025-04-20T09:45:00Z',
-      type: 'stats'
+      title: 'CMC Section 3.2.P.3.1',
+      type: 'CMC Document',
+      dateModified: '2025-05-06T09:45:00Z',
+      icon: 'clipboard',
+      status: 'draft'
     }
   ];
 
-  // Format timestamp for display
-  const formatTimestamp = (timestamp) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now - date;
-    const diffSec = Math.round(diffMs / 1000);
-    const diffMin = Math.round(diffSec / 60);
-    const diffHr = Math.round(diffMin / 60);
-    const diffDays = Math.round(diffHr / 24);
+  // Get client-specific documents
+  const getClientDocuments = () => {
+    if (!clientId) return recentDocuments;
     
-    if (diffSec < 60) {
-      return 'Just now';
-    } else if (diffMin < 60) {
-      return `${diffMin}m ago`;
-    } else if (diffHr < 24) {
-      return `${diffHr}h ago`;
-    } else if (diffDays === 1) {
-      return 'Yesterday';
-    } else if (diffDays < 7) {
-      return `${diffDays}d ago`;
-    } else {
-      return date.toLocaleDateString();
-    }
+    // In a real app, this would filter based on client ID
+    // For demo purposes, we'll just return all documents
+    return recentDocuments;
   };
 
-  // Get status badge based on document status
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'approved':
-        return <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200">Approved</Badge>;
-      case 'in_review':
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">In Review</Badge>;
-      case 'draft':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200">Draft</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">Unknown</Badge>;
-    }
+  const clientDocuments = getClientDocuments();
+
+  // Format dates for display
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    });
   };
 
   return (
-    <Card className="shadow-sm">
+    <Card>
       <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-base font-medium flex items-center">
-            <Database className="h-5 w-5 mr-2 text-primary" />
-            Vault Quick Access
-          </CardTitle>
-          <Button variant="ghost" size="sm" className="h-8">
-            View All
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Database className="h-5 w-5 mr-2 text-slate-600" />
+            <CardTitle className="text-lg font-medium">Vault Quick Access</CardTitle>
+          </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Plus size={16} />
           </Button>
         </div>
+        <CardDescription>
+          Recently accessed documents
+        </CardDescription>
       </CardHeader>
-      <CardContent className="pt-0">
-        {recentDocuments.length === 0 ? (
-          <div className="text-center py-6 bg-gray-50 rounded-md">
-            <FileText className="h-10 w-10 mx-auto text-gray-400 mb-2" />
-            <h3 className="text-sm font-medium text-gray-700">No documents yet</h3>
-            <p className="text-sm text-gray-500 mt-1">Add documents to your vault</p>
-            <Button size="sm" className="mt-3">
-              <Plus size={14} className="mr-1" />
-              Add Document
-            </Button>
+      <CardContent className="pb-1">
+        <div className="space-y-4">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search vault documents..."
+              className="pl-8 bg-gray-50 border-gray-200 focus:bg-white"
+            />
           </div>
-        ) : (
-          <div className="space-y-3">
-            {recentDocuments.map(doc => (
-              <div 
+          
+          {/* Document List */}
+          <div className="space-y-2">
+            {clientDocuments.map((doc) => (
+              <div
                 key={doc.id}
-                className="flex items-center p-2 rounded-md hover:bg-gray-50 cursor-pointer"
+                className="flex items-start p-2 hover:bg-gray-50 rounded-md cursor-pointer"
               >
-                <div className="h-9 w-9 rounded-md bg-primary/10 flex items-center justify-center">
-                  <FileCheck size={16} className="text-primary" />
+                <div className="bg-slate-100 p-2 rounded-md mr-3">
+                  <FileText className="h-5 w-5 text-slate-600" />
                 </div>
-                <div className="ml-3 flex-1 min-w-0">
-                  <div className="flex items-center">
-                    <h4 className="font-medium text-sm text-gray-900 truncate">{doc.name}</h4>
-                    <div className="ml-2">
-                      {getStatusBadge(doc.status)}
-                    </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-medium text-gray-800 truncate">{doc.title}</h4>
+                    <Badge 
+                      variant={
+                        doc.status === 'approved' ? 'default' :
+                        doc.status === 'final' ? 'success' : 'outline'
+                      }
+                      className="ml-2 text-xs"
+                    >
+                      {doc.status.charAt(0).toUpperCase() + doc.status.slice(1)}
+                    </Badge>
                   </div>
-                  <div className="flex items-center text-xs text-gray-500 mt-0.5">
-                    <Clock size={12} className="mr-1" />
-                    <span>{formatTimestamp(doc.updatedAt)}</span>
+                  <div className="flex items-center text-xs text-gray-500 mt-1">
+                    <span className="truncate">{doc.type}</span>
+                    <span className="mx-1.5">•</span>
+                    <div className="flex items-center">
+                      <Calendar className="h-3 w-3 mr-1" />
+                      <span>{formatDate(doc.dateModified)}</span>
+                    </div>
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        )}
+        </div>
       </CardContent>
+      <CardFooter className="pt-0">
+        <Button variant="outline" className="w-full mt-2" size="sm">
+          <Folder className="h-4 w-4 mr-2" />
+          View All Documents
+        </Button>
+      </CardFooter>
     </Card>
   );
 };
