@@ -48,7 +48,11 @@ export default function useNetworkResilience(options = {}) {
     // If we're offline and queueing is enabled, queue the request
     if (!navigator.onLine && queueOfflineRequests) {
       return new Promise((resolve, reject) => {
+        // Generate a unique request ID
+        const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
         requestQueue.current.push({
+          id: requestId,
           url,
           options,
           resolve,
@@ -59,10 +63,8 @@ export default function useNetworkResilience(options = {}) {
         // If the request has a timeout option, honor it
         if (options.timeout) {
           setTimeout(() => {
-            // Find and remove the queued request
-            const index = requestQueue.current.findIndex(req => 
-              req.url === url && req.timestamp === timestamp
-            );
+            // Find and remove the queued request by its unique ID
+            const index = requestQueue.current.findIndex(req => req.id === requestId);
             
             if (index !== -1) {
               const request = requestQueue.current.splice(index, 1)[0];
@@ -139,7 +141,11 @@ export default function useNetworkResilience(options = {}) {
     // If we're offline and queueing is enabled, queue the request for later
     if (!navigator.onLine && queueOfflineRequests) {
       return new Promise((resolve, reject) => {
+        // Generate a unique request ID
+        const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        
         requestQueue.current.push({
+          id: requestId,
           url,
           options,
           resolve,
