@@ -556,6 +556,31 @@ export function checkStorageQuota(options = {}) {
  * 
  * @returns {Object} - Diagnostics results
  */
+/**
+ * Initialize storage resilience system
+ * This function is called by the StabilityEnabledLayout component
+ */
+export function initStorageResilience() {
+  // Return a promise to match the expected API
+  return new Promise((resolve) => {
+    // Check storage availability
+    const storageStatus = {
+      localStorage: isLocalStorageAvailable(),
+      sessionStorage: isSessionStorageAvailable(),
+      indexedDB: isIndexedDBAvailable(),
+      memory: true
+    };
+    
+    // Update global availability tracker
+    availableStorage.localStorage = storageStatus.localStorage;
+    availableStorage.sessionStorage = storageStatus.sessionStorage;
+    availableStorage.indexedDB = storageStatus.indexedDB;
+    
+    // Return storage status
+    resolve(storageStatus);
+  });
+}
+
 export function runDiagnostics() {
   const results = {
     localStorage: {
@@ -696,6 +721,7 @@ export default {
   safeKeys,
   checkStorageQuota,
   runDiagnostics,
+  initStorageResilience,
   // Export these for direct access
   availableStorage,
   errors

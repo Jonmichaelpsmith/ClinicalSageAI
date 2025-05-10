@@ -32,13 +32,17 @@ export default function StabilityEnabledLayout({ children }) {
     console.log('Error analytics initialized with session ID:', analyticsInfo.sessionId);
     
     // Initialize storage resilience
-    storageResilience.initStorageResilience()
-      .then(status => {
-        console.log('Storage resilience initialized:', status);
-      })
-      .catch(err => {
-        console.error('Failed to initialize storage resilience:', err);
-      });
+    if (typeof storageResilience.initStorageResilience === 'function') {
+      storageResilience.initStorageResilience()
+        .then(status => {
+          console.log('Storage resilience initialized:', status);
+        })
+        .catch(err => {
+          console.error('Failed to initialize storage resilience:', err);
+        });
+    } else {
+      console.warn('Storage resilience initialization function not available, using defaults');
+    }
     
     // Initialize memory management monitoring
     memoryManagement.setupMemoryMonitoring();
