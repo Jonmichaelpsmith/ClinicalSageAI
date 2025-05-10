@@ -39,6 +39,7 @@ import OrganizationSwitcher from './components/client-portal/OrganizationSwitche
 import MultiTenantEnterprisePortal from './components/client-portal/MultiTenantEnterprisePortal';
 import SimplePortal from './components/client-portal/SimplePortal';
 import EnterpriseClientPortalFinal from './components/client-portal/EnterpriseClientPortalFinal';
+import SimpleWorkingPortal from './components/client-portal/SimpleWorkingPortal';
 
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
@@ -180,11 +181,11 @@ function App() {
           {/* Main Portal Landing Pages */}
           <Route path="/" component={ClientPortalLanding} />
           
-          {/* Client Portal Routes - direct render of EnterpriseClientPortalFinal */}
+          {/* Client Portal Routes - using simple working portal for reliability */}
           <Route path="/client-portal">
             {() => (
               <Suspense fallback={<LoadingPage />}>
-                <EnterpriseClientPortalFinal />
+                <SimpleWorkingPortal />
               </Suspense>
             )}
           </Route>
@@ -193,7 +194,7 @@ function App() {
           <Route path="/client-portal/:subpath*">
             {() => (
               <Suspense fallback={<LoadingPage />}>
-                <EnterpriseClientPortalFinal />
+                <SimpleWorkingPortal />
               </Suspense>
             )}
           </Route>
