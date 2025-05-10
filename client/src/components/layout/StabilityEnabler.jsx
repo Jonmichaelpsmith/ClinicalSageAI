@@ -134,14 +134,14 @@ function StabilityEnabler({ children }) {
   }
 
   return (
-    <React.Fragment>
+    <>
       {status.initialized && (
         <div style={{ display: 'none' }} data-testid="stability-enabler">
           {/* Hidden component, just used as a marker */}
         </div>
       )}
       {children}
-    </React.Fragment>
+    </>
   );
 }
 

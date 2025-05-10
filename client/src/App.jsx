@@ -327,42 +327,42 @@ function App() {
             </Route>
 
             {/* Unified Submission Builder routes (combines eCTD and IND Wizard) */}
-            <Route path="/submission-builder">
+            <Route path="/ectd-planner">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
-                  <SubmissionBuilder />
+                  <SubmissionBuilder initialModule="ectd" />
                 </Suspense>
               )}
             </Route>
-            <Route path="/submission-builder/module-1">
+            <Route path="/module-1">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
                   <SubmissionBuilder initialModule="m1" />
                 </Suspense>
               )}
             </Route>
-            <Route path="/submission-builder/module-2">
+            <Route path="/module-2">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
                   <SubmissionBuilder initialModule="m2" />
                 </Suspense>
               )}
             </Route>
-            <Route path="/submission-builder/module-3">
+            <Route path="/module-3">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
                   <SubmissionBuilder initialModule="m3" />
                 </Suspense>
               )}
             </Route>
-            <Route path="/submission-builder/module-4">
+            <Route path="/module-4">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
                   <SubmissionBuilder initialModule="m4" />
                 </Suspense>
               )}
             </Route>
-            <Route path="/submission-builder/module-5">
+            <Route path="/module-5">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
                   <SubmissionBuilder initialModule="m5" />
