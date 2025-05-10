@@ -1,250 +1,365 @@
 /**
  * Memory Management Utility
  * 
- * This module provides utilities to manage memory usage in the browser
- * to prevent crashes and performance issues.
+ * This module provides browser memory monitoring and optimization to prevent
+ * memory leaks and reduce the risk of application crashes due to memory issues.
  * 
  * CRITICAL STABILITY COMPONENT - DO NOT MODIFY WITHOUT THOROUGH TESTING
  */
 
 import { MEMORY_CONFIG } from '@/config/stabilityConfig';
 
-// Cache to store references to component cache clearers
-const componentCacheCleaners = new Map();
+// Current memory snapshot and settings
+const memoryState = {
+  currentUsage: null,
+  isMonitoring: false,
+  monitoringInterval: null,
+  lastCleanup: null,
+  componentCaches: new Map(), // Track registered component caches
+  memoryWarningThreshold: MEMORY_CONFIG.heapThreshold || 500, // MB
+  monitoringIntervalMs: MEMORY_CONFIG.monitoringInterval || 30000, // 30 seconds
+  enableGarbageCollection: MEMORY_CONFIG.enableExplicitGC || true,
+  cleanupHistory: [],
+  diagnosticsEnabled: process.env.NODE_ENV === 'development'
+};
+
+// Remember native methods to avoid issues if they get monkey-patched
+const nativeMethods = {
+  setTimeout: window.setTimeout.bind(window),
+  clearTimeout: window.clearTimeout.bind(window),
+  setInterval: window.setInterval.bind(window),
+  clearInterval: window.clearInterval.bind(window)
+};
 
 /**
- * Registers a function that can clear a component's cache
- * 
- * @param {string} componentName - Identifier for the component
- * @param {Function} cleanupFn - Function to call to clear the component's cache
- */
-export function registerCacheCleaner(componentName, cleanupFn) {
-  componentCacheCleaners.set(componentName, cleanupFn);
-}
-
-/**
- * Unregisters a component's cache cleaner when the component unmounts
- * 
- * @param {string} componentName - Identifier for the component
- */
-export function unregisterCacheCleaner(componentName) {
-  componentCacheCleaners.delete(componentName);
-}
-
-/**
- * Clears all component caches to free up memory
- */
-export function clearAllComponentCaches() {
-  for (const cleanupFn of componentCacheCleaners.values()) {
-    try {
-      cleanupFn();
-    } catch (error) {
-      console.error('Error clearing component cache:', error);
-    }
-  }
-}
-
-/**
- * Estimated memory usage based on the array length and type
- * 
- * @param {Array} array - The array to estimate memory for
- * @param {string} type - The type of objects in the array (string, object, etc.)
- * @returns {number} - Estimated memory usage in bytes
- */
-export function estimateArrayMemoryUsage(array, type = 'object') {
-  if (!array || !Array.isArray(array)) return 0;
-  
-  const length = array.length;
-  let bytesPerItem = 0;
-  
-  // Rough estimates based on object type
-  switch (type) {
-    case 'string':
-      bytesPerItem = 2 * 16; // Average string size
-      break;
-    case 'number':
-      bytesPerItem = 8;
-      break;
-    case 'boolean':
-      bytesPerItem = 4;
-      break;
-    case 'date':
-      bytesPerItem = 8;
-      break;
-    case 'object':
-    default:
-      bytesPerItem = 400; // Average object size estimate
-      break;
-  }
-  
-  return length * bytesPerItem;
-}
-
-/**
- * Hook to create a memory-efficient cache with automatic cleanup
- * 
- * @param {string} cacheId - Unique identifier for this cache
- * @param {number} maxItems - Maximum items to store in the cache
- * @returns {Object} - Cache management functions
- */
-export function useMemoryEfficientCache(cacheId, maxItems = MEMORY_CONFIG.maxCacheItems) {
-  const cacheRef = React.useRef(new Map());
-  
-  // Register a cleanup function to clear this cache if memory gets low
-  React.useEffect(() => {
-    const cleanup = () => {
-      // Keep only the most recently used 75% of items when cleanup is triggered
-      const cache = cacheRef.current;
-      const itemsToKeep = Math.floor(maxItems * 0.75);
-      
-      if (cache.size > itemsToKeep) {
-        // Create array of [key, timestamp] pairs
-        const entries = Array.from(cache.entries())
-          .map(([key, data]) => [key, data.timestamp])
-          .sort((a, b) => b[1] - a[1]); // Sort by timestamp descending
-        
-        // Delete older entries
-        for (let i = itemsToKeep; i < entries.length; i++) {
-          cache.delete(entries[i][0]);
-        }
-      }
-    };
-    
-    registerCacheCleaner(cacheId, cleanup);
-    
-    return () => {
-      unregisterCacheCleaner(cacheId);
-    };
-  }, [cacheId, maxItems]);
-  
-  const get = (key) => {
-    const cache = cacheRef.current;
-    const entry = cache.get(key);
-    
-    if (entry) {
-      // Update timestamp on access
-      entry.timestamp = Date.now();
-      return entry.value;
-    }
-    
-    return undefined;
-  };
-  
-  const set = (key, value) => {
-    const cache = cacheRef.current;
-    
-    // If we're at max capacity, remove oldest item
-    if (cache.size >= maxItems) {
-      let oldestKey = null;
-      let oldestTime = Infinity;
-      
-      // Find the oldest entry
-      for (const [k, data] of cache.entries()) {
-        if (data.timestamp < oldestTime) {
-          oldestTime = data.timestamp;
-          oldestKey = k;
-        }
-      }
-      
-      if (oldestKey) {
-        cache.delete(oldestKey);
-      }
-    }
-    
-    // Add new entry
-    cache.set(key, {
-      value,
-      timestamp: Date.now()
-    });
-  };
-  
-  const remove = (key) => {
-    cacheRef.current.delete(key);
-  };
-  
-  const clear = () => {
-    cacheRef.current.clear();
-  };
-  
-  return { get, set, remove, clear };
-}
-
-/**
- * Schedule periodic memory cleanup
+ * Set up browser memory monitoring
  */
 export function setupMemoryMonitoring() {
-  // Set up periodic memory sweeps
-  if (MEMORY_CONFIG.enableGCHints) {
-    const interval = setInterval(() => {
-      // Clear obsolete caches
-      clearAllComponentCaches();
-      
-      // Remove any large objects from memory
-      try {
-        // Hint to the browser that it's a good time to run GC
-        if (window.gc) {
-          window.gc();
-        }
-        
-        // Force image cache clearing (can help prevent memory leaks)
-        const images = document.querySelectorAll('img');
-        images.forEach(img => {
-          if (!isElementInViewport(img)) {
-            img.src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-          }
-        });
-      } catch (e) {
-        console.error('Memory sweep error:', e);
+  if (memoryState.isMonitoring) {
+    return; // Already monitoring
+  }
+  
+  // Check if performance.memory is available (Chrome/Edge)
+  const hasMemoryAPI = !!(window.performance && performance.memory);
+  
+  if (hasMemoryAPI) {
+    console.log('Performance.memory API available, setting up memory monitoring');
+    
+    // Take initial snapshot
+    updateMemorySnapshot();
+    
+    // Set up interval to monitor memory
+    memoryState.monitoringInterval = nativeMethods.setInterval(() => {
+      updateMemorySnapshot();
+      checkMemoryUsage();
+    }, memoryState.monitoringIntervalMs);
+    
+    memoryState.isMonitoring = true;
+  } else {
+    console.log('Performance.memory API not available, using limited memory monitoring');
+    
+    // Still set the monitoring flag to avoid repeated setup attempts
+    memoryState.isMonitoring = true;
+    
+    // Use a simpler interval to check for general issues
+    // This won't have actual memory metrics, but can still help manage component caches
+    memoryState.monitoringInterval = nativeMethods.setInterval(() => {
+      // Periodically clear caches if there are any registered
+      if (memoryState.componentCaches.size > 0 && shouldPerformCleanup()) {
+        performCleanup('scheduled');
       }
-    }, MEMORY_CONFIG.memorySweepIntervalMs);
+    }, 300000); // Every 5 minutes
+  }
+  
+  return memoryState.isMonitoring;
+}
 
-    // Clean up when the app is closed/navigated away
-    window.addEventListener('beforeunload', () => {
-      clearInterval(interval);
-      clearAllComponentCaches();
-    });
+/**
+ * Update the current memory snapshot
+ */
+function updateMemorySnapshot() {
+  if (window.performance && performance.memory) {
+    const { usedJSHeapSize, totalJSHeapSize, jsHeapSizeLimit } = performance.memory;
+    
+    memoryState.currentUsage = {
+      used: usedJSHeapSize,
+      total: totalJSHeapSize,
+      limit: jsHeapSizeLimit,
+      usedMB: Math.round(usedJSHeapSize / (1024 * 1024)),
+      totalMB: Math.round(totalJSHeapSize / (1024 * 1024)),
+      limitMB: Math.round(jsHeapSizeLimit / (1024 * 1024)),
+      percentUsed: Math.round((usedJSHeapSize / jsHeapSizeLimit) * 100),
+      timestamp: Date.now()
+    };
   }
 }
 
 /**
- * Helper to check if an element is currently visible in the viewport
+ * Check memory usage against thresholds
  */
-function isElementInViewport(el) {
-  const rect = el.getBoundingClientRect();
-  return (
-    rect.top >= 0 &&
-    rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-  );
+function checkMemoryUsage() {
+  if (!memoryState.currentUsage) {
+    return;
+  }
+  
+  const { usedMB, percentUsed } = memoryState.currentUsage;
+  
+  // If memory usage is above the warning threshold or using more than 80% of available heap
+  if (usedMB > memoryState.memoryWarningThreshold || percentUsed > 80) {
+    console.warn(
+      `High memory usage detected: ${usedMB}MB (${percentUsed}% of available heap). ` +
+      `Performing emergency cleanup.`
+    );
+    
+    performCleanup('emergency');
+    
+    // If extremely high, suggest a page reload
+    if (percentUsed > 90) {
+      console.error(
+        `Critical memory usage detected: ${usedMB}MB (${percentUsed}% of available heap). ` +
+        `Consider reloading the page to prevent a crash.`
+      );
+      
+      // In development mode, show a more conspicuous message
+      if (process.env.NODE_ENV === 'development') {
+        console.error(
+          '%c CRITICAL MEMORY WARNING! ',
+          'background:red;color:white;font-size:16px;'
+        );
+      }
+    }
+  }
 }
 
 /**
- * Monitor for memory leaks in React components
+ * Check if we should perform a cleanup based on time since last cleanup
  */
-export function useMemoryLeakProtection(componentName) {
-  React.useEffect(() => {
-    // Count of component instances
-    const countRef = React.useRef(0);
-    countRef.current++;
-    
-    // Check for too many instances of the same component type
-    if (countRef.current > 100) {
-      console.warn(`Possible memory leak: ${componentName} has ${countRef.current} instances`);
+function shouldPerformCleanup() {
+  if (!memoryState.lastCleanup) {
+    return true; // First cleanup
+  }
+  
+  const now = Date.now();
+  const timeSinceLastCleanup = now - memoryState.lastCleanup;
+  
+  // Don't clean up more than once every 2 minutes unless it's an emergency
+  return timeSinceLastCleanup > 120000;
+}
+
+/**
+ * Perform memory cleanup operations
+ */
+function performCleanup(reason = 'manual') {
+  // Only perform if it's been a while since the last cleanup
+  // or if this is an emergency cleanup
+  if (reason !== 'emergency' && !shouldPerformCleanup()) {
+    return;
+  }
+  
+  console.log(`Performing memory cleanup (reason: ${reason})`);
+  
+  // Clear component caches
+  clearComponentCaches();
+  
+  // Attempt to force garbage collection if enabled and available
+  if (memoryState.enableGarbageCollection && window.gc) {
+    try {
+      window.gc();
+      console.log('Forced garbage collection completed');
+    } catch (e) {
+      // Ignore errors
     }
+  }
+  
+  // Update the last cleanup time
+  memoryState.lastCleanup = Date.now();
+  
+  // Record the cleanup in history
+  memoryState.cleanupHistory.push({
+    timestamp: Date.now(),
+    reason,
+    memoryBefore: memoryState.currentUsage ? { ...memoryState.currentUsage } : null
+  });
+  
+  // Keep history limited
+  if (memoryState.cleanupHistory.length > 20) {
+    memoryState.cleanupHistory.shift();
+  }
+  
+  // Update memory snapshot after cleanup
+  nativeMethods.setTimeout(() => {
+    updateMemorySnapshot();
     
-    return () => {
-      countRef.current--;
-    };
-  }, [componentName]);
+    // Record the post-cleanup memory state
+    if (memoryState.currentUsage && memoryState.cleanupHistory.length > 0) {
+      const latestCleanup = memoryState.cleanupHistory[memoryState.cleanupHistory.length - 1];
+      latestCleanup.memoryAfter = { ...memoryState.currentUsage };
+      
+      // Calculate savings if we have before and after
+      if (latestCleanup.memoryBefore) {
+        const savedBytes = latestCleanup.memoryBefore.used - latestCleanup.memoryAfter.used;
+        const savedMB = Math.round(savedBytes / (1024 * 1024));
+        
+        if (savedMB > 0) {
+          console.log(`Memory cleanup freed approximately ${savedMB}MB`);
+        }
+      }
+    }
+  }, 1000);
+}
+
+/**
+ * Clear all registered component caches
+ */
+function clearComponentCaches() {
+  if (memoryState.componentCaches.size === 0) {
+    return;
+  }
+  
+  console.log(`Clearing ${memoryState.componentCaches.size} component caches`);
+  
+  let totalItemsCleared = 0;
+  
+  // Clear each registered cache
+  memoryState.componentCaches.forEach((cache, name) => {
+    if (typeof cache.clear === 'function') {
+      try {
+        const size = cache.size || 0;
+        cache.clear();
+        totalItemsCleared += size;
+        console.log(`Cleared ${name} cache (${size} items)`);
+      } catch (e) {
+        console.error(`Error clearing ${name} cache:`, e);
+      }
+    } else if (Array.isArray(cache)) {
+      const size = cache.length;
+      cache.length = 0;
+      totalItemsCleared += size;
+      console.log(`Cleared ${name} cache array (${size} items)`);
+    } else if (typeof cache === 'object') {
+      const size = Object.keys(cache).length;
+      for (const key in cache) {
+        delete cache[key];
+      }
+      totalItemsCleared += size;
+      console.log(`Cleared ${name} cache object (${size} items)`);
+    }
+  });
+  
+  console.log(`Total items cleared from caches: ${totalItemsCleared}`);
+}
+
+/**
+ * Register a component cache for automatic cleanup
+ * 
+ * @param {string} name - Name of the component/cache
+ * @param {object|Map|Set|Array} cache - Reference to the cache object
+ * @returns {function} - Function to unregister the cache
+ */
+export function registerComponentCache(name, cache) {
+  if (!cache) {
+    console.error('Cannot register null or undefined cache');
+    return () => {};
+  }
+  
+  console.log(`Registering component cache: ${name}`);
+  memoryState.componentCaches.set(name, cache);
+  
+  // Return a function to unregister
+  return () => {
+    memoryState.componentCaches.delete(name);
+    console.log(`Unregistered component cache: ${name}`);
+  };
+}
+
+/**
+ * Clear specific component caches by name
+ * 
+ * @param {string|Array<string>} cacheNames - Names of caches to clear
+ */
+export function clearComponentCache(cacheNames) {
+  const namesToClear = Array.isArray(cacheNames) ? cacheNames : [cacheNames];
+  
+  namesToClear.forEach(name => {
+    const cache = memoryState.componentCaches.get(name);
+    if (cache) {
+      if (typeof cache.clear === 'function') {
+        try {
+          const size = cache.size || 0;
+          cache.clear();
+          console.log(`Cleared ${name} cache (${size} items)`);
+        } catch (e) {
+          console.error(`Error clearing ${name} cache:`, e);
+        }
+      } else if (Array.isArray(cache)) {
+        const size = cache.length;
+        cache.length = 0;
+        console.log(`Cleared ${name} cache array (${size} items)`);
+      } else if (typeof cache === 'object') {
+        const size = Object.keys(cache).length;
+        for (const key in cache) {
+          delete cache[key];
+        }
+        console.log(`Cleared ${name} cache object (${size} items)`);
+      }
+    } else {
+      console.warn(`Cache not found: ${name}`);
+    }
+  });
+}
+
+/**
+ * Clear all component caches (public method)
+ */
+export function clearAllComponentCaches() {
+  clearComponentCaches();
+}
+
+/**
+ * Get the current memory usage
+ */
+export function getMemoryUsage() {
+  updateMemorySnapshot();
+  return memoryState.currentUsage;
+}
+
+/**
+ * Get statistics about memory management
+ */
+export function getMemoryStats() {
+  return {
+    isMonitoring: memoryState.isMonitoring,
+    currentUsage: memoryState.currentUsage,
+    registeredCaches: Array.from(memoryState.componentCaches.keys()),
+    cleanupHistory: [...memoryState.cleanupHistory],
+    lastCleanup: memoryState.lastCleanup,
+    config: {
+      memoryWarningThreshold: memoryState.memoryWarningThreshold,
+      monitoringIntervalMs: memoryState.monitoringIntervalMs,
+      enableGarbageCollection: memoryState.enableGarbageCollection
+    }
+  };
+}
+
+/**
+ * Stop memory monitoring
+ */
+export function stopMemoryMonitoring() {
+  if (memoryState.monitoringInterval) {
+    nativeMethods.clearInterval(memoryState.monitoringInterval);
+    memoryState.monitoringInterval = null;
+  }
+  
+  memoryState.isMonitoring = false;
+  console.log('Memory monitoring stopped');
 }
 
 export default {
-  registerCacheCleaner,
-  unregisterCacheCleaner,
-  clearAllComponentCaches,
-  estimateArrayMemoryUsage,
-  useMemoryEfficientCache,
   setupMemoryMonitoring,
-  useMemoryLeakProtection
+  registerComponentCache,
+  clearComponentCache,
+  clearAllComponentCaches,
+  getMemoryUsage,
+  getMemoryStats,
+  stopMemoryMonitoring
 };

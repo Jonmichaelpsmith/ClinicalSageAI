@@ -1,183 +1,213 @@
 /**
  * Network Resilience Hook
  * 
- * This hook provides network resilience capabilities to React components,
- * including automatic retries, offline detection, and connection status.
+ * This hook provides network status monitoring and resilient fetch operations
+ * with automatic retries, offline queueing, and error recovery.
  * 
  * CRITICAL STABILITY COMPONENT - DO NOT MODIFY WITHOUT THOROUGH TESTING
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import networkResilience from '@/utils/networkResilience';
 import { NETWORK_CONFIG } from '@/config/stabilityConfig';
 
 /**
- * Hook for resilient network operations in React components
+ * Hook for monitoring network status and providing resilient API operations
  * 
- * @param {Object} options Hook configuration
- * @param {string} options.baseUrl Base URL for API requests
- * @param {Object} options.defaultOptions Default fetch options
- * @returns {Object} Network resilience utilities and state
+ * @param {Object} options - Hook configuration
+ * @param {number} options.maxRetries - Maximum retry attempts (default from config)
+ * @param {number} options.baseRetryDelay - Base delay in ms between retries (default from config)
+ * @param {number} options.maxRetryDelay - Maximum delay in ms between retries (default from config)
+ * @param {boolean} options.queueOfflineRequests - Whether to queue requests when offline (default from config)
+ * @returns {Object} - Network status and resilient fetch operations
  */
-export default function useNetworkResilience({
-  baseUrl = '',
-  defaultOptions = {}
-} = {}) {
-  // Track online status
+export default function useNetworkResilience(options = {}) {
+  // Extract configuration with fallbacks to global config
+  const {
+    maxRetries = NETWORK_CONFIG.maxRetries,
+    baseRetryDelay = NETWORK_CONFIG.baseRetryDelay,
+    maxRetryDelay = NETWORK_CONFIG.maxRetryDelay,
+    queueOfflineRequests = NETWORK_CONFIG.queueOfflineRequests
+  } = options;
+  
+  // Network status
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   
-  // Track pending requests
+  // Request tracking
   const [pendingRequests, setPendingRequests] = useState(0);
-  
-  // Track failed requests
   const [failedRequests, setFailedRequests] = useState(0);
+  const [succeededRequests, setSucceededRequests] = useState(0);
   
-  // Create a resilient API client
-  const apiClient = useRef(
-    networkResilience.createResilientApiClient(baseUrl, defaultOptions)
-  ).current;
+  // Request queue for offline mode
+  const requestQueue = useRef([]);
   
-  // Update online status
-  const handleOnlineStatus = useCallback(() => {
-    setIsOnline(navigator.onLine);
+  // Function to perform a fetch with automatic retries
+  const resilientFetch = useCallback(async (url, options = {}) => {
+    // Increment pending requests
+    setPendingRequests(prev => prev + 1);
+    
+    // If we're offline and queueing is enabled, queue the request
+    if (!navigator.onLine && queueOfflineRequests) {
+      return new Promise((resolve, reject) => {
+        requestQueue.current.push({
+          url,
+          options,
+          resolve,
+          reject,
+          timestamp: Date.now()
+        });
+        
+        // If the request has a timeout option, honor it
+        if (options.timeout) {
+          setTimeout(() => {
+            // Find and remove the queued request
+            const index = requestQueue.current.findIndex(req => 
+              req.url === url && req.timestamp === timestamp
+            );
+            
+            if (index !== -1) {
+              const request = requestQueue.current.splice(index, 1)[0];
+              request.reject(new Error('Request timed out while queued offline'));
+              
+              // Update stats
+              setPendingRequests(prev => Math.max(0, prev - 1));
+              setFailedRequests(prev => prev + 1);
+            }
+          }, options.timeout);
+        }
+      });
+    }
+    
+    // Attempt the fetch with retries
+    let attempt = 0;
+    let lastError = null;
+    
+    while (attempt <= maxRetries) {
+      try {
+        const response = await fetch(url, options);
+        
+        // Check if the request was successful
+        if (response.ok) {
+          // Update stats
+          setPendingRequests(prev => Math.max(0, prev - 1));
+          setSucceededRequests(prev => prev + 1);
+          
+          return response;
+        }
+        
+        // If we get here, the response was not ok
+        lastError = new Error(`HTTP error ${response.status}: ${response.statusText}`);
+        lastError.response = response;
+        
+        // Check if we should retry based on status code
+        const shouldRetry = [408, 429, 500, 502, 503, 504].includes(response.status);
+        
+        if (!shouldRetry || attempt >= maxRetries) {
+          break;
+        }
+      } catch (error) {
+        lastError = error;
+        
+        // Network errors should be retried if we're online
+        if (!navigator.onLine || attempt >= maxRetries) {
+          break;
+        }
+      }
+      
+      // Increment attempt counter
+      attempt++;
+      
+      // If we're going to retry, calculate the delay with exponential backoff
+      if (attempt <= maxRetries) {
+        const delay = Math.min(
+          maxRetryDelay,
+          baseRetryDelay * Math.pow(2, attempt - 1)
+        );
+        
+        // Add some jitter to avoid request storms
+        const jitter = delay * 0.2 * Math.random();
+        const finalDelay = delay + jitter;
+        
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, finalDelay));
+      }
+    }
+    
+    // If we get here, we've exhausted our retries or hit a non-retryable error
+    setPendingRequests(prev => Math.max(0, prev - 1));
+    setFailedRequests(prev => prev + 1);
+    
+    // If we're offline and queueing is enabled, queue the request for later
+    if (!navigator.onLine && queueOfflineRequests) {
+      return new Promise((resolve, reject) => {
+        requestQueue.current.push({
+          url,
+          options,
+          resolve,
+          reject,
+          timestamp: Date.now()
+        });
+      });
+    }
+    
+    throw lastError;
+  }, [maxRetries, baseRetryDelay, maxRetryDelay, queueOfflineRequests]);
+  
+  // Process the request queue when we come back online
+  const processQueue = useCallback(async () => {
+    if (requestQueue.current.length === 0) {
+      return;
+    }
+    
+    console.log(`Processing ${requestQueue.current.length} queued requests`);
+    
+    // Create a copy of the queue and clear it
+    const queueCopy = [...requestQueue.current];
+    requestQueue.current = [];
+    
+    // Process each request
+    for (const request of queueCopy) {
+      try {
+        const response = await fetch(request.url, request.options);
+        request.resolve(response);
+        setSucceededRequests(prev => prev + 1);
+      } catch (error) {
+        request.reject(error);
+        setFailedRequests(prev => prev + 1);
+      }
+    }
   }, []);
   
-  // Setup network status listeners
+  // Set up event listeners for online/offline events
   useEffect(() => {
-    // Initialize network resilience features
-    networkResilience.initNetworkResilience();
-    
-    // Setup listeners for online/offline events
-    window.addEventListener('online', handleOnlineStatus);
-    window.addEventListener('offline', handleOnlineStatus);
-    
-    // Cleanup when component unmounts
-    return () => {
-      window.removeEventListener('online', handleOnlineStatus);
-      window.removeEventListener('offline', handleOnlineStatus);
-      networkResilience.cleanupNetworkResilience();
+    const handleOnline = () => {
+      setIsOnline(true);
+      
+      // Process queued requests when we come back online
+      if (queueOfflineRequests) {
+        processQueue();
+      }
     };
-  }, [handleOnlineStatus]);
-  
-  // Enhanced fetch with request tracking
-  const fetch = useCallback(async (url, options = {}) => {
-    setPendingRequests(prev => prev + 1);
     
-    try {
-      const response = await networkResilience.resilientFetch(url, options);
-      return response;
-    } catch (error) {
-      setFailedRequests(prev => prev + 1);
-      throw error;
-    } finally {
-      setPendingRequests(prev => Math.max(0, prev - 1));
-    }
-  }, []);
-  
-  /**
-   * Enhanced GET request with resilience
-   */
-  const get = useCallback(async (path, options = {}) => {
-    setPendingRequests(prev => prev + 1);
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
     
-    try {
-      const data = await apiClient.get(path, options);
-      return data;
-    } catch (error) {
-      setFailedRequests(prev => prev + 1);
-      throw error;
-    } finally {
-      setPendingRequests(prev => Math.max(0, prev - 1));
-    }
-  }, [apiClient]);
-  
-  /**
-   * Enhanced POST request with resilience
-   */
-  const post = useCallback(async (path, data, options = {}) => {
-    setPendingRequests(prev => prev + 1);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
     
-    try {
-      const response = await apiClient.post(path, data, options);
-      return response;
-    } catch (error) {
-      setFailedRequests(prev => prev + 1);
-      throw error;
-    } finally {
-      setPendingRequests(prev => Math.max(0, prev - 1));
-    }
-  }, [apiClient]);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [queueOfflineRequests, processQueue]);
   
-  /**
-   * Enhanced PUT request with resilience
-   */
-  const put = useCallback(async (path, data, options = {}) => {
-    setPendingRequests(prev => prev + 1);
-    
-    try {
-      const response = await apiClient.put(path, data, options);
-      return response;
-    } catch (error) {
-      setFailedRequests(prev => prev + 1);
-      throw error;
-    } finally {
-      setPendingRequests(prev => Math.max(0, prev - 1));
-    }
-  }, [apiClient]);
-  
-  /**
-   * Enhanced DELETE request with resilience
-   */
-  const del = useCallback(async (path, options = {}) => {
-    setPendingRequests(prev => prev + 1);
-    
-    try {
-      const response = await apiClient.delete(path, options);
-      return response;
-    } catch (error) {
-      setFailedRequests(prev => prev + 1);
-      throw error;
-    } finally {
-      setPendingRequests(prev => Math.max(0, prev - 1));
-    }
-  }, [apiClient]);
-  
-  /**
-   * Retry all failed requests
-   */
-  const retryFailedRequests = useCallback(() => {
-    const networkState = apiClient.getNetworkState();
-    setFailedRequests(0);
-    return networkState.retryQueueSize;
-  }, [apiClient]);
-  
-  /**
-   * Get current network state
-   */
-  const getNetworkState = useCallback(() => {
-    return apiClient.getNetworkState();
-  }, [apiClient]);
-  
+  // Return the network status and resilient fetch function
   return {
-    // Network status
     isOnline,
     pendingRequests,
     failedRequests,
-    isBusy: pendingRequests > 0,
-    
-    // Enhanced fetch with resilience
-    fetch,
-    
-    // API methods with resilience
-    api: {
-      get,
-      post,
-      put,
-      delete: del
-    },
-    
-    // Utility methods
-    retryFailedRequests,
-    getNetworkState
+    succeededRequests,
+    requestQueue: requestQueue.current,
+    resilientFetch
   };
 }

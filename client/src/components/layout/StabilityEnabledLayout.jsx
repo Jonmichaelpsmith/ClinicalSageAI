@@ -9,7 +9,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { ErrorBoundary } from '@/ErrorBoundary';
+import ErrorBoundary from '@/ErrorBoundary';
 import useHealthMonitor from '@/hooks/useHealthMonitor';
 import useNetworkResilience from '@/hooks/useNetworkResilience';
 import errorAnalytics from '@/utils/errorAnalytics';
