@@ -1,6 +1,11 @@
 // SubmissionBuilder.jsx – simplified version without drag-drop tree
 import React, { useEffect, useState, useCallback } from 'react';
-import { CheckCircle, XCircle, Info, AlertTriangle, Settings, Shield, Building, Users } from 'lucide-react';
+import { 
+  CheckCircle, XCircle, Info, AlertTriangle, Settings, Shield, Building, Users,
+  FileText, FileX, Plus, ArrowUpDown, FileSearch, InfoIcon, Eye, 
+  Pencil, Trash, Files, RefreshCw, ClipboardCheck, FolderTree, FileArchive,
+  Upload, FileDown, Loader2, Wand2
+} from 'lucide-react';
 import { useQCWebSocket } from '../hooks/useQCWebSocket';
 import { useTenant } from '../contexts/TenantContext.tsx';
 import { OrganizationSwitcher } from '../components/tenant/OrganizationSwitcher.tsx';
@@ -9,9 +14,14 @@ import useNetworkResilience from '../hooks/useNetworkResilience.jsx';
 import useHealthMonitor from '../hooks/useHealthMonitor.jsx';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import axios from 'axios';
 
 // Region‑specific folder hierarchy definitions
@@ -807,6 +817,247 @@ export default function SubmissionBuilder({
               </CardContent>
             </Card>
           )}
+        </TabsContent>
+        
+        {/* Module 1 - Administrative Information */}
+        <TabsContent value="module1" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Module 1 - Administrative Information</CardTitle>
+              <CardDescription>Regional administrative information</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-4">
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">1.1 Submission Information</h3>
+                  <p className="text-sm text-slate-500 mt-1">Cover letter, forms, and overall table of contents</p>
+                  
+                  <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium">Documents</h4>
+                      <div className="flex items-center space-x-2">
+                        <FileText className="h-4 w-4 text-blue-500" />
+                        <span className="text-xs">cover-letter.pdf</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <FileText className="h-4 w-4 text-blue-500" />
+                        <span className="text-xs">application-form.pdf</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium">Actions</h4>
+                      <Button variant="outline" size="sm" className="w-full text-xs">
+                        <Plus className="h-3 w-3 mr-1" /> Add Document
+                      </Button>
+                      <Button variant="outline" size="sm" className="w-full text-xs">
+                        <Settings className="h-3 w-3 mr-1" /> Configure Section
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">1.2 Administrative Information</h3>
+                  <p className="text-sm text-slate-500 mt-1">Application form and product information</p>
+                  
+                  <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium">Documents</h4>
+                      <div className="flex items-center space-x-2 text-slate-400">
+                        <FileX className="h-4 w-4" />
+                        <span className="text-xs">No documents added</span>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium">Actions</h4>
+                      <Button variant="outline" size="sm" className="w-full text-xs">
+                        <Plus className="h-3 w-3 mr-1" /> Add Document
+                      </Button>
+                      <Button variant="outline" size="sm" className="w-full text-xs">
+                        <Settings className="h-3 w-3 mr-1" /> Configure Section
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Module 2 - CTD Summaries */}
+        <TabsContent value="module2" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Module 2 - CTD Summaries</CardTitle>
+              <CardDescription>Common Technical Document Summaries</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-4">
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">2.1 CTD Table of Contents</h3>
+                  <p className="text-sm text-slate-500 mt-1">Overall table of contents for Module 2</p>
+                </div>
+                
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">2.2 Introduction</h3>
+                  <p className="text-sm text-slate-500 mt-1">Introduction to the pharmaceutical product</p>
+                </div>
+                
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">2.3 Quality Overall Summary</h3>
+                  <p className="text-sm text-slate-500 mt-1">Summary of quality information</p>
+                </div>
+                
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">2.4 Nonclinical Overview</h3>
+                  <p className="text-sm text-slate-500 mt-1">Overview of nonclinical studies</p>
+                </div>
+                
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">2.5 Clinical Overview</h3>
+                  <p className="text-sm text-slate-500 mt-1">Overview of clinical studies and risk-benefit assessment</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Module 3 - Quality */}
+        <TabsContent value="module3" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Module 3 - Quality</CardTitle>
+              <CardDescription>Chemical, pharmaceutical, and biological information</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-4">
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">3.1 Table of Contents</h3>
+                  <p className="text-sm text-slate-500 mt-1">Table of contents for Module 3</p>
+                </div>
+                
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">3.2 Body of Data</h3>
+                  <p className="text-sm text-slate-500 mt-1">Quality data for drug substance and product</p>
+                  
+                  <Alert className="mt-4">
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>ICH Guidelines</AlertTitle>
+                    <AlertDescription>
+                      This section follows ICH Q1-Q10 guidelines for pharmaceutical development and stability
+                    </AlertDescription>
+                  </Alert>
+                </div>
+                
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">3.3 Literature References</h3>
+                  <p className="text-sm text-slate-500 mt-1">References for Module 3</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Module 4 - Nonclinical Study Reports */}
+        <TabsContent value="module4" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Module 4 - Nonclinical Study Reports</CardTitle>
+              <CardDescription>Reports of toxicology, pharmacology, and pharmacokinetic studies</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-4">
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">4.1 Table of Contents</h3>
+                  <p className="text-sm text-slate-500 mt-1">Table of contents for Module 4</p>
+                </div>
+                
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">4.2 Study Reports</h3>
+                  <p className="text-sm text-slate-500 mt-1">Reports from nonclinical studies</p>
+                  
+                  <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium">Study Categories</h4>
+                      <div className="text-xs space-y-1">
+                        <div>• Pharmacology</div>
+                        <div>• Pharmacokinetics</div>
+                        <div>• Toxicology</div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium">Actions</h4>
+                      <Button variant="outline" size="sm" className="w-full text-xs">
+                        <Plus className="h-3 w-3 mr-1" /> Add Study
+                      </Button>
+                      <Button variant="outline" size="sm" className="w-full text-xs">
+                        <ArrowUpDown className="h-3 w-3 mr-1" /> Sort Studies
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">4.3 Literature References</h3>
+                  <p className="text-sm text-slate-500 mt-1">References for Module 4</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Module 5 - Clinical Study Reports */}
+        <TabsContent value="module5" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Module 5 - Clinical Study Reports</CardTitle>
+              <CardDescription>Reports of clinical studies</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <div className="space-y-4">
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">5.1 Table of Contents</h3>
+                  <p className="text-sm text-slate-500 mt-1">Table of contents for Module 5</p>
+                </div>
+                
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">5.2 Tabular Listing of Studies</h3>
+                  <p className="text-sm text-slate-500 mt-1">Overview of all clinical studies</p>
+                </div>
+                
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">5.3 Clinical Study Reports</h3>
+                  <p className="text-sm text-slate-500 mt-1">Reports from clinical studies</p>
+                  
+                  <div className="mt-4 grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium">Study Categories</h4>
+                      <div className="text-xs space-y-1">
+                        <div>• Biopharmaceutic Studies</div>
+                        <div>• Pharmacokinetic Studies</div>
+                        <div>• Efficacy and Safety Studies</div>
+                        <div>• Post-Marketing Experience</div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <h4 className="text-xs font-medium">Actions</h4>
+                      <Button variant="outline" size="sm" className="w-full text-xs">
+                        <Plus className="h-3 w-3 mr-1" /> Add Study
+                      </Button>
+                      <Button variant="outline" size="sm" className="w-full text-xs">
+                        <FileSearch className="h-3 w-3 mr-1" /> View Reports
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="rounded-md border p-4">
+                  <h3 className="text-sm font-medium">5.4 Literature References</h3>
+                  <p className="text-sm text-slate-500 mt-1">References for Module 5</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
         
         <TabsContent value="history" className="space-y-4">
