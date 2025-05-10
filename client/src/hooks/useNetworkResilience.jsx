@@ -173,10 +173,15 @@ export default function useNetworkResilience(options = {}) {
     // Process each request
     for (const request of queueCopy) {
       try {
+        console.log(`Processing queued request with ID: ${request.id}`);
+        // Use resilientFetch instead of direct fetch to get retry benefits
+        // but we need to avoid re-queueing, so we'll use a direct fetch inside
         const response = await fetch(request.url, request.options);
+        console.log(`Successfully processed queued request ID: ${request.id}`);
         request.resolve(response);
         setSucceededRequests(prev => prev + 1);
       } catch (error) {
+        console.error(`Error processing queued request with ID: ${request.id}`, error);
         request.reject(error);
         setFailedRequests(prev => prev + 1);
       }

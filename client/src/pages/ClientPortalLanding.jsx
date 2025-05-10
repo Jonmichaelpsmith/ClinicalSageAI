@@ -92,20 +92,33 @@ const ClientPortalLanding = () => {
   ];
 
   const handleModuleSelect = (moduleId) => {
+    // Find the module object from the module cards
+    const selectedModule = moduleCards.find(m => m.id === moduleId);
+    
     // Set the current module in the tenant context if available
-    if (typeof setCurrentModule === 'function') {
+    if (typeof setCurrentModule === 'function' && selectedModule) {
       try {
-        setCurrentModule(moduleId);
+        // Create a proper Module object format expected by TenantContext
+        const moduleObject = {
+          id: selectedModule.id,
+          name: selectedModule.title,
+          path: selectedModule.path,
+          // Add an optional icon if available in the future
+          icon: selectedModule.icon || undefined
+        };
+        
+        // Set the module object in the context
+        setCurrentModule(moduleObject);
+        console.log(`Setting current module: ${moduleObject.name}`);
       } catch (err) {
         console.error("Failed to set current module:", err);
         // Continue with navigation even if setting the module fails
       }
     } else {
-      console.warn("setCurrentModule function not available - tenant context may not be initialized");
+      console.warn("setCurrentModule function not available or module not found - tenant context may not be initialized");
     }
     
-    // Find the module path
-    const selectedModule = moduleCards.find(m => m.id === moduleId);
+    // Navigate to the module path if found
     if (selectedModule) {
       const fullUrl = window.location.origin + selectedModule.path;
       window.location.href = fullUrl;
