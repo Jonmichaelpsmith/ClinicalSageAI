@@ -2,11 +2,11 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { CheckCircle, XCircle, Info, AlertTriangle, Settings, Shield, Building, Users } from 'lucide-react';
 import { useQCWebSocket } from '../hooks/useQCWebSocket';
-import { useTenant } from '../../contexts/TenantContext.tsx';
-import { OrganizationSwitcher } from '../../components/tenant/OrganizationSwitcher.tsx';
-import { ClientWorkspaceSwitcher } from '../../components/tenant/ClientWorkspaceSwitcher.tsx';
-import { useNetworkResilience } from '../../hooks/useNetworkResilience.jsx';
-import { useHealthMonitor } from '../../hooks/useHealthMonitor.jsx';
+import { useTenant } from '../contexts/TenantContext.tsx';
+import { OrganizationSwitcher } from '../components/tenant/OrganizationSwitcher.tsx';
+import { ClientWorkspaceSwitcher } from '../components/tenant/ClientWorkspaceSwitcher.tsx';
+import { useNetworkResilience } from '../hooks/useNetworkResilience.jsx';
+import { useHealthMonitor } from '../hooks/useHealthMonitor.jsx';
 import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';

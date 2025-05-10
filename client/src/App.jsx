@@ -12,6 +12,7 @@ import freezeDetection from '@/utils/freezeDetection';
 import networkResilience from '@/utils/networkResilience';
 import memoryManagement from '@/utils/memoryManagement';
 import StabilityEnabledLayout from '@/components/layout/StabilityEnabledLayout';
+import { initializeMemoryOptimization } from './utils/memoryOptimizer';
 
 // Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
@@ -102,39 +103,39 @@ const Settings = lazy(() => import('./pages/Settings'));
 function App() {
   // Default tab for the UnifiedTopNavV3 component
   const [activeTab, setActiveTab] = useState('RiskHeatmap');
-  
+
   // Get current location to determine when to show the unified nav
   const [location] = useLocation();
-  
+
   // Initialize stability measures
   useEffect(() => {
     console.log('🛡️ Initializing application stability measures...');
-    
+
     // Initialize freeze detection
     freezeDetection.initFreezeDetection();
-    
+
     // Initialize network resilience
     networkResilience.initNetworkResilience();
-    
+
     // Initialize memory management
     memoryManagement.setupMemoryMonitoring();
-    
+
     // Make utilities available globally for emergency debugging
     window.stabilityUtils = {
       freezeDetection,
       networkResilience,
       memoryManagement
     };
-    
+
     console.log('✅ Application stability measures initialized');
-    
+
     // Clean up on unmount (though App should never unmount in normal operation)
     return () => {
       freezeDetection.cleanupFreezeDetection();
       networkResilience.cleanupNetworkResilience();
     };
   }, []);
-  
+
   // Check if we're on the landing page, regulatory hub, coauthor pages, or dashboard (which have their own navigation)
   const isLandingPage = location === '/' || location === '/client-portal';
   const isRegulatoryHub = location === '/regulatory-intelligence-hub' || 
@@ -144,9 +145,9 @@ function App() {
                          location === '/canvas' ||
                          location === '/timeline';
   const isDashboardPage = location === '/dashboard';
-                         
+
   const shouldShowNav = !isLandingPage && !isRegulatoryHub && !isCoAuthorPage && !isDashboardPage;
-  
+
   return (
     <QueryClientProvider client={queryClient}>
       <TenantProvider>
@@ -167,7 +168,7 @@ function App() {
           {/* Main Portal Landing Pages - both root and /client-portal go to same component */}
           <Route path="/" component={ClientPortalLanding} />
           <Route path="/client-portal" component={ClientPortalLanding} />
-          
+
           {/* Client Portal Sub-Pages */}
           <Route path="/client-portal/vault" component={VaultPage} />
           <Route path="/client-portal/regulatory-intel" component={RegulatoryIntelligenceHub} />
@@ -190,7 +191,7 @@ function App() {
           {/* IND Wizard Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
           <Route path="/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
           <Route path="/ind-full-solution" component={INDFullSolution} />
-          
+
           {/* Client Portal IND Wizard Route - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
           <Route path="/client-portal/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
 
@@ -227,7 +228,7 @@ function App() {
           <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
           <Route path="/regulatory-submissions" component={RegulatorySubmissionsPage} />
           <Route path="/client-portal/regulatory-submissions" component={RegulatorySubmissionsPage} />
-          
+
           {/* IND Wizard Module Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
           {/* These direct module routes help users navigate directly to specific IND modules */}
           <Route path="/module-1" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
@@ -237,20 +238,20 @@ function App() {
           <Route path="/module-5" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
           <Route path="/ind-wizard/module-3" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
           <Route path="/ind-wizard/module-4" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
-          
+
           {/* Analytical Control & Method Management Routes */}
           <Route path="/analytical" component={AnalyticalMethodsStubPage} />
           <Route path="/comparability" component={ComparabilityStudiesStubPage} />
-          
+
           {/* Stability Study Management Routes */}
           <Route path="/stability" component={StabilityStudiesStubPage} />
           <Route path="/stability/shelf-life-predictor" component={ShelfLifePredictorStubPage} />
-          
+
           {/* Reports Module Routes */}
           <Route path="/reports" component={ReportsPage} />
           <Route path="/cer-reports" component={ReportsPage} />
           <Route path="/cerv2/reports" component={ReportsPage} />
-          
+
           {/* Tenant Management Route */}
           <Route path="/tenant-management">
             {() => (
@@ -259,7 +260,7 @@ function App() {
               </Suspense>
             )}
           </Route>
-          
+
           {/* Client Management & Settings Routes */}
           <Route path="/client-management">
             {() => (
@@ -291,7 +292,7 @@ function App() {
               </div>
             )}
           </Route>
-          
+
           {/* CER Generator catch-all routes */}
           <Route path="/cer-generator/*">
             {() => <CERV2Page />}
@@ -305,7 +306,7 @@ function App() {
           <Route path="/cerV2/*">
             {() => <CERV2Page />}
           </Route>
-          
+
           {/* Default Redirect to Client Portal */}
           <Route>
             {() => {
