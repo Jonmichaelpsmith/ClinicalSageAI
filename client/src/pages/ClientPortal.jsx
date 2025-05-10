@@ -1,692 +1,532 @@
-import React, { useState } from 'react';
-import { useLocation } from 'wouter';
-import { useAuth } from '../hooks/use-auth';
-import Layout from '../components/Layout';
+/**
+ * Client Portal
+ * 
+ * This component provides the main interface for biotech clients
+ * when accessed through a CRO master account in a multi-tenant environment.
+ */
+
+import React, { useState, useEffect } from 'react';
+import { useLocation, Link } from 'wouter';
 import { 
-  CheckCircle, 
-  ChevronRight, 
+  Users, 
+  Building, 
+  ArrowLeft, 
   FileText, 
-  PieChart, 
-  Layers, 
-  Beaker, 
-  Brain, 
-  LineChart, 
+  BookOpen, 
   BarChart2, 
-  HelpCircle,
-  Upload,
-  Folder,
-  FilePlus,
-  Clock,
-  Tag,
-  Search,
-  Filter,
+  CheckCircle,
   AlertCircle,
-  Lock,
-  Download,
-  ExternalLink,
-  BookOpen,
-  Share2
+  Clock,
+  Calendar,
+  Search
 } from 'lucide-react';
+import securityService from '../../services/SecurityService';
+import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
 
+// Client Portal dashboard component
 const ClientPortal = () => {
-  const { user } = useAuth();
-  const [, setLocation] = useLocation();
-  const [activeDocumentTab, setActiveDocumentTab] = useState('recent');
+  const [location, setLocation] = useLocation();
+  const [clientOrganization, setClientOrganization] = useState(null);
+  const [parentOrganization, setParentOrganization] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [projects, setProjects] = useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-
-  // Hardcoded solutions for demo purposes
-  const subscribedSolutions = [
-    {
-      id: 1,
-      name: "IND Wizard",
-      description: "Automate IND application creation",
-      icon: <Beaker className="h-6 w-6" />,
-      status: "active",
-      route: "/solutions/ind-wizard",
-      stats: { completedDocs: 12, inProgress: 3 }
-    },
-    {
-      id: 2,
-      name: "CSR Deep Intelligence",
-      description: "Advanced clinical study report analytics",
-      icon: <Brain className="h-6 w-6" />,
-      status: "active",
-      route: "/solutions/csr-intelligence",
-      stats: { analyzedReports: 28, insights: 142 }
-    },
-    {
-      id: 3,
-      name: "CMC Insights",
-      description: "Chemistry, Manufacturing & Controls management",
-      icon: <Beaker className="h-6 w-6" />,
-      status: "active",
-      route: "/solutions/cmc-insights",
-      stats: { activePlans: 5, validations: 17 }
-    },
-    {
-      id: 4,
-      name: "Ask Lumen",
-      description: "AI regulatory compliance assistant",
-      icon: <HelpCircle className="h-6 w-6" />,
-      status: "active",
-      route: "/solutions/ask-lumen",
-      stats: { queries: 64, avgResponseTime: "1.2s" }
-    },
-    {
-      id: 5,
-      name: "Protocol Optimization",
-      description: "Clinical protocol design and optimization",
-      icon: <LineChart className="h-6 w-6" />,
-      status: "active",
-      route: "/solutions/protocol-optimization",
-      stats: { optimizedProtocols: 8, improvements: 32 }
-    },
-    {
-      id: 6,
-      name: "Validation Hub",
-      description: "21 CFR Part 11 compliance validation",
-      icon: <CheckCircle className="h-6 w-6" />,
-      status: "active",
-      route: "/validation-hub-enhanced",
-      stats: { validations: 23, compliance: "98%" }
-    }
-  ];
-
-  // Recent activities for the activity feed
-  const recentActivities = [
-    { id: 1, type: 'document', title: 'IND Application 2025-04R', action: 'modified', time: '2 hours ago' },
-    { id: 2, type: 'validation', title: 'Protocol 23B Validation', action: 'completed', time: '3 hours ago' },
-    { id: 3, type: 'analytics', title: 'CSR Performance Report', action: 'generated', time: '5 hours ago' },
-    { id: 4, type: 'document', title: 'CMC Strategy Document', action: 'created', time: '1 day ago' },
-    { id: 5, type: 'validation', title: 'Regulatory Compliance Check', action: 'passed', time: '2 days ago' }
-  ];
+  const { getSharedContext, shareContext } = useModuleIntegration();
   
-  // Document management data
-  const documentCategories = [
-    { id: 'recent', name: 'Recent Documents', icon: <Clock className="h-4 w-4" /> },
-    { id: 'regulatory', name: 'Regulatory', icon: <FileText className="h-4 w-4" /> },
-    { id: 'clinical', name: 'Clinical', icon: <BookOpen className="h-4 w-4" /> },
-    { id: 'manufacturing', name: 'Manufacturing', icon: <Layers className="h-4 w-4" /> },
-    { id: 'quality', name: 'Quality', icon: <CheckCircle className="h-4 w-4" /> },
-    { id: 'shared', name: 'Shared With Me', icon: <Share2 className="h-4 w-4" /> },
-  ];
-  
-  // Document data by category
-  const documentsByCategory = {
-    recent: [
-      { id: 1, name: 'IND Application 2025-04R.pdf', type: 'PDF', size: '2.4 MB', modified: '2 hours ago', status: 'Final', category: 'Regulatory' },
-      { id: 2, name: 'Protocol 23B.docx', type: 'DOCX', size: '1.8 MB', modified: '3 hours ago', status: 'Draft', category: 'Clinical' },
-      { id: 3, name: 'CSR Performance Report.xlsx', type: 'XLSX', size: '5.1 MB', modified: '5 hours ago', status: 'Final', category: 'Clinical' },
-      { id: 4, name: 'CMC Strategy Document.pdf', type: 'PDF', size: '3.2 MB', modified: '1 day ago', status: 'In Review', category: 'Manufacturing' },
-      { id: 5, name: 'Regulatory Compliance Check.pdf', type: 'PDF', size: '1.5 MB', modified: '2 days ago', status: 'Final', category: 'Quality' },
-      { id: 6, name: 'Protocol Amendment 12.docx', type: 'DOCX', size: '2.1 MB', modified: '3 days ago', status: 'Draft', category: 'Clinical' },
-    ],
-    regulatory: [
-      { id: 7, name: 'IND Application 2025-04R.pdf', type: 'PDF', size: '2.4 MB', modified: '2 hours ago', status: 'Final', category: 'Regulatory' },
-      { id: 8, name: 'NDA Form 356h.pdf', type: 'PDF', size: '1.3 MB', modified: '5 days ago', status: 'Final', category: 'Regulatory' },
-      { id: 9, name: 'FDA Response Letter.pdf', type: 'PDF', size: '0.8 MB', modified: '1 week ago', status: 'Final', category: 'Regulatory' },
-      { id: 10, name: 'EMA Submission Package.zip', type: 'ZIP', size: '24.6 MB', modified: '2 weeks ago', status: 'Final', category: 'Regulatory' },
-      { id: 11, name: 'Regulatory Strategy 2025.pptx', type: 'PPTX', size: '5.7 MB', modified: '3 weeks ago', status: 'Draft', category: 'Regulatory' },
-    ],
-    clinical: [
-      { id: 12, name: 'Protocol 23B.docx', type: 'DOCX', size: '1.8 MB', modified: '3 hours ago', status: 'Draft', category: 'Clinical' },
-      { id: 13, name: 'CSR Performance Report.xlsx', type: 'XLSX', size: '5.1 MB', modified: '5 hours ago', status: 'Final', category: 'Clinical' },
-      { id: 14, name: 'Protocol Amendment 12.docx', type: 'DOCX', size: '2.1 MB', modified: '3 days ago', status: 'Draft', category: 'Clinical' },
-      { id: 15, name: 'Clinical Data Analysis.xlsx', type: 'XLSX', size: '7.2 MB', modified: '1 week ago', status: 'Final', category: 'Clinical' },
-      { id: 16, name: 'Patient Enrollment Summary.pdf', type: 'PDF', size: '1.2 MB', modified: '2 weeks ago', status: 'Final', category: 'Clinical' },
-    ],
-    manufacturing: [
-      { id: 17, name: 'CMC Strategy Document.pdf', type: 'PDF', size: '3.2 MB', modified: '1 day ago', status: 'In Review', category: 'Manufacturing' },
-      { id: 18, name: 'Manufacturing Process Flow.pptx', type: 'PPTX', size: '4.5 MB', modified: '5 days ago', status: 'Final', category: 'Manufacturing' },
-      { id: 19, name: 'Batch Production Records.pdf', type: 'PDF', size: '8.3 MB', modified: '1 week ago', status: 'Final', category: 'Manufacturing' },
-      { id: 20, name: 'Stability Testing Results.xlsx', type: 'XLSX', size: '3.7 MB', modified: '2 weeks ago', status: 'Final', category: 'Manufacturing' },
-    ],
-    quality: [
-      { id: 21, name: 'Regulatory Compliance Check.pdf', type: 'PDF', size: '1.5 MB', modified: '2 days ago', status: 'Final', category: 'Quality' },
-      { id: 22, name: 'Quality Control Procedures.docx', type: 'DOCX', size: '2.2 MB', modified: '1 week ago', status: 'Final', category: 'Quality' },
-      { id: 23, name: 'GMP Audit Results.pdf', type: 'PDF', size: '3.4 MB', modified: '3 weeks ago', status: 'Final', category: 'Quality' },
-      { id: 24, name: 'CAPA Documentation.xlsx', type: 'XLSX', size: '1.9 MB', modified: '1 month ago', status: 'In Review', category: 'Quality' },
-    ],
-    shared: [
-      { id: 25, name: 'Product Specification File.docx', type: 'DOCX', size: '1.7 MB', modified: '4 days ago', status: 'Final', category: 'Regulatory', sharedBy: 'Regulatory Affairs' },
-      { id: 26, name: 'Clinical Study Synopsis.pdf', type: 'PDF', size: '2.3 MB', modified: '1 week ago', status: 'Draft', category: 'Clinical', sharedBy: 'Clinical Operations' },
-      { id: 27, name: 'Manufacturing Site Transfer Plan.pptx', type: 'PPTX', size: '6.5 MB', modified: '2 weeks ago', status: 'In Review', category: 'Manufacturing', sharedBy: 'CMC Team' },
-    ],
-  };
-  
-  // Document status badges
-  const getStatusBadge = (status) => {
-    switch (status) {
-      case 'Final':
-        return <span className="px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">Final</span>;
-      case 'Draft':
-        return <span className="px-2 py-0.5 bg-yellow-100 text-yellow-800 text-xs rounded-full">Draft</span>;
-      case 'In Review':
-        return <span className="px-2 py-0.5 bg-blue-100 text-blue-800 text-xs rounded-full">In Review</span>;
-      default:
-        return <span className="px-2 py-0.5 bg-gray-100 text-gray-800 text-xs rounded-full">{status}</span>;
-    }
-  };
-
-  const getActivityIcon = (type) => {
-    switch (type) {
-      case 'document': return <FileText className="h-5 w-5 text-blue-500" />;
-      case 'validation': return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case 'analytics': return <PieChart className="h-5 w-5 text-purple-500" />;
-      default: return <Layers className="h-5 w-5 text-gray-500" />;
-    }
-  };
-
-  const getStatDisplay = (solution) => {
-    const stats = solution.stats;
-    
-    if (stats.completedDocs !== undefined) {
-      return (
-        <div className="flex items-center text-sm">
-          <div className="mr-4">
-            <span className="text-gray-500">Completed:</span> 
-            <span className="ml-1 font-medium">{stats.completedDocs}</span>
-          </div>
-          <div>
-            <span className="text-gray-500">In Progress:</span> 
-            <span className="ml-1 font-medium">{stats.inProgress}</span>
-          </div>
-        </div>
-      );
-    }
-    
-    if (stats.analyzedReports !== undefined) {
-      return (
-        <div className="flex items-center text-sm">
-          <div className="mr-4">
-            <span className="text-gray-500">Reports:</span> 
-            <span className="ml-1 font-medium">{stats.analyzedReports}</span>
-          </div>
-          <div>
-            <span className="text-gray-500">Insights:</span> 
-            <span className="ml-1 font-medium">{stats.insights}</span>
-          </div>
-        </div>
-      );
-    }
-    
-    if (stats.activePlans !== undefined) {
-      return (
-        <div className="flex items-center text-sm">
-          <div className="mr-4">
-            <span className="text-gray-500">Active Plans:</span> 
-            <span className="ml-1 font-medium">{stats.activePlans}</span>
-          </div>
-          <div>
-            <span className="text-gray-500">Validations:</span> 
-            <span className="ml-1 font-medium">{stats.validations}</span>
-          </div>
-        </div>
-      );
-    }
-    
-    if (stats.queries !== undefined) {
-      return (
-        <div className="flex items-center text-sm">
-          <div className="mr-4">
-            <span className="text-gray-500">Queries:</span> 
-            <span className="ml-1 font-medium">{stats.queries}</span>
-          </div>
-          <div>
-            <span className="text-gray-500">Response Time:</span> 
-            <span className="ml-1 font-medium">{stats.avgResponseTime}</span>
-          </div>
-        </div>
-      );
-    }
-    
-    if (stats.optimizedProtocols !== undefined) {
-      return (
-        <div className="flex items-center text-sm">
-          <div className="mr-4">
-            <span className="text-gray-500">Protocols:</span> 
-            <span className="ml-1 font-medium">{stats.optimizedProtocols}</span>
-          </div>
-          <div>
-            <span className="text-gray-500">Improvements:</span> 
-            <span className="ml-1 font-medium">{stats.improvements}</span>
-          </div>
-        </div>
-      );
-    }
-    
-    if (stats.validations !== undefined) {
-      return (
-        <div className="flex items-center text-sm">
-          <div className="mr-4">
-            <span className="text-gray-500">Validations:</span> 
-            <span className="ml-1 font-medium">{stats.validations}</span>
-          </div>
-          <div>
-            <span className="text-gray-500">Compliance:</span> 
-            <span className="ml-1 font-medium">{stats.compliance}</span>
-          </div>
-        </div>
-      );
-    }
-    
-    return null;
-  };
-
-  return (
-    <Layout>
-      <div className="container mx-auto px-4 py-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Client Portal</h1>
-          <p className="text-gray-600 mt-2">
-            Welcome back, {user?.name || 'Valued Customer'}
-          </p>
-        </div>
+  // Fetch client data on mount
+  useEffect(() => {
+    const initClientPortal = async () => {
+      try {
+        // Get organization data
+        const org = securityService.currentOrganization;
+        const parentOrg = securityService.parentOrganization;
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2">
-            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-800">Your TrialSage Solutions</h2>
+        if (!org) {
+          throw new Error('No organization data available');
+        }
+        
+        setClientOrganization(org);
+        setParentOrganization(parentOrg);
+        
+        // Get shared context from integration layer
+        const portalContext = getSharedContext('client_portal');
+        
+        // In a real app, these would be API calls
+        // Fetch projects
+        const projectList = await fetchProjects(org.id);
+        setProjects(projectList);
+        
+        // Fetch recent documents
+        const docList = await fetchDocuments(org.id);
+        setDocuments(docList);
+        
+        // Fetch recent activities
+        const activityList = await fetchActivities(org.id);
+        setActivities(activityList);
+        
+        // Share client context with other modules
+        shareContext('organization', org.id, {
+          organization: org,
+          parentOrganization: parentOrg
+        });
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('Error initializing client portal:', err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+    
+    initClientPortal();
+  }, [getSharedContext, shareContext]);
+  
+  // Handle return to CRO portal
+  const handleReturnToCRO = async () => {
+    try {
+      const result = await securityService.returnToParentOrganization();
+      
+      if (result.success) {
+        // Redirect to CRO dashboard (admin)
+        window.location.href = '/admin'; // Using window.location for immediate navigation
+      } else {
+        setError(result.error || 'Failed to return to CRO portal');
+      }
+    } catch (err) {
+      console.error('Error returning to CRO portal:', err);
+      setError(err.message);
+    }
+  };
+  
+  // Handle search
+  const handleSearch = (e) => {
+    e.preventDefault();
+    
+    if (!searchQuery.trim()) {
+      return;
+    }
+    
+    // In a real app, would navigate to search results
+    console.log(`Searching for: ${searchQuery}`);
+  };
+  
+  // Fetch projects (simulated for demo)
+  const fetchProjects = async (orgId) => {
+    // In a real app, would be an API call
+    return [
+      {
+        id: 1,
+        name: 'Phase II Clinical Trial - BX-107',
+        status: 'in_progress',
+        module: 'trial-vault',
+        progress: 65,
+        dueDate: '2025-06-15'
+      },
+      {
+        id: 2,
+        name: 'IND Application for BTX-331',
+        status: 'in_progress',
+        module: 'ind-wizard',
+        progress: 42,
+        dueDate: '2025-05-30'
+      },
+      {
+        id: 3,
+        name: 'Clinical Study Report - Phase I',
+        status: 'pending_review',
+        module: 'csr-intelligence',
+        progress: 95,
+        dueDate: '2025-05-10'
+      },
+      {
+        id: 4,
+        name: 'Study Protocol Development',
+        status: 'not_started',
+        module: 'study-architect',
+        progress: 0,
+        dueDate: '2025-07-21'
+      }
+    ];
+  };
+  
+  // Fetch documents (simulated for demo)
+  const fetchDocuments = async (orgId) => {
+    // In a real app, would be an API call
+    return [
+      {
+        id: 1,
+        name: 'BX-107 Protocol.docx',
+        type: 'protocol',
+        module: 'study-architect',
+        updatedAt: '2025-04-25T15:30:00Z',
+        updatedBy: 'John Davis'
+      },
+      {
+        id: 2,
+        name: 'BTX-331 Investigator Brochure.pdf',
+        type: 'brochure',
+        module: 'ind-wizard',
+        updatedAt: '2025-04-24T09:15:00Z',
+        updatedBy: 'Sarah Johnson'
+      },
+      {
+        id: 3,
+        name: 'Phase I CSR Draft.docx',
+        type: 'report',
+        module: 'csr-intelligence',
+        updatedAt: '2025-04-23T11:45:00Z',
+        updatedBy: 'Mark Wilson'
+      },
+      {
+        id: 4,
+        name: 'BTX-331 Chemistry Data.xlsx',
+        type: 'data',
+        module: 'ind-wizard',
+        updatedAt: '2025-04-22T14:20:00Z',
+        updatedBy: 'Emily Chen'
+      }
+    ];
+  };
+  
+  // Fetch activities (simulated for demo)
+  const fetchActivities = async (orgId) => {
+    // In a real app, would be an API call
+    return [
+      {
+        id: 1,
+        type: 'document_updated',
+        description: 'BX-107 Protocol updated',
+        timestamp: '2025-04-25T15:30:00Z',
+        user: 'John Davis',
+        module: 'study-architect'
+      },
+      {
+        id: 2,
+        type: 'task_completed',
+        description: 'Phase I CSR Quality Check completed',
+        timestamp: '2025-04-24T16:45:00Z',
+        user: 'Sarah Johnson',
+        module: 'csr-intelligence'
+      },
+      {
+        id: 3,
+        type: 'comment_added',
+        description: 'Comment added to BTX-331 IND application',
+        timestamp: '2025-04-24T10:15:00Z',
+        user: 'Mark Wilson',
+        module: 'ind-wizard'
+      },
+      {
+        id: 4,
+        type: 'meeting_scheduled',
+        description: 'FDA Meeting scheduled for May 10',
+        timestamp: '2025-04-23T09:30:00Z',
+        user: 'Emily Chen',
+        module: 'ind-wizard'
+      },
+      {
+        id: 5,
+        type: 'document_shared',
+        description: 'Phase I CSR shared with regulatory team',
+        timestamp: '2025-04-22T14:20:00Z',
+        user: 'Emily Chen',
+        module: 'csr-intelligence'
+      }
+    ];
+  };
+  
+  // Format date for display
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+  
+  // Format timestamp for display
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffSec = Math.round(diffMs / 1000);
+    const diffMin = Math.round(diffSec / 60);
+    const diffHr = Math.round(diffMin / 60);
+    const diffDays = Math.round(diffHr / 24);
+    
+    if (diffSec < 60) {
+      return 'Just now';
+    } else if (diffMin < 60) {
+      return `${diffMin}m ago`;
+    } else if (diffHr < 24) {
+      return `${diffHr}h ago`;
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays < 7) {
+      return `${diffDays}d ago`;
+    } else {
+      return formatDate(timestamp);
+    }
+  };
+  
+  // Get status icon and text
+  const getStatusDisplay = (status) => {
+    switch (status) {
+      case 'completed':
+        return { 
+          icon: <CheckCircle size={16} className="text-green-500" />,
+          text: 'Completed',
+          className: 'text-green-600'
+        };
+      case 'in_progress':
+        return { 
+          icon: <Clock size={16} className="text-blue-500" />,
+          text: 'In Progress',
+          className: 'text-blue-600'
+        };
+      case 'pending_review':
+        return { 
+          icon: <AlertCircle size={16} className="text-yellow-500" />,
+          text: 'Pending Review',
+          className: 'text-yellow-600'
+        };
+      case 'not_started':
+        return { 
+          icon: <Calendar size={16} className="text-gray-500" />,
+          text: 'Not Started',
+          className: 'text-gray-600'
+        };
+      default:
+        return { 
+          icon: <Clock size={16} className="text-gray-500" />,
+          text: 'Unknown',
+          className: 'text-gray-600'
+        };
+    }
+  };
+  
+  // Get module icon
+  const getModuleIcon = (module) => {
+    switch (module) {
+      case 'ind-wizard':
+        return <FileText size={16} className="text-primary" />;
+      case 'trial-vault':
+        return <Building size={16} className="text-primary" />;
+      case 'csr-intelligence':
+        return <BookOpen size={16} className="text-primary" />;
+      case 'study-architect':
+        return <Users size={16} className="text-primary" />;
+      case 'analytics':
+        return <BarChart2 size={16} className="text-primary" />;
+      default:
+        return <FileText size={16} className="text-primary" />;
+    }
+  };
+  
+  // Render loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
+          <p className="text-gray-600">Loading client portal...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Render error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-md">
+          <AlertCircle size={48} className="mx-auto text-red-500 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Portal</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="bg-gray-50 min-h-screen">
+      {/* Client Portal Header */}
+      <div className="bg-white border-b shadow-sm">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              {parentOrganization && (
                 <button 
-                  onClick={() => setLocation('/account/subscribed-solutions')}
-                  className="text-blue-600 text-sm flex items-center hover:text-blue-800"
+                  onClick={handleReturnToCRO}
+                  className="mr-4 flex items-center text-sm text-gray-600 hover:text-gray-900"
                 >
-                  View All
-                  <ChevronRight className="h-4 w-4 ml-1" />
+                  <ArrowLeft size={16} className="mr-1" />
+                  Return to {parentOrganization.name}
                 </button>
-              </div>
+              )}
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {subscribedSolutions.map(solution => (
-                  <div 
-                    key={solution.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow duration-200 cursor-pointer"
-                    onClick={() => setLocation(solution.route)}
-                  >
+              <div className="flex items-center">
+                <Building className="text-primary mr-2" size={20} />
+                <span className="font-medium text-lg">{clientOrganization?.name || 'Client Portal'}</span>
+                <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">
+                  {clientOrganization?.type?.toUpperCase() || 'CLIENT'}
+                </span>
+              </div>
+            </div>
+            
+            <form onSubmit={handleSearch} className="relative max-w-xs w-full">
+              <input
+                type="text"
+                placeholder="Search client portal..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+              />
+              <Search size={16} className="absolute top-2.5 left-3 text-gray-400" />
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      {/* Client Portal Content */}
+      <div className="container mx-auto px-4 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Projects Column */}
+          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <div className="px-4 py-3 border-b bg-gray-50">
+              <h2 className="font-semibold text-gray-800">Active Projects</h2>
+            </div>
+            <div className="divide-y">
+              {projects.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  No active projects found
+                </div>
+              ) : (
+                projects.map(project => (
+                  <div key={project.id} className="p-4 hover:bg-gray-50">
                     <div className="flex items-start">
-                      <div className="p-2 rounded-full bg-blue-50 mr-4">
-                        {solution.icon}
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex justify-between items-start">
-                          <h3 className="text-md font-semibold text-gray-900">{solution.name}</h3>
-                          <div className="flex items-center text-sm font-medium text-green-600">
-                            <CheckCircle className="h-3.5 w-3.5 mr-1" />
-                            Active
-                          </div>
+                      {getModuleIcon(project.module)}
+                      <div className="ml-3 flex-1">
+                        <div className="font-medium text-gray-800">{project.name}</div>
+                        <div className="flex items-center mt-2 text-xs text-gray-500">
+                          {getStatusDisplay(project.status).icon}
+                          <span className={`ml-1 ${getStatusDisplay(project.status).className}`}>
+                            {getStatusDisplay(project.status).text}
+                          </span>
+                          <span className="mx-2">•</span>
+                          <span>Due {formatDate(project.dueDate)}</span>
                         </div>
                         
-                        <p className="mt-1 text-sm text-gray-600 mb-2">
-                          {solution.description}
-                        </p>
-                        
-                        {getStatDisplay(solution)}
+                        {/* Progress bar */}
+                        <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-primary h-2 rounded-full" 
+                            style={{ width: `${project.progress}%` }}
+                          ></div>
+                        </div>
+                        <div className="mt-1 text-xs text-right text-gray-500">
+                          {project.progress}% complete
+                        </div>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-              
-              <div className="mt-4 flex justify-center">
-                <button 
-                  onClick={() => setLocation('/account/subscribed-solutions')}
-                  className="text-blue-600 text-sm flex items-center hover:text-blue-800 mt-2"
-                >
-                  See More Solutions
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </button>
-              </div>
+                ))
+              )}
             </div>
-            
-            {/* Document Management Section */}
-            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-800">Document Management</h2>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setLocation('/document-management')}
-                    className="text-blue-600 text-sm flex items-center hover:text-blue-800"
-                  >
-                    Full Document Manager
-                    <ChevronRight className="h-4 w-4 ml-1" />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="mb-4 flex flex-wrap items-center justify-between">
-                <div className="flex overflow-x-auto pb-2 mb-2 sm:mb-0 space-x-2">
-                  {documentCategories.map(category => (
-                    <button
-                      key={category.id}
-                      onClick={() => setActiveDocumentTab(category.id)}
-                      className={`flex items-center px-3 py-2 text-sm rounded-md whitespace-nowrap ${
-                        activeDocumentTab === category.id
-                          ? 'bg-blue-50 text-blue-600 font-medium border border-blue-200'
-                          : 'text-gray-600 hover:bg-gray-100 border border-transparent'
-                      }`}
-                    >
-                      {React.cloneElement(category.icon, { 
-                        className: `mr-1.5 ${activeDocumentTab === category.id ? 'text-blue-500' : 'text-gray-500'}`
-                      })}
-                      {category.name}
-                    </button>
-                  ))}
-                </div>
-                
-                <div className="flex w-full sm:w-auto mt-2 sm:mt-0">
-                  <div className="relative flex-1">
-                    <input
-                      type="text"
-                      placeholder="Search documents..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                    />
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
-                  </div>
-                  <button
-                    className="ml-2 px-3 py-2 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-1 focus:ring-gray-500"
-                  >
-                    <Filter className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              
-              <div className="overflow-hidden border border-gray-200 rounded-md">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Name
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Category
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Status
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Last Modified
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Size
-                        </th>
-                        <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {documentsByCategory[activeDocumentTab]?.map((document) => (
-                        <tr key={document.id} className="hover:bg-gray-50">
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-8 w-8 bg-blue-50 rounded-md flex items-center justify-center">
-                                <FileText className="h-4 w-4 text-blue-500" />
-                              </div>
-                              <div className="ml-3">
-                                <div className="text-sm font-medium text-gray-900">{document.name}</div>
-                                <div className="text-xs text-gray-500">{document.type}</div>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{document.category}</div>
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap">
-                            {getStatusBadge(document.status)}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                            {document.modified}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                            {document.size}
-                          </td>
-                          <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end space-x-2">
-                              <button className="text-blue-600 hover:text-blue-800" title="Download">
-                                <Download className="h-4 w-4" />
-                              </button>
-                              <button className="text-gray-600 hover:text-gray-800" title="Share">
-                                <Share2 className="h-4 w-4" />
-                              </button>
-                              <button className="text-gray-600 hover:text-gray-800" title="Open">
-                                <ExternalLink className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-              
-              <div className="mt-4 flex justify-between items-center">
-                <button 
-                  onClick={() => setLocation('/enterprise-vault')}
-                  className="text-sm flex items-center text-gray-600 hover:text-gray-800"
-                >
-                  <Lock className="h-3.5 w-3.5 mr-1" />
-                  Secure Enterprise Vault
+            <div className="px-4 py-3 border-t bg-gray-50 text-center">
+              <Link to="/projects">
+                <button className="text-sm text-primary hover:underline">
+                  View All Projects
                 </button>
-                
-                <button 
-                  onClick={() => setLocation('/document-management')}
-                  className="bg-blue-50 hover:bg-blue-100 text-blue-600 px-4 py-2 rounded-md text-sm font-medium flex items-center"
-                >
-                  <FilePlus className="h-4 w-4 mr-1.5" />
-                  Upload New Document
-                </button>
-              </div>
-            </div>
-            
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-semibold text-gray-800">Quick Analytics</h2>
-                <button 
-                  onClick={() => setLocation('/analytics-dashboard')}
-                  className="text-blue-600 text-sm flex items-center hover:text-blue-800"
-                >
-                  View Complete Analytics
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="border border-gray-200 rounded-lg p-4 bg-blue-50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-500">Documents</p>
-                      <p className="text-2xl font-bold text-gray-900">127</p>
-                    </div>
-                    <FileText className="h-8 w-8 text-blue-500" />
-                  </div>
-                  <div className="mt-2 text-sm text-blue-600">+12% from last month</div>
-                </div>
-                
-                <div className="border border-gray-200 rounded-lg p-4 bg-green-50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-500">Validations</p>
-                      <p className="text-2xl font-bold text-gray-900">48</p>
-                    </div>
-                    <CheckCircle className="h-8 w-8 text-green-500" />
-                  </div>
-                  <div className="mt-2 text-sm text-green-600">98% compliance rate</div>
-                </div>
-                
-                <div className="border border-gray-200 rounded-lg p-4 bg-purple-50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm text-gray-500">AI Insights</p>
-                      <p className="text-2xl font-bold text-gray-900">256</p>
-                    </div>
-                    <Brain className="h-8 w-8 text-purple-500" />
-                  </div>
-                  <div className="mt-2 text-sm text-purple-600">42 critical findings</div>
-                </div>
-              </div>
+              </Link>
             </div>
           </div>
           
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Activity Feed</h2>
-              
-              <div className="space-y-4">
-                {recentActivities.map(activity => (
-                  <div key={activity.id} className="flex items-start">
-                    <div className="mt-1 mr-3">
-                      {getActivityIcon(activity.type)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{activity.title}</p>
-                      <p className="text-xs text-gray-500">
-                        <span className="capitalize">{activity.action}</span> {activity.time}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
-              <button 
-                onClick={() => setLocation('/activity-history')}
-                className="mt-4 w-full py-2 px-3 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition-colors flex justify-center items-center"
-              >
-                View All Activity
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </button>
+          {/* Recent Documents Column */}
+          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <div className="px-4 py-3 border-b bg-gray-50">
+              <h2 className="font-semibold text-gray-800">Recent Documents</h2>
             </div>
-            
-            <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Document Workflows</h2>
-              
-              <div className="space-y-3">
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                  <div className="flex items-center">
-                    <div className="mr-3 flex-shrink-0">
-                      <div className="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center">
-                        <AlertCircle className="h-4 w-4 text-yellow-600" />
+            <div className="divide-y">
+              {documents.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  No recent documents found
+                </div>
+              ) : (
+                documents.map(doc => (
+                  <div key={doc.id} className="p-4 hover:bg-gray-50">
+                    <div className="flex items-start">
+                      {getModuleIcon(doc.module)}
+                      <div className="ml-3 flex-1">
+                        <div className="font-medium text-gray-800">{doc.name}</div>
+                        <div className="flex items-center mt-1 text-xs text-gray-500">
+                          <span className="capitalize">{doc.type}</span>
+                          <span className="mx-2">•</span>
+                          <span>Updated {formatTimestamp(doc.updatedAt)}</span>
+                        </div>
+                        <div className="mt-1 text-xs text-gray-500">
+                          Updated by {doc.updatedBy}
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-yellow-800">Pending Approval</h3>
-                      <p className="text-xs text-yellow-700 mt-0.5">3 documents need your review</p>
-                    </div>
                   </div>
-                  <div className="mt-2">
-                    <button 
-                      onClick={() => setLocation('/document-management?filter=pending')}
-                      className="w-full py-1.5 px-3 bg-white border border-yellow-300 text-yellow-800 text-xs rounded-md hover:bg-yellow-50 transition-colors flex justify-center items-center"
-                    >
-                      Review Documents
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-md">
-                  <div className="flex items-center">
-                    <div className="mr-3 flex-shrink-0">
-                      <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
-                        <Clock className="h-4 w-4 text-blue-600" />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-blue-800">Draft Documents</h3>
-                      <p className="text-xs text-blue-700 mt-0.5">5 documents in draft stage</p>
-                    </div>
-                  </div>
-                  <div className="mt-2">
-                    <button 
-                      onClick={() => setLocation('/document-management?filter=draft')}
-                      className="w-full py-1.5 px-3 bg-white border border-blue-300 text-blue-800 text-xs rounded-md hover:bg-blue-50 transition-colors flex justify-center items-center"
-                    >
-                      Continue Editing
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="p-3 bg-green-50 border border-green-200 rounded-md">
-                  <div className="flex items-center">
-                    <div className="mr-3 flex-shrink-0">
-                      <div className="h-8 w-8 rounded-full bg-green-100 flex items-center justify-center">
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      </div>
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-medium text-green-800">Ready for Submission</h3>
-                      <p className="text-xs text-green-700 mt-0.5">2 documents validated & ready</p>
-                    </div>
-                  </div>
-                  <div className="mt-2">
-                    <button 
-                      onClick={() => setLocation('/document-management?filter=ready')}
-                      className="w-full py-1.5 px-3 bg-white border border-green-300 text-green-800 text-xs rounded-md hover:bg-green-50 transition-colors flex justify-center items-center"
-                    >
-                      Submit Documents
-                    </button>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-4">
-                <button 
-                  onClick={() => setLocation('/document-workflows')}
-                  className="w-full py-2 px-3 bg-gray-100 text-gray-700 text-sm rounded-md hover:bg-gray-200 transition-colors flex justify-center items-center"
-                >
-                  View All Workflows
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </button>
-              </div>
+                ))
+              )}
             </div>
-            
-            <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">Support Resources</h2>
-              
-              <div className="space-y-2">
-                <button 
-                  onClick={() => setLocation('/solutions/ask-lumen')}
-                  className="w-full py-2 px-3 bg-blue-50 text-blue-700 rounded-md hover:bg-blue-100 transition-colors flex justify-between items-center"
-                >
-                  <span className="font-medium">Ask Lumen AI Assistant</span>
-                  <ChevronRight className="h-4 w-4" />
+            <div className="px-4 py-3 border-t bg-gray-50 text-center">
+              <Link to="/documents">
+                <button className="text-sm text-primary hover:underline">
+                  View All Documents
                 </button>
-                
-                <button 
-                  onClick={() => setLocation('/documentation')}
-                  className="w-full py-2 px-3 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors flex justify-between items-center"
-                >
-                  <span>Documentation</span>
-                  <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+          
+          {/* Recent Activity Column */}
+          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <div className="px-4 py-3 border-b bg-gray-50">
+              <h2 className="font-semibold text-gray-800">Recent Activity</h2>
+            </div>
+            <div className="divide-y">
+              {activities.length === 0 ? (
+                <div className="p-4 text-center text-gray-500">
+                  No recent activity found
+                </div>
+              ) : (
+                activities.map(activity => (
+                  <div key={activity.id} className="p-4 hover:bg-gray-50">
+                    <div className="flex items-start">
+                      {getModuleIcon(activity.module)}
+                      <div className="ml-3 flex-1">
+                        <div className="font-medium text-gray-800">{activity.description}</div>
+                        <div className="flex items-center mt-1 text-xs text-gray-500">
+                          <span>{activity.user}</span>
+                          <span className="mx-2">•</span>
+                          <span>{formatTimestamp(activity.timestamp)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="px-4 py-3 border-t bg-gray-50 text-center">
+              <Link to="/activity">
+                <button className="text-sm text-primary hover:underline">
+                  View All Activity
                 </button>
-                
-                <button 
-                  onClick={() => setLocation('/training')}
-                  className="w-full py-2 px-3 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors flex justify-between items-center"
-                >
-                  <span>Training Videos</span>
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-                
-                <button 
-                  onClick={() => setLocation('/contact-support')}
-                  className="w-full py-2 px-3 bg-gray-50 text-gray-700 rounded-md hover:bg-gray-100 transition-colors flex justify-between items-center"
-                >
-                  <span>Contact Support</span>
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
+              </Link>
             </div>
           </div>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 

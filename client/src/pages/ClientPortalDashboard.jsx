@@ -1,771 +1,547 @@
-import React, { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useLocation } from "wouter";
+/**
+ * Client Dashboard
+ * 
+ * This component provides a dashboard overview for biotech clients
+ * in the multi-tenant environment, showing key metrics and project information.
+ */
 
-const ClientPortalDashboard = () => {
-  const { toast } = useToast();
-  const [activeModule, setActiveModule] = useState("vault");
-  const [authenticated, setAuthenticated] = useState(localStorage.getItem("authenticated") === "true");
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [documents, setDocuments] = useState([]);
-  const [recentActivity, setRecentActivity] = useState([]);
-  const [activeProjects, setActiveProjects] = useState([]);
-  const [location, setLocation] = useLocation();
+import React, { useState, useEffect } from 'react';
+import { useLocation, Link } from 'wouter';
+import { 
+  FileText, 
+  FileCheck, 
+  Calendar, 
+  Clock, 
+  AlertTriangle, 
+  CheckCircle,
+  BarChart2,
+  Users,
+  ExternalLink,
+  ChevronRight,
+  Bookmark
+} from 'lucide-react';
+import securityService from '../../services/SecurityService';
+import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
 
-  useEffect(() => {
-    if (authenticated) {
-      fetchDocuments();
-      fetchActivity();
-      fetchProjects();
-    }
-  }, [authenticated]);
-
-  const handleLogin = (e) => {
-    e.preventDefault();
-    setLoading(true);
-
-    // For demonstration, accept admin/admin123 as valid credentials
-    if (username === "admin" && password === "admin123") {
-      setTimeout(() => {
-        setLoading(false);
-        setAuthenticated(true);
-        localStorage.setItem("authenticated", "true");
-        toast({
-          title: "Login Successful",
-          description: "Welcome to the TrialSage Client Portal",
-        });
-        // Redirect to the client portal React component
-        setLocation("/client-portal");
-      }, 1000);
-    } else {
-      setTimeout(() => {
-        setLoading(false);
-        toast({
-          title: "Login Failed",
-          description: "Login failed. Please check your credentials.",
-          variant: "destructive",
-        });
-      }, 1000);
-    }
-  };
-
-  const handleLogout = () => {
-    setAuthenticated(false);
-    localStorage.removeItem("authenticated");
-    toast({
-      title: "Logged Out",
-      description: "You have been logged out successfully.",
-    });
-  };
-
-  const fetchDocuments = () => {
-    // Mock data for demonstration
-    setDocuments([
-      {
-        id: 1,
-        title: "ENZYMAX FORTE - Clinical Protocol",
-        description: "Phase 2 study protocol for refractory epilepsy",
-        document_type: "Clinical",
-        category: "IND",
-        tags: ["Protocol", "Phase 2"],
-        ai_tags: ["Epilepsy", "Neurology"],
-        created_at: "2025-04-25T14:32:45Z",
-        file_name: "enzymax_protocol_v2.pdf"
-      },
-      {
-        id: 2,
-        title: "CARDIOPLEX - CMC Documentation",
-        description: "Chemistry, Manufacturing, and Controls details",
-        document_type: "Regulatory",
-        category: "NDA",
-        tags: ["CMC", "Quality"],
-        ai_tags: ["Cardiovascular", "API Specification"],
-        created_at: "2025-04-22T09:15:30Z",
-        file_name: "cardioplex_cmc_v1.pdf"
-      },
-      {
-        id: 3,
-        title: "NEUROEASE - Toxicology Report",
-        description: "Preclinical toxicology study results",
-        document_type: "Safety",
-        category: "IND",
-        tags: ["Preclinical", "Toxicology"],
-        ai_tags: ["Neurology", "Safety Assessment"],
-        created_at: "2025-04-20T16:45:12Z",
-        file_name: "neuroease_tox_report.pdf"
-      }
-    ]);
-  };
-
-  const fetchActivity = () => {
-    // Mock data for demonstration
-    setRecentActivity([
-      {
-        id: 1,
-        type: "document",
-        action: "upload",
-        user: "Maria Rodriguez",
-        item: "ENZYMAX FORTE - Toxicology Report",
-        timestamp: "2025-04-26T14:32:45Z"
-      },
-      {
-        id: 2,
-        type: "workflow",
-        action: "approval",
-        user: "John Smith",
-        item: "CARDIOPLEX - Drug Chemistry Specifications",
-        timestamp: "2025-04-25T09:15:30Z"
-      },
-      {
-        id: 3,
-        type: "ai",
-        action: "alert",
-        user: "TrialSage AI",
-        item: "Missing endpoint in NEUROEASE clinical protocol",
-        timestamp: "2025-04-24T16:45:12Z"
-      },
-      {
-        id: 4,
-        type: "document",
-        action: "download",
-        user: "Sarah Johnson",
-        item: "ENZYMAX FORTE - Clinical Protocol",
-        timestamp: "2025-04-23T11:22:05Z"
-      },
-      {
-        id: 5,
-        type: "document",
-        action: "edit",
-        user: "Alex Chen",
-        item: "IMMUNOTROL - IND Amendment",
-        timestamp: "2025-04-22T08:30:17Z"
-      }
-    ]);
-  };
-
-  const fetchProjects = () => {
-    // Mock data for demonstration
-    setActiveProjects([
-      {
-        id: 1,
-        name: "ENZYMAX FORTE",
-        type: "IND",
-        status: "Active",
-        phase: "Phase 2",
-        therapeutic: "Neurology",
-        progress: 65,
-        updated: "2025-04-25T14:32:45Z"
-      },
-      {
-        id: 2,
-        name: "CARDIOPLEX",
-        type: "NDA",
-        status: "Submitted",
-        phase: "Phase 3",
-        therapeutic: "Cardiovascular",
-        progress: 90,
-        updated: "2025-04-22T09:15:30Z"
-      },
-      {
-        id: 3,
-        name: "NEUROEASE",
-        type: "IND",
-        status: "Draft",
-        phase: "Phase 2",
-        therapeutic: "Neurology",
-        progress: 42,
-        updated: "2025-04-20T16:45:12Z"
-      }
-    ]);
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    });
-  };
-
-  const navigateToModule = (module) => {
-    setActiveModule(module);
-    
-    // Navigate to the proper React components using router
-    if (module === "ind") {
-      setLocation("/client-portal/ind-wizard");
-    } else if (module === "vault") {
-      setLocation("/client-portal/vault");
-    } else if (module === "csr") {
-      setLocation("/client-portal/csr-analyzer");
-    } else if (module === "study") {
-      setLocation("/client-portal/study-architect");
-    } else if (module === "cmc") {
-      setLocation("/client-portal/cmc-wizard");
-    } else if (module === "timeline") {
-      setLocation("/timeline");
-    } else {
-      // Default to client portal
-      setLocation("/client-portal");
-    }
-  };
-
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-white to-pink-50 p-4">
-        <Card className="w-[350px] sm:w-[400px]">
-          <CardHeader className="space-y-1 text-center">
-            <div className="flex justify-center mb-4">
-              <span className="text-3xl font-bold text-pink-600">TrialSage</span>
-              <span className="text-xs align-top font-medium text-gray-500">™</span>
-            </div>
-            <CardTitle className="text-2xl">Sign in</CardTitle>
-            <CardDescription>
-              Enter your credentials to access your account
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin}>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="username">Username</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    placeholder="Enter your username"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="Enter your password"
-                  />
-                </div>
-                <div className="pt-2">
-                  <Button type="submit" className="w-full bg-pink-600 hover:bg-pink-700" disabled={loading}>
-                    {loading ? 'Logging in...' : 'Login'}
-                  </Button>
-                </div>
-              </div>
-            </form>
-          </CardContent>
-          <CardFooter className="flex justify-center text-sm text-muted-foreground">
-            Default credentials: admin / admin123
-          </CardFooter>
-        </Card>
-      </div>
-    );
-  }
-
+// Progress card component
+const ProgressCard = ({ title, current, total, icon, color, onClick }) => {
+  const percentage = total > 0 ? Math.round((current / total) * 100) : 0;
+  
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-          <div className="flex items-center">
-            <span className="text-2xl font-bold text-pink-600">TrialSage</span>
-            <span className="text-xs align-top font-medium text-gray-500">™</span>
-            <span className="ml-2 text-sm text-gray-400">Client Portal</span>
+    <div 
+      className="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
+      <div className="p-4">
+        <div className="flex items-center mb-3">
+          <div className={`w-8 h-8 rounded-full ${color} flex items-center justify-center text-white`}>
+            {icon}
           </div>
-          
-          <div className="flex items-center space-x-2 sm:space-x-4">
-            <div className="hidden md:flex space-x-4">
-              <Button 
-                variant={activeModule === "vault" ? "default" : "ghost"} 
-                className={activeModule === "vault" ? "bg-pink-600 hover:bg-pink-700" : ""}
-                onClick={() => navigateToModule("vault")}
-              >
-                Vault™
-              </Button>
-              <Button 
-                variant={activeModule === "ind" ? "default" : "ghost"}
-                className={activeModule === "ind" ? "bg-pink-600 hover:bg-pink-700" : ""}
-                onClick={() => navigateToModule("ind")}
-              >
-                IND Wizard™
-              </Button>
-              <Button 
-                variant={activeModule === "csr" ? "default" : "ghost"}
-                className={activeModule === "csr" ? "bg-pink-600 hover:bg-pink-700" : ""}
-                onClick={() => navigateToModule("csr")}
-              >
-                CSR Intelligence™
-              </Button>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <span className="hidden sm:inline text-sm font-medium">John Smith</span>
-              <Button size="sm" variant="outline" onClick={handleLogout}>
-                Logout
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="container mx-auto px-4 py-6">
-        <div className="mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Welcome, John</h1>
-          <p className="text-gray-500">Last login: April 26, 2025, 8:12 AM EDT</p>
+          <h3 className="ml-3 font-medium text-gray-800">{title}</h3>
         </div>
         
-        {/* Stats overview */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="bg-blue-100 p-3 rounded-full">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Active Documents</p>
-                  <p className="text-2xl font-bold">248</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="bg-pink-100 p-3 rounded-full">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Active Submissions</p>
-                  <p className="text-2xl font-bold">5</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="bg-green-100 p-3 rounded-full">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Approved Documents</p>
-                  <p className="text-2xl font-bold">52</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center space-x-4">
-                <div className="bg-amber-100 p-3 rounded-full">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-amber-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Pending Reviews</p>
-                  <p className="text-2xl font-bold">12</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="flex items-baseline mb-2">
+          <span className="text-2xl font-bold">{current}</span>
+          <span className="text-gray-500 ml-1">/ {total}</span>
         </div>
         
-        {/* Dashboard Tabs */}
-        <Tabs defaultValue="projects" className="mb-8">
-          <TabsList>
-            <TabsTrigger value="projects">Active Projects</TabsTrigger>
-            <TabsTrigger value="documents">Recent Documents</TabsTrigger>
-            <TabsTrigger value="activity">Recent Activity</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="projects">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Active Projects</CardTitle>
-                <CardDescription>View and manage your ongoing regulatory projects</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  {activeProjects.map((project) => (
-                    <Card key={project.id} className="overflow-hidden">
-                      <div className="p-4">
-                        <div className="flex flex-wrap justify-between items-start gap-2">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h3 className="font-semibold">{project.name}</h3>
-                              <span className={`px-2 py-0.5 text-xs rounded-full ${
-                                project.status === "Active" ? "bg-blue-100 text-blue-800" :
-                                project.status === "Submitted" ? "bg-green-100 text-green-800" :
-                                project.status === "Draft" ? "bg-amber-100 text-amber-800" :
-                                "bg-gray-100 text-gray-800"
-                              }`}>
-                                {project.status}
-                              </span>
-                            </div>
-                            <p className="text-sm text-gray-500 mt-1">{project.type} • {project.phase} • {project.therapeutic}</p>
-                          </div>
-                          
-                          <Button 
-                            size="sm" 
-                            className={project.name === "ENZYMAX FORTE" ? "bg-pink-600 hover:bg-pink-700" : ""}
-                            onClick={() => {
-                              if (project.name === "ENZYMAX FORTE") {
-                                setLocation("/client-portal/ind-wizard");
-                              }
-                            }}
-                          >
-                            View Details
-                          </Button>
-                        </div>
-                        
-                        <div className="mt-3">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs text-gray-500">Progress</span>
-                            <span className="text-xs font-medium">{project.progress}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
-                              className={`h-2 rounded-full ${
-                                project.progress >= 80 ? "bg-green-500" :
-                                project.progress >= 40 ? "bg-blue-500" :
-                                "bg-amber-500"
-                              }`} 
-                              style={{width: `${project.progress}%`}}
-                            ></div>
-                          </div>
-                        </div>
-                        
-                        <div className="mt-2 text-xs text-gray-500">
-                          Last updated: {formatDate(project.updated)}
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="documents">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Documents</CardTitle>
-                <CardDescription>Access your recently uploaded and modified documents</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4">
-                  {documents.map((doc) => (
-                    <Card key={doc.id} className="p-4">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h3 className="font-semibold text-lg">{doc.title}</h3>
-                          <p className="text-sm text-muted-foreground mb-2">{doc.description}</p>
-                          <div className="flex flex-wrap gap-2 my-2">
-                            <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-                              {doc.document_type}
-                            </span>
-                            <span className="inline-flex items-center rounded-md bg-purple-50 px-2 py-1 text-xs font-medium text-purple-700 ring-1 ring-inset ring-purple-700/10">
-                              {doc.category}
-                            </span>
-                            {doc.tags && doc.tags.map((tag, i) => (
-                              <span key={i} className="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10">
-                                {tag}
-                              </span>
-                            ))}
-                            {doc.ai_tags && doc.ai_tags.map((tag, i) => (
-                              <span key={i} className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-700/10">
-                                AI: {tag}
-                              </span>
-                            ))}
-                          </div>
-                          <div className="text-xs text-muted-foreground">
-                            Uploaded on {formatDate(doc.created_at)}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                          >
-                            Download
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                          >
-                            View
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="activity">
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Track recent actions on your documents and submissions</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {recentActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-start space-x-4">
-                      <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${
-                        activity.type === "document" ? "bg-blue-100 text-blue-600" :
-                        activity.type === "workflow" ? "bg-green-100 text-green-600" :
-                        activity.type === "ai" ? "bg-pink-100 text-pink-600" :
-                        "bg-gray-100 text-gray-600"
-                      }`}>
-                        {activity.type === "document" && (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                        )}
-                        {activity.type === "workflow" && (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        )}
-                        {activity.type === "ai" && (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                          </svg>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="text-sm font-medium text-gray-900">
-                          {activity.user} {activity.action === "upload" && "uploaded"}
-                          {activity.action === "approval" && "approved"}
-                          {activity.action === "alert" && "flagged"}
-                          {activity.action === "download" && "downloaded"}
-                          {activity.action === "edit" && "edited"} {activity.item}
-                        </div>
-                        <p className="text-sm text-gray-500">
-                          {formatDate(activity.timestamp)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-        
-        {/* Quick access modules grid */}
-        <h2 className="text-xl font-bold mb-4">TrialSage™ Modules</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-0">
-              <div 
-                className="p-6 cursor-pointer"
-                onClick={() => navigateToModule("vault")}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-pink-100 p-2 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold">TrialSage Vault™</h3>
-                </div>
-                <p className="text-sm text-gray-500 mb-4">
-                  Secure document management with full audit trails and 21 CFR Part 11 compliance
-                </p>
-                <div className="text-sm text-pink-600 font-medium flex items-center">
-                  Access Vault
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="hover:shadow-md transition-shadow border-pink-200">
-            <CardContent className="p-0">
-              <div 
-                className="p-6 cursor-pointer bg-pink-50 rounded-[inherit]"
-                onClick={() => navigateToModule("ind")}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-pink-200 p-2 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-pink-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold">IND Wizard™</h3>
-                </div>
-                <p className="text-sm text-gray-600 mb-4">
-                  Guided IND application workflow with smart document generation and submission tools
-                </p>
-                <div className="text-sm text-pink-700 font-medium flex items-center">
-                  Launch IND Wizard
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-0">
-              <div 
-                className="p-6 cursor-pointer"
-                onClick={() => navigateToModule("csr")}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-purple-100 p-2 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold">CSR Intelligence™</h3>
-                </div>
-                <p className="text-sm text-gray-500 mb-4">
-                  Analyze 3,200+ clinical study reports with powerful AI search and insight extraction
-                </p>
-                <div className="text-sm text-purple-600 font-medium flex items-center">
-                  Access CSR Intelligence
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-0">
-              <div 
-                className="p-6 cursor-pointer"
-                onClick={() => navigateToModule("study")}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-emerald-100 p-2 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold">Study Architect™</h3>
-                </div>
-                <p className="text-sm text-gray-500 mb-4">
-                  Design clinical study protocols with AI-guided tools and statistical simulation features
-                </p>
-                <div className="text-sm text-emerald-600 font-medium flex items-center">
-                  Launch Study Architect
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-0">
-              <div 
-                className="p-6 cursor-pointer"
-                onClick={() => navigateToModule("cmc")}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-amber-100 p-2 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold">CMC Automation™</h3>
-                </div>
-                <p className="text-sm text-gray-500 mb-4">
-                  Streamline Chemistry, Manufacturing, and Controls documentation with AI-powered tools
-                </p>
-                <div className="text-sm text-amber-600 font-medium flex items-center">
-                  Access CMC Tools
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="hover:shadow-md transition-shadow">
-            <CardContent className="p-0">
-              <div 
-                className="p-6 cursor-pointer"
-                onClick={() => navigateToModule("timeline")}
-              >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="bg-indigo-100 p-2 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <h3 className="font-semibold">Regulatory Timeline™</h3>
-                </div>
-                <p className="text-sm text-gray-500 mb-4">
-                  Visualize and manage global regulatory submission timelines with predictive analytics
-                </p>
-                <div className="text-sm text-indigo-600 font-medium flex items-center">
-                  View Timeline
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        <div className="w-full bg-gray-200 rounded-full h-2">
+          <div 
+            className={`${color} h-2 rounded-full`} 
+            style={{ width: `${percentage}%` }}
+          ></div>
         </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="bg-white border-t py-4">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center mb-4 md:mb-0">
-            <span className="text-lg font-bold text-pink-600">TrialSage</span>
-            <span className="text-xs align-top font-medium text-gray-500">™</span>
-            <span className="text-sm text-gray-400 ml-2">Client Portal</span>
-          </div>
-          <div className="text-sm text-gray-500">
-            &copy; 2025 Concept2Cures Inc. All rights reserved.
-          </div>
-          <div className="flex space-x-4 mt-4 md:mt-0">
-            <a href="#" className="text-sm text-gray-500 hover:text-gray-700">Help</a>
-            <a href="#" className="text-sm text-gray-500 hover:text-gray-700">Documentation</a>
-            <a href="#" className="text-sm text-gray-500 hover:text-gray-700">Support</a>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   );
 };
 
-export default ClientPortalDashboard;
+// Upcoming deadline card
+const DeadlineCard = ({ deadline, onClick }) => {
+  // Format date for display
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'short', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+  
+  // Calculate days remaining
+  const getDaysRemaining = (dateString) => {
+    const deadline = new Date(dateString);
+    const today = new Date();
+    const diffTime = deadline - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+  
+  const daysRemaining = getDaysRemaining(deadline.date);
+  const isOverdue = daysRemaining < 0;
+  const isNearDue = daysRemaining >= 0 && daysRemaining <= 7;
+  
+  return (
+    <div 
+      className="bg-white rounded-lg shadow-sm border overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+      onClick={onClick}
+    >
+      <div className="p-4">
+        <div className="flex items-start">
+          <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+            isOverdue 
+              ? 'bg-red-100 text-red-500' 
+              : isNearDue 
+                ? 'bg-yellow-100 text-yellow-500' 
+                : 'bg-green-100 text-green-500'
+          }`}>
+            {isOverdue ? (
+              <AlertTriangle size={20} />
+            ) : isNearDue ? (
+              <Clock size={20} />
+            ) : (
+              <Calendar size={20} />
+            )}
+          </div>
+          
+          <div className="ml-3 flex-1">
+            <h3 className="font-medium text-gray-800">{deadline.title}</h3>
+            <div className="flex items-center mt-1">
+              <Calendar size={14} className="text-gray-400" />
+              <span className="ml-1 text-sm text-gray-600">{formatDate(deadline.date)}</span>
+            </div>
+            
+            <div className={`mt-2 text-sm font-medium ${
+              isOverdue 
+                ? 'text-red-600' 
+                : isNearDue 
+                  ? 'text-yellow-600' 
+                  : 'text-green-600'
+            }`}>
+              {isOverdue 
+                ? `Overdue by ${Math.abs(daysRemaining)} day${Math.abs(daysRemaining) !== 1 ? 's' : ''}` 
+                : `${daysRemaining} day${daysRemaining !== 1 ? 's' : ''} remaining`}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Recent document card
+const DocumentCard = ({ document, onClick }) => {
+  // Format timestamp for display
+  const formatTimestamp = (timestamp) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffSec = Math.round(diffMs / 1000);
+    const diffMin = Math.round(diffSec / 60);
+    const diffHr = Math.round(diffMin / 60);
+    const diffDays = Math.round(diffHr / 24);
+    
+    if (diffSec < 60) {
+      return 'Just now';
+    } else if (diffMin < 60) {
+      return `${diffMin}m ago`;
+    } else if (diffHr < 24) {
+      return `${diffHr}h ago`;
+    } else if (diffDays === 1) {
+      return 'Yesterday';
+    } else if (diffDays < 7) {
+      return `${diffDays}d ago`;
+    } else {
+      const options = { month: 'short', day: 'numeric' };
+      return date.toLocaleDateString(undefined, options);
+    }
+  };
+  
+  // Get document icon
+  const getDocumentIcon = () => {
+    switch (document.type) {
+      case 'protocol':
+        return <FileText size={16} className="text-blue-500" />;
+      case 'report':
+        return <FileCheck size={16} className="text-green-500" />;
+      case 'form':
+        return <Bookmark size={16} className="text-purple-500" />;
+      default:
+        return <FileText size={16} className="text-gray-500" />;
+    }
+  };
+  
+  return (
+    <div 
+      className="flex items-center p-3 hover:bg-gray-50 cursor-pointer border-b last:border-b-0"
+      onClick={onClick}
+    >
+      <div className="mr-3">
+        {getDocumentIcon()}
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="text-sm font-medium text-gray-800 truncate">{document.name}</div>
+        <div className="text-xs text-gray-500">{formatTimestamp(document.updatedAt)}</div>
+      </div>
+      <ChevronRight size={16} className="text-gray-400" />
+    </div>
+  );
+};
+
+// Quick action button
+const QuickActionButton = ({ icon, title, onClick }) => {
+  return (
+    <button 
+      className="flex flex-col items-center justify-center p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+      onClick={onClick}
+    >
+      <div className="w-10 h-10 rounded-full bg-primary bg-opacity-10 flex items-center justify-center text-primary mb-2">
+        {icon}
+      </div>
+      <span className="text-sm font-medium text-gray-700">{title}</span>
+    </button>
+  );
+};
+
+// Client Dashboard component
+const ClientDashboard = () => {
+  const [location, setLocation] = useLocation();
+  const [metrics, setMetrics] = useState(null);
+  const [deadlines, setDeadlines] = useState([]);
+  const [recentDocuments, setRecentDocuments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const { getSharedContext } = useModuleIntegration();
+  
+  // Load dashboard data
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        setLoading(true);
+        
+        // In a real implementation, these would be API calls
+        // Get basic metrics data
+        const metricsData = {
+          documents: {
+            total: 156,
+            complete: 89
+          },
+          tasks: {
+            total: 42,
+            complete: 27
+          },
+          milestones: {
+            total: 12,
+            complete: 5
+          },
+          issues: {
+            total: 18,
+            resolved: 15
+          }
+        };
+        
+        // Get upcoming deadlines
+        const deadlinesData = [
+          {
+            id: 1,
+            title: 'IND Application Submission',
+            date: '2025-05-15',
+            type: 'regulatory',
+            project: 'BTX-331'
+          },
+          {
+            id: 2,
+            title: 'CSR Final Draft Review',
+            date: '2025-05-10',
+            type: 'document',
+            project: 'BX-107'
+          },
+          {
+            id: 3,
+            title: 'Protocol Amendment Submission',
+            date: '2025-06-05',
+            type: 'regulatory',
+            project: 'BTX-331'
+          },
+          {
+            id: 4,
+            title: 'Data Safety Monitoring Board Meeting',
+            date: '2025-05-20',
+            type: 'meeting',
+            project: 'BX-107'
+          }
+        ];
+        
+        // Get recent documents
+        const documentsData = [
+          {
+            id: 1,
+            name: 'BTX-331 IND Application.docx',
+            type: 'form',
+            updatedAt: '2025-04-26T10:15:00Z',
+            updatedBy: 'Sarah Johnson',
+            module: 'ind-wizard'
+          },
+          {
+            id: 2,
+            name: 'BX-107 Clinical Study Report.pdf',
+            type: 'report',
+            updatedAt: '2025-04-25T14:30:00Z',
+            updatedBy: 'Mark Wilson',
+            module: 'csr-intelligence'
+          },
+          {
+            id: 3,
+            name: 'BTX-331 Protocol v2.0.docx',
+            type: 'protocol',
+            updatedAt: '2025-04-24T09:45:00Z',
+            updatedBy: 'John Davis',
+            module: 'study-architect'
+          },
+          {
+            id: 4,
+            name: 'Patient Recruitment Status Report.xlsx',
+            type: 'report',
+            updatedAt: '2025-04-23T16:20:00Z',
+            updatedBy: 'Emily Chen',
+            module: 'trial-vault'
+          },
+          {
+            id: 5,
+            name: 'BTX-331 Chemistry Data Package.zip',
+            type: 'data',
+            updatedAt: '2025-04-22T11:05:00Z',
+            updatedBy: 'Michael Brown',
+            module: 'ind-wizard'
+          }
+        ];
+        
+        setMetrics(metricsData);
+        setDeadlines(deadlinesData);
+        setRecentDocuments(documentsData);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error loading dashboard data:', err);
+        setError('Failed to load dashboard data');
+        setLoading(false);
+      }
+    };
+    
+    loadDashboardData();
+  }, []);
+  
+  // Location is already defined at the component level
+  // const [location, setLocation] = useLocation();
+  
+  // Navigate to document
+  const navigateToDocument = (document) => {
+    // In a real app, would navigate to document viewer
+    console.log('Navigate to document:', document);
+    const path = `/${document.module}/documents/${document.id}`;
+    setLocation(path); // Using React Router navigation
+  };
+  
+  // Navigate to deadline
+  const navigateToDeadline = (deadline) => {
+    // In a real app, would navigate to deadline details
+    console.log('Navigate to deadline:', deadline);
+    const path = `/deadlines/${deadline.id}`;
+    setLocation(path); // Using React Router navigation
+  };
+  
+  // Navigate based on metric type
+  const navigateToMetric = (metricType) => {
+    // In a real app, would navigate to appropriate section
+    console.log('Navigate to metric:', metricType);
+    const path = `/${metricType}`;
+    setLocation(path); // Using React Router navigation
+  };
+  
+  // Handle quick action
+  const handleQuickAction = (action) => {
+    // In a real app, would navigate to appropriate action
+    console.log('Quick action:', action);
+    const path = `/${action}`;
+    setLocation(path); // Using React Router navigation
+  };
+  
+  // Render loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full"></div>
+        <span className="ml-3 text-gray-600">Loading dashboard...</span>
+      </div>
+    );
+  }
+  
+  // Render error state
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-4 m-4">
+        <div className="flex items-center">
+          <AlertTriangle size={24} className="text-red-500 mr-3" />
+          <div>
+            <h3 className="font-medium text-red-800">Error Loading Dashboard</h3>
+            <p className="text-red-700">{error}</p>
+          </div>
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+  
+  return (
+    <div className="p-4 md:p-6">
+      {/* Welcome section */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800 mb-1">
+          Welcome to TrialSage Client Portal
+        </h1>
+        <p className="text-gray-600">
+          Your centralized dashboard for regulatory document management and submissions
+        </p>
+      </div>
+      
+      {/* Quick actions */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
+          <QuickActionButton 
+            icon={<FileText size={20} />}
+            title="New Document"
+            onClick={() => handleQuickAction('new-document')}
+          />
+          <QuickActionButton 
+            icon={<FileCheck size={20} />}
+            title="Submissions"
+            onClick={() => handleQuickAction('submissions')}
+          />
+          <QuickActionButton 
+            icon={<Calendar size={20} />}
+            title="Calendar"
+            onClick={() => handleQuickAction('calendar')}
+          />
+          <QuickActionButton 
+            icon={<BarChart2 size={20} />}
+            title="Reports"
+            onClick={() => handleQuickAction('reports')}
+          />
+          <QuickActionButton 
+            icon={<Users size={20} />}
+            title="Team"
+            onClick={() => handleQuickAction('team')}
+          />
+          <QuickActionButton 
+            icon={<ExternalLink size={20} />}
+            title="Regulatory Links"
+            onClick={() => handleQuickAction('regulatory-links')}
+          />
+        </div>
+      </div>
+      
+      {/* Metrics */}
+      <div className="mb-8">
+        <h2 className="text-lg font-semibold text-gray-800 mb-4">Overview</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <ProgressCard 
+            title="Documents" 
+            current={metrics.documents.complete}
+            total={metrics.documents.total}
+            icon={<FileText size={16} />}
+            color="bg-blue-500"
+            onClick={() => navigateToMetric('documents')}
+          />
+          <ProgressCard 
+            title="Tasks" 
+            current={metrics.tasks.complete}
+            total={metrics.tasks.total}
+            icon={<CheckCircle size={16} />}
+            color="bg-green-500"
+            onClick={() => navigateToMetric('tasks')}
+          />
+          <ProgressCard 
+            title="Milestones" 
+            current={metrics.milestones.complete}
+            total={metrics.milestones.total}
+            icon={<Calendar size={16} />}
+            color="bg-purple-500"
+            onClick={() => navigateToMetric('milestones')}
+          />
+          <ProgressCard 
+            title="Issues Resolved" 
+            current={metrics.issues.resolved}
+            total={metrics.issues.total}
+            icon={<AlertTriangle size={16} />}
+            color="bg-yellow-500"
+            onClick={() => navigateToMetric('issues')}
+          />
+        </div>
+      </div>
+      
+      {/* Two column layout for deadlines and documents */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Upcoming deadlines */}
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">Upcoming Deadlines</h2>
+            <Link to="/deadlines">
+              <button className="text-sm text-primary hover:underline flex items-center">
+                View All
+                <ChevronRight size={16} className="ml-1" />
+              </button>
+            </Link>
+          </div>
+          
+          <div className="space-y-4">
+            {deadlines.length === 0 ? (
+              <div className="bg-white rounded-lg shadow-sm border p-4 text-center text-gray-500">
+                No upcoming deadlines
+              </div>
+            ) : (
+              deadlines.slice(0, 4).map(deadline => (
+                <DeadlineCard 
+                  key={deadline.id}
+                  deadline={deadline}
+                  onClick={() => navigateToDeadline(deadline)}
+                />
+              ))
+            )}
+          </div>
+        </div>
+        
+        {/* Recent documents */}
+        <div>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold text-gray-800">Recent Documents</h2>
+            <Link to="/documents">
+              <button className="text-sm text-primary hover:underline flex items-center">
+                View All
+                <ChevronRight size={16} className="ml-1" />
+              </button>
+            </Link>
+          </div>
+          
+          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+            {recentDocuments.length === 0 ? (
+              <div className="p-4 text-center text-gray-500">
+                No recent documents
+              </div>
+            ) : (
+              recentDocuments.map(document => (
+                <DocumentCard 
+                  key={document.id}
+                  document={document}
+                  onClick={() => navigateToDocument(document)}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default ClientDashboard;
