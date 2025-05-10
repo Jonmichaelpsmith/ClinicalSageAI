@@ -19,6 +19,9 @@ const networkState = {
   isRetrying: false,
 };
 
+// Cache for network requests
+const requestCache = new Map();
+
 /**
  * Initialize network resilience features
  */
@@ -29,6 +32,19 @@ export function initNetworkResilience() {
 
   // Start retry queue processor
   processRetryQueue();
+  
+  // Clear expired cache entries periodically
+  setInterval(cleanupExpiredCache, 60000);
+  
+  console.info('Network resilience features initialized');
+  
+  return {
+    clearCache: () => requestCache.clear(),
+    getCacheStats: () => ({
+      size: requestCache.size,
+      maxSize: NETWORK_CONFIG.requestCacheSize
+    })
+  };
 }
 
 /**
@@ -171,6 +187,86 @@ function calculateBackoff(attemptsMade) {
   const jitter = exponentialDelay * 0.2 * (Math.random() * 2 - 1);
 
   return Math.floor(exponentialDelay + jitter);
+}
+
+/**
+ * Clean up expired cache entries
+ */
+function cleanupExpiredCache() {
+  const now = Date.now();
+
+  for (const [key, value] of requestCache.entries()) {
+    if (now - value.timestamp > NETWORK_CONFIG.requestCacheExpiry) {
+      requestCache.delete(key);
+    }
+  }
+}
+
+/**
+ * Create a resilient fetch function
+ * @param {Function} originalFetch - Original fetch function
+ * @returns {Function} Enhanced fetch function with retries
+ */
+export function createResilientFetch(originalFetch = window.fetch) {
+  return async function resilientFetch(url, options = {}) {
+    const isGetRequest = !options.method || options.method === 'GET';
+    const shouldCache = NETWORK_CONFIG.cacheRequests && isGetRequest;
+
+    // Check cache for GET requests
+    if (shouldCache) {
+      const cacheKey = `${url}:${JSON.stringify(options)}`;
+      const cachedResponse = requestCache.get(cacheKey);
+
+      if (cachedResponse && (Date.now() - cachedResponse.timestamp < NETWORK_CONFIG.requestCacheExpiry)) {
+        console.debug('Using cached response for:', url);
+        return cachedResponse.response.clone();
+      }
+    }
+
+    // Setup for retries
+    let lastError;
+    let retries = 0;
+
+    while (retries <= NETWORK_CONFIG.maxRetries) {
+      try {
+        const response = await originalFetch(url, options);
+
+        // Cache successful GET responses
+        if (shouldCache && response.ok) {
+          const cacheKey = `${url}:${JSON.stringify(options)}`;
+          const clonedResponse = response.clone();
+
+          requestCache.set(cacheKey, {
+            response: clonedResponse,
+            timestamp: Date.now()
+          });
+
+          // Maintain cache size
+          if (requestCache.size > NETWORK_CONFIG.requestCacheSize) {
+            // Remove oldest entry
+            const oldestKey = [...requestCache.entries()]
+              .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
+            requestCache.delete(oldestKey);
+          }
+        }
+
+        return response;
+      } catch (error) {
+        lastError = error;
+        retries++;
+
+        if (retries <= NETWORK_CONFIG.maxRetries) {
+          console.warn(`Network request failed, retrying (${retries}/${NETWORK_CONFIG.maxRetries}):`, url);
+          // Wait before retrying with exponential backoff
+          await new Promise(resolve => setTimeout(resolve, NETWORK_CONFIG.retryDelay * Math.pow(2, retries - 1)));
+        }
+      }
+    }
+
+    // All retries failed
+    console.error(`Request failed after ${NETWORK_CONFIG.maxRetries} retries:`, url, lastError);
+    throw lastError;
+  };
 }
 
 /**
@@ -362,155 +458,5 @@ export default {
   fetchWithExponentialBackoff,
   resilientFetch,
   createResilientApiClient,
-};
-/**
- * Network Resilience Module
- * 
- * Provides automatic retries, offline detection, and
- * connection restoration for critical API requests.
- */
-
-const NETWORK_CONFIG = {
-  maxRetries: 3,
-  retryDelay: 1000,
-  cacheRequests: true,
-  requestCacheSize: 50,
-  requestCacheExpiry: 5 * 60 * 1000, // 5 minutes
-  criticalEndpoints: [
-    '/api/health',
-    '/api/auth',
-    '/api/documents',
-    '/api/export'
-  ]
-};
-
-// Cache for network requests
-const requestCache = new Map();
-
-/**
- * Create a resilient fetch function
- * @param {Function} originalFetch - Original fetch function
- * @returns {Function} Enhanced fetch function with retries
- */
-export function createResilientFetch(originalFetch = window.fetch) {
-  return async function resilientFetch(url, options = {}) {
-    const isGetRequest = !options.method || options.method === 'GET';
-    const shouldCache = NETWORK_CONFIG.cacheRequests && isGetRequest;
-
-    // Check cache for GET requests
-    if (shouldCache) {
-      const cacheKey = `${url}:${JSON.stringify(options)}`;
-      const cachedResponse = requestCache.get(cacheKey);
-
-      if (cachedResponse && (Date.now() - cachedResponse.timestamp < NETWORK_CONFIG.requestCacheExpiry)) {
-        console.debug('Using cached response for:', url);
-        return cachedResponse.response.clone();
-      }
-    }
-
-    // Setup for retries
-    let lastError;
-    let retries = 0;
-
-    while (retries <= NETWORK_CONFIG.maxRetries) {
-      try {
-        const response = await originalFetch(url, options);
-
-        // Cache successful GET responses
-        if (shouldCache && response.ok) {
-          const cacheKey = `${url}:${JSON.stringify(options)}`;
-          const clonedResponse = response.clone();
-
-          requestCache.set(cacheKey, {
-            response: clonedResponse,
-            timestamp: Date.now()
-          });
-
-          // Maintain cache size
-          if (requestCache.size > NETWORK_CONFIG.requestCacheSize) {
-            // Remove oldest entry
-            const oldestKey = [...requestCache.entries()]
-              .sort((a, b) => a[1].timestamp - b[1].timestamp)[0][0];
-            requestCache.delete(oldestKey);
-          }
-        }
-
-        return response;
-      } catch (error) {
-        lastError = error;
-        retries++;
-
-        if (retries <= NETWORK_CONFIG.maxRetries) {
-          console.warn(`Network request failed, retrying (${retries}/${NETWORK_CONFIG.maxRetries}):`, url);
-          // Wait before retrying with exponential backoff
-          await new Promise(resolve => setTimeout(resolve, NETWORK_CONFIG.retryDelay * Math.pow(2, retries - 1)));
-        }
-      }
-    }
-
-    // All retries failed
-    console.error(`Request failed after ${NETWORK_CONFIG.maxRetries} retries:`, url, lastError);
-    throw lastError;
-  };
-}
-
-/**
- * Initialize network resilience features
- */
-export function initNetworkResilience() {
-  // Store original fetch
-  const originalFetch = window.fetch;
-
-  // Replace with resilient version
-  window.fetch = createResilientFetch(originalFetch);
-
-  // Set up offline detection
-  window.addEventListener('online', handleOnline);
-  window.addEventListener('offline', handleOffline);
-
-  // Clear expired cache entries periodically
-  setInterval(cleanupExpiredCache, 60000);
-
-  console.info('Network resilience features initialized');
-
-  return {
-    clearCache: () => requestCache.clear(),
-    getCacheStats: () => ({
-      size: requestCache.size,
-      maxSize: NETWORK_CONFIG.requestCacheSize
-    })
-  };
-}
-
-/**
- * Handle online event
- */
-function handleOnline() {
-  console.info('🌐 Network connection restored');
-  // Could implement retry logic for failed requests here
-}
-
-/**
- * Handle offline event
- */
-function handleOffline() {
-  console.warn('🔌 Network connection lost');
-  // Could queue important requests here
-}
-
-/**
- * Clean up expired cache entries
- */
-function cleanupExpiredCache() {
-  const now = Date.now();
-
-  for (const [key, value] of requestCache.entries()) {
-    if (now - value.timestamp > NETWORK_CONFIG.requestCacheExpiry) {
-      requestCache.delete(key);
-    }
-  }
-}
-
-export default {
-  initNetworkResilience
+  createResilientFetch
 };
