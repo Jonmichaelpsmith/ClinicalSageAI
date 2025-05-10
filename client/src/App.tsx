@@ -10,6 +10,7 @@ import NotFound from '@/pages/not-found';
 import AuthPage from '@/pages/auth-page';
 import CMCPage from '@/pages/CMCPage';
 import CoAuthor from '@/pages/CoAuthor';
+import ClientPortalLanding from '@/pages/ClientPortalLanding';
 // Import your existing CSR Analyzer pages
 import CSRAnalyzer from '@/pages/CSRAnalyzer.jsx';
 import CERV2Page from '@/pages/CERV2Page.jsx';
@@ -35,6 +36,7 @@ function Router() {
   return (
     <Switch>
       <ProtectedRoute path="/" component={HomePage} />
+      <ProtectedRoute path="/client-portal" component={ClientPortalLanding} />
       <ProtectedRoute path="/ind" component={IndDashboard} />
       <ProtectedRoute path="/ind/:id" component={SubmissionHome} />
       <ProtectedRoute path="/analytics" component={AnalyticsDashboard} />
