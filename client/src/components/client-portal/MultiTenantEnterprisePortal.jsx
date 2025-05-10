@@ -68,12 +68,15 @@ import {
   Download,
   Server,
   Grid,
+  FileCheck,
+  Upload,
+  File,
+  Check,
   Sparkles,
   ChevronDown,
   X,
   User,
   UserPlus,
-  FileCheck,
   Brain,
   Cpu,
   Bot,
@@ -2151,6 +2154,113 @@ const MultiTenantEnterprisePortal = () => {
               </div>
             </div>
           </div>
+        )}
+        
+        {/* CER2V Module Tab */}
+        {activeTab === 'cer2v' && !loading && !error && (
+          <>
+            <div className="flex items-center mb-6">
+              <FileCheck className="h-6 w-6 text-green-600 mr-2" />
+              <h1 className="text-2xl font-bold text-gray-800">CER2V Module</h1>
+              <div className="ml-4 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                Enterprise Feature
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
+                {/* Main CER2V Content - Load the actual CERV2Page component in an iframe */}
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" style={{ height: "calc(100vh - 230px)" }}>
+                  <iframe 
+                    src="/cerv2" 
+                    className="w-full h-full border-0"
+                    title="CER2V Module"
+                  ></iframe>
+                </div>
+              </div>
+              
+              <div className="space-y-6">
+                {/* CER2V Quick Actions */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <Button variant="outline" className="w-full justify-start text-green-700 bg-green-50 hover:bg-green-100 border-green-200">
+                      <FileText className="mr-2 h-4 w-4" />
+                      Create New CER Report
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start text-green-700 bg-green-50 hover:bg-green-100 border-green-200">
+                      <Upload className="mr-2 h-4 w-4" />
+                      Import Existing Report
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start text-green-700 bg-green-50 hover:bg-green-100 border-green-200">
+                      <ListChecks className="mr-2 h-4 w-4" />
+                      View Report Templates
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start text-green-700 bg-green-50 hover:bg-green-100 border-green-200">
+                      <BarChart className="mr-2 h-4 w-4" />
+                      CER Analytics Dashboard
+                    </Button>
+                  </CardContent>
+                </Card>
+                
+                {/* Recent CER Activities */}
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium">Recent Activities</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex items-start space-x-3">
+                      <div className="bg-green-100 p-1.5 rounded-full">
+                        <Check className="h-3.5 w-3.5 text-green-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">CER Report for BTX-112 Updated</p>
+                        <p className="text-xs text-gray-500">Today at 11:43 AM</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="bg-blue-100 p-1.5 rounded-full">
+                        <File className="h-3.5 w-3.5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">New Literature Added</p>
+                        <p className="text-xs text-gray-500">Yesterday at 4:15 PM</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start space-x-3">
+                      <div className="bg-amber-100 p-1.5 rounded-full">
+                        <AlertCircle className="h-3.5 w-3.5 text-amber-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Vigilance Alert: Post-Market Data</p>
+                        <p className="text-xs text-gray-500">May 9, 2025</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                {/* AI Integration */}
+                <Card className="bg-gradient-to-br from-indigo-50 to-purple-50 border-indigo-100">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-lg font-medium text-indigo-800">AI Analysis</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-indigo-700 mb-3">Ask Lument AI about your Clinical Evaluation Reports</p>
+                    <div className="relative">
+                      <input 
+                        type="text" 
+                        placeholder="Ask about CER preparation, literature, etc..."
+                        className="w-full px-4 py-2 pr-10 border border-indigo-200 rounded-md text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                      />
+                      <Sparkles className="absolute right-3 top-2.5 h-4 w-4 text-indigo-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </>
         )}
         
         {/* Dashboard Tab Content */}
