@@ -73,7 +73,8 @@ import {
   Cpu,
   Bot,
   ExternalLink,
-  List
+  List,
+  ArrowRight
 } from 'lucide-react';
 
 import { 
