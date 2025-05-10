@@ -7,15 +7,12 @@
 
 import React from 'react';
 import { ModuleIntegrationProvider } from './components/integration/ModuleIntegrationLayer';
-import { TenantProvider } from './contexts/TenantContext';
 
 const AppProvider = ({ children }) => {
   return (
-    <TenantProvider>
-      <ModuleIntegrationProvider>
-        {children}
-      </ModuleIntegrationProvider>
-    </TenantProvider>
+    <ModuleIntegrationProvider>
+      {children}
+    </ModuleIntegrationProvider>
   );
 };
 
