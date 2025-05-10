@@ -28,71 +28,67 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
+import { Calendar, FileText } from 'lucide-react';
 
-// Create a schema for form validation
+// Schema for the form validation
 const formSchema = z.object({
   name: z.string().min(3, {
     message: 'Name must be at least 3 characters.',
   }),
-  submissionType: z.enum(['IND', 'eCTD', 'NDA', 'BLA', 'ANDA', 'DMF'], {
-    required_error: 'Please select a submission type.',
+  submissionType: z.string().min(1, {
+    message: 'Submission type is required.',
   }),
-  fda21CfrPart11Enabled: z.boolean().default(false),
+  description: z.string().optional(),
+  sponsor: z.string().min(3, {
+    message: 'Sponsor name is required.',
+  }),
+  applicationNumber: z.string().optional(),
+  productName: z.string().optional(),
 });
 
 /**
  * Create Submission Dialog Component
  * 
- * Dialog for creating a new regulatory submission with form validation.
+ * Dialog for creating a new regulatory submission.
  */
 const CreateSubmissionDialog = ({ 
   open, 
   onOpenChange,
-  onSubmit,
-  isLoading = false,
-  clientWorkspaces = [], 
-  selectedClientWorkspaceId = null,
-  allowClientWorkspaceSelection = false
+  onCreate,
+  isLoading = false
 }) => {
   // Create a form instance with validation
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      submissionType: 'IND',
-      fda21CfrPart11Enabled: false,
-      clientWorkspaceId: selectedClientWorkspaceId
+      submissionType: '',
+      description: '',
+      sponsor: '',
+      applicationNumber: '',
+      productName: '',
     },
   });
 
-  // Add client workspace selection to schema if needed
-  const formSchemaWithClient = allowClientWorkspaceSelection && clientWorkspaces.length > 0
-    ? formSchema.extend({
-        clientWorkspaceId: z.string({
-          required_error: 'Please select a client workspace.',
-        }),
-      })
-    : formSchema;
-
   // Handle form submission
   const handleSubmit = (data) => {
-    // Transform client workspace ID to number
-    if (data.clientWorkspaceId) {
-      data.clientWorkspaceId = parseInt(data.clientWorkspaceId, 10);
-    } else if (selectedClientWorkspaceId) {
-      data.clientWorkspaceId = selectedClientWorkspaceId;
-    }
-    onSubmit(data);
+    onCreate(data);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={(newState) => {
+      if (!newState) {
+        // Reset form when dialog is closed
+        form.reset();
+      }
+      onOpenChange(newState);
+    }}>
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
-          <DialogTitle>Create New Regulatory Submission</DialogTitle>
+          <DialogTitle>Create New Submission</DialogTitle>
           <DialogDescription>
-            Create a new regulatory submission project. Fill in the details below.
+            Create a new regulatory submission project to organize your eCTD or IND documents.
           </DialogDescription>
         </DialogHeader>
         
@@ -103,105 +99,124 @@ const CreateSubmissionDialog = ({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Submission Name</FormLabel>
+                  <FormLabel>Project Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g., IND-12345 for Drug X" {...field} />
+                    <Input placeholder="e.g., IND-123456 for Drug ABC" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Enter a descriptive name for your submission.
+                    Enter a descriptive name for this submission.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
             
-            <FormField
-              control={form.control}
-              name="submissionType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Submission Type</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a submission type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="IND">IND (Investigational New Drug)</SelectItem>
-                      <SelectItem value="eCTD">eCTD (Electronic Common Technical Document)</SelectItem>
-                      <SelectItem value="NDA">NDA (New Drug Application)</SelectItem>
-                      <SelectItem value="BLA">BLA (Biologics License Application)</SelectItem>
-                      <SelectItem value="ANDA">ANDA (Abbreviated New Drug Application)</SelectItem>
-                      <SelectItem value="DMF">DMF (Drug Master File)</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Select the type of regulatory submission.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            {allowClientWorkspaceSelection && clientWorkspaces.length > 0 && (
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control}
-                name="clientWorkspaceId"
+                name="submissionType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Client Workspace</FormLabel>
+                    <FormLabel>Submission Type</FormLabel>
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value?.toString()}
+                      defaultValue={field.value}
                     >
                       <FormControl>
                         <SelectTrigger>
-                          <SelectValue placeholder="Select a client workspace" />
+                          <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {clientWorkspaces.map((workspace) => (
-                          <SelectItem
-                            key={workspace.id}
-                            value={workspace.id.toString()}
-                          >
-                            {workspace.name}
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="IND">IND</SelectItem>
+                        <SelectItem value="NDA">NDA</SelectItem>
+                        <SelectItem value="BLA">BLA</SelectItem>
+                        <SelectItem value="ANDA">ANDA</SelectItem>
+                        <SelectItem value="DMF">DMF</SelectItem>
+                        <SelectItem value="IDE">IDE</SelectItem>
+                        <SelectItem value="510k">510(k)</SelectItem>
+                        <SelectItem value="PMA">PMA</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormDescription>
-                      Select the client workspace for this submission.
+                      Select the type of regulatory submission.
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            )}
+              
+              <FormField
+                control={form.control}
+                name="sponsor"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sponsor</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Sponsoring company name" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Organization sponsoring this submission.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="applicationNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Application Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., 123456" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Optional FDA/regulatory agency number.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <FormField
+                control={form.control}
+                name="productName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Product Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Product or compound name" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Name of the product being submitted.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             
             <FormField
               control={form.control}
-              name="fda21CfrPart11Enabled"
+              name="description"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormItem>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
+                    <Textarea
+                      placeholder="Brief description of this submission"
+                      {...field}
                     />
                   </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel>
-                      Enable FDA 21 CFR Part 11 Compliance
-                    </FormLabel>
-                    <FormDescription>
-                      Enforce FDA 21 CFR Part 11 electronic records and signatures compliance for this submission.
-                    </FormDescription>
-                  </div>
+                  <FormDescription>
+                    Optional details about this submission.
+                  </FormDescription>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -215,7 +230,10 @@ const CreateSubmissionDialog = ({
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isLoading}>
+              <Button 
+                type="submit" 
+                disabled={isLoading}
+              >
                 {isLoading ? 'Creating...' : 'Create Submission'}
               </Button>
             </DialogFooter>
