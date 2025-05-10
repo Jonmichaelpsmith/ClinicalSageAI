@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { optimizeMemory, getMemoryUsage } from '../../utils/memoryOptimizer';
 import { initFreezeDetection, analyzeFreezeRisks } from '../../utils/freezeDetection';
-import { initNetworkResilience } from '../../utils/networkResilience';
+import { initAdvancedNetworkResilience } from '../../utils/networkResilience';
 import { useToast } from '@/hooks/use-toast';
 
 /**
@@ -113,7 +113,7 @@ export default function StabilityEnabler({ children }) {
     console.log('🛡️ Initializing all stability features...');
 
     // Initialize network resilience
-    networkResilienceRef.current = initNetworkResilience({
+    networkResilienceRef.current = initAdvancedNetworkResilience({
       onStatusChange: (status) => {
         if (!status.online) {
           stabilityMetricsRef.current.networkDisconnects++;
