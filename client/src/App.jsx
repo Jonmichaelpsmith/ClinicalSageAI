@@ -137,7 +137,7 @@ function App() {
   }, []);
   
   // Check if we're on the landing page, regulatory hub, coauthor pages, or dashboard (which have their own navigation)
-  const isLandingPage = location === '/' || location === '/client-portal';
+  const isLandingPage = location === '/'; // Only root is landing page, client-portal should show proper navigation
   const isRegulatoryHub = location === '/regulatory-intelligence-hub' || 
                           location === '/client-portal/regulatory-intel';
   const isCoAuthorPage = location === '/coauthor' || 
@@ -162,12 +162,13 @@ function App() {
             isRegulatoryHub ? "p-0" : 
             isCoAuthorPage ? "p-0" : // No padding for CoAuthor pages
             isDashboardPage ? "p-0" : // No padding for Dashboard page
+            location === '/client-portal' ? "p-0" : // No padding for Client Portal
             "p-4 mt-24"
           }>
           <Switch>
-          {/* Main Portal Landing Pages - both root and /client-portal go to same component */}
+          {/* Main Portal Landing Pages */}
           <Route path="/" component={ClientPortalLanding} />
-          <Route path="/client-portal" component={ClientPortalLanding} />
+          <Route path="/client-portal" component={ClientPortal} />
           
           {/* Client Portal Sub-Pages */}
           <Route path="/client-portal/vault" component={VaultPage} />
