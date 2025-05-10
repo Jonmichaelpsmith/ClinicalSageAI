@@ -27,6 +27,13 @@ const LoadingPage = () => (
 // Eagerly load the landing page for faster initial render
 import ClientPortalLanding from './pages/ClientPortalLanding';
 
+// Import client portal components from their proper location
+import ClientPortal from '../client-portal/ClientPortal';
+import ClientHeader from '../client-portal/ClientHeader';
+import ClientContextBar from '../client-portal/ClientContextBar';
+import ClientDashboard from '../client-portal/ClientDashboard';
+import OrganizationSwitcher from '../client-portal/OrganizationSwitcher';
+
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
 const CERPage = lazy(() => import('./pages/CerPage'));
