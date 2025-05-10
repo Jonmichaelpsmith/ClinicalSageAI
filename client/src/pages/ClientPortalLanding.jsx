@@ -1,18 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import { useLocation, Link } from 'wouter';
-import axios from 'axios';
-import { Button } from '@/components/ui/button';
+import React, { useEffect, useState, memo, useCallback, Suspense } from 'react';
+import { useLocation } from 'wouter';
 import { useTenant } from '../contexts/TenantContext';
 import { OrganizationSwitcher } from '../components/tenant/OrganizationSwitcher';
 import { ClientWorkspaceSwitcher } from '../components/tenant/ClientWorkspaceSwitcher';
 import { Building, Users, Settings, Info } from 'lucide-react';
 
-// Import component placeholders (these would be real components in production)
-import ProjectManagerGrid from '../components/ProjectManagerGrid';
-import NextActionsSidebar from '../components/NextActionsSidebar';
-import VaultQuickAccess from '../components/VaultQuickAccess';
-import AnalyticsQuickView from '../components/AnalyticsQuickView';
-import ReportsQuickWidget from '../components/ReportsQuickWidget';
+// Import component placeholders - using React.lazy for performance
+const ProjectManagerGrid = memo(React.lazy(() => import('../components/ProjectManagerGrid')));
+const VaultQuickAccess = memo(React.lazy(() => import('../components/VaultQuickAccess')));
+const AnalyticsQuickView = memo(React.lazy(() => import('../components/AnalyticsQuickView')));
+
+// Fallback loading component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center p-4 h-full min-h-[100px]">
+    <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-indigo-500"></div>
+  </div>
+);
 
 const ClientPortalLanding = () => {
   const [projects, setProjects] = useState([]);
@@ -77,52 +80,29 @@ const ClientPortalLanding = () => {
     console.log('All module access links updated to point to /client-portal');
   }, []);
 
-  // Module cards for the dashboard
+  // Module cards for the dashboard - ONLY official TrialSage modules
   const moduleCards = [
     { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/ind-wizard', highlight: false },
     { id: 'ectd', title: 'eCTD Module Builder™', description: 'Integrated common technical document module builder', path: '/ectd-planner', highlight: true, isNew: true },
     { id: 'regulatory-submissions', title: 'Regulatory Submissions Hub™', description: 'Unified platform for managing eCTD and IND submissions with comprehensive document management', path: '/regulatory-submissions', highlight: true },
-    { id: 'cer', title: 'CER Generator™', description: 'Next-generation regulatory automation for medical device and combination product submissions', path: '/cerv2', highlight: true },
+    { id: 'cer', title: 'CER Generator™', description: 'Next-generation regulatory automation for medical device and combination product submissions', path: '/cerv2', highlight: false },
     { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/cmc', highlight: false },
     { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/vault', highlight: false },
     { id: 'rih', title: 'Regulatory Intelligence Hub™', description: 'AI-powered strategy, timeline, and risk simulation', path: '/regulatory-intelligence-hub', highlight: true },
-    { id: 'risk', title: 'Risk Heatmap™', description: 'Interactive visualization of CTD risk gaps & impacts', path: '/regulatory-risk-dashboard', highlight: false },
+    { id: 'risk', title: 'Risk Heatmap™', description: 'Interactive visualization of CTD risk gaps & impacts', path: '/risk-heatmap', highlight: false },
     { id: 'study', title: 'Study Architect™', description: 'Protocol development with regulatory intelligence', path: '/study-architect', highlight: false },
-    { id: 'coauthor', title: 'eCTD Co-Author™', description: 'AI-assisted co-authoring of CTD submission sections', path: '/coauthor', highlight: false },
+    { id: 'coauthor', title: 'eCTD Co-Author™', description: 'AI-assisted co-authoring of CTD submission sections', path: '/ectd-coauthor', highlight: false },
     { id: 'analytics', title: 'Analytics Dashboard', description: 'Metrics and insights on regulatory performance', path: '/analytics', highlight: false }
   ];
 
+  // Simplified module selection handler to reduce UI freezes
   const handleModuleSelect = (moduleId) => {
     // Find the module object from the module cards
     const selectedModule = moduleCards.find(m => m.id === moduleId);
     
-    // Set the current module in the tenant context if available
-    if (typeof setCurrentModule === 'function' && selectedModule) {
-      try {
-        // Create a proper Module object format expected by TenantContext
-        const moduleObject = {
-          id: selectedModule.id,
-          name: selectedModule.title,
-          path: selectedModule.path,
-          // Add an optional icon if available in the future
-          icon: selectedModule.icon || undefined
-        };
-        
-        // Set the module object in the context
-        setCurrentModule(moduleObject);
-        console.log(`Setting current module: ${moduleObject.name}`);
-      } catch (err) {
-        console.error("Failed to set current module:", err);
-        // Continue with navigation even if setting the module fails
-      }
-    } else {
-      console.warn("setCurrentModule function not available or module not found - tenant context may not be initialized");
-    }
-    
-    // Navigate to the module path if found
+    // Just navigate to the module path if found, skip the context setting to improve performance
     if (selectedModule) {
-      const fullUrl = window.location.origin + selectedModule.path;
-      window.location.href = fullUrl;
+      setLocation(selectedModule.path);
     }
   };
   
@@ -246,7 +226,9 @@ const ClientPortalLanding = () => {
                     </div>
                   )}
                 </div>
-                <ProjectManagerGrid projects={projects} />
+                <Suspense fallback={<LoadingFallback />}>
+                  <ProjectManagerGrid projects={projects} />
+                </Suspense>
               </div>
               
               {/* Quick Insight Metrics */}
@@ -254,17 +236,21 @@ const ClientPortalLanding = () => {
                 {/* Vault Quick Access */}
                 <div className="bg-white rounded-xl shadow-md p-6">
                   <h2 className="text-xl font-semibold text-indigo-700 mb-4">Vault Quick Access</h2>
-                  <VaultQuickAccess />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <VaultQuickAccess />
+                  </Suspense>
                 </div>
                 
                 {/* Analytics Quick View */}
                 <div className="bg-white rounded-xl shadow-md p-6">
                   <h2 className="text-xl font-semibold text-indigo-700 mb-4">Analytics Snapshot</h2>
-                  <AnalyticsQuickView />
+                  <Suspense fallback={<LoadingFallback />}>
+                    <AnalyticsQuickView />
+                  </Suspense>
                 </div>
               </div>
               
-              {/* Module Cards */}
+              {/* Module Cards - Using a fixed set of official modules only */}
               <div className="bg-white rounded-xl shadow-md p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-semibold text-indigo-700">TrialSage™ Modules</h2>
@@ -272,26 +258,35 @@ const ClientPortalLanding = () => {
                   {currentOrganization && (
                     <div className="flex items-center gap-2 text-sm">
                       <Info className="h-4 w-4 text-indigo-500" />
-                      <span className="text-gray-600">Showing modules available in your {currentOrganization.subscriptionTier} subscription</span>
+                      <span className="text-gray-600">Showing modules available in your {currentOrganization?.subscriptionTier || 'Standard'} subscription</span>
                     </div>
                   )}
                 </div>
+                
+                {/* Official modules - using a memoized render */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {moduleCards.map(module => (
-                    <div 
-                      key={module.id} 
-                      onClick={() => handleModuleSelect(module.id)} 
-                      className={`block ${module.highlight ? 'bg-indigo-100 border border-indigo-200' : 'bg-indigo-50'} hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full cursor-pointer relative`}
-                    >
-                      {module.isNew && (
-                        <span className="absolute top-0 right-0 transform translate-x-1 -translate-y-1/2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
-                          NEW
-                        </span>
-                      )}
-                      <h3 className="text-lg font-semibold text-indigo-700">{module.title}</h3>
-                      <p className="text-gray-600 mt-2 text-sm">{module.description}</p>
-                    </div>
-                  ))}
+                  {moduleCards.map(module => {
+                    // Precompute the class string to avoid recalculations
+                    const cardClass = `block ${
+                      module.highlight ? 'bg-indigo-100 border border-indigo-200' : 'bg-indigo-50'
+                    } hover:bg-indigo-100 rounded-lg p-4 transition duration-200 h-full cursor-pointer relative`;
+                    
+                    return (
+                      <div 
+                        key={module.id} 
+                        onClick={() => handleModuleSelect(module.id)} 
+                        className={cardClass}
+                      >
+                        {module.isNew && (
+                          <span className="absolute top-0 right-0 transform translate-x-1 -translate-y-1/2 bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full font-semibold">
+                            NEW
+                          </span>
+                        )}
+                        <h3 className="text-lg font-semibold text-indigo-700">{module.title}</h3>
+                        <p className="text-gray-600 mt-2 text-sm">{module.description}</p>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
