@@ -75,7 +75,7 @@ const ClientPortal = () => {
           }
           
           // Load initial data for the selected organization
-          await loadOrganizationData(defaultOrg);
+          await loadOrganizationData();
         }
         
         setLoading(false);
@@ -90,8 +90,8 @@ const ClientPortal = () => {
   }, []);
   
   // Load organization data when organization changes
-  const loadOrganizationData = async (org) => {
-    if (!org) return;
+  const loadOrganizationData = async () => {
+    if (!currentOrganization) return;
     
     try {
       // In a real app, these would be API calls
@@ -122,7 +122,7 @@ const ClientPortal = () => {
     const newOrg = organizations.find(org => org.id === newOrgId);
     if (newOrg) {
       setCurrentOrganization(newOrg);
-      await loadOrganizationData(newOrg);
+      await loadOrganizationData();
     }
   };
   
@@ -367,9 +367,8 @@ const ClientPortal = () => {
   
   // STEP 3: We've removed duplicated org state declarations
   
-  // Step 4: Fixed landing page rendering to use existing variables 
+  // Step 4: Render the landing page when no organization is selected
   if (!currentOrganization) {
-    // Show the landing page when no organization is selected
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-md">
@@ -444,9 +443,9 @@ const ClientPortal = () => {
               
               <div className="flex items-center">
                 <Building className="text-primary mr-2" size={20} />
-                <span className="font-medium text-lg">{org?.name || 'Client Portal'}</span>
+                <span className="font-medium text-lg">{currentOrganization?.name || 'Client Portal'}</span>
                 <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">
-                  {org?.type?.toUpperCase() || 'CLIENT'}
+                  {currentOrganization?.type?.toUpperCase() || 'CLIENT'}
                 </span>
               </div>
             </div>
