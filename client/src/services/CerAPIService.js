@@ -209,9 +209,10 @@ cerApiService.getCERReports = async ({ limit = 20, offset = 0, status, deviceNam
  * @param {string} params.sectionType - The type of section to generate
  * @param {string} params.context - The context for the section
  * @param {string} [params.productName] - Optional product name for context
+ * @param {Object} [params.qmpData] - Optional QMP data for ICH E6(R3) integration
  * @returns {Promise<Object>} - The generated section
  */
-cerApiService.generateSection = async ({ sectionType, context, productName }) => {
+cerApiService.generateSection = async ({ sectionType, context, productName, qmpData }) => {
   try {
     const response = await fetch('/api/cer/generate-section', {
       method: 'POST',
@@ -221,7 +222,8 @@ cerApiService.generateSection = async ({ sectionType, context, productName }) =>
       body: JSON.stringify({
         section: sectionType,
         context,
-        productName
+        productName,
+        qmpData // Include QMP data for ICH E6(R3) integration
       }),
     });
     
@@ -233,6 +235,79 @@ cerApiService.generateSection = async ({ sectionType, context, productName }) =>
     return data;
   } catch (error) {
     console.error('Error in generateSection:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate a QMP-integrated CER section with ICH E6(R3) compliance
+ * This advanced function specifically integrates Quality Management Plan data
+ * into the CER generation process to ensure ICH E6(R3) risk-based quality 
+ * principles are embedded in the generated content.
+ * 
+ * @param {Object} params - Parameters for generating the QMP-integrated section
+ * @param {string} params.sectionType - The type of section to generate
+ * @param {string} params.context - The context for the section
+ * @param {Object} params.qmpData - QMP data with objectives and risk assessments
+ * @param {Array} [params.criticalFactors] - Critical-to-Quality factors relevant to this section
+ * @param {string} [params.regulatoryFramework] - Regulatory framework (default: 'EU MDR')
+ * @returns {Promise<Object>} - The generated QMP-integrated section
+ */
+cerApiService.generateQmpIntegratedSection = async ({ 
+  sectionType, 
+  context, 
+  qmpData, 
+  criticalFactors = [], 
+  regulatoryFramework = 'EU MDR' 
+}) => {
+  try {
+    // First fetch section-specific CtQ factors if not provided
+    let sectionCtqFactors = criticalFactors;
+    
+    if (!sectionCtqFactors || sectionCtqFactors.length === 0) {
+      // Try to get section-specific CtQ factors from the QMP API
+      try {
+        const ctqResponse = await fetch(`/api/qmp/ctq-for-section/${sectionType}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+        
+        if (ctqResponse.ok) {
+          const ctqData = await ctqResponse.json();
+          if (ctqData.success && ctqData.factors) {
+            sectionCtqFactors = ctqData.factors;
+          }
+        }
+      } catch (ctqError) {
+        console.warn('Failed to fetch CtQ factors, proceeding with generation:', ctqError);
+      }
+    }
+    
+    // Now generate the section with integrated QMP data
+    const response = await fetch('/api/cer/generate-qmp-section', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        section: sectionType,
+        context,
+        qmpData,
+        criticalFactors: sectionCtqFactors,
+        regulatoryFramework
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating QMP-integrated section: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in generateQmpIntegratedSection:', error);
     throw error;
   }
 };
@@ -1701,10 +1776,13 @@ cerApiService.deleteEuPmsData = async (id) => {
  * @param {Array} [sections=[]] - Document sections to analyze with AI validation
  * @returns {Promise<Object>} - Validation results including AI-powered insights
  */
-cerApiService.validateCERDocument = async (documentId, framework = 'mdr', sections = []) => {
+cerApiService.validateCERDocument = async (documentId, framework = 'mdr', sections = [], additionalParams = {}) => {
   try {
     // Log validation request details
     console.log(`Validating document ${documentId} against ${framework} framework with ${sections.length} sections`);
+    if (additionalParams.qmpData) {
+      console.log(`Including QMP data for ICH E6(R3) integration`);
+    }
     
     // Always use the real API validation endpoint
     const response = await fetch(`/api/cer/documents/${documentId}/validate`, {
@@ -1714,7 +1792,8 @@ cerApiService.validateCERDocument = async (documentId, framework = 'mdr', sectio
       },
       body: JSON.stringify({
         framework,
-        sections
+        sections,
+        ...additionalParams  // Include QMP data and other parameters
       }),
     });
     
@@ -1726,6 +1805,356 @@ cerApiService.validateCERDocument = async (documentId, framework = 'mdr', sectio
     return await response.json();
   } catch (error) {
     console.error('Error in validateCERDocument:', error);
+    throw error;
+  }
+};
+
+/**
+ * Detect hallucinations in a CER document using GPT-4o AI
+ * 
+ * @param {Object} cerDocument - The CER document object to analyze
+ * @returns {Promise<Object>} - Detected hallucinations and recommendations
+ */
+cerApiService.detectHallucinations = async (cerDocument) => {
+  try {
+    console.log(`Detecting hallucinations in document ${cerDocument.id}`);
+    
+    // API call to hallucination detection endpoint
+    const response = await fetch(`/api/cer/ai/hallucination-detection`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        document: cerDocument
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Hallucination detection API error: ${response.status} ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error detecting hallucinations:', error);
+    // Don't use simulated data, instead throw the error to the caller
+    throw new Error(`Failed to detect hallucinations: ${error.message}. Please ensure the backend validation service is available.`);
+    // No fallback to simulated data as per requirement to use only authentic data
+  }
+};
+
+/**
+ * Verify factual claim against authoritative sources
+ * 
+ * @param {Object} claim - The claim to verify
+ * @returns {Promise<Object>} - Verification result
+ */
+cerApiService.verifyFactualClaim = async (claim) => {
+  try {
+    console.log(`Verifying factual claim: ${claim.text}`);
+    
+    // API call to factual verification endpoint
+    const response = await fetch(`/api/cer/ai/verify-claim`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        claim
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Claim verification API error: ${response.status} ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error verifying claim:', error);
+    // Don't use simulated data, instead throw the error to the caller
+    throw new Error(`Failed to verify factual claim: ${error.message}. Please ensure the backend validation service is available.`);
+    // No fallback to simulated data as per requirement to use only authentic data
+  }
+};
+
+/**
+ * Verify reference against literature databases
+ * 
+ * @param {Object} reference - The reference to verify
+ * @returns {Promise<Object>} - Verification result
+ */
+cerApiService.verifyReference = async (reference) => {
+  try {
+    console.log(`Verifying reference: ${reference.id || reference.text}`);
+    
+    // API call to reference verification endpoint
+    const response = await fetch(`/api/cer/ai/verify-reference`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        reference
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Reference verification API error: ${response.status} ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error verifying reference:', error);
+    // Don't use simulated data, instead throw the error to the caller
+    throw new Error(`Failed to verify reference: ${error.message}. Please ensure the backend validation service is available.`);
+    // No fallback to simulated data as per requirement to use only authentic data
+  }
+};
+
+/**
+ * Validate regulatory compliance
+ * 
+ * @param {Object} cerDocument - The CER document to validate
+ * @param {string} regulatoryFramework - The regulatory framework to validate against
+ * @returns {Promise<Object>} - Compliance validation results
+ */
+cerApiService.validateRegulatory = async (cerDocument, regulatoryFramework) => {
+  try {
+    console.log(`Validating regulatory compliance against ${regulatoryFramework}`);
+    
+    // API call to regulatory validation endpoint
+    const response = await fetch(`/api/cer/ai/validate-regulatory`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        document: cerDocument,
+        framework: regulatoryFramework
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Regulatory validation API error: ${response.status} ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error validating regulatory compliance:', error);
+    // Don't use simulated data, instead throw the error to the caller
+    throw new Error(`Failed to validate regulatory compliance: ${error.message}. Please ensure the backend validation service is available.`);
+    // No fallback to simulated data as per requirement to use only authentic data
+  }
+};
+
+/**
+ * Submit document for human expert review
+ * 
+ * @param {Object} reviewRequest - The review request object
+ * @returns {Promise<Object>} - Submission result
+ */
+cerApiService.submitReviewRequest = async (reviewRequest) => {
+  try {
+    console.log(`Submitting document for review to ${reviewRequest.reviewer}`);
+    
+    // API call to review submission endpoint
+    const response = await fetch(`/api/cer/review-requests`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(reviewRequest),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Review submission API error: ${response.status} ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error submitting review request:', error);
+    // Don't use simulated data, instead throw the error to the caller
+    throw new Error(`Failed to submit document for review: ${error.message}. Please ensure the backend review service is available.`);
+    // No fallback to simulated data as per requirement to use only authentic data
+  }
+};
+
+// Implementation moved to bottom of file to avoid duplication
+
+/**
+ * Get Quality Management Plan data
+ * Retrieves QMP data including ICH E6(R3) objectives and Critical-to-Quality factors 
+ * @returns {Promise<Object>} - The QMP data
+ */
+cerApiService.getQmpData = async () => {
+  try {
+    // Make API request to get QMP data
+    const response = await fetch('/api/qmp-api/data', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error retrieving QMP data: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getQmpData:', error);
+    throw error;
+  }
+};
+
+/**
+ * Save Quality Management Plan data
+ * Stores QMP data including ICH E6(R3) objectives and Critical-to-Quality factors
+ * @param {Object} qmpData - The QMP data to save
+ * @returns {Promise<Object>} - Response with success status
+ */
+cerApiService.saveQmpData = async (qmpData) => {
+  try {
+    // Make API request to save QMP data
+    const response = await fetch('/api/qmp-api/data', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(qmpData)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error saving QMP data: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in saveQmpData:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get available CER sections
+ * Retrieves all available sections in the current CER document
+ * @returns {Promise<Object>} - The CER sections data
+ */
+cerApiService.getCerSections = async () => {
+  try {
+    // Make API request to get CER sections
+    const response = await fetch('/api/cer/sections', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error retrieving CER sections: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getCerSections:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate QMP Traceability Report
+ * Creates a detailed traceability report based on QMP data for CER inclusion
+ * @param {Object} params - Parameters for report generation
+ * @param {string} params.deviceName - The device name
+ * @param {Object} params.qmpData - QMP data including objectives and CtQ factors
+ * @param {Array} params.sectionTitles - List of CER section titles
+ * @returns {Promise<Object>} - Generated traceability report
+ */
+cerApiService.generateQmpTraceabilityReport = async ({ deviceName, qmpData, sectionTitles = [] }) => {
+  try {
+    // Make API request to generate traceability report
+    const response = await fetch('/api/cer-qmp-integration/generate-traceability-report', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        deviceName,
+        qmpData,
+        sectionTitles
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error generating QMP traceability report: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in generateQmpTraceabilityReport:', error);
+    throw error;
+  }
+};
+
+/**
+ * Validate Quality Management Plan integration with CER
+ * 
+ * This function uses the QMP objectives and their scope sections to validate 
+ * compliance with ICH E6(R3) and the relevant regulatory framework.
+ * 
+ * @param {Array} objectives - Array of quality objectives
+ * @param {Array} cerSections - Array of CER sections names
+ * @param {string} framework - Regulatory framework to check against (mdr, fda, ukca)
+ * @returns {Promise<Object>} - Validation results including compliance status, gaps, and recommendations
+ */
+cerApiService.validateQmpIntegration = async (objectives, cerSections, framework = 'mdr') => {
+  try {
+    const response = await fetch('/api/cer-validation/qmp-integration/validate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        objectives,
+        cerSections,
+        framework
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Error validating QMP integration: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in validateQmpIntegration:', error);
+    throw error;
+  }
+};
+
+/**
+ * Get details on which CtQ factors might affect a specific CER section
+ * 
+ * @param {string} sectionName - Name of the CER section to check
+ * @returns {Promise<Object>} - Relevant CtQ factors for the section
+ */
+cerApiService.getCtqFactorsForSection = async (sectionName) => {
+  try {
+    const response = await fetch(`/api/qmp/ctq-for-section/${encodeURIComponent(sectionName)}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching CtQ factors for section: ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error in getCtqFactorsForSection:', error);
     throw error;
   }
 };

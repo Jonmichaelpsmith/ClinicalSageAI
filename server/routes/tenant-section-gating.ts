@@ -9,48 +9,12 @@ import { z } from 'zod';
 import { db } from '../db';
 import { eq, and, sql } from 'drizzle-orm';
 import { authMiddleware } from '../auth';
-// Import only what's available in schema
-import { } from '../../shared/schema';
-
-// Define qualityManagementPlans locally
-const qualityManagementPlans = {
-  tableName: 'quality_management_plans',
-  id: 'id',
-  organizationId: 'organization_id',
-  name: 'name',
-  version: 'version',
-  status: 'status',
-  createdAt: 'created_at',
-  updatedAt: 'updated_at'
-};
-
-// Define qmpSectionGating locally since it's not exported from schema
-const qmpSectionGating = {
-  tableName: 'qmp_section_gating',
-  id: 'id',
-  organizationId: 'organization_id',
-  qmpId: 'qmp_id',
-  sectionKey: 'section_key',
-  requiredLevel: 'required_level',
-  active: 'active',
-  createdById: 'created_by_id',
-  updatedById: 'updated_by_id',
-  createdAt: 'created_at',
-  updatedAt: 'updated_at'
-};
-
-// Temporary solution until ctqFactors is properly exported from schema
-const ctqFactors = {
-  tableName: 'ctq_factors',
-  id: 'id',
-  organizationId: 'organization_id',
-  name: 'name',
-  description: 'description',
-  category: 'category',
-  riskLevel: 'risk_level',
-  validationRule: 'validation_rule',
-  applicableSection: 'applicable_section'
-};
+import { 
+  qmpSectionGating, 
+  ctqFactors,
+  qualityManagementPlans,
+  // Note: cerSections is not exported from the schema yet, will be added later
+} from '../../shared/schema';
 import { requireOrganizationContext } from '../middleware/tenantContext';
 import { getDb } from '../db/tenantDbHelper';
 import { createScopedLogger } from '../utils/logger';

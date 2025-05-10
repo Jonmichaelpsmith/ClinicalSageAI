@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TrialSage™ Client Portal</title>
+  <title>TrialSage Client Portal</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <style>
     body {
@@ -19,17 +19,6 @@
     .border-primary {
       border-color: #ff1493;
     }
-    .animate-pulse {
-      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    @keyframes pulse {
-      0%, 100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: .5;
-      }
-    }
   </style>
 </head>
 <body>
@@ -42,24 +31,11 @@
           <div class="ml-2 bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs">Client Portal</div>
         </div>
         <div class="flex items-center">
-          <span id="userWelcome" class="mr-4 text-sm text-gray-600">Welcome, Admin User</span>
-          <button id="logoutBtn" class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm">Logout</button>
+          <span class="mr-4 text-sm text-gray-600">Welcome, Admin User</span>
+          <button class="bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-1 rounded text-sm">Logout</button>
         </div>
       </div>
     </header>
-
-    <!-- Notification Message -->
-    <div class="bg-green-50 border border-green-200 text-green-800 rounded-md p-4 mb-8">
-      <div class="flex">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
-          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-        </svg>
-        <div>
-          <p class="font-medium">Direct Access Enabled</p>
-          <p class="text-sm">Welcome to the TrialSage Client Portal. This standalone portal provides access to all modules.</p>
-        </div>
-      </div>
-    </div>
 
     <!-- Dashboard Grid -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -236,7 +212,7 @@
       <h2 class="text-xl font-bold text-gray-800 mb-4">TrialSage™ Modules</h2>
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         <!-- Vault Module -->
-        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+        <a href="/vault" class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
           <div class="flex items-center mb-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -244,15 +220,10 @@
             <h3 class="font-semibold text-gray-800">TrialSage Vault™</h3>
           </div>
           <p class="text-sm text-gray-600">Manage and access all your clinical trial documents securely.</p>
-          <div class="mt-3">
-            <button data-module="vault" class="module-btn w-full text-sm bg-primary text-white px-3 py-1.5 rounded hover:bg-opacity-90 transition-all">
-              Access Module
-            </button>
-          </div>
-        </div>
+        </a>
         
         <!-- IND Wizard Module -->
-        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+        <a href="/ind-wizard" class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
           <div class="flex items-center mb-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -260,15 +231,10 @@
             <h3 class="font-semibold text-gray-800">IND Wizard™</h3>
           </div>
           <p class="text-sm text-gray-600">Streamline your Investigational New Drug application process.</p>
-          <div class="mt-3">
-            <button data-module="ind-wizard" class="module-btn w-full text-sm bg-primary text-white px-3 py-1.5 rounded hover:bg-opacity-90 transition-all">
-              Access Module
-            </button>
-          </div>
-        </div>
+        </a>
         
         <!-- CSR Intelligence Module -->
-        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+        <a href="/csr-intelligence" class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
           <div class="flex items-center mb-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -276,15 +242,10 @@
             <h3 class="font-semibold text-gray-800">CSR Intelligence™</h3>
           </div>
           <p class="text-sm text-gray-600">AI-powered clinical study report generation and analysis.</p>
-          <div class="mt-3">
-            <button data-module="csr-intelligence" class="module-btn w-full text-sm bg-primary text-white px-3 py-1.5 rounded hover:bg-opacity-90 transition-all">
-              Access Module
-            </button>
-          </div>
-        </div>
+        </a>
         
         <!-- Study Architect Module -->
-        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+        <a href="/study-architect" class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
           <div class="flex items-center mb-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -292,12 +253,7 @@
             <h3 class="font-semibold text-gray-800">Study Architect™</h3>
           </div>
           <p class="text-sm text-gray-600">Design and optimize clinical trial protocols with AI assistance.</p>
-          <div class="mt-3">
-            <button data-module="study-architect" class="module-btn w-full text-sm bg-primary text-white px-3 py-1.5 rounded hover:bg-opacity-90 transition-all">
-              Access Module
-            </button>
-          </div>
-        </div>
+        </a>
       </div>
     </div>
   </div>
@@ -318,12 +274,12 @@
   </footer>
 
   <script>
+    // Check for authentication
     document.addEventListener('DOMContentLoaded', function() {
       // Authentication check
       const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
       if (!isAuthenticated) {
         window.location.href = '/login';
-        return;
       }
       
       // Get user information
@@ -331,9 +287,9 @@
       if (userString) {
         try {
           const user = JSON.parse(userString);
-          const userWelcome = document.getElementById('userWelcome');
-          if (userWelcome && user.name) {
-            userWelcome.textContent = `Welcome, ${user.name}`;
+          const userNameElement = document.querySelector('header .text-sm.text-gray-600');
+          if (userNameElement && user.name) {
+            userNameElement.textContent = `Welcome, ${user.name}`;
           }
         } catch (e) {
           console.error('Error parsing user data:', e);
@@ -341,25 +297,16 @@
       }
       
       // Logout handler
-      const logoutBtn = document.getElementById('logoutBtn');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
+      const logoutButton = document.querySelector('header button');
+      if (logoutButton) {
+        logoutButton.addEventListener('click', function() {
           localStorage.removeItem('isAuthenticated');
           localStorage.removeItem('user');
           window.location.href = '/login';
         });
       }
       
-      // Module access buttons
-      const moduleButtons = document.querySelectorAll('.module-btn');
-      moduleButtons.forEach(button => {
-        button.addEventListener('click', function() {
-          const module = this.getAttribute('data-module');
-          alert(`You clicked on the ${module} module. This would navigate to the module interface.`);
-        });
-      });
-      
-      console.log('Direct dashboard initialized successfully');
+      console.log('Client portal initialized');
     });
   </script>
 </body>

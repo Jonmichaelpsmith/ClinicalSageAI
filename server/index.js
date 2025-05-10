@@ -244,7 +244,9 @@ function checkAuth(req, res, next) {
 }
 
 // Public client portal (no auth check)
-// This route is handled by the clientPortal router
+// Handled directly in index.ts with high priority and multiple fallbacks
+// DO NOT MODIFY OR UNCOMMENT - This route is critical for system stability
+// app.get('/client-portal', (req, res) => {});
 
 // Secure client portal (with auth check)
 app.get('/client-portal-direct', checkAuth, (req, res) => {
@@ -278,10 +280,6 @@ app.use('/api/mashable-bi', mashableBiRoutes);
 app.use('/api/vault', vaultRoutes);
 app.use('/api/next-actions', actionsRoutes);
 app.use('/api/test', testApiRoutes); // Test API routes for development
-
-// Client Portal routes
-import clientPortalRoutes from './routes/clientPortal.js';
-app.use('/client-portal', clientPortalRoutes);
 
 // Vault and Analytics routes
 const vaultRoutesNew = require('./routes/vault');
@@ -317,17 +315,6 @@ app.use((req, res, next) => {
   // Skip API routes and existing routes
   if (req.path.startsWith('/api/')) {
     return next();
-  }
-  
-  // Special handling for client portal
-  if (req.path === '/client-portal') {
-    console.log('Tenant Context:', JSON.stringify({
-      organizationId: null,
-      clientWorkspaceId: null,
-      module: null
-    }));
-    console.log('Serving client portal page');
-    return res.sendFile(path.resolve('./client/public/index.html'));
   }
   
   // For paths that don't match any defined routes

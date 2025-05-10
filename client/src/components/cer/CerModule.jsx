@@ -11,7 +11,8 @@ import {
   History, 
   Settings, 
   CheckSquare,
-  Database
+  Database,
+  ShieldCheck
 } from 'lucide-react';
 
 import GenerateFullCerButton from './GenerateFullCerButton';
@@ -23,6 +24,7 @@ import CerHistoryPanel from './CerHistoryPanel';
 import TemplateSettingsPanel from './TemplateSettingsPanel';
 import ApprovalsPanel from './ApprovalsPanel';
 import InternalClinicalDataPanel from './InternalClinicalDataPanel';
+import QmpSectionGatingPanel from './QmpSectionGatingPanel';
 
 export default function CerModule() {
   const [activeTab, setActiveTab] = useState('input');
@@ -59,7 +61,7 @@ export default function CerModule() {
           </p>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2">
+            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-2">
               <TabsTrigger value="input" className="flex items-center">
                 <FileText className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Input Data</span>
@@ -84,6 +86,11 @@ export default function CerModule() {
                 <BarChart3 className="w-4 h-4 mr-2" />
                 <span className="hidden sm:inline">Document Vault</span>
                 <span className="sm:hidden">Vault</span>
+              </TabsTrigger>
+              <TabsTrigger value="quality-gating" className="flex items-center">
+                <ShieldCheck className="w-4 h-4 mr-2" />
+                <span className="hidden sm:inline">Section Quality</span>
+                <span className="sm:hidden">Quality</span>
               </TabsTrigger>
               <TabsTrigger value="history" className="flex items-center">
                 <History className="w-4 h-4 mr-2" />
@@ -120,6 +127,10 @@ export default function CerModule() {
 
             <TabsContent value="document-vault" className="space-y-4">
               <DocumentVaultPanel jobId={currentJobId} />
+            </TabsContent>
+            
+            <TabsContent value="quality-gating" className="space-y-4">
+              <QmpSectionGatingPanel jobId={currentJobId} />
             </TabsContent>
 
             <TabsContent value="history" className="space-y-4">

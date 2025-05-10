@@ -4,7 +4,7 @@ import { createServer as createHttpServer } from 'http';
 import registerRoutes from './routes_fixed';
 import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
-// No longer using initializeQualityApi directly
+import { initializeQualityApi } from './initializers/qualityApiInitializer';
 import { tenantContextMiddleware } from './middleware/tenantContext';
 import errorHandler from './middleware/errorHandlerMiddleware';
 import globalErrorHandler from './utils/globalErrorHandler';
@@ -88,11 +88,6 @@ import tenantSectionGatingRoutes from './routes/tenant-section-gating.js';
 app.use('/api/tenant-section-gating', tenantSectionGatingRoutes);
 console.log('Tenant Section Gating routes registered');
 
-// Import and register client portal routes
-import clientPortalRoutes from './routes/clientPortal.js';
-app.use('/api', clientPortalRoutes);
-console.log('Client Portal routes registered');
-
 // Import and register health check routes
 import { createHealthCheckRouter } from './routes/healthCheck';
 app.use('/api', createHealthCheckRouter(dbPool));
@@ -128,15 +123,34 @@ app.get('/marketing', (req, res) => {
   }
 });
 
-// Add explicit client portal route handler
+// HIGH PRIORITY - Client Portal route - MUST NOT RETURN 404
 app.get('/client-portal', (req, res) => {
-  console.log('Tenant Context:', JSON.stringify({
-    organizationId: null,
-    clientWorkspaceId: null,
-    module: null
-  }));
-  console.log('Serving client portal page');
-  res.sendFile(path.resolve('./client/public/index.html')); 
+  console.log('CRITICAL: Serving Client Portal React app');
+  // We need to serve the React app for client-side routing
+  const reactApp = path.join(process.cwd(), 'client/public/index.html');
+  if (fs.existsSync(reactApp)) {
+    res.sendFile(reactApp);
+  } else {
+    // Emergency fallback to static client portal page if React app index not found
+    const staticClientPortal = path.join(process.cwd(), 'client-portal.html');
+    if (fs.existsSync(staticClientPortal)) {
+      res.sendFile(staticClientPortal);
+    } else {
+      // Last resort: Generate a minimal response instead of a 404
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Client Portal</title>
+          <meta http-equiv="refresh" content="0;url=/" />
+        </head>
+        <body>
+          <p>Redirecting to home page...</p>
+        </body>
+        </html>
+      `);
+    }
+  }
 });
 
 // Create HTTP server
