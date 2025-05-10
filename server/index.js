@@ -319,6 +319,17 @@ app.use((req, res, next) => {
     return next();
   }
   
+  // Special handling for client portal
+  if (req.path === '/client-portal') {
+    console.log('Tenant Context:', JSON.stringify({
+      organizationId: null,
+      clientWorkspaceId: null,
+      module: null
+    }));
+    console.log('Serving client portal page');
+    return res.sendFile(path.resolve('./client/public/index.html'));
+  }
+  
   // For paths that don't match any defined routes
   if (req.method === 'GET' && !req.path.match(/\.(js|css|png|jpg|jpeg|gif|svg|ico)$/)) {
     // Serve React app for client-side routing instead of redirecting
