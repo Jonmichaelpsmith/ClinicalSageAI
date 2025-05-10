@@ -1,102 +1,250 @@
 /**
- * Application Stability Configuration
+ * Stability Configuration
  * 
- * This file contains configuration settings that control the application's
- * stability mechanisms. This ensures consistent behavior across all parts
- * of the application.
- * 
- * CRITICAL STABILITY COMPONENT - DO NOT MODIFY WITHOUT THOROUGH TESTING
+ * This file contains global configuration settings for all stability features.
+ * Modify these settings to adjust the behavior of memory management,
+ * error handling, network resilience, and other stability features.
  */
 
 /**
- * Global stability configuration
- */
-export const STABILITY_CONFIG = {
-  // Whether to enable stability features (should always be true in production)
-  enabled: true,
-  
-  // Maximum number of automatic recovery attempts before requiring manual intervention
-  maxRecoveryAttempts: 3,
-  
-  // Time between recovery attempts in milliseconds
-  recoveryDelayMs: 1000,
-  
-  // Components requiring specialized stability containers
-  criticalComponents: [
-    'RegulatorySubmissionsPage',
-    'DocumentUploadDialog',
-    'SubmissionTreeView',
-    'CreateSubmissionDialog'
-  ],
-  
-  // Log errors to localStorage
-  logErrors: true,
-  
-  // Maximum number of errors to keep in local storage
-  maxErrorsToStore: 20,
-  
-  // Auto reload when error count exceeds this threshold within 5 minutes
-  errorThresholdToReload: 10,
-  
-  // Display detailed error information in development
-  showDetailedErrors: process.env.NODE_ENV !== 'production'
-};
-
-/**
- * Memory management configuration to prevent browser tab crashes
+ * Memory Management Configuration
  */
 export const MEMORY_CONFIG = {
-  // Enable periodic garbage collection hints
-  enableGCHints: true,
+  // Maximum heap size in MB before cleanup is triggered
+  heapThreshold: 500,
   
-  // Maximum number of items to keep in component caches
-  maxCacheItems: 100,
+  // Interval in ms for memory monitoring
+  monitoringInterval: 30000,
   
-  // Clear unused objects from memory every 5 minutes
-  memorySweepIntervalMs: 5 * 60 * 1000
+  // Whether to attempt explicit garbage collection when available
+  enableExplicitGC: true,
+  
+  // Maximum cache size in MB for component caches
+  maxCacheSize: 100,
+  
+  // Whether to automatically clean up component caches when memory is low
+  autoCacheCleanup: true,
+  
+  // Minimum age in ms for items to be cleared from component caches
+  cacheItemMinAge: 300000 // 5 minutes
 };
 
 /**
- * Network request configuration for stability
+ * Network Resilience Configuration
  */
 export const NETWORK_CONFIG = {
-  // Default timeout for network requests in milliseconds
-  defaultTimeoutMs: 30000,
-  
   // Maximum number of retry attempts for failed requests
-  maxRetryAttempts: 3,
+  maxRetries: 3,
   
-  // Time between retry attempts in milliseconds (exponential backoff)
-  retryBackoffMs: 1000,
+  // Base delay in ms before retrying (will increase exponentially)
+  baseRetryDelay: 1000,
   
-  // Maximum backoff time in milliseconds
-  maxBackoffMs: 10000
+  // Maximum delay in ms between retries
+  maxRetryDelay: 10000,
+  
+  // Request timeout in ms
+  requestTimeout: 30000,
+  
+  // Whether to automatically retry idempotent requests
+  autoRetryIdempotent: true,
+  
+  // Whether to queue offline requests for later
+  queueOfflineRequests: true,
+  
+  // Maximum number of requests to queue when offline
+  maxQueueSize: 50,
+  
+  // Whether to show reconnection notifications
+  showReconnectionNotifications: true
 };
 
 /**
- * Log levels for the application
+ * Error Handling Configuration
  */
-export const LOG_LEVELS = {
-  DEBUG: 0,
-  INFO: 1,
-  WARN: 2,
-  ERROR: 3,
-  FATAL: 4
+export const ERROR_CONFIG = {
+  // Whether to attempt recovery from non-critical errors
+  autoRecovery: true,
+  
+  // Whether to log all errors to the console
+  consoleLogging: true,
+  
+  // Whether to send critical errors to the server
+  serverLogging: true,
+  
+  // Maximum number of recovery attempts before giving up
+  maxRecoveryAttempts: 3,
+  
+  // Whether to show error notifications to users
+  showErrorNotifications: true,
+  
+  // Whether to collect error analytics
+  collectErrorAnalytics: true,
+  
+  // Maximum number of errors to store in memory
+  maxErrorsInMemory: 100
 };
 
 /**
- * Configuration for minimum log level based on environment
+ * Freeze Detection Configuration
+ */
+export const FREEZE_CONFIG = {
+  // Interval in ms for checking UI responsiveness
+  checkInterval: 5000,
+  
+  // Threshold in ms for considering the UI frozen
+  freezeThreshold: 3000,
+  
+  // Whether to attempt recovery from freezes
+  autoRecovery: true,
+  
+  // Whether to log freeze events
+  logFreezeEvents: true,
+  
+  // Whether to show notifications about freeze events
+  showFreezeNotifications: true
+};
+
+/**
+ * Component Error Boundary Configuration
+ */
+export const ERROR_BOUNDARY_CONFIG = {
+  // Whether to show detailed error information (dev only)
+  showDetails: process.env.NODE_ENV === 'development',
+  
+  // Whether to attempt to recover automatically
+  autoRecovery: true,
+  
+  // Maximum number of recovery attempts
+  maxRecoveryAttempts: 3,
+  
+  // Whether to log errors to the console
+  consoleLogging: true,
+  
+  // Whether to fall back to a simplified UI on error
+  useFallbackUI: true,
+  
+  // Whether to isolate errors to individual components when possible
+  isolateErrors: true
+};
+
+/**
+ * Logging Configuration
  */
 export const LOGGING_CONFIG = {
-  minLogLevel: process.env.NODE_ENV === 'production' ? LOG_LEVELS.INFO : LOG_LEVELS.DEBUG,
+  // Minimum log level to record
+  minLevel: process.env.NODE_ENV === 'development' ? 'debug' : 'warn',
+  
+  // Whether to include timestamps in logs
+  includeTimestamp: true,
+  
+  // Whether to persist logs to localStorage
   persistLogs: true,
-  maxPersistedLogs: 1000
+  
+  // Maximum number of log entries to persist
+  maxPersistedLogs: 1000,
+  
+  // Whether to batch logs when sending to server
+  batchServerLogs: true,
+  
+  // Batch size for server logs
+  serverLogBatchSize: 50,
+  
+  // Whether to log performance metrics
+  logPerformanceMetrics: true
+};
+
+/**
+ * Storage Resilience Configuration
+ */
+export const STORAGE_CONFIG = {
+  // Whether to back up storage data to memory
+  backupToMemory: true,
+  
+  // Whether to validate storage data on read
+  validateOnRead: false,
+  
+  // Whether to compress large storage items
+  compressLargeItems: true,
+  
+  // Size threshold in bytes for compression
+  compressionThreshold: 10000,
+  
+  // Maximum size in bytes for individual storage items
+  maxItemSize: 5000000, // 5MB
+  
+  // Whether to automatically partition large items
+  autoPartition: true,
+  
+  // Whether to retry failed storage operations
+  retryFailedOperations: true,
+  
+  // Maximum number of retry attempts
+  maxRetries: 3
+};
+
+/**
+ * Cross-Tab Communication Configuration
+ */
+export const CROSS_TAB_CONFIG = {
+  // Whether to use SharedWorkers for cross-tab communication when available
+  useSharedWorker: true,
+  
+  // Fallback to localStorage for browsers without SharedWorker support
+  fallbackToLocalStorage: true,
+  
+  // Heartbeat interval in ms for detecting disconnected tabs
+  heartbeatInterval: 10000,
+  
+  // Whether to elect a leader tab for coordinated actions
+  useLeaderElection: true,
+  
+  // Whether to sync state between tabs
+  syncStateBetweenTabs: true,
+  
+  // Types of data to sync between tabs
+  syncTypes: ['preferences', 'authentication', 'errors']
+};
+
+/**
+ * Global Stability Configuration
+ */
+export const STABILITY_CONFIG = {
+  // Whether to enable all stability features
+  enabled: true,
+  
+  // Whether to enable detailed error information (for development)
+  showDetailedErrors: process.env.NODE_ENV === 'development',
+  
+  // Whether to show stability status indicators
+  showStatusIndicators: process.env.NODE_ENV === 'development',
+  
+  // Environment-specific settings
+  environment: process.env.NODE_ENV || 'development',
+  
+  // Whether to collect and report stability metrics
+  collectMetrics: true,
+  
+  // Application version (for error tracking)
+  appVersion: process.env.REACT_APP_VERSION || '1.0.0',
+  
+  // Whether to enable maintenance mode automatically when too many errors occur
+  autoMaintenanceMode: true,
+  
+  // Threshold for number of critical errors before triggering maintenance mode
+  maintenanceModeErrorThreshold: 10,
+  
+  // Whether to enable all diagnostic tools
+  enableDiagnosticTools: process.env.NODE_ENV === 'development'
 };
 
 export default {
-  STABILITY_CONFIG,
   MEMORY_CONFIG,
   NETWORK_CONFIG,
-  LOG_LEVELS,
-  LOGGING_CONFIG
+  ERROR_CONFIG,
+  FREEZE_CONFIG,
+  ERROR_BOUNDARY_CONFIG,
+  LOGGING_CONFIG,
+  STORAGE_CONFIG,
+  CROSS_TAB_CONFIG,
+  STABILITY_CONFIG
 };
