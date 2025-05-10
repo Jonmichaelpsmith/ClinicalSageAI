@@ -27,13 +27,6 @@ const LoadingPage = () => (
 // Eagerly load the landing page for faster initial render
 import ClientPortalLanding from './pages/ClientPortalLanding';
 
-// Import client portal components from their proper location
-import ClientPortal from './components/client-portal/ClientPortal';
-import ClientHeader from './components/client-portal/ClientHeader';
-import ClientContextBar from './components/client-portal/ClientContextBar';
-import ClientDashboard from './components/client-portal/ClientDashboard';
-import OrganizationSwitcher from './components/client-portal/OrganizationSwitcher';
-
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
 const CERPage = lazy(() => import('./pages/CerPage'));
@@ -177,7 +170,8 @@ function App() {
           {/* Main client portal route - uses wildcard to catch all /client-portal/* paths */}
           <Route path="/client-portal/*" component={ClientPortal} />
           
-          {/* Client Portal Sub-Pages */}
+          {/* Client Portal Sub-Pages - DISABLED: now handled by ClientPortal component */}
+          {/* These routes are commented out to ensure the ClientPortal component handles all client portal routes
           <Route path="/client-portal/vault" component={VaultPage} />
           <Route path="/client-portal/regulatory-intel" component={RegulatoryIntelligenceHub} />
           <Route path="/client-portal/cer-generator" component={CERV2Page} />
@@ -185,11 +179,9 @@ function App() {
           <Route path="/client-portal/csr-analyzer" component={CSRPage} />
           <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
           <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
-          <Route path="/client-portal/client-management">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <ClientManagement />
-              </Suspense>
+          <Route path="/client-portal/client-management" /> */}
+          
+          {/* Module Dashboard */}
             )}
           </Route>
 

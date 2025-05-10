@@ -33,14 +33,9 @@ export function setupStaticRoutes(app) {
   
   reactRoutes.forEach(route => {
     app.get(route, (req, res, next) => {
-      console.log(`[StaticRoutes] Forwarding ${req.path} to React app via index.html`);
-      // For client-portal route, directly serve the React app's index.html
-      if (req.path === '/client-portal') {
-        res.sendFile(path.resolve('./client/public/index.html'));
-      } else {
-        // For other routes, forward to next middleware/route handler
-        next();
-      }
+      console.log(`[StaticRoutes] Forwarding ${req.path} to React app`);
+      // Forward to the next middleware/route handler
+      next();
     });
   });
   
