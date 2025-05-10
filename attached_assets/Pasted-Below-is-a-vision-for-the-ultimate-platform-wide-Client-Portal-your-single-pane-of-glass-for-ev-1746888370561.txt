@@ -1,0 +1,151 @@
+Below is a **vision for the ultimate, platform-wide Client Portal**—your single pane of glass for every module, every tenant, every workflow. Think of it as the “mission control” for TrialSage, unifying CER, regulatory submissions, risk, literature, BI, AI assistant, billing, user management, and more—all under one roof.
+
+---
+
+## 🏠 1. Global Portal Layout
+
+```
+┌───────────────────────────────────────────────────────────────────────────────┐
+│ Logo  |   Organization ▼   Client Workspace ▼   | Search… | Notifications 🔔 | User ▼ │
+├───────────────────────────────────────────────────────────────────────────────┤
+│ Module Nav:  Dashboard  |  CER Reports  |  Literature  |  Submissions  |  Risk   | … │
+│ ────────────────────────────────────────────────────────────────────────────── │
+│ [ Home / Projects / Documents / Analytics / AI Assistant / Billing / Settings ] │
+├───────────────────────────────────────────────────────────────────────────────┤
+│ ░░   MAIN CONTENT AREA (widgetized, drag-&-drop panels, single-click actions)  ░░ │
+└───────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1.1 Key UI Regions
+
+1. **Global Header**
+
+   * **Tenant Switchers** (Org & Client Workspace)
+   * **Universal Search** (projects, documents, modules, AI queries)
+   * **Real-Time Alerts** (quota warnings, pending approvals, system health)
+   * **User Menu** (profile, help, sign-out)
+
+2. **Sticky Module Navigation**
+
+   * Top-level tabs for each major module:
+
+     * **Dashboard**, **CER**, **Literature**, **Submissions**, **Risk**, **Analytics**, **Ask Lumen AI**, **Billing**, **Settings**
+
+3. **Sub-Navigation & Breadcrumbs**
+
+   * Contextual links within each module
+   * Breadcrumb trail back to any parent page
+
+4. **Main Content**
+
+   * Fully **widgetized** layout: drag, drop, resize, hide panels
+   * **Personalized** per-user home screen with pinned widgets
+
+---
+
+## 🔧 2. Core Portal Features
+
+| Feature                      | Purpose                                                                            | UI Component               |
+| ---------------------------- | ---------------------------------------------------------------------------------- | -------------------------- |
+| **Tenant Management**        | Scoped view per Org / Client; strict isolation & permissioning                     | Tenant dropdowns in header |
+| **Universal Search**         | Instantly jump to projects, CERs, docs, or AI insights                             | Global search bar          |
+| **Personalized Dashboard**   | KPI cards + project summary + recent activity + quick actions                      | Dashboard canvas           |
+| **Module Launcher**          | One-click access to any module, with unread counts                                 | Module Nav tabs            |
+| **Drag-&-Drop Widgets**      | Users tailor their portal—move, resize, configure cards                            | Widget containers          |
+| **Contextual Quick Actions** | “New CER,” “Upload Document,” “Start Literature Review,” “Run Risk Analysis”       | Floating action button bar |
+| **Notifications & Inbox**    | All system, team, and AI alerts in one feed + actionable “Approve / Retry” buttons | Bell icon + inbox panel    |
+| **AI Assistant Sidebar**     | Contextual “Ask Lumen AI” help, auto-suggestions, and guided tours                 | Slide-out AI panel         |
+| **Real-Time System Health**  | Memory, network, worker-freeze warnings, automated recovery prompts                | Global health badge        |
+| **Deep Integrations**        | FAERS ingestion, UNII matching, PubMed APIs, internal DBs                          | “Data Insights” widget     |
+| **Billing & Quotas**         | Subscription tier, storage & project usage, payment status, upgrade CTA            | Billing widget + settings  |
+| **User & Role Management**   | Invite teammates, assign roles, view access logs                                   | Settings → Team panel      |
+| **Help & Onboarding Tour**   | Step-by-step guided walkthroughs, in-app tooltips, video demos                     | Help icon + tour overlay   |
+
+---
+
+## 📦 3. Module-Specific Widgets
+
+Below are example widgets you could drag-onto your Dashboard canvas:
+
+### 3.1 CER Reports
+
+* **Latest CERs**: list of recently generated reports with status, citations count
+* **Generate New CER**: one-click launch + FAERS auto-ingestion toggle
+* **Risk-Benefit Snapshot**: mini-heatmap of top 5 device risks from FAERS
+
+### 3.2 Literature Review
+
+* **Saved Searches**: quick links to PubMed/GoogleScholar queries
+* **Top Citations**: trending papers by citation count or recency
+* **Upload New Paper**: drag-and-drop to include preprints or PDFs
+
+### 3.3 Regulatory Submissions
+
+* **Submission Tracker**: current cycle, assigned reviewers, next milestones
+* **Document Hub**: live folder view with version badges, statuses
+* **eCTD Packages**: one-click compile & validate
+
+### 3.4 Risk Heatmap
+
+* **Dynamic Heatmap**: filterable by severity, outcome type, date range
+* **Compare Products**: side-by-side hazard frequency charts
+* **Alert Thresholds**: user-configurable triggers for automated notifications
+
+### 3.5 Analytics & BI
+
+* **Custom Reports**: build & schedule exports (CSV, PDF)
+* **KPI Tiles**: clinical trial enrollment, adverse event rates, document throughput
+* **Trend Charts**: historical data with rolling averages
+
+### 3.6 Ask Lumen AI
+
+* **Chat Window**: context-aware Q\&A across all loaded data
+* **Suggested Prompts**: “Summarize safety profile,” “Draft benefit-risk section”
+* **Citation Snippets**: auto-generate MLA/APA formatted refs
+
+---
+
+## 🔒 4. Security, Permissions & Compliance
+
+* **SSO & SAML/OAuth** integration for enterprise logins
+* **Role-Based Access Control**: granular per-module & per-action permissions
+* **Audit Trail**: immutable logs of all document edits, report generations, user actions
+* **Data Encryption**: at rest & in transit, FAERS records securely tokenized
+* **Session & Idle Timeout**: configurable per-organization
+
+---
+
+## ⚙️ 5. Extensibility & Integrations
+
+* **Plugin Framework**: third-party modules (e.g., ClinicalDataWarehouse, eTMF connector)
+* **Webhooks & Events**: trigger external workflows on portal events (new CER, doc upload)
+* **API Explorer**: built-in Swagger UI for internal & partner developers
+* **SDKs**: JavaScript, Python, and R clients for advanced automation
+
+---
+
+## 🎯 6. End-User Workflow
+
+1. **Log In** → SSO → land on **Personalized Dashboard**
+2. **Select Organization & Workspace** → view scoped projects & docs
+3. **Scan Alerts** → see pending approvals, new FAERS signals
+4. **Search** → find your CER draft, report, or literature citation
+5. **Open Module** → e.g., CER → launch section generator with FAERS auto-match
+6. **Review & Approve** → electronic sign-off workflows integrated
+7. **Export** → PDF/DOCX for submission; eCTD for regulator uploads
+8. **Switch Context** → dropdown to another client/workspace
+9. **Manage Team** → invite new users, assign roles, track usage
+10. **Upgrade Plan** → click “Upgrade” in billing widget as quotas near limits
+
+---
+
+## 🚀 Why This Portal Wins
+
+* **One-Stop Hub** for ALL regulatory & clinical workflows
+* **Widgetized UI** lets every user tailor their workspace
+* **Deep AI & Data Integrations** surface insights faster
+* **Bullet-proof Stability** via resilience layer & health monitoring
+* **Enterprise-Grade Security** and granular permissions
+* **Scalable for CROs & Biotechs**—from single‐tenant to multi‐client at scale
+
+This is the **most advanced** Client Portal you can build on TrialSage—a central nervous system for your entire compliance, clinical, and regulatory universe.

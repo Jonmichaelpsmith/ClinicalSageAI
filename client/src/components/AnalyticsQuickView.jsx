@@ -1,106 +1,137 @@
 import React from 'react';
+import { BarChart2, LineChart, PieChart, TrendingUp, Calendar } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
-const AnalyticsQuickView = () => {
-  // Sample analytics data (in a real app these would come from an API)
-  const metrics = [
-    { 
-      id: 'projects', 
-      label: 'Active Projects', 
-      value: 12, 
-      change: 2, 
-      trend: 'up', 
-      color: 'indigo'
+// AnalyticsQuickView component for providing a quick overview of analytics
+const AnalyticsQuickView = ({ orgId, clientId }) => {
+  // Mock data for demonstration - in a real app this would come from an API
+  const analyticsData = {
+    enrollment: {
+      current: 65,
+      target: 100,
+      change: '+12%',
+      period: 'Last 30 days'
     },
-    { 
-      id: 'completion', 
-      label: 'Avg. Completion', 
-      value: '67%', 
-      change: 5, 
-      trend: 'up', 
-      color: 'blue'
+    aes: {
+      current: 8,
+      previous: 12,
+      change: '-33%',
+      period: 'vs. previous period'
     },
-    { 
-      id: 'documents', 
-      label: 'Documents', 
-      value: 184, 
-      change: 23, 
-      trend: 'up', 
-      color: 'teal'
+    completedTrials: {
+      current: 3,
+      total: 7,
+      change: '+1',
+      period: 'This quarter'
     },
-    { 
-      id: 'ontime', 
-      label: 'On-time Rate', 
-      value: '92%', 
-      change: 3, 
-      trend: 'down', 
-      color: 'orange'
+    documentThroughput: {
+      current: 24,
+      previous: 18,
+      change: '+33%',
+      period: 'vs. previous month'
     }
-  ];
-
+  };
+  
   return (
-    <div>
-      <div className="grid grid-cols-2 gap-3">
-        {metrics.map((metric) => (
-          <div 
-            key={metric.id} 
-            className={`p-3 rounded-lg bg-${metric.color}-50 border border-${metric.color}-100`}
-          >
-            <div className="text-sm text-gray-600">{metric.label}</div>
-            <div className="flex items-end justify-between">
-              <div className={`text-2xl font-bold text-${metric.color}-700`}>{metric.value}</div>
-              <div className="flex items-center">
-                <span className={`text-xs font-medium ${metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}`}>
-                  {metric.trend === 'up' ? '+' : '-'}{metric.change}%
-                </span>
-                <svg 
-                  xmlns="http://www.w3.org/2000/svg" 
-                  className={`h-3 w-3 ml-1 ${metric.trend === 'up' ? 'text-green-600' : 'text-red-600'}`} 
-                  fill="none" 
-                  viewBox="0 0 24 24" 
-                  stroke="currentColor"
-                >
-                  <path 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
-                    strokeWidth={2} 
-                    d={metric.trend === 'up' 
-                      ? 'M5 10l7-7m0 0l7 7m-7-7v18' 
-                      : 'M19 14l-7 7m0 0l-7-7m7 7V3'} 
-                  />
-                </svg>
-              </div>
-            </div>
+    <Card className="shadow-sm">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-base font-medium flex items-center">
+            <BarChart2 className="h-5 w-5 mr-2 text-primary" />
+            Analytics Snapshot
+          </CardTitle>
+          <Button variant="ghost" size="sm" className="h-8">
+            Full Analytics
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="pt-0 grid grid-cols-2 gap-4">
+        {/* Enrollment KPI */}
+        <div className="p-3 border rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-sm font-medium">Patient Enrollment</h4>
+            <Calendar className="h-4 w-4 text-gray-500" />
           </div>
-        ))}
-      </div>
-
-      <div className="mt-4">
-        <div className="bg-gray-50 p-3 rounded-lg">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Project Completion Status</h3>
-          <div className="space-y-2">
-            {[
-              { name: 'IND Submissions', value: 85 },
-              { name: 'Protocol Development', value: 62 },
-              { name: 'CSR Analysis', value: 45 },
-              { name: 'CMC Documentation', value: 71 }
-            ].map((item) => (
-              <div key={item.name}>
-                <div className="flex justify-between text-xs text-gray-600 mb-1">
-                  <span>{item.name}</span>
-                  <span>{item.value}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-1.5">
-                  <div 
-                    className="bg-indigo-600 h-1.5 rounded-full" 
-                    style={{ width: `${item.value}%` }}
-                  ></div>
-                </div>
-              </div>
-            ))}
+          <div className="flex items-baseline">
+            <span className="text-xl font-bold">{analyticsData.enrollment.current}</span>
+            <span className="text-xs text-gray-500 ml-1">/ {analyticsData.enrollment.target}</span>
+          </div>
+          <Progress 
+            value={(analyticsData.enrollment.current / analyticsData.enrollment.target) * 100} 
+            className="h-2 mt-2" 
+          />
+          <div className="mt-1 flex items-center text-xs">
+            <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+            <span className="text-green-600 font-medium">{analyticsData.enrollment.change}</span>
+            <span className="text-gray-500 ml-1">{analyticsData.enrollment.period}</span>
           </div>
         </div>
-      </div>
-    </div>
+        
+        {/* Adverse Events KPI */}
+        <div className="p-3 border rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-sm font-medium">Adverse Events</h4>
+            <LineChart className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="flex items-baseline">
+            <span className="text-xl font-bold">{analyticsData.aes.current}</span>
+            <span className="text-xs text-gray-500 ml-1">reported</span>
+          </div>
+          <div className="h-2 mt-2 bg-gray-100 rounded-full" />
+          <div className="mt-1 flex items-center text-xs">
+            <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+            <span className="text-green-600 font-medium">{analyticsData.aes.change}</span>
+            <span className="text-gray-500 ml-1">{analyticsData.aes.period}</span>
+          </div>
+        </div>
+        
+        {/* Completed Trials KPI */}
+        <div className="p-3 border rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-sm font-medium">Completed Trials</h4>
+            <PieChart className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="flex items-baseline">
+            <span className="text-xl font-bold">{analyticsData.completedTrials.current}</span>
+            <span className="text-xs text-gray-500 ml-1">/ {analyticsData.completedTrials.total}</span>
+          </div>
+          <Progress 
+            value={(analyticsData.completedTrials.current / analyticsData.completedTrials.total) * 100} 
+            className="h-2 mt-2" 
+          />
+          <div className="mt-1 flex items-center text-xs">
+            <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+            <span className="text-green-600 font-medium">{analyticsData.completedTrials.change}</span>
+            <span className="text-gray-500 ml-1">{analyticsData.completedTrials.period}</span>
+          </div>
+        </div>
+        
+        {/* Document Throughput KPI */}
+        <div className="p-3 border rounded-lg">
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-sm font-medium">Document Throughput</h4>
+            <BarChart2 className="h-4 w-4 text-gray-500" />
+          </div>
+          <div className="flex items-baseline">
+            <span className="text-xl font-bold">{analyticsData.documentThroughput.current}</span>
+            <span className="text-xs text-gray-500 ml-1">documents</span>
+          </div>
+          <div className="h-2 mt-2 bg-gray-100 rounded-full" />
+          <div className="mt-1 flex items-center text-xs">
+            <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
+            <span className="text-green-600 font-medium">{analyticsData.documentThroughput.change}</span>
+            <span className="text-gray-500 ml-1">{analyticsData.documentThroughput.period}</span>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className="pt-0 px-4 pb-4">
+        <Button variant="outline" size="sm" className="w-full">
+          Create Custom Report
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 
