@@ -63,6 +63,9 @@ const VaultPage = lazy(() => import('./pages/VaultPage'));
 const VaultTestPage = lazy(() => import('./pages/VaultTestPage'));
 const VaultDocumentViewer = lazy(() => import('./components/vault/VaultDocumentViewer'));
 
+// eCTD-related pages
+const ECTDPage = lazy(() => import('./pages/ECTDPage'));
+
 // CoAuthor and Canvas-related pages
 const CoAuthor = lazy(() => import('./pages/CoAuthor'));
 const CanvasPage = lazy(() => import('./pages/CanvasPage'));
@@ -208,6 +211,7 @@ function App() {
           
           {/* Other Client Portal Routes that should go directly to specific modules */}
           <Route path="/client-portal/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
+          <Route path="/client-portal/ectd" component={ECTDPage} /> {/* eCTD Module in Client Portal */}
           <Route path="/client-portal/regulatory-submissions" component={RegulatorySubmissionsPage} />
 
           {/* Other Module Pages */}
@@ -232,6 +236,7 @@ function App() {
           <Route path="/cerV2" component={CERV2Page} /> {/* Advanced CER Generator page route */}
           <Route path="/cerv2" component={CERV2Page} /> {/* Additional lowercase route for Advanced CER Generator */}
           <Route path="/cerv2/info" component={CerGeneratorLandingPage} /> {/* CER Generator Landing page with detailed info */}
+          <Route path="/ectd" component={ECTDPage} /> {/* eCTD Module page route */}
           <Route path="/blueprint" component={BlueprintPage} /> {/* Blueprint Generator page route */}
           <Route path="/citations" component={CitationManagerPage} /> {/* Citation Manager page route */}
           <Route path="/audit" component={AuditPage} /> {/* Audit Trail page route */}
