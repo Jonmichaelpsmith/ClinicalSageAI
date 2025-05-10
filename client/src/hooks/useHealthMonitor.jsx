@@ -8,7 +8,6 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Hook for interacting with the health monitor shared worker

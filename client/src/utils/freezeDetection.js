@@ -1,396 +1,205 @@
 /**
  * Freeze Detection Utility
  * 
- * This module provides utilities to detect and recover from application freezes and hangs.
+ * This module provides detection of browser UI freezes/hangs and can
+ * trigger recovery actions when freezes are detected.
  * 
  * CRITICAL STABILITY COMPONENT - DO NOT MODIFY WITHOUT THOROUGH TESTING
  */
 
-import { STABILITY_CONFIG } from '@/config/stabilityConfig';
+import { FREEZE_CONFIG } from '@/config/stabilityConfig';
 
-// State for tracking application responsiveness
-const freezeState = {
+/**
+ * Globals for freeze detection
+ */
+const state = {
   heartbeatInterval: null,
   lastHeartbeat: Date.now(),
-  freezeDetected: false,
+  workerHeartbeat: null,
+  freezeHistory: [],
   recoveryAttempts: 0,
-  criticalComponents: new Map(), // component name -> timestamp
-  eventLoopLagMeasurements: [],
-  longTasksDetected: 0,
+  enabled: false,
+  worker: null
 };
 
 /**
  * Initialize freeze detection
  */
 export function initFreezeDetection() {
-  // Use a web worker if available for more accurate detection
-  if (window.Worker) {
-    setupWorkerHeartbeat();
-  } else {
-    setupTimerHeartbeat();
+  if (state.enabled) {
+    // Already initialized
+    return;
   }
   
-  // Monitor event loop lag
-  monitorEventLoopLag();
+  console.log('Initializing freeze detection...');
   
-  // Monitor long tasks API if available
-  if ('PerformanceObserver' in window) {
-    monitorLongTasks();
-  }
+  // Initialize with the last heartbeat as now
+  state.lastHeartbeat = Date.now();
   
-  // Monitor for unresponsive UI
-  monitorUserInteractions();
-}
-
-/**
- * Clean up freeze detection
- */
-export function cleanupFreezeDetection() {
-  if (freezeState.heartbeatInterval) {
-    clearInterval(freezeState.heartbeatInterval);
-    freezeState.heartbeatInterval = null;
-  }
-  
-  freezeState.freezeDetected = false;
-  freezeState.recoveryAttempts = 0;
-}
-
-/**
- * Setup timer-based heartbeat for freeze detection
- */
-function setupTimerHeartbeat() {
-  // Reset state
-  freezeState.lastHeartbeat = Date.now();
-  freezeState.freezeDetected = false;
-  
-  // Check heartbeat every second
-  freezeState.heartbeatInterval = setInterval(() => {
-    const now = Date.now();
-    const elapsed = now - freezeState.lastHeartbeat;
-    
-    // If more than 5 seconds have passed since last heartbeat, application might be frozen
-    if (elapsed > 5000 && !freezeState.freezeDetected) {
-      handleFreezeDetected(elapsed);
-    }
-    
-    // Update heartbeat
-    freezeState.lastHeartbeat = now;
-  }, 1000);
-}
-
-/**
- * Setup worker-based heartbeat for more accurate freeze detection
- */
-function setupWorkerHeartbeat() {
+  // Start a worker if supported, to monitor the main thread from a separate thread
   try {
-    // Create a blob URL for the worker script
-    const workerBlob = new Blob([`
-      // Send heartbeat every 1 second
-      setInterval(() => {
-        postMessage('heartbeat');
-      }, 1000);
-    `], { type: 'application/javascript' });
-    
-    const workerUrl = URL.createObjectURL(workerBlob);
-    const worker = new Worker(workerUrl);
-    
-    worker.onmessage = (e) => {
-      if (e.data === 'heartbeat') {
-        const now = Date.now();
-        const elapsed = now - freezeState.lastHeartbeat;
-        
-        // If more than 3 seconds have passed, application might be frozen
-        if (elapsed > 3000 && !freezeState.freezeDetected) {
-          handleFreezeDetected(elapsed);
-        }
-        
-        // Update heartbeat
-        freezeState.lastHeartbeat = now;
-      }
-    };
-    
-    // Clean up the blob URL
-    URL.revokeObjectURL(workerUrl);
-    
-    // Cleanup when window is unloaded
-    window.addEventListener('beforeunload', () => {
-      worker.terminate();
-    });
-  } catch (error) {
-    console.error('Failed to setup worker heartbeat:', error);
-    // Fall back to timer-based heartbeat
-    setupTimerHeartbeat();
+    startWorker();
+  } catch (e) {
+    console.error('Could not start freeze detection worker:', e);
+    // Fall back to the setTimeout approach
+    startMainThreadDetection();
   }
-}
-
-/**
- * Monitor event loop lag
- */
-function monitorEventLoopLag() {
-  let lastCheck = performance.now();
-  const expectedInterval = 100; // 100ms intervals
   
-  // Start monitoring
-  const intervalId = setInterval(() => {
-    const now = performance.now();
-    const actualInterval = now - lastCheck;
-    const lag = actualInterval - expectedInterval;
-    
-    // Keep last 10 lag measurements for trend analysis
-    freezeState.eventLoopLagMeasurements.push(lag);
-    if (freezeState.eventLoopLagMeasurements.length > 10) {
-      freezeState.eventLoopLagMeasurements.shift();
-    }
-    
-    // If lag is consistently high, the app might be struggling
-    if (lag > 500) {
-      const averageLag = freezeState.eventLoopLagMeasurements.reduce((sum, val) => sum + val, 0) / 
-                        freezeState.eventLoopLagMeasurements.length;
-      
-      if (averageLag > 200) {
-        // Significant lag detected
-        handleLagDetected(averageLag);
-      }
-    }
-    
-    lastCheck = now;
-  }, expectedInterval);
-  
-  // Cleanup on page unload
-  window.addEventListener('beforeunload', () => {
-    clearInterval(intervalId);
-  });
-}
-
-/**
- * Monitor for long tasks using Performance Observer API
- */
-function monitorLongTasks() {
+  // Load freeze history from localStorage if available
   try {
-    const observer = new PerformanceObserver((list) => {
-      for (const entry of list.getEntries()) {
-        // Long task detected (over 50ms)
-        if (entry.entryType === 'longtask') {
-          freezeState.longTasksDetected++;
-          
-          // If we're seeing a lot of long tasks in a short period,
-          // the application might be struggling
-          if (freezeState.longTasksDetected > 5) {
-            handleLongTasksDetected(entry.duration);
-            freezeState.longTasksDetected = 0;
-          }
-        }
-      }
-    });
-    
-    observer.observe({ entryTypes: ['longtask'] });
-    
-    // Cleanup on page unload
-    window.addEventListener('beforeunload', () => {
-      observer.disconnect();
-    });
-  } catch (error) {
-    console.error('Long Tasks API not supported:', error);
-  }
-}
-
-/**
- * Monitor for unresponsive UI by tracking user interactions
- */
-function monitorUserInteractions() {
-  let lastInteraction = Date.now();
-  let pendingInteractions = 0;
-  
-  // Track user interactions
-  const trackInteraction = () => {
-    lastInteraction = Date.now();
-    pendingInteractions++;
-    
-    // Schedule a check to see if UI responded within reasonable time
-    setTimeout(() => {
-      pendingInteractions--;
-      
-      const now = Date.now();
-      const elapsed = now - lastInteraction;
-      
-      // If no other interactions happened and we're still processing
-      // this one after a long time, UI might be frozen
-      if (pendingInteractions === 0 && elapsed > 1000) {
-        handleUIFreeze(elapsed);
-      }
-    }, 100);
-  };
-  
-  // Listen for user interactions
-  const interactionEvents = ['click', 'touchstart', 'keydown', 'mousemove'];
-  interactionEvents.forEach(event => {
-    window.addEventListener(event, trackInteraction, { passive: true });
-  });
-  
-  // Cleanup on page unload
-  window.addEventListener('beforeunload', () => {
-    interactionEvents.forEach(event => {
-      window.removeEventListener(event, trackInteraction);
-    });
-  });
-}
-
-/**
- * Register a critical component for monitoring
- * 
- * @param {string} componentName - Name of the component
- */
-export function registerCriticalComponent(componentName) {
-  freezeState.criticalComponents.set(componentName, Date.now());
-}
-
-/**
- * Unregister a critical component
- * 
- * @param {string} componentName - Name of the component
- */
-export function unregisterCriticalComponent(componentName) {
-  freezeState.criticalComponents.delete(componentName);
-}
-
-/**
- * Update a critical component's timestamp
- * 
- * @param {string} componentName - Name of the component
- */
-export function updateCriticalComponent(componentName) {
-  if (freezeState.criticalComponents.has(componentName)) {
-    freezeState.criticalComponents.set(componentName, Date.now());
-  }
-}
-
-/**
- * Handle freeze detection
- */
-function handleFreezeDetected(frozenDuration) {
-  console.warn(`⚠️ Application freeze detected! App was unresponsive for ${Math.round(frozenDuration)}ms`);
-  freezeState.freezeDetected = true;
-  
-  // Log the frozen state for diagnostics
-  logFreezeState(frozenDuration, 'app_freeze');
-  
-  // Attempt recovery
-  if (freezeState.recoveryAttempts < STABILITY_CONFIG.maxRecoveryAttempts) {
-    freezeState.recoveryAttempts++;
-    attemptRecovery();
-  } else {
-    // If we've tried multiple times and it's still freezing, recommend a refresh
-    suggestRefresh();
-  }
-}
-
-/**
- * Handle event loop lag detection
- */
-function handleLagDetected(averageLag) {
-  console.warn(`⚠️ Application lag detected! Event loop delayed by ${Math.round(averageLag)}ms`);
-  
-  // Log the lag state for diagnostics
-  logFreezeState(averageLag, 'event_loop_lag');
-  
-  // Check if any critical components have been unresponsive
-  checkCriticalComponents();
-  
-  // Attempt to free up resources
-  if (freezeState.recoveryAttempts < STABILITY_CONFIG.maxRecoveryAttempts) {
-    freezeState.recoveryAttempts++;
-    attemptGarbageCollection();
-  }
-}
-
-/**
- * Handle long tasks detection
- */
-function handleLongTasksDetected(duration) {
-  console.warn(`⚠️ Multiple long tasks detected! Last task duration: ${Math.round(duration)}ms`);
-  
-  // Log the long tasks for diagnostics
-  logFreezeState(duration, 'long_tasks');
-}
-
-/**
- * Handle UI freeze detection
- */
-function handleUIFreeze(duration) {
-  console.warn(`⚠️ UI freeze detected! Interface was unresponsive for ${Math.round(duration)}ms`);
-  
-  // Log the UI freeze for diagnostics
-  logFreezeState(duration, 'ui_freeze');
-  
-  // Check if any critical components have been unresponsive
-  checkCriticalComponents();
-}
-
-/**
- * Check if any critical components have been unresponsive
- */
-function checkCriticalComponents() {
-  const now = Date.now();
-  const COMPONENT_TIMEOUT = 5000; // 5 seconds
-  
-  let unresponsiveComponents = [];
-  
-  for (const [componentName, lastUpdate] of freezeState.criticalComponents.entries()) {
-    const elapsed = now - lastUpdate;
-    
-    if (elapsed > COMPONENT_TIMEOUT) {
-      unresponsiveComponents.push({
-        name: componentName,
-        elapsed
-      });
+    const freezeHistory = localStorage.getItem('freeze_logs');
+    if (freezeHistory) {
+      state.freezeHistory = JSON.parse(freezeHistory);
+      pruneOldFreezeEvents();
     }
-  }
-  
-  if (unresponsiveComponents.length > 0) {
-    console.warn('⚠️ Unresponsive critical components detected:', unresponsiveComponents);
-    
-    // If the regulatory module is frozen, it's a known issue area
-    const hasRegulatoryModule = unresponsiveComponents.some(c => 
-      c.name.includes('Regulatory') || c.name.includes('Document')
-    );
-    
-    if (hasRegulatoryModule) {
-      console.warn('⚠️ Regulatory module appears to be frozen. This is a known stability issue area.');
-      // Could attempt specialized recovery here
-    }
-  }
-}
-
-/**
- * Log freeze state for diagnostics
- */
-function logFreezeState(duration, type) {
-  try {
-    // Create a freeze log entry
-    const freezeLog = {
-      type,
-      duration,
-      timestamp: new Date().toISOString(),
-      url: window.location.href,
-      criticalComponents: Array.from(freezeState.criticalComponents.keys()),
-      recoveryAttempts: freezeState.recoveryAttempts,
-      eventLoopLag: freezeState.eventLoopLagMeasurements,
-      longTasks: freezeState.longTasksDetected,
-      userAgent: navigator.userAgent
-    };
-    
-    // Store in localStorage for diagnostics
-    const existingLogs = JSON.parse(localStorage.getItem('freeze_logs') || '[]');
-    existingLogs.push(freezeLog);
-    
-    // Keep only the last 20 freeze events
-    if (existingLogs.length > 20) {
-      existingLogs.shift();
-    }
-    
-    localStorage.setItem('freeze_logs', JSON.stringify(existingLogs));
   } catch (e) {
     // Ignore storage errors
+    console.error('Could not load freeze history from localStorage:', e);
+  }
+  
+  // Set up the heartbeat interval on the main thread
+  state.heartbeatInterval = setInterval(() => {
+    // Update the last heartbeat time
+    state.lastHeartbeat = Date.now();
+  }, FREEZE_CONFIG.checkInterval / 2);
+  
+  state.enabled = true;
+  
+  return {
+    enabled: state.enabled,
+    freezeHistory: [...state.freezeHistory]
+  };
+}
+
+/**
+ * Start a worker to monitor the main thread
+ */
+function startWorker() {
+  // Create a simple worker blob that will ping the main thread
+  const workerBlob = new Blob([`
+    // Worker for freeze detection
+    
+    // Configuration
+    const CHECK_INTERVAL = ${FREEZE_CONFIG.checkInterval};
+    const FREEZE_THRESHOLD = ${FREEZE_CONFIG.freezeThreshold};
+    
+    // State
+    let lastMessageTime = Date.now();
+    let checkInterval = null;
+    
+    // Start checking
+    checkInterval = setInterval(() => {
+      const now = Date.now();
+      const timeSinceLastMessage = now - lastMessageTime;
+      
+      // If we haven't received a message in a while, the main thread might be frozen
+      if (timeSinceLastMessage > FREEZE_THRESHOLD) {
+        // Send a freeze event to the main thread
+        postMessage({
+          type: 'freeze',
+          duration: timeSinceLastMessage,
+          timestamp: now
+        });
+      }
+      
+      // Send a ping to the main thread
+      postMessage({ type: 'ping', timestamp: now });
+    }, CHECK_INTERVAL);
+    
+    // Listen for messages from the main thread
+    self.addEventListener('message', (event) => {
+      if (event.data.type === 'pong') {
+        // Update the last message time
+        lastMessageTime = Date.now();
+      } else if (event.data.type === 'stop') {
+        // Stop the interval
+        clearInterval(checkInterval);
+      }
+    });
+  `], { type: 'application/javascript' });
+  
+  // Create a URL for the blob
+  const workerUrl = URL.createObjectURL(workerBlob);
+  
+  // Create a worker
+  state.worker = new Worker(workerUrl);
+  
+  // Listen for messages from the worker
+  state.worker.addEventListener('message', (event) => {
+    if (event.data.type === 'ping') {
+      // Send a pong back to the worker
+      state.worker.postMessage({ type: 'pong', timestamp: Date.now() });
+    } else if (event.data.type === 'freeze') {
+      // The worker detected a potential freeze
+      const { duration, timestamp } = event.data;
+      handleFreezeEvent(duration, timestamp);
+    }
+  });
+  
+  // Revoke the URL to free memory
+  URL.revokeObjectURL(workerUrl);
+}
+
+/**
+ * Start freeze detection on the main thread
+ * This is a fallback for browsers that don't support workers
+ */
+function startMainThreadDetection() {
+  // Set up an interval to check for freezes
+  state.workerHeartbeat = setInterval(() => {
+    const now = Date.now();
+    const elapsed = now - state.lastHeartbeat;
+    
+    // If the elapsed time is greater than our threshold, we might have had a freeze
+    if (elapsed > FREEZE_CONFIG.freezeThreshold) {
+      handleFreezeEvent(elapsed, now);
+    }
+  }, FREEZE_CONFIG.checkInterval);
+}
+
+/**
+ * Handle a detected freeze event
+ */
+function handleFreezeEvent(duration, timestamp) {
+  // Only log if it's a significant freeze
+  if (duration < FREEZE_CONFIG.freezeThreshold) {
+    return;
+  }
+  
+  // Create a freeze event
+  const freezeEvent = {
+    duration,
+    timestamp,
+    url: window.location.href,
+    recovery: state.recoveryAttempts > 0
+  };
+  
+  // Add to history
+  state.freezeHistory.push(freezeEvent);
+  
+  // Prune old events
+  pruneOldFreezeEvents();
+  
+  // Log the event
+  if (FREEZE_CONFIG.logFreezeEvents) {
+    console.warn(`UI freeze detected: ${Math.round(duration)}ms at ${new Date(timestamp).toISOString()}`);
+  }
+  
+  // Store in localStorage
+  try {
+    localStorage.setItem('freeze_logs', JSON.stringify(state.freezeHistory));
+  } catch (e) {
+    // Ignore storage errors
+  }
+  
+  // Show a notification if enabled
+  if (FREEZE_CONFIG.showFreezeNotifications) {
+    showFreezeNotification(duration);
+  }
+  
+  // Attempt recovery if enabled and the freeze was severe
+  if (FREEZE_CONFIG.autoRecovery && duration > FREEZE_CONFIG.freezeThreshold * 3) {
+    attemptRecovery();
   }
 }
 
@@ -398,141 +207,282 @@ function logFreezeState(duration, type) {
  * Attempt to recover from a freeze
  */
 function attemptRecovery() {
-  console.log(`🔄 Recovery attempt ${freezeState.recoveryAttempts}/${STABILITY_CONFIG.maxRecoveryAttempts}`);
+  // Increment recovery attempts
+  state.recoveryAttempts++;
   
-  // Reset freeze state
-  freezeState.freezeDetected = false;
+  // Log the recovery attempt
+  console.warn(`Attempting freeze recovery (attempt ${state.recoveryAttempts})`);
   
-  // Try to clean up memory
-  attemptGarbageCollection();
+  // Try to clean up memory and resources
   
-  // Wait a moment and then check if the app is responsive
-  setTimeout(() => {
-    if (Date.now() - freezeState.lastHeartbeat < 2000) {
-      console.log('✅ Application appears to be responsive again');
-    }
-  }, 2000);
-}
-
-/**
- * Attempt to free up memory by garbage collection hints
- */
-function attemptGarbageCollection() {
-  try {
-    // Clear as many caches as possible
-    if (window.memoryManagement && window.memoryManagement.clearAllComponentCaches) {
-      window.memoryManagement.clearAllComponentCaches();
-    }
-    
-    // Try to clear image cache
-    const images = document.querySelectorAll('img');
-    for (let i = 0; i < images.length; i++) {
-      if (!isElementInViewport(images[i])) {
-        // Replace with a tiny transparent gif to free up memory
-        images[i].src = 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-      }
-    }
-    
-    // Clear CSS animation frames that might be causing layout thrashing
-    const animatedElements = document.querySelectorAll('.animated, .animating, [data-animation]');
-    for (let i = 0; i < animatedElements.length; i++) {
-      animatedElements[i].style.animation = 'none';
-      animatedElements[i].style.transition = 'none';
-    }
-    
-    // If the global GC function is available (rare), suggest garbage collection
-    if (window.gc) {
+  // Force garbage collection if available
+  if (window.gc) {
+    try {
       window.gc();
+    } catch (e) {
+      // Ignore errors
     }
-  } catch (error) {
-    console.error('Error during garbage collection attempt:', error);
+  }
+  
+  // Try to clear some browser caches if available
+  if (window.caches && typeof caches.keys === 'function') {
+    try {
+      caches.keys().then(keys => {
+        // Only clear non-essential caches
+        keys.forEach(key => {
+          if (key.includes('dynamic') || key.includes('temp')) {
+            caches.delete(key);
+          }
+        });
+      }).catch(() => {
+        // Ignore errors
+      });
+    } catch (e) {
+      // Ignore errors
+    }
+  }
+  
+  // If we've tried too many times, suggest a page reload
+  if (state.recoveryAttempts >= 3) {
+    console.warn('Multiple freeze recovery attempts have failed. Consider reloading the page.');
+    
+    if (FREEZE_CONFIG.showFreezeNotifications) {
+      showPageReloadSuggestion();
+    }
   }
 }
 
 /**
- * Check if an element is in the viewport
+ * Show a notification about a detected freeze
  */
-function isElementInViewport(el) {
-  if (!el || !el.getBoundingClientRect) return false;
+function showFreezeNotification(duration) {
+  // Only show if we're in a browser environment with notifications
+  if (typeof document === 'undefined') {
+    return;
+  }
   
   try {
-    const rect = el.getBoundingClientRect();
+    // Create a notification element
+    const notification = document.createElement('div');
+    notification.style.position = 'fixed';
+    notification.style.bottom = '16px';
+    notification.style.left = '16px';
+    notification.style.padding = '8px 16px';
+    notification.style.borderRadius = '4px';
+    notification.style.backgroundColor = 'rgba(255, 200, 10, 0.9)';
+    notification.style.color = '#333';
+    notification.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.15)';
+    notification.style.zIndex = '9999';
+    notification.style.transition = 'opacity 0.5s';
+    notification.style.fontSize = '13px';
+    notification.style.fontFamily = 'system-ui, -apple-system, sans-serif';
     
-    return (
-      rect.top >= 0 &&
-      rect.left >= 0 &&
-      rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-      rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-    );
-  } catch (e) {
-    return false;
-  }
-}
-
-/**
- * Suggest a page refresh to the user
- */
-function suggestRefresh() {
-  try {
-    // Show a refresh suggestion dialog
-    const dialog = document.createElement('div');
-    dialog.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: white;
-      border: 1px solid #f0f0f0;
-      border-radius: 4px;
-      padding: 15px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      z-index: 9999;
-      max-width: 300px;
-      font-family: system-ui, -apple-system, sans-serif;
-    `;
+    // Add a close button
+    const closeButton = document.createElement('button');
+    closeButton.innerHTML = '×';
+    closeButton.style.background = 'none';
+    closeButton.style.border = 'none';
+    closeButton.style.color = '#333';
+    closeButton.style.float = 'right';
+    closeButton.style.fontSize = '16px';
+    closeButton.style.cursor = 'pointer';
+    closeButton.style.marginLeft = '8px';
+    closeButton.style.padding = '0 4px';
     
-    dialog.innerHTML = `
-      <div style="display: flex; align-items: center; margin-bottom: 10px;">
-        <div style="width: 24px; height: 24px; background: #FFEBEE; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
-          <span style="color: #F44336; font-weight: bold;">!</span>
-        </div>
-        <h3 style="margin: 0; font-size: 16px; color: #333;">Application Performance</h3>
-      </div>
-      <p style="margin: 0 0 10px 0; font-size: 14px; color: #666;">
-        We've noticed the application is running slower than expected. 
-        Refreshing the page may help improve performance.
-      </p>
-      <div style="display: flex; justify-content: flex-end;">
-        <button id="freeze-dismiss" style="background: none; border: none; color: #666; margin-right: 10px; cursor: pointer; font-size: 14px;">Dismiss</button>
-        <button id="freeze-refresh" style="background: #0078d4; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 14px;">Refresh Page</button>
-      </div>
-    `;
-    
-    document.body.appendChild(dialog);
-    
-    // Add event listeners
-    document.getElementById('freeze-dismiss').addEventListener('click', () => {
-      dialog.remove();
+    closeButton.addEventListener('click', () => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
     });
     
-    document.getElementById('freeze-refresh').addEventListener('click', () => {
+    // Add the message
+    notification.appendChild(closeButton);
+    notification.appendChild(document.createTextNode(
+      `UI freeze detected: ${Math.round(duration)}ms. Performance may be degraded.`
+    ));
+    
+    // Add to the document
+    document.body.appendChild(notification);
+    
+    // Remove after a delay
+    setTimeout(() => {
+      notification.style.opacity = '0';
+      
+      // Remove from DOM after fade out
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 500);
+    }, 5000);
+  } catch (e) {
+    // Ignore errors when showing the notification
+  }
+}
+
+/**
+ * Show a notification suggesting a page reload
+ */
+function showPageReloadSuggestion() {
+  // Only show if we're in a browser environment with notifications
+  if (typeof document === 'undefined') {
+    return;
+  }
+  
+  try {
+    // Create a notification element
+    const notification = document.createElement('div');
+    notification.style.position = 'fixed';
+    notification.style.top = '50%';
+    notification.style.left = '50%';
+    notification.style.transform = 'translate(-50%, -50%)';
+    notification.style.padding = '16px 24px';
+    notification.style.borderRadius = '8px';
+    notification.style.backgroundColor = 'rgba(240, 240, 240, 0.95)';
+    notification.style.color = '#333';
+    notification.style.boxShadow = '0 4px 16px rgba(0, 0, 0, 0.15)';
+    notification.style.zIndex = '10000';
+    notification.style.transition = 'opacity 0.5s';
+    notification.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+    notification.style.textAlign = 'center';
+    notification.style.maxWidth = '400px';
+    notification.style.width = '80%';
+    
+    // Add a header
+    const header = document.createElement('h3');
+    header.textContent = 'Performance Issue Detected';
+    header.style.margin = '0 0 8px 0';
+    header.style.fontSize = '16px';
+    header.style.fontWeight = '600';
+    
+    // Add the message
+    const message = document.createElement('p');
+    message.textContent = 'Multiple UI freezes detected. Reloading the page may improve performance.';
+    message.style.margin = '0 0 16px 0';
+    message.style.fontSize = '14px';
+    
+    // Add buttons
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.display = 'flex';
+    buttonContainer.style.justifyContent = 'center';
+    buttonContainer.style.gap = '8px';
+    
+    const reloadButton = document.createElement('button');
+    reloadButton.textContent = 'Reload Page';
+    reloadButton.style.padding = '8px 16px';
+    reloadButton.style.backgroundColor = '#0078d4';
+    reloadButton.style.color = 'white';
+    reloadButton.style.border = 'none';
+    reloadButton.style.borderRadius = '4px';
+    reloadButton.style.cursor = 'pointer';
+    reloadButton.style.fontSize = '14px';
+    
+    reloadButton.addEventListener('click', () => {
       window.location.reload();
     });
     
-    // Auto-remove after 30 seconds if ignored
-    setTimeout(() => {
-      if (document.body.contains(dialog)) {
-        dialog.remove();
+    const ignoreButton = document.createElement('button');
+    ignoreButton.textContent = 'Ignore';
+    ignoreButton.style.padding = '8px 16px';
+    ignoreButton.style.backgroundColor = '#f3f4f6';
+    ignoreButton.style.color = '#4b5563';
+    ignoreButton.style.border = '1px solid #d1d5db';
+    ignoreButton.style.borderRadius = '4px';
+    ignoreButton.style.cursor = 'pointer';
+    ignoreButton.style.fontSize = '14px';
+    
+    ignoreButton.addEventListener('click', () => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
       }
-    }, 30000);
-  } catch (error) {
-    console.error('Error showing refresh suggestion:', error);
+    });
+    
+    buttonContainer.appendChild(reloadButton);
+    buttonContainer.appendChild(ignoreButton);
+    
+    notification.appendChild(header);
+    notification.appendChild(message);
+    notification.appendChild(buttonContainer);
+    
+    // Create a semi-transparent overlay
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100%';
+    overlay.style.height = '100%';
+    overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+    overlay.style.zIndex = '9999';
+    
+    // Add to the document
+    document.body.appendChild(overlay);
+    document.body.appendChild(notification);
+    
+    // Remove when ignore is clicked
+    ignoreButton.addEventListener('click', () => {
+      if (overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
+      }
+    });
+  } catch (e) {
+    // Ignore errors when showing the notification
   }
+}
+
+/**
+ * Remove freeze events older than 24 hours
+ */
+function pruneOldFreezeEvents() {
+  const now = Date.now();
+  const oneDayAgo = now - (24 * 60 * 60 * 1000);
+  
+  state.freezeHistory = state.freezeHistory.filter(event => event.timestamp > oneDayAgo);
+}
+
+/**
+ * Cleanup freeze detection resources
+ */
+export function cleanupFreezeDetection() {
+  if (state.heartbeatInterval) {
+    clearInterval(state.heartbeatInterval);
+    state.heartbeatInterval = null;
+  }
+  
+  if (state.workerHeartbeat) {
+    clearInterval(state.workerHeartbeat);
+    state.workerHeartbeat = null;
+  }
+  
+  if (state.worker) {
+    state.worker.postMessage({ type: 'stop' });
+    state.worker.terminate();
+    state.worker = null;
+  }
+  
+  state.enabled = false;
+}
+
+/**
+ * Get freeze history
+ */
+export function getFreezeHistory() {
+  return [...state.freezeHistory];
+}
+
+/**
+ * Get current freeze detection status
+ */
+export function getStatus() {
+  return {
+    enabled: state.enabled,
+    recoveryAttempts: state.recoveryAttempts,
+    freezeEvents: state.freezeHistory.length
+  };
 }
 
 export default {
   initFreezeDetection,
   cleanupFreezeDetection,
-  registerCriticalComponent,
-  unregisterCriticalComponent,
-  updateCriticalComponent
+  getFreezeHistory,
+  getStatus
 };
