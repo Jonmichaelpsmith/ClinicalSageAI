@@ -23,9 +23,9 @@ const networkState = {
 const requestCache = new Map();
 
 /**
- * Initialize network resilience features
+ * Initialize basic network resilience features
  */
-export function initNetworkResilience() {
+function initBasicNetworkResilience() {
   // Listen for online/offline events
   window.addEventListener('online', handleOnline);
   window.addEventListener('offline', handleOffline);
@@ -470,7 +470,7 @@ export default {
  * @param {Array<string>} options.criticalEndpoints - Endpoints that should always be retried
  * @returns {Object} Network resilience controller
  */
-export function initNetworkResilience(options = {}) {
+export function initAdvancedNetworkResilience(options = {}) {
   const { 
     onStatusChange = null,
     maxRetries = 3,

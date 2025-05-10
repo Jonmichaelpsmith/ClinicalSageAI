@@ -4,18 +4,13 @@ import { useLocation } from 'wouter';
 const ClientPortalLanding = () => {
   const [, setLocation] = useLocation();
   
-  // Module cards for the dashboard - EXACTLY as shown in the screenshot
+  // Module cards for the dashboard - Only showing specific modules as directed
   const moduleCards = [
     { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/ind-wizard' },
-    { id: 'ectd', title: 'eCTD Module Builder™', description: 'Integrated common technical document module builder', path: '/ectd-planner' },
-    { id: 'regulatory-submissions', title: 'Regulatory Submissions Hub™', description: 'Unified platform for managing eCTD and IND submissions with comprehensive document management', path: '/regulatory-submissions' },
     { id: 'cer', title: 'CER Generator™', description: 'Next-generation regulatory automation for medical device and combination product submissions', path: '/cerv2' },
     { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/cmc' },
     { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/vault' },
-    { id: 'rih', title: 'Regulatory Intelligence Hub™', description: 'AI-powered strategy, timeline, and risk simulation', path: '/regulatory-intelligence-hub' },
-    { id: 'risk', title: 'Risk Heatmap™', description: 'Interactive visualization of CTD risk gaps & impacts', path: '/risk-heatmap' },
     { id: 'study', title: 'Study Architect™', description: 'Protocol development with regulatory intelligence', path: '/study-architect' },
-    { id: 'coauthor', title: 'eCTD Co-Author™', description: 'AI-assisted co-authoring of CTD submission sections', path: '/ectd-coauthor' },
     { id: 'analytics', title: 'Analytics Dashboard', description: 'Metrics and insights on regulatory performance', path: '/analytics' }
   ];
 
