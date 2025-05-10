@@ -76,7 +76,7 @@ import literatureReviewRouter from './routes/literature-review.js';
 import documentRouter from './routes/document-routes';
 import vaultRouter from './routes/vault-routes';
 import organizationsRouter from './routes/organizations-routes';  // Add organizations router
-import regulatorySubmissionsRouter from './routes/regulatory-submissions-routes';  // Add regulatory submissions router
+// Regulatory submissions functionality removed as per client request
 import emergencyFixRouter from './routes/emergency-fix.js';
 import sotaRouter from './routes/sota-api.mjs';
 import equivalenceRouter from './routes/equivalence-api.mjs';
@@ -195,8 +195,8 @@ export default function registerRoutes(app: Express): void {
   // Register Organization API routes
   app.use('/api/organizations', organizationsRouter);
   
-  // Register Regulatory Submissions API routes
-  app.use('/api/regulatory-submissions', regulatorySubmissionsRouter);
+  // Regulatory Submissions Hub functionality removed as per client request
+  // app.use('/api/regulatory-submissions', regulatorySubmissionsRouter);
   
   // Register SOTA API routes (appending to existing CER routes)
   app.use('/api/cer/sota', sotaRouter);

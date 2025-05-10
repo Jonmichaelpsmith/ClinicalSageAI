@@ -57,7 +57,7 @@ const CanvasPage = lazy(() => import('./pages/CanvasPage'));
 const TimelinePage = lazy(() => import('./pages/TimelinePage'));
 const ModuleSectionEditor = lazy(() => import('./components/ModuleSectionEditor'));
 
-// Regulatory-related pages
+// Regulatory-related pages (excluding Regulatory Submissions Hub)
 const RegulatoryRiskDashboard = lazy(() => import('./pages/RegulatoryRiskDashboard'));
 const EnhancedRegulatoryDashboard = lazy(() => import('./pages/EnhancedRegulatoryDashboard'));
 const RegulatoryDashboard = lazy(() => import('./pages/RegulatoryDashboard'));
