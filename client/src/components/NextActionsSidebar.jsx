@@ -1,62 +1,71 @@
 import React from 'react';
-import { Clock, CheckCircle, AlertCircle, ArrowUpRight, Calendar, FileText, User, ArrowRight } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Clock, CheckCircle, AlertCircle, CalendarClock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 
-// NextActionsSidebar component for displaying next actions and pending tasks
-const NextActionsSidebar = ({ orgId, clientId }) => {
-  // Mock data for demonstration - in a real app this would come from an API
+/**
+ * NextActionsSidebar Component
+ * 
+ * Displays upcoming tasks and actions required from the user.
+ */
+const NextActionsSidebar = ({ clientId }) => {
+  // Sample next actions data - in a real application, this would come from an API
   const nextActions = [
     {
       id: 'action-1',
-      title: 'Review IND submission draft',
-      dueDate: '2025-05-15T00:00:00Z',
+      title: 'CER Quality Check Due',
+      dueDate: '2025-05-15', // 5 days from today
       priority: 'high',
       status: 'pending',
-      type: 'review'
+      project: 'BTX-112 Clinical Trial',
+      module: 'cer2v',
+      progress: 0
     },
     {
       id: 'action-2',
-      title: 'Schedule FDA meeting preparation',
-      dueDate: '2025-05-18T00:00:00Z',
+      title: 'Review Protocol Amendments',
+      dueDate: '2025-05-12', // 2 days from today
       priority: 'medium',
-      status: 'pending',
-      type: 'meeting'
+      status: 'in_progress',
+      project: 'BTX-112 Clinical Trial',
+      module: 'study-architect',
+      progress: 35
     },
     {
       id: 'action-3',
-      title: 'Approve DSMB report',
-      dueDate: '2025-05-12T00:00:00Z',
-      priority: 'high',
-      status: 'pending',
-      type: 'approval'
+      title: 'CMC Documentation Updates',
+      dueDate: '2025-05-20', // 10 days from today
+      priority: 'medium',
+      status: 'in_progress',
+      project: 'BTX-112 Clinical Trial',
+      module: 'cmc-module',
+      progress: 68
     },
     {
       id: 'action-4',
-      title: 'Update clinical study protocol',
-      dueDate: '2025-05-20T00:00:00Z',
-      priority: 'medium',
-      status: 'in_progress',
-      type: 'document'
-    },
-    {
-      id: 'action-5',
-      title: 'Assign site monitor responsibilities',
-      dueDate: '2025-05-22T00:00:00Z',
-      priority: 'low',
-      status: 'pending',
-      type: 'assignment'
+      title: 'IND Submission Final Check',
+      dueDate: '2025-05-30', // 20 days from today
+      priority: 'high',
+      status: 'not_started',
+      project: 'BTX-112 Clinical Trial',
+      module: 'ind-wizard',
+      progress: 0
     }
   ];
 
-  // Format date for display
-  const formatDate = (dateString) => {
-    const options = { month: 'short', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+  // Get prioritized, client-specific next actions
+  const getClientActions = () => {
+    if (!clientId) return nextActions;
+    
+    // In a real app, this would filter based on client ID
+    // For demo purposes, we'll just return all actions
+    return nextActions;
   };
 
-  // Get days remaining until due date
+  const clientActions = getClientActions();
+
+  // Calculate days remaining
   const getDaysRemaining = (dueDate) => {
     const today = new Date();
     const due = new Date(dueDate);
@@ -65,106 +74,100 @@ const NextActionsSidebar = ({ orgId, clientId }) => {
     return diffDays;
   };
 
-  // Get priority badge
-  const getPriorityBadge = (priority) => {
-    switch (priority) {
-      case 'high':
-        return <Badge variant="outline" className="bg-red-100 border-red-200 text-red-700">High</Badge>;
-      case 'medium':
-        return <Badge variant="outline" className="bg-yellow-100 border-yellow-200 text-yellow-700">Medium</Badge>;
-      case 'low':
-        return <Badge variant="outline" className="bg-blue-100 border-blue-200 text-blue-700">Low</Badge>;
-      default:
-        return <Badge variant="outline" className="bg-gray-100 border-gray-200 text-gray-700">Normal</Badge>;
+  // Get badge variant based on priority and days remaining
+  const getBadgeVariant = (priority, dueDate) => {
+    const daysRemaining = getDaysRemaining(dueDate);
+    
+    if (priority === 'high' && daysRemaining <= 7) {
+      return 'destructive';
     }
+    
+    if (priority === 'high' || daysRemaining <= 3) {
+      return 'destructive';
+    }
+    
+    if (priority === 'medium' || daysRemaining <= 7) {
+      return 'warning';
+    }
+    
+    return 'outline';
   };
 
-  // Get action icon
-  const getActionIcon = (type) => {
-    switch (type) {
-      case 'review':
-        return <FileText size={16} className="text-primary" />;
-      case 'meeting':
-        return <Calendar size={16} className="text-indigo-500" />;
-      case 'approval':
-        return <CheckCircle size={16} className="text-green-500" />;
-      case 'document':
-        return <FileText size={16} className="text-blue-500" />;
-      case 'assignment':
-        return <User size={16} className="text-purple-500" />;
-      default:
-        return <Clock size={16} className="text-gray-500" />;
-    }
-  };
+  if (clientActions.length === 0) {
+    return (
+      <div className="text-center py-4">
+        <CheckCircle className="h-12 w-12 mx-auto text-green-500 mb-2" />
+        <h3 className="text-lg font-medium text-gray-700">All Caught Up!</h3>
+        <p className="text-sm text-gray-500">No pending actions at this time.</p>
+      </div>
+    );
+  }
 
   return (
-    <Card className="shadow-sm">
-      <CardHeader className="pb-3">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-base font-medium flex items-center">
-            <Clock className="h-5 w-5 mr-2 text-primary" />
-            Next Actions
-          </CardTitle>
-          <Button variant="ghost" size="sm" className="h-8">
-            View All
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent className="pt-0">
-        {nextActions.length === 0 ? (
-          <div className="text-center py-6 bg-gray-50 rounded-md">
-            <CheckCircle className="h-10 w-10 mx-auto text-green-400 mb-2" />
-            <h3 className="text-sm font-medium text-gray-700">All caught up!</h3>
-            <p className="text-sm text-gray-500 mt-1">No pending actions</p>
+    <div className="space-y-4">
+      {clientActions.map((action) => (
+        <div 
+          key={action.id} 
+          className="p-3 bg-white border rounded-lg shadow-sm hover:shadow-md transition-shadow"
+        >
+          <div className="flex justify-between items-start">
+            <h3 className="font-medium text-gray-800">{action.title}</h3>
+            <Badge variant={getBadgeVariant(action.priority, action.dueDate)}>
+              {action.priority === 'high' ? 'High' : action.priority === 'medium' ? 'Medium' : 'Low'}
+            </Badge>
           </div>
-        ) : (
-          <div className="space-y-3">
-            {nextActions.slice(0, 4).map(action => (
-              <div 
-                key={action.id}
-                className={`flex items-start p-3 rounded-md border ${
-                  getDaysRemaining(action.dueDate) <= 3 ? 'border-red-200 bg-red-50' : 'border-gray-200 hover:bg-gray-50'
-                } cursor-pointer`}
-              >
-                <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                  {getActionIcon(action.type)}
-                </div>
-                <div className="ml-3 flex-1 min-w-0">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-sm text-gray-900">{action.title}</h4>
-                    {getPriorityBadge(action.priority)}
-                  </div>
-                  <div className="flex items-center text-xs text-gray-500 mt-1">
-                    <Calendar size={12} className="mr-1" />
-                    <span>Due: {formatDate(action.dueDate)}</span>
-                    {getDaysRemaining(action.dueDate) <= 3 ? (
-                      <Badge variant="outline" className="ml-2 bg-red-100 border-red-200 text-red-700">
-                        {getDaysRemaining(action.dueDate)} days left
-                      </Badge>
-                    ) : (
-                      <span className="ml-2 text-gray-500">
-                        ({getDaysRemaining(action.dueDate)} days left)
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 ml-2 flex-shrink-0">
-                  <ArrowRight size={14} />
-                </Button>
+          
+          <div className="mt-2 flex items-center text-sm text-gray-500">
+            <Clock className="h-4 w-4 mr-1 text-gray-400" />
+            <span>
+              Due: {new Date(action.dueDate).toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric' 
+              })}
+            </span>
+            <span className="mx-2">•</span>
+            <span>{getDaysRemaining(action.dueDate)} days remaining</span>
+          </div>
+          
+          {action.progress > 0 && (
+            <div className="mt-3">
+              <div className="flex justify-between items-center text-xs mb-1">
+                <span>Progress</span>
+                <span>{action.progress}%</span>
               </div>
-            ))}
-          </div>
-        )}
-        {nextActions.length > 4 && (
-          <div className="mt-4 text-center">
-            <Button variant="outline" size="sm" className="w-full">
-              <ArrowUpRight size={14} className="mr-1" />
-              See {nextActions.length - 4} more actions
+              <Progress value={action.progress} className="h-1.5" />
+            </div>
+          )}
+          
+          <div className="mt-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full text-primary border-primary/20 hover:bg-primary/5"
+            >
+              <div className="flex items-center justify-center w-full">
+                {action.status === 'pending' ? (
+                  <AlertCircle className="h-3.5 w-3.5 mr-1.5 text-amber-500" />
+                ) : action.status === 'in_progress' ? (
+                  <CalendarClock className="h-3.5 w-3.5 mr-1.5 text-blue-500" />
+                ) : (
+                  <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-500" />
+                )}
+                Take Action
+              </div>
             </Button>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </div>
+      ))}
+      
+      <Button 
+        variant="ghost" 
+        className="w-full text-primary"
+      >
+        View All Tasks
+      </Button>
+    </div>
   );
 };
 
