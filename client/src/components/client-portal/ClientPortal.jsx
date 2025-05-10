@@ -1,22 +1,11 @@
 /**
- * Client Portal - Enterprise Edition
+ * Client Portal
  * 
- * This component provides a unified central hub for biotech clients, integrating
- * all activities across modules with seamless navigation and a global project manager.
- * 
- * REBUILT: May 10, 2025 - Unified Client Experience Edition
- * 
- * Features:
- * - Global project management across all modules
- * - Activity aggregation from all platform services
- * - Multi-organization support with seamless switching
- * - Real-time data synchronization with SecurityService
- * - Enhanced error resilience and recovery
- * - Adaptive cross-module navigation
- * - Integrated stability monitoring
+ * This component provides the main interface for biotech clients
+ * when accessed through a CRO master account in a multi-tenant environment.
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, Link } from 'wouter';
 import { 
   Users, 
@@ -29,42 +18,15 @@ import {
   AlertCircle,
   Clock,
   Calendar,
-  Search,
-  Plus,
-  RefreshCw,
-  Shield,
-  Zap,
-  Layout,
-  Layers,
-  Activity,
-  Folder,
-  Database,
-  BarChartHorizontal,
-  BookMarked,
-  ClipboardList,
-  Lightbulb,
-  Beaker,
-  Network,
-  Share2,
-  ListChecks,
-  Settings,
-  Briefcase,
-  ArrowUpRight
+  Search
 } from 'lucide-react';
 import securityService from '../../services/SecurityService';
 import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
-import { useToast } from '@/hooks/use-toast';
-import ProjectManagerGrid from '../project-manager/ProjectManagerGrid';
-import VaultQuickAccess from '../VaultQuickAccess';
-import AnalyticsQuickView from '../AnalyticsQuickView';
-import NextActionsSidebar from '../NextActionsSidebar';
-import ReportsQuickWidget from '../ReportsQuickWidget';
 
 // Client Portal dashboard component
 const ClientPortal = () => {
   const [location, setLocation] = useLocation();
-  const [organizations, setOrganizations] = useState([]);
-  const [currentOrganization, setCurrentOrganization] = useState(null);
+  const [clientOrganization, setClientOrganization] = useState(null);
   const [parentOrganization, setParentOrganization] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -72,47 +34,44 @@ const ClientPortal = () => {
   const [documents, setDocuments] = useState([]);
   const [activities, setActivities] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // Create a fallback object if ModuleIntegrationProvider is not available
-  let moduleIntegration = {
-    getSharedContext: () => ({}),
-    shareContext: () => {} 
-  };
-  
-  try {
-    // Attempt to use the hook, but don't crash if the provider isn't available
-    moduleIntegration = useModuleIntegration();
-  } catch (error) {
-    console.log('ModuleIntegration not available, using fallback');
-  }
+  const { getSharedContext, shareContext } = useModuleIntegration();
   
   // Fetch client data on mount
   useEffect(() => {
     const initClientPortal = async () => {
       try {
-        // Get organization list
-        const orgList = securityService.getAccessibleOrganizations() || [];
-        setOrganizations(orgList);
-        
-        // Set the current organization if available, otherwise use the first one in the list
-        const defaultOrg = securityService.currentOrganization || (orgList.length > 0 ? orgList[0] : null);
+        // Get organization data
+        const org = securityService.currentOrganization;
         const parentOrg = securityService.parentOrganization;
         
-        if (defaultOrg) {
-          setCurrentOrganization(defaultOrg);
-          setParentOrganization(parentOrg);
-          
-          // Share client context with other modules (if available)
-          if (moduleIntegration.shareContext) {
-            moduleIntegration.shareContext('organization', defaultOrg.id, {
-              organization: defaultOrg,
-              parentOrganization: parentOrg
-            });
-          }
-          
-          // Load initial data for the selected organization
-          await loadOrganizationData();
+        if (!org) {
+          throw new Error('No organization data available');
         }
+        
+        setClientOrganization(org);
+        setParentOrganization(parentOrg);
+        
+        // Get shared context from integration layer
+        const portalContext = getSharedContext('client_portal');
+        
+        // In a real app, these would be API calls
+        // Fetch projects
+        const projectList = await fetchProjects(org.id);
+        setProjects(projectList);
+        
+        // Fetch recent documents
+        const docList = await fetchDocuments(org.id);
+        setDocuments(docList);
+        
+        // Fetch recent activities
+        const activityList = await fetchActivities(org.id);
+        setActivities(activityList);
+        
+        // Share client context with other modules
+        shareContext('organization', org.id, {
+          organization: org,
+          parentOrganization: parentOrg
+        });
         
         setLoading(false);
       } catch (err) {
@@ -123,74 +82,7 @@ const ClientPortal = () => {
     };
     
     initClientPortal();
-  }, []);
-  
-  // Add a useEffect to reload data when currentOrganization changes
-  useEffect(() => {
-    if (currentOrganization) {
-      // Load data for the selected organization
-      const loadData = async () => {
-        try {
-          await loadOrganizationData();
-        } catch (err) {
-          console.error("Error loading organization data:", err);
-          setError(err.message);
-        }
-      };
-      
-      loadData();
-      
-      // Log the current organization to confirm changes
-      console.log("Current organization updated:", currentOrganization.name);
-    }
-  }, [currentOrganization]);
-  
-  // Load organization data when organization changes
-  const loadOrganizationData = async () => {
-    if (!currentOrganization) return;
-    
-    try {
-      // In a real app, these would be API calls
-      // Fetch projects
-      const projectList = await fetchProjects(currentOrganization.id);
-      setProjects(projectList);
-      
-      // Fetch recent documents
-      const docList = await fetchDocuments(currentOrganization.id);
-      setDocuments(docList);
-      
-      // Fetch recent activities
-      const activityList = await fetchActivities(currentOrganization.id);
-      setActivities(activityList);
-      
-      // Update security service
-      if (securityService.currentOrganization?.id !== currentOrganization.id) {
-        securityService.switchOrganization(currentOrganization.id);
-      }
-    } catch (err) {
-      console.error('Error loading organization data:', err);
-      setError(`Error loading organization data: ${err.message}`);
-    }
-  };
-  
-  // Handle organization change
-  const handleOrganizationChange = async (newOrgId) => {
-    const newOrg = organizations.find(org => org.id === newOrgId);
-    if (newOrg) {
-      // Update the organization in SecurityService first
-      securityService.switchOrganization(newOrgId, {
-        notifySubscribers: true,
-        updateRoutes: false
-      });
-      
-      // Then update our local state - this will trigger the useEffect
-      setCurrentOrganization(newOrg);
-      console.log(`Switching to organization: ${newOrg.name} (${newOrg.id})`);
-      
-      // No need to explicitly call loadOrganizationData here
-      // as it's now handled by the useEffect that watches currentOrganization
-    }
-  };
+  }, [getSharedContext, shareContext]);
   
   // Handle return to CRO portal
   const handleReturnToCRO = async () => {
@@ -431,65 +323,37 @@ const ClientPortal = () => {
     }
   };
   
-  // STEP 3: We've removed duplicated org state declarations
-  
-  // Step 4: Render the landing page when no organization is selected
-  if (!currentOrganization) {
+  // Render loading state
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-md">
-          <Building size={48} className="mx-auto text-primary mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Welcome to TrialSage</h2>
-          <p className="text-gray-600 mb-4">Please select an organization to continue.</p>
-          {error && (
-            <div className="text-red-500 mb-4 flex items-center justify-center">
-              <AlertCircle size={16} className="mr-1" />
-              <span>{error}</span>
-            </div>
-          )}
-          {organizations.length > 0 ? (
-            <div className="space-y-2">
-              {organizations.map(org => (
-                <button 
-                  key={org.id}
-                  onClick={() => {
-                    setCurrentOrganization(org);
-                    securityService.switchOrganization(org.id);
-                  }}
-                  className="w-full px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90 flex items-center justify-center"
-                >
-                  <Building size={16} className="mr-2" />
-                  {org.name}
-                </button>
-              ))}
-            </div>
-          ) : loading ? (
-            <div className="animate-pulse p-4">Loading organizations...</div>
-          ) : (
-            <button 
-              onClick={() => {
-                const testOrg = { 
-                  id: 'test-org', 
-                  name: 'Acme CRO', 
-                  type: 'cro',
-                  role: 'Administrator',
-                  clients: 5,
-                  lastUpdated: '2025-05-10'
-                };
-                setCurrentOrganization(testOrg);
-                setOrganizations([testOrg]);
-              }}
-              className="px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90"
-            >
-              Use Test Organization
-            </button>
-          )}
+        <div className="text-center">
+          <div className="inline-block animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
+          <p className="text-gray-600">Loading client portal...</p>
         </div>
       </div>
     );
   }
   
-  // Show the dashboard when organization is selected
+  // Render error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-md">
+          <AlertCircle size={48} className="mx-auto text-red-500 mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Portal</h2>
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Client Portal Header */}
@@ -509,30 +373,11 @@ const ClientPortal = () => {
               
               <div className="flex items-center">
                 <Building className="text-primary mr-2" size={20} />
-                <span className="font-medium text-lg">{currentOrganization?.name || 'Client Portal'}</span>
+                <span className="font-medium text-lg">{clientOrganization?.name || 'Client Portal'}</span>
                 <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">
-                  {currentOrganization?.type?.toUpperCase() || 'CLIENT'}
+                  {clientOrganization?.type?.toUpperCase() || 'CLIENT'}
                 </span>
               </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Link to="/ind-wizard" className="text-sm text-primary hover:underline flex items-center">
-                <FileText size={16} className="mr-1" />
-                IND Wizard
-              </Link>
-              <Link to="/regulatory-submissions" className="text-sm text-primary hover:underline flex items-center">
-                <ClipboardList size={16} className="mr-1" />
-                Submissions
-              </Link>
-              <Link to="/study-architect" className="text-sm text-primary hover:underline flex items-center">
-                <Beaker size={16} className="mr-1" />
-                Study Architect
-              </Link>
-              <Link to="/vault" className="text-sm text-primary hover:underline flex items-center">
-                <Database size={16} className="mr-1" />
-                Vault
-              </Link>
             </div>
             
             <form onSubmit={handleSearch} className="relative max-w-xs w-full">
