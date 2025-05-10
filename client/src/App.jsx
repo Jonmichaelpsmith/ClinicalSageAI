@@ -27,6 +27,13 @@ const LoadingPage = () => (
 // Eagerly load the landing page for faster initial render
 import ClientPortalLanding from './pages/ClientPortalLanding';
 
+// Import client portal components from their proper location
+import ClientPortal from './components/client-portal/ClientPortal';
+import ClientHeader from './components/client-portal/ClientHeader';
+import ClientContextBar from './components/client-portal/ClientContextBar';
+import ClientDashboard from './components/client-portal/ClientDashboard';
+import OrganizationSwitcher from './components/client-portal/OrganizationSwitcher';
+
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
 const CERPage = lazy(() => import('./pages/CerPage'));
@@ -169,21 +176,6 @@ function App() {
           
           {/* Main client portal route - uses wildcard to catch all /client-portal/* paths */}
           <Route path="/client-portal/*" component={ClientPortal} />
-          
-          {/* Client Portal Sub-Pages - DISABLED: now handled by ClientPortal component */}
-          {/* These routes are commented out to ensure the ClientPortal component handles all client portal routes
-          <Route path="/client-portal/vault" component={VaultPage} />
-          <Route path="/client-portal/regulatory-intel" component={RegulatoryIntelligenceHub} />
-          <Route path="/client-portal/cer-generator" component={CERV2Page} />
-          <Route path="/client-portal/cmc-wizard" component={CmcWizard} />
-          <Route path="/client-portal/csr-analyzer" component={CSRPage} />
-          <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
-          <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
-          <Route path="/client-portal/client-management" /> */}
-          
-          {/* Module Dashboard */}
-            )}
-          </Route>
 
           {/* Module Dashboard */}
           <Route path="/dashboard" component={ModuleDashboard} />
@@ -192,8 +184,9 @@ function App() {
           <Route path="/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
           <Route path="/ind-full-solution" component={INDFullSolution} />
           
-          {/* Client Portal IND Wizard Route - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
+          {/* Other Client Portal Routes that should go directly to specific modules */}
           <Route path="/client-portal/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
+          <Route path="/client-portal/regulatory-submissions" component={RegulatorySubmissionsPage} />
 
           {/* Other Module Pages */}
           <Route path="/cer-generator" component={CERPage} />
@@ -227,7 +220,6 @@ function App() {
           <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
           <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
           <Route path="/regulatory-submissions" component={RegulatorySubmissionsPage} />
-          <Route path="/client-portal/regulatory-submissions" component={RegulatorySubmissionsPage} />
           
           {/* IND Wizard Module Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
           {/* These direct module routes help users navigate directly to specific IND modules */}
@@ -297,30 +289,32 @@ function App() {
           <Route path="/cer-generator/*">
             {() => <CERV2Page />}
           </Route>
-          <Route path="/client-portal/cer-generator/*">
-            {() => <CERV2Page />}
+          <Route path="/cmc-wizard/*">
+            {() => <CMCPage />}
           </Route>
-          <Route path="/cerv2/*">
-            {() => <CERV2Page />}
+          <Route path="/csr-analyzer/*">
+            {() => <CSRPage />}
           </Route>
-          <Route path="/cerV2/*">
-            {() => <CERV2Page />}
+          <Route path="/vault-v2/*">
+            {() => <VaultPage />}
           </Route>
           
-          {/* Default Redirect to Client Portal */}
+          {/* Generic fallback for unmatched routes */}
           <Route>
-            {() => {
-              // Automatically redirect to client portal
-              window.location.href = '/client-portal';
-              return (
-                <div className="flex flex-col items-center justify-center p-8">
-                  <h2 className="text-xl font-medium mb-4">Redirecting to Client Portal...</h2>
-                  <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
-                </div>
-              );
-            }}
+            {() => (
+              <div className="flex flex-col items-center justify-center p-8">
+                <h2 className="text-2xl font-bold mb-4 text-red-700">Page Not Found</h2>
+                <p className="mb-4 text-gray-600">The URL you're trying to access doesn't exist in this application.</p>
+                <Button 
+                  onClick={() => window.location.href = '/'}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
+                >
+                  Return to Home
+                </Button>
+              </div>
+            )}
           </Route>
-        </Switch>
+          </Switch>
           </div>
         </StabilityEnabledLayout>
       </TenantProvider>
