@@ -1,117 +1,205 @@
-const { createClient } = require('@supabase/supabase-js');
-const db = require('../db');
+/**
+ * Authentication and Authorization Middleware
+ * 
+ * This module provides middleware for JWT authentication,
+ * role-based access control (RBAC), and permission validation.
+ */
 
-// Initialize Supabase client with service role key for user verification
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+const jwt = require('jsonwebtoken');
+const config = require('../config/environment').config;
+const { createLogger } = require('../utils/monitoring');
+
+const logger = createLogger('auth');
 
 /**
- * Middleware to verify authentication and set tenant context
+ * Verify JWT token and attach user to request
  */
-async function requireAuth(req, res, next) {
+const authenticateJWT = (req, res, next) => {
+  // Skip authentication for public routes
+  if (isPublicRoute(req.path)) {
+    return next();
+  }
+
+  // Get the authorization header
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ 
+      status: 'error', 
+      message: 'Authentication required' 
+    });
+  }
+  
+  // Extract the token
+  const token = authHeader.split(' ')[1];
+  
   try {
-    // Extract the token from the Authorization header
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1]; // Bearer <token>
+    // Verify the token with appropriate secret for current environment
+    const user = jwt.verify(token, config.jwt.secret);
     
-    if (!token) {
-      return res.status(401).json({ message: 'Authentication required' });
-    }
+    // Attach user to request
+    req.user = user;
     
-    // Verify the token with Supabase
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    
-    if (error || !user) {
-      return res.status(401).json({ message: 'Invalid or expired token' });
-    }
-    
-    // Get user's organization info from our database
-    const userOrgResult = await db.query(
-      `SELECT uo.org_id, uo.role, o.org_type, o.parent_org_id 
-       FROM user_organizations uo 
-       JOIN organizations o ON uo.org_id = o.org_id 
-       WHERE uo.user_id = $1 AND uo.is_primary = TRUE`, 
-      [user.id]
-    );
-    
-    if (userOrgResult.rows.length === 0) {
-      return res.status(403).json({ message: 'User not associated with any organization' });
-    }
-    
-    const userOrg = userOrgResult.rows[0];
-    
-    // Set user and tenant context on the request
-    req.user = {
-      id: user.id,
-      email: user.email,
-      orgId: userOrg.org_id,
-      role: userOrg.role,
-      orgType: userOrg.org_type
-    };
-    
-    // Set tenant context based on organization type
-    req.tenantContext = {
-      userId: user.id
-    };
-    
-    if (userOrg.org_type === 'CRO') {
-      req.tenantContext.croId = userOrg.org_id;
-    } else if (userOrg.org_type === 'CLIENT') {
-      req.tenantContext.clientId = userOrg.org_id;
-      req.tenantContext.croId = userOrg.parent_org_id;
-    }
+    // Log authentication success
+    logger.debug('User authenticated', { 
+      userId: user.id, 
+      username: user.username,
+      roles: user.roles 
+    });
     
     next();
   } catch (error) {
-    console.error('Auth middleware error:', error);
-    res.status(500).json({ message: 'Authentication error' });
-  }
-}
-
-/**
- * Middleware to check if user has the required role
- */
-function authorizeRole(requiredRoles) {
-  return (req, res, next) => {
-    // requiredRoles can be a single role or an array of roles
-    const roles = Array.isArray(requiredRoles) ? requiredRoles : [requiredRoles];
+    logger.warn('Authentication failed', { error: error.message });
     
-    if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({ message: 'Insufficient permissions' });
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ 
+        status: 'error', 
+        message: 'Token expired' 
+      });
     }
     
-    next();
-  };
-}
+    return res.status(401).json({ 
+      status: 'error', 
+      message: 'Invalid token' 
+    });
+  }
+};
 
 /**
- * Middleware to switch tenant context when a CRO user is accessing client data
+ * Check if user has the required role
  */
-function switchTenantContext(req, res, next) {
-  // Only CRO users can switch context
-  if (req.user.orgType !== 'CRO') {
-    return res.status(403).json({ message: 'Only CRO users can switch tenant context' });
-  }
-  
-  const clientId = req.params.clientId || req.query.clientId || req.body.clientId;
-  
-  if (!clientId) {
-    return res.status(400).json({ message: 'Client ID is required for context switching' });
-  }
-  
-  // Update tenant context with the specified client
-  req.tenantContext = {
-    ...req.tenantContext,
-    clientId
+const requireRole = (requiredRole) => {
+  return (req, res, next) => {
+    // If not authenticated, deny access
+    if (!req.user) {
+      return res.status(401).json({ 
+        status: 'error', 
+        message: 'Authentication required' 
+      });
+    }
+    
+    // Get user roles from JWT payload
+    const userRoles = req.user.roles || [];
+    
+    // Check if user has the required role or admin role
+    if (userRoles.includes(requiredRole) || userRoles.includes('admin')) {
+      return next();
+    }
+    
+    // Log authorization failure
+    logger.warn('Authorization failed: insufficient role', { 
+      userId: req.user.id, 
+      requiredRole, 
+      userRoles 
+    });
+    
+    return res.status(403).json({ 
+      status: 'error', 
+      message: 'Access denied: insufficient permissions' 
+    });
   };
+};
+
+/**
+ * Check if user has permission for a specific resource
+ * This is more fine-grained than role-based checks
+ */
+const requirePermission = (resource, action) => {
+  return (req, res, next) => {
+    // If not authenticated, deny access
+    if (!req.user) {
+      return res.status(401).json({ 
+        status: 'error', 
+        message: 'Authentication required' 
+      });
+    }
+    
+    // Get user permissions from JWT payload
+    const userPermissions = req.user.permissions || {};
+    
+    // Get resource permissions
+    const resourcePermissions = userPermissions[resource] || [];
+    
+    // Check if user has the required permission or has wildcard permission
+    if (resourcePermissions.includes(action) || resourcePermissions.includes('*')) {
+      return next();
+    }
+    
+    // Log authorization failure
+    logger.warn('Authorization failed: insufficient permission', { 
+      userId: req.user.id, 
+      resource, 
+      action, 
+      userPermissions 
+    });
+    
+    return res.status(403).json({ 
+      status: 'error', 
+      message: `Access denied: ${action} permission required for ${resource}` 
+    });
+  };
+};
+
+/**
+ * Middleware to ensure user belongs to the organization
+ * This enforces tenant isolation at the application level
+ */
+const requireSameOrganization = (req, res, next) => {
+  // If not authenticated, deny access
+  if (!req.user) {
+    return res.status(401).json({ 
+      status: 'error', 
+      message: 'Authentication required' 
+    });
+  }
+  
+  // Get organization ID from request (set by tenantContext middleware)
+  const organizationId = req.organizationId;
+  
+  // If no organization ID in request, skip this check
+  if (!organizationId) {
+    return next();
+  }
+  
+  // Check if user belongs to the organization
+  if (req.user.organizationId !== organizationId && !req.user.roles.includes('admin')) {
+    logger.warn('Cross-tenant access attempt blocked', { 
+      userId: req.user.id, 
+      userOrganizationId: req.user.organizationId,
+      requestedOrganizationId: organizationId 
+    });
+    
+    return res.status(403).json({ 
+      status: 'error', 
+      message: 'Access denied: resource belongs to a different organization' 
+    });
+  }
   
   next();
-}
+};
+
+/**
+ * Check if route is public (no authentication required)
+ */
+const isPublicRoute = (path) => {
+  const publicRoutes = [
+    '/api/health', 
+    '/health',
+    '/auth/login',
+    '/auth/register',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+    '/api/public'
+  ];
+  
+  // Check if path starts with any public route
+  return publicRoutes.some(route => path.startsWith(route));
+};
 
 module.exports = {
-  requireAuth,
-  authorizeRole,
-  switchTenantContext
+  authenticateJWT,
+  requireRole,
+  requirePermission,
+  requireSameOrganization,
+  isPublicRoute
 };
