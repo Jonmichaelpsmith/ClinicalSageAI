@@ -1,0 +1,107 @@
+.coauthor-content {
+  display: grid;
+  grid-template-columns: 3fr 1fr;
+  gap: 1rem;
+  padding: 1rem;
+  height: calc(100vh - 60px);
+  overflow: hidden;
+}
+
+.coauthor-full-content {
+  height: calc(100vh - 60px);
+  overflow-y: auto;
+}
+
+.editor-pane {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+.copilot-pane {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+/* Timeline simulator styles */
+.timeline-bar {
+  height: 4px;
+  background-color: #e2e8f0;
+  position: relative;
+  margin: 1rem 0;
+}
+
+.timeline-progress {
+  height: 100%;
+  background-color: #3b82f6;
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: width 0.5s ease;
+}
+
+.timeline-marker {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: white;
+  border: 3px solid #3b82f6;
+  position: absolute;
+  top: -6px;
+  transform: translateX(-50%);
+  z-index: 2;
+  transition: left 0.5s ease;
+}
+
+.timeline-milestone {
+  position: absolute;
+  top: -6px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #cbd5e1;
+  transform: translateX(-50%);
+  z-index: 1;
+}
+
+.timeline-milestone.completed {
+  background-color: #22c55e;
+}
+
+/* Glass card effect for the new UI */
+.glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  border: 1px solid rgba(209, 213, 219, 0.5);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Transition effects */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+@media (max-width: 768px) {
+  .coauthor-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .copilot-pane {
+    display: none;
+  }
+}
