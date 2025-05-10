@@ -1,0 +1,140 @@
+Below is a breakdown of **every major feature**, its **function**, and the **UI component** that delivers it in your Client Portal “shell” (`ClientPortal.jsx`)—so you can see how the pieces fit together and where to go if you need to tweak or extend anything:
+
+---
+
+## 1. Tenant Management
+
+**Function:** Let users switch between Organizations and Client Workspaces (tenants), driving all data scoping downstream.
+**UI Components:**
+
+* **ClientHeader**
+
+  * **Organization Selector** (dropdown with org name + logo badge)
+  * **Client Workspace Selector** (dropdown of workspaces under the org)
+  * **User Profile / Settings** menu
+* **ClientContextBar**
+
+  * **Subscription Tier & Status** badge
+  * **Contract Period & Renewal** date
+  * **Usage Counters** (Projects used vs. quota, Storage used vs. quota)
+  * **Timeline Range** (high-level Gantt or date range)
+  * **Client Leads** avatars or names
+
+---
+
+## 2. Global Search & Quick Actions
+
+**Function:** Provide instant access to projects, documents, and key workflows.
+**UI Components:**
+
+* **Search Input** (in header; type-ahead to find projects, docs, CE reports)
+* **Quick Action Buttons** (e.g. “New Project,” “Upload Document,” “Generate CER”)
+
+---
+
+## 3. Landing vs. Dashboard View
+
+**Function:** Surface the right “next step” depending on selection state.
+**UI Components (in `ClientPortal.jsx`):**
+
+* **ClientPortalLanding** (empty-state)
+
+  * Prompt: “Select an Organization and Workspace to begin”
+  * CTA: “Create Organization” / “Add Client Workspace”
+* **ClientDashboard** (active-state)
+
+  * **Active Projects** card
+  * **Recent Documents** card
+  * **Notifications / Alerts** (e.g. upcoming due dates, pending reviews)
+
+---
+
+## 4. Active Projects List
+
+**Function:** Show progress & status of key regulatory or clinical projects at a glance.
+**UI Components (inside `ClientDashboard.jsx`):**
+
+* **Project Card Rows**
+
+  * Icon (study, report, application, protocol)
+  * Name + project code
+  * Status pill (In Progress, Pending Review, Not Started)
+  * Due date
+  * Progress bar + percentage
+* **View All** link to full Project Management page
+
+---
+
+## 5. Recent Documents Panel
+
+**Function:** Surface the most recently edited or critical docs for the client.
+**UI Components:**
+
+* **Document List Rows**
+
+  * Icon by type (docx, pdf, spreadsheet)
+  * Filename + document type label
+  * “Updated \[Date] by \[User]” metadata
+* **Upload New Document** button
+
+---
+
+## 6. Contextual Navigation
+
+**Function:** Seamlessly move between modules (CER, Literature Review, Submissions, Risk, etc.)
+**UI Components:**
+
+* **Top-Level Nav Tabs** or **Sidebar Links** (depending on your overall layout)
+
+  * “Risk Heatmap,” “Timeline Simulator,” “Ask Lumen AI,” plus a “Switch Module” menu
+
+---
+
+## 7. Stability & Resilience Layer
+
+**Function:** Keep the portal responsive and recoverable even if parts of the app crash.
+**UI Components:**
+
+* **StabilityEnabledLayout** wrapper around `ClientPortal.jsx`
+
+  * Initializes `storageResilience`
+  * Catches runtime errors and shows an **Error Fallback Card** with “Try Again”
+* **Error Fallback Card** in-UI
+
+  * Title (“Error Loading Portal”)
+  * Message (“No organization data available”)
+  * Retry button
+
+---
+
+## 8. Under-the-Hood Services
+
+Though not directly visible in the UI, these support key functions:
+
+| Service               | Purpose                                              |
+| --------------------- | ---------------------------------------------------- |
+| **securityService**   | Manages current user’s organization & client context |
+| **apiService**        | Fetches orgs, projects, docs, metrics via REST       |
+| **ModuleIntegration** | Exposes shared utilities (health monitor, alerts)    |
+| **storageResilience** | Coordinates cross-tab recovery & data caching        |
+
+---
+
+### How It All Hangs Together
+
+1. **ClientPortal.jsx** reads the selected `org` & `client` (from `securityService` or its own state)
+2. It wraps everything in the **StabilityEnabledLayout** for resilience
+3. It renders the **ClientHeader** & **ClientContextBar** (always visible)
+4. It chooses between **ClientPortalLanding** or **ClientDashboard** based on selection
+5. **ClientDashboard** surfaces active projects, recent docs, and quick-links to deeper module screens
+
+---
+
+### Next Steps for Enhancement
+
+* **Interactive Onboarding**: add tooltips or a guided tour to the landing view.
+* **Customizable Widgets**: allow clients to rearrange or hide cards on their dashboard.
+* **Real-time Notifications**: push alerts into the context bar (e.g. new CER ready).
+* **Advanced Quota Alerts**: surface warnings when approaching storage or project limits.
+
+With this map of features, functions, and UI components, you now have a clear picture of your full Client Portal—and where each bit lives in code—so you can confidently maintain, extend, or even refactor it.
