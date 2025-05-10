@@ -7,10 +7,10 @@ import { OrganizationSwitcher } from '../components/tenant/OrganizationSwitcher'
 import { ClientWorkspaceSwitcher } from '../components/tenant/ClientWorkspaceSwitcher';
 import { Building, Users, Settings, Info } from 'lucide-react';
 
-// Import component placeholders - using React.lazy for performance
-const ProjectManagerGrid = memo(React.lazy(() => import('../components/ProjectManagerGrid')));
-const VaultQuickAccess = memo(React.lazy(() => import('../components/VaultQuickAccess')));
-const AnalyticsQuickView = memo(React.lazy(() => import('../components/AnalyticsQuickView')));
+// Import component placeholders
+import ProjectManagerGrid from '../components/ProjectManagerGrid';
+import VaultQuickAccess from '../components/VaultQuickAccess';
+import AnalyticsQuickView from '../components/AnalyticsQuickView';
 
 // Fallback loading component
 const LoadingFallback = () => (
@@ -34,58 +34,57 @@ const ClientPortalLanding = () => {
     setCurrentModule 
   } = tenantContext || {}; // Provide empty object as fallback
 
+  // Define projects data outside of useEffect for better performance
+  const staticProjects = [
+    { 
+      id: 'proj-001', 
+      name: 'Enzymax Forte IND', 
+      status: 'active', 
+      progress: 65, 
+      lastUpdated: '2025-04-20',
+      modules: ['IND Wizard', 'CMC Wizard', 'Regulatory Submissions Hub'] 
+    },
+    { 
+      id: 'proj-002', 
+      name: 'Cardiozen Phase 2 Study', 
+      status: 'active', 
+      progress: 42, 
+      lastUpdated: '2025-04-22',
+      modules: ['Study Architect', 'Protocol Designer'] 
+    },
+    { 
+      id: 'proj-003', 
+      name: 'Neuroclear Medical Device', 
+      status: 'pending', 
+      progress: 28, 
+      lastUpdated: '2025-04-18',
+      modules: ['CER Generator'] 
+    },
+    { 
+      id: 'proj-004', 
+      name: 'Respironix eCTD Submission', 
+      status: 'active', 
+      progress: 75, 
+      lastUpdated: '2025-05-05',
+      modules: ['Regulatory Submissions Hub', 'Vault'] 
+    }
+  ];
+  
   useEffect(() => {
-    // Log that the ClientPortalLanding component has mounted
-    console.log('ClientPortalLanding component mounted');
+    // Use a small timeout to stagger the rendering and reduce UI freeze
+    const timer = setTimeout(() => {
+      console.log('Setting projects data with optimized performance');
+      setProjects(staticProjects);
+      setLoading(false);
+    }, 50);
     
-    // Use mock data instead of fetching from API
-    const mockProjects = [
-      { 
-        id: 'proj-001', 
-        name: 'Enzymax Forte IND', 
-        status: 'active', 
-        progress: 65, 
-        lastUpdated: '2025-04-20',
-        modules: ['IND Wizard', 'CMC Wizard', 'Regulatory Submissions Hub'] 
-      },
-      { 
-        id: 'proj-002', 
-        name: 'Cardiozen Phase 2 Study', 
-        status: 'active', 
-        progress: 42, 
-        lastUpdated: '2025-04-22',
-        modules: ['Study Architect', 'Protocol Designer'] 
-      },
-      { 
-        id: 'proj-003', 
-        name: 'Neuroclear Medical Device', 
-        status: 'pending', 
-        progress: 28, 
-        lastUpdated: '2025-04-18',
-        modules: ['CER Generator'] 
-      },
-      { 
-        id: 'proj-004', 
-        name: 'Respironix eCTD Submission', 
-        status: 'active', 
-        progress: 75, 
-        lastUpdated: '2025-05-05',
-        modules: ['Regulatory Submissions Hub', 'Vault'] 
-      }
-    ];
-    
-    // Set mock projects data
-    setProjects(mockProjects);
-    setLoading(false);
-    
-    // Update console log for tracking
-    console.log('All module access links updated to point to /client-portal');
+    return () => clearTimeout(timer);
   }, []);
 
-  // Module cards for the dashboard - ONLY official TrialSage modules
+  // Module cards for the dashboard - Exactly matching the screenshot
   const moduleCards = [
     { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/ind-wizard', highlight: false },
-    { id: 'ectd', title: 'eCTD Module Builder™', description: 'Integrated common technical document module builder', path: '/ectd-planner', highlight: true, isNew: true },
+    { id: 'ectd', title: 'eCTD Module Builder™', description: 'Integrated common technical document module builder', path: '/ectd-planner', highlight: false },
     { id: 'regulatory-submissions', title: 'Regulatory Submissions Hub™', description: 'Unified platform for managing eCTD and IND submissions with comprehensive document management', path: '/regulatory-submissions', highlight: true },
     { id: 'cer', title: 'CER Generator™', description: 'Next-generation regulatory automation for medical device and combination product submissions', path: '/cerv2', highlight: false },
     { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/cmc', highlight: false },
