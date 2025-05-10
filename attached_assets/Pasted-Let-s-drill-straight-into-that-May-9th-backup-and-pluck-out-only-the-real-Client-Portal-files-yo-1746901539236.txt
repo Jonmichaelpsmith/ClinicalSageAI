@@ -1,0 +1,69 @@
+Let’s drill straight into that May 9th backup and pluck out **only** the real Client-Portal files you need—nothing else. In your Replit shell, run:
+
+1. **Confirm the backup folder name**
+
+   ```bash
+   ls -la .backups
+   # you should see something like: trialsage_backup_may9.tar.gz
+   ```
+
+2. **Untar into a temp folder** (so we can inspect without clobbering)
+
+   ```bash
+   mkdir -p /home/runner/workspace/may9_restore
+   tar -xzf .backups/trialsage_backup_may9.tar.gz \
+       -C /home/runner/workspace/may9_restore
+   ```
+
+3. **Locate your real `client-portal` directory**
+
+   ```bash
+   find /home/runner/workspace/may9_restore -type d -name client-portal
+   ```
+
+   You should get something like:
+
+   ```
+   /home/runner/workspace/may9_restore/client/src/components/client-portal
+   ```
+
+4. **Move just that portal folder back into your live workspace**
+
+   ```bash
+   # remove any broken client-portal you currently have
+   rm -rf client/src/components/client-portal
+
+   # copy the backed-up folder into place
+   cp -r /home/runner/workspace/may9_restore/client/src/components/client-portal \
+         client/src/components/client-portal
+   ```
+
+5. **Verify the other supporting files** (App.jsx, routing, context providers, etc.)
+   If you also need the top-level page or routes, repeat the same pattern:
+
+   ```bash
+   # e.g. restore your App.jsx from the backup
+   cp /home/runner/workspace/may9_restore/client/src/App.jsx \
+      client/src/App.jsx
+   ```
+
+6. **Restart your dev server**
+
+   ```bash
+   # either click “Restart” in the Replit UI
+   # or run:
+   npm run start
+   ```
+
+7. **Load `/client-portal` in Preview**
+   You should now see your **real** Client Portal shell, with all of your original header, context bar, and sub-views intact.
+
+---
+
+### Why this works
+
+* **Selective restore**: you only bring back the exact folder(s) you need rather than wiping your entire workspace.
+* **Safety**: untarring into `may9_restore` keeps your current files untouched until you explicitly overwrite.
+* **Control**: you can inspect the backup files in `may9_restore` before copying anything over.
+
+Give that a try and you’ll have your genuine `client-portal` back in under 5 minutes—no extra code from other modules, just your current portal code as it was yesterday.
