@@ -79,16 +79,22 @@ const ClientPortalLanding = () => {
 
   // Module cards for the dashboard
   const moduleCards = [
-    { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/ind-wizard' },
-    { id: 'coauthor', title: 'eCTD Co-Author™', description: 'AI-assisted co-authoring of CTD submission sections', path: '/coauthor' },
-    { id: 'regulatory-submissions', title: 'Regulatory Submissions Hub™', description: 'Unified platform for managing IND and eCTD submissions with comprehensive document management and version control', path: '/regulatory-submissions', highlight: true, isNew: true },
-    { id: 'cer', title: 'CER Generator™', description: 'The TrialSage CER Generator is a next-generation regulatory automation module designed to eliminate bottlenecks in medical device and combination product submissions. Built for compliance with EU MDR 2017/745, FDA post-market expectations, and ISO 14155 guidance, it fuses real-world adverse event data with literature review automation, GPT-4o reasoning, and structured risk modeling. This CRO-ready platform includes multi-client project management for complete control of your entire CER portfolio.', path: '/cerv2', highlight: true },
-    { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/cmc' },
-    { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/vault' },
+    { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/submission-builder?module=ind', highlight: false },
+    { id: 'ectd', title: 'eCTD Module Builder™', description: 'Integrated common technical document module builder', path: '/submission-builder', highlight: true, isNew: true },
+    { id: 'module-1', title: 'Module 1 Builder', description: 'Administrative Information and Prescribing Information', path: '/submission-builder/module-1', highlight: false },
+    { id: 'module-2', title: 'Module 2 Builder', description: 'Common Technical Document Summaries', path: '/submission-builder/module-2', highlight: false },
+    { id: 'module-3', title: 'Module 3 Builder', description: 'Quality (Chemistry, Manufacturing, and Controls)', path: '/submission-builder/module-3', highlight: false },
+    { id: 'module-4', title: 'Module 4 Builder', description: 'Nonclinical Study Reports', path: '/submission-builder/module-4', highlight: false },
+    { id: 'module-5', title: 'Module 5 Builder', description: 'Clinical Study Reports', path: '/submission-builder/module-5', highlight: false },
+    { id: 'coauthor', title: 'eCTD Co-Author™', description: 'AI-assisted co-authoring of CTD submission sections', path: '/coauthor', highlight: false },
+    { id: 'regulatory-submissions', title: 'Regulatory Submissions Hub™', description: 'Unified platform for managing eCTD and IND submissions with comprehensive document management', path: '/submission-builder', highlight: true },
+    { id: 'cer', title: 'CER Generator™', description: 'Next-generation regulatory automation for medical device and combination product submissions', path: '/cerv2', highlight: true },
+    { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/cmc', highlight: false },
+    { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/vault', highlight: false },
     { id: 'rih', title: 'Regulatory Intelligence Hub™', description: 'AI-powered strategy, timeline, and risk simulation', path: '/regulatory-intelligence-hub', highlight: true },
-    { id: 'risk', title: 'Risk Heatmap™', description: 'Interactive visualization of CTD risk gaps & impacts', path: '/regulatory-risk-dashboard' },
-    { id: 'study', title: 'Study Architect™', description: 'Protocol development with regulatory intelligence', path: '/study-architect' },
-    { id: 'analytics', title: 'Analytics Dashboard', description: 'Metrics and insights on regulatory performance', path: '/analytics' }
+    { id: 'risk', title: 'Risk Heatmap™', description: 'Interactive visualization of CTD risk gaps & impacts', path: '/regulatory-risk-dashboard', highlight: false },
+    { id: 'study', title: 'Study Architect™', description: 'Protocol development with regulatory intelligence', path: '/study-architect', highlight: false },
+    { id: 'analytics', title: 'Analytics Dashboard', description: 'Metrics and insights on regulatory performance', path: '/analytics', highlight: false }
   ];
 
   const handleModuleSelect = (moduleId) => {
