@@ -123,6 +123,36 @@ app.get('/marketing', (req, res) => {
   }
 });
 
+// HIGH PRIORITY - Client Portal route - MUST NOT RETURN 404
+app.get('/client-portal', (req, res) => {
+  console.log('CRITICAL: Serving Client Portal React app');
+  // We need to serve the React app for client-side routing
+  const reactApp = path.join(process.cwd(), 'client/public/index.html');
+  if (fs.existsSync(reactApp)) {
+    res.sendFile(reactApp);
+  } else {
+    // Emergency fallback to static client portal page if React app index not found
+    const staticClientPortal = path.join(process.cwd(), 'client-portal.html');
+    if (fs.existsSync(staticClientPortal)) {
+      res.sendFile(staticClientPortal);
+    } else {
+      // Last resort: Generate a minimal response instead of a 404
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Client Portal</title>
+          <meta http-equiv="refresh" content="0;url=/" />
+        </head>
+        <body>
+          <p>Redirecting to home page...</p>
+        </body>
+        </html>
+      `);
+    }
+  }
+});
+
 // Create HTTP server
 const httpServer = createHttpServer(app);
 
