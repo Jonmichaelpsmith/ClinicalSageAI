@@ -5,7 +5,7 @@ import { Switch, Route, useLocation } from 'wouter';
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import queryClient from './lib/queryClient';
-import AppProvider from './AppProvider';
+import { TenantProvider } from './contexts/TenantContext';
 
 // Import stability utilities
 import freezeDetection from '@/utils/freezeDetection';
@@ -24,10 +24,8 @@ const LoadingPage = () => (
   </div>
 );
 
-// Eagerly load the client portal pages for faster initial render
+// Eagerly load the landing page for faster initial render
 import ClientPortalLanding from './pages/ClientPortalLanding';
-import ClientPortal from './pages/ClientPortal';
-import ClientPortalDashboard from './pages/ClientPortalDashboard';
 
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
@@ -137,9 +135,8 @@ function App() {
     };
   }, []);
   
-  // Check if we're on the landing page, regulatory hub, coauthor pages, client portal, or dashboard (which have their own navigation)
-  const isLandingPage = location === '/';
-  const isClientPortal = location === '/client-portal' || location.startsWith('/client-portal/'); 
+  // Check if we're on the landing page, regulatory hub, coauthor pages, or dashboard (which have their own navigation)
+  const isLandingPage = location === '/' || location === '/client-portal';
   const isRegulatoryHub = location === '/regulatory-intelligence-hub' || 
                           location === '/client-portal/regulatory-intel';
   const isCoAuthorPage = location === '/coauthor' || 
@@ -148,11 +145,11 @@ function App() {
                          location === '/timeline';
   const isDashboardPage = location === '/dashboard';
                          
-  const shouldShowNav = !isLandingPage && !isClientPortal && !isRegulatoryHub && !isCoAuthorPage && !isDashboardPage;
+  const shouldShowNav = !isLandingPage && !isRegulatoryHub && !isCoAuthorPage && !isDashboardPage;
   
   return (
     <QueryClientProvider client={queryClient}>
-      <AppProvider>
+      <TenantProvider>
         {/* Wrap the entire application in the StabilityEnabledLayout */}
         <StabilityEnabledLayout>
           {/* Only show the UnifiedTopNavV3 if we're not on the landing page, regulatory hub, or dashboard */}
@@ -167,12 +164,9 @@ function App() {
             "p-4 mt-24"
           }>
           <Switch>
-          {/* Main Portal Landing Pages */}
+          {/* Main Portal Landing Pages - both root and /client-portal go to same component */}
           <Route path="/" component={ClientPortalLanding} />
-          
-          {/* Client Portal Pages */}
-          <Route path="/client-portal" component={ClientPortal} />
-          <Route path="/client-portal/dashboard" component={ClientPortalDashboard} />
+          <Route path="/client-portal" component={ClientPortalLanding} />
           
           {/* Client Portal Sub-Pages */}
           <Route path="/client-portal/vault" component={VaultPage} />
@@ -328,7 +322,7 @@ function App() {
         </Switch>
           </div>
         </StabilityEnabledLayout>
-      </AppProvider>
+      </TenantProvider>
     </QueryClientProvider>
   );
 }
