@@ -1,71 +1,77 @@
 /**
  * Health Monitor Shared Worker
  * 
- * This shared worker monitors application health across multiple tabs,
- * enabling coordinated recovery actions and cross-tab communication.
+ * This worker coordinates health monitoring and recovery across all open tabs
+ * of the application. It maintains health status, manages coordinated recoveries,
+ * and enables cross-tab communication.
  * 
  * CRITICAL STABILITY COMPONENT - DO NOT MODIFY WITHOUT THOROUGH TESTING
  */
 
-// Health status for all connected tabs
-const tabHealth = new Map();
-
-// Connected ports (tabs)
+// Store connected ports (one per tab)
 const connectedPorts = new Map();
 
-// Timestamp of last health check
-let lastHealthCheck = Date.now();
+// Health status for all tabs
+const tabStatus = new Map();
 
-// Application global state
-const appState = {
-  restartRequested: false,
-  restartRequestTime: null,
-  coordinatedRecoveryInProgress: false,
-  recoveryLeaderTab: null,
-  globalErrors: [],
-  maintenanceMode: false
+// Global health status
+const healthStatus = {
+  maintenanceMode: false,
+  maintenanceModeReason: null,
+  coordinated: {
+    recoveryInProgress: false,
+    recoveryLeaderTab: null,
+    restartRequested: false,
+    restartRequestTime: null
+  },
+  lastUpdated: Date.now()
 };
+
+// Track tab timeouts
+const tabTimeouts = new Map();
+
+// TAB TIMEOUT (milliseconds) - how long before a tab is considered inactive
+const TAB_TIMEOUT = 30000; // 30 seconds
+
+// Leader tab ID (first tab to connect becomes the leader)
+let leaderTabId = null;
 
 /**
  * Handle messages from connected tabs
  */
-function handleMessage(message, port) {
-  const portId = connectedPorts.get(port);
+function handleMessage(event, port) {
+  const { type, data } = event.data;
+  const tabId = port.__tabId;
   
-  switch (message.type) {
+  switch (type) {
     case 'register':
       // Register a new tab
-      registerTab(message.data, port);
+      registerTab(data.tabId, port, data);
       break;
       
     case 'heartbeat':
-      // Update tab health status
-      updateTabHealth(portId, message.data);
+      // Update tab status
+      updateTabStatus(tabId, data);
       break;
       
     case 'error':
-      // Record an error
-      recordError(portId, message.data);
-      break;
-      
-    case 'request_restart':
-      // Request a coordinated restart
-      requestRestart(portId, message.data);
-      break;
-      
-    case 'recovery_complete':
-      // Mark recovery as complete for a tab
-      markRecoveryComplete(portId);
+      // Record error from a tab
+      recordTabError(tabId, data);
       break;
       
     case 'get_health':
-      // Send back health status
+      // Send the latest health status to the requesting tab
       sendHealthStatus(port);
+      break;
+      
+    case 'request_restart':
+      // A tab has requested all tabs to restart
+      handleRestartRequest(tabId, data.reason);
       break;
       
     case 'enable_maintenance_mode':
       // Enable maintenance mode
-      setMaintenanceMode(true, message.data?.reason);
+      setMaintenanceMode(true, data.reason);
       break;
       
     case 'disable_maintenance_mode':
@@ -73,391 +79,416 @@ function handleMessage(message, port) {
       setMaintenanceMode(false);
       break;
       
+    case 'recovery_complete':
+      // A tab has completed recovery
+      markTabRecoveryComplete(tabId);
+      break;
+      
+    case 'start_coordinated_recovery':
+      // Initiate coordinated recovery
+      startCoordinatedRecovery(tabId, data.reason);
+      break;
+      
     default:
-      console.warn(`Unknown message type: ${message.type}`);
+      console.log(`[Health Monitor Worker] Unknown message type: ${type}`);
   }
 }
 
 /**
  * Register a new tab
  */
-function registerTab(data, port) {
-  const tabId = data.tabId || `tab-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+function registerTab(tabId, port, data) {
+  console.log(`[Health Monitor Worker] Registering tab: ${tabId}`);
   
-  // Store the port for this tab
-  connectedPorts.set(port, tabId);
+  // Store the tab ID on the port
+  port.__tabId = tabId;
   
-  // Initialize health status for this tab
-  tabHealth.set(tabId, {
-    tabId,
-    url: data.url || 'unknown',
-    lastHeartbeat: Date.now(),
+  // Add port to connected ports
+  connectedPorts.set(tabId, port);
+  
+  // Initialize tab status
+  tabStatus.set(tabId, {
     status: 'healthy',
+    url: data.url,
+    registeredAt: Date.now(),
+    lastHeartbeat: Date.now(),
     errors: [],
-    memoryUsage: data.memoryUsage || null,
-    networkStatus: data.networkStatus || { isOnline: true },
-    recoveryAttempts: 0,
-    startTime: Date.now()
+    ...data
   });
   
-  // Set up event listener for when the port disconnects
-  port.addEventListener('close', () => {
-    tabHealth.delete(tabId);
-    connectedPorts.delete(port);
-    console.log(`Tab ${tabId} disconnected. ${connectedPorts.size} tabs remaining.`);
-  });
+  // Set a timeout for this tab
+  resetTabTimeout(tabId);
   
-  // Send initial status to the new tab
-  sendMessage(port, {
+  // If we don't have a leader tab, make this the leader
+  if (!leaderTabId || !connectedPorts.has(leaderTabId)) {
+    leaderTabId = tabId;
+  }
+  
+  // Let the tab know it's registered and if it's the leader
+  port.postMessage({
     type: 'registered',
     data: {
       tabId,
-      maintenanceMode: appState.maintenanceMode,
-      tabCount: tabHealth.size,
-      isRecoveryLeader: appState.recoveryLeaderTab === tabId
+      isRecoveryLeader: leaderTabId === tabId
     }
   });
   
-  console.log(`Tab ${tabId} registered. ${tabHealth.size} tabs connected.`);
+  // Send the latest health status
+  sendHealthStatus(port);
+  
+  // Broadcast updated tab count to all tabs
+  broadcastHealthStatus();
 }
 
 /**
- * Update tab health status
+ * Update tab status from heartbeat
  */
-function updateTabHealth(tabId, data) {
-  if (!tabHealth.has(tabId)) {
+function updateTabStatus(tabId, data) {
+  if (!tabStatus.has(tabId)) {
+    // Tab status not found, maybe it was cleaned up
     return;
   }
   
-  const tab = tabHealth.get(tabId);
-  
-  // Update health information
-  tab.lastHeartbeat = Date.now();
-  tab.status = data.status || tab.status;
-  tab.url = data.url || tab.url;
-  tab.memoryUsage = data.memoryUsage || tab.memoryUsage;
-  tab.networkStatus = data.networkStatus || tab.networkStatus;
-  
-  tabHealth.set(tabId, tab);
-}
-
-/**
- * Record an error for a tab
- */
-function recordError(tabId, errorData) {
-  if (!tabHealth.has(tabId)) {
-    return;
-  }
-  
-  const tab = tabHealth.get(tabId);
-  
-  // Add the error with a timestamp
-  const error = {
-    ...errorData,
-    timestamp: Date.now(),
-    tabId
-  };
-  
-  tab.errors.push(error);
-  
-  // Keep only the last 10 errors
-  if (tab.errors.length > 10) {
-    tab.errors.shift();
-  }
-  
-  // Add to global errors if it's a critical error
-  if (errorData.severity === 'critical') {
-    appState.globalErrors.push(error);
-    
-    // Keep only the last 50 global errors
-    if (appState.globalErrors.length > 50) {
-      appState.globalErrors.shift();
-    }
-    
-    // Check if we need to trigger a coordinated recovery
-    checkForCoordinatedRecovery(error);
-  }
-  
-  tabHealth.set(tabId, tab);
-}
-
-/**
- * Check if we need to trigger a coordinated recovery
- */
-function checkForCoordinatedRecovery(latestError) {
-  // Don't trigger recovery if one is already in progress
-  if (appState.coordinatedRecoveryInProgress) {
-    return;
-  }
-  
-  // Check for error patterns that would require a coordinated recovery
-  const now = Date.now();
-  const recentErrors = appState.globalErrors.filter(e => now - e.timestamp < 60000); // Last minute
-  
-  // If we have multiple critical errors in a short time across tabs
-  if (recentErrors.length >= 3) {
-    // Check if they're from different tabs
-    const tabsWithErrors = new Set(recentErrors.map(e => e.tabId));
-    
-    if (tabsWithErrors.size >= 2) {
-      // This indicates a systemic issue affecting multiple tabs
-      startCoordinatedRecovery('multiple_critical_errors');
-    }
-  }
-  
-  // Check for specific error types that always trigger recovery
-  if (latestError && 
-      (latestError.message?.includes('memory') || 
-       latestError.message?.includes('storage quota'))) {
-    startCoordinatedRecovery('memory_issue');
-  }
-}
-
-/**
- * Start a coordinated recovery process
- */
-function startCoordinatedRecovery(reason) {
-  // Don't start if already in progress
-  if (appState.coordinatedRecoveryInProgress) {
-    return;
-  }
-  
-  console.warn(`Starting coordinated recovery due to: ${reason}`);
-  
-  appState.coordinatedRecoveryInProgress = true;
-  
-  // Select a tab to lead the recovery (preferably the oldest/most stable one)
-  selectRecoveryLeader();
-  
-  // Notify all tabs
-  broadcastMessage({
-    type: 'start_coordinated_recovery',
-    data: {
-      reason,
-      leaderTabId: appState.recoveryLeaderTab,
-      timestamp: Date.now()
-    }
+  // Update tab status
+  const status = tabStatus.get(tabId);
+  tabStatus.set(tabId, {
+    ...status,
+    ...data,
+    lastHeartbeat: Date.now()
   });
+  
+  // Reset timeout for this tab
+  resetTabTimeout(tabId);
 }
 
 /**
- * Select a tab to lead the recovery process
+ * Record an error from a tab
  */
-function selectRecoveryLeader() {
-  if (tabHealth.size === 0) {
-    appState.recoveryLeaderTab = null;
+function recordTabError(tabId, data) {
+  if (!tabStatus.has(tabId)) {
+    // Tab status not found, maybe it was cleaned up
     return;
   }
   
-  // Find the oldest tab that's still healthy
-  const now = Date.now();
-  let oldestTab = null;
-  let oldestTime = Infinity;
+  // Get current status
+  const status = tabStatus.get(tabId);
   
-  for (const [tabId, tab] of tabHealth.entries()) {
-    // Skip tabs that haven't sent a heartbeat recently
-    if (now - tab.lastHeartbeat > 10000) {
-      continue;
-    }
-    
-    // Skip tabs with too many errors
-    if (tab.errors.length > 5) {
-      continue;
-    }
-    
-    if (tab.startTime < oldestTime) {
-      oldestTime = tab.startTime;
-      oldestTab = tabId;
-    }
-  }
-  
-  // If we couldn't find a suitable tab, use any tab
-  if (!oldestTab && tabHealth.size > 0) {
-    oldestTab = Array.from(tabHealth.keys())[0];
-  }
-  
-  appState.recoveryLeaderTab = oldestTab;
-}
-
-/**
- * Request a restart
- */
-function requestRestart(tabId, data) {
-  // Record the restart request
-  appState.restartRequested = true;
-  appState.restartRequestTime = Date.now();
-  
-  // Broadcast to all tabs
-  broadcastMessage({
-    type: 'restart_requested',
-    data: {
-      tabId,
-      reason: data?.reason || 'unknown',
-      timestamp: Date.now()
-    }
+  // Add error to the tab's error log
+  const errors = status.errors || [];
+  errors.push({
+    message: data.message,
+    stack: data.stack,
+    severity: data.severity,
+    timestamp: data.timestamp || Date.now()
   });
+  
+  // Keep only the latest 10 errors
+  if (errors.length > 10) {
+    errors.shift();
+  }
+  
+  // Update tab status
+  tabStatus.set(tabId, {
+    ...status,
+    status: data.severity === 'critical' ? 'error' : status.status,
+    errors
+  });
+  
+  // If this is a critical error, maybe start recovery
+  if (data.severity === 'critical' && !healthStatus.coordinated.recoveryInProgress) {
+    // If this tab is the leader, start coordinated recovery
+    if (tabId === leaderTabId) {
+      startCoordinatedRecovery(tabId, 'critical_error_in_leader');
+    } else {
+      // Otherwise let the leader know about the critical error
+      const leaderPort = connectedPorts.get(leaderTabId);
+      if (leaderPort) {
+        leaderPort.postMessage({
+          type: 'tab_critical_error',
+          data: {
+            tabId,
+            error: data
+          }
+        });
+      }
+    }
+  }
+  
+  // Broadcast updated status to all tabs
+  broadcastHealthStatus();
 }
 
 /**
- * Mark recovery as complete for a tab
+ * Reset the timeout for a tab
  */
-function markRecoveryComplete(tabId) {
-  if (!tabHealth.has(tabId)) {
+function resetTabTimeout(tabId) {
+  // Clear any existing timeout
+  if (tabTimeouts.has(tabId)) {
+    clearTimeout(tabTimeouts.get(tabId));
+  }
+  
+  // Set a new timeout
+  const timeout = setTimeout(() => {
+    // Tab has timed out
+    handleTabTimeout(tabId);
+  }, TAB_TIMEOUT);
+  
+  // Store the timeout
+  tabTimeouts.set(tabId, timeout);
+}
+
+/**
+ * Handle a tab timing out
+ */
+function handleTabTimeout(tabId) {
+  // Remove the tab
+  removeTab(tabId, 'timeout');
+}
+
+/**
+ * Remove a tab
+ */
+function removeTab(tabId, reason) {
+  // Log the removal
+  console.log(`[Health Monitor Worker] Removing tab: ${tabId} (reason: ${reason})`);
+  
+  // Remove from connected ports
+  connectedPorts.delete(tabId);
+  
+  // Remove from tab status
+  tabStatus.delete(tabId);
+  
+  // Clear timeout
+  if (tabTimeouts.has(tabId)) {
+    clearTimeout(tabTimeouts.get(tabId));
+    tabTimeouts.delete(tabId);
+  }
+  
+  // If this was the leader tab, elect a new leader
+  if (tabId === leaderTabId) {
+    electNewLeader();
+  }
+  
+  // Broadcast updated tab count to all tabs
+  broadcastHealthStatus();
+}
+
+/**
+ * Elect a new leader tab
+ */
+function electNewLeader() {
+  if (connectedPorts.size === 0) {
+    // No tabs connected
+    leaderTabId = null;
     return;
   }
   
-  // If this is the recovery leader, end the recovery process
-  if (tabId === appState.recoveryLeaderTab) {
-    appState.coordinatedRecoveryInProgress = false;
-    
-    // Broadcast to all tabs
-    broadcastMessage({
-      type: 'recovery_complete',
+  // Get the first tab ID
+  leaderTabId = Array.from(connectedPorts.keys())[0];
+  
+  // Notify the new leader
+  const leaderPort = connectedPorts.get(leaderTabId);
+  if (leaderPort) {
+    leaderPort.postMessage({
+      type: 'recovery_leader_changed',
       data: {
-        timestamp: Date.now()
+        leaderTabId,
+        reason: 'previous_leader_disconnected'
       }
     });
   }
+  
+  // Notify all tabs about the new leader
+  connectedPorts.forEach((port, tabId) => {
+    if (tabId !== leaderTabId) {
+      port.postMessage({
+        type: 'recovery_leader_changed',
+        data: {
+          leaderTabId,
+          reason: 'previous_leader_disconnected'
+        }
+      });
+    }
+  });
 }
 
 /**
  * Send health status to a tab
  */
 function sendHealthStatus(port) {
-  const healthStatus = {
-    tabCount: tabHealth.size,
-    maintenanceMode: appState.maintenanceMode,
-    coordinated: {
-      recoveryInProgress: appState.coordinatedRecoveryInProgress,
-      recoveryLeaderTab: appState.recoveryLeaderTab,
-      restartRequested: appState.restartRequested,
-      restartRequestTime: appState.restartRequestTime,
-    },
-    globalErrors: appState.globalErrors.slice(-5), // Send last 5 global errors
-    timestamp: Date.now()
-  };
+  // Calculate tab count
+  const tabCount = connectedPorts.size;
   
-  sendMessage(port, {
+  // Send health status
+  port.postMessage({
     type: 'health_status',
-    data: healthStatus
-  });
-}
-
-/**
- * Set maintenance mode
- */
-function setMaintenanceMode(enabled, reason) {
-  appState.maintenanceMode = enabled;
-  
-  // Broadcast to all tabs
-  broadcastMessage({
-    type: 'maintenance_mode_changed',
     data: {
-      enabled,
-      reason,
+      tabCount,
+      maintenanceMode: healthStatus.maintenanceMode,
+      maintenanceModeReason: healthStatus.maintenanceModeReason,
+      coordinated: healthStatus.coordinated,
       timestamp: Date.now()
     }
   });
 }
 
 /**
- * Send a message to a specific port
+ * Broadcast health status to all tabs
  */
-function sendMessage(port, message) {
-  try {
-    port.postMessage(message);
-  } catch (error) {
-    console.error('Error sending message to port:', error);
-  }
-}
-
-/**
- * Broadcast a message to all connected tabs
- */
-function broadcastMessage(message) {
-  for (const port of connectedPorts.keys()) {
-    sendMessage(port, message);
-  }
-}
-
-/**
- * Check for stale tabs
- */
-function checkStaleTabs() {
-  const now = Date.now();
+function broadcastHealthStatus() {
+  // Calculate tab count
+  const tabCount = connectedPorts.size;
   
-  for (const [tabId, tab] of tabHealth.entries()) {
-    // If the tab hasn't sent a heartbeat in 15 seconds, consider it stale
-    if (now - tab.lastHeartbeat > 15000) {
-      // If this was the recovery leader, choose a new one
-      if (tabId === appState.recoveryLeaderTab) {
-        selectRecoveryLeader();
-        
-        // Notify all tabs of the new leader
-        if (appState.coordinatedRecoveryInProgress) {
-          broadcastMessage({
-            type: 'recovery_leader_changed',
-            data: {
-              leaderTabId: appState.recoveryLeaderTab,
-              timestamp: Date.now()
-            }
-          });
-        }
+  // Update last updated timestamp
+  healthStatus.lastUpdated = Date.now();
+  
+  // Broadcast to all tabs
+  connectedPorts.forEach((port) => {
+    port.postMessage({
+      type: 'health_status',
+      data: {
+        tabCount,
+        maintenanceMode: healthStatus.maintenanceMode,
+        maintenanceModeReason: healthStatus.maintenanceModeReason,
+        coordinated: healthStatus.coordinated,
+        timestamp: healthStatus.lastUpdated
       }
-      
-      // Remove the stale tab
-      tabHealth.delete(tabId);
-    }
+    });
+  });
+}
+
+/**
+ * Set maintenance mode
+ */
+function setMaintenanceMode(enabled, reason = null) {
+  healthStatus.maintenanceMode = enabled;
+  healthStatus.maintenanceModeReason = reason;
+  
+  // Broadcast to all tabs
+  connectedPorts.forEach((port) => {
+    port.postMessage({
+      type: 'maintenance_mode_changed',
+      data: {
+        enabled,
+        reason,
+        timestamp: Date.now()
+      }
+    });
+  });
+  
+  // Broadcast updated status
+  broadcastHealthStatus();
+}
+
+/**
+ * Start coordinated recovery
+ */
+function startCoordinatedRecovery(leaderTabId, reason) {
+  // Only allow one recovery at a time
+  if (healthStatus.coordinated.recoveryInProgress) {
+    return;
+  }
+  
+  console.log(`[Health Monitor Worker] Starting coordinated recovery (leader: ${leaderTabId}, reason: ${reason})`);
+  
+  // Update health status
+  healthStatus.coordinated.recoveryInProgress = true;
+  healthStatus.coordinated.recoveryLeaderTab = leaderTabId;
+  
+  // Broadcast to all tabs
+  connectedPorts.forEach((port, tabId) => {
+    port.postMessage({
+      type: 'start_coordinated_recovery',
+      data: {
+        leaderTabId,
+        reason,
+        timestamp: Date.now()
+      }
+    });
+  });
+  
+  // Broadcast updated status
+  broadcastHealthStatus();
+}
+
+/**
+ * Mark a tab as having completed recovery
+ */
+function markTabRecoveryComplete(tabId) {
+  // If this is the leader tab, end the coordinated recovery
+  if (tabId === healthStatus.coordinated.recoveryLeaderTab) {
+    // End the recovery
+    healthStatus.coordinated.recoveryInProgress = false;
+    healthStatus.coordinated.recoveryLeaderTab = null;
+    
+    // Broadcast updated status
+    broadcastHealthStatus();
   }
 }
 
 /**
- * Perform regular health check
+ * Handle a restart request from a tab
  */
-function performHealthCheck() {
-  lastHealthCheck = Date.now();
+function handleRestartRequest(tabId, reason) {
+  console.log(`[Health Monitor Worker] Restart requested by tab ${tabId} (reason: ${reason})`);
   
-  // Check for stale tabs
-  checkStaleTabs();
+  // Set restart requested flag
+  healthStatus.coordinated.restartRequested = true;
+  healthStatus.coordinated.restartRequestTime = Date.now();
   
-  // If there are no tabs, reset the app state
-  if (tabHealth.size === 0) {
-    appState.coordinatedRecoveryInProgress = false;
-    appState.recoveryLeaderTab = null;
-  }
+  // Broadcast to all tabs
+  connectedPorts.forEach((port, id) => {
+    port.postMessage({
+      type: 'restart_requested',
+      data: {
+        tabId,
+        reason,
+        timestamp: Date.now()
+      }
+    });
+  });
   
-  // End recovery process if it's been active too long
-  if (appState.coordinatedRecoveryInProgress) {
-    // If recovery has been in progress for more than 5 minutes, force-end it
-    const recoveryStartTime = appState.globalErrors
-      .filter(e => e.timestamp > Date.now() - 300000)
-      .sort((a, b) => a.timestamp - b.timestamp)[0]?.timestamp;
-      
-    if (recoveryStartTime && Date.now() - recoveryStartTime > 300000) {
-      console.warn('Force-ending coordinated recovery after timeout');
-      appState.coordinatedRecoveryInProgress = false;
-      
-      // Broadcast to all tabs
-      broadcastMessage({
-        type: 'recovery_timeout',
-        data: {
-          timestamp: Date.now()
-        }
-      });
-    }
-  }
+  // Broadcast updated status
+  broadcastHealthStatus();
 }
 
-// Set up event handlers for incoming connections
-self.addEventListener('connect', (e) => {
-  const port = e.ports[0];
-  port.addEventListener('message', (event) => {
-    handleMessage(event.data, port);
+/**
+ * Initialize the worker
+ */
+function initialize() {
+  console.log('[Health Monitor Worker] Initializing health monitor shared worker');
+  
+  // Listen for connections
+  self.addEventListener('connect', (event) => {
+    const port = event.ports[0];
+    
+    // Listen for messages from this port
+    port.addEventListener('message', (event) => {
+      try {
+        handleMessage(event, port);
+      } catch (error) {
+        console.error('[Health Monitor Worker] Error handling message:', error);
+      }
+    });
+    
+    // Start the port
+    port.start();
   });
-  port.start();
-});
+  
+  // Set up periodic cleanup
+  setInterval(() => {
+    // Check for inactive tabs
+    const now = Date.now();
+    
+    // Get tabs that haven't sent a heartbeat in a while
+    tabStatus.forEach((status, tabId) => {
+      if (now - status.lastHeartbeat > TAB_TIMEOUT) {
+        // Tab has timed out
+        handleTabTimeout(tabId);
+      }
+    });
+  }, 10000); // Check every 10 seconds
+}
 
-// Set up periodic health checks
-setInterval(performHealthCheck, 5000); // Every 5 seconds
-
-console.log('Health monitor shared worker initialized');
+// Initialize the worker
+initialize();

@@ -160,7 +160,12 @@ export default function useHealthMonitor({
    * Register with the worker
    */
   const registerWithWorker = useCallback((port) => {
-    const sessionId = localStorage.getItem('health_monitor_tab_id') || uuidv4();
+    // Generate a random ID if one doesn't exist
+    const generateRandomId = () => {
+      return Date.now().toString(36) + Math.random().toString(36).substring(2);
+    };
+    
+    const sessionId = localStorage.getItem('health_monitor_tab_id') || generateRandomId();
     localStorage.setItem('health_monitor_tab_id', sessionId);
     
     port.postMessage({

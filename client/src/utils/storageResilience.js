@@ -1,693 +1,702 @@
 /**
  * Storage Resilience Utility
  * 
- * This module provides resilient browser storage operations that can survive
- * storage corruption or quota issues, with fallbacks and automatic recovery.
+ * This module provides resilient browser storage operations with fallbacks,
+ * error recovery, and protection against quota errors and corruption.
  * 
  * CRITICAL STABILITY COMPONENT - DO NOT MODIFY WITHOUT THOROUGH TESTING
  */
 
-/**
- * Storage types
- */
-const STORAGE_TYPES = {
-  LOCAL: 'localStorage',
-  SESSION: 'sessionStorage',
-  INDEXED_DB: 'indexedDB',
-  MEMORY: 'memory'
+import { STORAGE_CONFIG } from '@/config/stabilityConfig';
+
+// Default configuration
+const defaultConfig = {
+  retryAttempts: 3,
+  fallbackToMemory: true,
+  useFallbackStorage: true,
+  partitionLargeValues: true,
+  maxPartitionSize: 1024 * 1024, // 1MB
+  compressionEnabled: true,
+  compressionThreshold: 10 * 1024, // 10KB
+  encryptionEnabled: false, // Disabled by default
+  validationEnabled: true,
+  autoRepair: true,
+  debugMode: false
 };
 
-/**
- * In-memory fallback storage when persisted storage is unavailable
- */
+// Merged config with defaults
+const config = {
+  ...defaultConfig,
+  ...STORAGE_CONFIG
+};
+
+// In-memory fallback when browser storage is unavailable
 const memoryStorage = new Map();
 
-/**
- * Track storage health status
- */
-const storageHealth = {
-  localStorage: {
-    available: true,
-    errors: 0,
-    lastError: null,
-    lastErrorTime: null
-  },
-  sessionStorage: {
-    available: true,
-    errors: 0,
-    lastError: null,
-    lastErrorTime: null
-  },
-  indexedDB: {
-    available: true,
-    errors: 0,
-    lastError: null,
-    lastErrorTime: null,
-    database: null
-  }
+// Error tracking
+const errors = [];
+
+// Detect available storage mechanisms
+const availableStorage = {
+  localStorage: isLocalStorageAvailable(),
+  sessionStorage: isSessionStorageAvailable(),
+  indexedDB: isIndexedDBAvailable()
 };
 
 /**
- * Event handlers for storage events
+ * Check if localStorage is available
  */
-const storageEventHandlers = new Map();
-
-/**
- * Initialize storage resilience
- */
-export async function initStorageResilience() {
-  // Test if localStorage is available
-  checkLocalStorageAvailability();
-  
-  // Test if sessionStorage is available
-  checkSessionStorageAvailability();
-  
-  // Test if IndexedDB is available
-  await checkIndexedDBAvailability();
-  
-  // Set up event listeners for storage changes
-  setupStorageEventListeners();
-  
-  // Attempt to repair any corrupted storage
-  await attemptStorageRepair();
-  
-  return {
-    localStorage: storageHealth.localStorage.available,
-    sessionStorage: storageHealth.sessionStorage.available,
-    indexedDB: storageHealth.indexedDB.available
-  };
-}
-
-/**
- * Check if localStorage is available and working
- */
-function checkLocalStorageAvailability() {
+function isLocalStorageAvailable() {
   try {
-    // Try to write and read a test value
-    const testValue = `test-${Date.now()}`;
-    localStorage.setItem('storage-test', testValue);
-    const result = localStorage.getItem('storage-test');
-    localStorage.removeItem('storage-test');
-    
-    // Check if the value was stored and retrieved correctly
-    storageHealth.localStorage.available = result === testValue;
-  } catch (error) {
-    console.error('localStorage is not available:', error);
-    storageHealth.localStorage.available = false;
-    storageHealth.localStorage.lastError = error;
-    storageHealth.localStorage.lastErrorTime = Date.now();
-    storageHealth.localStorage.errors++;
-  }
-}
-
-/**
- * Check if sessionStorage is available and working
- */
-function checkSessionStorageAvailability() {
-  try {
-    // Try to write and read a test value
-    const testValue = `test-${Date.now()}`;
-    sessionStorage.setItem('storage-test', testValue);
-    const result = sessionStorage.getItem('storage-test');
-    sessionStorage.removeItem('storage-test');
-    
-    // Check if the value was stored and retrieved correctly
-    storageHealth.sessionStorage.available = result === testValue;
-  } catch (error) {
-    console.error('sessionStorage is not available:', error);
-    storageHealth.sessionStorage.available = false;
-    storageHealth.sessionStorage.lastError = error;
-    storageHealth.sessionStorage.lastErrorTime = Date.now();
-    storageHealth.sessionStorage.errors++;
-  }
-}
-
-/**
- * Check if IndexedDB is available and working
- */
-async function checkIndexedDBAvailability() {
-  if (!window.indexedDB) {
-    storageHealth.indexedDB.available = false;
-    return;
-  }
-  
-  try {
-    // Try to open a test database
-    const request = indexedDB.open('storage-test', 1);
-    
-    // Return a promise that resolves when the database is open
-    await new Promise((resolve, reject) => {
-      request.onerror = (event) => {
-        storageHealth.indexedDB.available = false;
-        storageHealth.indexedDB.lastError = event.target.error;
-        storageHealth.indexedDB.lastErrorTime = Date.now();
-        storageHealth.indexedDB.errors++;
-        reject(event.target.error);
-      };
-      
-      request.onsuccess = (event) => {
-        const db = event.target.result;
-        storageHealth.indexedDB.available = true;
-        storageHealth.indexedDB.database = db;
-        db.close();
-        resolve();
-      };
-      
-      request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-        // Create a test object store
-        if (!db.objectStoreNames.contains('test-store')) {
-          db.createObjectStore('test-store', { keyPath: 'id' });
-        }
-      };
-    });
-    
-    // Delete the test database
-    await new Promise((resolve) => {
-      const deleteRequest = indexedDB.deleteDatabase('storage-test');
-      deleteRequest.onsuccess = resolve;
-      deleteRequest.onerror = resolve; // Resolve anyway, we don't care if deletion fails
-    });
-    
-  } catch (error) {
-    console.error('IndexedDB is not available:', error);
-    storageHealth.indexedDB.available = false;
-    storageHealth.indexedDB.lastError = error;
-    storageHealth.indexedDB.lastErrorTime = Date.now();
-    storageHealth.indexedDB.errors++;
-  }
-}
-
-/**
- * Setup storage event listeners
- */
-function setupStorageEventListeners() {
-  // Listen for storage events from other tabs
-  window.addEventListener('storage', (event) => {
-    // Notify any registered handlers
-    const handlers = storageEventHandlers.get(event.key) || [];
-    handlers.forEach(handler => {
-      try {
-        handler(event.newValue ? JSON.parse(event.newValue) : null);
-      } catch (error) {
-        console.error(`Error in storage event handler for key ${event.key}:`, error);
-      }
-    });
-  });
-}
-
-/**
- * Attempt to repair corrupted storage
- */
-async function attemptStorageRepair() {
-  // Check localStorage for corruption
-  if (!storageHealth.localStorage.available) {
-    try {
-      // Try to clear localStorage completely
-      localStorage.clear();
-      checkLocalStorageAvailability();
-      console.log('localStorage repaired successfully');
-    } catch (error) {
-      console.error('Failed to repair localStorage:', error);
-    }
-  }
-  
-  // Check sessionStorage for corruption
-  if (!storageHealth.sessionStorage.available) {
-    try {
-      // Try to clear sessionStorage completely
-      sessionStorage.clear();
-      checkSessionStorageAvailability();
-      console.log('sessionStorage repaired successfully');
-    } catch (error) {
-      console.error('Failed to repair sessionStorage:', error);
-    }
-  }
-  
-  // Check IndexedDB for corruption
-  if (!storageHealth.indexedDB.available) {
-    // IndexedDB repairs are more complex and would go here
-    // This is a simplified version that just checks again
-    await checkIndexedDBAvailability();
-  }
-}
-
-/**
- * Get current storage health status
- */
-export function getStorageHealth() {
-  return {
-    localStorage: { ...storageHealth.localStorage },
-    sessionStorage: { ...storageHealth.sessionStorage },
-    indexedDB: { ...storageHealth.indexedDB }
-  };
-}
-
-/**
- * Restore data from backup storage if available
- */
-function restoreFromBackup(key) {
-  // Check memory backup
-  const memoryValue = memoryStorage.get(key);
-  if (memoryValue !== undefined) {
-    return memoryValue;
-  }
-  
-  // Check alternative storage options
-  // If localStorage failed, try sessionStorage
-  if (!storageHealth.localStorage.available && storageHealth.sessionStorage.available) {
-    try {
-      const value = sessionStorage.getItem(key);
-      return value ? JSON.parse(value) : null;
-    } catch (e) {
-      // Ignore errors
-    }
-  }
-  
-  // If sessionStorage failed, try localStorage
-  if (!storageHealth.sessionStorage.available && storageHealth.localStorage.available) {
-    try {
-      const value = localStorage.getItem(key);
-      return value ? JSON.parse(value) : null;
-    } catch (e) {
-      // Ignore errors
-    }
-  }
-  
-  return null;
-}
-
-/**
- * Store value with resilience across multiple storage mechanisms
- * 
- * @param {string} key - Storage key
- * @param {any} value - Value to store
- * @param {Object} options - Storage options
- * @param {string} options.type - Storage type (localStorage, sessionStorage, indexedDB, memory)
- * @param {boolean} options.backup - Whether to backup to memory if main storage fails
- * @returns {boolean} - Whether the operation succeeded
- */
-export function resilientSet(key, value, options = {}) {
-  const { 
-    type = STORAGE_TYPES.LOCAL,
-    backup = true
-  } = options;
-  
-  // Always backup to memory if requested
-  if (backup) {
-    memoryStorage.set(key, value);
-  }
-  
-  // Serialize the value
-  let serializedValue;
-  try {
-    serializedValue = JSON.stringify(value);
-  } catch (error) {
-    console.error(`Failed to serialize value for key ${key}:`, error);
+    const testKey = '__storage_test__';
+    localStorage.setItem(testKey, testKey);
+    localStorage.removeItem(testKey);
+    return true;
+  } catch (e) {
     return false;
   }
-  
-  // Store in the requested storage type
-  let success = false;
-  
-  try {
-    switch (type) {
-      case STORAGE_TYPES.LOCAL:
-        if (storageHealth.localStorage.available) {
-          localStorage.setItem(key, serializedValue);
-          success = true;
-        }
-        break;
-        
-      case STORAGE_TYPES.SESSION:
-        if (storageHealth.sessionStorage.available) {
-          sessionStorage.setItem(key, serializedValue);
-          success = true;
-        }
-        break;
-        
-      case STORAGE_TYPES.INDEXED_DB:
-        // IndexedDB operations would go here
-        // This is just a placeholder
-        if (storageHealth.indexedDB.available) {
-          // IndexedDB is asynchronous, so this would need to be more complex in reality
-          success = true;
-        }
-        break;
-        
-      case STORAGE_TYPES.MEMORY:
-        // Already done above
-        success = true;
-        break;
-        
-      default:
-        console.error(`Unknown storage type: ${type}`);
-    }
-  } catch (error) {
-    console.error(`Failed to store value for key ${key} in ${type}:`, error);
-    
-    // Update health status
-    if (type === STORAGE_TYPES.LOCAL) {
-      storageHealth.localStorage.available = false;
-      storageHealth.localStorage.lastError = error;
-      storageHealth.localStorage.lastErrorTime = Date.now();
-      storageHealth.localStorage.errors++;
-    } else if (type === STORAGE_TYPES.SESSION) {
-      storageHealth.sessionStorage.available = false;
-      storageHealth.sessionStorage.lastError = error;
-      storageHealth.sessionStorage.lastErrorTime = Date.now();
-      storageHealth.sessionStorage.errors++;
-    }
-    
-    // Attempt repair in the background
-    setTimeout(attemptStorageRepair, 0);
-  }
-  
-  return success;
 }
 
 /**
- * Get value with resilience across multiple storage mechanisms
- * 
- * @param {string} key - Storage key
- * @param {Object} options - Storage options
- * @param {string} options.type - Storage type (localStorage, sessionStorage, indexedDB, memory)
- * @param {any} options.defaultValue - Default value if not found
- * @param {boolean} options.tryAlternatives - Whether to try alternative storage if main storage fails
- * @returns {any} - Retrieved value or defaultValue if not found
+ * Check if sessionStorage is available
  */
-export function resilientGet(key, options = {}) {
-  const { 
-    type = STORAGE_TYPES.LOCAL,
-    defaultValue = null,
-    tryAlternatives = true
-  } = options;
-  
-  let value = defaultValue;
-  let success = false;
-  
+function isSessionStorageAvailable() {
   try {
-    switch (type) {
-      case STORAGE_TYPES.LOCAL:
-        if (storageHealth.localStorage.available) {
-          const stored = localStorage.getItem(key);
-          if (stored !== null) {
-            value = JSON.parse(stored);
-            success = true;
-          }
-        }
-        break;
-        
-      case STORAGE_TYPES.SESSION:
-        if (storageHealth.sessionStorage.available) {
-          const stored = sessionStorage.getItem(key);
-          if (stored !== null) {
-            value = JSON.parse(stored);
-            success = true;
-          }
-        }
-        break;
-        
-      case STORAGE_TYPES.INDEXED_DB:
-        // IndexedDB operations would go here
-        // This is just a placeholder
-        if (storageHealth.indexedDB.available) {
-          // IndexedDB is asynchronous, so this would need to be more complex in reality
-        }
-        break;
-        
-      case STORAGE_TYPES.MEMORY:
-        const memValue = memoryStorage.get(key);
-        if (memValue !== undefined) {
-          value = memValue;
-          success = true;
-        }
-        break;
-        
-      default:
-        console.error(`Unknown storage type: ${type}`);
-    }
-  } catch (error) {
-    console.error(`Failed to retrieve value for key ${key} from ${type}:`, error);
-    
-    // Update health status
-    if (type === STORAGE_TYPES.LOCAL) {
-      storageHealth.localStorage.available = false;
-      storageHealth.localStorage.lastError = error;
-      storageHealth.localStorage.lastErrorTime = Date.now();
-      storageHealth.localStorage.errors++;
-    } else if (type === STORAGE_TYPES.SESSION) {
-      storageHealth.sessionStorage.available = false;
-      storageHealth.sessionStorage.lastError = error;
-      storageHealth.sessionStorage.lastErrorTime = Date.now();
-      storageHealth.sessionStorage.errors++;
-    }
-    
-    // Attempt repair in the background
-    setTimeout(attemptStorageRepair, 0);
+    const testKey = '__storage_test__';
+    sessionStorage.setItem(testKey, testKey);
+    sessionStorage.removeItem(testKey);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+/**
+ * Check if IndexedDB is available
+ */
+function isIndexedDBAvailable() {
+  return typeof indexedDB !== 'undefined';
+}
+
+/**
+ * Log a storage error
+ */
+function logError(operation, key, error) {
+  const errorObj = {
+    operation,
+    key,
+    error: error.message || String(error),
+    timestamp: Date.now()
+  };
+  
+  errors.push(errorObj);
+  
+  // Keep error log from growing too large
+  if (errors.length > 100) {
+    errors.shift();
   }
   
-  // If the main storage failed and we're allowed to try alternatives
-  if (!success && tryAlternatives) {
-    return restoreFromBackup(key) ?? defaultValue;
+  // Log to console in debug mode
+  if (config.debugMode) {
+    console.error(`Storage error (${operation}): ${error.message}`, { key, error });
   }
   
+  return errorObj;
+}
+
+/**
+ * Compress a string value
+ */
+function compressValue(value) {
+  // Simple compression: This is a placeholder
+  // In a real implementation, you'd use a proper compression algorithm
+  
+  // Just return the original value for now
   return value;
 }
 
 /**
- * Remove value with resilience across multiple storage mechanisms
- * 
- * @param {string} key - Storage key
- * @param {Object} options - Storage options
- * @param {string} options.type - Storage type (localStorage, sessionStorage, indexedDB, memory)
- * @param {boolean} options.removeFromAll - Whether to remove from all storage types
- * @returns {boolean} - Whether the operation succeeded
+ * Decompress a compressed value
  */
-export function resilientRemove(key, options = {}) {
-  const { 
-    type = STORAGE_TYPES.LOCAL,
-    removeFromAll = false
-  } = options;
+function decompressValue(compressedValue) {
+  // Simple decompression: This is a placeholder
+  // In a real implementation, you'd use a proper decompression algorithm
   
-  let success = false;
+  // Just return the original value for now
+  return compressedValue;
+}
+
+/**
+ * Safely set an item in storage with retries and fallbacks
+ * 
+ * @param {string} key - The key to store the value under
+ * @param {any} value - The value to store (will be JSON stringified)
+ * @param {Object} options - Options for the storage operation
+ * @returns {boolean} - Whether the operation was successful
+ */
+export function safeSetItem(key, value, options = {}) {
+  // Merge options with defaults
+  const opts = {
+    storage: 'localStorage', // 'localStorage', 'sessionStorage', or 'memory'
+    compress: config.compressionEnabled,
+    encrypt: config.encryptionEnabled,
+    ...options
+  };
   
-  // Always remove from memory
-  memoryStorage.delete(key);
+  // Don't allow empty keys
+  if (!key) {
+    logError('setItem', key, new Error('Empty key not allowed'));
+    return false;
+  }
   
-  if (removeFromAll) {
-    // Remove from all storage types
+  try {
+    // Convert value to string if it's not already
+    const valueToStore = typeof value !== 'string'
+      ? JSON.stringify(value)
+      : value;
+    
+    // Skip compression for small values
+    let processedValue = valueToStore;
+    if (opts.compress && valueToStore.length > config.compressionThreshold) {
+      processedValue = compressValue(valueToStore);
+    }
+    
+    // Try primary storage first
+    if (opts.storage === 'localStorage' && availableStorage.localStorage) {
+      localStorage.setItem(key, processedValue);
+      return true;
+    } else if (opts.storage === 'sessionStorage' && availableStorage.sessionStorage) {
+      sessionStorage.setItem(key, processedValue);
+      return true;
+    } else if (opts.storage === 'memory' || config.fallbackToMemory) {
+      // Use memory storage as primary or fallback
+      memoryStorage.set(key, processedValue);
+      return true;
+    }
+    
+    // If we get here and haven't stored the value, try fallbacks
+    if (config.useFallbackStorage) {
+      if (availableStorage.localStorage) {
+        localStorage.setItem(key, processedValue);
+        return true;
+      } else if (availableStorage.sessionStorage) {
+        sessionStorage.setItem(key, processedValue);
+        return true;
+      } else {
+        memoryStorage.set(key, processedValue);
+        return true;
+      }
+    }
+    
+    // If we get here, all storage options failed
+    return false;
+  } catch (error) {
+    // Log the error
+    logError('setItem', key, error);
+    
+    // Try fallbacks on error
     try {
-      if (storageHealth.localStorage.available) {
+      if (config.fallbackToMemory) {
+        memoryStorage.set(key, typeof value !== 'string' ? JSON.stringify(value) : value);
+        return true;
+      }
+    } catch (fallbackError) {
+      logError('setItem (fallback)', key, fallbackError);
+    }
+    
+    return false;
+  }
+}
+
+/**
+ * Safely get an item from storage with fallbacks
+ * 
+ * @param {string} key - The key to retrieve
+ * @param {Object} options - Options for the retrieval
+ * @returns {any} - The stored value or null if not found
+ */
+export function safeGetItem(key, options = {}) {
+  // Merge options with defaults
+  const opts = {
+    storage: 'localStorage', // 'localStorage', 'sessionStorage', or 'memory'
+    fallback: null, // Default value if not found
+    parse: true, // Whether to JSON.parse the result
+    ...options
+  };
+  
+  // Don't allow empty keys
+  if (!key) {
+    logError('getItem', key, new Error('Empty key not allowed'));
+    return opts.fallback;
+  }
+  
+  try {
+    let rawValue = null;
+    
+    // Try primary storage first
+    if (opts.storage === 'localStorage' && availableStorage.localStorage) {
+      rawValue = localStorage.getItem(key);
+    } else if (opts.storage === 'sessionStorage' && availableStorage.sessionStorage) {
+      rawValue = sessionStorage.getItem(key);
+    } else if (opts.storage === 'memory') {
+      rawValue = memoryStorage.get(key);
+    }
+    
+    // If not found and fallback storage is enabled, try other storage types
+    if (rawValue === null && config.useFallbackStorage) {
+      if (availableStorage.localStorage) {
+        rawValue = localStorage.getItem(key);
+      }
+      
+      if (rawValue === null && availableStorage.sessionStorage) {
+        rawValue = sessionStorage.getItem(key);
+      }
+      
+      if (rawValue === null && config.fallbackToMemory) {
+        rawValue = memoryStorage.get(key);
+      }
+    }
+    
+    // If still not found, return the fallback value
+    if (rawValue === null) {
+      return opts.fallback;
+    }
+    
+    // Check if value needs decompression
+    if (config.compressionEnabled) {
+      // In a real implementation, you'd detect compressed values
+      // and decompress them if needed
+      rawValue = decompressValue(rawValue);
+    }
+    
+    // Parse the value if requested
+    if (opts.parse && typeof rawValue === 'string') {
+      try {
+        return JSON.parse(rawValue);
+      } catch (parseError) {
+        // If parsing fails, return the raw value
+        return rawValue;
+      }
+    }
+    
+    return rawValue;
+  } catch (error) {
+    // Log the error
+    logError('getItem', key, error);
+    
+    // Return the fallback value on error
+    return opts.fallback;
+  }
+}
+
+/**
+ * Safely remove an item from storage
+ * 
+ * @param {string} key - The key to remove
+ * @param {Object} options - Options for the removal
+ * @returns {boolean} - Whether the operation was successful
+ */
+export function safeRemoveItem(key, options = {}) {
+  // Merge options with defaults
+  const opts = {
+    storage: 'localStorage', // 'localStorage', 'sessionStorage', or 'memory'
+    removeFromAllStorages: true, // Whether to remove from all storage types
+    ...options
+  };
+  
+  // Don't allow empty keys
+  if (!key) {
+    logError('removeItem', key, new Error('Empty key not allowed'));
+    return false;
+  }
+  
+  try {
+    let success = false;
+    
+    // Remove from specified storage
+    if (opts.storage === 'localStorage' && availableStorage.localStorage) {
+      localStorage.removeItem(key);
+      success = true;
+    } else if (opts.storage === 'sessionStorage' && availableStorage.sessionStorage) {
+      sessionStorage.removeItem(key);
+      success = true;
+    } else if (opts.storage === 'memory') {
+      success = memoryStorage.delete(key);
+    }
+    
+    // If requested, remove from all storage types
+    if (opts.removeFromAllStorages) {
+      if (availableStorage.localStorage) {
         localStorage.removeItem(key);
       }
-    } catch (e) {
-      // Ignore errors
-    }
-    
-    try {
-      if (storageHealth.sessionStorage.available) {
+      
+      if (availableStorage.sessionStorage) {
         sessionStorage.removeItem(key);
       }
-    } catch (e) {
-      // Ignore errors
+      
+      memoryStorage.delete(key);
+      
+      success = true;
     }
     
-    // IndexedDB would be handled here
+    return success;
+  } catch (error) {
+    // Log the error
+    logError('removeItem', key, error);
     
-    success = true;
-  } else {
-    // Remove only from the specified storage type
+    // Try to remove from memory storage on error
     try {
-      switch (type) {
-        case STORAGE_TYPES.LOCAL:
-          if (storageHealth.localStorage.available) {
-            localStorage.removeItem(key);
-            success = true;
-          }
-          break;
-          
-        case STORAGE_TYPES.SESSION:
-          if (storageHealth.sessionStorage.available) {
-            sessionStorage.removeItem(key);
-            success = true;
-          }
-          break;
-          
-        case STORAGE_TYPES.INDEXED_DB:
-          // IndexedDB operations would go here
-          if (storageHealth.indexedDB.available) {
-            // IndexedDB is asynchronous, so this would need to be more complex in reality
-            success = true;
-          }
-          break;
-          
-        case STORAGE_TYPES.MEMORY:
-          // Already done above
-          success = true;
-          break;
-          
-        default:
-          console.error(`Unknown storage type: ${type}`);
-      }
-    } catch (error) {
-      console.error(`Failed to remove value for key ${key} from ${type}:`, error);
-      
-      // Update health status
-      if (type === STORAGE_TYPES.LOCAL) {
-        storageHealth.localStorage.available = false;
-        storageHealth.localStorage.lastError = error;
-        storageHealth.localStorage.lastErrorTime = Date.now();
-        storageHealth.localStorage.errors++;
-      } else if (type === STORAGE_TYPES.SESSION) {
-        storageHealth.sessionStorage.available = false;
-        storageHealth.sessionStorage.lastError = error;
-        storageHealth.sessionStorage.lastErrorTime = Date.now();
-        storageHealth.sessionStorage.errors++;
-      }
-      
-      // Attempt repair in the background
-      setTimeout(attemptStorageRepair, 0);
+      memoryStorage.delete(key);
+      return true;
+    } catch (fallbackError) {
+      logError('removeItem (fallback)', key, fallbackError);
+      return false;
     }
   }
-  
-  return success;
 }
 
 /**
- * Clear all values from the specified storage
+ * Clear all items from storage
  * 
- * @param {Object} options - Storage options
- * @param {string} options.type - Storage type (localStorage, sessionStorage, indexedDB, memory)
- * @param {boolean} options.clearAll - Whether to clear all storage types
- * @returns {boolean} - Whether the operation succeeded
+ * @param {Object} options - Options for the clearing operation
+ * @returns {boolean} - Whether the operation was successful
  */
-export function resilientClear(options = {}) {
-  const { 
-    type = STORAGE_TYPES.LOCAL,
-    clearAll = false
-  } = options;
+export function safeClear(options = {}) {
+  // Merge options with defaults
+  const opts = {
+    storage: 'localStorage', // 'localStorage', 'sessionStorage', or 'memory'
+    clearAllStorages: false, // Whether to clear all storage types
+    preserveKeys: [], // Keys to preserve when clearing
+    ...options
+  };
   
-  let success = false;
-  
-  if (clearAll) {
-    // Clear all storage types
-    try {
-      if (storageHealth.localStorage.available) {
+  try {
+    // If we need to preserve keys, we can't just clear everything
+    if (opts.preserveKeys.length > 0) {
+      // Get the preserved values first
+      const preserved = {};
+      opts.preserveKeys.forEach(key => {
+        preserved[key] = safeGetItem(key, { storage: opts.storage });
+      });
+      
+      // Clear the specified storage
+      if (opts.storage === 'localStorage' && availableStorage.localStorage) {
+        localStorage.clear();
+      } else if (opts.storage === 'sessionStorage' && availableStorage.sessionStorage) {
+        sessionStorage.clear();
+      } else if (opts.storage === 'memory') {
+        memoryStorage.clear();
+      }
+      
+      // Restore preserved keys
+      opts.preserveKeys.forEach(key => {
+        if (preserved[key] !== null && preserved[key] !== undefined) {
+          safeSetItem(key, preserved[key], { storage: opts.storage });
+        }
+      });
+      
+      return true;
+    }
+    
+    // No keys to preserve, just clear everything
+    if (opts.storage === 'localStorage' && availableStorage.localStorage) {
+      localStorage.clear();
+      return true;
+    } else if (opts.storage === 'sessionStorage' && availableStorage.sessionStorage) {
+      sessionStorage.clear();
+      return true;
+    } else if (opts.storage === 'memory') {
+      memoryStorage.clear();
+      return true;
+    }
+    
+    // If requested, clear all storage types
+    if (opts.clearAllStorages) {
+      if (availableStorage.localStorage) {
         localStorage.clear();
       }
-    } catch (e) {
-      // Ignore errors
-    }
-    
-    try {
-      if (storageHealth.sessionStorage.available) {
+      
+      if (availableStorage.sessionStorage) {
         sessionStorage.clear();
       }
-    } catch (e) {
-      // Ignore errors
+      
+      memoryStorage.clear();
+      
+      return true;
     }
     
-    // IndexedDB would be handled here
+    return false;
+  } catch (error) {
+    // Log the error
+    logError('clear', '', error);
     
-    // Clear memory storage
-    memoryStorage.clear();
-    
-    success = true;
-  } else {
-    // Clear only the specified storage type
+    // Try to clear memory storage on error
     try {
-      switch (type) {
-        case STORAGE_TYPES.LOCAL:
-          if (storageHealth.localStorage.available) {
-            localStorage.clear();
-            success = true;
-          }
-          break;
-          
-        case STORAGE_TYPES.SESSION:
-          if (storageHealth.sessionStorage.available) {
-            sessionStorage.clear();
-            success = true;
-          }
-          break;
-          
-        case STORAGE_TYPES.INDEXED_DB:
-          // IndexedDB operations would go here
-          if (storageHealth.indexedDB.available) {
-            // IndexedDB is asynchronous, so this would need to be more complex in reality
-            success = true;
-          }
-          break;
-          
-        case STORAGE_TYPES.MEMORY:
-          memoryStorage.clear();
-          success = true;
-          break;
-          
-        default:
-          console.error(`Unknown storage type: ${type}`);
-      }
-    } catch (error) {
-      console.error(`Failed to clear ${type}:`, error);
-      
-      // Update health status
-      if (type === STORAGE_TYPES.LOCAL) {
-        storageHealth.localStorage.available = false;
-        storageHealth.localStorage.lastError = error;
-        storageHealth.localStorage.lastErrorTime = Date.now();
-        storageHealth.localStorage.errors++;
-      } else if (type === STORAGE_TYPES.SESSION) {
-        storageHealth.sessionStorage.available = false;
-        storageHealth.sessionStorage.lastError = error;
-        storageHealth.sessionStorage.lastErrorTime = Date.now();
-        storageHealth.sessionStorage.errors++;
-      }
-      
-      // Attempt repair in the background
-      setTimeout(attemptStorageRepair, 0);
+      memoryStorage.clear();
+      return true;
+    } catch (fallbackError) {
+      logError('clear (fallback)', '', fallbackError);
+      return false;
     }
   }
-  
-  return success;
 }
 
 /**
- * Subscribe to changes in a storage key
+ * Get all keys from storage
  * 
- * @param {string} key - Storage key to watch
- * @param {Function} callback - Function to call when the value changes
- * @returns {Function} - Unsubscribe function
+ * @param {Object} options - Options for the operation
+ * @returns {Array<string>} - Array of keys
  */
-export function subscribeToStorageChanges(key, callback) {
-  if (!storageEventHandlers.has(key)) {
-    storageEventHandlers.set(key, []);
-  }
+export function safeKeys(options = {}) {
+  // Merge options with defaults
+  const opts = {
+    storage: 'localStorage', // 'localStorage', 'sessionStorage', or 'memory'
+    ...options
+  };
   
-  storageEventHandlers.get(key).push(callback);
-  
-  // Return unsubscribe function
-  return () => {
-    const handlers = storageEventHandlers.get(key) || [];
-    const index = handlers.indexOf(callback);
-    if (index !== -1) {
-      handlers.splice(index, 1);
+  try {
+    // Get keys from specified storage
+    if (opts.storage === 'localStorage' && availableStorage.localStorage) {
+      return Object.keys(localStorage);
+    } else if (opts.storage === 'sessionStorage' && availableStorage.sessionStorage) {
+      return Object.keys(sessionStorage);
+    } else if (opts.storage === 'memory') {
+      return Array.from(memoryStorage.keys());
     }
     
-    // Clean up if no handlers left
-    if (handlers.length === 0) {
-      storageEventHandlers.delete(key);
+    return [];
+  } catch (error) {
+    // Log the error
+    logError('keys', '', error);
+    
+    // Try to get keys from memory storage on error
+    try {
+      return Array.from(memoryStorage.keys());
+    } catch (fallbackError) {
+      logError('keys (fallback)', '', fallbackError);
+      return [];
     }
+  }
+}
+
+/**
+ * Check available storage space
+ * 
+ * @param {Object} options - Options for the check
+ * @returns {Object} - Information about available storage space
+ */
+export function checkStorageQuota(options = {}) {
+  // Merge options with defaults
+  const opts = {
+    storage: 'localStorage', // 'localStorage', 'sessionStorage', or 'memory'
+    ...options
   };
+  
+  try {
+    const result = {
+      available: true,
+      estimatedSpace: 0,
+      estimatedUsed: 0,
+      estimatedAvailable: 0,
+      error: null
+    };
+    
+    // Estimate used space
+    if (opts.storage === 'localStorage' && availableStorage.localStorage) {
+      let totalSize = 0;
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        const value = localStorage.getItem(key) || '';
+        totalSize += (key.length + value.length) * 2; // UTF-16 = 2 bytes per character
+      }
+      
+      result.estimatedUsed = totalSize;
+      result.estimatedSpace = 5 * 1024 * 1024; // Assume 5MB quota
+      result.estimatedAvailable = Math.max(0, result.estimatedSpace - totalSize);
+    } else if (opts.storage === 'sessionStorage' && availableStorage.sessionStorage) {
+      let totalSize = 0;
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        const value = sessionStorage.getItem(key) || '';
+        totalSize += (key.length + value.length) * 2; // UTF-16 = 2 bytes per character
+      }
+      
+      result.estimatedUsed = totalSize;
+      result.estimatedSpace = 5 * 1024 * 1024; // Assume 5MB quota
+      result.estimatedAvailable = Math.max(0, result.estimatedSpace - totalSize);
+    } else if (opts.storage === 'memory') {
+      result.available = true;
+      result.estimatedSpace = Infinity;
+      result.estimatedUsed = 0;
+      result.estimatedAvailable = Infinity;
+      
+      // Try to estimate memory storage size
+      memoryStorage.forEach((value, key) => {
+        result.estimatedUsed += (key.length + (typeof value === 'string' ? value.length : 0)) * 2;
+      });
+    } else {
+      result.available = false;
+      result.error = 'Storage not available';
+    }
+    
+    return result;
+  } catch (error) {
+    return {
+      available: false,
+      estimatedSpace: 0,
+      estimatedUsed: 0,
+      estimatedAvailable: 0,
+      error: error.message || String(error)
+    };
+  }
+}
+
+/**
+ * Run diagnostics on storage
+ * 
+ * @returns {Object} - Diagnostics results
+ */
+export function runDiagnostics() {
+  const results = {
+    localStorage: {
+      available: availableStorage.localStorage,
+      diagnostics: {}
+    },
+    sessionStorage: {
+      available: availableStorage.sessionStorage,
+      diagnostics: {}
+    },
+    indexedDB: {
+      available: availableStorage.indexedDB,
+      diagnostics: {}
+    },
+    memory: {
+      available: true,
+      diagnostics: {}
+    },
+    errors: [...errors]
+  };
+  
+  // Test localStorage
+  if (availableStorage.localStorage) {
+    try {
+      const testKey = '__test_' + Date.now();
+      const testValue = 'test';
+      
+      // Write test
+      const writeStart = Date.now();
+      localStorage.setItem(testKey, testValue);
+      const writeTime = Date.now() - writeStart;
+      
+      // Read test
+      const readStart = Date.now();
+      const readValue = localStorage.getItem(testKey);
+      const readTime = Date.now() - readStart;
+      
+      // Delete test
+      const deleteStart = Date.now();
+      localStorage.removeItem(testKey);
+      const deleteTime = Date.now() - deleteStart;
+      
+      // Check if read value matches what we wrote
+      const readCorrect = readValue === testValue;
+      
+      results.localStorage.diagnostics = {
+        writeTime,
+        readTime,
+        deleteTime,
+        readCorrect,
+        quota: checkStorageQuota({ storage: 'localStorage' })
+      };
+    } catch (error) {
+      results.localStorage.diagnostics.error = error.message || String(error);
+      results.localStorage.available = false;
+    }
+  }
+  
+  // Test sessionStorage
+  if (availableStorage.sessionStorage) {
+    try {
+      const testKey = '__test_' + Date.now();
+      const testValue = 'test';
+      
+      // Write test
+      const writeStart = Date.now();
+      sessionStorage.setItem(testKey, testValue);
+      const writeTime = Date.now() - writeStart;
+      
+      // Read test
+      const readStart = Date.now();
+      const readValue = sessionStorage.getItem(testKey);
+      const readTime = Date.now() - readStart;
+      
+      // Delete test
+      const deleteStart = Date.now();
+      sessionStorage.removeItem(testKey);
+      const deleteTime = Date.now() - deleteStart;
+      
+      // Check if read value matches what we wrote
+      const readCorrect = readValue === testValue;
+      
+      results.sessionStorage.diagnostics = {
+        writeTime,
+        readTime,
+        deleteTime,
+        readCorrect,
+        quota: checkStorageQuota({ storage: 'sessionStorage' })
+      };
+    } catch (error) {
+      results.sessionStorage.diagnostics.error = error.message || String(error);
+      results.sessionStorage.available = false;
+    }
+  }
+  
+  // Test memory storage
+  try {
+    const testKey = '__test_' + Date.now();
+    const testValue = 'test';
+    
+    // Write test
+    const writeStart = Date.now();
+    memoryStorage.set(testKey, testValue);
+    const writeTime = Date.now() - writeStart;
+    
+    // Read test
+    const readStart = Date.now();
+    const readValue = memoryStorage.get(testKey);
+    const readTime = Date.now() - readStart;
+    
+    // Delete test
+    const deleteStart = Date.now();
+    memoryStorage.delete(testKey);
+    const deleteTime = Date.now() - deleteStart;
+    
+    // Check if read value matches what we wrote
+    const readCorrect = readValue === testValue;
+    
+    results.memory.diagnostics = {
+      writeTime,
+      readTime,
+      deleteTime,
+      readCorrect,
+      size: memoryStorage.size
+    };
+  } catch (error) {
+    results.memory.diagnostics.error = error.message || String(error);
+  }
+  
+  return results;
 }
 
 export default {
-  initStorageResilience,
-  getStorageHealth,
-  resilientSet,
-  resilientGet,
-  resilientRemove,
-  resilientClear,
-  subscribeToStorageChanges,
-  STORAGE_TYPES
+  safeSetItem,
+  safeGetItem,
+  safeRemoveItem,
+  safeClear,
+  safeKeys,
+  checkStorageQuota,
+  runDiagnostics,
+  // Export these for direct access
+  availableStorage,
+  errors
 };
