@@ -1,0 +1,120 @@
+Phase 1: Locate & Recover the Missing File
+Inspect your folder
+In Replit’s file explorer, navigate to:
+
+bash
+Copy
+Edit
+client/client-portal/
+You should see:
+
+ClientContextBar.jsx
+
+ClientDashboard.jsx
+
+ClientHeader.jsx
+
+ClientPortal.jsx
+
+ClientPortalLanding.jsx
+
+OrganizationSwitcher.jsx
+
+If ClientPortal.jsx is missing or empty
+
+Open the Replit console and run:
+
+bash
+Copy
+Edit
+git status
+git log -- client/client-portal/ClientPortal.jsx
+to see if it was deleted in a recent commit.
+
+If you find a commit where it still existed, restore:
+
+bash
+Copy
+Edit
+git checkout <that-sha> -- client/client-portal/ClientPortal.jsx
+If you’re not using Git or it never existed, skip to Phase 2 to rebuild from the other pieces.
+
+🏗️ Phase 2: Reconstruct ClientPortal.jsx Structure
+Using your existing components as building blocks, your ClientPortal.jsx should:
+
+Import & render the header
+
+jsx
+Copy
+Edit
+import ClientHeader from './ClientHeader';
+Import & render the context bar
+
+jsx
+Copy
+Edit
+import ClientContextBar from './ClientContextBar';
+Import & render the main dashboard or landing
+
+jsx
+Copy
+Edit
+import ClientDashboard from './ClientDashboard';
+import ClientPortalLanding from './ClientPortalLanding';
+Tie it all together
+
+Display the header at top
+
+Show either the landing or the dashboard based on route or state
+
+(If you have a ClientPortalLanding.jsx, it’s likely your “empty” state before a client is chosen.)
+
+🔀 Phase 3: Wire Up Routing
+Open your main router (often in App.jsx or Routes.jsx)
+
+Add or restore a route entry for /client-portal:
+
+jsx
+Copy
+Edit
+<Route path="/client-portal/*" element={<ClientPortal />} />
+Ensure no other route is shadowing it—check for a wildcard or catch-all redirect.
+
+✅ Phase 4: Verify & Test
+In Replit’s preview, navigate to:
+
+arduino
+Copy
+Edit
+https://<your-repl>.repl.co/client-portal
+Confirm you see your portal header, context bar, and dashboard/landing.
+
+Switch organizations via the OrganizationSwitcher and ensure the header updates.
+
+Click “Go to Project Management” (if present) to confirm routing into your projects list.
+
+🔒 Phase 5: Lock It Down
+Commit your changes:
+
+bash
+Copy
+Edit
+git add client/client-portal/ClientPortal.jsx
+git commit -m "Restore ClientPortal.jsx and wiring"
+Tag a release or create a backup branch:
+
+bash
+Copy
+Edit
+git tag v-client-portal-recovered
+Add a quick note in your team’s README or wiki about where the Client Portal lives.
+
+Outcome
+By following these phases—Locate, Reconstruct, Route, Test, and Lock Down—you’ll have your Client Portal page fully back in Replit, integrated with your multi-tenant selector components, and ready to drive every module (CER, dashboards, etc.) under the same context.
+
+
+
+
+
+
+

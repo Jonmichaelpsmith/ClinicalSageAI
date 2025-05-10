@@ -24,8 +24,9 @@ const LoadingPage = () => (
   </div>
 );
 
-// Eagerly load the landing page for faster initial render
+// Eagerly load the landing page and client portal for faster initial render
 import ClientPortalLanding from './pages/ClientPortalLanding';
+import ClientPortal from './pages/ClientPortal';
 
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
