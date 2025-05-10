@@ -175,6 +175,33 @@ export default function SubmissionBuilder({
   const { request, isNetworkError, retryRequest } = useNetworkResilience();
   const healthStatus = useHealthMonitor();
   const { toast } = useToast();
+  
+  // Set up initial active tab based on initialModule prop
+  useEffect(() => {
+    if (initialModule) {
+      console.log(`Navigating to specific module: ${initialModule}`);
+      // Set active tab to the corresponding module
+      switch(initialModule) {
+        case 'm1':
+          setActiveTab('module1');
+          break;
+        case 'm2':
+          setActiveTab('module2');
+          break;
+        case 'm3':
+          setActiveTab('module3');
+          break;
+        case 'm4':
+          setActiveTab('module4');
+          break;
+        case 'm5':
+          setActiveTab('module5');
+          break;
+        default:
+          setActiveTab('builder');
+      }
+    }
+  }, [initialModule]);
 
   // Handle messages from QC WebSocket
   const handleQCMessage = useCallback((data) => {
@@ -537,10 +564,15 @@ export default function SubmissionBuilder({
       
       {/* Tabs for different sections */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="grid grid-cols-3 mb-4">
-          <TabsTrigger value="builder">Builder</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
-          <TabsTrigger value="security">Security</TabsTrigger>
+        <TabsList className="grid grid-cols-8 mb-4 gap-1">
+          <TabsTrigger value="builder" className="text-sm">Builder</TabsTrigger>
+          <TabsTrigger value="module1" className="text-sm">Module 1</TabsTrigger>
+          <TabsTrigger value="module2" className="text-sm">Module 2</TabsTrigger>
+          <TabsTrigger value="module3" className="text-sm">Module 3</TabsTrigger>
+          <TabsTrigger value="module4" className="text-sm">Module 4</TabsTrigger>
+          <TabsTrigger value="module5" className="text-sm">Module 5</TabsTrigger>
+          <TabsTrigger value="history" className="text-sm">History</TabsTrigger>
+          <TabsTrigger value="security" className="text-sm">Security</TabsTrigger>
         </TabsList>
         
         <TabsContent value="builder" className="space-y-4">
