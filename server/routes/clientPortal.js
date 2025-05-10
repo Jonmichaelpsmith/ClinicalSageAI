@@ -5,20 +5,15 @@
  */
 
 import express from 'express';
-import path from 'path';
+import { checkAuth } from '../controllers/auth.js';
+import { serveClientPortalDirectPage, serveAutoLoginPage } from '../controllers/clientPortal.js';
 
 const router = express.Router();
 
-// Client portal route (no auth check)
-router.get('/', (req, res) => {
-  console.log('Serving client portal page from router');
-  res.sendFile(path.resolve('./client/public/index.html'));
-});
+// Secure client portal route (with auth check)
+router.get('/client-portal-direct', checkAuth, serveClientPortalDirectPage);
 
 // Auto-login page route
-router.get('/auto-login', (req, res) => {
-  console.log('Serving auto-login page');
-  res.sendFile(path.resolve('./client/public/auto-login.html'));
-});
+router.get('/auto-login', serveAutoLoginPage);
 
 export default router;
