@@ -244,9 +244,10 @@ function checkAuth(req, res, next) {
 }
 
 // Public client portal (no auth check)
-// Handled directly in index.ts with high priority and multiple fallbacks
-// DO NOT MODIFY OR UNCOMMENT - This route is critical for system stability
-// app.get('/client-portal', (req, res) => {});
+// This route is critical for system stability
+app.get('/client-portal', (req, res) => {
+  res.sendFile(path.resolve('./client/public/index.html'));
+});
 
 // Secure client portal (with auth check)
 app.get('/client-portal-direct', checkAuth, (req, res) => {
