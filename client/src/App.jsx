@@ -62,9 +62,8 @@ const RegulatoryRiskDashboard = lazy(() => import('./pages/RegulatoryRiskDashboa
 const EnhancedRegulatoryDashboard = lazy(() => import('./pages/EnhancedRegulatoryDashboard'));
 const RegulatoryDashboard = lazy(() => import('./pages/RegulatoryDashboard'));
 const RegulatoryIntelligenceHub = lazy(() => import('./pages/RegulatoryIntelligenceHub'));
-const RegulatorySubmissionsPage = lazy(() => import('./pages/RegulatorySubmissionsPage'));
 
-// IND Wizard and eCTD/Submission Builder related pages
+// IND Wizard pages (no Submission Builder)
 const IndWizard = lazy(() => import('./pages/INDWizardFixed'));
 const INDFullSolution = lazy(() => import('./pages/INDFullSolution'));
 const Module1AdminPage = lazy(() => import('./modules/Module1AdminPage'));
@@ -72,7 +71,6 @@ const Module2SummaryPage = lazy(() => import('./modules/Module2SummaryPage'));
 const Module3QualityPage = lazy(() => import('./modules/Module3QualityPage'));
 const Module4NonclinicalPage = lazy(() => import('./modules/Module4NonclinicalPage'));
 const Module5ClinicalPage = lazy(() => import('./modules/Module5ClinicalPage'));
-const SubmissionBuilder = lazy(() => import('./pages/SubmissionBuilder'));
 
 // Study and Protocol-related pages
 const StudyArchitect = lazy(() => import('./modules/StudyArchitect'));
@@ -233,57 +231,57 @@ function App() {
             <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
             <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
             <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
-            <Route path="/regulatory-submissions" component={RegulatorySubmissionsPage} />
-            <Route path="/client-portal/regulatory-submissions" component={RegulatorySubmissionsPage} />
+            {/* Regulatory Submissions Hub removed as requested */}
+            {/* Removed Regulatory Submissions Hub as requested */}
 
             {/* IND Wizard Module Routes - Now integrated into the unified Submission Builder */}
             {/* These direct module routes help users navigate directly to specific CTD modules */}
             <Route path="/module-1">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
-                  <SubmissionBuilder initialModule="m1" />
+                  <Module1AdminPage />
                 </Suspense>
               )}
             </Route>
             <Route path="/module-2">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
-                  <SubmissionBuilder initialModule="m2" />
+                  <Module2SummaryPage />
                 </Suspense>
               )}
             </Route>
             <Route path="/module-3">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
-                  <SubmissionBuilder initialModule="m3" />
+                  <Module3QualityPage />
                 </Suspense>
               )}
             </Route>
             <Route path="/module-4">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
-                  <SubmissionBuilder initialModule="m4" />
+                  <Module4NonclinicalPage />
                 </Suspense>
               )}
             </Route>
             <Route path="/module-5">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
-                  <SubmissionBuilder initialModule="m5" />
+                  <Module5ClinicalPage />
                 </Suspense>
               )}
             </Route>
             <Route path="/ind-wizard/module-3">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
-                  <SubmissionBuilder initialModule="m3" />
+                  <Module3QualityPage />
                 </Suspense>
               )}
             </Route>
             <Route path="/ind-wizard/module-4">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
-                  <SubmissionBuilder initialModule="m4" />
+                  <Module4NonclinicalPage />
                 </Suspense>
               )}
             </Route>
