@@ -75,6 +75,7 @@ import literatureRouter from './routes/literature.js';
 import literatureReviewRouter from './routes/literature-review.js';
 import documentRouter from './routes/document-routes';
 import vaultRouter from './routes/vault-routes';
+import organizationsRouter from './routes/organizations-routes';  // Add organizations router
 import emergencyFixRouter from './routes/emergency-fix.js';
 import sotaRouter from './routes/sota-api.mjs';
 import equivalenceRouter from './routes/equivalence-api.mjs';
@@ -189,6 +190,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register Vault API routes
   app.use('/api/vault', vaultRouter);
+  
+  // Register Organization API routes
+  app.use('/api/organizations', organizationsRouter);
   
   // Register SOTA API routes (appending to existing CER routes)
   app.use('/api/cer/sota', sotaRouter);
