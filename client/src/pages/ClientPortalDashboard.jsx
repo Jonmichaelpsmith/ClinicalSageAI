@@ -42,8 +42,8 @@ const ClientPortalDashboard = () => {
           title: "Login Successful",
           description: "Welcome to the TrialSage Client Portal",
         });
-        // Redirect to the client portal HTML page
-        window.location.href = "/client-portal.html";
+        // Redirect to the client portal React component
+        setLocation("/client-portal");
       }, 1000);
     } else {
       setTimeout(() => {
@@ -199,24 +199,22 @@ const ClientPortalDashboard = () => {
   const navigateToModule = (module) => {
     setActiveModule(module);
     
-    // Navigate to the specific module using the solutions HTML files
+    // Navigate to the proper React components using router
     if (module === "ind") {
-      window.location.href = "/solutions_ind_wizard.html";
+      setLocation("/client-portal/ind-wizard");
     } else if (module === "vault") {
-      window.location.href = "/solutions_vault.html";
+      setLocation("/client-portal/vault");
     } else if (module === "csr") {
-      window.location.href = "/solutions_csr_intelligence.html";
+      setLocation("/client-portal/csr-analyzer");
     } else if (module === "study") {
-      window.location.href = "/solutions_study_architect.html";
+      setLocation("/client-portal/study-architect");
     } else if (module === "cmc") {
-      // Fallback to client portal for now
-      window.location.href = "/client-portal.html";
+      setLocation("/client-portal/cmc-wizard");
     } else if (module === "timeline") {
-      // Fallback to client portal for now
-      window.location.href = "/client-portal.html";
+      setLocation("/timeline");
     } else {
       // Default to client portal
-      window.location.href = "/client-portal.html";
+      setLocation("/client-portal");
     }
   };
 
@@ -435,7 +433,7 @@ const ClientPortalDashboard = () => {
                             className={project.name === "ENZYMAX FORTE" ? "bg-pink-600 hover:bg-pink-700" : ""}
                             onClick={() => {
                               if (project.name === "ENZYMAX FORTE") {
-                                window.location.href = "/solutions_ind_wizard.html";
+                                setLocation("/client-portal/ind-wizard");
                               }
                             }}
                           >
