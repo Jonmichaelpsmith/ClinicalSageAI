@@ -128,8 +128,11 @@ app.get('/marketing', (req, res) => {
   }
 });
 
-// Let the Vite/React router handle the client portal route
-// Don't add a specific handler for /client-portal to make sure React routing works
+// Add explicit client portal route handler
+app.get('/client-portal', (req, res) => {
+  console.log('Serving client portal page');
+  res.sendFile(path.resolve('./client/public/index.html')); 
+});
 
 // Create HTTP server
 const httpServer = createHttpServer(app);
