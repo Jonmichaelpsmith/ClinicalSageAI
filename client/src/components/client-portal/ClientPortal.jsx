@@ -40,66 +40,43 @@ const ClientPortal = () => {
   useEffect(() => {
     const initClientPortal = async () => {
       try {
-        console.log('Initializing client portal...');
+        // Get organization data
+        const org = securityService.currentOrganization;
+        const parentOrg = securityService.parentOrganization;
         
-        // Get organization data or create a mock one for testing
-        let org = securityService.currentOrganization;
-        let parentOrg = securityService.parentOrganization;
-        
-        // If security service hasn't initialized yet or organization data isn't available,
-        // use dummy data for development/testing
         if (!org) {
-          console.log('No organization data available, using development data');
-          org = {
-            id: 'dev-org-001',
-            name: 'Development Organization',
-            type: 'biotech',
-            role: 'Admin'
-          };
-          
-          parentOrg = {
-            id: 'dev-parent-001',
-            name: 'Parent CRO',
-            type: 'cro'
-          };
+          throw new Error('No organization data available');
         }
         
-        console.log('Setting organization data:', org);
         setClientOrganization(org);
         setParentOrganization(parentOrg);
         
         // Get shared context from integration layer
         const portalContext = getSharedContext('client_portal');
-        console.log('Portal context:', portalContext);
         
         // In a real app, these would be API calls
         // Fetch projects
-        console.log('Fetching projects...');
         const projectList = await fetchProjects(org.id);
         setProjects(projectList);
         
         // Fetch recent documents
-        console.log('Fetching documents...');
         const docList = await fetchDocuments(org.id);
         setDocuments(docList);
         
         // Fetch recent activities
-        console.log('Fetching activities...');
         const activityList = await fetchActivities(org.id);
         setActivities(activityList);
         
         // Share client context with other modules
-        console.log('Sharing context with other modules...');
         shareContext('organization', org.id, {
           organization: org,
           parentOrganization: parentOrg
         });
         
-        console.log('Client portal initialization complete.');
         setLoading(false);
       } catch (err) {
         console.error('Error initializing client portal:', err);
-        setError(err.message || 'An unknown error occurred');
+        setError(err.message);
         setLoading(false);
       }
     };
