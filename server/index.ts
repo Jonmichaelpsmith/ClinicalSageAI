@@ -152,26 +152,39 @@ globalErrorHandler.initializeStabilityMeasures();
 // Apply the error handler middleware
 app.use(errorHandler);
 
-// Serve static files from the client/dist directory
-const clientDist = path.resolve(__dirname, '../client/dist');
-app.use(express.static(clientDist));
-
-// All other GET requests not handled above should return index.html
-// This ensures client-side routing works for direct URL access
-app.get('*', (req, res) => {
-  // Skip API routes - let them 404 if they don't exist
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({
+// In production mode, serve static files from the client/dist directory
+if (!isDev) {
+  const clientDist = path.resolve(__dirname, '../client/dist');
+  app.use(express.static(clientDist));
+  
+  // In production, serve index.html for client-side routes
+  app.get('*', (req, res) => {
+    // Skip API routes
+    if (req.path.startsWith('/api/')) {
+      return res.status(404).json({
+        error: {
+          message: `API route not found: ${req.method} ${req.path}`,
+          status: 404,
+        },
+      });
+    }
+    
+    console.log(`[PROD] Serving index.html for client-side route: ${req.path}`);
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+} else {
+  // In development mode, handle API 404s
+  // Vite middleware will handle serving the client app (configured earlier)
+  app.use('/api/*', (req, res) => {
+    console.log(`[DEV] API route not found: ${req.method} ${req.path}`);
+    res.status(404).json({
       error: {
         message: `API route not found: ${req.method} ${req.path}`,
         status: 404,
       },
     });
-  }
-
-  console.log(`Serving index.html for client-side route: ${req.path}`);
-  res.sendFile(path.join(clientDist, 'index.html'));
-});
+  });
+}
 
 // Start server with error handling
 httpServer.listen(port, () => {
