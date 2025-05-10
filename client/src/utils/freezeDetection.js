@@ -23,9 +23,9 @@ const state = {
 };
 
 /**
- * Initialize freeze detection
+ * Initialize basic freeze detection
  */
-export function initFreezeDetection() {
+function initBasicFreezeDetection() {
   if (state.enabled) {
     // Already initialized
     return;
