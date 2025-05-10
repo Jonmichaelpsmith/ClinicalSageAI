@@ -365,9 +365,50 @@ const ClientPortal = () => {
     }
   };
   
-  // STEP 1: First just test if the shell component loads properly
-  return <div style={{padding: 40, background: "#fff", textAlign: "center", fontSize: "24px"}}>🚧 Client Portal Shell Loaded! 🚧</div>;
+  // STEP 2: Re-introduce the Landing & Dashboard views with a test organization
+  const [org, setOrg] = useState(null);
   
+  // Hard-code a test org to prove the view works
+  useEffect(() => {
+    // Set to null to see the landing view, or provide an object to see the dashboard
+    setOrg({ 
+      id: 'test', 
+      name: 'Acme CRO', 
+      type: 'cro',
+      role: 'Administrator',
+      clients: 5,
+      lastUpdated: '2025-05-10'
+    });
+  }, []);
+  
+  // Step 2B: Conditionally render landing page or dashboard
+  if (!org) {
+    // Show the landing page when no organization is selected
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-md">
+          <Building size={48} className="mx-auto text-primary mb-4" />
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Welcome to TrialSage</h2>
+          <p className="text-gray-600 mb-4">Please select an organization to continue.</p>
+          <button 
+            onClick={() => setOrg({ 
+              id: 'test', 
+              name: 'Acme CRO', 
+              type: 'cro',
+              role: 'Administrator',
+              clients: 5,
+              lastUpdated: '2025-05-10'
+            })}
+            className="px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90"
+          >
+            Select Test Organization
+          </button>
+        </div>
+      </div>
+    );
+  }
+  
+  // Show the dashboard when organization is selected
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Client Portal Header */}
@@ -387,9 +428,9 @@ const ClientPortal = () => {
               
               <div className="flex items-center">
                 <Building className="text-primary mr-2" size={20} />
-                <span className="font-medium text-lg">{currentOrganization?.name || 'Client Portal'}</span>
+                <span className="font-medium text-lg">{org?.name || 'Client Portal'}</span>
                 <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">
-                  {currentOrganization?.type?.toUpperCase() || 'CLIENT'}
+                  {org?.type?.toUpperCase() || 'CLIENT'}
                 </span>
               </div>
             </div>
