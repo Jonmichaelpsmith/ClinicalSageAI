@@ -17,7 +17,7 @@ interface ErrorWithStatusCode extends Error {
 
 interface ErrorLogStructure {
   timestamp: string;
-  path: string;
+  path: string | undefined; // Make path optional as it could be undefined in some contexts
   method: string;
   ip: string;
   error: {

@@ -2,10 +2,15 @@
 
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Switch, Route, useLocation } from 'wouter';
-import { useState, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import queryClient from './lib/queryClient';
 import { TenantProvider } from './contexts/TenantContext';
+
+// Import stability utilities
+import freezeDetection from '@/utils/freezeDetection';
+import networkResilience from '@/utils/networkResilience';
+import memoryManagement from '@/utils/memoryManagement';
 
 // Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
@@ -99,6 +104,35 @@ function App() {
   
   // Get current location to determine when to show the unified nav
   const [location] = useLocation();
+  
+  // Initialize stability measures
+  useEffect(() => {
+    console.log('🛡️ Initializing application stability measures...');
+    
+    // Initialize freeze detection
+    freezeDetection.initFreezeDetection();
+    
+    // Initialize network resilience
+    networkResilience.initNetworkResilience();
+    
+    // Initialize memory management
+    memoryManagement.setupMemoryMonitoring();
+    
+    // Make utilities available globally for emergency debugging
+    window.stabilityUtils = {
+      freezeDetection,
+      networkResilience,
+      memoryManagement
+    };
+    
+    console.log('✅ Application stability measures initialized');
+    
+    // Clean up on unmount (though App should never unmount in normal operation)
+    return () => {
+      freezeDetection.cleanupFreezeDetection();
+      networkResilience.cleanupNetworkResilience();
+    };
+  }, []);
   
   // Check if we're on the landing page, regulatory hub, coauthor pages, or dashboard (which have their own navigation)
   const isLandingPage = location === '/' || location === '/client-portal';
