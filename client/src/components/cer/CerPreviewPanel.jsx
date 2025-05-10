@@ -1,24 +1,33 @@
-import React, { useState } from 'react';
-import { AlertTriangle, CheckCircle, Info, Download, FileText, Eye } from 'lucide-react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { AlertTriangle, CheckCircle, Info, Download, FileText, Eye, FileDown, Loader2, File, Rows, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { cerApiService } from '@/services/CerAPIService';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import SaveCerToVaultButton from './SaveCerToVaultButton';
 
+// Dynamically import export panel for code splitting
+const CerReportExportPanel = lazy(() => import('./CerReportExportPanel'));
+
 export default function CerPreviewPanel({ title, sections = [], faers = [], comparators = [], complianceData }) {
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const { toast } = useToast();
+  const [previewMode, setPreviewMode] = useState('document');
+  const [isExporting, setIsExporting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [showExportPanel, setShowExportPanel] = useState(false);
+  const [reportsList, setReportsList] = useState([]);
   // Helper function to find compliance score for a section
   const getSectionComplianceStatus = (sectionTitle) => {
     if (!complianceData || !complianceData.sectionScores) return null;
-    
+
     const sectionData = complianceData.sectionScores.find(
       section => section.title.toLowerCase() === sectionTitle.toLowerCase()
     );
-    
+
     if (!sectionData) return null;
-    
+
     return {
       score: sectionData.averageScore,
       status: sectionData.averageScore >= 0.8 ? 'compliant' : 
@@ -27,7 +36,7 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
       feedback: Object.values(sectionData.standards || {}).map(s => s.feedback).filter(Boolean).join(' ')
     };
   };
-  
+
   // Get badge color based on compliance status
   const getComplianceColor = (status) => {
     switch (status) {
@@ -37,7 +46,7 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
       default: return 'bg-gray-50 text-gray-700 border-gray-200';
     }
   };
-  
+
   // Get icon based on compliance status
   const getComplianceIcon = (status) => {
     switch (status) {
@@ -47,7 +56,7 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
       default: return null;
     }
   };
-  
+
   // Generate MEDDEV 2.7/1 Rev 4 complaint PDF preview
   const generatePDFPreview = async () => {
     if (sections.length === 0) {
@@ -61,7 +70,7 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
 
     try {
       setIsGeneratingPreview(true);
-      
+
       // Use a hidden iframe to show the preview
       const previewContainer = document.getElementById('pdf-preview-container');
       if (!previewContainer) {
@@ -70,7 +79,7 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
         container.className = 'fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 z-50 flex items-center justify-center';
         container.style.display = 'none';
         document.body.appendChild(container);
-        
+
         // Add close button
         const closeButton = document.createElement('button');
         closeButton.innerText = 'Close Preview';
@@ -80,7 +89,7 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
         };
         container.appendChild(closeButton);
       }
-      
+
       // Prepare data for preview
       const exportData = {
         title,
@@ -99,26 +108,26 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
           watermark: 'PREVIEW - NOT FOR REGULATORY SUBMISSION'
         }
       };
-      
+
       // Generate PDF blob
       const pdfBlob = await cerApiService.exportToPDF(exportData);
-      
+
       // Create object URL for preview
       const pdfUrl = URL.createObjectURL(pdfBlob);
-      
+
       // Show preview in iframe
       const container = document.getElementById('pdf-preview-container');
       let iframe = container.querySelector('iframe');
-      
+
       if (!iframe) {
         iframe = document.createElement('iframe');
         iframe.className = 'w-4/5 h-4/5 border-none';
         container.appendChild(iframe);
       }
-      
+
       iframe.src = pdfUrl;
       container.style.display = 'flex';
-      
+
       toast({
         title: 'Preview Generated',
         description: 'MEDDEV 2.7/1 Rev 4 compliant preview created successfully',
@@ -135,7 +144,92 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
       setIsGeneratingPreview(false);
     }
   };
-  
+
+  const exportToPDF = async () => {
+    // New function to handle batch export
+    const showBatchExportDialog = () => {
+      // We'll use dynamic import to load the component only when needed
+      // This helps with memory usage by not loading components until required
+      import('./CerReportExportPanel').then(module => {
+        const CerReportExportPanel = module.default;
+
+        // Here we would normally show a modal dialog with this component
+        // For simplicity in this implementation, we'll just redirect to a new page
+        // In a real app, you would use a modal dialog component
+        setShowExportPanel(true);
+      }).catch(error => {
+        console.error('Error loading batch export component:', error);
+        toast({
+          title: "Component Error",
+          description: "Failed to load batch export component",
+          variant: "destructive"
+        });
+      });
+    };
+
+    if (!sections) {
+      toast({
+        title: "Export error",
+        description: "No sections found for export",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      // Start memory monitoring
+      if (window.performance && window.performance.memory) {
+        const memBefore = window.performance.memory.usedJSHeapSize / (1024 * 1024);
+        console.log(`Memory before export: ${Math.round(memBefore)}MB`);
+      }
+
+      const pdfBlob = await cerApiService.exportToPDF({
+        title,
+        sections,
+        faers,
+        comparators,
+        complianceData,
+        templateId: 'meddev'
+      });
+
+      const url = window.URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `${title.replace(/\s+/g, '_')}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+
+      // Clean up resources
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        // Check memory after export
+        if (window.performance && window.performance.memory) {
+          const memAfter = window.performance.memory.usedJSHeapSize / (1024 * 1024);
+          console.log(`Memory after export: ${Math.round(memAfter)}MB`);
+        }
+      }, 100);
+
+      toast({
+        title: "Export successful",
+        description: "Your CER has been exported as PDF",
+      });
+    } catch (error) {
+      console.error('Error exporting to PDF:', error);
+      toast({
+        title: "Export failed",
+        description: error.message || "Failed to export report to PDF",
+        variant: "destructive"
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
 
 
   return (
@@ -143,7 +237,7 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
       {/* Top panel with actions */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-6 pb-4 border-b border-[#E1DFDD]">
         <h1 className="text-xl font-semibold text-[#323130] mb-3 sm:mb-0">{title || 'Clinical Evaluation Report'}</h1>
-        
+
         <div className="flex flex-wrap gap-2">
           <Button
             onClick={generatePDFPreview}
@@ -163,16 +257,9 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
               </>
             )}
           </Button>
-          
+
           <Button
-            onClick={() => cerApiService.exportToPDF({
-              title,
-              sections,
-              faers,
-              comparators,
-              complianceData,
-              templateId: 'meddev'
-            }).then(blob => cerApiService.downloadBlob(blob, `${title.replace(/\s+/g, '_')}.pdf`))}
+            onClick={exportToPDF}
             disabled={sections.length === 0}
             className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white h-9"
             size="sm"
@@ -180,7 +267,7 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
             <FileText className="h-4 w-4 mr-2" />
             Download PDF
           </Button>
-          
+
           <SaveCerToVaultButton
             cerData={{
               title,
@@ -231,7 +318,7 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
       {sections.length > 0 ? (
         <div className="mb-6">
           <h2 className="text-lg font-semibold mb-4 text-[#323130]">Report Contents</h2>
-          
+
           {/* Table of contents */}
           <div className="mb-6 p-4 bg-white border border-[#E1DFDD] rounded">
             <h3 className="text-sm font-semibold mb-2 text-[#323130]">Table of Contents</h3>
@@ -245,12 +332,12 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
               {comparators.length > 0 && <li className="text-[#0F6CBD]"><span className="text-[#323130]">Comparator Products Analysis</span></li>}
             </ol>
           </div>
-          
+
           {/* Section content */}
           {sections.map((s, i) => {
             const complianceStatus = getSectionComplianceStatus(s.section);
             const hasComplianceData = complianceStatus !== null;
-            
+
             return (
               <div 
                 key={i} 
@@ -265,7 +352,7 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
                     </div>
                   )}
                 </div>
-                
+
                 {hasComplianceData && complianceStatus.status !== 'compliant' && (
                   <div className={`mb-3 text-sm p-2 rounded ${complianceStatus.status === 'needs-improvement' ? 'bg-yellow-50' : 'bg-red-50'}`}>
                     <p className="font-medium mb-1">{complianceStatus.status === 'needs-improvement' ? 'Improvement Suggestions:' : 'Compliance Issues:'}</p>
@@ -280,7 +367,7 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
                     </ul>
                   </div>
                 )}
-                
+
                 <div className="whitespace-pre-wrap text-sm text-[#323130] leading-relaxed">{s.content}</div>
               </div>
             );

@@ -51,6 +51,23 @@ async function generateCER(deviceData, clinicalData, literatureData, templateSet
 async function analyzeClinicalData(clinicalData) {
   try {
     const response = await openai.chat.completions.create({
+
+/**
+ * Helper function to estimate number of pages for a section based on content length
+ * @param {string} content - The section content
+ * @param {number} charsPerPage - Estimated characters per page
+ * @returns {number} - Estimated page count
+ */
+function calculateSectionPages(content, charsPerPage = 3000) {
+  if (!content) return 1;
+  
+  const contentLength = typeof content === 'string' ? content.length : JSON.stringify(content).length;
+  const estimatedPages = Math.ceil(contentLength / charsPerPage);
+  
+  return Math.max(1, estimatedPages);
+}
+
+
       model: "gpt-4o",
       messages: [
         {
@@ -184,12 +201,15 @@ async function generateFullCER(deviceData, clinicalAnalysis, literatureReview, r
 }
 
 /**
- * Generate a PDF version of the CER
+ * Generate a PDF version of the CER with memory optimizations
  */
 async function generateCERPDF(cerData) {
   try {
-    // Create a new PDF document
-    const pdfDoc = await PDFDocument.create();
+    // Create a new PDF document with memory efficiency options
+    const pdfDoc = await PDFDocument.create({
+      updateMetadata: true, // Only update when necessary
+      useObjectStreams: true // More compact binary representation
+    });
     
     // Add metadata
     pdfDoc.setTitle(`Clinical Evaluation Report - ${cerData.deviceData.deviceName}`);
@@ -206,6 +226,10 @@ async function generateCERPDF(cerData) {
     // Add a cover page
     const coverPage = pdfDoc.addPage([595.28, 841.89]); // A4
     const { width, height } = coverPage.getSize();
+    
+    // Track memory usage during PDF generation
+    const memoryUsage = process.memoryUsage();
+    console.log(`Memory usage before cover page: ${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB`);
     
     // Add title
     coverPage.drawText('CLINICAL EVALUATION REPORT', {
@@ -241,9 +265,17 @@ async function generateCERPDF(cerData) {
     });
     
     // Add version
-    coverPage.drawText(`Version: ${cerData.templateSettings.version || '1.0.0'}`, {
+    coverPage.drawText(`Version: ${cerData.templateSettings?.version || '1.0.0'}`, {
       x: 150,
       y: height - 320,
+      size: 12,
+      font: helveticaFont
+    });
+    
+    // Add report ID for traceability
+    coverPage.drawText(`Report ID: ${cerData.reportId || 'Generated ' + Date.now()}`, {
+      x: 150,
+      y: height - 340,
       size: 12,
       font: helveticaFont
     });
@@ -259,17 +291,43 @@ async function generateCERPDF(cerData) {
       color: rgb(0, 0.3, 0.6)
     });
     
-    // Mock table of contents
-    const tocItems = [
-      { title: '1. Executive Summary', page: 3 },
-      { title: '2. Device Description', page: 4 },
-      { title: '3. Literature Review', page: 6 },
-      { title: '4. Clinical Data Analysis', page: 10 },
-      { title: '5. Risk Assessment', page: 15 },
-      { title: '6. Conclusions', page: 20 },
-      { title: '7. Appendices', page: 22 }
-    ];
+    // Determine page numbers based on actual sections
+    let currentPage = 3; // Start after TOC page
+    const tocItems = [];
     
+    // Executive Summary is always first
+    tocItems.push({ title: '1. Executive Summary', page: currentPage });
+    currentPage += 2;
+    
+    // Add TOC items based on available sections
+    if (cerData.cerContent?.deviceDescription) {
+      tocItems.push({ title: '2. Device Description', page: currentPage });
+      currentPage += calculateSectionPages(cerData.cerContent.deviceDescription, 3000);
+    }
+    
+    if (cerData.literatureReview?.findings) {
+      tocItems.push({ title: '3. Literature Review', page: currentPage });
+      currentPage += calculateSectionPages(cerData.literatureReview.findings, 3500);
+    }
+    
+    if (cerData.clinicalAnalysis?.findings) {
+      tocItems.push({ title: '4. Clinical Data Analysis', page: currentPage });
+      currentPage += calculateSectionPages(cerData.clinicalAnalysis.findings, 4000);
+    }
+    
+    if (cerData.riskAssessment?.assessment) {
+      tocItems.push({ title: '5. Risk Assessment', page: currentPage });
+      currentPage += calculateSectionPages(cerData.riskAssessment.assessment, 3500);
+    }
+    
+    // Always add conclusions
+    tocItems.push({ title: '6. Conclusions', page: currentPage });
+    currentPage += 2;
+    
+    // Always add appendices
+    tocItems.push({ title: '7. Appendices', page: currentPage });
+    
+    // Draw the TOC
     tocItems.forEach((item, index) => {
       tocPage.drawText(item.title, {
         x: 50,
@@ -311,37 +369,82 @@ async function generateCERPDF(cerData) {
       executiveSummary = cerData.cerContent.executiveSummary;
     }
     
-    // Format and draw the executive summary text
-    // This is a very basic text rendering - in a real app we'd use proper text layout
-    const lines = wrapText(executiveSummary, 70);
-    lines.forEach((line, index) => {
-      const y = height - 100 - (index * 14);
-      if (y > 50) { // Basic page overflow prevention
-        summaryPage.drawText(line, {
+    // Format and draw the executive summary text with pagination
+    const textLines = wrapText(executiveSummary, 70);
+    let currentLine = 0;
+    let currentTextPage = summaryPage;
+    const linesPerPage = Math.floor((height - 150) / 14);
+    
+    while (currentLine < textLines.length) {
+      // How many lines can we fit on this page
+      const endLine = Math.min(currentLine + linesPerPage, textLines.length);
+      
+      // Draw the lines for this page
+      for (let i = currentLine; i < endLine; i++) {
+        const y = height - 100 - ((i - currentLine) * 14);
+        currentTextPage.drawText(textLines[i], {
           x: 50,
           y,
           size: 10,
           font: helveticaFont
         });
       }
-    });
-    
-    // Add page numbers
-    for (let i = 0; i < pdfDoc.getPageCount(); i++) {
-      const page = pdfDoc.getPage(i);
-      page.drawText(`Page ${i + 1} of ${pdfDoc.getPageCount()}`, {
-        x: 250,
-        y: 30,
-        size: 10,
-        font: helveticaFont
-      });
+      
+      currentLine = endLine;
+      
+      // If we have more lines, add a new page
+      if (currentLine < textLines.length) {
+        currentTextPage = pdfDoc.addPage([595.28, 841.89]);
+        currentTextPage.drawText('1. EXECUTIVE SUMMARY (continued)', {
+          x: 50,
+          y: height - 50,
+          size: 16,
+          font: helveticaBold,
+          color: rgb(0, 0.3, 0.6)
+        });
+      }
     }
     
-    // In a real implementation, we would add all the sections here
-    // with proper formatting, styles, headers, footers, etc.
+    // Track memory during generation
+    const memoryAfterSummary = process.memoryUsage();
+    console.log(`Memory usage after summary: ${Math.round(memoryAfterSummary.heapUsed / 1024 / 1024)}MB`);
     
-    // Serialize to bytes
-    const pdfBytes = await pdfDoc.save();
+    // In a real implementation, we would add all sections here
+    // For this optimization, we'll just add page numbers
+    
+    // Add page numbers in batches to avoid memory pressure
+    const pageCount = pdfDoc.getPageCount();
+    const batchSize = 10; // Process pages in batches of 10 to avoid memory spikes
+    
+    for (let batchStart = 0; batchStart < pageCount; batchStart += batchSize) {
+      const batchEnd = Math.min(batchStart + batchSize, pageCount);
+      
+      for (let i = batchStart; i < batchEnd; i++) {
+        const page = pdfDoc.getPage(i);
+        page.drawText(`Page ${i + 1} of ${pageCount}`, {
+          x: 250,
+          y: 30,
+          size: 10,
+          font: helveticaFont
+        });
+      }
+      
+      // If we're running in a production environment, allow some GC time
+      if (process.env.NODE_ENV === 'production' && batchEnd < pageCount) {
+        await new Promise(resolve => setTimeout(resolve, 50));
+      }
+    }
+    
+    // Log final memory usage
+    const finalMemory = process.memoryUsage();
+    console.log(`Final memory usage: ${Math.round(finalMemory.heapUsed / 1024 / 1024)}MB`);
+    
+    // Serialize to bytes with compression to reduce memory footprint
+    const pdfBytes = await pdfDoc.save({ 
+      useObjectStreams: true,
+      addDefaultPage: false,
+      objectsPerTick: 50 // Process in small batches to avoid memory pressure
+    });
     
     // Save the PDF to a temporary file
     const tempFilePath = path.join(__dirname, '../../temp', `cer-${Date.now()}.pdf`);
@@ -351,7 +454,16 @@ async function generateCERPDF(cerData) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
     
-    fs.writeFileSync(tempFilePath, pdfBytes);
+    // Write the file in chunks to avoid memory pressure
+    const fileHandle = fs.openSync(tempFilePath, 'w');
+    const chunkSize = 1024 * 1024; // 1MB chunks
+    
+    for (let i = 0; i < pdfBytes.length; i += chunkSize) {
+      const chunk = pdfBytes.slice(i, Math.min(i + chunkSize, pdfBytes.length));
+      fs.writeSync(fileHandle, chunk, 0, chunk.length);
+    }
+    
+    fs.closeSync(fileHandle);
     
     return {
       filePath: tempFilePath,
