@@ -1,17 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Define available modules
-export const MODULES = {
-  IND_WIZARD: 'ind-wizard',
-  VAULT: 'trial-vault',
-  CSR_INTELLIGENCE: 'csr-intelligence',
-  CER_GENERATOR: 'cer-generator',
-  STUDY_ARCHITECT: 'study-architect',
-  CMC_WIZARD: 'cmc-wizard',
-  ANALYTICS: 'analytics',
-  CLIENT_PORTAL: 'client-portal'
-};
-
 // Create the context for module integration
 const ModuleIntegrationContext = createContext();
 
@@ -191,25 +179,6 @@ export const ModuleIntegrationProvider = ({ children }) => {
     }
   };
 
-  // Module context sharing
-  const [contextMap, setContextMap] = useState({});
-
-  // Method to share context between modules
-  const shareContext = (moduleId, key, value) => {
-    setContextMap(prev => ({
-      ...prev,
-      [moduleId]: {
-        ...(prev[moduleId] || {}),
-        [key]: value
-      }
-    }));
-  };
-
-  // Method to get shared context from another module
-  const getSharedContext = (moduleId) => {
-    return contextMap[moduleId] || {};
-  };
-
   // Make all these methods and state available through the context
   const value = {
     data: sharedData,
@@ -222,8 +191,6 @@ export const ModuleIntegrationProvider = ({ children }) => {
     addAuditEntry,
     runAiAnalysis,
     verifyDocumentBlockchain,
-    shareContext,
-    getSharedContext
   };
 
   return (
