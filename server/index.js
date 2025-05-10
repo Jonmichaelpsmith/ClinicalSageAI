@@ -244,10 +244,17 @@ function checkAuth(req, res, next) {
 }
 
 // Public client portal (no auth check)
-// Let React router handle this route instead of serving static HTML
-// app.get('/client-portal', (req, res) => {
-//   res.sendFile(path.resolve('./client-portal.html'));
-// });
+// Check if client-portal.html exists and serve it
+app.get('/client-portal', (req, res, next) => {
+  const clientPortalPath = path.resolve('./client-portal.html');
+  if (fs.existsSync(clientPortalPath)) {
+    res.sendFile(clientPortalPath);
+  } else {
+    console.log('[Routes] Static client-portal.html not found, falling back to React app');
+    // This will fall through to React routing via Vite middleware
+    next();
+  }
+});
 
 // Secure client portal (with auth check)
 app.get('/client-portal-direct', checkAuth, (req, res) => {
