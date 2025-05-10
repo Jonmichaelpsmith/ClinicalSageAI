@@ -28,11 +28,11 @@ const LoadingPage = () => (
 import ClientPortalLanding from './pages/ClientPortalLanding';
 
 // Import client portal components from their proper location
-import ClientPortal from '../client-portal/ClientPortal';
-import ClientHeader from '../client-portal/ClientHeader';
-import ClientContextBar from '../client-portal/ClientContextBar';
-import ClientDashboard from '../client-portal/ClientDashboard';
-import OrganizationSwitcher from '../client-portal/OrganizationSwitcher';
+import ClientPortal from './components/client-portal/ClientPortal';
+import ClientHeader from './components/client-portal/ClientHeader';
+import ClientContextBar from './components/client-portal/ClientContextBar';
+import ClientDashboard from './components/client-portal/ClientDashboard';
+import OrganizationSwitcher from './components/client-portal/OrganizationSwitcher';
 
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
@@ -173,7 +173,9 @@ function App() {
           <Switch>
           {/* Main Portal Landing Pages - both root and /client-portal go to same component */}
           <Route path="/" component={ClientPortalLanding} />
-          <Route path="/client-portal" component={ClientPortalLanding} />
+          
+          {/* Main client portal route - uses wildcard to catch all /client-portal/* paths */}
+          <Route path="/client-portal/*" component={ClientPortal} />
           
           {/* Client Portal Sub-Pages */}
           <Route path="/client-portal/vault" component={VaultPage} />
