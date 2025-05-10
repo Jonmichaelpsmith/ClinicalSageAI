@@ -40,7 +40,7 @@ const errorHandler = (
   // Create a structured error log for monitoring
   const errorLog: ErrorLogStructure = {
     timestamp: new Date().toISOString(),
-    path: req.path,
+    path: req.path || 'unknown_path', // Ensure path is never undefined
     method: req.method,
     ip: req.ip,
     error: {
@@ -57,7 +57,7 @@ const errorHandler = (
     console.error('Error details:', errorLog);
   } else {
     console.error(
-      `Error processing ${req.method} ${req.path}: ${err.name} - ${err.message}`
+      `Error processing ${req.method} ${req.path || 'unknown_path'}: ${err.name} - ${err.message}`
     );
   }
 
