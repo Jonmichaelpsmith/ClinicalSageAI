@@ -1,148 +1,217 @@
-
-import React, { useEffect, useState } from 'react';
-import { initFreezeDetection } from '../../utils/freezeDetection';
-import { initializeMemoryOptimization } from '../../utils/memoryOptimizer';
+import React, { useEffect, useState, useRef } from 'react';
+import { optimizeMemory, getMemoryUsage } from '../../utils/memoryOptimizer';
+import { initFreezeDetection, analyzeFreezeRisks } from '../../utils/freezeDetection';
 import { initNetworkResilience } from '../../utils/networkResilience';
+import { useToast } from '@/hooks/use-toast';
 
 /**
- * StabilityEnabler Component
- * 
- * Integrates all stability and performance optimizations in one place.
- * This component should be included near the root of your application.
+ * StabilityEnabler component provides application stability enhancements
+ * It monitors for UI freezes, optimizes memory usage, and handles network resilience
  */
-function StabilityEnabler({ children }) {
-  const [status, setStatus] = useState({
-    initialized: false,
-    memoryManagement: false,
-    freezeDetection: false,
-    networkResilience: false
+export default function StabilityEnabler({ children }) {
+  const { toast } = useToast();
+  const [isStabilityEnabled, setIsStabilityEnabled] = useState(false);
+  const [diagnosticData, setDiagnosticData] = useState(null);
+
+  // References to maintain instance across renders
+  const networkResilienceRef = useRef(null);
+  const freezeDetectionRef = useRef(null);
+  const stabilityMetricsRef = useRef({
+    freezes: 0,
+    memoryCleanups: 0,
+    networkDisconnects: 0,
+    severeFreezes: 0,
+    lastMemoryUsage: null,
+    risks: []
   });
+
+  // Run stability diagnostics to detect and log potential issues
+  const runStabilityDiagnostics = () => {
+    try {
+      // Analyze freeze risks
+      const freezeRiskAnalysis = analyzeFreezeRisks();
+
+      // Get current memory metrics
+      const memoryMetrics = getMemoryUsage();
+
+      // Get freeze metrics
+      const freezeMetrics = freezeDetectionRef.current?.getMetrics() || {};
+
+      // Get network stats
+      const networkStats = networkResilienceRef.current?.getStats() || {};
+      const connectionQuality = networkResilienceRef.current?.getConnectionQuality() || 'unknown';
+
+      // Determine if we need to run memory optimization
+      const shouldOptimizeMemory = memoryMetrics && 
+        (memoryMetrics.percentUsed > 70 || freezeMetrics.severeFreezesCount > 0);
+
+      // Run optimization if needed
+      if (shouldOptimizeMemory) {
+        optimizeMemory({ 
+          aggressive: freezeMetrics.severeFreezesCount > 0,
+          threshold: 75
+        });
+        stabilityMetricsRef.current.memoryCleanups++;
+      }
+
+      // Compile diagnostic data
+      const diagnostics = {
+        timestamp: new Date().toISOString(),
+        memory: memoryMetrics,
+        freezes: freezeMetrics,
+        network: {
+          isOnline: networkResilienceRef.current?.isOnline() || navigator.onLine,
+          connectionQuality,
+          queueLength: networkResilienceRef.current?.getQueueLength() || 0,
+          ...networkStats
+        },
+        risks: freezeRiskAnalysis.risks,
+        recommendations: []
+      };
+
+      // Generate recommendations based on diagnostics
+      if (freezeMetrics.severeFreezesCount > 2) {
+        diagnostics.recommendations.push(
+          'Multiple severe UI freezes detected. Consider reducing animations and complex DOM operations.'
+        );
+      }
+
+      if (memoryMetrics && memoryMetrics.percentUsed > 80) {
+        diagnostics.recommendations.push(
+          'High memory usage detected. Consider implementing virtualization for large lists and data tables.'
+        );
+      }
+
+      if (networkStats.failedRequests > networkStats.successfulRequests * 0.1) {
+        diagnostics.recommendations.push(
+          'High rate of network failures detected. Check for API endpoint issues or implement more robust error handling.'
+        );
+      }
+
+      // Update local state
+      setDiagnosticData(diagnostics);
+
+      // Log diagnostics if there are issues
+      if (diagnostics.recommendations.length > 0 || freezeRiskAnalysis.risks.length > 0) {
+        console.warn('Stability issues detected:', diagnostics);
+      }
+
+      // Update metrics
+      stabilityMetricsRef.current.lastMemoryUsage = memoryMetrics;
+      stabilityMetricsRef.current.freezes = freezeMetrics.freezeCount || 0;
+      stabilityMetricsRef.current.severeFreezes = freezeMetrics.severeFreezesCount || 0;
+      stabilityMetricsRef.current.risks = freezeRiskAnalysis.risks;
+
+      return diagnostics;
+    } catch (error) {
+      console.error('Error running stability diagnostics:', error);
+      return null;
+    }
+  };
 
   useEffect(() => {
     console.log('🛡️ Initializing all stability features...');
-    
-    // Initialize error tracking
-    const errorAnalytics = setupErrorAnalytics();
-    
-    // Initialize memory management
-    const memoryManager = initializeMemoryOptimization();
-    setStatus(prev => ({ ...prev, memoryManagement: true }));
-    console.log('Memory management initialized');
-    
-    // Initialize freeze detection
-    const freezeDetector = initFreezeDetection();
-    setStatus(prev => ({ ...prev, freezeDetection: true }));
-    console.log('Freeze detection initialized');
-    
+
     // Initialize network resilience
-    const networkManager = initNetworkResilience();
-    setStatus(prev => ({ ...prev, networkResilience: true }));
-    
-    // Initialize storage resilience
-    const storageManager = initializeStorageResilience();
-    
-    // Set up health check interval
-    const healthCheckInterval = setInterval(() => {
-      // Perform periodic health check
-      const memoryUsage = memoryManager.getCurrentMemoryUsage();
-      
-      // If memory usage is high, trigger optimization
-      if (memoryUsage.percentUsed > 70) {
-        memoryManager.forceOptimize();
+    networkResilienceRef.current = initNetworkResilience({
+      onStatusChange: (status) => {
+        if (!status.online) {
+          stabilityMetricsRef.current.networkDisconnects++;
+
+          toast({
+            title: 'Network connection lost',
+            description: 'Working in offline mode. Changes will be synchronized when connection is restored.',
+            variant: 'warning',
+            duration: 5000
+          });
+        } else if (status.queuedRequests > 0) {
+          toast({
+            title: 'Network connection restored',
+            description: `Synchronizing ${status.queuedRequests} pending changes...`,
+            variant: 'default',
+            duration: 3000
+          });
+        }
+      },
+      maxRetries: 3,
+      retryDelay: 1000,
+      useExponentialBackoff: true,
+      criticalEndpoints: ['/api/auth', '/api/cer', '/api/health']
+    });
+
+    // Initialize freeze detection with more detailed options
+    freezeDetectionRef.current = initFreezeDetection({
+      threshold: 2000, // 2 seconds
+      severeFreezeThreshold: 5000, // 5 seconds is a severe freeze
+      attemptRecovery: true,
+      onFreeze: (info) => {
+        console.warn(`UI freeze detected: ${Math.round(info.duration)}ms at ${info.timestamp}`);
+
+        // If severe freeze, run memory optimization
+        if (info.isSevere) {
+          const result = optimizeMemory({ 
+            aggressive: true,
+            threshold: 50 // Lower threshold for severe freezes
+          });
+
+          stabilityMetricsRef.current.memoryCleanups++;
+          console.log('Memory optimization completed:', result);
+        }
+      },
+      onSevereFreeze: (info) => {
+        // Show toast for severe freezes
+        toast({
+          title: 'Performance issue detected',
+          description: 'Application performance was temporarily affected. Stability measures have been applied.',
+          variant: 'warning',
+          duration: 5000
+        });
+
+        // Run diagnostics after severe freeze
+        runStabilityDiagnostics();
       }
-      
-      // Clear network cache if it's getting too large
-      if (networkManager.getCacheStats().size > networkManager.getCacheStats().maxSize * 0.8) {
-        networkManager.clearCache();
-      }
-    }, 30000);
-    
-    setStatus(prev => ({ ...prev, initialized: true }));
-    console.log('🛡️ Initializing application stability measures...');
-    
+    });
+
+    // Run initial memory optimization
+    optimizeMemory();
+
+    // Schedule regular stability checks
+    const stabilityCheckInterval = setInterval(() => {
+      runStabilityDiagnostics();
+    }, 120000); // Every 2 minutes
+
+    // Schedule more frequent memory optimizations
+    const memoryInterval = setInterval(() => {
+      optimizeMemory();
+    }, 60000); // Every minute
+
+    // Initial diagnostics after a short delay
+    setTimeout(runStabilityDiagnostics, 5000);
+
+    setIsStabilityEnabled(true);
+    console.log('✅ Application stability measures initialized');
+
+    // Cleanup function
     return () => {
-      // Clean up on unmount
-      clearInterval(healthCheckInterval);
+      freezeDetectionRef.current?.cleanup();
+      networkResilienceRef.current?.cleanup();
+      clearInterval(memoryInterval);
+      clearInterval(stabilityCheckInterval);
     };
   }, []);
-  
-  /**
-   * Setup error analytics
-   */
-  function setupErrorAnalytics() {
-    const sessionId = `session-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-    console.log('Error analytics initialized with session ID:', sessionId);
-    
-    // Global error handler
-    window.addEventListener('error', (event) => {
-      console.error('Unhandled error:', event.error);
-      // You could send this to a logging service
-    });
-    
-    // Unhandled promise rejection handler
-    window.addEventListener('unhandledrejection', (event) => {
-      console.error('Unhandled promise rejection:', event.reason);
-      // You could send this to a logging service
-    });
-    
-    return { sessionId };
-  }
-  
-  /**
-   * Initialize storage resilience
-   */
-  function initializeStorageResilience() {
-    const storageTypes = {
-      localStorage: false,
-      sessionStorage: false,
-      indexedDB: false,
-      memory: true // Fallback is always available
-    };
-    
-    // Test localStorage
-    try {
-      localStorage.setItem('test', 'test');
-      localStorage.removeItem('test');
-      storageTypes.localStorage = true;
-    } catch (e) {
-      console.warn('localStorage not available, using memory fallback');
-    }
-    
-    // Test sessionStorage
-    try {
-      sessionStorage.setItem('test', 'test');
-      sessionStorage.removeItem('test');
-      storageTypes.sessionStorage = true;
-    } catch (e) {
-      console.warn('sessionStorage not available, using memory fallback');
-    }
-    
-    // Test indexedDB
-    try {
-      const request = indexedDB.open('test');
-      request.onsuccess = () => {
-        storageTypes.indexedDB = true;
-        request.result.close();
-        indexedDB.deleteDatabase('test');
+
+  // Expose diagnostics method to window for debugging
+  useEffect(() => {
+    if (isStabilityEnabled) {
+      window.__stabilityDiagnostics = runStabilityDiagnostics;
+      window.__forceClearMemory = () => optimizeMemory({ aggressive: true });
+
+      return () => {
+        delete window.__stabilityDiagnostics;
+        delete window.__forceClearMemory;
       };
-    } catch (e) {
-      console.warn('indexedDB not available, using memory fallback');
     }
-    
-    console.log('Storage resilience initialized:', storageTypes);
-    return storageTypes;
-  }
+  }, [isStabilityEnabled]);
 
-  return (
-    <>
-      {status.initialized && (
-        <div style={{ display: 'none' }} data-testid="stability-enabler">
-          {/* Hidden component, just used as a marker */}
-        </div>
-      )}
-      {children}
-    </>
-  );
+  return <>{children}</>;
 }
-
-export default StabilityEnabler;

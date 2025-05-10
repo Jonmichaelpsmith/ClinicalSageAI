@@ -1,4 +1,3 @@
-
 /**
  * Memory Optimizer
  * 
@@ -12,17 +11,17 @@
 const MEMORY_CONFIG = {
   // How often to check memory usage (ms) - increased to reduce frequency
   checkInterval: 30000,
-  
+
   // Memory thresholds (MB) - increased to be less sensitive
   warningThreshold: 250,
   criticalThreshold: 350,
-  
+
   // Performance metrics
   longTaskThreshold: 100, // ms - increased to be less sensitive
-  
+
   // Enable debug logging
   debug: false,
-  
+
   // Disable aggressive optimization to reduce performance impact
   aggressiveOptimization: false,
 };
@@ -45,16 +44,16 @@ const state = {
  */
 export function initializeMemoryOptimization() {
   console.info('Initializing memory optimization');
-  
+
   // Start periodic memory checks
   setInterval(checkMemory, MEMORY_CONFIG.checkInterval);
-  
+
   // Setup performance observer for long tasks if available
   setupLongTaskObserver();
-  
+
   // Initial memory check
   checkMemory();
-  
+
   return {
     getCurrentMemoryUsage: () => state.memoryUsage,
     forceOptimize: performMemoryOptimization,
@@ -66,18 +65,18 @@ export function initializeMemoryOptimization() {
  */
 function checkMemory() {
   state.checkCount++;
-  
+
   try {
     updateMemoryUsage();
-    
+
     // Log memory usage periodically
     if (MEMORY_CONFIG.debug && state.checkCount % 6 === 0) {
       console.debug('Memory usage:', state.memoryUsage);
     }
-    
+
     // Check if optimization is needed
     const timeSinceLastOptimization = Date.now() - state.lastOptimization;
-    
+
     if (state.memoryUsage.heapUsed > MEMORY_CONFIG.criticalThreshold * 1024 * 1024) {
       console.warn('Critical memory usage detected, performing optimization');
       performMemoryOptimization();
@@ -87,7 +86,7 @@ function checkMemory() {
       console.warn('High memory usage with long tasks detected, performing optimization');
       performMemoryOptimization();
     }
-    
+
     // Reset long task counter periodically
     if (state.checkCount % 30 === 0) {
       state.observedLongTasks = 0;
@@ -125,21 +124,21 @@ function performMemoryOptimization() {
     console.info('Skipping optimization - last one performed too recently');
     return;
   }
-  
+
   state.isOptimizing = true;
   state.lastOptimization = now;
-  
+
   try {
     console.info('Performing memory optimization');
-    
+
     // Clear application-specific caches only (less invasive)
     clearApplicationCaches();
-    
+
     // Clear console logs to free memory (simple, effective)
     if (console.clear) {
       console.clear();
     }
-    
+
     // Force garbage collection if available (unlikely in most browsers)
     if (window.gc) {
       try {
@@ -148,22 +147,22 @@ function performMemoryOptimization() {
         // Ignore errors
       }
     }
-    
+
     // Only perform aggressive optimizations if enabled and we're experiencing critical issues
     if (MEMORY_CONFIG.aggressiveOptimization && state.observedLongTasks > 5) {
       // Clear image caches
       clearImageCaches();
-      
+
       // Remove non-visible image data
       unloadNonVisibleImages();
-      
+
       // Clear any large objects in memory
       cleanupLargeObjects();
-      
+
       // Last resort - detach event listeners from non-visible components
       cleanupEventListeners();
     }
-    
+
     // Update memory usage after optimization
     setTimeout(() => {
       updateMemoryUsage();
@@ -185,19 +184,19 @@ function cleanupEventListeners() {
     const elements = document.querySelectorAll('*');
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-    
+
     for (const el of elements) {
       if (!el || !el.getBoundingClientRect) continue;
-      
+
       const rect = el.getBoundingClientRect();
       // If element is very far from viewport
       if (rect.bottom < -2000 || rect.top > viewportHeight + 2000 ||
           rect.right < -2000 || rect.left > viewportWidth + 2000) {
-        
+
         // Store original handlers if not already stored
         if (!el._originalEventListeners && el._events) {
           el._originalEventListeners = { ...el._events };
-          
+
           // Remove non-essential events
           for (const eventType in el._events) {
             if (!['click', 'submit', 'change'].includes(eventType)) {
@@ -227,7 +226,7 @@ function cleanupLargeObjects() {
       'dataCache', 'tempResults', 'chartData', 
       'oldRenderCache', 'previousSearch', 'resultCache'
     ];
-    
+
     for (const key of componentsToClean) {
       if (window[key] && typeof window[key] === 'object') {
         // If it's an array with more than 1000 items or an object with many properties
@@ -238,11 +237,11 @@ function cleanupLargeObjects() {
         }
       }
     }
-    
+
     // Find and clean up any React component state cache
     if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__ && 
         window.__REACT_DEVTOOLS_GLOBAL_HOOK__._renderers) {
-      
+
       const renderers = Object.values(window.__REACT_DEVTOOLS_GLOBAL_HOOK__._renderers);
       for (const renderer of renderers) {
         if (renderer && renderer.findFiberByHostInstance) {
@@ -269,7 +268,7 @@ function clearImageCaches() {
     typeof window[key] === 'string' && 
     window[key].startsWith('blob:')
   );
-  
+
   for (const key of blobUrls) {
     try {
       URL.revokeObjectURL(window[key]);
@@ -289,7 +288,7 @@ function clearApplicationCaches() {
     'dataCache', 'responseCache', 'queryCache', 
     'documentCache', 'tempData'
   ];
-  
+
   for (const name of cacheNames) {
     if (window[name]) {
       try {
@@ -303,7 +302,7 @@ function clearApplicationCaches() {
       }
     }
   }
-  
+
   // Clear React Query cache if it exists
   if (window.queryClient && typeof window.queryClient.clear === 'function') {
     window.queryClient.clear();
@@ -318,7 +317,7 @@ function clearUnusedData() {
   if (console.clear && MEMORY_CONFIG.aggressiveOptimization) {
     console.clear();
   }
-  
+
   // Remove old log entries
   if (console.history && Array.isArray(console.history)) {
     console.history.length = 0;
@@ -333,22 +332,22 @@ function unloadNonVisibleImages() {
     const images = document.querySelectorAll('img');
     const viewportHeight = window.innerHeight;
     const viewportWidth = window.innerWidth;
-    
+
     let unloadedCount = 0;
-    
+
     for (const img of images) {
       if (img.complete && img.currentSrc) {
         const rect = img.getBoundingClientRect();
-        
+
         // If image is far outside viewport, free its memory
         if (rect.bottom < -1000 || rect.top > viewportHeight + 1000 ||
             rect.right < -1000 || rect.left > viewportWidth + 1000) {
-          
+
           // Save original source
           if (!img.dataset.originalSrc) {
             img.dataset.originalSrc = img.currentSrc;
           }
-          
+
           // Replace with empty 1x1 transparent gif
           img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
           unloadedCount++;
@@ -362,7 +361,7 @@ function unloadNonVisibleImages() {
         }
       }
     }
-    
+
     if (unloadedCount > 0 && MEMORY_CONFIG.debug) {
       console.debug(`Unloaded ${unloadedCount} images to save memory`);
     }
@@ -388,12 +387,205 @@ function setupLongTaskObserver() {
           }
         }
       });
-      
+
       observer.observe({ entryTypes: ['longtask'] });
     } catch (err) {
       console.warn('Long task observer not supported:', err);
     }
   }
+}
+
+/**
+ * Optimizes memory usage by cleaning up unused resources
+ * @param {Object} options - Configuration options
+ * @param {boolean} options.aggressive - Whether to use aggressive optimization
+ * @param {number} options.threshold - Memory threshold in MB to trigger aggressive cleanup
+ * @returns {Object} - Success status and memory metrics
+ */
+export function optimizeMemory(options = {}) {
+  try {
+    const { 
+      aggressive = false, 
+      threshold = 100 // Default threshold in MB
+    } = options;
+
+    // Capture initial memory usage
+    const initialMemory = getMemoryUsage();
+
+    // Check if we need auto-aggressive mode based on memory threshold
+    const autoAggressive = initialMemory && initialMemory.heapUsedMB > threshold;
+    const shouldBeAggressive = aggressive || autoAggressive;
+
+    // Basic cleanup
+    if (window.gc) {
+      window.gc();
+    }
+
+    // Clear console in non-development environments
+    if (process.env.NODE_ENV !== 'development') {
+      console.clear();
+    }
+
+    // Remove any orphaned event listeners
+    cleanupEventListeners();
+
+    // Progressive cleanup steps
+    // Level 1: Basic cleanup always runs
+    purgeWeakReferences();
+
+    // Level 2: Medium cleanup for auto-triggered or manually aggressive modes
+    if (shouldBeAggressive) {
+      // Clear image cache
+      clearImageCaches();
+
+      // Clear any stored blobs
+      clearStoredBlobs();
+
+      // Remove DOM elements pending deletion
+      cleanUpDetachedDomNodes();
+    }
+
+    // Level 3: Extreme cleanup only when manually requested
+    if (aggressive) {
+      // Clear all non-essential localStorage items
+      clearTemporaryStorage();
+
+      // Reset non-critical application state
+      resetNonCriticalState();
+    }
+
+    // Get final memory usage
+    const finalMemory = getMemoryUsage();
+
+    return {
+      success: true,
+      initial: initialMemory,
+      final: finalMemory,
+      cleaned: initialMemory && finalMemory ? 
+        (initialMemory.heapUsedMB - finalMemory.heapUsedMB).toFixed(2) + 'MB' : 
+        'Unknown',
+      aggressive: shouldBeAggressive
+    };
+  } catch (error) {
+    console.error('Memory optimization failed:', error);
+    return { 
+      success: false, 
+      error: error.message 
+    };
+  }
+}
+
+/**
+ * Get current memory usage metrics
+ * @returns {Object|null} Memory usage metrics or null if not available
+ */
+export function getMemoryUsage() {
+  if (!window.performance || !window.performance.memory) {
+    return null;
+  }
+
+  const { 
+    usedJSHeapSize, 
+    totalJSHeapSize, 
+    jsHeapSizeLimit 
+  } = window.performance.memory;
+
+  return {
+    heapUsedMB: Math.round(usedJSHeapSize / (1024 * 1024) * 100) / 100,
+    heapTotalMB: Math.round(totalJSHeapSize / (1024 * 1024) * 100) / 100,
+    heapLimitMB: Math.round(jsHeapSizeLimit / (1024 * 1024) * 100) / 100,
+    percentUsed: Math.round((usedJSHeapSize / jsHeapSizeLimit) * 100 * 100) / 100
+  };
+}
+
+/**
+ * Purge weak references that may be holding onto memory
+ */
+function purgeWeakReferences() {
+  // This will help trigger garbage collection of weak references
+  if (window.WeakRef && window.FinalizationRegistry) {
+    // Modern browsers support this
+    const registry = new FinalizationRegistry(() => {});
+    registry.register({}, {});
+  }
+}
+
+/**
+ * Clean up any detached DOM nodes that might be in memory
+ */
+function cleanUpDetachedDomNodes() {
+  // Force a small layout recalculation to help browser 
+  // identify unused DOM nodes
+  if (document.body) {
+    const dummyDiv = document.createElement('div');
+    document.body.appendChild(dummyDiv);
+    dummyDiv.getBoundingClientRect();
+    document.body.removeChild(dummyDiv);
+  }
+}
+
+/**
+ * Clear temporary items from storage
+ */
+function clearTemporaryStorage() {
+  try {
+    // Clear temporary items but preserve critical ones
+    const preserveKeys = ['auth', 'user', 'tenant', 'organization'];
+
+    // Process localStorage
+    if (window.localStorage) {
+      const toRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (!preserveKeys.some(pk => key.includes(pk)) && 
+            (key.includes('temp') || key.includes('cache'))) {
+          toRemove.push(key);
+        }
+      }
+
+      // Remove identified items
+      toRemove.forEach(key => localStorage.removeItem(key));
+    }
+
+    // Clear non-essential sessionStorage
+    if (window.sessionStorage) {
+      const toRemove = [];
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (!preserveKeys.some(pk => key.includes(pk)) && 
+            (key.includes('temp') || key.includes('cache'))) {
+          toRemove.push(key);
+        }
+      }
+
+      // Remove identified items
+      toRemove.forEach(key => sessionStorage.removeItem(key));
+    }
+  } catch (e) {
+    console.error('Error clearing temporary storage:', e);
+  }
+}
+
+/**
+ * Reset non-critical application state
+ */
+function resetNonCriticalState() {
+  // Close any open but inactive modals
+  document.querySelectorAll('[role="dialog"]').forEach(dialog => {
+    if (dialog.getAttribute('aria-hidden') === 'true') {
+      dialog.remove();
+    }
+  });
+
+  // Remove unused iframes
+  document.querySelectorAll('iframe').forEach(iframe => {
+    // Only remove iframes that aren't visible
+    if (iframe.style.display === 'none' || 
+        iframe.width === '0' || 
+        iframe.height === '0') {
+      iframe.remove();
+    }
+  });
 }
 
 export default {

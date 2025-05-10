@@ -54,17 +54,94 @@ async function analyzeClinicalData(clinicalData) {
 
 /**
  * Helper function to estimate number of pages for a section based on content length
- * @param {string} content - The section content
+ * @param {string|object} content - The section content
  * @param {number} charsPerPage - Estimated characters per page
+ * @param {object} options - Additional options for calculation
  * @returns {number} - Estimated page count
  */
-function calculateSectionPages(content, charsPerPage = 3000) {
+function calculateSectionPages(content, charsPerPage = 3000, options = {}) {
   if (!content) return 1;
   
-  const contentLength = typeof content === 'string' ? content.length : JSON.stringify(content).length;
-  const estimatedPages = Math.ceil(contentLength / charsPerPage);
+  const { includeImages = true, complexFormatting = false } = options;
   
+  // Calculate base content length
+  let contentLength = 0;
+  
+  if (typeof content === 'string') {
+    contentLength = content.length;
+  } else {
+    try {
+      contentLength = JSON.stringify(content).length;
+    } catch (error) {
+      console.error('Error stringifying content for page calculation:', error);
+      // Fallback to a reasonable estimate
+      contentLength = 5000;
+    }
+  }
+  
+  // Adjust based on content complexity
+  let adjustedCharsPerPage = charsPerPage;
+  
+  // If content has complex formatting, reduce chars per page estimate
+  if (complexFormatting) {
+    adjustedCharsPerPage = Math.floor(charsPerPage * 0.8);
+  }
+  
+  // Calculate base page count
+  let estimatedPages = Math.ceil(contentLength / adjustedCharsPerPage);
+  
+  // Add pages for images if detected in content and option is enabled
+  if (includeImages && typeof content === 'string') {
+    // Count image references in content
+    const imageMatches = content.match(/\!\[.*?\]\(.*?\)|<img|data:image/g) || [];
+    const imageCount = imageMatches.length;
+    
+    // Each image takes approximately 1/3 page
+    if (imageCount > 0) {
+      estimatedPages += Math.ceil(imageCount / 3);
+    }
+  }
+  
+  // Ensure at least 1 page
   return Math.max(1, estimatedPages);
+}
+
+/**
+ * Chunks large text content for more efficient processing
+ * @param {string} text - The text content to chunk
+ * @param {number} chunkSize - Maximum characters per chunk
+ * @returns {Array<string>} Array of text chunks
+ */
+function chunkTextContent(text, chunkSize = 10000) {
+  if (!text || text.length <= chunkSize) return [text];
+  
+  const chunks = [];
+  let currentIndex = 0;
+  
+  while (currentIndex < text.length) {
+    // Find a good breaking point (paragraph or sentence end)
+    let endIndex = Math.min(currentIndex + chunkSize, text.length);
+    
+    // If we're not at the end, look for paragraph break
+    if (endIndex < text.length) {
+      // Try to find paragraph break near the end of chunk
+      const paragraphBreakIndex = text.lastIndexOf('\n\n', endIndex);
+      if (paragraphBreakIndex > currentIndex && paragraphBreakIndex > endIndex - 500) {
+        endIndex = paragraphBreakIndex + 2; // Include the double newline
+      } else {
+        // Try to find sentence end
+        const sentenceEndIndex = text.lastIndexOf('. ', endIndex);
+        if (sentenceEndIndex > currentIndex && sentenceEndIndex > endIndex - 200) {
+          endIndex = sentenceEndIndex + 2; // Include the period and space
+        }
+      }
+    }
+    
+    chunks.push(text.substring(currentIndex, endIndex));
+    currentIndex = endIndex;
+  }
+  
+  return chunks;
 }
 
 
@@ -202,22 +279,57 @@ async function generateFullCER(deviceData, clinicalAnalysis, literatureReview, r
 
 /**
  * Generate a PDF version of the CER with memory optimizations
+ * @param {Object} cerData - The CER data to format into PDF
+ * @param {Object} options - Options for PDF generation
+ * @returns {Object} Result object with file path and metadata
  */
-async function generateCERPDF(cerData) {
+async function generateCERPDF(cerData, options = {}) {
+  const {
+    optimizeMemory = true,
+    compressImages = true,
+    chunkProcessing = true,
+    debugMode = false
+  } = options;
+  
+  // Start monitoring memory usage
+  const memoryUsage = process.memoryUsage();
+  const startMemory = {
+    rss: Math.round(memoryUsage.rss / 1024 / 1024),
+    heapTotal: Math.round(memoryUsage.heapTotal / 1024 / 1024),
+    heapUsed: Math.round(memoryUsage.heapUsed / 1024 / 1024),
+    external: Math.round(memoryUsage.external / 1024 / 1024)
+  };
+  
+  if (debugMode) {
+    console.log(`Memory usage at start of PDF generation: ${JSON.stringify(startMemory)}MB`);
+  }
+  
   try {
     // Create a new PDF document with memory efficiency options
     const pdfDoc = await PDFDocument.create({
       updateMetadata: true, // Only update when necessary
-      useObjectStreams: true // More compact binary representation
+      useObjectStreams: true, // More compact binary representation
+      compress: true // Compress content streams
     });
     
     // Add metadata
     pdfDoc.setTitle(`Clinical Evaluation Report - ${cerData.deviceData.deviceName}`);
     pdfDoc.setAuthor('TrialSage AI');
     pdfDoc.setSubject('Clinical Evaluation Report');
-    pdfDoc.setKeywords(['CER', 'Clinical Evaluation', 'Medical Device', 'Regulatory']);
+    pdfDoc.setKeywords(['CER', 'Clinical Evaluation', 'Medical Device', 'Regulatory', 'EU MDR', 'MEDDEV']);
     pdfDoc.setCreator('TrialSage AI CER Generator');
-    pdfDoc.setProducer('TrialSage AI');
+    pdfDoc.setProducer('TrialSage AI CER Module v2.0.1');
+    
+    // Track memory at key points if debug mode enabled
+    let phasedMemoryUsage = {};
+    if (debugMode) {
+      const postSetupMemory = process.memoryUsage();
+      phasedMemoryUsage.afterSetup = {
+        rss: Math.round(postSetupMemory.rss / 1024 / 1024),
+        heapUsed: Math.round(postSetupMemory.heapUsed / 1024 / 1024),
+        delta: Math.round((postSetupMemory.heapUsed - memoryUsage.heapUsed) / 1024 / 1024)
+      };
+    }
     
     // Get the standard font
     const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);

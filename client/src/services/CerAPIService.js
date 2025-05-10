@@ -25,7 +25,7 @@ const cerApiService = {};
  * @param {Object} params.deviceInfo - Information about the device (name, manufacturer, type, classification)
  * @param {Array} [params.literature] - Optional array of literature references
  * @param {Object} [params.fdaData] - Optional FDA FAERS data
- * @param {string} [params.templateId] - Optional template ID (meddev, eu-mdr, fda-510k, iso-14155)
+ * @string} [params.templateId] - Optional template ID (meddev, eu-mdr, fda-510k, iso-14155)
  * @returns {Promise<Object>} - The initialized CER report and workflow
  */
 cerApiService.initializeZeroClickCER = async ({ deviceInfo, literature, fdaData, templateId = 'meddev' }) => {
@@ -42,11 +42,11 @@ cerApiService.initializeZeroClickCER = async ({ deviceInfo, literature, fdaData,
         templateId
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error initializing Zero-Click CER: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -69,25 +69,25 @@ cerApiService.initializeZeroClickCER = async ({ deviceInfo, literature, fdaData,
 cerApiService.fetchFaersData = async (productName, options = {}) => {
   try {
     const { limit = 100 } = options;
-    
+
     const queryParams = new URLSearchParams({
       productName: productName,
       limit: limit.toString()
     });
-    
+
     const response = await fetch(`/api/cer/faers/data?${queryParams.toString()}`);
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching FAERS data: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+
     // Log data source information
     if (data.dataSource) {
       console.log(`FAERS data source: ${data.dataSource.name} (authentic: ${data.dataSource.authentic || true})`);
     }
-    
+
     return data;
   } catch (error) {
     console.error('Error in fetchFaersData:', error);
@@ -116,11 +116,11 @@ cerApiService.fetchFaersDataForCER = async ({ productName, cerId, includeCompara
         includeComparators
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching FAERS data for CER: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -137,11 +137,11 @@ cerApiService.fetchFaersDataForCER = async ({ productName, cerId, includeCompara
 cerApiService.getWorkflowStatus = async (workflowId) => {
   try {
     const response = await fetch(`/api/cer/workflows/${workflowId}`);
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching workflow status: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -158,11 +158,11 @@ cerApiService.getWorkflowStatus = async (workflowId) => {
 cerApiService.getCERReport = async (reportId) => {
   try {
     const response = await fetch(`/api/cer/report/${reportId}`);
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching CER report: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -184,17 +184,17 @@ cerApiService.getCERReport = async (reportId) => {
 cerApiService.getCERReports = async ({ limit = 20, offset = 0, status, deviceName, search } = {}) => {
   try {
     let url = `/api/cer/reports?limit=${limit}&offset=${offset}`;
-    
+
     if (status) url += `&status=${encodeURIComponent(status)}`;
     if (deviceName) url += `&deviceName=${encodeURIComponent(deviceName)}`;
     if (search) url += `&search=${encodeURIComponent(search)}`;
-    
+
     const response = await fetch(url);
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching CER reports: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -226,11 +226,11 @@ cerApiService.generateSection = async ({ sectionType, context, productName, qmpD
         qmpData // Include QMP data for ICH E6(R3) integration
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error generating section: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -263,7 +263,7 @@ cerApiService.generateQmpIntegratedSection = async ({
   try {
     // First fetch section-specific CtQ factors if not provided
     let sectionCtqFactors = criticalFactors;
-    
+
     if (!sectionCtqFactors || sectionCtqFactors.length === 0) {
       // Try to get section-specific CtQ factors from the QMP API
       try {
@@ -273,7 +273,7 @@ cerApiService.generateQmpIntegratedSection = async ({
             'Content-Type': 'application/json'
           }
         });
-        
+
         if (ctqResponse.ok) {
           const ctqData = await ctqResponse.json();
           if (ctqData.success && ctqData.factors) {
@@ -284,7 +284,7 @@ cerApiService.generateQmpIntegratedSection = async ({
         console.warn('Failed to fetch CtQ factors, proceeding with generation:', ctqError);
       }
     }
-    
+
     // Now generate the section with integrated QMP data
     const response = await fetch('/api/cer/generate-qmp-section', {
       method: 'POST',
@@ -299,11 +299,11 @@ cerApiService.generateQmpIntegratedSection = async ({
         regulatoryFramework
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error generating QMP-integrated section: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -324,43 +324,159 @@ cerApiService.generateQmpIntegratedSection = async ({
  * @param {string} [params.templateId] - Optional template ID
  * @returns {Promise<Blob>} - The PDF as a Blob
  */
-cerApiService.exportToPDF = async ({ title, sections, deviceInfo, faers, comparators, metadata, templateId }) => {
-  try {
-    const response = await fetch('/api/cer/export-pdf', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title,
-        sections,
-        deviceInfo,
-        faers,
-        comparators,
-        metadata,
-        templateId
-      }),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Error exporting to PDF: ${response.statusText}`);
+/**
+   * Export CER to PDF format with enhanced resilience
+   * @param {Object} data CER data for export
+   * @param {Object} options Export options
+   * @returns {Promise<Blob>} PDF blob
+   */
+  exportToPDF: async (data, options = {}) => {
+    const { 
+      timeout = 60000,
+      retries = 2,
+      retryDelay = 2000,
+      progressCallback = null
+    } = options;
+
+    // Set up abort controller for timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    let attemptCount = 0;
+    let lastError = null;
+
+    // Report initial progress
+    if (progressCallback) {
+      progressCallback({
+        phase: 'initialization',
+        progress: 0,
+        status: 'Starting PDF export'
+      });
     }
-    
-    const blob = await response.blob();
-    
-    // Format the filename
-    const sanitizedTitle = title?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'clinical_evaluation_report';
-    const filename = `${sanitizedTitle}_${new Date().toISOString().split('T')[0]}.pdf`;
-    
-    // Download the file
-    cerApiService.downloadBlob(blob, filename);
-    
-    return blob;
-  } catch (error) {
-    console.error('Error in exportToPDF:', error);
-    throw error;
-  }
-};
+
+    // Retry loop
+    while (attemptCount <= retries) {
+      try {
+        // Increment attempt counter
+        attemptCount++;
+
+        // Report progress
+        if (progressCallback) {
+          progressCallback({
+            phase: 'processing',
+            progress: 10,
+            status: attemptCount > 1 ? 
+              `Retry attempt ${attemptCount}/${retries + 1}` : 
+              'Sending export request'
+          });
+        }
+
+        // Request headers
+        const headers = {
+          'Content-Type': 'application/json',
+          'X-Request-ID': `cer-pdf-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`,
+          'X-Client-Timestamp': new Date().toISOString()
+        };
+
+        // Add optimization hints
+        const optimizedData = {
+          ...data,
+          _exportOptions: {
+            quality: 'high',
+            optimizeForPrint: true,
+            includeWatermark: true,
+            compression: 'medium',
+            cacheKey: `cer-${Date.now()}`
+          }
+        };
+
+        // Make the request with the current attempt
+        const response = await fetch('/api/cer/export-pdf', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(optimizedData),
+          signal: controller.signal
+        });
+
+        // Report progress
+        if (progressCallback) {
+          progressCallback({
+            phase: 'downloading',
+            progress: 50,
+            status: 'Processing export data'
+          });
+        }
+
+        // Handle error responses
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Export failed: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        // Get content type
+        const contentType = response.headers.get('Content-Type');
+        if (!contentType || !contentType.includes('application/pdf')) {
+          console.warn(`Unexpected content type: ${contentType}`);
+        }
+
+        // Download the blob
+        const blob = await response.blob();
+
+        // Verify the blob is a PDF (check magic number)
+        if (blob.size < 5) {
+          throw new Error('Invalid PDF received: File too small');
+        }
+
+        // Clear the timeout
+        clearTimeout(timeoutId);
+
+        // Report completion
+        if (progressCallback) {
+          progressCallback({
+            phase: 'complete',
+            progress: 100,
+            status: 'Export complete'
+          });
+        }
+
+        return blob;
+      } catch (error) {
+        lastError = error;
+
+        // Don't retry if it was an abort
+        if (error.name === 'AbortError') {
+          throw new Error(`PDF export timed out after ${timeout/1000} seconds`);
+        }
+
+        // Don't retry on last attempt
+        if (attemptCount > retries) {
+          break;
+        }
+
+        // Report retry
+        if (progressCallback) {
+          progressCallback({
+            phase: 'retry',
+            progress: 10 * attemptCount,
+            status: `Export failed, retrying (${attemptCount}/${retries})`,
+            error: error.message
+          });
+        }
+
+        console.warn(`CER PDF export failed (attempt ${attemptCount}/${retries + 1}):`, error);
+
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+    }
+
+    // Clean up timeout if it hasn't fired
+    clearTimeout(timeoutId);
+
+    // If we got here, all retries failed
+    console.error('Error exporting to PDF after all retries:', lastError);
+    throw lastError || new Error('Failed to export to PDF after multiple attempts');
+  };
 
 /**
  * Export CER to Word document
@@ -391,20 +507,20 @@ cerApiService.exportToWord = async ({ title, sections, deviceInfo, faers, compar
         templateId
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error exporting to Word: ${response.statusText}`);
     }
-    
+
     const blob = await response.blob();
-    
+
     // Format the filename
     const sanitizedTitle = title?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'clinical_evaluation_report';
     const filename = `${sanitizedTitle}_${new Date().toISOString().split('T')[0]}.docx`;
-    
+
     // Download the file
     cerApiService.downloadBlob(blob, filename);
-    
+
     return blob;
   } catch (error) {
     console.error('Error in exportToWord:', error);
@@ -446,7 +562,7 @@ cerApiService.downloadBlob = (blob, filename) => {
 cerApiService.analyzeGsprWithAI = async ({ deviceName, gspr, evidenceContext, currentAnalysis = {} }) => {
   try {
     console.log(`Analyzing GSPR ${gspr.id} for ${deviceName} using GPT-4o...`);
-    
+
     const response = await fetch('/api/cer/ai-gspr-analysis', {
       method: 'POST',
       headers: {
@@ -459,13 +575,13 @@ cerApiService.analyzeGsprWithAI = async ({ deviceName, gspr, evidenceContext, cu
         currentAnalysis
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error analyzing GSPR with AI: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+
     return {
       ...data,
       gsprId: gspr.id,
@@ -496,7 +612,7 @@ cerApiService.analyzeGsprWithAI = async ({ deviceName, gspr, evidenceContext, cu
 cerApiService.generateStateOfArt = async ({ deviceName, deviceType, indication, regulatoryFramework = 'EU MDR' }) => {
   try {
     console.log('Generating State of the Art analysis for:', deviceName);
-    
+
     const response = await fetch('/api/cer/sota/', {
       method: 'POST',
       headers: {
@@ -509,13 +625,13 @@ cerApiService.generateStateOfArt = async ({ deviceName, deviceType, indication, 
         regulatoryFramework
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error generating State of the Art analysis: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+
     return {
       title: "State of the Art Analysis",
       type: "state-of-art",
@@ -559,7 +675,7 @@ cerApiService.generateComparativeSOTA = async ({
 }) => {
   try {
     console.log('Generating Comparative SOTA analysis for:', deviceName);
-    
+
     const response = await fetch('/api/cer/sota/comparative', {
       method: 'POST',
       headers: {
@@ -575,13 +691,13 @@ cerApiService.generateComparativeSOTA = async ({
         outcomeMetrics
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error generating Comparative SOTA analysis: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+
     return {
       title: "Comparative State of the Art Analysis",
       type: "comparative-sota",
@@ -615,11 +731,11 @@ cerApiService.getComplianceScore = async ({ sections, title, standards = ['EU MD
         standards,
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error getting compliance score: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -642,20 +758,20 @@ cerApiService.exportComplianceReport = async (data) => {
       },
       body: JSON.stringify(data),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error exporting compliance report: ${response.statusText}`);
     }
-    
+
     const blob = await response.blob();
-    
+
     // Format the filename
     const sanitizedTitle = data.title?.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'compliance_report';
     const filename = `${sanitizedTitle}_compliance_${new Date().toISOString().split('T')[0]}.pdf`;
-    
+
     // Download the file
     cerApiService.downloadBlob(blob, filename);
-    
+
     return blob;
   } catch (error) {
     console.error('Error in exportComplianceReport:', error);
@@ -675,7 +791,7 @@ cerApiService.exportComplianceReport = async (data) => {
 cerApiService.saveToVault = async ({ title, sections, deviceInfo, metadata }) => {
   try {
     console.log('Saving CER to vault:', title);
-    
+
     const response = await fetch('/api/cer/save-to-vault', {
       method: 'POST',
       headers: {
@@ -688,11 +804,11 @@ cerApiService.saveToVault = async ({ title, sections, deviceInfo, metadata }) =>
         metadata: metadata || {}
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error saving to vault: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -715,7 +831,7 @@ cerApiService.saveToVault = async ({ title, sections, deviceInfo, metadata }) =>
 cerApiService.generateEquivalenceRationale = async ({ subjectDevice, equivalentDevice }) => {
   try {
     console.log('Generating equivalence rationale for feature:', subjectDevice.feature.name);
-    
+
     const response = await fetch('/api/cer/equivalence/feature-rationale', {
       method: 'POST',
       headers: {
@@ -726,11 +842,11 @@ cerApiService.generateEquivalenceRationale = async ({ subjectDevice, equivalentD
         equivalentDevice
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error generating equivalence rationale: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -749,7 +865,7 @@ cerApiService.generateEquivalenceRationale = async ({ subjectDevice, equivalentD
 cerApiService.generateOverallEquivalence = async ({ subjectDevice, equivalentDevice }) => {
   try {
     console.log('Generating overall equivalence assessment for:', equivalentDevice.name);
-    
+
     const response = await fetch('/api/cer/equivalence/overall-assessment', {
       method: 'POST',
       headers: {
@@ -760,11 +876,11 @@ cerApiService.generateOverallEquivalence = async ({ subjectDevice, equivalentDev
         equivalentDevice
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error generating overall equivalence assessment: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -783,7 +899,7 @@ cerApiService.generateOverallEquivalence = async ({ subjectDevice, equivalentDev
 cerApiService.saveEquivalenceData = async ({ cerId, equivalenceData }) => {
   try {
     console.log(`Saving equivalence data to CER ${cerId}`);
-    
+
     const response = await fetch('/api/cer/equivalence/save', {
       method: 'POST',
       headers: {
@@ -794,11 +910,11 @@ cerApiService.saveEquivalenceData = async ({ cerId, equivalenceData }) => {
         equivalenceData,
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error saving equivalence data: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -815,11 +931,11 @@ cerApiService.saveEquivalenceData = async ({ cerId, equivalenceData }) => {
 cerApiService.getEquivalenceData = async (cerId) => {
   try {
     const response = await fetch(`/api/cer/equivalence/${cerId}`);
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching equivalence data: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -835,12 +951,13 @@ cerApiService.getEquivalenceData = async (cerId) => {
  * @param {string} params.standard - The regulatory standard to optimize for
  * @param {string} [params.cerTitle] - Optional CER title for context
  * @param {Object} [params.complianceData] - Optional compliance scores for the section
- * @returns {Promise<Object>} - The improved section content including original and improved versions
+ * @returns {Promise<Object>} -```python
+ The improved section content including original and improved versions
  */
 cerApiService.improveSectionCompliance = async ({ section, standard, cerTitle, complianceData }) => {
   try {
     console.log(`Improving section "${section.title}" for ${standard} compliance`);
-    
+
     const response = await fetch('/api/cer/improve-section', {
       method: 'POST',
       headers: {
@@ -853,11 +970,11 @@ cerApiService.improveSectionCompliance = async ({ section, standard, cerTitle, c
         cerTitle: cerTitle || 'Clinical Evaluation Report'
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error improving section compliance: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     console.log('Received improved section:', data);
     return data;
@@ -883,11 +1000,11 @@ cerApiService.analyzeLiterature = async (literature) => {
         literature
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error analyzing literature: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -932,7 +1049,7 @@ cerApiService.documentLiteratureSearch = async ({
 }) => {
   try {
     console.log('Documenting literature search methodology for:', deviceName);
-    
+
     const response = await fetch('/api/literature/document-methodology', {
       method: 'POST',
       headers: {
@@ -953,13 +1070,13 @@ cerApiService.documentLiteratureSearch = async ({
         timestamp: new Date().toISOString()
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error documenting literature search: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+
     return {
       title: "Literature Search Methodology",
       type: "literature-methodology",
@@ -999,7 +1116,7 @@ cerApiService.analyzeAdverseEvents = async (fdaData, options = {}) => {
     if (!fdaData || !fdaData.productName) {
       throw new Error('Valid FDA FAERS data is required for analysis');
     }
-    
+
     // Verify data source information is present
     if (!fdaData.dataSource) {
       console.warn('FAERS data is missing source attribution');
@@ -1009,10 +1126,10 @@ cerApiService.analyzeAdverseEvents = async (fdaData, options = {}) => {
         authentic: false
       };
     }
-    
+
     // Log data source for auditing and transparency
     console.log(`Analyzing FAERS data from: ${fdaData.dataSource.name}, authentic: ${fdaData.dataSource.authentic || false}`);
-    
+
     // Prepare enhanced analysis context
     const analysisContext = {
       productName: options.productName || fdaData.productName,
@@ -1021,7 +1138,7 @@ cerApiService.analyzeAdverseEvents = async (fdaData, options = {}) => {
       dataAuthenticity: fdaData.dataSource.authentic || false,
       analysisDate: new Date().toISOString()
     };
-    
+
     const response = await fetch('/api/cer/analyze/adverse-events', {
       method: 'POST',
       headers: {
@@ -1032,13 +1149,13 @@ cerApiService.analyzeAdverseEvents = async (fdaData, options = {}) => {
         context: analysisContext
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error analyzing adverse events: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+
     // Add data source attribution to the analysis results
     data.dataSourceAttribution = {
       source: fdaData.dataSource.name || "Unknown source",
@@ -1046,7 +1163,7 @@ cerApiService.analyzeAdverseEvents = async (fdaData, options = {}) => {
       authentic: fdaData.dataSource.authentic || false,
       analysisDate: new Date().toISOString()
     };
-    
+
     return data;
   } catch (error) {
     console.error('Error in analyzeAdverseEvents:', error);
@@ -1068,11 +1185,11 @@ cerApiService.retrieveDataForCER = async (reportId) => {
       },
       body: JSON.stringify({ reportId })
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error triggering data retrieval: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -1089,14 +1206,14 @@ cerApiService.retrieveDataForCER = async (reportId) => {
 cerApiService.getDataRetrievalStatus = async (reportId) => {
   try {
     console.log('EMERGENCY FIX: Checking data retrieval status for:', reportId);
-    
+
     // Emergency fix - use updated endpoint path 
     const response = await fetch(`/api/cer/data-status/${reportId}`);
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching data retrieval status: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     console.log('EMERGENCY FIX: Data retrieval status:', data);
     return data;
@@ -1129,11 +1246,11 @@ cerApiService.searchLiterature = async ({ query, deviceInfo, filters, limit }) =
         limit
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error searching literature: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -1163,11 +1280,11 @@ cerApiService.generateLiteratureReview = async ({ papers, context, options }) =>
         options
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error generating literature review: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -1184,11 +1301,11 @@ cerApiService.generateLiteratureReview = async ({ papers, context, options }) =>
 cerApiService.getLiteratureForReport = async (reportId) => {
   try {
     const response = await fetch(`/api/cer-data/literature/${reportId}`);
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching literature for report: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -1216,11 +1333,11 @@ cerApiService.fetchEnhancedFaersData = async ({ productName, reportId }) => {
         reportId
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching enhanced FAERS data: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -1237,14 +1354,14 @@ cerApiService.fetchEnhancedFaersData = async ({ productName, reportId }) => {
 cerApiService.getFaersDataForReport = async (reportId) => {
   try {
     console.log('EMERGENCY FIX: Fetching FAERS data for report:', reportId);
-    
+
     // Emergency fix - use updated endpoint path
     const response = await fetch(`/api/cer/data-faers/${reportId}`);
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching FAERS data for report: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     console.log('EMERGENCY FIX: FAERS data retrieved successfully');
     return data;
@@ -1282,11 +1399,11 @@ cerApiService.saveVersion = async ({ title, sections, deviceInfo, metadata, vers
         versionType
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error saving version: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -1308,11 +1425,11 @@ cerApiService.getVersionHistory = async (documentId) => {
         'Content-Type': 'application/json',
       },
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error getting version history: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -1350,11 +1467,11 @@ cerApiService.prepareSubmission = async ({ documentId, version, title, sections,
         submissionType
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error preparing submission: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -1390,7 +1507,7 @@ cerApiService.generateZeroClickCER = async ({
 }) => {
   try {
     console.log(`Generating Zero-Click CER for device: ${deviceName}`);
-    
+
     // Call the new direct Zero-Click API endpoint
     const response = await fetch('/api/cer/generate-report', {
       method: 'POST',
@@ -1407,17 +1524,17 @@ cerApiService.generateZeroClickCER = async ({
         includeComparators
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error generating Zero-Click CER: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
-    
+
     if (!data.success) {
       throw new Error(data.error || 'Failed to generate CER report');
     }
-    
+
     console.log(`Zero-Click CER generated successfully for ${deviceName}`);
     return data;
   } catch (error) {
@@ -1437,7 +1554,7 @@ cerApiService.generateZeroClickCER = async ({
 cerApiService.generateFullCER = async ({ deviceInfo, templateId = 'eu-mdr', fdaData = null }) => {
   try {
     console.log('EMERGENCY FIX: Starting Zero-Click CER generation for device:', deviceInfo.name);
-    
+
     // Check if we can use the new direct approach
     if (deviceInfo.name) {
       try {
@@ -1452,18 +1569,18 @@ cerApiService.generateFullCER = async ({ deviceInfo, templateId = 'eu-mdr', fdaD
         // Continue with the old method below
       }
     }
-    
+
     // Initialize CER generation (legacy approach)
     const result = await cerApiService.initializeZeroClickCER({
       deviceInfo,
       templateId,
       fdaData
     });
-    
+
     if (!result || !result.reportId) {
       throw new Error('Failed to initialize Zero-Click CER generation');
     }
-    
+
     // Simulate typical sections for a CER based on EU MDR requirements
     const sections = [
       {
@@ -1521,7 +1638,7 @@ cerApiService.generateFullCER = async ({ deviceInfo, templateId = 'eu-mdr', fdaD
         createdAt: new Date().toISOString()
       }
     ];
-    
+
     return {
       reportId: result.reportId,
       title: `${deviceInfo.name} Clinical Evaluation Report`,
@@ -1543,11 +1660,11 @@ cerApiService.generateFullCER = async ({ deviceInfo, templateId = 'eu-mdr', fdaD
 cerApiService.getInternalClinicalData = async () => {
   try {
     const response = await fetch('/api/cer/internal-data');
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching internal clinical data: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -1563,11 +1680,11 @@ cerApiService.getInternalClinicalData = async () => {
 cerApiService.getInternalClinicalDataSummary = async () => {
   try {
     const response = await fetch('/api/cer/internal-data/summary');
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching internal clinical data summary: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -1584,11 +1701,11 @@ cerApiService.getInternalClinicalDataSummary = async () => {
 cerApiService.getInternalClinicalDataByCategory = async (category) => {
   try {
     const response = await fetch(`/api/cer/internal-data/category/${category}`);
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching internal clinical data by category: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -1611,12 +1728,12 @@ cerApiService.addInternalClinicalData = async (data) => {
       },
       body: JSON.stringify(data),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error adding internal clinical data: ${response.statusText}`);
     }
-    
-    const responseData = await response.json();
+
+    const responseData = await await response.json();
     return responseData;
   } catch (error) {
     console.error('Error in addInternalClinicalData:', error);
@@ -1634,11 +1751,11 @@ cerApiService.deleteInternalClinicalData = async (id) => {
     const response = await fetch(`/api/cer/internal-data/${id}`, {
       method: 'DELETE',
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error deleting internal clinical data: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -1660,11 +1777,11 @@ cerApiService.deleteInternalClinicalData = async (id) => {
 cerApiService.getEuPmsData = async () => {
   try {
     const response = await fetch('/api/cer/eu-pms-data');
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching EU/global PMS data: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error in getEuPmsData:', error);
@@ -1680,11 +1797,11 @@ cerApiService.getEuPmsData = async () => {
 cerApiService.getEuPmsDataSummary = async () => {
   try {
     const response = await fetch('/api/cer/eu-pms-data/summary');
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching EU/global PMS data summary: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error in getEuPmsDataSummary:', error);
@@ -1701,11 +1818,11 @@ cerApiService.getEuPmsDataSummary = async () => {
 cerApiService.getEuPmsDataByCategory = async (category) => {
   try {
     const response = await fetch(`/api/cer/eu-pms-data/category/${category}`);
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching EU/global PMS data for category ${category}: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error in getEuPmsDataByCategory:', error);
@@ -1728,11 +1845,11 @@ cerApiService.addEuPmsData = async (data) => {
       },
       body: JSON.stringify(data),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error adding EU/global PMS data: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error in addEuPmsData:', error);
@@ -1751,11 +1868,11 @@ cerApiService.deleteEuPmsData = async (id) => {
     const response = await fetch(`/api/cer/eu-pms-data/${id}`, {
       method: 'DELETE'
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error deleting EU/global PMS data: ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error in deleteEuPmsData:', error);
@@ -1783,24 +1900,23 @@ cerApiService.validateCERDocument = async (documentId, framework = 'mdr', sectio
     if (additionalParams.qmpData) {
       console.log(`Including QMP data for ICH E6(R3) integration`);
     }
-    
+
     // Always use the real API validation endpoint
     const response = await fetch(`/api/cer/documents/${documentId}/validate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
+      },body: JSON.stringify({
         framework,
         sections,
         ...additionalParams  // Include QMP data and other parameters
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error validating document: ${response.statusText}`);
     }
-    
+
     // Return the real validation results from the API
     return await response.json();
   } catch (error) {
@@ -1818,7 +1934,7 @@ cerApiService.validateCERDocument = async (documentId, framework = 'mdr', sectio
 cerApiService.detectHallucinations = async (cerDocument) => {
   try {
     console.log(`Detecting hallucinations in document ${cerDocument.id}`);
-    
+
     // API call to hallucination detection endpoint
     const response = await fetch(`/api/cer/ai/hallucination-detection`, {
       method: 'POST',
@@ -1829,11 +1945,11 @@ cerApiService.detectHallucinations = async (cerDocument) => {
         document: cerDocument
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Hallucination detection API error: ${response.status} ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error detecting hallucinations:', error);
@@ -1852,7 +1968,7 @@ cerApiService.detectHallucinations = async (cerDocument) => {
 cerApiService.verifyFactualClaim = async (claim) => {
   try {
     console.log(`Verifying factual claim: ${claim.text}`);
-    
+
     // API call to factual verification endpoint
     const response = await fetch(`/api/cer/ai/verify-claim`, {
       method: 'POST',
@@ -1863,11 +1979,11 @@ cerApiService.verifyFactualClaim = async (claim) => {
         claim
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Claim verification API error: ${response.status} ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error verifying claim:', error);
@@ -1886,7 +2002,7 @@ cerApiService.verifyFactualClaim = async (claim) => {
 cerApiService.verifyReference = async (reference) => {
   try {
     console.log(`Verifying reference: ${reference.id || reference.text}`);
-    
+
     // API call to reference verification endpoint
     const response = await fetch(`/api/cer/ai/verify-reference`, {
       method: 'POST',
@@ -1897,11 +2013,11 @@ cerApiService.verifyReference = async (reference) => {
         reference
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Reference verification API error: ${response.status} ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error verifying reference:', error);
@@ -1921,7 +2037,7 @@ cerApiService.verifyReference = async (reference) => {
 cerApiService.validateRegulatory = async (cerDocument, regulatoryFramework) => {
   try {
     console.log(`Validating regulatory compliance against ${regulatoryFramework}`);
-    
+
     // API call to regulatory validation endpoint
     const response = await fetch(`/api/cer/ai/validate-regulatory`, {
       method: 'POST',
@@ -1933,11 +2049,11 @@ cerApiService.validateRegulatory = async (cerDocument, regulatoryFramework) => {
         framework: regulatoryFramework
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Regulatory validation API error: ${response.status} ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error validating regulatory compliance:', error);
@@ -1956,7 +2072,7 @@ cerApiService.validateRegulatory = async (cerDocument, regulatoryFramework) => {
 cerApiService.submitReviewRequest = async (reviewRequest) => {
   try {
     console.log(`Submitting document for review to ${reviewRequest.reviewer}`);
-    
+
     // API call to review submission endpoint
     const response = await fetch(`/api/cer/review-requests`, {
       method: 'POST',
@@ -1965,11 +2081,11 @@ cerApiService.submitReviewRequest = async (reviewRequest) => {
       },
       body: JSON.stringify(reviewRequest),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Review submission API error: ${response.status} ${response.statusText}`);
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('Error submitting review request:', error);
@@ -1995,11 +2111,11 @@ cerApiService.getQmpData = async () => {
         'Content-Type': 'application/json',
       }
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error retrieving QMP data: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -2024,11 +2140,11 @@ cerApiService.saveQmpData = async (qmpData) => {
       },
       body: JSON.stringify(qmpData)
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error saving QMP data: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -2051,11 +2167,11 @@ cerApiService.getCerSections = async () => {
         'Content-Type': 'application/json',
       }
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error retrieving CER sections: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -2087,11 +2203,11 @@ cerApiService.generateQmpTraceabilityReport = async ({ deviceName, qmpData, sect
         sectionTitles
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error generating QMP traceability report: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -2124,11 +2240,11 @@ cerApiService.validateQmpIntegration = async (objectives, cerSections, framework
         framework
       }),
     });
-    
+
     if (!response.ok) {
       throw new Error(`Error validating QMP integration: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
@@ -2146,11 +2262,11 @@ cerApiService.validateQmpIntegration = async (objectives, cerSections, framework
 cerApiService.getCtqFactorsForSection = async (sectionName) => {
   try {
     const response = await fetch(`/api/qmp/ctq-for-section/${encodeURIComponent(sectionName)}`);
-    
+
     if (!response.ok) {
       throw new Error(`Error fetching CtQ factors for section: ${response.statusText}`);
     }
-    
+
     const data = await response.json();
     return data;
   } catch (error) {
