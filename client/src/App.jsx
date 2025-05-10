@@ -180,11 +180,11 @@ function App() {
           {/* Main Portal Landing Pages */}
           <Route path="/" component={ClientPortalLanding} />
           
-          {/* Client Portal Routes with SimplePortal - no dependencies */}
+          {/* Client Portal Routes with original ClientPortal - no extra dependencies */}
           <Route path="/client-portal">
             {() => (
               <Suspense fallback={<LoadingPage />}>
-                <SimplePortal />
+                <ClientPortal />
               </Suspense>
             )}
           </Route>
@@ -193,7 +193,7 @@ function App() {
           <Route path="/client-portal/:subpath*">
             {() => (
               <Suspense fallback={<LoadingPage />}>
-                <SimplePortal />
+                <ClientPortal />
               </Suspense>
             )}
           </Route>
