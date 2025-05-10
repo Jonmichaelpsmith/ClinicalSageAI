@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrialSage™ Emergency Portal</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+        header {
+            background-color: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-weight: bold;
+            font-size: 1.25rem;
+        }
+        .logo-blue {
+            color: #3b82f6;
+        }
+        .badge {
+            background-color: #dbeafe;
+            color: #1e40af;
+            font-size: 0.75rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            margin-left: 0.25rem;
+        }
+        .tagline {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        .selectors {
+            display: flex;
+            gap: 1rem;
+        }
+        select {
+            border: 1px solid #d1d5db;
+            border-radius: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+        }
+        main {
+            padding: 2rem 0;
+        }
+        .alert {
+            background-color: #dbeafe;
+            border: 1px solid #93c5fd;
+            color: #1e40af;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .alert-title {
+            font-weight: 500;
+        }
+        .alert-text {
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            gap: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        @media (min-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        .card {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            border-left: 4px solid;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #dbeafe;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.75rem;
+        }
+        .card-icon svg {
+            width: 24px;
+            height: 24px;
+            color: #3b82f6;
+        }
+        .card-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        .card-desc {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        .card-cerv2 { border-color: #10b981; }
+        .card-ind { border-color: #6366f1; }
+        .card-ectd { border-color: #8b5cf6; }
+        .card-cmc { border-color: #eab308; }
+        .card-csr { border-color: #14b8a6; }
+        .card-study { border-color: #f97316; }
+        .card-reports { border-color: #ec4899; }
+        .card-vault { border-color: #64748b; }
+        .card-regulatory { border-color: #6366f1; }
+        .card-risk { border-color: #ef4444; }
+        .card-analytics { border-color: #06b6d4; }
+        footer {
+            background-color: white;
+            border-top: 1px solid #e5e7eb;
+            padding: 1rem 0;
+            margin-top: auto;
+        }
+        .footer-text {
+            font-size: 0.875rem;
+            color: #6b7280;
+            text-align: center;
+        }
+        .flex-col {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="flex-col">
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <div>
+                        <h1 class="logo">
+                            <span class="logo-blue">TrialSage</span>
+                            <span class="badge">Enterprise</span>
+                        </h1>
+                        <p class="tagline">AI-Powered Regulatory Platform (Emergency Access)</p>
+                    </div>
+                    <div class="selectors">
+                        <select>
+                            <option>Acme CRO</option>
+                            <option>BioTech Innovations</option>
+                            <option>Clari-Pharm</option>
+                        </select>
+                        <select>
+                            <option>NeuroPharma Inc.</option>
+                            <option>GeneTech Labs</option>
+                            <option>MedAlliance</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="alert">
+                <h3 class="alert-title">Emergency Access Mode</h3>
+                <p class="alert-text">
+                    This is a lightweight emergency portal that provides direct access to all modules. 
+                    Click any module to access its functionality.
+                </p>
+            </div>
+            
+            <h2>Module Access</h2>
+            
+            <div class="grid">
+                <!-- Dashboard -->
+                <div class="card card-cerv2" onclick="window.location.href='/dashboard'">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Dashboard</h3>
+                    </div>
+                    <p class="card-desc">Overview of all platform activities</p>
+                </div>
+                
+                <!-- CER2V -->
+                <div class="card card-cerv2" onclick="window.location.href='/cerv2'">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">CER2V™</h3>
+                    </div>
+                    <p class="card-desc">Clinical Evaluation Report generation and validation</p>
+                </div>
+                
+                <!-- IND Wizard -->
+                <div class="card card-ind" onclick="window.location.href='/ind-wizard'">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">IND Wizard™</h3>
+                    </div>
+                    <p class="card-desc">Investigational New Drug application guidance</p>
+                </div>
+                
+                <!-- eCTD Author -->
+                <div class="card card-ectd" onclick="window.location.href='/ectd-author'">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">eCTD Author™</h3>
+                    </div>
+                    <p class="card-desc">Electronic Common Technical Document authoring</p>
+                </div>
+                
+                <!-- CMC Module -->
+                <div class="card card-cmc" onclick="window.location.href='/cmc'">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">CMC Module™</h3>
+                    </div>
+                    <p class="card-desc">Chemistry, Manufacturing, and Controls documentation</p>
+                </div>
+                
+                <!-- CSR Intelligence -->
+                <div class="card card-csr" onclick="window.location.href='/csr'">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">CSR Intelligence™</h3>
+                    </div>
+                    <p class="card-desc">Clinical Study Report analytics</p>
+                </div>
+                
+                <!-- Study Architect -->
+                <div class="card card-study" onclick="window.location.href='/study-architect'">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Study Architect™</h3>
+                    </div>
+                    <p class="card-desc">Clinical study design and protocol development</p>
+                </div>
+                
+                <!-- Reports -->
+                <div class="card card-reports" onclick="window.location.href='/reports'">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Reports</h3>
+                    </div>
+                    <p class="card-desc">Comprehensive reporting and analytics</p>
+                </div>
+                
+                <!-- Vault -->
+                <div class="card card-vault" onclick="window.location.href='/vault'">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Vault™</h3>
+                    </div>
+                    <p class="card-desc">Secure document storage and management</p>
+                </div>
+                
+                <!-- Regulatory Hub -->
+                <div class="card card-regulatory" onclick="window.location.href='/regulatory-intelligence-hub'">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Regulatory Hub™</h3>
+                    </div>
+                    <p class="card-desc">Regulatory intelligence and compliance</p>
+                </div>
+                
+                <!-- Risk Heatmap -->
+                <div class="card card-risk" onclick="window.location.href='/regulatory-risk-dashboard'">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Risk Heatmap™</h3>
+                    </div>
+                    <p class="card-desc">Visual risk assessment and management</p>
+                </div>
+                
+                <!-- Analytics -->
+                <div class="card card-analytics" onclick="window.location.href='/analytics'">
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                            </svg>
+                        </div>
+                        <h3 class="card-title">Analytics</h3>
+                    </div>
+                    <p class="card-desc">Advanced data analysis and visualization</p>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="container">
+                <div class="footer-text">
+                    TrialSage™ Enterprise Platform © 2025
+                </div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>
