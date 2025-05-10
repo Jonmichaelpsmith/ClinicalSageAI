@@ -54,6 +54,7 @@ const RegulatoryRiskDashboard = lazy(() => import('./pages/RegulatoryRiskDashboa
 const EnhancedRegulatoryDashboard = lazy(() => import('./pages/EnhancedRegulatoryDashboard'));
 const RegulatoryDashboard = lazy(() => import('./pages/RegulatoryDashboard'));
 const RegulatoryIntelligenceHub = lazy(() => import('./pages/RegulatoryIntelligenceHub'));
+const RegulatorySubmissionsPage = lazy(() => import('./pages/RegulatorySubmissionsPage'));
 
 // IND Wizard-related pages
 const IndWizard = lazy(() => import('./pages/INDWizardFixed'));
@@ -187,6 +188,8 @@ function App() {
           <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
           <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
           <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
+          <Route path="/regulatory-submissions" component={RegulatorySubmissionsPage} />
+          <Route path="/client-portal/regulatory-submissions" component={RegulatorySubmissionsPage} />
           
           {/* IND Wizard Module Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
           {/* These direct module routes help users navigate directly to specific IND modules */}
