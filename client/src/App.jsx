@@ -12,6 +12,7 @@ import freezeDetection from '@/utils/freezeDetection';
 import networkResilience from '@/utils/networkResilience';
 import memoryManagement from '@/utils/memoryManagement';
 import StabilityEnabledLayout from '@/components/layout/StabilityEnabledLayout';
+import { ModuleIntegrationProvider } from '@/components/integration/ModuleIntegrationLayer';
 
 // Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
@@ -174,14 +175,26 @@ function App() {
           {/* Main Portal Landing Pages */}
           <Route path="/" component={ClientPortalLanding} />
           
-          {/* Client Portal Routes - explicitly define client-portal path */}
+          {/* Client Portal Routes - explicitly define client-portal path with ModuleIntegrationProvider */}
           <Route path="/client-portal">
-            {() => <ClientPortal />}
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <ModuleIntegrationProvider>
+                  <ClientPortal />
+                </ModuleIntegrationProvider>
+              </Suspense>
+            )}
           </Route>
           
           {/* Also catch sub-paths under client-portal with explicit route */}
           <Route path="/client-portal/:subpath*">
-            {() => <ClientPortal />}
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <ModuleIntegrationProvider>
+                  <ClientPortal />
+                </ModuleIntegrationProvider>
+              </Suspense>
+            )}
           </Route>
 
           {/* Module Dashboard */}
