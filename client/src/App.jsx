@@ -12,7 +12,6 @@ import freezeDetection from '@/utils/freezeDetection';
 import networkResilience from '@/utils/networkResilience';
 import memoryManagement from '@/utils/memoryManagement';
 import StabilityEnabledLayout from '@/components/layout/StabilityEnabledLayout';
-import { ModuleIntegrationProvider } from '@/components/integration/ModuleIntegrationLayer';
 
 // Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
@@ -27,19 +26,6 @@ const LoadingPage = () => (
 
 // Eagerly load the landing page for faster initial render
 import ClientPortalLanding from './pages/ClientPortalLanding';
-
-// Import client portal components from their proper location
-import ClientPortal from './components/client-portal/ClientPortal';
-import ClientHeader from './components/client-portal/ClientHeader';
-import ClientContextBar from './components/client-portal/ClientContextBar';
-import ClientDashboard from './components/client-portal/ClientDashboard';
-import OrganizationSwitcher from './components/client-portal/OrganizationSwitcher';
-
-// Import client portal components
-import MultiTenantEnterprisePortal from './components/client-portal/MultiTenantEnterprisePortal';
-import SimplePortal from './components/client-portal/SimplePortal';
-import EnterpriseClientPortalFinal from './components/client-portal/EnterpriseClientPortalFinal';
-import SimpleWorkingPortal from './components/client-portal/SimpleWorkingPortal';
 
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
@@ -62,9 +48,6 @@ const Vault = lazy(() => import('./modules/Vault'));
 const VaultPage = lazy(() => import('./pages/VaultPage'));
 const VaultTestPage = lazy(() => import('./pages/VaultTestPage'));
 const VaultDocumentViewer = lazy(() => import('./components/vault/VaultDocumentViewer'));
-
-// eCTD-related pages
-const ECTDPage = lazy(() => import('./pages/ECTDPage'));
 
 // CoAuthor and Canvas-related pages
 const CoAuthor = lazy(() => import('./pages/CoAuthor'));
@@ -181,23 +164,22 @@ function App() {
             "p-4 mt-24"
           }>
           <Switch>
-          {/* Main Portal Landing Pages */}
+          {/* Main Portal Landing Pages - both root and /client-portal go to same component */}
           <Route path="/" component={ClientPortalLanding} />
+          <Route path="/client-portal" component={ClientPortalLanding} />
           
-          {/* Client Portal Routes - using simple working portal for reliability */}
-          <Route path="/client-portal">
+          {/* Client Portal Sub-Pages */}
+          <Route path="/client-portal/vault" component={VaultPage} />
+          <Route path="/client-portal/regulatory-intel" component={RegulatoryIntelligenceHub} />
+          <Route path="/client-portal/cer-generator" component={CERV2Page} />
+          <Route path="/client-portal/cmc-wizard" component={CmcWizard} />
+          <Route path="/client-portal/csr-analyzer" component={CSRPage} />
+          <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
+          <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
+          <Route path="/client-portal/client-management">
             {() => (
               <Suspense fallback={<LoadingPage />}>
-                <SimpleWorkingPortal />
-              </Suspense>
-            )}
-          </Route>
-          
-          {/* Also catch sub-paths under client-portal with explicit route */}
-          <Route path="/client-portal/:subpath*">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <SimpleWorkingPortal />
+                <ClientManagement />
               </Suspense>
             )}
           </Route>
@@ -209,10 +191,8 @@ function App() {
           <Route path="/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
           <Route path="/ind-full-solution" component={INDFullSolution} />
           
-          {/* Other Client Portal Routes that should go directly to specific modules */}
+          {/* Client Portal IND Wizard Route - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
           <Route path="/client-portal/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
-          <Route path="/client-portal/ectd" component={ECTDPage} /> {/* eCTD Module in Client Portal */}
-          <Route path="/client-portal/regulatory-submissions" component={RegulatorySubmissionsPage} />
 
           {/* Other Module Pages */}
           <Route path="/cer-generator" component={CERPage} />
@@ -236,7 +216,6 @@ function App() {
           <Route path="/cerV2" component={CERV2Page} /> {/* Advanced CER Generator page route */}
           <Route path="/cerv2" component={CERV2Page} /> {/* Additional lowercase route for Advanced CER Generator */}
           <Route path="/cerv2/info" component={CerGeneratorLandingPage} /> {/* CER Generator Landing page with detailed info */}
-          <Route path="/ectd" component={ECTDPage} /> {/* eCTD Module page route */}
           <Route path="/blueprint" component={BlueprintPage} /> {/* Blueprint Generator page route */}
           <Route path="/citations" component={CitationManagerPage} /> {/* Citation Manager page route */}
           <Route path="/audit" component={AuditPage} /> {/* Audit Trail page route */}
@@ -247,6 +226,7 @@ function App() {
           <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
           <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
           <Route path="/regulatory-submissions" component={RegulatorySubmissionsPage} />
+          <Route path="/client-portal/regulatory-submissions" component={RegulatorySubmissionsPage} />
           
           {/* IND Wizard Module Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
           {/* These direct module routes help users navigate directly to specific IND modules */}
@@ -316,32 +296,30 @@ function App() {
           <Route path="/cer-generator/*">
             {() => <CERV2Page />}
           </Route>
-          <Route path="/cmc-wizard/*">
-            {() => <CMCPage />}
+          <Route path="/client-portal/cer-generator/*">
+            {() => <CERV2Page />}
           </Route>
-          <Route path="/csr-analyzer/*">
-            {() => <CSRPage />}
+          <Route path="/cerv2/*">
+            {() => <CERV2Page />}
           </Route>
-          <Route path="/vault-v2/*">
-            {() => <VaultPage />}
+          <Route path="/cerV2/*">
+            {() => <CERV2Page />}
           </Route>
           
-          {/* Generic fallback for unmatched routes */}
+          {/* Default Redirect to Client Portal */}
           <Route>
-            {() => (
-              <div className="flex flex-col items-center justify-center p-8">
-                <h2 className="text-2xl font-bold mb-4 text-red-700">Page Not Found</h2>
-                <p className="mb-4 text-gray-600">The URL you're trying to access doesn't exist in this application.</p>
-                <Button 
-                  onClick={() => window.location.href = '/'}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                >
-                  Return to Home
-                </Button>
-              </div>
-            )}
+            {() => {
+              // Automatically redirect to client portal
+              window.location.href = '/client-portal';
+              return (
+                <div className="flex flex-col items-center justify-center p-8">
+                  <h2 className="text-xl font-medium mb-4">Redirecting to Client Portal...</h2>
+                  <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+                </div>
+              );
+            }}
           </Route>
-          </Switch>
+        </Switch>
           </div>
         </StabilityEnabledLayout>
       </TenantProvider>

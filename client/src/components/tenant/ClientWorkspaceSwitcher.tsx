@@ -40,7 +40,7 @@ export function ClientWorkspaceSwitcher() {
   const [, navigate] = useLocation();
 
   // If there are no client workspaces available and we're not loading, we don't show the switcher
-  if (!filteredClientWorkspaces || filteredClientWorkspaces.length === 0 && !isLoading) return null;
+  if (filteredClientWorkspaces.length === 0 && !isLoading) return null;
 
   if (isLoading) {
     return (
