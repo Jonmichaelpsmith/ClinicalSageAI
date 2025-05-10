@@ -63,7 +63,7 @@ const RegulatoryDashboard = lazy(() => import('./pages/RegulatoryDashboard'));
 const RegulatoryIntelligenceHub = lazy(() => import('./pages/RegulatoryIntelligenceHub'));
 const RegulatorySubmissionsPage = lazy(() => import('./pages/RegulatorySubmissionsPage'));
 
-// IND Wizard-related pages
+// IND Wizard and eCTD/Submission Builder related pages
 const IndWizard = lazy(() => import('./pages/INDWizardFixed'));
 const INDFullSolution = lazy(() => import('./pages/INDFullSolution'));
 const Module1AdminPage = lazy(() => import('./modules/Module1AdminPage'));
@@ -71,6 +71,7 @@ const Module2SummaryPage = lazy(() => import('./modules/Module2SummaryPage'));
 const Module3QualityPage = lazy(() => import('./modules/Module3QualityPage'));
 const Module4NonclinicalPage = lazy(() => import('./modules/Module4NonclinicalPage'));
 const Module5ClinicalPage = lazy(() => import('./modules/Module5ClinicalPage'));
+const SubmissionBuilder = lazy(() => import('./pages/SubmissionBuilder'));
 
 // Study and Protocol-related pages
 const StudyArchitect = lazy(() => import('./modules/StudyArchitect'));
@@ -229,15 +230,57 @@ function App() {
           <Route path="/regulatory-submissions" component={RegulatorySubmissionsPage} />
           <Route path="/client-portal/regulatory-submissions" component={RegulatorySubmissionsPage} />
 
-          {/* IND Wizard Module Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
-          {/* These direct module routes help users navigate directly to specific IND modules */}
-          <Route path="/module-1" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
-          <Route path="/module-2" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
-          <Route path="/module-3" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
-          <Route path="/module-4" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
-          <Route path="/module-5" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
-          <Route path="/ind-wizard/module-3" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
-          <Route path="/ind-wizard/module-4" component={IndWizard} /> {/* Using fixed implementation v5.0 */}
+          {/* IND Wizard Module Routes - Now integrated into the unified Submission Builder */}
+          {/* These direct module routes help users navigate directly to specific CTD modules */}
+          <Route path="/module-1">
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <SubmissionBuilder initialModule="m1" />
+              </Suspense>
+            )}
+          </Route>
+          <Route path="/module-2">
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <SubmissionBuilder initialModule="m2" />
+              </Suspense>
+            )}
+          </Route>
+          <Route path="/module-3">
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <SubmissionBuilder initialModule="m3" />
+              </Suspense>
+            )}
+          </Route>
+          <Route path="/module-4">
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <SubmissionBuilder initialModule="m4" />
+              </Suspense>
+            )}
+          </Route>
+          <Route path="/module-5">
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <SubmissionBuilder initialModule="m5" />
+              </Suspense>
+            )}
+          </Route>
+          <Route path="/ind-wizard/module-3">
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <SubmissionBuilder initialModule="m3" />
+              </Suspense>
+            )}
+          </Route>
+          <Route path="/ind-wizard/module-4">
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <SubmissionBuilder initialModule="m4" />
+              </Suspense>
+            )}
+          </Route>
 
           {/* Analytical Control & Method Management Routes */}
           <Route path="/analytical" component={AnalyticalMethodsStubPage} />
@@ -277,6 +320,22 @@ function App() {
             )}
           </Route>
 
+          {/* Unified Submission Builder routes (combines eCTD and IND Wizard) */}
+          <Route path="/submission-builder">
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <SubmissionBuilder />
+              </Suspense>
+            )}
+          </Route>
+          <Route path="/ectd-module">
+            {() => (
+              <Suspense fallback={<LoadingPage />}>
+                <SubmissionBuilder />
+              </Suspense>
+            )}
+          </Route>
+          
           {/* Error fallback and catch-all routes for specific modules */}
           <Route path="/cer-*">
             {() => (

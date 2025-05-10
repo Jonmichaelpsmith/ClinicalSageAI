@@ -151,7 +151,11 @@ const REGION_HINTS = {
   ]
 };
 
-export default function SubmissionBuilder({ initialRegion = 'FDA', region: propRegion }) {
+export default function SubmissionBuilder({ 
+  initialRegion = 'FDA', 
+  region: propRegion,
+  initialModule = null // Support direct navigation to specific CTD module
+}) {
   // Use either the passed region prop or fall back to initialRegion
   const [region, setRegion] = useState(propRegion || initialRegion);
   const [tree, setTree] = useState([]);
@@ -161,6 +165,7 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
   const [securitySettings, setSecuritySettings] = useState(null);
   const [isSettingsLoading, setIsSettingsLoading] = useState(false);
   const [showStatusDetails, setShowStatusDetails] = useState(false);
+  const [activeModule, setActiveModule] = useState(initialModule);
   
   // Get tenant context
   const tenantContext = useTenant();
