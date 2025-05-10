@@ -49,7 +49,8 @@ import {
   ListChecks,
   Settings,
   Briefcase,
-  ArrowUpRight
+  ArrowUpRight,
+  ChevronRight
 } from 'lucide-react';
 import securityService from '../../services/SecurityService';
 import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
@@ -62,6 +63,7 @@ import ReportsQuickWidget from '../ReportsQuickWidget';
 
 // Client Portal dashboard component
 const ClientPortal = () => {
+  const { toast } = useToast();
   const [location, setLocation] = useLocation();
   const [organizations, setOrganizations] = useState([]);
   const [currentOrganization, setCurrentOrganization] = useState(null);
@@ -72,6 +74,7 @@ const ClientPortal = () => {
   const [documents, setDocuments] = useState([]);
   const [activities, setActivities] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('dashboard');
   
   // Create a fallback object if ModuleIntegrationProvider is not available
   let moduleIntegration = {
@@ -119,6 +122,12 @@ const ClientPortal = () => {
         console.error('Error initializing client portal:', err);
         setError(err.message);
         setLoading(false);
+        
+        toast({
+          title: "Initialization Error",
+          description: `Could not initialize client portal: ${err.message}`,
+          variant: "destructive"
+        });
       }
     };
     
@@ -135,6 +144,12 @@ const ClientPortal = () => {
         } catch (err) {
           console.error("Error loading organization data:", err);
           setError(err.message);
+          
+          toast({
+            title: "Data Loading Error",
+            description: `Failed to load organization data: ${err.message}`,
+            variant: "destructive"
+          });
         }
       };
       
@@ -150,6 +165,8 @@ const ClientPortal = () => {
     if (!currentOrganization) return;
     
     try {
+      setLoading(true);
+      
       // In a real app, these would be API calls
       // Fetch projects
       const projectList = await fetchProjects(currentOrganization.id);
@@ -167,9 +184,23 @@ const ClientPortal = () => {
       if (securityService.currentOrganization?.id !== currentOrganization.id) {
         securityService.switchOrganization(currentOrganization.id);
       }
+      
+      setLoading(false);
+      
+      toast({
+        title: "Data Refreshed",
+        description: "Latest organization data has been loaded",
+      });
     } catch (err) {
       console.error('Error loading organization data:', err);
       setError(`Error loading organization data: ${err.message}`);
+      setLoading(false);
+      
+      toast({
+        title: "Data Refresh Failed",
+        description: `Could not load latest data: ${err.message}`,
+        variant: "destructive"
+      });
     }
   };
   
@@ -177,18 +208,33 @@ const ClientPortal = () => {
   const handleOrganizationChange = async (newOrgId) => {
     const newOrg = organizations.find(org => org.id === newOrgId);
     if (newOrg) {
-      // Update the organization in SecurityService first
-      securityService.switchOrganization(newOrgId, {
-        notifySubscribers: true,
-        updateRoutes: false
-      });
-      
-      // Then update our local state - this will trigger the useEffect
-      setCurrentOrganization(newOrg);
-      console.log(`Switching to organization: ${newOrg.name} (${newOrg.id})`);
-      
-      // No need to explicitly call loadOrganizationData here
-      // as it's now handled by the useEffect that watches currentOrganization
+      try {
+        // Update the organization in SecurityService first
+        await securityService.switchOrganization(newOrgId, {
+          notifySubscribers: true,
+          updateRoutes: false
+        });
+        
+        // Then update our local state - this will trigger the useEffect
+        setCurrentOrganization(newOrg);
+        console.log(`Switching to organization: ${newOrg.name} (${newOrg.id})`);
+        
+        toast({
+          title: "Organization Changed",
+          description: `Now viewing ${newOrg.name}`,
+        });
+        
+        // No need to explicitly call loadOrganizationData here
+        // as it's now handled by the useEffect that watches currentOrganization
+      } catch (err) {
+        console.error('Error switching organization:', err);
+        
+        toast({
+          title: "Switch Failed",
+          description: `Could not switch to ${newOrg.name}: ${err.message}`,
+          variant: "destructive"
+        });
+      }
     }
   };
   
@@ -198,14 +244,31 @@ const ClientPortal = () => {
       const result = await securityService.returnToParentOrganization();
       
       if (result.success) {
+        toast({
+          title: "Returning to CRO Portal",
+          description: "You will be redirected to the CRO administration portal",
+        });
+        
         // Redirect to CRO dashboard (admin)
         window.location.href = '/admin'; // Using window.location for immediate navigation
       } else {
         setError(result.error || 'Failed to return to CRO portal');
+        
+        toast({
+          title: "Navigation Failed",
+          description: result.error || 'Failed to return to CRO portal',
+          variant: "destructive"
+        });
       }
     } catch (err) {
       console.error('Error returning to CRO portal:', err);
       setError(err.message);
+      
+      toast({
+        title: "Navigation Error",
+        description: `Error returning to CRO portal: ${err.message}`,
+        variant: "destructive"
+      });
     }
   };
   
@@ -219,6 +282,13 @@ const ClientPortal = () => {
     
     // In a real app, would navigate to search results
     console.log(`Searching for: ${searchQuery}`);
+    setLocation(`/search?q=${encodeURIComponent(searchQuery)}`);
+  };
+  
+  // Navigate to a module
+  const navigateToModule = (module) => {
+    console.log(`Navigating to module: ${module}`);
+    setLocation(`/${module}`);
   };
   
   // Fetch projects (simulated for demo)
@@ -431,8 +501,6 @@ const ClientPortal = () => {
     }
   };
   
-  // STEP 3: We've removed duplicated org state declarations
-  
   // Step 4: Render the landing page when no organization is selected
   if (!currentOrganization) {
     return (
@@ -540,146 +608,281 @@ const ClientPortal = () => {
                 type="text"
                 placeholder="Search client portal..."
                 value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 text-sm border rounded-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
-              <Search size={16} className="absolute top-2.5 left-3 text-gray-400" />
+              <button 
+                type="submit"
+                className="absolute inset-y-0 left-0 pl-3 flex items-center"
+              >
+                <Search size={16} className="text-gray-500" />
+              </button>
             </form>
+          </div>
+        </div>
+        
+        {/* Navigation Tabs */}
+        <div className="container mx-auto px-4 pt-2">
+          <div className="flex border-b">
+            <button
+              className={`px-4 py-2 border-b-2 font-medium ${
+                activeTab === 'dashboard'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('dashboard')}
+            >
+              Dashboard
+            </button>
+            <button
+              className={`px-4 py-2 border-b-2 font-medium ${
+                activeTab === 'projects'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('projects')}
+            >
+              Projects
+            </button>
+            <button
+              className={`px-4 py-2 border-b-2 font-medium ${
+                activeTab === 'documents'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('documents')}
+            >
+              Documents
+            </button>
+            <button
+              className={`px-4 py-2 border-b-2 font-medium ${
+                activeTab === 'analytics'
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+              onClick={() => setActiveTab('analytics')}
+            >
+              Analytics
+            </button>
           </div>
         </div>
       </div>
       
-      {/* Client Portal Content */}
+      {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Projects Column */}
-          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-            <div className="px-4 py-3 border-b bg-gray-50">
-              <h2 className="font-semibold text-gray-800">Active Projects</h2>
+        {/* Welcome Banner with Organization Info */}
+        <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-xl p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">
+                Welcome to {currentOrganization?.name || 'TrialSage'}
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Your unified portal for managing clinical and regulatory projects across all modules
+              </p>
             </div>
-            <div className="divide-y">
-              {projects.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">
-                  No active projects found
-                </div>
-              ) : (
-                projects.map(project => (
-                  <div key={project.id} className="p-4 hover:bg-gray-50">
-                    <div className="flex items-start">
-                      {getModuleIcon(project.module)}
-                      <div className="ml-3 flex-1">
-                        <div className="font-medium text-gray-800">{project.name}</div>
-                        <div className="flex items-center mt-2 text-xs text-gray-500">
-                          {getStatusDisplay(project.status).icon}
-                          <span className={`ml-1 ${getStatusDisplay(project.status).className}`}>
-                            {getStatusDisplay(project.status).text}
-                          </span>
-                          <span className="mx-2">•</span>
-                          <span>Due {formatDate(project.dueDate)}</span>
-                        </div>
-                        
-                        {/* Progress bar */}
-                        <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-primary h-2 rounded-full" 
-                            style={{ width: `${project.progress}%` }}
-                          ></div>
-                        </div>
-                        <div className="mt-1 text-xs text-right text-gray-500">
-                          {project.progress}% complete
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="px-4 py-3 border-t bg-gray-50 text-center">
-              <Link to="/projects">
-                <button className="text-sm text-primary hover:underline">
-                  View All Projects
-                </button>
-              </Link>
-            </div>
-          </div>
-          
-          {/* Recent Documents Column */}
-          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-            <div className="px-4 py-3 border-b bg-gray-50">
-              <h2 className="font-semibold text-gray-800">Recent Documents</h2>
-            </div>
-            <div className="divide-y">
-              {documents.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">
-                  No recent documents found
-                </div>
-              ) : (
-                documents.map(doc => (
-                  <div key={doc.id} className="p-4 hover:bg-gray-50">
-                    <div className="flex items-start">
-                      {getModuleIcon(doc.module)}
-                      <div className="ml-3 flex-1">
-                        <div className="font-medium text-gray-800">{doc.name}</div>
-                        <div className="flex items-center mt-1 text-xs text-gray-500">
-                          <span className="capitalize">{doc.type}</span>
-                          <span className="mx-2">•</span>
-                          <span>Updated {formatTimestamp(doc.updatedAt)}</span>
-                        </div>
-                        <div className="mt-1 text-xs text-gray-500">
-                          Updated by {doc.updatedBy}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="px-4 py-3 border-t bg-gray-50 text-center">
-              <Link to="/documents">
-                <button className="text-sm text-primary hover:underline">
-                  View All Documents
-                </button>
-              </Link>
-            </div>
-          </div>
-          
-          {/* Recent Activity Column */}
-          <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-            <div className="px-4 py-3 border-b bg-gray-50">
-              <h2 className="font-semibold text-gray-800">Recent Activity</h2>
-            </div>
-            <div className="divide-y">
-              {activities.length === 0 ? (
-                <div className="p-4 text-center text-gray-500">
-                  No recent activity found
-                </div>
-              ) : (
-                activities.map(activity => (
-                  <div key={activity.id} className="p-4 hover:bg-gray-50">
-                    <div className="flex items-start">
-                      {getModuleIcon(activity.module)}
-                      <div className="ml-3 flex-1">
-                        <div className="font-medium text-gray-800">{activity.description}</div>
-                        <div className="flex items-center mt-1 text-xs text-gray-500">
-                          <span>{activity.user}</span>
-                          <span className="mx-2">•</span>
-                          <span>{formatTimestamp(activity.timestamp)}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            <div className="px-4 py-3 border-t bg-gray-50 text-center">
-              <Link to="/activity">
-                <button className="text-sm text-primary hover:underline">
-                  View All Activity
-                </button>
-              </Link>
+            <div className="flex space-x-4">
+              <button 
+                onClick={() => setLocation('/projects/new')}
+                className="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90 flex items-center"
+              >
+                <Plus size={16} className="mr-2" />
+                New Project
+              </button>
+              <button 
+                onClick={() => loadOrganizationData()}
+                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 flex items-center"
+              >
+                <RefreshCw size={16} className="mr-2" />
+                Refresh
+              </button>
             </div>
           </div>
         </div>
+        
+        {/* Loading State */}
+        {loading && (
+          <div className="flex items-center justify-center p-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <span className="ml-3 text-gray-600">Loading client data...</span>
+          </div>
+        )}
+        
+        {/* Error State */}
+        {error && !loading && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
+            <div className="flex items-start">
+              <AlertCircle className="h-6 w-6 text-red-500 mt-0.5 mr-3" />
+              <div>
+                <h3 className="font-medium text-red-800">Error Loading Data</h3>
+                <p className="text-red-700 mt-1">{error}</p>
+                <button 
+                  className="mt-3 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center"
+                  onClick={() => loadOrganizationData()}
+                >
+                  <RefreshCw size={14} className="mr-2" />
+                  Retry
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Main Dashboard Layout - 3 column grid */}
+        {!loading && !error && (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Left Sidebar - Quick Navigation */}
+            <div className="lg:col-span-1">
+              <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+                <h3 className="font-medium text-gray-800 mb-3 flex items-center">
+                  <Folder size={18} className="text-primary mr-2" />
+                  Module Quick Access
+                </h3>
+                <div className="space-y-2">
+                  <Link to="/ind-wizard" className="flex items-center p-2 rounded-md hover:bg-gray-50">
+                    <FileText size={16} className="text-primary mr-2" />
+                    <span>IND Wizard</span>
+                  </Link>
+                  <Link to="/csr-intelligence" className="flex items-center p-2 rounded-md hover:bg-gray-50">
+                    <BookMarked size={16} className="text-purple-500 mr-2" />
+                    <span>CSR Intelligence</span>
+                  </Link>
+                  <Link to="/trial-vault" className="flex items-center p-2 rounded-md hover:bg-gray-50">
+                    <Database size={16} className="text-blue-500 mr-2" />
+                    <span>Trial Vault</span>
+                  </Link>
+                  <Link to="/study-architect" className="flex items-center p-2 rounded-md hover:bg-gray-50">
+                    <Beaker size={16} className="text-green-500 mr-2" />
+                    <span>Study Architect</span>
+                  </Link>
+                  <Link to="/analytics" className="flex items-center p-2 rounded-md hover:bg-gray-50">
+                    <BarChartHorizontal size={16} className="text-amber-500 mr-2" />
+                    <span>Analytics</span>
+                  </Link>
+                </div>
+              </div>
+              
+              {/* Next Actions Sidebar */}
+              <div className="bg-white rounded-xl shadow-sm p-4">
+                <h3 className="font-medium text-gray-800 mb-3 flex items-center">
+                  <Clock size={18} className="text-primary mr-2" />
+                  Next Actions
+                </h3>
+                <div className="space-y-1">
+                  {activities.slice(0, 3).map(activity => (
+                    <div key={activity.id} className="p-2 hover:bg-gray-50 rounded-md">
+                      <div className="flex items-start">
+                        <div className="rounded-full h-8 w-8 bg-primary/10 flex items-center justify-center mt-0.5">
+                          {getModuleIcon(activity.module)}
+                        </div>
+                        <div className="ml-3">
+                          <div className="text-sm font-medium">{activity.description}</div>
+                          <div className="text-xs text-gray-500 mt-0.5 flex items-center">
+                            <Clock size={12} className="mr-1" />
+                            {formatTimestamp(activity.timestamp)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Link to="/activities" className="text-primary hover:underline text-sm flex items-center justify-end pt-2">
+                    View All Activities
+                    <ChevronRight className="h-3 w-3 ml-1" />
+                  </Link>
+                </div>
+              </div>
+            </div>
+            
+            {/* Center Content - Global Project Manager */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold flex items-center">
+                    <Briefcase size={20} className="text-primary mr-2" />
+                    Global Project Manager
+                  </h2>
+                  <Link to="/projects" className="text-sm text-primary hover:underline flex items-center">
+                    View All Projects
+                    <ArrowUpRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </div>
+                
+                {/* Project Manager Grid Component */}
+                <ProjectManagerGrid 
+                  userId={securityService.currentUser?.id} 
+                  orgId={currentOrganization.id}
+                  onProjectSelect={(projectId) => setLocation(`/projects/${projectId}`)}
+                />
+              </div>
+              
+              {/* Recent Documents */}
+              <div className="bg-white rounded-xl shadow-sm p-4">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-semibold flex items-center">
+                    <FileText size={20} className="text-primary mr-2" />
+                    Recent Documents
+                  </h2>
+                  <Link to="/documents" className="text-sm text-primary hover:underline flex items-center">
+                    View All Documents
+                    <ArrowUpRight className="ml-1 h-4 w-4" />
+                  </Link>
+                </div>
+                
+                <div className="divide-y">
+                  {documents.map(doc => (
+                    <div 
+                      key={doc.id} 
+                      className="py-3 flex items-center hover:bg-gray-50 px-2 cursor-pointer"
+                      onClick={() => setLocation(`/${doc.module}/documents/${doc.id}`)}
+                    >
+                      <div className="rounded-full h-8 w-8 bg-primary/10 flex items-center justify-center">
+                        {getModuleIcon(doc.module)}
+                      </div>
+                      <div className="ml-3 flex-1">
+                        <div className="text-sm font-medium">{doc.name}</div>
+                        <div className="text-xs text-gray-500 flex items-center mt-0.5">
+                          <span className="mr-2">Updated {formatTimestamp(doc.updatedAt)}</span>
+                          <span className="flex items-center">
+                            <Users size={12} className="mr-1" />
+                            {doc.updatedBy}
+                          </span>
+                        </div>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-gray-400" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Right Sidebar - Analytics and Vault Quick Access */}
+            <div className="lg:col-span-1">
+              {/* Analytics Quick View */}
+              <div className="bg-white rounded-xl shadow-sm p-4 mb-6">
+                <h3 className="font-medium text-gray-800 mb-3 flex items-center">
+                  <BarChart2 size={18} className="text-primary mr-2" />
+                  Analytics Snapshot
+                </h3>
+                <AnalyticsQuickView 
+                  orgId={currentOrganization.id}
+                  onViewDetails={() => setLocation('/analytics')}
+                />
+              </div>
+              
+              {/* Vault Quick Access */}
+              <div className="bg-white rounded-xl shadow-sm p-4">
+                <h3 className="font-medium text-gray-800 mb-3 flex items-center">
+                  <Database size={18} className="text-primary mr-2" />
+                  Vault Quick Access
+                </h3>
+                <VaultQuickAccess 
+                  orgId={currentOrganization.id}
+                  onViewDocument={(docId) => setLocation(`/vault/documents/${docId}`)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
