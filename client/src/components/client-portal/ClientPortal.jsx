@@ -365,36 +365,8 @@ const ClientPortal = () => {
     }
   };
   
-  // Render loading state
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center">
-          <div className="inline-block animate-spin w-8 h-8 border-4 border-primary border-t-transparent rounded-full mb-4"></div>
-          <p className="text-gray-600">Loading client portal...</p>
-        </div>
-      </div>
-    );
-  }
-  
-  // Render error state
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="text-center max-w-md p-6 bg-white rounded-lg shadow-md">
-          <AlertCircle size={48} className="mx-auto text-red-500 mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Error Loading Portal</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button 
-            onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // STEP 1: First just test if the shell component loads properly
+  return <div style={{padding: 40, background: "#fff", textAlign: "center", fontSize: "24px"}}>🚧 Client Portal Shell Loaded! 🚧</div>;
   
   return (
     <div className="bg-gray-50 min-h-screen">

@@ -1,0 +1,86 @@
+It turns out what you’re looking at in that screenshot isn’t your true “Client Portal” at all, it’s just the error‐fallback UI (the red “Error Loading Portal. No organization data available” card) overlaid on a blank screen. In other words, your routing, layout shell and data loading are all still wired up, but you haven’t yet supplied any organization data—so it’s never actually rendering your portal dashboard or landing page.
+
+**Here’s the fast path to get *your* portal back in view, incrementally and without rewriting every line of code:**
+
+---
+
+## 1. Verify the *Shell* is Rendering
+
+1. **Confirm** that `/client-portal` is routed to **only** `ClientPortal.jsx` (and not directly to the Dashboard or Landing)
+2. **Open** `ClientPortal.jsx` and temporarily replace its return with:
+
+   ```jsx
+   return <div style={{padding: 40}}>🚧 Client Portal Shell Loaded! 🚧</div>;
+   ```
+3. **Reload** `/client-portal` in the browser—if you see that banner, your routing and static catch‐all are solid.
+
+---
+
+## 2. Re-introduce the Landing & Dashboard Views
+
+Once you’ve confirmed the shell is live, gradually swap back in your two main children:
+
+```jsx
+function ClientPortal() {
+  const [org, setOrg] = useState(null);
+  
+  // Hard-code a test org to prove the view works:
+  useEffect(() => {
+    setOrg({ id: 'test', name: 'Acme CRO', type: 'CRO' });
+  }, []);
+  
+  if (!org) return <ClientPortalLanding />;
+  return <ClientDashboard org={org} />;
+}
+```
+
+* **Step A**: With `setOrg(null)` → you’ll see your **Landing** view.
+* **Step B**: Switch to `setOrg({ ... })` → you’ll see the **Dashboard** view.
+
+This proves both components themselves are hooked up correctly.
+
+---
+
+## 3. Hook Up the Real Organization Loader
+
+Replace that hard-coded `useEffect` with the real one:
+
+```jsx
+useEffect(() => {
+  securityService
+    .listOrganizations()
+    .then(list => {
+      if (list.length) setOrg(list[0]);
+    })
+    .catch(() => /* your fallback */);
+}, []);
+```
+
+Now the portal will actually fetch your orgs and render the dashboard for the first one.
+
+---
+
+## 4. Wire the Header Dropdown
+
+Finally, pass both `org` and `setOrg` down into your `<ClientHeader />` so that when a user picks a different organization from the dropdown, the portal re-renders for that new org:
+
+```jsx
+<ClientHeader
+  organizations={orgs}
+  selectedOrganization={org}
+  onSelectOrganization={setOrg}
+/>
+```
+
+---
+
+### In Summary
+
+1. **Confirm** your shell loads (so routing is correct).
+2. **Swap in** the Landing and Dashboard manually (to prove they render).
+3. **Replace** the manual `setOrg(...)` with your real `listOrganizations()` call.
+4. **Hook** the dropdown to `setOrg`, so users can switch.
+
+This incremental path will get *your* portal UI—complete with “Acme CRO” header, Active Projects list, Recent Documents, etc.—back in under an hour, without tearing everything down.
+
+Let me know as soon as you can see your landing or dashboard come into view, and we’ll finish wiring the data flows.
