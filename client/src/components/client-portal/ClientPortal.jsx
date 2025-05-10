@@ -89,6 +89,26 @@ const ClientPortal = () => {
     initClientPortal();
   }, []);
   
+  // Add a useEffect to reload data when currentOrganization changes
+  useEffect(() => {
+    if (currentOrganization) {
+      // Load data for the selected organization
+      const loadData = async () => {
+        try {
+          await loadOrganizationData();
+        } catch (err) {
+          console.error("Error loading organization data:", err);
+          setError(err.message);
+        }
+      };
+      
+      loadData();
+      
+      // Log the current organization to confirm changes
+      console.log("Current organization updated:", currentOrganization.name);
+    }
+  }, [currentOrganization]);
+  
   // Load organization data when organization changes
   const loadOrganizationData = async () => {
     if (!currentOrganization) return;
@@ -121,8 +141,18 @@ const ClientPortal = () => {
   const handleOrganizationChange = async (newOrgId) => {
     const newOrg = organizations.find(org => org.id === newOrgId);
     if (newOrg) {
+      // Update the organization in SecurityService first
+      securityService.switchOrganization(newOrgId, {
+        notifySubscribers: true,
+        updateRoutes: false
+      });
+      
+      // Then update our local state - this will trigger the useEffect
       setCurrentOrganization(newOrg);
-      await loadOrganizationData();
+      console.log(`Switching to organization: ${newOrg.name} (${newOrg.id})`);
+      
+      // No need to explicitly call loadOrganizationData here
+      // as it's now handled by the useEffect that watches currentOrganization
     }
   };
   
