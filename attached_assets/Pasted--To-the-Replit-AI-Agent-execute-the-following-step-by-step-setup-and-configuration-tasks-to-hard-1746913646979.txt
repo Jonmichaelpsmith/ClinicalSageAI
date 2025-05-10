@@ -1,0 +1,116 @@
+**To the Replit AI Agent:** execute the following step-by-step setup and configuration tasks to harden security, enforce reliability, and establish enterprise-grade workflows for the entire TrialSage platform:
+
+---
+
+## 1. Secret Management
+
+1.1. In the Replit Secrets panel, add these entries (no hard-coding in Git):
+
+* `DATABASE_URL_DEV`, `DATABASE_URL_STAGING`, `DATABASE_URL_PROD`
+* `JWT_SECRET_DEV`, `JWT_SECRET_STAGING`, `JWT_SECRET_PROD`
+* `OPENAI_API_KEY`, `PUBMED_API_KEY`, `S3_VAUL_BUCKET_KEY`
+  1.2. Configure Replit to expose only the correct `DATABASE_URL_*` and `JWT_SECRET_*` for each environment (Dev/Staging/Prod).
+
+## 2. Branch Protection & Git Integration
+
+2.1. Add a GitHub remote (`git remote add origin git@github.com:YourOrg/TrialSage.git`) and push your `main` and `develop` branches.
+2.2. In GitHub, enable **branch protection** on `main` and `release/*`: require passing CI checks and 2 code-review approvals before merge.
+2.3. Set up a nightly cron job in Replit to `git push origin main` so you maintain an external mirror.
+
+## 3. Continuous Integration Pipeline
+
+3.1. Create a `.replit-ci.yml` (or GitHub Actions) that runs on every PR:
+
+```yaml
+- step: run ESLint, Prettier
+- step: run TypeScript type-check
+- step: run Jest unit & integration tests
+- step: run Cypress E2E smoke-test on /client-portal
+```
+
+3.2. On merge to `develop`, deploy to your **Dev** Replit project; on merge to `staging` tag, deploy to **Staging**; on merge to `main`, deploy to **Production**.
+
+## 4. Backup & Snapshot Automation
+
+4.1. Add a `.replit/backup.sh` script that runs nightly to:
+
+```bash
+tar czf .backups/$(date +%F)_code_backup.tar.gz client/ server/ .replit-ci.yml
+```
+
+4.2. Schedule that script via Replit’s cron or a lightweight “always-on” service with `node-cron`.
+
+## 5. Database Security & Multi-Tenant Isolation
+
+5.1. In your Postgres DB, enable **Row-Level Security** on every tenant-scoped table (`cer_reports`, `vault_documents`, etc.):
+
+```sql
+ALTER TABLE cer_reports ENABLE ROW LEVEL SECURITY;
+CREATE POLICY tenant_isolation ON cer_reports
+  USING ( org_id = current_setting('app.current_org')::uuid );
+```
+
+5.2. In `server/index.ts`, set `SET app.current_org = '<incoming-org-id>'` at the start of each request, based on the authenticated tenant.
+
+## 6. Authentication & RBAC
+
+6.1. Integrate SAML/OAuth2 SSO:
+
+* Install and configure `@okta/oidc-middleware` (or your IdP) in `server/index.ts`.
+* Replace existing login with SSO flow, mapping SAML groups to roles (`cer:read`, `vault:write`, etc.).
+  6.2. In every Express route, add a middleware to check the user’s JWT for the required role before proceeding.
+
+## 7. CORS, Rate-Limiting & Security Headers
+
+7.1. Install and configure `helmet()` and `cors()` in your Express app:
+
+```js
+app.use(helmet());
+app.use(cors({ origin: ['https://yourdomain.com'], credentials: true }));
+```
+
+7.2. Add rate-limiting via `express-rate-limit`, keyed by IP and tenant:
+
+```js
+app.use('/api', rateLimit({ windowMs:60000, max:100 }));
+```
+
+7.3. Enforce HSTS:
+
+```js
+app.use(helmet.hsts({ maxAge: 31536000 }));
+```
+
+## 8. Monitoring, Logging & Tracing
+
+8.1. Integrate Sentry (or Datadog) in both client and server:
+
+```js
+Sentry.init({ dsn: process.env.SENTRY_DSN, tracesSampleRate:1.0 });
+```
+
+8.2. Add OpenTelemetry tracing around your Express routes and React app.
+8.3. Expose `/health/live` and `/health/ready` endpoints; configure Replit to restart on liveness failure.
+
+## 9. Performance & UI Resilience
+
+9.1. Confirm your `storageResilience.js` exports `initStorageResilience()` and is invoked at the root of your React app.
+9.2. Profile with Chrome DevTools and offload any >200 ms tasks (FAERS ingestion, large JSON parsing) into Web Workers.
+9.3. Code-split each major module (`React.lazy`) so initial bundle size stays <200 KB.
+
+## 10. Disaster-Recovery Drills
+
+10.1. Quarterly, spin up a fresh Replit project from your nightly backup tar.gz and your DB dump, then run the full CI pipeline to verify a clean restore.
+10.2. Document your “Restore Procedure” in `REPLIT_README.md` with exact commands.
+
+---
+
+**Execute these tasks in order**, verifying at each step that:
+
+* Secrets are not in Git
+* PRs cannot merge without CI passing
+* `/client-portal` and every module route remain operational
+* Backups appear in `.backups/` daily
+* Tenant isolation and security policies are enforced
+
+This will transform your Replit workspace into a rock-solid, enterprise-grade environment with true guardrails against future disruptions.
