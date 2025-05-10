@@ -81,7 +81,10 @@ import {
   List,
   Layers3,
   Boxes,
-  FolderTree
+  FolderTree,
+  Send,
+  Info,
+  AlertTriangle
 } from 'lucide-react';
 import securityService from '../../services/SecurityService';
 import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';

@@ -35,6 +35,9 @@ import ClientContextBar from './components/client-portal/ClientContextBar';
 import ClientDashboard from './components/client-portal/ClientDashboard';
 import OrganizationSwitcher from './components/client-portal/OrganizationSwitcher';
 
+// Import new Multi-Tenant Enterprise Portal
+import MultiTenantEnterprisePortal from './components/client-portal/MultiTenantEnterprisePortal';
+
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
 const CERPage = lazy(() => import('./pages/CerPage'));
@@ -180,7 +183,7 @@ function App() {
             {() => (
               <Suspense fallback={<LoadingPage />}>
                 <ModuleIntegrationProvider>
-                  <ClientPortal />
+                  <MultiTenantEnterprisePortal />
                 </ModuleIntegrationProvider>
               </Suspense>
             )}
@@ -191,7 +194,7 @@ function App() {
             {() => (
               <Suspense fallback={<LoadingPage />}>
                 <ModuleIntegrationProvider>
-                  <ClientPortal />
+                  <MultiTenantEnterprisePortal />
                 </ModuleIntegrationProvider>
               </Suspense>
             )}
