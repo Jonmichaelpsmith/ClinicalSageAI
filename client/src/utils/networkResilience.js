@@ -453,7 +453,7 @@ export function createResilientApiClient(baseUrl = '', defaultOptions = {}) {
 }
 
 export default {
-  initNetworkResilience,
+  initNetworkResilience: initBasicNetworkResilience,
   cleanupNetworkResilience,
   fetchWithExponentialBackoff,
   resilientFetch,
