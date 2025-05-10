@@ -39,7 +39,7 @@ export function OrganizationSwitcher() {
   const [, navigate] = useLocation();
 
   // If there are no organizations available and we're not loading, we don't show the switcher
-  if (organizations.length === 0 && !isLoading) return null;
+  if (!organizations || organizations.length === 0 && !isLoading) return null;
 
   if (isLoading) {
     return (
