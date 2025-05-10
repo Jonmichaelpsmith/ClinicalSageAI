@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TrialSage™ Client Portal</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="/js/resilience-service.js"></script>
   <style>
     body {
       background: linear-gradient(to bottom, white 80%, #ffd1dc 100%);
       min-height: 100vh;
-      font-family: Arial, sans-serif;
     }
     .bg-primary {
       background-color: #ff1493;
@@ -19,6 +19,17 @@
     }
     .border-primary {
       border-color: #ff1493;
+    }
+    .animate-pulse {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: .5;
+      }
     }
   </style>
 </head>
@@ -38,283 +49,261 @@
       </div>
     </header>
 
-    <!-- Main Banner -->
-    <div class="mb-8 bg-black p-6 rounded-lg text-white">
-      <h1 class="text-2xl font-bold mb-2">Welcome to TrialSage Client Portal</h1>
-      <p class="mb-4">Access all of your clinical trial and regulatory documents in one place</p>
-      <div class="flex space-x-4">
-        <button class="bg-primary text-white px-4 py-2 rounded-md font-medium hover:bg-pink-700 transition-colors">
-          View My Dashboard
-        </button>
-        <button class="bg-transparent border border-white text-white px-4 py-2 rounded-md font-medium hover:bg-white/10 transition-colors">
-          Explore Solutions
-        </button>
-      </div>
-    </div>
-
-    <!-- Solutions Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-      <!-- IND Wizard -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-        <div class="border-b border-gray-200 px-4 py-3 bg-gray-50">
-          <h2 class="font-semibold text-gray-800">IND Wizard™</h2>
-        </div>
-        <div class="p-4">
-          <p class="text-sm text-gray-600 mb-4">
-            Streamline your Investigational New Drug application process with AI-powered document generation and compliance checks.
-          </p>
-          <div class="flex justify-between items-center">
-            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Active</span>
-            <button class="text-primary text-sm hover:underline">Access Module</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- CSR Intelligence -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-        <div class="border-b border-gray-200 px-4 py-3 bg-gray-50">
-          <h2 class="font-semibold text-gray-800">CSR Intelligence™</h2>
-        </div>
-        <div class="p-4">
-          <p class="text-sm text-gray-600 mb-4">
-            AI-powered clinical study report generation and analysis for optimized regulatory submissions.
-          </p>
-          <div class="flex justify-between items-center">
-            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Active</span>
-            <button class="text-primary text-sm hover:underline">Access Module</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- TrialSage Vault -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-        <div class="border-b border-gray-200 px-4 py-3 bg-gray-50">
-          <h2 class="font-semibold text-gray-800">TrialSage Vault™</h2>
-        </div>
-        <div class="p-4">
-          <p class="text-sm text-gray-600 mb-4">
-            Securely store and manage all your clinical trial documents with blockchain verification.
-          </p>
-          <div class="flex justify-between items-center">
-            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Active</span>
-            <button class="text-primary text-sm hover:underline">Access Module</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Study Architect -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-        <div class="border-b border-gray-200 px-4 py-3 bg-gray-50">
-          <h2 class="font-semibold text-gray-800">Study Architect™</h2>
-        </div>
-        <div class="p-4">
-          <p class="text-sm text-gray-600 mb-4">
-            Design and optimize clinical trial protocols with AI assistance based on historical data.
-          </p>
-          <div class="flex justify-between items-center">
-            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Active</span>
-            <button class="text-primary text-sm hover:underline">Access Module</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Clinical Metadata Repository -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-        <div class="border-b border-gray-200 px-4 py-3 bg-gray-50">
-          <h2 class="font-semibold text-gray-800">Clinical Metadata Repository</h2>
-        </div>
-        <div class="p-4">
-          <p class="text-sm text-gray-600 mb-4">
-            Centralized repository for clinical trial metadata enabling standardized reporting and analysis.
-          </p>
-          <div class="flex justify-between items-center">
-            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Active</span>
-            <button class="text-primary text-sm hover:underline">Access Module</button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Analytics Module -->
-      <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-        <div class="border-b border-gray-200 px-4 py-3 bg-gray-50">
-          <h2 class="font-semibold text-gray-800">Analytics Module</h2>
-        </div>
-        <div class="p-4">
-          <p class="text-sm text-gray-600 mb-4">
-            Advanced analytics and visualizations for clinical trial data and regulatory intelligence.
-          </p>
-          <div class="flex justify-between items-center">
-            <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Active</span>
-            <button class="text-primary text-sm hover:underline">Access Module</button>
-          </div>
+    <!-- Notification Message -->
+    <div class="bg-green-50 border border-green-200 text-green-800 rounded-md p-4 mb-8">
+      <div class="flex">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <div>
+          <p class="font-medium">Direct Access Enabled</p>
+          <p class="text-sm">Welcome to the TrialSage Client Portal. This standalone portal provides access to all modules.</p>
         </div>
       </div>
     </div>
 
-    <!-- Recent Documents -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
-      <div class="border-b border-gray-200 px-4 py-3 bg-gray-50 flex justify-between items-center">
-        <h2 class="font-semibold text-gray-800">Recent Documents</h2>
-        <div class="flex space-x-2">
-          <div class="relative">
-            <input type="text" placeholder="Search documents..." class="pl-8 pr-4 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
-            <div class="absolute left-2 top-1/2 transform -translate-y-1/2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    <!-- Dashboard Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <!-- Projects Column -->
+      <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div class="px-4 py-3 border-b bg-gray-50">
+          <h2 class="font-semibold text-gray-800">Active Projects</h2>
+        </div>
+        <div class="divide-y">
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">Phase II Clinical Trial - BX-107</div>
+                <div class="flex items-center mt-2 text-xs text-gray-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="ml-1 text-blue-600">In Progress</span>
+                  <span class="mx-2">•</span>
+                  <span>Due June 15, 2025</span>
+                </div>
+                
+                <!-- Progress bar -->
+                <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-primary h-2 rounded-full" style="width: 65%"></div>
+                </div>
+                <div class="mt-1 text-xs text-right text-gray-500">
+                  65% complete
+                </div>
+              </div>
             </div>
           </div>
-          <button class="text-primary text-sm hover:underline">View All</button>
+          
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">IND Application for BTX-331</div>
+                <div class="flex items-center mt-2 text-xs text-gray-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span class="ml-1 text-blue-600">In Progress</span>
+                  <span class="mx-2">•</span>
+                  <span>Due May 30, 2025</span>
+                </div>
+                
+                <!-- Progress bar -->
+                <div class="mt-2 w-full bg-gray-200 rounded-full h-2">
+                  <div class="bg-primary h-2 rounded-full" style="width: 42%"></div>
+                </div>
+                <div class="mt-1 text-xs text-right text-gray-500">
+                  42% complete
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="px-4 py-3 border-t bg-gray-50 text-center">
+          <a href="#" class="text-sm text-primary hover:underline">View All Projects</a>
         </div>
       </div>
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modified</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-              <th scope="col" class="relative px-6 py-3">
-                <span class="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                  <div class="text-sm font-medium text-gray-900">IND Application 2025-04R</div>
+      
+      <!-- Recent Documents Column -->
+      <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div class="px-4 py-3 border-b bg-gray-50">
+          <h2 class="font-semibold text-gray-800">Recent Documents</h2>
+        </div>
+        <div class="divide-y">
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">BX-107 Protocol.docx</div>
+                <div class="flex items-center mt-1 text-xs text-gray-500">
+                  <span>Protocol</span>
+                  <span class="mx-2">•</span>
+                  <span>Updated 2 days ago</span>
                 </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-500">PDF</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-500">2 hours ago</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                  Final
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button class="text-primary hover:text-pink-800 mr-2">View</button>
-                <button class="text-primary hover:text-pink-800">Download</button>
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                  <div class="text-sm font-medium text-gray-900">Protocol 23B</div>
+                <div class="mt-1 text-xs text-gray-500">
+                  Updated by John Davis
                 </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-500">DOCX</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-500">3 hours ago</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                  Draft
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button class="text-primary hover:text-pink-800 mr-2">View</button>
-                <button class="text-primary hover:text-pink-800">Download</button>
-              </td>
-            </tr>
-            
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                  <div class="text-sm font-medium text-gray-900">CSR Performance Report</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">BTX-331 Investigator Brochure.pdf</div>
+                <div class="flex items-center mt-1 text-xs text-gray-500">
+                  <span>Brochure</span>
+                  <span class="mx-2">•</span>
+                  <span>Updated 3 days ago</span>
                 </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-500">XLSX</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-gray-500">5 hours ago</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                  Final
-                </span>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <button class="text-primary hover:text-pink-800 mr-2">View</button>
-                <button class="text-primary hover:text-pink-800">Download</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+                <div class="mt-1 text-xs text-gray-500">
+                  Updated by Sarah Johnson
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="px-4 py-3 border-t bg-gray-50 text-center">
+          <a href="#" class="text-sm text-primary hover:underline">View All Documents</a>
+        </div>
+      </div>
+      
+      <!-- Recent Activity Column -->
+      <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div class="px-4 py-3 border-b bg-gray-50">
+          <h2 class="font-semibold text-gray-800">Recent Activity</h2>
+        </div>
+        <div class="divide-y">
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">BX-107 Protocol updated</div>
+                <div class="text-xs text-gray-500 mt-1">
+                  2 days ago by John Davis
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">Phase I CSR Quality Check completed</div>
+                <div class="text-xs text-gray-500 mt-1">
+                  3 days ago by Sarah Johnson
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="p-4 hover:bg-gray-50">
+            <div class="flex items-start">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-primary mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+              </svg>
+              <div class="ml-3 flex-1">
+                <div class="font-medium text-gray-800">Comment added to BTX-331 IND application</div>
+                <div class="text-xs text-gray-500 mt-1">
+                  3 days ago by Mark Wilson
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="px-4 py-3 border-t bg-gray-50 text-center">
+          <a href="#" class="text-sm text-primary hover:underline">View All Activity</a>
+        </div>
       </div>
     </div>
-
-    <!-- Activity Feed -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
-      <div class="border-b border-gray-200 px-4 py-3 bg-gray-50">
-        <h2 class="font-semibold text-gray-800">Recent Activity</h2>
-      </div>
-      <div>
-        <ul class="divide-y divide-gray-200">
-          <li class="p-4 hover:bg-gray-50">
-            <div class="flex">
-              <div class="mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <div>
-                <div class="font-medium text-gray-800">IND Application 2025-04R</div>
-                <div class="text-sm text-gray-500">Modified 2 hours ago</div>
-              </div>
-            </div>
-          </li>
-          <li class="p-4 hover:bg-gray-50">
-            <div class="flex">
-              <div class="mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <div>
-                <div class="font-medium text-gray-800">Protocol 23B Validation</div>
-                <div class="text-sm text-gray-500">Completed 3 hours ago</div>
-              </div>
-            </div>
-          </li>
-          <li class="p-4 hover:bg-gray-50">
-            <div class="flex">
-              <div class="mr-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-purple-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div>
-                <div class="font-medium text-gray-800">CSR Performance Report</div>
-                <div class="text-sm text-gray-500">Generated 5 hours ago</div>
-              </div>
-            </div>
-          </li>
-        </ul>
+    
+    <!-- Module Access Section -->
+    <div class="mt-8">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">TrialSage™ Modules</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <!-- Vault Module -->
+        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+          <div class="flex items-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <h3 class="font-semibold text-gray-800">TrialSage Vault™</h3>
+          </div>
+          <p class="text-sm text-gray-600">Manage and access all your clinical trial documents securely.</p>
+          <div class="mt-3">
+            <button data-module="vault" class="module-btn w-full text-sm bg-primary text-white px-3 py-1.5 rounded hover:bg-opacity-90 transition-all">
+              Access Module
+            </button>
+          </div>
+        </div>
+        
+        <!-- IND Wizard Module -->
+        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+          <div class="flex items-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <h3 class="font-semibold text-gray-800">IND Wizard™</h3>
+          </div>
+          <p class="text-sm text-gray-600">Streamline your Investigational New Drug application process.</p>
+          <div class="mt-3">
+            <button data-module="ind-wizard" class="module-btn w-full text-sm bg-primary text-white px-3 py-1.5 rounded hover:bg-opacity-90 transition-all">
+              Access Module
+            </button>
+          </div>
+        </div>
+        
+        <!-- CSR Intelligence Module -->
+        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+          <div class="flex items-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <h3 class="font-semibold text-gray-800">CSR Intelligence™</h3>
+          </div>
+          <p class="text-sm text-gray-600">AI-powered clinical study report generation and analysis.</p>
+          <div class="mt-3">
+            <button data-module="csr-intelligence" class="module-btn w-full text-sm bg-primary text-white px-3 py-1.5 rounded hover:bg-opacity-90 transition-all">
+              Access Module
+            </button>
+          </div>
+        </div>
+        
+        <!-- Study Architect Module -->
+        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+          <div class="flex items-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+            </svg>
+            <h3 class="font-semibold text-gray-800">Study Architect™</h3>
+          </div>
+          <p class="text-sm text-gray-600">Design and optimize clinical trial protocols with AI assistance.</p>
+          <div class="mt-3">
+            <button data-module="study-architect" class="module-btn w-full text-sm bg-primary text-white px-3 py-1.5 rounded hover:bg-opacity-90 transition-all">
+              Access Module
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <footer class="mt-auto py-6 bg-black text-white">
+  <footer class="mt-12 py-6 bg-gray-800 text-white">
     <div class="container mx-auto px-4">
       <div class="flex flex-col md:flex-row justify-between items-center">
         <div class="mb-4 md:mb-0">
@@ -331,17 +320,9 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Authentication check
-      if (!localStorage.getItem('isAuthenticated')) {
-        // Auto log in for demo purposes
-        localStorage.setItem('isAuthenticated', 'true');
-        localStorage.setItem('user', JSON.stringify({
-          username: 'admin',
-          role: 'admin',
-          name: 'Admin User',
-          organization: 'TrialSage'
-        }));
-      }
+      // Direct portal mode - authentication not required
+      // For standalone portal access, we skip authentication checks
+      // This enables direct access to the client portal without login
       
       // Get user information
       const userString = localStorage.getItem('user');
@@ -363,11 +344,47 @@
         logoutBtn.addEventListener('click', function() {
           localStorage.removeItem('isAuthenticated');
           localStorage.removeItem('user');
-          window.location.href = '/login.html';
+          window.location.href = '/login';
         });
       }
       
-      console.log('Client Portal initialized successfully');
+      // Module access buttons with resilient navigation
+      const moduleButtons = document.querySelectorAll('.module-btn');
+      moduleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const module = this.getAttribute('data-module');
+          
+          // Log access attempt for diagnostics
+          console.log(`All module access links updated to point to /client-portal`);
+          console.log(`Client portal initialized`);
+          
+          // Use proper module paths with fallback mechanism
+          try {
+            // Map of module ids to their respective URLs
+            const moduleUrls = {
+              'vault': '/vault',
+              'ind-wizard': '/ind-wizard',
+              'csr-intelligence': '/csr',
+              'study-architect': '/study-architect'
+            };
+            
+            // Navigate with resilience support
+            if (moduleUrls[module]) {
+              window.location.href = moduleUrls[module];
+            } else {
+              // Fallback if module is unknown
+              console.error(`Unknown module: ${module}`);
+              window.location.href = `/modules/${module}`;
+            }
+          } catch (e) {
+            console.error(`Error navigating to module ${module}:`, e);
+            // Critical fallback
+            window.location.href = `/${module}`;
+          }
+        });
+      });
+      
+      console.log('Client portal initialized');
     });
   </script>
 </body>
