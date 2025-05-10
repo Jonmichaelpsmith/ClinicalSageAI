@@ -1940,6 +1940,26 @@ const MultiTenantEnterprisePortal = () => {
                 Projects
               </div>
             </button>
+            
+            {/* CER2V Module Tab - Prominently Featured */}
+            <button
+              className={`px-4 py-3 font-medium border-b-2 transition-colors ${
+                activeTab === 'cer2v'
+                  ? 'border-green-500 text-green-600 bg-green-50'
+                  : 'border-transparent text-green-600 hover:text-green-700 hover:border-green-300 hover:bg-green-50/50'
+              }`}
+              onClick={() => {
+                setActiveTab('cer2v');
+                // Navigate to CERV2 module
+                setLocation('/client-portal/cer2v');
+              }}
+            >
+              <div className="flex items-center">
+                <FileCheck size={16} className="mr-2" />
+                <span className="font-semibold">CER2V Module</span>
+              </div>
+            </button>
+            
             <button
               className={`px-4 py-3 font-medium border-b-2 transition-colors ${
                 activeTab === 'documents'
