@@ -315,4 +315,12 @@ class SecurityService {
   }
 }
 
-export default SecurityService;
+// Create a singleton instance
+const securityService = new SecurityService();
+
+// Initialize the service when it's imported
+securityService.initialize().catch(err => {
+  console.error('Failed to initialize security service:', err);
+});
+
+export default securityService;
