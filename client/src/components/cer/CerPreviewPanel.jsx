@@ -69,28 +69,68 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
     }
 
     try {
+      // Capture memory before starting
+      let startMemory = null;
+      if (window.performance && window.performance.memory) {
+        startMemory = window.performance.memory.usedJSHeapSize / (1024 * 1024);
+        console.log(`Memory before preview generation: ${Math.round(startMemory)}MB`);
+      }
+      
       setIsGeneratingPreview(true);
 
-      // Use a hidden iframe to show the preview
-      const previewContainer = document.getElementById('pdf-preview-container');
+      // Create or get the preview container
+      let previewContainer = document.getElementById('pdf-preview-container');
       if (!previewContainer) {
-        const container = document.createElement('div');
-        container.id = 'pdf-preview-container';
-        container.className = 'fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 z-50 flex items-center justify-center';
-        container.style.display = 'none';
-        document.body.appendChild(container);
+        previewContainer = document.createElement('div');
+        previewContainer.id = 'pdf-preview-container';
+        previewContainer.className = 'fixed top-0 left-0 w-full h-full bg-black bg-opacity-75 z-50 flex items-center justify-center';
+        previewContainer.style.display = 'none';
+        document.body.appendChild(previewContainer);
+
+        // Create a loading indicator
+        const loadingElement = document.createElement('div');
+        loadingElement.id = 'pdf-preview-loading';
+        loadingElement.className = 'absolute inset-0 flex flex-col items-center justify-center text-white';
+        loadingElement.innerHTML = `
+          <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white mb-4"></div>
+          <p class="text-lg">Generating PDF Preview...</p>
+        `;
+        previewContainer.appendChild(loadingElement);
 
         // Add close button
         const closeButton = document.createElement('button');
         closeButton.innerText = 'Close Preview';
-        closeButton.className = 'absolute top-4 right-4 bg-white px-4 py-2 rounded shadow';
+        closeButton.className = 'absolute top-4 right-4 bg-white px-4 py-2 rounded shadow text-black';
         closeButton.onclick = () => {
-          container.style.display = 'none';
+          // Clean up when closing to avoid memory leaks
+          const iframe = previewContainer.querySelector('iframe');
+          if (iframe) {
+            const iframeSrc = iframe.src;
+            iframe.src = 'about:blank'; // Clear the iframe content
+            
+            // Revoke object URL after a small delay
+            setTimeout(() => {
+              if (iframeSrc && iframeSrc.startsWith('blob:')) {
+                URL.revokeObjectURL(iframeSrc);
+              }
+            }, 100);
+          }
+          previewContainer.style.display = 'none';
         };
-        container.appendChild(closeButton);
+        previewContainer.appendChild(closeButton);
       }
 
-      // Prepare data for preview
+      // Show container with loading indicator
+      previewContainer.style.display = 'flex';
+      const loadingIndicator = document.getElementById('pdf-preview-loading');
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'flex';
+      }
+
+      // Prepare data for preview with enhanced metadata
+      const deviceName = title.split(' ')[0] || 'Medical Device';
+      const modelNumber = 'TS-' + Date.now().toString().slice(-6);
+      
       const exportData = {
         title,
         sections,
@@ -99,34 +139,98 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
         complianceData,
         templateId: 'meddev', // MEDDEV 2.7/1 Rev 4 format
         metadata: {
-          device: title.split(' ')[0] || 'Medical Device',
+          device: deviceName,
           manufacturer: 'TrialSage Medical',
-          modelNumber: 'TS-' + Date.now().toString().slice(-6),
-          version: '1.0',
+          modelNumber: modelNumber,
+          version: '2.0',
           date: new Date().toLocaleDateString(),
           standard: 'MEDDEV 2.7/1 Rev 4',
-          watermark: 'PREVIEW - NOT FOR REGULATORY SUBMISSION'
+          watermark: 'PREVIEW - NOT FOR REGULATORY SUBMISSION',
+          generatedBy: 'TrialSage CER Module v2.0.1',
+          // Include compliance information in the metadata
+          regulatoryFramework: 'EU MDR 2017/745',
+          complianceScore: complianceData?.overallScore || 'N/A',
+          validationDate: new Date().toLocaleDateString()
+        },
+        // Enable optimizations
+        optimizations: {
+          reduceImageQuality: true,
+          compressPdf: true,
+          batchProcessing: true,
+          memoryEfficient: true
         }
       };
 
-      // Generate PDF blob
-      const pdfBlob = await cerApiService.exportToPDF(exportData);
+      // Generate PDF blob with timeout handling
+      const pdfBlobPromise = cerApiService.exportToPDF(exportData);
+      
+      // Add timeout protection
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('PDF generation timed out')), 60000);
+      });
+      
+      // Race the promises
+      const pdfBlob = await Promise.race([pdfBlobPromise, timeoutPromise]);
 
       // Create object URL for preview
       const pdfUrl = URL.createObjectURL(pdfBlob);
 
-      // Show preview in iframe
-      const container = document.getElementById('pdf-preview-container');
-      let iframe = container.querySelector('iframe');
-
-      if (!iframe) {
-        iframe = document.createElement('iframe');
-        iframe.className = 'w-4/5 h-4/5 border-none';
-        container.appendChild(iframe);
+      // Hide loading indicator
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
       }
 
+      // Show preview in iframe - create or reuse
+      let iframe = previewContainer.querySelector('iframe');
+      if (!iframe) {
+        iframe = document.createElement('iframe');
+        iframe.className = 'w-4/5 h-4/5 border-none bg-white rounded-lg shadow-lg';
+        iframe.title = 'CER Preview';
+        previewContainer.appendChild(iframe);
+      } else {
+        // Clean up previous object URL if it exists
+        const previousSrc = iframe.src;
+        if (previousSrc && previousSrc.startsWith('blob:')) {
+          iframe.src = 'about:blank'; // Clear first
+          URL.revokeObjectURL(previousSrc); // Release memory
+        }
+      }
+
+      // Set new source
       iframe.src = pdfUrl;
-      container.style.display = 'flex';
+      
+      // Add download button next to close
+      const downloadButton = previewContainer.querySelector('#preview-download-button');
+      if (!downloadButton) {
+        const newDownloadButton = document.createElement('button');
+        newDownloadButton.id = 'preview-download-button';
+        newDownloadButton.innerText = 'Download Preview';
+        newDownloadButton.className = 'absolute top-4 right-36 bg-blue-600 text-white px-4 py-2 rounded shadow';
+        newDownloadButton.onclick = () => {
+          // Trigger download of the preview
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = pdfUrl;
+          a.download = `CER_${deviceName.replace(/\s+/g, '_')}_${modelNumber}_preview.pdf`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        };
+        previewContainer.appendChild(newDownloadButton);
+      }
+
+      // Check final memory usage
+      if (window.performance && window.performance.memory && startMemory) {
+        const endMemory = window.performance.memory.usedJSHeapSize / (1024 * 1024);
+        console.log(`Memory after preview generation: ${Math.round(endMemory)}MB (Δ: ${Math.round(endMemory - startMemory)}MB)`);
+        
+        // Cleanup if memory usage grew significantly
+        if (endMemory - startMemory > 50) { // If more than 50MB growth
+          setTimeout(() => {
+            if (window.gc) window.gc();
+          }, 1000);
+        }
+      }
 
       toast({
         title: 'Preview Generated',
@@ -135,6 +239,13 @@ export default function CerPreviewPanel({ title, sections = [], faers = [], comp
       });
     } catch (error) {
       console.error('Preview generation failed:', error);
+      
+      // Hide the preview container if it exists
+      const previewContainer = document.getElementById('pdf-preview-container');
+      if (previewContainer) {
+        previewContainer.style.display = 'none';
+      }
+      
       toast({
         title: 'Preview Generation Failed',
         description: error.message || 'Failed to generate PDF preview',

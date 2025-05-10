@@ -46,8 +46,20 @@ export default function CerReportExportPanel({ reports = [], onExportComplete })
 
     setIsExporting(true);
     setProgress(0);
+    
+    // Track memory usage if available
+    const initialMemory = window.performance?.memory?.usedJSHeapSize 
+      ? Math.round(window.performance.memory.usedJSHeapSize / (1024 * 1024)) 
+      : null;
+    
+    if (initialMemory) {
+      console.log(`Initial memory before export: ${initialMemory}MB`);
+    }
 
     try {
+      let successCount = 0;
+      let errorCount = 0;
+      
       // Export reports one at a time to avoid memory issues
       for (let i = 0; i < selectedReports.length; i++) {
         const reportId = selectedReports[i];
@@ -56,41 +68,91 @@ export default function CerReportExportPanel({ reports = [], onExportComplete })
         if (report) {
           setCurrentReport(report.title || 'Unnamed Report');
           
-          // Call the API to export a single report
-          const response = await fetch(`/api/cer/export-pdf/${reportId}`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
+          try {
+            // Call the API to export a single report with timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 60000); // 60 second timeout
+            
+            const response = await fetch(`/api/cer/export-pdf/${reportId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+              throw new Error(`Failed to export report: ${response.statusText}`);
             }
-          });
-          
-          if (!response.ok) {
-            throw new Error(`Failed to export report: ${response.statusText}`);
+            
+            // Create download blob
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `CER_${reportId}_${report.title?.replace(/\s+/g, '_') || reportId}_${new Date().toISOString().split('T')[0]}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            
+            // Clean up immediately to reduce memory usage
+            document.body.removeChild(a);
+            setTimeout(() => {
+              window.URL.revokeObjectURL(url);
+            }, 100);
+            
+            successCount++;
+            
+            // Force garbage collection if available
+            if (window.gc) {
+              window.gc();
+            }
+          } catch (itemError) {
+            console.error(`Error exporting report ${reportId}:`, itemError);
+            errorCount++;
+            // Continue with next report instead of stopping the whole batch
           }
-          
-          // Create download blob
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.style.display = 'none';
-          a.href = url;
-          a.download = `CER_${reportId}_${new Date().toISOString().split('T')[0]}.pdf`;
-          document.body.appendChild(a);
-          a.click();
-          
-          // Clean up
-          window.URL.revokeObjectURL(url);
-          document.body.removeChild(a);
         }
         
-        // Update progress
+        // Update progress after each report, regardless of success
         setProgress(Math.round(((i + 1) / selectedReports.length) * 100));
+        
+        // Small delay between reports to prevent UI freezing
+        if (i < selectedReports.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
       }
       
-      toast({
-        title: "Export complete",
-        description: `Successfully exported ${selectedReports.length} reports.`,
-      });
+      // Final memory check
+      const finalMemory = window.performance?.memory?.usedJSHeapSize 
+        ? Math.round(window.performance.memory.usedJSHeapSize / (1024 * 1024)) 
+        : null;
+      
+      if (initialMemory && finalMemory) {
+        console.log(`Final memory after export: ${finalMemory}MB (Δ: ${finalMemory - initialMemory}MB)`);
+      }
+      
+      // Show appropriate toast based on results
+      if (errorCount === 0) {
+        toast({
+          title: "Export complete",
+          description: `Successfully exported ${successCount} reports.`,
+        });
+      } else if (successCount === 0) {
+        toast({
+          title: "Export failed",
+          description: `Failed to export all ${errorCount} reports.`,
+          variant: "destructive"
+        });
+      } else {
+        toast({
+          title: "Export partially complete",
+          description: `Exported ${successCount} reports. Failed to export ${errorCount} reports.`,
+          variant: "warning"
+        });
+      }
       
       if (onExportComplete) {
         onExportComplete();

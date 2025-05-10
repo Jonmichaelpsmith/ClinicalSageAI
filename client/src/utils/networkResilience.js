@@ -32,12 +32,12 @@ export function initNetworkResilience() {
 
   // Start retry queue processor
   processRetryQueue();
-  
+
   // Clear expired cache entries periodically
   setInterval(cleanupExpiredCache, 60000);
-  
+
   console.info('Network resilience features initialized');
-  
+
   return {
     clearCache: () => requestCache.clear(),
     getCacheStats: () => ({
@@ -460,3 +460,356 @@ export default {
   createResilientApiClient,
   createResilientFetch
 };
+/**
+ * Monitors network status and provides resilience
+ * @param {Object} options - Configuration options
+ * @param {Function} options.onStatusChange - Callback when network status changes
+ * @param {number} options.maxRetries - Maximum number of retries for failed requests
+ * @param {number} options.retryDelay - Base delay between retries in ms
+ * @param {boolean} options.useExponentialBackoff - Whether to use exponential backoff for retries
+ * @param {Array<string>} options.criticalEndpoints - Endpoints that should always be retried
+ * @returns {Object} Network resilience controller
+ */
+export function initNetworkResilience(options = {}) {
+  const { 
+    onStatusChange = null,
+    maxRetries = 3,
+    retryDelay = 1000,
+    useExponentialBackoff = true,
+    criticalEndpoints = ['/api/auth', '/api/cer', '/api/health']
+  } = options;
+
+  // Network status
+  let isOnline = navigator.onLine;
+  let lastConnectedTime = isOnline ? Date.now() : null;
+  let connectionQuality = 'unknown'; // 'unknown', 'poor', 'good', 'excellent'
+  let latencyHistory = []; // Track recent latencies to assess connection quality
+
+  // Queue for failed requests with retry metadata
+  const requestQueue = [];
+
+  // Statistics tracking
+  const stats = {
+    totalRequests: 0,
+    successfulRequests: 0,
+    failedRequests: 0,
+    retriedRequests: 0,
+    successAfterRetry: 0,
+    networkDowntime: 0, // in milliseconds
+    lastDowntime: null,
+    averageLatency: 0,
+    latencySamples: 0
+  };
+
+  // Track the network status
+  const handleNetworkChange = (online) => {
+    const wasOnline = isOnline;
+    isOnline = online;
+
+    const now = Date.now();
+
+    if (online) {
+      // Calculate downtime if we were previously offline
+      if (!wasOnline && stats.lastDowntime) {
+        stats.networkDowntime += (now - stats.lastDowntime);
+      }
+
+      lastConnectedTime = now;
+
+      // Process queue when back online with a small delay to ensure connection is stable
+      setTimeout(processQueue, 1000);
+    } else {
+      // Mark downtime start
+      stats.lastDowntime = now;
+    }
+
+    // Notify status change if callback provided
+    if (wasOnline !== online && onStatusChange) {
+      onStatusChange({
+        online,
+        lastConnectedTime,
+        connectionQuality,
+        queuedRequests: requestQueue.length,
+        stats
+      });
+    }
+
+    // Log status
+    if (online) {
+      console.log('🌐 Network connection restored');
+    } else {
+      console.log('🔌 Network connection lost');
+    }
+  };
+
+  // Calculate retry delay using exponential backoff if enabled
+  const calculateRetryDelay = (attempt) => {
+    if (!useExponentialBackoff) return retryDelay;
+
+    // Exponential backoff with jitter: base * 2^attempt + random jitter
+    const exponentialPart = retryDelay * Math.pow(2, attempt);
+    const jitter = Math.random() * retryDelay * 0.1; // 10% jitter
+    return exponentialPart + jitter;
+  };
+
+  // Test connection quality periodically
+  const testConnectionQuality = async () => {
+    if (!isOnline) {
+      connectionQuality = 'unknown';
+      return connectionQuality;
+    }
+
+    try {
+      const startTime = performance.now();
+      const response = await fetch('/api/health', {
+        method: 'HEAD',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      });
+
+      const latency = performance.now() - startTime;
+
+      // Update latency tracking
+      latencyHistory.push(latency);
+      if (latencyHistory.length > 10) latencyHistory.shift();
+
+      // Calculate average latency
+      const avgLatency = latencyHistory.reduce((a, b) => a + b, 0) / latencyHistory.length;
+
+      // Update statistics
+      stats.averageLatency = ((stats.averageLatency * stats.latencySamples) + latency) / 
+                            (stats.latencySamples + 1);
+      stats.latencySamples++;
+
+      // Determine connection quality based on latency and response status
+      if (!response.ok) {
+        connectionQuality = 'poor';
+      } else if (avgLatency < 100) {
+        connectionQuality = 'excellent';
+      } else if (avgLatency < 300) {
+        connectionQuality = 'good';
+      } else {
+        connectionQuality = 'poor';
+      }
+    } catch (error) {
+      // If the test fails, set quality to poor
+      connectionQuality = 'poor';
+    }
+
+    return connectionQuality;
+  };
+
+  // Start periodic connection quality testing
+  const qualityTestInterval = setInterval(testConnectionQuality, 30000);
+
+  // Process the request queue
+  const processQueue = async () => {
+    if (!isOnline || requestQueue.length === 0) return;
+
+    // Process one at a time to avoid overwhelming
+    while (requestQueue.length > 0 && isOnline) {
+      const { 
+        request, 
+        resolve, 
+        reject, 
+        retries, 
+        isCritical,
+        lastAttempt
+      } = requestQueue.shift();
+
+      // If this is a retry, calculate delay based on retry count
+      if (retries > 0 && lastAttempt) {
+        const timeSinceLastAttempt = Date.now() - lastAttempt;
+        const targetDelay = calculateRetryDelay(retries - 1);
+
+        // If we haven't waited long enough, push back to queue
+        if (timeSinceLastAttempt < targetDelay) {
+          requestQueue.push({
+            request, resolve, reject, retries, isCritical, lastAttempt
+          });
+
+          // Wait a bit before processing more
+          await new Promise(r => setTimeout(r, 100));
+          continue;
+        }
+      }
+
+      try {
+        const startTime = performance.now();
+        const response = await fetch(request.url, request.options);
+        const requestLatency = performance.now() - startTime;
+
+        // Update statistics
+        stats.successfulRequests++;
+        if (retries > 0) stats.successAfterRetry++;
+
+        // Update latency tracking
+        stats.averageLatency = ((stats.averageLatency * stats.latencySamples) + requestLatency) / 
+                              (stats.latencySamples + 1);
+        stats.latencySamples++;
+
+        resolve(response);
+      } catch (error) {
+        // Check if should retry
+        if (retries < maxRetries || isCritical) {
+          stats.retriedRequests++;
+
+          // Queue for retry with incremented retry count
+          requestQueue.push({
+            request,
+            resolve,
+            reject,
+            retries: retries + 1,
+            isCritical,
+            lastAttempt: Date.now()
+          });
+        } else {
+          // Max retries exceeded
+          stats.failedRequests++;
+          reject(error);
+        }
+      }
+
+      // Small pause between processing queue items
+      if (requestQueue.length > 0) {
+        await new Promise(r => setTimeout(r, 50));
+      }
+    }
+  };
+
+  // Check if URL matches critical endpoints
+  const isCriticalEndpoint = (url) => {
+    return criticalEndpoints.some(endpoint => url.includes(endpoint));
+  };
+
+  // Add listeners for online/offline events
+  window.addEventListener('online', () => handleNetworkChange(true));
+  window.addEventListener('offline', () => handleNetworkChange(false));
+
+  // Execute a fetch with resilience
+  const resilientFetch = (url, options = {}) => {
+    // Track total requests
+    stats.totalRequests++;
+
+    // Determine if this is a critical request that always gets retried
+    const isCritical = isCriticalEndpoint(url);
+
+    // Add custom headers for tracking
+    const enhancedOptions = {
+      ...options,
+      headers: {
+        ...options.headers,
+        'X-Request-ID': `req-${Date.now()}-${Math.random().toString(36).substring(2, 10)}`,
+        'X-Client-Quality': connectionQuality
+      }
+    };
+
+    if (isOnline) {
+      return fetch(url, enhancedOptions)
+        .then(response => {
+          stats.successfulRequests++;
+          return response;
+        })
+        .catch(error => {
+          // Check if it's a network error
+          if (error.name === 'TypeError' || !isOnline) {
+            // Network error, queue for retry
+            return new Promise((resolve, reject) => {
+              requestQueue.push({
+                request: { url, options: enhancedOptions },
+                resolve,
+                reject,
+                retries: 0,
+                isCritical,
+                lastAttempt: Date.now()
+              });
+            });
+          }
+
+          // Other error, just reject
+          stats.failedRequests++;
+          return Promise.reject(error);
+        });
+    } else {
+      // Already offline, queue immediately
+      return new Promise((resolve, reject) => {
+        requestQueue.push({
+          request: { url, options: enhancedOptions },
+          resolve,
+          reject,
+          retries: 0,
+          isCritical,
+          lastAttempt: Date.now()
+        });
+      });
+    }
+  };
+
+  // Reset statistics
+  const resetStats = () => {
+    Object.assign(stats, {
+      totalRequests: 0,
+      successfulRequests: 0,
+      failedRequests: 0,
+      retriedRequests: 0,
+      successAfterRetry: 0,
+      networkDowntime: 0,
+      lastDowntime: isOnline ? null : Date.now(),
+      averageLatency: 0,
+      latencySamples: 0
+    });
+  };
+
+  // Initial connection quality test
+  testConnectionQuality();
+
+  // Return controller
+  return {
+    isOnline: () => isOnline,
+    fetch: resilientFetch,
+    getConnectionQuality: () => connectionQuality,
+    testConnectionQuality,
+    getQueueLength: () => requestQueue.length,
+    getStats: () => ({ ...stats }), // Return a copy to prevent external modification
+    resetStats,
+    processQueue,
+    cleanup: () => {
+      window.removeEventListener('online', () => handleNetworkChange(true));
+      window.removeEventListener('offline', () => handleNetworkChange(false));
+      clearInterval(qualityTestInterval);
+    }
+  };
+}
+
+/**
+ * Utility to check if a request should be retried based on the error and status code
+ * @param {Error} error - The error that occurred
+ * @param {number} statusCode - The HTTP status code (if available)
+ * @returns {boolean} Whether the request should be retried
+ */
+export function shouldRetryRequest(error, statusCode = null) {
+  // Network errors should be retried
+  if (error && (error.name === 'TypeError' || error.name === 'NetworkError')) {
+    return true;
+  }
+
+  // 5xx errors should be retried (server errors)
+  if (statusCode && statusCode >= 500 && statusCode < 600) {
+    return true;
+  }
+
+  // 429 Too Many Requests should be retried after a delay
+  if (statusCode === 429) {
+    return true;
+  }
+
+  // Don't retry 4xx errors (except 429)
+  if (statusCode && statusCode >= 400 && statusCode < 500) {
+    return false;
+  }
+
+  return false;
+}
