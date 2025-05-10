@@ -1,72 +1,40 @@
 /**
- * Authentication Controller
+ * Authentication Controllers
  * 
- * This module handles authentication logic for the TrialSage platform.
+ * This module provides controller functions for authentication routes.
  */
 
 /**
- * Check Authentication Middleware
- * Verifies if the user is authenticated via token or user cookie
+ * Middleware to check if a user is authenticated
  */
-export function checkAuth(req, res, next) {
-  // Check for token in cookie or authorization header
-  const token = req.cookies?.token || req.headers.authorization?.split(' ')[1];
-  
-  // If no token, also check if there's a user cookie (our simplified auth)
-  const userCookie = req.cookies?.user;
-  
-  if (!token && !userCookie) {
-    console.log('[AUTH] Auth check failed - redirecting to login');
-    return res.redirect('/login');
-  }
-  
-  // For now just check existence, in production verify JWT signature
-  console.log('[AUTH] User authenticated successfully');
-  next();
-}
-
-/**
- * Handle Login
- * Process login requests and set authentication tokens
- */
-export function handleLogin(req, res) {
-  const { username, password } = req.body;
-  
-  // Simple authentication logic - would use database in production
-  if (username === 'admin' && password === 'admin') {
-    // Create a user object
-    const user = {
-      id: 1,
-      username: 'admin',
-      name: 'Admin User',
-      email: 'admin@trialsage.ai',
-      role: 'admin',
-      subscribed: true
+export const checkAuth = (req, res, next) => {
+  try {
+    // Check for authentication token
+    const token = req.headers.authorization?.split(' ')[1];
+    
+    // For development, we're just providing a simple auth check
+    // In production, you would verify the token against your auth system
+    if (!token) {
+      return res.status(401).send({
+        success: false,
+        message: 'Authentication required'
+      });
+    }
+    
+    // Add user info to request object
+    // In a real app, you would decode the token and get the actual user
+    req.user = {
+      id: 'user123',
+      name: 'Test User',
+      role: 'client'
     };
     
-    // Set user cookie
-    res.cookie('user', JSON.stringify(user), {
-      httpOnly: false, // Allow JavaScript access for client-side auth checks
-      secure: process.env.NODE_ENV === 'production', // Use secure in production
-      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    next();
+  } catch (error) {
+    console.error('Authentication error:', error);
+    res.status(401).send({
+      success: false,
+      message: 'Authentication failed'
     });
-    
-    return res.json({ success: true, user });
   }
-  
-  // Authentication failed
-  res.status(401).json({ success: false, message: 'Invalid credentials' });
-}
-
-/**
- * Handle Logout
- * Clear authentication tokens and cookies
- */
-export function handleLogout(req, res) {
-  // Clear cookies
-  res.clearCookie('user');
-  res.clearCookie('token');
-  
-  // Redirect to login page
-  res.redirect('/login');
-}
+};
