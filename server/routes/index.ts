@@ -12,6 +12,7 @@ import tenantCtqFactorsRoutes from './tenant-ctq-factors';
 import tenantSectionGatingRoutes from './tenant-section-gating';
 import tenantTraceabilityRoutes from './tenant-traceability';
 import documentRoutes from './document-routes';
+import regulatorySubmissionsRoutes from './regulatorySubmissions';
 import { authMiddleware } from '../auth';
 
 const router = Router();
@@ -36,6 +37,7 @@ router.use('/tenant-ctq-factors', tenantCtqFactorsRoutes);
 router.use('/tenant-section-gating', tenantSectionGatingRoutes);
 router.use('/tenant-traceability', tenantTraceabilityRoutes);
 router.use('/documents', documentRoutes);
+router.use('/regulatory-submissions', regulatorySubmissionsRoutes);
 
 // Mount API routes
 export function mountApiRoutes(app: any) {
