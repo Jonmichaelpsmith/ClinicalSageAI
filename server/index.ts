@@ -123,30 +123,8 @@ app.get('/marketing', (req, res) => {
   }
 });
 
-// HIGH PRIORITY - Client Portal route - MUST NOT RETURN 404
-app.get('/client-portal', (req, res) => {
-  console.log('CRITICAL: Serving Static Client Portal HTML directly');
-  // Always prefer the static client portal file first - this is the user's intended file
-  const staticClientPortal = path.join(process.cwd(), 'client-portal.html');
-  if (fs.existsSync(staticClientPortal)) {
-    return res.sendFile(staticClientPortal);
-  } else {
-    console.error('CRITICAL ERROR: client-portal.html not found at:', staticClientPortal);
-    // Last resort: Generate a minimal response instead of a 404
-    return res.send(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>Client Portal Error</title>
-        <meta http-equiv="refresh" content="5;url=/" />
-      </head>
-      <body>
-        <p>Error: Client Portal unavailable. Redirecting to home page in 5 seconds...</p>
-      </body>
-      </html>
-    `);
-  }
-});
+// Let the Vite/React router handle the client portal route
+// Don't add a specific handler for /client-portal to make sure React routing works
 
 // Create HTTP server
 const httpServer = createHttpServer(app);
