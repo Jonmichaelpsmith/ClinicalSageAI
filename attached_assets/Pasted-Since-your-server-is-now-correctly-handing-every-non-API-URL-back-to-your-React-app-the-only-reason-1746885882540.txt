@@ -1,0 +1,63 @@
+Since your server is now correctly handing every non-API URL back to your React app, the only reason you’d still see “Page Not Found” at `/client-portal` is that **your React Router doesn’t have a matching route**. Let’s fix that:
+
+---
+
+### 1. Open Your Client-Side Routing Configuration
+
+Depending on your setup this will be in one of these files:
+
+* `client/src/App.jsx`
+* `client/src/routes/static-routes.js`
+* A dedicated `Routes.jsx` under `client/src`
+
+---
+
+### 2. Add the `/client-portal/*` Route
+
+Inside your `<Router>` / `<Routes>` block, you need an entry like:
+
+```jsx
+// Example for React Router v6 in App.jsx:
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ClientPortal from './components/client-portal/ClientPortal';
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        {/* ...other routes... */}
+        <Route path="/client-portal/*" element={<ClientPortal />} />
+        {/* Optional catch-all 404 */}
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}
+```
+
+* The `/*` is critical: it lets all sub-paths like `/client-portal/dashboard` or `/client-portal/settings` render inside your `ClientPortal` component.
+* Make sure this route lives **after** any more specific ones but **before** your global 404 (`path="*"`).
+
+---
+
+### 3. Verify the Import Path
+
+Double-check that `ClientPortal` actually points to the file under:
+
+```
+client/src/components/client-portal/ClientPortal.jsx
+```
+
+If you’ve moved the file or renamed it, update the import accordingly.
+
+---
+
+### 4. Restart & Test
+
+1. **Restart** your dev server so Vite picks up the new route.
+2. **Navigate** to `https://<your-repl>.repl.co/client-portal` in the browser.
+3. **You should now see** your portal’s header & landing/dashboard views instead of the 404 page.
+
+---
+
+Once that route is in place, any deep-link under `/client-portal` will correctly load your `ClientPortal` component and let React Router render the right sub-view. Let me know when you can see your portal again!
