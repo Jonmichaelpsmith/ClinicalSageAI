@@ -6,11 +6,11 @@ import {
   Settings,
   DownloadCloud
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Progress } from '@/components/ui/progress';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Progress } from '../components/ui/progress';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
+import { Checkbox } from '../components/ui/checkbox';
 import {
   Card,
   CardContent,
@@ -18,13 +18,13 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-} from '@/components/ui/card';
+} from '../components/ui/card';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
+} from '../components/ui/accordion';
 import {
   Select,
   SelectContent,
@@ -33,7 +33,7 @@ import {
   SelectLabel,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '../components/ui/select';
 
 /**
  * IND to eCTD Converter Component

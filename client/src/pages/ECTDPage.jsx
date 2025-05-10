@@ -15,13 +15,13 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
+} from '../components/ui/card';
+import { Button } from '../components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Progress } from '../components/ui/progress';
+import { Badge } from '../components/ui/badge';
+import { Separator } from '../components/ui/separator';
+import { ScrollArea } from '../components/ui/scroll-area';
 import { 
   Table, 
   TableBody, 
@@ -30,8 +30,8 @@ import {
   TableHead, 
   TableHeader, 
   TableRow 
-} from '@/components/ui/table';
-import { useTenantContext } from '@/contexts/TenantContext';
+} from '../components/ui/table';
+import { useTenant } from '../contexts/TenantContext';
 
 // Import existing INDtoECTDConverter for functionality
 import INDtoECTDConverter from './INDtoECTDConverter';
@@ -50,7 +50,7 @@ const ECTDPage = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [submissions, setSubmissions] = useState([]);
   const [recentDocuments, setRecentDocuments] = useState([]);
-  const { organizationId, clientWorkspaceId } = useTenantContext();
+  const { organizationId, clientWorkspaceId } = useTenant();
   
   useEffect(() => {
     // In a real app, these would be API calls to fetch data
