@@ -29,7 +29,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { FileUpload } from '@/components/ui/file-upload';
+// Import FileUpload explicitly from TSX file to avoid ambiguity
+import { FileUpload } from '@/components/ui/file-upload.tsx';
 import { Progress } from '@/components/ui/progress';
 import { AlertCircle, FileText } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
