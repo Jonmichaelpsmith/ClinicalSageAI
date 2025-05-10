@@ -1,188 +1,94 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { AlertTriangle, CheckCircle, Info, XCircle } from 'lucide-react';
 import { 
-  AlertCircle, 
-  AlertTriangle, 
-  Info, 
-  X, 
-  ChevronDown, 
-  ChevronUp,
-  ExternalLink
-} from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 
 /**
  * Validation Results List Component
  * 
- * Displays validation issues for regulatory submissions with filtering
- * capabilities by severity level.
+ * Displays a list of validation issues found in a submission.
  */
-const ValidationResultsList = ({ 
-  validationResults, 
-  onItemClick,
-  onClearAll
-}) => {
-  const [severityFilter, setSeverityFilter] = useState('all');
-  const [expandedResults, setExpandedResults] = useState({});
+const ValidationResultsList = ({ results = [] }) => {
+  const getSeverityIcon = (severity) => {
+    switch (severity) {
+      case 'error':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'warning':
+        return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+      case 'info':
+        return <Info className="h-4 w-4 text-blue-500" />;
+      case 'success':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      default:
+        return <Info className="h-4 w-4 text-gray-500" />;
+    }
+  };
+  
+  const getSeverityClass = (severity) => {
+    switch (severity) {
+      case 'error':
+        return 'text-red-500 border-red-200 bg-red-50';
+      case 'warning':
+        return 'text-amber-500 border-amber-200 bg-amber-50';
+      case 'info':
+        return 'text-blue-500 border-blue-200 bg-blue-50';
+      case 'success':
+        return 'text-green-500 border-green-200 bg-green-50';
+      default:
+        return 'text-gray-500 border-gray-200 bg-gray-50';
+    }
+  };
 
-  if (!validationResults || validationResults.length === 0) {
+  // If no results, show empty state
+  if (!results || results.length === 0) {
     return (
-      <div className="text-center p-4 border rounded-md bg-gray-50">
-        No validation issues found
+      <div className="text-center p-8 border rounded-md bg-gray-50">
+        <CheckCircle className="h-10 w-10 mx-auto text-green-500" />
+        <h3 className="mt-2 text-lg font-medium">No validation issues found</h3>
+        <p className="text-gray-500">The submission has passed all validation checks.</p>
       </div>
     );
   }
 
-  const toggleExpanded = (id) => {
-    setExpandedResults(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
-
-  const errorCount = validationResults.filter(result => result.severity === 'error').length;
-  const warningCount = validationResults.filter(result => result.severity === 'warning').length;
-  const infoCount = validationResults.filter(result => result.severity === 'info').length;
-
-  const filteredResults = severityFilter === 'all' 
-    ? validationResults 
-    : validationResults.filter(result => result.severity === severityFilter);
-
-  const getSeverityIcon = (severity) => {
-    switch (severity) {
-      case 'error':
-        return <AlertCircle className="h-5 w-5 text-red-500 mr-2" />;
-      case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />;
-      case 'info':
-        return <Info className="h-5 w-5 text-blue-500 mr-2" />;
-      default:
-        return <Info className="h-5 w-5 text-blue-500 mr-2" />;
-    }
-  };
-
-  const getSeverityColor = (severity) => {
-    switch (severity) {
-      case 'error':
-        return 'border-red-200 bg-red-50';
-      case 'warning':
-        return 'border-amber-200 bg-amber-50';
-      case 'info':
-        return 'border-blue-200 bg-blue-50';
-      default:
-        return 'border-gray-200 bg-gray-50';
-    }
-  };
-
   return (
-    <div className="validation-results space-y-4">
-      <div className="flex justify-between items-center">
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant={severityFilter === 'all' ? 'default' : 'outline'}
-            onClick={() => setSeverityFilter('all')}
-          >
-            All ({validationResults.length})
-          </Button>
-          <Button
-            size="sm"
-            variant={severityFilter === 'error' ? 'default' : 'outline'}
-            className={severityFilter !== 'error' ? 'text-red-600' : ''}
-            onClick={() => setSeverityFilter('error')}
-          >
-            Errors ({errorCount})
-          </Button>
-          <Button
-            size="sm"
-            variant={severityFilter === 'warning' ? 'default' : 'outline'}
-            className={severityFilter !== 'warning' ? 'text-amber-600' : ''}
-            onClick={() => setSeverityFilter('warning')}
-          >
-            Warnings ({warningCount})
-          </Button>
-          <Button
-            size="sm"
-            variant={severityFilter === 'info' ? 'default' : 'outline'}
-            className={severityFilter !== 'info' ? 'text-blue-600' : ''}
-            onClick={() => setSeverityFilter('info')}
-          >
-            Info ({infoCount})
-          </Button>
-        </div>
-        
-        {onClearAll && (
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={onClearAll}
-          >
-            <X className="h-4 w-4 mr-1" /> Clear All
-          </Button>
-        )}
-      </div>
-      
-      <div className="space-y-2">
-        {filteredResults.map((result) => (
-          <Collapsible
-            key={result.id}
-            open={expandedResults[result.id]}
-            onOpenChange={() => toggleExpanded(result.id)}
-            className={cn(
-              'border rounded-md overflow-hidden',
-              getSeverityColor(result.severity)
-            )}
-          >
-            <div className="flex items-start p-3">
-              {getSeverityIcon(result.severity)}
-              <div className="flex-1">
-                <div className="font-medium">{result.validationType}</div>
-                <div className="text-sm text-gray-700 line-clamp-1">
-                  {result.message}
+    <div className="border rounded-md overflow-hidden">
+      <Table>
+        <TableCaption>Validation results for this submission</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[60px]">Severity</TableHead>
+            <TableHead>Issue</TableHead>
+            <TableHead className="w-[250px]">Location</TableHead>
+            <TableHead className="w-[180px]">Rule</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {results.map((result, index) => (
+            <TableRow key={index} className={cn("hover:bg-gray-50", index % 2 === 0 ? "bg-white" : "bg-gray-50")}>
+              <TableCell>
+                <div className="flex items-center">
+                  {getSeverityIcon(result.severity)}
                 </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {result.locationPath && (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-8"
-                    onClick={() => onItemClick?.(result)}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-1" />
-                    Go to location
-                  </Button>
-                )}
-                <CollapsibleTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                    {expandedResults[result.id] ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </Button>
-                </CollapsibleTrigger>
-              </div>
-            </div>
-            <CollapsibleContent>
-              <div className="border-t p-3 bg-white">
-                <div className="text-sm">{result.message}</div>
-                {result.locationPath && (
-                  <div className="mt-2 text-xs text-gray-500">
-                    <strong>Location:</strong> {result.locationPath}
-                  </div>
-                )}
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-        ))}
-      </div>
+              </TableCell>
+              <TableCell className="font-medium">{result.message}</TableCell>
+              <TableCell>{result.location}</TableCell>
+              <TableCell>
+                <div className={cn("text-xs px-2 py-1 rounded-full inline-flex items-center", getSeverityClass(result.severity))}>
+                  {result.rule}
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 };
