@@ -28,17 +28,22 @@ import { useLocation } from 'wouter';
 import { Skeleton } from '../ui/skeleton';
 
 export function OrganizationSwitcher() {
+  const tenantContext = useTenant();
+  
+  // If tenant context is undefined, return early
+  if (!tenantContext) return null;
+  
   const { 
     currentOrganization, 
     setCurrentOrganization, 
-    organizations, 
-    isLoading 
-  } = useTenant();
+    organizations = [], // Provide default empty array
+    isLoading = false   // Provide default value
+  } = tenantContext;
   
   const [open, setOpen] = useState(false);
   const [, navigate] = useLocation();
 
-  // If there are no organizations available and we're not loading, we don't show the switcher
+  // If no organizations available and we're not loading, don't show the switcher
   if (organizations.length === 0 && !isLoading) return null;
 
   if (isLoading) {
