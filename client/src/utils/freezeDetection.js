@@ -192,6 +192,21 @@ function handleFreezeEvent(duration, timestamp) {
     // Ignore storage errors
   }
   
+  // Check for consecutive freezes
+  const recentFreezes = getRecentConsecutiveFreezes(timestamp);
+  
+  // Aggressive recovery for consecutive freezes
+  if (recentFreezes >= 3) {
+    console.warn(`Detected ${recentFreezes} consecutive freezes, attempting aggressive recovery`);
+    attemptAggressiveRecovery();
+    
+    // Show recovery notification
+    if (FREEZE_CONFIG.showFreezeNotifications) {
+      showPageReloadSuggestion();
+    }
+    return;
+  }
+  
   // Show a notification if enabled
   if (FREEZE_CONFIG.showFreezeNotifications) {
     showFreezeNotification(duration);
@@ -201,6 +216,29 @@ function handleFreezeEvent(duration, timestamp) {
   if (FREEZE_CONFIG.autoRecovery && duration > FREEZE_CONFIG.freezeThreshold * 3) {
     attemptRecovery();
   }
+}
+
+// Function to detect consecutive freezes within a short time period
+function getRecentConsecutiveFreezes(currentTimestamp) {
+  if (state.freezeHistory.length < 2) return 1;
+  
+  // Look for freezes in the last minute
+  const lastMinute = currentTimestamp - 60000;
+  const recentFreezes = state.freezeHistory.filter(freeze => freeze.timestamp > lastMinute);
+  
+  // Check if they are consecutive (within ~5-6 seconds of each other)
+  let consecutiveCount = 1;
+  for (let i = recentFreezes.length - 1; i > 0; i--) {
+    const timeDiff = recentFreezes[i].timestamp - recentFreezes[i-1].timestamp;
+    // If freezes are happening one after another with small gaps
+    if (timeDiff < 10000) {
+      consecutiveCount++;
+    } else {
+      break;
+    }
+  }
+  
+  return consecutiveCount;
 }
 
 /**
@@ -242,6 +280,9 @@ function attemptRecovery() {
     }
   }
   
+  // Try to cleanup DOM events
+  cleanupDomListeners();
+  
   // If we've tried too many times, suggest a page reload
   if (state.recoveryAttempts >= 3) {
     console.warn('Multiple freeze recovery attempts have failed. Consider reloading the page.');
@@ -249,6 +290,144 @@ function attemptRecovery() {
     if (FREEZE_CONFIG.showFreezeNotifications) {
       showPageReloadSuggestion();
     }
+  }
+}
+
+// More aggressive recovery for consecutive freezes
+function attemptAggressiveRecovery() {
+  // Increment recovery attempts
+  state.recoveryAttempts++;
+  
+  console.warn(`Attempting AGGRESSIVE freeze recovery (attempt ${state.recoveryAttempts})`);
+  
+  // Force garbage collection
+  if (window.gc) {
+    try {
+      window.gc();
+    } catch (e) {
+      // Ignore errors
+    }
+  }
+  
+  // Clear all caches
+  if (window.caches && typeof caches.keys === 'function') {
+    try {
+      caches.keys().then(keys => {
+        keys.forEach(key => caches.delete(key));
+      }).catch(() => {
+        // Ignore errors
+      });
+    } catch (e) {
+      // Ignore errors
+    }
+  }
+  
+  // Remove all non-essential event listeners
+  cleanupDomListeners();
+  
+  // Cleanup memory-intensive objects
+  cleanupMemoryObjects();
+  
+  // Reset application state if possible
+  resetAppState();
+  
+  // Allow DOM to settle
+  setTimeout(() => {
+    console.info('Aggressive recovery completed');
+  }, 100);
+}
+
+// Helper to clean up DOM listeners that might be leaking
+function cleanupDomListeners() {
+  try {
+    // Find elements with many listeners
+    const elements = document.querySelectorAll('*');
+    for (const el of elements) {
+      if (el._events && Object.keys(el._events).length > 10) {
+        // Clear non-essential event listeners on elements with many listeners
+        if (typeof el.removeEventListener === 'function') {
+          for (const eventType in el._events) {
+            // Keep only essential events
+            if (!['click', 'submit', 'change'].includes(eventType)) {
+              el._events[eventType] = [];
+            }
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error during DOM listener cleanup:', e);
+  }
+}
+
+// Cleanup memory-intensive objects
+function cleanupMemoryObjects() {
+  try {
+    // Clear any cached large data objects in window
+    const propertiesToClean = [
+      'cachedData', 'tempResults', 'largeDatasets', 
+      'imageCache', 'responseCache', 'dataCache'
+    ];
+    
+    for (const prop of propertiesToClean) {
+      if (window[prop]) {
+        window[prop] = null;
+      }
+    }
+    
+    // Clear any application level caches if they exist
+    if (window.app && window.app.cache) {
+      window.app.cache.clear();
+    }
+    
+    // Clear unused image data
+    const images = document.querySelectorAll('img[src^="data:"]');
+    for (const img of images) {
+      if (!isElementInViewport(img)) {
+        img.src = '';
+      }
+    }
+  } catch (e) {
+    console.error('Error during memory cleanup:', e);
+  }
+}
+
+// Check if element is in viewport
+function isElementInViewport(el) {
+  const rect = el.getBoundingClientRect();
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+  );
+}
+
+// Reset application state to minimize memory usage
+function resetAppState() {
+  try {
+    // If React is available
+    if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) {
+      // Find React instances that might be leaking
+      const reactInstances = Object.values(window.__REACT_DEVTOOLS_GLOBAL_HOOK__._renderers || {});
+      for (const instance of reactInstances) {
+        if (instance.findHostInstancesForRefresh) {
+          // Clear any stale React component state
+          try {
+            instance.findHostInstancesForRefresh();
+          } catch (e) {
+            // Ignore errors
+          }
+        }
+      }
+    }
+    
+    // Purge Redux store if available
+    if (window.store && typeof window.store.dispatch === 'function') {
+      window.store.dispatch({ type: 'MEMORY_CLEANUP' });
+    }
+  } catch (e) {
+    console.error('Error during app state reset:', e);
   }
 }
 
