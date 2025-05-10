@@ -109,7 +109,7 @@ export const FREEZE_CONFIG = {
  */
 export const ERROR_BOUNDARY_CONFIG = {
   // Whether to show detailed error information (dev only)
-  showDetails: process.env.NODE_ENV === 'development',
+  showDetails: import.meta.env.DEV,
   
   // Whether to attempt to recover automatically
   autoRecovery: true,
@@ -132,7 +132,7 @@ export const ERROR_BOUNDARY_CONFIG = {
  */
 export const LOGGING_CONFIG = {
   // Minimum log level to record
-  minLevel: process.env.NODE_ENV === 'development' ? 'debug' : 'warn',
+  minLevel: import.meta.env.DEV ? 'debug' : 'warn',
   
   // Whether to include timestamps in logs
   includeTimestamp: true,
@@ -213,19 +213,19 @@ export const STABILITY_CONFIG = {
   enabled: true,
   
   // Whether to enable detailed error information (for development)
-  showDetailedErrors: process.env.NODE_ENV === 'development',
+  showDetailedErrors: import.meta.env.DEV,
   
   // Whether to show stability status indicators
-  showStatusIndicators: process.env.NODE_ENV === 'development',
+  showStatusIndicators: import.meta.env.DEV,
   
   // Environment-specific settings
-  environment: process.env.NODE_ENV || 'development',
+  environment: import.meta.env.MODE || 'development',
   
   // Whether to collect and report stability metrics
   collectMetrics: true,
   
   // Application version (for error tracking)
-  appVersion: process.env.REACT_APP_VERSION || '1.0.0',
+  appVersion: import.meta.env.VITE_APP_VERSION || '1.0.0',
   
   // Whether to enable maintenance mode automatically when too many errors occur
   autoMaintenanceMode: true,
@@ -234,7 +234,7 @@ export const STABILITY_CONFIG = {
   maintenanceModeErrorThreshold: 10,
   
   // Whether to enable all diagnostic tools
-  enableDiagnosticTools: process.env.NODE_ENV === 'development'
+  enableDiagnosticTools: import.meta.env.DEV
 };
 
 export default {
