@@ -244,10 +244,7 @@ function checkAuth(req, res, next) {
 }
 
 // Public client portal (no auth check)
-// This route is critical for system stability
-app.get('/client-portal', (req, res) => {
-  res.sendFile(path.resolve('./client/public/index.html'));
-});
+// This route is handled by the clientPortal router
 
 // Secure client portal (with auth check)
 app.get('/client-portal-direct', checkAuth, (req, res) => {
@@ -281,6 +278,10 @@ app.use('/api/mashable-bi', mashableBiRoutes);
 app.use('/api/vault', vaultRoutes);
 app.use('/api/next-actions', actionsRoutes);
 app.use('/api/test', testApiRoutes); // Test API routes for development
+
+// Client Portal routes
+import clientPortalRoutes from './routes/clientPortal.js';
+app.use('/client-portal', clientPortalRoutes);
 
 // Vault and Analytics routes
 const vaultRoutesNew = require('./routes/vault');
