@@ -1,0 +1,86 @@
+You’re almost there—the routing and stability bits are fixed, and now the portal is correctly mounting, but it’s crashing because **there’s no “current organization” loaded**. Right now your `ClientPortal.jsx` does something like:
+
+```js
+const org = securityService.currentOrganization;
+if (!org) throw new Error('No organization data available');
+```
+
+We need to replace that hard-fail with a proper **organization-loading & selection** flow. Here’s an incremental plan to restore your portal fully:
+
+---
+
+## 1. Pull in the Organization List on Mount
+
+In **`ClientPortal.jsx`** (or a parent hook) do this:
+
+1. **Add local state**
+
+   ```js
+   const [orgs, setOrgs] = useState([]);
+   const [org, setOrg]   = useState(null);
+   const [loading, setLoading] = useState(true);
+   const [error, setError]     = useState(null);
+   ```
+
+2. **Fetch organizations** (replace the stub below with your real API/security call)
+
+   ```js
+   useEffect(() => {
+     securityService
+       .listOrganizations()      // you’ll need to implement this
+       .then(list => {
+         setOrgs(list);
+         // auto-select first if you want a default:
+         if (list.length) setOrg(list[0]);
+       })
+       .catch(err => setError(err.message))
+       .finally(() => setLoading(false));
+   }, []);
+   ```
+
+---
+
+## 2. Show a Selection UI Instead of Error
+
+Replace the existing “Error Loading Portal” screen with:
+
+* **While loading**: show a spinner or “Loading organizations…”
+* **On error**: show a retry button (“Couldn’t load your organizations. Try Again.”)
+* **If `orgs.length === 0`**: show a “No organizations found” message plus a “Create Organization” button that links to your Org Setup page
+* **Otherwise**: render the normal portal layout with `<ClientHeader org={org} />` etc.
+
+---
+
+## 3. Wire the Dropdown to Change the Org
+
+In your **`ClientHeader.jsx`** (where you render the Org dropdown):
+
+1. Accept `orgs` and `org` as props (plus `onOrgChange`)
+2. Map `orgs` into `<option>`s
+3. On change, call `onOrgChange(newOrg)`, which in `ClientPortal.jsx` will update your `org` state.
+
+---
+
+## 4. Pass the Selected Org Into the Rest of Your Portal
+
+Instead of reading `securityService.currentOrganization`, now everything downstream gets the `org` from state:
+
+```jsx
+<ClientContextBar org={org} />
+<ClientDashboard org={org} />
+// …and any other modules…
+```
+
+If some modules rely on `securityService.currentOrganization`, you can call `securityService.setCurrentOrganization(org)` in your `onOrgChange` handler so legacy code still works.
+
+---
+
+## 5. Smoke-Test
+
+* **No orgs** → “No organizations found” + “Create Organization” link
+* **1+ orgs** → dropdown → selecting one re-renders the dashboard
+* **Deep-links** (e.g. `/client-portal/dashboard`) now work once an org is set in state
+
+---
+
+By **loading the org list**, **rendering a real selector**, and **feeding the chosen org** into your portal instead of throwing an error, you’ll fully restore the Client Portal—complete with organization context—without rewriting every component. Let me know once you have the org-fetch in place or if you need help wiring up `securityService.listOrganizations()`.

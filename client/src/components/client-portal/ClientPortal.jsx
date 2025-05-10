@@ -18,7 +18,8 @@ import {
   AlertCircle,
   Clock,
   Calendar,
-  Search
+  Search,
+  Plus
 } from 'lucide-react';
 import securityService from '../../services/SecurityService';
 import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
@@ -26,7 +27,8 @@ import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
 // Client Portal dashboard component
 const ClientPortal = () => {
   const [location, setLocation] = useLocation();
-  const [clientOrganization, setClientOrganization] = useState(null);
+  const [organizations, setOrganizations] = useState([]);
+  const [currentOrganization, setCurrentOrganization] = useState(null);
   const [parentOrganization, setParentOrganization] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -34,44 +36,47 @@ const ClientPortal = () => {
   const [documents, setDocuments] = useState([]);
   const [activities, setActivities] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const { getSharedContext, shareContext } = useModuleIntegration();
+  
+  // Create a fallback object if ModuleIntegrationProvider is not available
+  let moduleIntegration = {
+    getSharedContext: () => ({}),
+    shareContext: () => {} 
+  };
+  
+  try {
+    // Attempt to use the hook, but don't crash if the provider isn't available
+    moduleIntegration = useModuleIntegration();
+  } catch (error) {
+    console.log('ModuleIntegration not available, using fallback');
+  }
   
   // Fetch client data on mount
   useEffect(() => {
     const initClientPortal = async () => {
       try {
-        // Get organization data
-        const org = securityService.currentOrganization;
+        // Get organization list
+        const orgList = securityService.getAccessibleOrganizations() || [];
+        setOrganizations(orgList);
+        
+        // Set the current organization if available, otherwise use the first one in the list
+        const defaultOrg = securityService.currentOrganization || (orgList.length > 0 ? orgList[0] : null);
         const parentOrg = securityService.parentOrganization;
         
-        if (!org) {
-          throw new Error('No organization data available');
+        if (defaultOrg) {
+          setCurrentOrganization(defaultOrg);
+          setParentOrganization(parentOrg);
+          
+          // Share client context with other modules (if available)
+          if (moduleIntegration.shareContext) {
+            moduleIntegration.shareContext('organization', defaultOrg.id, {
+              organization: defaultOrg,
+              parentOrganization: parentOrg
+            });
+          }
+          
+          // Load initial data for the selected organization
+          await loadOrganizationData(defaultOrg);
         }
-        
-        setClientOrganization(org);
-        setParentOrganization(parentOrg);
-        
-        // Get shared context from integration layer
-        const portalContext = getSharedContext('client_portal');
-        
-        // In a real app, these would be API calls
-        // Fetch projects
-        const projectList = await fetchProjects(org.id);
-        setProjects(projectList);
-        
-        // Fetch recent documents
-        const docList = await fetchDocuments(org.id);
-        setDocuments(docList);
-        
-        // Fetch recent activities
-        const activityList = await fetchActivities(org.id);
-        setActivities(activityList);
-        
-        // Share client context with other modules
-        shareContext('organization', org.id, {
-          organization: org,
-          parentOrganization: parentOrg
-        });
         
         setLoading(false);
       } catch (err) {
@@ -82,7 +87,44 @@ const ClientPortal = () => {
     };
     
     initClientPortal();
-  }, [getSharedContext, shareContext]);
+  }, []);
+  
+  // Load organization data when organization changes
+  const loadOrganizationData = async (org) => {
+    if (!org) return;
+    
+    try {
+      // In a real app, these would be API calls
+      // Fetch projects
+      const projectList = await fetchProjects(org.id);
+      setProjects(projectList);
+      
+      // Fetch recent documents
+      const docList = await fetchDocuments(org.id);
+      setDocuments(docList);
+      
+      // Fetch recent activities
+      const activityList = await fetchActivities(org.id);
+      setActivities(activityList);
+      
+      // Update security service
+      if (securityService.currentOrganization?.id !== org.id) {
+        securityService.switchOrganization(org.id);
+      }
+    } catch (err) {
+      console.error('Error loading organization data:', err);
+      setError(`Error loading organization data: ${err.message}`);
+    }
+  };
+  
+  // Handle organization change
+  const handleOrganizationChange = async (newOrgId) => {
+    const newOrg = organizations.find(org => org.id === newOrgId);
+    if (newOrg) {
+      setCurrentOrganization(newOrg);
+      await loadOrganizationData(newOrg);
+    }
+  };
   
   // Handle return to CRO portal
   const handleReturnToCRO = async () => {
@@ -373,9 +415,9 @@ const ClientPortal = () => {
               
               <div className="flex items-center">
                 <Building className="text-primary mr-2" size={20} />
-                <span className="font-medium text-lg">{clientOrganization?.name || 'Client Portal'}</span>
+                <span className="font-medium text-lg">{currentOrganization?.name || 'Client Portal'}</span>
                 <span className="ml-2 bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded">
-                  {clientOrganization?.type?.toUpperCase() || 'CLIENT'}
+                  {currentOrganization?.type?.toUpperCase() || 'CLIENT'}
                 </span>
               </div>
             </div>
