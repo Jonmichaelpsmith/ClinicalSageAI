@@ -639,18 +639,70 @@ export default function SubmissionBuilder({
           <Card className="mb-4">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-medium">eCTD Structure</h3>
+                <h3 className="text-lg font-medium">
+                  {activeModule ? `Module ${activeModule.substring(1)} - ${activeModule === 'm1' ? 'Administrative' : 
+                                  activeModule === 'm2' ? 'Summaries' :
+                                  activeModule === 'm3' ? 'Quality' :
+                                  activeModule === 'm4' ? 'Nonclinical' :
+                                  activeModule === 'm5' ? 'Clinical' : 'CTD Structure'}` 
+                  : 'eCTD Structure'}
+                </h3>
                 <div className="bg-amber-100 text-amber-800 flex items-center text-xs px-2 py-1 rounded">
                   <AlertTriangle size={14} className="mr-1" />
                   Drag and drop temporarily disabled
                 </div>
               </div>
               
+              {/* Module navigation tabs */}
+              {!activeModule && (
+                <div className="mb-4 flex flex-wrap gap-1">
+                  {['m1', 'm2', 'm3', 'm4', 'm5'].map(module => (
+                    <Button 
+                      key={module} 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => setActiveModule(module)}
+                      className="flex items-center gap-1"
+                    >
+                      <span className="font-mono">{module.toUpperCase()}</span>
+                      <span className="hidden sm:inline">- {
+                        module === 'm1' ? 'Administrative' :
+                        module === 'm2' ? 'Summaries' :
+                        module === 'm3' ? 'Quality' :
+                        module === 'm4' ? 'Nonclinical' :
+                        'Clinical'
+                      }</span>
+                    </Button>
+                  ))}
+                </div>
+              )}
+              
+              {/* Back button when viewing a specific module */}
+              {activeModule && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setActiveModule(null)}
+                  className="mb-3"
+                >
+                  ← Back to All Modules
+                </Button>
+              )}
+              
               <div className="folders-container space-y-4">
                 {tree
-                  .filter(node => node.droppable && node.id !== 0)
+                  .filter(node => {
+                    // If activeModule is set, only show folders for that module
+                    if (activeModule && node.droppable && node.id !== 0) {
+                      return node.data?.module === activeModule;
+                    }
+                    // Otherwise show all folders
+                    return node.droppable && node.id !== 0;
+                  })
                   .map(folder => (
-                    <div key={folder.id} className="folder border rounded-md overflow-hidden">
+                    <div key={folder.id} className={`folder border rounded-md overflow-hidden ${
+                      activeModule === folder.data.module ? 'ring-2 ring-primary' : ''
+                    }`}>
                       <div className="folder-header py-2 px-3 bg-gray-50 border-b flex items-center justify-between">
                         <strong className="text-sm">{folder.text}</strong>
                       </div>
