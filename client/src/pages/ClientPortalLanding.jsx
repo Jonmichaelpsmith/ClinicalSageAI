@@ -19,12 +19,15 @@ const ClientPortalLanding = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [, setLocation] = useLocation();
+  
+  // Get tenant context with proper default handling
+  const tenantContext = useTenant();
   const { 
     currentOrganization, 
     currentClientWorkspace, 
     currentModule,
     setCurrentModule 
-  } = useTenant();
+  } = tenantContext || {}; // Provide empty object as fallback
 
   useEffect(() => {
     // Log that the ClientPortalLanding component has mounted
@@ -89,8 +92,17 @@ const ClientPortalLanding = () => {
   ];
 
   const handleModuleSelect = (moduleId) => {
-    // Set the current module in the tenant context
-    setCurrentModule(moduleId);
+    // Set the current module in the tenant context if available
+    if (typeof setCurrentModule === 'function') {
+      try {
+        setCurrentModule(moduleId);
+      } catch (err) {
+        console.error("Failed to set current module:", err);
+        // Continue with navigation even if setting the module fails
+      }
+    } else {
+      console.warn("setCurrentModule function not available - tenant context may not be initialized");
+    }
     
     // Find the module path
     const selectedModule = moduleCards.find(m => m.id === moduleId);
