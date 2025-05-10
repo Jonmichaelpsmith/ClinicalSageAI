@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useParams, useLocation, useNavigate } from 'wouter';
+import { useParams, useLocation } from 'wouter';
 import { apiRequest } from '@/lib/queryClient';
 import { toast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -37,7 +37,6 @@ import DocumentUploadDialog from '@/components/regulatory/DocumentUploadDialog';
  */
 const RegulatorySubmissionsPage = () => {
   const [location, setLocation] = useLocation();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   
   // UI state
