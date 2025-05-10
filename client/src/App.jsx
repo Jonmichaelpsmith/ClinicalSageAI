@@ -334,6 +334,41 @@ function App() {
                 </Suspense>
               )}
             </Route>
+            <Route path="/submission-builder/module-1">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder initialModule="m1" />
+                </Suspense>
+              )}
+            </Route>
+            <Route path="/submission-builder/module-2">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder initialModule="m2" />
+                </Suspense>
+              )}
+            </Route>
+            <Route path="/submission-builder/module-3">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder initialModule="m3" />
+                </Suspense>
+              )}
+            </Route>
+            <Route path="/submission-builder/module-4">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder initialModule="m4" />
+                </Suspense>
+              )}
+            </Route>
+            <Route path="/submission-builder/module-5">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder initialModule="m5" />
+                </Suspense>
+              )}
+            </Route>
             <Route path="/ectd-module">
               {() => (
                 <Suspense fallback={<LoadingPage />}>
