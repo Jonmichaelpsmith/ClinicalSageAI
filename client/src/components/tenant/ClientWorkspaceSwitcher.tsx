@@ -29,17 +29,22 @@ import { useLocation } from 'wouter';
 import { Skeleton } from '../ui/skeleton';
 
 export function ClientWorkspaceSwitcher() {
+  const tenantContext = useTenant();
+  
+  // If tenant context is undefined, return early
+  if (!tenantContext) return null;
+  
   const { 
     currentClientWorkspace, 
     setCurrentClientWorkspace, 
-    filteredClientWorkspaces, 
-    isLoading 
-  } = useTenant();
+    filteredClientWorkspaces = [], // Provide default empty array
+    isLoading = false   // Provide default value
+  } = tenantContext;
   
   const [open, setOpen] = useState(false);
   const [, navigate] = useLocation();
 
-  // If there are no client workspaces available and we're not loading, we don't show the switcher
+  // If no client workspaces available and we're not loading, don't show the switcher
   if (filteredClientWorkspaces.length === 0 && !isLoading) return null;
 
   if (isLoading) {
