@@ -11,7 +11,7 @@
 import { relations, InferSelectModel } from 'drizzle-orm';
 import { 
   integer, pgTable, serial, text, timestamp, boolean, 
-  uuid, json, unique, primaryKey, varchar
+  uuid, json, unique, primaryKey, varchar, pgEnum
 } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
