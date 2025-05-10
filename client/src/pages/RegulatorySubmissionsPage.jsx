@@ -28,6 +28,7 @@ import CreateSubmissionDialog from '@/components/regulatory/CreateSubmissionDial
 import ValidationResultsList from '@/components/regulatory/ValidationResultsList';
 import SequenceHeader from '@/components/regulatory/SequenceHeader';
 import DocumentUploadDialog from '@/components/regulatory/DocumentUploadDialog';
+import { withErrorBoundary } from '@/components/regulatory/ErrorBoundaryWrapper';
 
 /**
  * Regulatory Submissions Hub Page
@@ -518,4 +519,5 @@ const RegulatorySubmissionsPage = () => {
   );
 };
 
-export default RegulatorySubmissionsPage;
+// Export the component with error boundary protection
+export default withErrorBoundary(RegulatorySubmissionsPage);
