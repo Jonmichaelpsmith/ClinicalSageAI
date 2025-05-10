@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { optimizeMemory, getMemoryUsage } from '../../utils/memoryOptimizer';
 import { initFreezeDetection, analyzeFreezeRisks } from '../../utils/freezeDetection';
-import { initAdvancedNetworkResilience } from '../../utils/networkResilience';
+import networkResilience from '../../utils/networkResilience';
 import { useToast } from '@/hooks/use-toast';
 
 /**
