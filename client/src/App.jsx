@@ -171,11 +171,18 @@ function App() {
             "p-4 mt-24"
           }>
           <Switch>
-          {/* Main Portal Landing Pages - both root and /client-portal go to same component */}
+          {/* Main Portal Landing Pages */}
           <Route path="/" component={ClientPortalLanding} />
           
-          {/* Main client portal route - uses wildcard to catch all /client-portal/* paths */}
-          <Route path="/client-portal/*" component={ClientPortal} />
+          {/* Client Portal Routes - explicitly define client-portal path */}
+          <Route path="/client-portal">
+            {() => <ClientPortal />}
+          </Route>
+          
+          {/* Also catch sub-paths under client-portal with explicit route */}
+          <Route path="/client-portal/:subpath*">
+            {() => <ClientPortal />}
+          </Route>
 
           {/* Module Dashboard */}
           <Route path="/dashboard" component={ModuleDashboard} />
