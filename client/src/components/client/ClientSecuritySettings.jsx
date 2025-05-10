@@ -757,20 +757,18 @@ const ClientSecuritySettings = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="validationApproach">System Validation Approach</Label>
-                        <Select 
-                          value={formValues.fdaCompliance?.validationApproach || 'riskBased'} 
+                        <EnhancedSelect 
+                          id="validationApproach"
+                          value={formValues.fdaCompliance?.validationApproach || 'riskBased'}
                           onValueChange={(value) => handleInputChange('fdaCompliance', 'validationApproach', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select validation approach" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="riskBased">Risk-Based Approach (GAMP 5)</SelectItem>
-                            <SelectItem value="traditional">Traditional Approach (IQ/OQ/PQ)</SelectItem>
-                            <SelectItem value="agile">Agile CSV Methodology</SelectItem>
-                            <SelectItem value="hybrid">Hybrid Approach</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          optionsArray={[
+                            { value: 'riskBased', label: 'Risk-Based Approach (GAMP 5)' },
+                            { value: 'traditional', label: 'Traditional Approach (IQ/OQ/PQ)' },
+                            { value: 'agile', label: 'Agile CSV Methodology' },
+                            { value: 'hybrid', label: 'Hybrid Approach' }
+                          ]}
+                          placeholder="Select validation approach"
+                        />
                         <p className="text-xs text-muted-foreground">
                           Determines validation methodology used for this workspace
                         </p>
@@ -778,21 +776,19 @@ const ClientSecuritySettings = () => {
                       
                       <div className="space-y-2">
                         <Label htmlFor="documentRetentionPeriod">Validation Document Retention</Label>
-                        <Select 
-                          value={formValues.fdaCompliance?.documentRetentionPeriod || 'lifeplus10'} 
+                        <EnhancedSelect 
+                          id="documentRetentionPeriod"
+                          value={formValues.fdaCompliance?.documentRetentionPeriod || 'lifeplus10'}
                           onValueChange={(value) => handleInputChange('fdaCompliance', 'documentRetentionPeriod', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select retention period" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="standard">Standard (10 years)</SelectItem>
-                            <SelectItem value="extended">Extended (15 years)</SelectItem>
-                            <SelectItem value="lifeplus2">Product Life + 2 years</SelectItem>
-                            <SelectItem value="lifeplus10">Product Life + 10 years</SelectItem>
-                            <SelectItem value="permanent">Permanent</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          optionsArray={[
+                            { value: 'standard', label: 'Standard (10 years)' },
+                            { value: 'extended', label: 'Extended (15 years)' },
+                            { value: 'lifeplus2', label: 'Product Life + 2 years' },
+                            { value: 'lifeplus10', label: 'Product Life + 10 years' },
+                            { value: 'permanent', label: 'Permanent' }
+                          ]}
+                          placeholder="Select retention period"
+                        />
                         <p className="text-xs text-muted-foreground">
                           How long validation-related documentation will be retained
                         </p>
@@ -842,21 +838,19 @@ const ClientSecuritySettings = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="reportGeneration">Automated Report Generation</Label>
-                        <Select 
-                          value={formValues.fdaCompliance?.reportGeneration || 'quarterly'} 
+                        <EnhancedSelect 
+                          id="reportGeneration"
+                          value={formValues.fdaCompliance.reportGeneration}
                           onValueChange={(value) => handleInputChange('fdaCompliance', 'reportGeneration', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select report frequency" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="monthly">Monthly</SelectItem>
-                            <SelectItem value="quarterly">Quarterly</SelectItem>
-                            <SelectItem value="biannually">Bi-annually</SelectItem>
-                            <SelectItem value="annually">Annually</SelectItem>
-                            <SelectItem value="manual">Manual Generation Only</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          optionsArray={[
+                            { value: 'monthly', label: 'Monthly' },
+                            { value: 'quarterly', label: 'Quarterly' },
+                            { value: 'biannually', label: 'Bi-annually' },
+                            { value: 'annually', label: 'Annually' },
+                            { value: 'manual', label: 'Manual Generation Only' }
+                          ]}
+                          placeholder="Select report frequency"
+                        />
                         <p className="text-xs text-muted-foreground">
                           Frequency of automated regulatory compliance reports
                         </p>
@@ -864,20 +858,18 @@ const ClientSecuritySettings = () => {
                       
                       <div className="space-y-2">
                         <Label htmlFor="submissionFormat">Submission Format</Label>
-                        <Select 
-                          value={formValues.fdaCompliance?.submissionFormat || 'ectd'} 
+                        <EnhancedSelect 
+                          id="submissionFormat"
+                          value={formValues.fdaCompliance.submissionFormat}
                           onValueChange={(value) => handleInputChange('fdaCompliance', 'submissionFormat', value)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select submission format" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ectd">eCTD (Electronic Common Technical Document)</SelectItem>
-                            <SelectItem value="nees">FDA NEES Format</SelectItem>
-                            <SelectItem value="cesp">EU CESP Format</SelectItem>
-                            <SelectItem value="mixed">Mixed Format (Market-dependent)</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          optionsArray={[
+                            { value: 'ectd', label: 'eCTD (Electronic Common Technical Document)' },
+                            { value: 'nees', label: 'FDA NEES Format' },
+                            { value: 'cesp', label: 'EU CESP Format' },
+                            { value: 'mixed', label: 'Mixed Format (Market-dependent)' }
+                          ]}
+                          placeholder="Select submission format"
+                        />
                         <p className="text-xs text-muted-foreground">
                           Default format for regulatory submissions
                         </p>
