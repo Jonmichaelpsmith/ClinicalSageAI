@@ -42,7 +42,7 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
             >
               → Forward
             </button>
-            <Link href="/client-portal">
+            <Link to="/client-portal">
               <span className="px-3 py-1 text-xs font-medium bg-indigo-600 text-white rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 cursor-pointer">
                 🏠 Client Portal
               </span>
@@ -66,7 +66,7 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link href="/settings">
+                <Link to="/settings">
                   <span className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
                     <Settings className="h-3 w-3 mr-1" />
                     <span className="hidden sm:inline">Settings</span>
@@ -81,7 +81,7 @@ export default function UnifiedTopNavV3({ activeTab, onTabChange, breadcrumbs = 
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Link href="/client-management">
+                <Link to="/client-management">
                   <span className="px-3 py-1 text-xs font-medium bg-gray-100 rounded transition-all duration-200 ease-in-out hover:bg-indigo-500 hover:text-white focus:ring-2 focus:ring-indigo-300 active:scale-95 flex items-center cursor-pointer">
                     <Users className="h-3 w-3 mr-1" />
                     <span className="hidden sm:inline">Client Management</span>
