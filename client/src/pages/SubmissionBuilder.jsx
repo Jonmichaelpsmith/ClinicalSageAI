@@ -1,7 +1,17 @@
 // SubmissionBuilder.jsx – simplified version without drag-drop tree
 import React, { useEffect, useState, useCallback } from 'react';
-import { CheckCircle, XCircle, Info, AlertTriangle } from 'lucide-react';
+import { CheckCircle, XCircle, Info, AlertTriangle, Settings, Shield, Building, Users } from 'lucide-react';
 import { useQCWebSocket } from '../hooks/useQCWebSocket';
+import { useTenant } from '../../contexts/TenantContext.tsx';
+import { OrganizationSwitcher } from '../../components/tenant/OrganizationSwitcher.tsx';
+import { ClientWorkspaceSwitcher } from '../../components/tenant/ClientWorkspaceSwitcher.tsx';
+import { useNetworkResilience } from '../../hooks/useNetworkResilience.jsx';
+import { useHealthMonitor } from '../../hooks/useHealthMonitor.jsx';
+import { useToast } from '@/hooks/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Button } from '@/components/ui/button';
 
 // Region‑specific folder hierarchy definitions
 const REGION_TREE = {
@@ -154,6 +164,18 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
   const [tree, setTree] = useState([]);
   const [selected, setSelected] = useState(new Set());
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('builder');
+  const [securitySettings, setSecuritySettings] = useState(null);
+  const [isSettingsLoading, setIsSettingsLoading] = useState(false);
+  
+  // Get tenant context
+  const tenantContext = useTenant();
+  const { currentOrganization, currentClientWorkspace, getTenantHeaders } = tenantContext || {};
+  
+  // Network resilience and UI hooks
+  const { request, isNetworkError, retryRequest } = useNetworkResilience();
+  const healthStatus = useHealthMonitor();
+  const { toast } = useToast();
 
   // Handle messages from QC WebSocket
   const handleQCMessage = useCallback((data) => {
@@ -303,15 +325,85 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
     return nodes;
   }, []);
 
+  // Load security settings when tab changes to security
+  useEffect(() => {
+    if (activeTab === 'security' && currentClientWorkspace?.id) {
+      loadSecuritySettings();
+    }
+  }, [activeTab, currentClientWorkspace]);
+
+  // Load security settings
+  async function loadSecuritySettings() {
+    if (!currentClientWorkspace?.id) return;
+    
+    setIsSettingsLoading(true);
+    try {
+      const { data } = await request(
+        () => axios.get(`/api/clients/${currentClientWorkspace.id}/security-settings`, {
+          headers: getTenantHeaders ? getTenantHeaders() : {}
+        }),
+        {
+          operation: 'fetch-security-settings',
+          errorMessage: 'Failed to load security settings'
+        }
+      );
+      
+      setSecuritySettings(data || {
+        passwordPolicy: {
+          minLength: 12,
+          requireUppercase: true,
+          requireLowercase: true,
+          requireNumber: true,
+          requireSpecialChar: true,
+          historyCount: 5,
+          expiryDays: 90
+        },
+        sessionSettings: {
+          timeoutMinutes: 30,
+          maxConcurrentSessions: 3,
+          enforceIpLock: false
+        },
+        documentSettings: {
+          requireApproval: true,
+          digitalSignaturesEnabled: true,
+          auditTrailEnabled: true
+        }
+      });
+    } catch (error) {
+      console.error('Error loading security settings:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load security settings. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSettingsLoading(false);
+    }
+  }
+
   // Load documents and build tree
   useEffect(() => {
     async function loadDocs() {
+      if (!currentOrganization) {
+        return; // Don't load if no organization is selected
+      }
+      
       setLoading(true);
       try {
-        const response = await fetch('/api/documents?status=all');
+        const response = await request(
+          () => fetch('/api/documents?status=all', {
+            headers: getTenantHeaders ? getTenantHeaders() : {}
+          }),
+          {
+            operation: 'fetch-documents',
+            errorMessage: 'Failed to load submission documents'
+          }
+        );
+        
         if (!response.ok) {
           throw new Error(`HTTP error ${response.status}`);
         }
+        
         const docs = await response.json();
         
         // Build region-specific tree with retrieved documents
@@ -319,14 +411,18 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
         setTree(newTree);
       } catch (error) {
         console.error('Error loading documents:', error);
-        console.error('Failed to load submission documents');
+        toast({
+          title: 'Error',
+          description: 'Failed to load submission documents. Please try again.',
+          variant: 'destructive',
+        });
       } finally {
         setLoading(false);
       }
     }
     
     loadDocs();
-  }, [region, buildTree]);
+  }, [region, buildTree, currentOrganization, currentClientWorkspace]);
 
   // Handle tree drop (reorganization)
   const handleDrop = (newTree) => {
@@ -472,32 +568,92 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
     );
   };
 
-  if (loading) return <div className="text-center mt-4">Loading...</div>;
+  if (loading) return (
+    <div className="container max-w-7xl mx-auto py-4">
+      <div className="mb-4 flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Submission Builder</h2>
+        <div className="flex items-center space-x-2">
+          <Skeleton className="h-10 w-32" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+      </div>
+      <div className="grid gap-6">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex justify-center items-center min-h-[400px]">
+              <div className="flex flex-col items-center gap-2">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                <p className="text-muted-foreground">Loading submission documents...</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
 
   return (
-    <div className="container py-4">
-      {/* Notification handling now done with console.log */}
-      
-      {/* Region Selector */}
-      <div className="mb-4">
-        <div className="d-flex align-items-center">
-          <h2 className="mb-0 me-4">Submission Builder</h2>
+    <div className="container max-w-7xl mx-auto py-4">
+      {/* Tenant context selectors */}
+      <div className="mb-6 grid md:grid-cols-2 gap-4">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">Submission Builder</h1>
+          <p className="text-muted-foreground">Build and manage electronic CTD submissions</p>
+        </div>
+        <div className="flex flex-col md:flex-row md:items-center md:justify-end gap-2">
+          {currentOrganization ? (
+            <OrganizationSwitcher />
+          ) : (
+            <Button variant="outline" size="sm" className="flex items-center gap-1" disabled>
+              <Building className="h-4 w-4" />
+              <span>Select Organization</span>
+            </Button>
+          )}
           
+          {currentOrganization && (
+            currentClientWorkspace ? (
+              <ClientWorkspaceSwitcher />
+            ) : (
+              <Button variant="outline" size="sm" className="flex items-center gap-1" disabled>
+                <Users className="h-4 w-4" />
+                <span>Select Client</span>
+              </Button>
+            )
+          )}
+        </div>
+      </div>
+      
+      {/* Tabs for different sections */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList className="grid grid-cols-3 mb-4">
+          <TabsTrigger value="builder">Builder</TabsTrigger>
+          <TabsTrigger value="history">History</TabsTrigger>
+          <TabsTrigger value="security">Security</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="builder" className="space-y-4">
           {/* WebSocket connection status indicator */}
-          <div className="d-flex align-items-center me-3">
+          <div className="flex items-center mb-3">
             <span 
-              className={`badge ${getStatusBadgeClass()} d-flex align-items-center gap-1`}
+              className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium ${getStatusBadgeClass()}`}
               title={`QC WebSocket status: ${wsStatus}`}
             >
-              <span className="spinner-grow spinner-grow-sm" role="status" aria-hidden="true" 
-                style={{ display: wsStatus === 'connecting' || wsStatus === 'reconnecting' ? 'inline-block' : 'none' }}
-              ></span>
+              {wsStatus === 'connecting' || wsStatus === 'reconnecting' ? (
+                <span className="animate-pulse mr-1 h-2 w-2 rounded-full bg-current"></span>
+              ) : null}
               {getStatusMessage()}
             </span>
           </div>
-          
-          <div className="btn-group" role="group" aria-label="Region Selection">
-            {Object.keys(REGION_FOLDERS).map(r => (
+
+          {/* Region Selector */}
+          <div className="mb-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center me-3">
+                <span className="mr-2">Region:</span>
+              </div>
+              
+              <div className="flex flex-wrap gap-1" role="group" aria-label="Region Selection">
+                {Object.keys(REGION_FOLDERS).map(r => (
               <button 
                 key={r} 
                 type="button" 
