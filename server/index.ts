@@ -128,10 +128,28 @@ if (isDev) {
   });
 }
 
-// Start server
+// Initialize global error handlers to catch uncaught exceptions
+setupGlobalErrorHandlers();
+
+// Apply the error handler middleware as the last middleware (after all routes)
+// This ensures all errors from routes are caught and handled properly
+app.use(errorHandler);
+
+// Add a catch-all error route as the absolute last route
+app.use((req, res) => {
+  res.status(404).json({
+    error: {
+      message: `Route not found: ${req.method} ${req.path}`,
+      status: 404
+    }
+  });
+});
+
+// Start server with error handling
 httpServer.listen(port, () => {
   console.log(`Server running on port ${port}`);
   console.log(`Health check available at http://localhost:${port}/api/health`);
+  console.log('STABILITY MODE ACTIVE: All error handlers initialized');
   
   // Initialize performance optimizations after server has started
   initializePerformanceOptimizations()
