@@ -4,7 +4,7 @@ import { createServer as createHttpServer } from 'http';
 import registerRoutes from './routes_fixed';
 import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
-import { initializeQualityApi } from './initializers/qualityApiInitializer';
+// No longer using initializeQualityApi directly
 import { tenantContextMiddleware } from './middleware/tenantContext';
 import errorHandler from './middleware/errorHandlerMiddleware';
 import globalErrorHandler from './utils/globalErrorHandler';
@@ -130,6 +130,11 @@ app.get('/marketing', (req, res) => {
 
 // Add explicit client portal route handler
 app.get('/client-portal', (req, res) => {
+  console.log('Tenant Context:', JSON.stringify({
+    organizationId: null,
+    clientWorkspaceId: null,
+    module: null
+  }));
   console.log('Serving client portal page');
   res.sendFile(path.resolve('./client/public/index.html')); 
 });
