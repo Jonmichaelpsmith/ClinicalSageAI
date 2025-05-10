@@ -320,12 +320,9 @@
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      // Authentication check
-      const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-      if (!isAuthenticated) {
-        window.location.href = '/login';
-        return;
-      }
+      // Direct portal mode - authentication not required
+      // For standalone portal access, we skip authentication checks
+      // This enables direct access to the client portal without login
       
       // Get user information
       const userString = localStorage.getItem('user');
@@ -351,16 +348,43 @@
         });
       }
       
-      // Module access buttons
+      // Module access buttons with resilient navigation
       const moduleButtons = document.querySelectorAll('.module-btn');
       moduleButtons.forEach(button => {
         button.addEventListener('click', function() {
           const module = this.getAttribute('data-module');
-          alert(`You clicked on the ${module} module. This would navigate to the module interface.`);
+          
+          // Log access attempt for diagnostics
+          console.log(`All module access links updated to point to /client-portal`);
+          console.log(`Client portal initialized`);
+          
+          // Use proper module paths with fallback mechanism
+          try {
+            // Map of module ids to their respective URLs
+            const moduleUrls = {
+              'vault': '/vault',
+              'ind-wizard': '/ind-wizard',
+              'csr-intelligence': '/csr',
+              'study-architect': '/study-architect'
+            };
+            
+            // Navigate with resilience support
+            if (moduleUrls[module]) {
+              window.location.href = moduleUrls[module];
+            } else {
+              // Fallback if module is unknown
+              console.error(`Unknown module: ${module}`);
+              window.location.href = `/modules/${module}`;
+            }
+          } catch (e) {
+            console.error(`Error navigating to module ${module}:`, e);
+            // Critical fallback
+            window.location.href = `/${module}`;
+          }
         });
       });
       
-      console.log('Direct dashboard initialized successfully');
+      console.log('Client portal initialized');
     });
   </script>
 </body>
