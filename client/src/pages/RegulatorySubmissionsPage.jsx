@@ -519,5 +519,15 @@ const RegulatorySubmissionsPage = () => {
   );
 };
 
-// Export the component with error boundary protection
-export default withErrorBoundary(RegulatorySubmissionsPage);
+// Import the specialized stability container for regulatory modules
+import RegulatoryStabilityContainer from '@/components/regulatory/StabilityContainer';
+
+// First wrap with the module-specific stability container
+const StabilityWrappedComponent = (props) => (
+  <RegulatoryStabilityContainer>
+    <RegulatorySubmissionsPage {...props} />
+  </RegulatoryStabilityContainer>
+);
+
+// Then apply the general error boundary for additional protection
+export default withErrorBoundary(StabilityWrappedComponent);
