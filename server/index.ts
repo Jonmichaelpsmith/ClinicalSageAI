@@ -6,6 +6,8 @@ import { setupVite } from './vite';
 import { initializePerformanceOptimizations } from './initializers/performanceOptimizer';
 import { initializeQualityApi } from './initializers/qualityApiInitializer';
 import { tenantContextMiddleware } from './middleware/tenantContext';
+import errorHandler from './middleware/errorHandlerMiddleware';
+import { setupGlobalErrorHandlers } from './utils/globalErrorHandler';
 
 // Load environment variables
 dotenv.config();
