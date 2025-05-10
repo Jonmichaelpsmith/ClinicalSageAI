@@ -654,79 +654,87 @@ export default function SubmissionBuilder({ initialRegion = 'FDA', region: propR
               
               <div className="flex flex-wrap gap-1" role="group" aria-label="Region Selection">
                 {Object.keys(REGION_FOLDERS).map(r => (
-              <button 
-                key={r} 
-                type="button" 
-                className={`btn ${region === r ? 'btn-primary' : 'btn-outline-secondary'}`}
-                onClick={() => setRegion(r)}
-              >
-                {r}
-              </button>
-            ))}
+                  <Button 
+                    key={r} 
+                    variant={region === r ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setRegion(r)}
+                    disabled={!currentClientWorkspace}
+                  >
+                    {r}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground mt-2">
+              {region === 'FDA' && 'FDA submissions follow US regulatory standards and 21 CFR Part 11 requirements.'}
+              {region === 'EMA' && 'EMA submissions adhere to EU regulatory requirements with regional variations.'}
+              {region === 'PMDA' && 'PMDA submissions include Japan-specific annexes and follow PMDA guidelines.'}
+            </p>
           </div>
-        </div>
-        <p className="text-muted mt-2">
-          {region === 'FDA' && 'FDA submissions follow US regulatory standards and 21 CFR Part 11 requirements.'}
-          {region === 'EMA' && 'EMA submissions adhere to EU regulatory requirements with regional variations.'}
-          {region === 'PMDA' && 'PMDA submissions include Japan-specific annexes and follow PMDA guidelines.'}
-        </p>
+          
+          {/* Region hints */}
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4 text-sm">
+            <div className="flex gap-2">
+              <Info size={16} className="text-blue-500 mt-0.5 flex-shrink-0"/>
+              <ul className="space-y-1 m-0">
+                {REGION_HINTS[region].map((h, i) => (<li key={i}>{h}</li>))}
+              </ul>
+            </div>
       </div>
-      
-      {/* Region hints */}
-      <div className="alert alert-info d-flex gap-2 align-items-start py-2 mb-4">
-        <Info size={16} className="mt-1"/>
-        <ul className="mb-0">
-          {REGION_HINTS[region].map((h, i) => (<li key={i}>{h}</li>))}
-        </ul>
-      </div>
-      
-      {/* Tree structure - using simplified version without DnD */}
-      <div className="tree-structure bg-light p-3 rounded mb-3">
-        <div className="alert alert-warning">
-          <AlertTriangle size={16} className="me-2" />
-          Drag and drop functionality temporarily disabled
-        </div>
-        
-        <div className="folders-container">
-          {tree
-            .filter(node => node.droppable && node.id !== 0)
-            .map(folder => (
-              <div key={folder.id} className="folder mb-3">
-                <div className="folder-header py-1 px-2 bg-light border-bottom">
-                  <strong>{folder.text}</strong>
+          {/* Tree structure - using simplified version without DnD */}
+          <Card className="mb-4">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-lg font-medium">eCTD Structure</h3>
+                <div className="bg-amber-100 text-amber-800 flex items-center text-xs px-2 py-1 rounded">
+                  <AlertTriangle size={14} className="mr-1" />
+                  Drag and drop temporarily disabled
                 </div>
-                <div className="folder-content">
-                  {tree
-                    .filter(node => !node.droppable && node.parent === folder.id)
-                    .map(doc => {
-                      const qcStatus = doc.data?.qc_json?.status;
-                      const isSelected = selected.has(doc.id);
-                      
-                      return (
-                        <div
-                          key={doc.id}
-                          onClick={() => toggleSelect(doc.id)}
-                          className={`doc-item py-1 px-2 d-flex align-items-center ${isSelected ? 'bg-light' : ''}`}
-                        >
-                          <div className="form-check me-2">
-                            <input
-                              type="checkbox"
-                              className="form-check-input"
-                              checked={isSelected}
-                              onChange={() => {}}
-                              id={`check-${doc.id}`}
-                            />
-                          </div>
-                          
-                          {qcStatus === 'passed' ? (
-                            <CheckCircle size={16} className="text-success me-2" />
-                          ) : qcStatus === 'failed' ? (
-                            <XCircle size={16} className="text-danger me-2" />
-                          ) : (
-                            <AlertTriangle size={16} className="text-warning me-2" />
-                          )}
-                          
-                          <span>{doc.text}</span>
+              </div>
+              
+              <div className="folders-container space-y-4">
+                {tree
+                  .filter(node => node.droppable && node.id !== 0)
+                  .map(folder => (
+                    <div key={folder.id} className="folder border rounded-md overflow-hidden">
+                      <div className="folder-header py-2 px-3 bg-gray-50 border-b flex items-center justify-between">
+                        <strong className="text-sm">{folder.text}</strong>
+                      </div>
+                      <div className="folder-content p-2">
+                        {tree
+                          .filter(node => !node.droppable && node.parent === folder.id)
+                          .map(doc => {
+                            const qcStatus = doc.data?.qc_json?.status;
+                            const isSelected = selected.has(doc.id);
+                            
+                            return (
+                              <div
+                                key={doc.id}
+                                onClick={() => toggleSelect(doc.id)}
+                                className={`flex items-center py-2 px-3 rounded-md cursor-pointer border-b last:border-0 ${
+                                  isSelected ? 'bg-blue-50' : 'hover:bg-gray-50'
+                                }`}
+                              >
+                                <div className="mr-2">
+                                  <input
+                                    type="checkbox"
+                                    className="rounded border-gray-300 text-primary focus:ring-primary/20"
+                                    checked={isSelected}
+                                    onChange={() => {}}
+                                    id={`check-${doc.id}`}
+                                  />
+                                </div>
+                                
+                                {qcStatus === 'passed' ? (
+                                  <CheckCircle size={14} className="text-green-500 mr-2 flex-shrink-0" />
+                                ) : qcStatus === 'failed' ? (
+                                  <XCircle size={14} className="text-red-500 mr-2 flex-shrink-0" />
+                                ) : (
+                                  <AlertTriangle size={14} className="text-amber-500 mr-2 flex-shrink-0" />
+                                )}
+                                
+                                <span className="text-sm">{doc.text}</span>
                         </div>
                       );
                     })}
