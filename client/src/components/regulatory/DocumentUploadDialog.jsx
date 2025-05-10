@@ -29,8 +29,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-// Use relative import for FileUpload component to avoid conflicts
-import { FileUpload } from '@/components/ui/file-upload';
+// Import from the stable wrapper to prevent conflicts
+import { FileUpload } from '@/components/ui/file-upload-wrapper';
 import { Progress } from '@/components/ui/progress';
 import { AlertCircle, FileText } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
