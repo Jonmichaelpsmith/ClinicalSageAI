@@ -8,11 +8,37 @@
  * and should not be removed or modified without thorough testing.
  */
 
-const errorHandler = (err, req, res, next) => {
+import { Request, Response, NextFunction } from 'express';
+
+interface ErrorWithStatusCode extends Error {
+  statusCode?: number;
+  code?: string;
+}
+
+interface ErrorLogStructure {
+  timestamp: string;
+  path: string;
+  method: string;
+  ip: string;
+  error: {
+    name: string;
+    message: string;
+    stack?: string | undefined;
+  };
+  requestId: string;
+  tenant: any;
+}
+
+const errorHandler = (
+  err: ErrorWithStatusCode, 
+  req: Request, 
+  res: Response, 
+  next: NextFunction
+) => {
   console.error('API Error:', err);
   
   // Create a structured error log for monitoring
-  const errorLog = {
+  const errorLog: ErrorLogStructure = {
     timestamp: new Date().toISOString(),
     path: req.path,
     method: req.method,
@@ -22,8 +48,8 @@ const errorHandler = (err, req, res, next) => {
       message: err.message,
       stack: process.env.NODE_ENV === 'production' ? undefined : err.stack
     },
-    requestId: req.headers['x-request-id'] || 'unknown',
-    tenant: req.tenantContext || {}
+    requestId: (req.headers['x-request-id'] as string) || 'unknown',
+    tenant: (req as any).tenantContext || {}
   };
   
   // Log error details in development, but only summarized version in production
@@ -63,4 +89,4 @@ const errorHandler = (err, req, res, next) => {
   });
 };
 
-module.exports = errorHandler;
+export default errorHandler;
