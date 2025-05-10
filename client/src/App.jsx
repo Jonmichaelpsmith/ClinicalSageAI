@@ -5,7 +5,7 @@ import { Switch, Route, useLocation } from 'wouter';
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import queryClient from './lib/queryClient';
-import { TenantProvider } from './contexts/TenantContext';
+import AppProvider from './AppProvider';
 
 // Import stability utilities
 import freezeDetection from '@/utils/freezeDetection';
@@ -152,7 +152,7 @@ function App() {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <TenantProvider>
+      <AppProvider>
         {/* Wrap the entire application in the StabilityEnabledLayout */}
         <StabilityEnabledLayout>
           {/* Only show the UnifiedTopNavV3 if we're not on the landing page, regulatory hub, or dashboard */}
@@ -328,7 +328,7 @@ function App() {
         </Switch>
           </div>
         </StabilityEnabledLayout>
-      </TenantProvider>
+      </AppProvider>
     </QueryClientProvider>
   );
 }
