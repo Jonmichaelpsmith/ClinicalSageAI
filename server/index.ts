@@ -88,6 +88,11 @@ import tenantSectionGatingRoutes from './routes/tenant-section-gating.js';
 app.use('/api/tenant-section-gating', tenantSectionGatingRoutes);
 console.log('Tenant Section Gating routes registered');
 
+// Import and register client portal routes
+import clientPortalRoutes from './routes/clientPortal.js';
+app.use('/api', clientPortalRoutes);
+console.log('Client Portal routes registered');
+
 // Import and register health check routes
 import { createHealthCheckRouter } from './routes/healthCheck';
 app.use('/api', createHealthCheckRouter(dbPool));
