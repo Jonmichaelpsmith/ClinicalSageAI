@@ -365,24 +365,10 @@ const ClientPortal = () => {
     }
   };
   
-  // STEP 2: Re-introduce the Landing & Dashboard views with a test organization
-  const [org, setOrg] = useState(null);
+  // STEP 3: We've removed duplicated org state declarations
   
-  // Hard-code a test org to prove the view works
-  useEffect(() => {
-    // Set to null to see the landing view, or provide an object to see the dashboard
-    setOrg({ 
-      id: 'test', 
-      name: 'Acme CRO', 
-      type: 'cro',
-      role: 'Administrator',
-      clients: 5,
-      lastUpdated: '2025-05-10'
-    });
-  }, []);
-  
-  // Step 2B: Conditionally render landing page or dashboard
-  if (!org) {
+  // Step 4: Fixed landing page rendering to use existing variables 
+  if (!currentOrganization) {
     // Show the landing page when no organization is selected
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
@@ -390,19 +376,49 @@ const ClientPortal = () => {
           <Building size={48} className="mx-auto text-primary mb-4" />
           <h2 className="text-xl font-semibold text-gray-800 mb-2">Welcome to TrialSage</h2>
           <p className="text-gray-600 mb-4">Please select an organization to continue.</p>
-          <button 
-            onClick={() => setOrg({ 
-              id: 'test', 
-              name: 'Acme CRO', 
-              type: 'cro',
-              role: 'Administrator',
-              clients: 5,
-              lastUpdated: '2025-05-10'
-            })}
-            className="px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90"
-          >
-            Select Test Organization
-          </button>
+          {error && (
+            <div className="text-red-500 mb-4 flex items-center justify-center">
+              <AlertCircle size={16} className="mr-1" />
+              <span>{error}</span>
+            </div>
+          )}
+          {organizations.length > 0 ? (
+            <div className="space-y-2">
+              {organizations.map(org => (
+                <button 
+                  key={org.id}
+                  onClick={() => {
+                    setCurrentOrganization(org);
+                    securityService.switchOrganization(org.id);
+                  }}
+                  className="w-full px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90 flex items-center justify-center"
+                >
+                  <Building size={16} className="mr-2" />
+                  {org.name}
+                </button>
+              ))}
+            </div>
+          ) : loading ? (
+            <div className="animate-pulse p-4">Loading organizations...</div>
+          ) : (
+            <button 
+              onClick={() => {
+                const testOrg = { 
+                  id: 'test-org', 
+                  name: 'Acme CRO', 
+                  type: 'cro',
+                  role: 'Administrator',
+                  clients: 5,
+                  lastUpdated: '2025-05-10'
+                };
+                setCurrentOrganization(testOrg);
+                setOrganizations([testOrg]);
+              }}
+              className="px-4 py-2 bg-primary text-white rounded hover:bg-opacity-90"
+            >
+              Use Test Organization
+            </button>
+          )}
         </div>
       </div>
     );
