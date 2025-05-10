@@ -13,6 +13,7 @@ import networkResilience from '@/utils/networkResilience';
 import memoryManagement from '@/utils/memoryManagement';
 import StabilityEnabledLayout from '@/components/layout/StabilityEnabledLayout';
 import { initializeMemoryOptimization } from './utils/memoryOptimizer';
+import StabilityEnabler from './components/layout/StabilityEnabler';
 
 // Core navigation component (loaded immediately)
 import UnifiedTopNavV3 from './components/navigation/UnifiedTopNavV3';
@@ -149,241 +150,247 @@ function App() {
 
   const shouldShowNav = !isLandingPage && !isRegulatoryHub && !isCoAuthorPage && !isDashboardPage;
 
+  useEffect(() => {
+    console.log('✅ Application stability measures initialized');
+  }, []);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <TenantProvider>
-        {/* Wrap the entire application in the StabilityEnabledLayout */}
-        <StabilityEnabledLayout>
-          {/* Only show the UnifiedTopNavV3 if we're not on the landing page, regulatory hub, or dashboard */}
-          {shouldShowNav && (
-            <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
-          )}
-          <div className={
-            isLandingPage ? "p-4" : 
-            isRegulatoryHub ? "p-0" : 
-            isCoAuthorPage ? "p-0" : // No padding for CoAuthor pages
-            isDashboardPage ? "p-0" : // No padding for Dashboard page
-            "p-4 mt-24"
-          }>
-          <Switch>
-          {/* Main Portal Landing Pages - both root and /client-portal go to same component */}
-          <Route path="/" component={ClientPortalLanding} />
-          <Route path="/client-portal" component={ClientPortalLanding} />
-
-          {/* Client Portal Sub-Pages */}
-          <Route path="/client-portal/vault" component={VaultPage} />
-          <Route path="/client-portal/regulatory-intel" component={RegulatoryIntelligenceHub} />
-          <Route path="/client-portal/cer-generator" component={CERV2Page} />
-          <Route path="/client-portal/cmc-wizard" component={CmcWizard} />
-          <Route path="/client-portal/csr-analyzer" component={CSRPage} />
-          <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
-          <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
-          <Route path="/client-portal/client-management">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <ClientManagement />
-              </Suspense>
+    <StabilityEnabler>
+      <QueryClientProvider client={queryClient}>
+        <TenantProvider>
+          {/* Wrap the entire application in the StabilityEnabledLayout */}
+          <StabilityEnabledLayout>
+            {/* Only show the UnifiedTopNavV3 if we're not on the landing page, regulatory hub, or dashboard */}
+            {shouldShowNav && (
+              <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
             )}
-          </Route>
+            <div className={
+              isLandingPage ? "p-4" : 
+              isRegulatoryHub ? "p-0" : 
+              isCoAuthorPage ? "p-0" : // No padding for CoAuthor pages
+              isDashboardPage ? "p-0" : // No padding for Dashboard page
+              "p-4 mt-24"
+            }>
+            <Switch>
+            {/* Main Portal Landing Pages - both root and /client-portal go to same component */}
+            <Route path="/" component={ClientPortalLanding} />
+            <Route path="/client-portal" component={ClientPortalLanding} />
 
-          {/* Module Dashboard */}
-          <Route path="/dashboard" component={ModuleDashboard} />
+            {/* Client Portal Sub-Pages */}
+            <Route path="/client-portal/vault" component={VaultPage} />
+            <Route path="/client-portal/regulatory-intel" component={RegulatoryIntelligenceHub} />
+            <Route path="/client-portal/cer-generator" component={CERV2Page} />
+            <Route path="/client-portal/cmc-wizard" component={CmcWizard} />
+            <Route path="/client-portal/csr-analyzer" component={CSRPage} />
+            <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
+            <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
+            <Route path="/client-portal/client-management">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <ClientManagement />
+                </Suspense>
+              )}
+            </Route>
 
-          {/* IND Wizard Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
-          <Route path="/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
-          <Route path="/ind-full-solution" component={INDFullSolution} />
+            {/* Module Dashboard */}
+            <Route path="/dashboard" component={ModuleDashboard} />
 
-          {/* Client Portal IND Wizard Route - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
-          <Route path="/client-portal/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
+            {/* IND Wizard Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
+            <Route path="/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
+            <Route path="/ind-full-solution" component={INDFullSolution} />
 
-          {/* Other Module Pages */}
-          <Route path="/cer-generator" component={CERPage} />
-          <Route path="/cmc-wizard" component={CmcWizard} />
-          <Route path="/csr-analyzer" component={CSRPage} />
-          <Route path="/vault" component={VaultPage} /> {/* Use VaultPage which includes VaultDocumentViewer */}
-          <Route path="/vault-page" component={VaultPage} />
-          <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
-          <Route path="/context-demo" component={ContextDemoPage} /> {/* Add our context demo page */}
-          <Route path="/coauthor" component={CoAuthor} /> {/* Add our CoAuthor page */}
-          <Route path="/coauthor/timeline" component={CoAuthor} /> {/* CoAuthor timeline tab */}
-          <Route path="/coauthor/ask-lumen" component={CoAuthor} /> {/* CoAuthor Ask Lumen tab */}
-          <Route path="/coauthor/canvas" component={CoAuthor} /> {/* CoAuthor Canvas Workbench tab */}
-          <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
-          <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}
-          <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
-          <Route path="/csr" component={CSRPage} /> {/* CSR Deep Intelligence page route */}
-          <Route path="/csr-library" component={CSRLibraryPage} /> {/* CSR Library page route */}
-          <Route path="/cmc" component={CMCPage} /> {/* CMC Module page route */}
-          <Route path="/cer" component={CERPage} /> {/* CER Generator page route */}
-          <Route path="/cerV2" component={CERV2Page} /> {/* Advanced CER Generator page route */}
-          <Route path="/cerv2" component={CERV2Page} /> {/* Additional lowercase route for Advanced CER Generator */}
-          <Route path="/cerv2/info" component={CerGeneratorLandingPage} /> {/* CER Generator Landing page with detailed info */}
-          <Route path="/blueprint" component={BlueprintPage} /> {/* Blueprint Generator page route */}
-          <Route path="/citations" component={CitationManagerPage} /> {/* Citation Manager page route */}
-          <Route path="/audit" component={AuditPage} /> {/* Audit Trail page route */}
-          <Route path="/signature" component={SignaturePage} /> {/* Digital Signature page route */}
-          <Route path="/study-architect" component={StudyArchitectPage} />
-          <Route path="/analytics" component={AnalyticsDashboard} />
-          <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
-          <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
-          <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
-          <Route path="/regulatory-submissions" component={RegulatorySubmissionsPage} />
-          <Route path="/client-portal/regulatory-submissions" component={RegulatorySubmissionsPage} />
+            {/* Client Portal IND Wizard Route - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
+            <Route path="/client-portal/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
 
-          {/* IND Wizard Module Routes - Now integrated into the unified Submission Builder */}
-          {/* These direct module routes help users navigate directly to specific CTD modules */}
-          <Route path="/module-1">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <SubmissionBuilder initialModule="m1" />
-              </Suspense>
-            )}
-          </Route>
-          <Route path="/module-2">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <SubmissionBuilder initialModule="m2" />
-              </Suspense>
-            )}
-          </Route>
-          <Route path="/module-3">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <SubmissionBuilder initialModule="m3" />
-              </Suspense>
-            )}
-          </Route>
-          <Route path="/module-4">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <SubmissionBuilder initialModule="m4" />
-              </Suspense>
-            )}
-          </Route>
-          <Route path="/module-5">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <SubmissionBuilder initialModule="m5" />
-              </Suspense>
-            )}
-          </Route>
-          <Route path="/ind-wizard/module-3">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <SubmissionBuilder initialModule="m3" />
-              </Suspense>
-            )}
-          </Route>
-          <Route path="/ind-wizard/module-4">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <SubmissionBuilder initialModule="m4" />
-              </Suspense>
-            )}
-          </Route>
+            {/* Other Module Pages */}
+            <Route path="/cer-generator" component={CERPage} />
+            <Route path="/cmc-wizard" component={CmcWizard} />
+            <Route path="/csr-analyzer" component={CSRPage} />
+            <Route path="/vault" component={VaultPage} /> {/* Use VaultPage which includes VaultDocumentViewer */}
+            <Route path="/vault-page" component={VaultPage} />
+            <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
+            <Route path="/context-demo" component={ContextDemoPage} /> {/* Add our context demo page */}
+            <Route path="/coauthor" component={CoAuthor} /> {/* Add our CoAuthor page */}
+            <Route path="/coauthor/timeline" component={CoAuthor} /> {/* CoAuthor timeline tab */}
+            <Route path="/coauthor/ask-lumen" component={CoAuthor} /> {/* CoAuthor Ask Lumen tab */}
+            <Route path="/coauthor/canvas" component={CoAuthor} /> {/* CoAuthor Canvas Workbench tab */}
+            <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
+            <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}
+            <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
+            <Route path="/csr" component={CSRPage} /> {/* CSR Deep Intelligence page route */}
+            <Route path="/csr-library" component={CSRLibraryPage} /> {/* CSR Library page route */}
+            <Route path="/cmc" component={CMCPage} /> {/* CMC Module page route */}
+            <Route path="/cer" component={CERPage} /> {/* CER Generator page route */}
+            <Route path="/cerV2" component={CERV2Page} /> {/* Advanced CER Generator page route */}
+            <Route path="/cerv2" component={CERV2Page} /> {/* Additional lowercase route for Advanced CER Generator */}
+            <Route path="/cerv2/info" component={CerGeneratorLandingPage} /> {/* CER Generator Landing page with detailed info */}
+            <Route path="/blueprint" component={BlueprintPage} /> {/* Blueprint Generator page route */}
+            <Route path="/citations" component={CitationManagerPage} /> {/* Citation Manager page route */}
+            <Route path="/audit" component={AuditPage} /> {/* Audit Trail page route */}
+            <Route path="/signature" component={SignaturePage} /> {/* Digital Signature page route */}
+            <Route path="/study-architect" component={StudyArchitectPage} />
+            <Route path="/analytics" component={AnalyticsDashboard} />
+            <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
+            <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
+            <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
+            <Route path="/regulatory-submissions" component={RegulatorySubmissionsPage} />
+            <Route path="/client-portal/regulatory-submissions" component={RegulatorySubmissionsPage} />
 
-          {/* Analytical Control & Method Management Routes */}
-          <Route path="/analytical" component={AnalyticalMethodsStubPage} />
-          <Route path="/comparability" component={ComparabilityStudiesStubPage} />
+            {/* IND Wizard Module Routes - Now integrated into the unified Submission Builder */}
+            {/* These direct module routes help users navigate directly to specific CTD modules */}
+            <Route path="/module-1">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder initialModule="m1" />
+                </Suspense>
+              )}
+            </Route>
+            <Route path="/module-2">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder initialModule="m2" />
+                </Suspense>
+              )}
+            </Route>
+            <Route path="/module-3">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder initialModule="m3" />
+                </Suspense>
+              )}
+            </Route>
+            <Route path="/module-4">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder initialModule="m4" />
+                </Suspense>
+              )}
+            </Route>
+            <Route path="/module-5">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder initialModule="m5" />
+                </Suspense>
+              )}
+            </Route>
+            <Route path="/ind-wizard/module-3">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder initialModule="m3" />
+                </Suspense>
+              )}
+            </Route>
+            <Route path="/ind-wizard/module-4">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder initialModule="m4" />
+                </Suspense>
+              )}
+            </Route>
 
-          {/* Stability Study Management Routes */}
-          <Route path="/stability" component={StabilityStudiesStubPage} />
-          <Route path="/stability/shelf-life-predictor" component={ShelfLifePredictorStubPage} />
+            {/* Analytical Control & Method Management Routes */}
+            <Route path="/analytical" component={AnalyticalMethodsStubPage} />
+            <Route path="/comparability" component={ComparabilityStudiesStubPage} />
 
-          {/* Reports Module Routes */}
-          <Route path="/reports" component={ReportsPage} />
-          <Route path="/cer-reports" component={ReportsPage} />
-          <Route path="/cerv2/reports" component={ReportsPage} />
+            {/* Stability Study Management Routes */}
+            <Route path="/stability" component={StabilityStudiesStubPage} />
+            <Route path="/stability/shelf-life-predictor" component={ShelfLifePredictorStubPage} />
 
-          {/* Tenant Management Route */}
-          <Route path="/tenant-management">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <TenantManagement />
-              </Suspense>
-            )}
-          </Route>
+            {/* Reports Module Routes */}
+            <Route path="/reports" component={ReportsPage} />
+            <Route path="/cer-reports" component={ReportsPage} />
+            <Route path="/cerv2/reports" component={ReportsPage} />
 
-          {/* Client Management & Settings Routes */}
-          <Route path="/client-management">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <ClientManagement />
-              </Suspense>
-            )}
-          </Route>
-          <Route path="/settings">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <Settings />
-              </Suspense>
-            )}
-          </Route>
+            {/* Tenant Management Route */}
+            <Route path="/tenant-management">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <TenantManagement />
+                </Suspense>
+              )}
+            </Route>
 
-          {/* Unified Submission Builder routes (combines eCTD and IND Wizard) */}
-          <Route path="/submission-builder">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <SubmissionBuilder />
-              </Suspense>
-            )}
-          </Route>
-          <Route path="/ectd-module">
-            {() => (
-              <Suspense fallback={<LoadingPage />}>
-                <SubmissionBuilder />
-              </Suspense>
-            )}
-          </Route>
-          
-          {/* Error fallback and catch-all routes for specific modules */}
-          <Route path="/cer-*">
-            {() => (
-              <div className="flex flex-col items-center justify-center p-8">
-                <h2 className="text-2xl font-bold mb-4 text-indigo-700">Redirecting to CER Generator</h2>
-                <p className="mb-4 text-gray-600">The URL you're trying to access is being redirected to the CER Generator module.</p>
-                <Button 
-                  onClick={() => window.location.href = '/cerv2'}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
-                >
-                  Go to CER Generator
-                </Button>
-              </div>
-            )}
-          </Route>
+            {/* Client Management & Settings Routes */}
+            <Route path="/client-management">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <ClientManagement />
+                </Suspense>
+              )}
+            </Route>
+            <Route path="/settings">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <Settings />
+                </Suspense>
+              )}
+            </Route>
 
-          {/* CER Generator catch-all routes */}
-          <Route path="/cer-generator/*">
-            {() => <CERV2Page />}
-          </Route>
-          <Route path="/client-portal/cer-generator/*">
-            {() => <CERV2Page />}
-          </Route>
-          <Route path="/cerv2/*">
-            {() => <CERV2Page />}
-          </Route>
-          <Route path="/cerV2/*">
-            {() => <CERV2Page />}
-          </Route>
+            {/* Unified Submission Builder routes (combines eCTD and IND Wizard) */}
+            <Route path="/submission-builder">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder />
+                </Suspense>
+              )}
+            </Route>
+            <Route path="/ectd-module">
+              {() => (
+                <Suspense fallback={<LoadingPage />}>
+                  <SubmissionBuilder />
+                </Suspense>
+              )}
+            </Route>
 
-          {/* Default Redirect to Client Portal */}
-          <Route>
-            {() => {
-              // Automatically redirect to client portal
-              window.location.href = '/client-portal';
-              return (
+            {/* Error fallback and catch-all routes for specific modules */}
+            <Route path="/cer-*">
+              {() => (
                 <div className="flex flex-col items-center justify-center p-8">
-                  <h2 className="text-xl font-medium mb-4">Redirecting to Client Portal...</h2>
-                  <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+                  <h2 className="text-2xl font-bold mb-4 text-indigo-700">Redirecting to CER Generator</h2>
+                  <p className="mb-4 text-gray-600">The URL you're trying to access is being redirected to the CER Generator module.</p>
+                  <Button 
+                    onClick={() => window.location.href = '/cerv2'}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+                  >
+                    Go to CER Generator
+                  </Button>
                 </div>
-              );
-            }}
-          </Route>
-        </Switch>
-          </div>
-        </StabilityEnabledLayout>
-      </TenantProvider>
-    </QueryClientProvider>
+              )}
+            </Route>
+
+            {/* CER Generator catch-all routes */}
+            <Route path="/cer-generator/*">
+              {() => <CERV2Page />}
+            </Route>
+            <Route path="/client-portal/cer-generator/*">
+              {() => <CERV2Page />}
+            </Route>
+            <Route path="/cerv2/*">
+              {() => <CERV2Page />}
+            </Route>
+            <Route path="/cerV2/*">
+              {() => <CERV2Page />}
+            </Route>
+
+            {/* Default Redirect to Client Portal */}
+            <Route>
+              {() => {
+                // Automatically redirect to client portal
+                window.location.href = '/client-portal';
+                return (
+                  <div className="flex flex-col items-center justify-center p-8">
+                    <h2 className="text-xl font-medium mb-4">Redirecting to Client Portal...</h2>
+                    <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+                  </div>
+                );
+              }}
+            </Route>
+          </Switch>
+            </div>
+          </StabilityEnabledLayout>
+        </TenantProvider>
+      </QueryClientProvider>
+    </StabilityEnabler>
   );
 }
 

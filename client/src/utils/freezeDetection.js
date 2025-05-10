@@ -293,7 +293,7 @@ function attemptRecovery() {
   }
 }
 
-// More aggressive recovery for consecutive freezes
+// More aggressive recovery for consecutive freezes but with better performance
 function attemptAggressiveRecovery() {
   // Increment recovery attempts
   state.recoveryAttempts++;
@@ -309,11 +309,16 @@ function attemptAggressiveRecovery() {
     }
   }
   
-  // Clear all caches
+  // Clear only non-essential caches to avoid complete app reload
   if (window.caches && typeof caches.keys === 'function') {
     try {
       caches.keys().then(keys => {
-        keys.forEach(key => caches.delete(key));
+        keys.forEach(key => {
+          // Only clear non-essential caches
+          if (key.includes('dynamic') || key.includes('temp')) {
+            caches.delete(key);
+          }
+        });
       }).catch(() => {
         // Ignore errors
       });
@@ -322,19 +327,102 @@ function attemptAggressiveRecovery() {
     }
   }
   
-  // Remove all non-essential event listeners
-  cleanupDomListeners();
+  // Cleanup DOM listeners more selectively
+  cleanupDomListenersSelectively();
   
   // Cleanup memory-intensive objects
   cleanupMemoryObjects();
   
-  // Reset application state if possible
-  resetAppState();
+  // Reset parts of application state
+  partialAppStateReset();
   
   // Allow DOM to settle
   setTimeout(() => {
     console.info('Aggressive recovery completed');
-  }, 100);
+  }, 200); // Increased to 200ms to allow for more cleanup time
+}
+
+// More selective DOM cleanup to avoid breaking essential functionality
+function cleanupDomListenersSelectively() {
+  try {
+    // Find elements with many listeners
+    const elements = document.querySelectorAll('*');
+    let cleanedCount = 0;
+    
+    for (const el of elements) {
+      if (el._events && Object.keys(el._events).length > 15) {
+        // These elements have too many listeners, which can indicate a memory leak
+        // Clear non-essential event listeners on elements with many listeners
+        if (typeof el.removeEventListener === 'function') {
+          const originalEvents = { ...el._events };
+          
+          for (const eventType in el._events) {
+            // Keep only essential events
+            if (!['click', 'submit', 'change', 'keydown', 'keyup', 'input', 'focus', 'blur'].includes(eventType)) {
+              el._events[eventType] = [];
+              cleanedCount++;
+            }
+          }
+          
+          // Store original listeners in case they need to be restored
+          el._originalEvents = originalEvents;
+        }
+      }
+    }
+    
+    console.debug(`Cleaned up ${cleanedCount} event listeners`);
+  } catch (e) {
+    console.error('Error during selective DOM listener cleanup:', e);
+  }
+}
+
+// Reset only parts of application state to avoid complete disruption
+function partialAppStateReset() {
+  try {
+    // Clear any cached large data objects in window
+    const propertiesToClean = [
+      'cachedData', 'tempResults', 'largeDatasets', 
+      'imageCache', 'responseCache', 'dataCache'
+    ];
+    
+    for (const prop of propertiesToClean) {
+      if (window[prop]) {
+        // Clean objects rather than nullify them
+        if (Array.isArray(window[prop])) {
+          window[prop] = [];
+        } else if (typeof window[prop] === 'object') {
+          // Preserve the object reference but clear contents
+          const keys = Object.keys(window[prop]);
+          for (const key of keys) {
+            delete window[prop][key];
+          }
+        }
+      }
+    }
+    
+    // If there's an app-level cache, clear it but don't destroy it
+    if (window.app && window.app.cache && typeof window.app.cache.clear === 'function') {
+      window.app.cache.clear();
+    }
+    
+    // Remove non-essential timeouts and intervals
+    const highestTimeoutId = setTimeout(() => {}, 0);
+    for (let i = highestTimeoutId; i > highestTimeoutId - 100; i--) {
+      window.clearTimeout(i);
+    }
+    
+    // Clear unused image data
+    const images = document.querySelectorAll('img[src^="data:"]');
+    for (const img of images) {
+      if (!isElementInViewport(img)) {
+        img.src = '';
+      }
+    }
+    
+    console.debug('Partial application state reset completed');
+  } catch (e) {
+    console.error('Error during partial app state reset:', e);
+  }
 }
 
 // Helper to clean up DOM listeners that might be leaking

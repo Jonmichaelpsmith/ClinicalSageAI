@@ -149,6 +149,14 @@ function performMemoryOptimization() {
       unloadNonVisibleImages();
     }
     
+    // Detach event listeners from non-visible components
+    if (MEMORY_CONFIG.aggressiveOptimization) {
+      cleanupEventListeners();
+    }
+    
+    // Clear any large objects in memory
+    cleanupLargeObjects();
+    
     // Update memory usage after optimization
     setTimeout(() => {
       updateMemoryUsage();
@@ -158,6 +166,90 @@ function performMemoryOptimization() {
   } catch (err) {
     console.error('Error during memory optimization:', err);
     state.isOptimizing = false;
+  }
+}
+
+/**
+ * Clean up event listeners from non-visible components
+ */
+function cleanupEventListeners() {
+  try {
+    // Find elements that are far outside viewport
+    const elements = document.querySelectorAll('*');
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    
+    for (const el of elements) {
+      if (!el || !el.getBoundingClientRect) continue;
+      
+      const rect = el.getBoundingClientRect();
+      // If element is very far from viewport
+      if (rect.bottom < -2000 || rect.top > viewportHeight + 2000 ||
+          rect.right < -2000 || rect.left > viewportWidth + 2000) {
+        
+        // Store original handlers if not already stored
+        if (!el._originalEventListeners && el._events) {
+          el._originalEventListeners = { ...el._events };
+          
+          // Remove non-essential events
+          for (const eventType in el._events) {
+            if (!['click', 'submit', 'change'].includes(eventType)) {
+              el._events[eventType] = [];
+            }
+          }
+        }
+      }
+      // Restore event listeners if element is back in view
+      else if (el._originalEventListeners) {
+        el._events = el._originalEventListeners;
+        delete el._originalEventListeners;
+      }
+    }
+  } catch (e) {
+    console.error('Error cleaning up event listeners:', e);
+  }
+}
+
+/**
+ * Clean up large objects in memory
+ */
+function cleanupLargeObjects() {
+  try {
+    // Clear temporary state in large components
+    const componentsToClean = [
+      'dataCache', 'tempResults', 'chartData', 
+      'oldRenderCache', 'previousSearch', 'resultCache'
+    ];
+    
+    for (const key of componentsToClean) {
+      if (window[key] && typeof window[key] === 'object') {
+        // If it's an array with more than 1000 items or an object with many properties
+        if ((Array.isArray(window[key]) && window[key].length > 1000) || 
+            (Object.keys(window[key]).length > 100)) {
+          window[key] = Array.isArray(window[key]) ? [] : {};
+          console.debug(`Cleaned up large object: ${key}`);
+        }
+      }
+    }
+    
+    // Find and clean up any React component state cache
+    if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__ && 
+        window.__REACT_DEVTOOLS_GLOBAL_HOOK__._renderers) {
+      
+      const renderers = Object.values(window.__REACT_DEVTOOLS_GLOBAL_HOOK__._renderers);
+      for (const renderer of renderers) {
+        if (renderer && renderer.findFiberByHostInstance) {
+          try {
+            // This forces React to potentially clean up some component cache
+            renderer.findFiberByHostInstance(document.body);
+          } catch (e) {
+            // Ignore errors
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error cleaning up large objects:', e);
   }
 }
 

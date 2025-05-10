@@ -1,315 +1,222 @@
 /**
- * Query Batching Utility
+ * Query Batcher Service
  * 
- * This module provides batch execution capabilities for PostgreSQL queries
- * to optimize database performance by reducing round-trips.
+ * Batches database queries to reduce connection overhead and
+ * improve performance for high-volume operations.
  */
-import { db } from '../db';
-import { sql, SQL } from 'drizzle-orm';
+
+import { performance } from 'perf_hooks';
 import { createScopedLogger } from '../utils/logger';
 
 const logger = createScopedLogger('query-batcher');
 
-// Batcher configuration
-const BATCH_TIMEOUT = 20; // ms to wait before executing a batch
-const MAX_BATCH_SIZE = 100; // maximum queries in a single batch
+// Configuration
+const BATCH_CONFIG = {
+  maxBatchSize: 100,
+  maxWaitTime: 50, // ms
+  enableBatching: true,
+  minBatchSize: 5
+};
 
-// Stats for monitoring
-const batchStats = {
+// Statistics for monitoring
+const stats = {
   batchesExecuted: 0,
   queriesExecuted: 0,
-  totalExecutionTimeMs: 0,
-  errors: 0,
-  lastBatchSize: 0,
-  lastBatchTimeMs: 0
+  queriesBatched: 0,
+  avgBatchSize: 0,
+  totalBatchTime: 0,
+  peakBatchSize: 0,
+  lastResetTime: Date.now()
 };
 
-// Query information
-interface QueuedQuery<T = any> {
-  query: SQL;
-  resolver: (result: T) => void;
-  rejecter: (error: Error) => void;
-  startTime: number;
-}
-
-// Mutable state for batching
-const state = {
-  queryQueue: [] as QueuedQuery[],
-  timeoutId: null as NodeJS.Timeout | null,
-  isProcessing: false
-};
+// Current batch
+let currentBatch: any[] = [];
+let batchTimer: NodeJS.Timeout | null = null;
 
 /**
- * Check if the database connection is available
+ * Add a query to the current batch
+ * @param db - Database connection
+ * @param query - SQL query
+ * @param params - Query parameters
+ * @returns Promise that resolves with query result
  */
-async function isDatabaseAvailable(): Promise<boolean> {
-  try {
-    if (!db) {
-      logger.error('Database connection is not initialized');
-      return false;
-    }
-    
-    // Test the connection with a simple query
-    await db.execute(sql`SELECT 1`);
-    return true;
-  } catch (error) {
-    logger.error('Database connection test failed', error);
-    return false;
+export function batchQuery(db: any, query: string, params: any[] = []) {
+  if (!BATCH_CONFIG.enableBatching || !db) {
+    // Execute directly if batching is disabled
+    return executeQuery(db, query, params);
   }
-}
 
-/**
- * Process the current batch of queries
- */
-async function processBatch(): Promise<void> {
-  // Clear the timeout
-  if (state.timeoutId) {
-    clearTimeout(state.timeoutId);
-    state.timeoutId = null;
-  }
-  
-  // If already processing or queue is empty, don't do anything
-  if (state.isProcessing || state.queryQueue.length === 0) {
-    return;
-  }
-  
-  // Check database availability
-  if (!await isDatabaseAvailable()) {
-    // Reject all queued queries
-    const error = new Error('Database connection not available');
-    state.queryQueue.forEach(({ rejecter }) => {
-      try {
-        rejecter(error);
-      } catch (e) {
-        logger.error('Error rejecting query due to database unavailability', e);
-      }
-    });
-    
-    // Clear the queue
-    state.queryQueue = [];
-    batchStats.errors++;
-    return;
-  }
-  
-  // Get queries to process in this batch
-  const queriesToProcess = state.queryQueue.splice(0, MAX_BATCH_SIZE);
-  const batchSize = queriesToProcess.length;
-  
-  // Track batch size
-  batchStats.lastBatchSize = batchSize;
-  
-  // Set processing flag
-  state.isProcessing = true;
-  
-  // Start batch execution time tracking
-  const batchStartTime = Date.now();
-  
-  try {
-    // Construct the SQL for the combined batch
-    // In PostgreSQL, we can execute multiple statements in a single call
-    const combinedQuery = sql`BEGIN;${sql.raw('\n')}`;
-    
-    // Add each individual query
-    queriesToProcess.forEach(({ query }) => {
-      // @ts-ignore - Append the query
-      combinedQuery.append(query);
-      // @ts-ignore - Add a semicolon and newline after each query
-      combinedQuery.append(sql.raw(';\n'));
-    });
-    
-    // End the transaction
-    // @ts-ignore
-    combinedQuery.append(sql.raw('COMMIT;'));
-    
-    // Execute the combined query
-    const result = await db!.execute(combinedQuery);
-    
-    // Update stats
-    const batchTimeMs = Date.now() - batchStartTime;
-    batchStats.batchesExecuted++;
-    batchStats.queriesExecuted += batchSize;
-    batchStats.totalExecutionTimeMs += batchTimeMs;
-    batchStats.lastBatchTimeMs = batchTimeMs;
-    
-    // Log batch execution
-    logger.debug('Batch query executed', { 
-      batchSize, 
-      executionTimeMs: batchTimeMs,
-      avgTimePerQueryMs: batchTimeMs / batchSize
-    });
-    
-    // Resolve each query in the batch with its individual result
-    // Note: If the PostgreSQL driver returns a single result for the batch
-    // (which is likely since we submitted a single combined query),
-    // we'll need alternative approaches like using named parameters
-    // or parsing the results. This is a simplified implementation.
-    queriesToProcess.forEach(({ resolver, startTime }, index) => {
-      try {
-        // Here we assume each query's result is at the corresponding index
-        // This might need adjustment based on how the DB driver returns results
-        const queryResult = result;
-        resolver(queryResult);
-        
-        // Log individual query time
-        const queryTime = Date.now() - startTime;
-        logger.debug('Query resolved', { index, queryTimeMs: queryTime });
-      } catch (e) {
-        logger.error('Error resolving query result', { error: e, index });
-      }
-    });
-  } catch (error) {
-    // Error in batch execution
-    batchStats.errors++;
-    logger.error('Error executing batch query', { error, batchSize });
-    
-    // Reject all queries with the error
-    queriesToProcess.forEach(({ rejecter }, index) => {
-      try {
-        rejecter(error as Error);
-      } catch (e) {
-        logger.error('Error rejecting query after batch failure', { error: e, index });
-      }
-    });
-  } finally {
-    // Reset processing flag
-    state.isProcessing = false;
-    
-    // Process the next batch if there are still items in the queue
-    if (state.queryQueue.length > 0) {
-      setImmediate(() => processBatch());
-    }
-  }
-}
-
-/**
- * Queue a query for batched execution
- * @param query SQL query to execute
- * @returns Promise that resolves with the query result
- */
-export function batchQuery<T = any>(query: SQL): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    // Add query to the queue
-    state.queryQueue.push({
+  return new Promise((resolve, reject) => {
+    currentBatch.push({
       query,
-      resolver: resolve,
-      rejecter: reject,
-      startTime: Date.now()
+      params,
+      resolve,
+      reject,
+      timestamp: performance.now()
     });
-    
-    // Schedule batch processing
-    if (!state.timeoutId && !state.isProcessing) {
-      state.timeoutId = setTimeout(processBatch, BATCH_TIMEOUT);
+
+    // If we've reached max batch size, execute immediately
+    if (currentBatch.length >= BATCH_CONFIG.maxBatchSize) {
+      if (batchTimer) {
+        clearTimeout(batchTimer);
+        batchTimer = null;
+      }
+      executeBatch(db);
+    } else if (!batchTimer) {
+      // Start a timer to execute the batch after maxWaitTime
+      batchTimer = setTimeout(() => {
+        batchTimer = null;
+        if (currentBatch.length >= BATCH_CONFIG.minBatchSize) {
+          executeBatch(db);
+        } else {
+          // Execute queries individually if batch is too small
+          executeQueriesIndividually(db);
+        }
+      }, BATCH_CONFIG.maxWaitTime);
     }
   });
 }
 
 /**
- * Force immediate execution of the current batch
- * This can be useful when you need a query to execute right away
- * without waiting for other queries to accumulate
+ * Execute a batch of queries in a transaction
+ * @param db - Database connection
  */
-export function flushBatchQueue(): void {
-  if (state.queryQueue.length > 0 && !state.isProcessing) {
-    // Clear any existing timeout
-    if (state.timeoutId) {
-      clearTimeout(state.timeoutId);
-      state.timeoutId = null;
-    }
-    
-    // Process immediately
-    setImmediate(() => processBatch());
-  }
-}
+async function executeBatch(db: any) {
+  if (currentBatch.length === 0) return;
 
-/**
- * Get current batching statistics
- */
-export function getBatchStats(): typeof batchStats {
-  return { ...batchStats };
-}
+  const batchToExecute = [...currentBatch];
+  currentBatch = [];
 
-/**
- * Log current batching statistics
- */
-export function logBatchStats(): void {
-  const avgTimePerBatchMs = batchStats.batchesExecuted > 0 
-    ? batchStats.totalExecutionTimeMs / batchStats.batchesExecuted 
-    : 0;
-    
-  const avgTimePerQueryMs = batchStats.queriesExecuted > 0 
-    ? batchStats.totalExecutionTimeMs / batchStats.queriesExecuted 
-    : 0;
-    
-  logger.info('Query batching statistics', {
-    batchesExecuted: batchStats.batchesExecuted,
-    queriesExecuted: batchStats.queriesExecuted,
-    avgQueriesPerBatch: batchStats.batchesExecuted > 0 
-      ? batchStats.queriesExecuted / batchStats.batchesExecuted 
-      : 0,
-    avgTimePerBatchMs,
-    avgTimePerQueryMs,
-    errors: batchStats.errors,
-    lastBatchSize: batchStats.lastBatchSize,
-    lastBatchTimeMs: batchStats.lastBatchTimeMs
-  });
-}
+  const batchSize = batchToExecute.length;
+  const startTime = performance.now();
 
-/**
- * Reset batching statistics
- */
-export function resetBatchStats(): void {
-  batchStats.batchesExecuted = 0;
-  batchStats.queriesExecuted = 0;
-  batchStats.totalExecutionTimeMs = 0;
-  batchStats.errors = 0;
-  batchStats.lastBatchSize = 0;
-  batchStats.lastBatchTimeMs = 0;
-  logger.info('Batch statistics reset');
-}
-
-// Export a transaction utility that leverages batching
-/**
- * Execute multiple queries in a single transaction with batching
- * This ensures all queries succeed or all fail together
- * @param queries Array of SQL queries to execute in a transaction
- * @returns Promise that resolves when the transaction completes
- */
-export async function batchTransaction(queries: SQL[]): Promise<void> {
-  if (queries.length === 0) {
-    return;
-  }
-  
   try {
-    // Begin transaction
-    await batchQuery(sql`BEGIN`);
-    
-    // Execute all queries in the transaction
-    for (const query of queries) {
-      await batchQuery(query);
+    // Start transaction
+    await db.query('BEGIN');
+
+    // Execute all queries in the batch
+    for (const item of batchToExecute) {
+      try {
+        const result = await db.query(item.query, item.params);
+        item.resolve(result);
+      } catch (error) {
+        item.reject(error);
+      }
     }
-    
+
     // Commit transaction
-    await batchQuery(sql`COMMIT`);
+    await db.query('COMMIT');
+
+    // Update stats
+    const elapsedTime = performance.now() - startTime;
+    stats.batchesExecuted++;
+    stats.queriesExecuted += batchSize;
+    stats.queriesBatched += batchSize;
+    stats.totalBatchTime += elapsedTime;
+    stats.avgBatchSize = stats.queriesBatched / stats.batchesExecuted;
+    stats.peakBatchSize = Math.max(stats.peakBatchSize, batchSize);
+
+    logger.debug(`Executed batch of ${batchSize} queries in ${elapsedTime.toFixed(2)}ms`);
   } catch (error) {
-    logger.error('Error in batch transaction, rolling back', { error });
-    
+    logger.error('Error executing query batch', { error });
+
+    // Rollback transaction
     try {
-      // Roll back the transaction on error
-      await batchQuery(sql`ROLLBACK`);
+      await db.query('ROLLBACK');
     } catch (rollbackError) {
-      logger.error('Error rolling back batch transaction', { error: rollbackError });
+      logger.error('Error rolling back transaction', { error: rollbackError });
     }
-    
-    // Re-throw the original error
+
+    // Reject all promises in the batch
+    for (const item of batchToExecute) {
+      item.reject(error);
+    }
+  }
+}
+
+/**
+ * Execute queries individually for small batches
+ * @param db - Database connection
+ */
+async function executeQueriesIndividually(db: any) {
+  if (currentBatch.length === 0) return;
+
+  const batchToExecute = [...currentBatch];
+  currentBatch = [];
+
+  for (const item of batchToExecute) {
+    try {
+      const result = await executeQuery(db, item.query, item.params);
+      item.resolve(result);
+    } catch (error) {
+      item.reject(error);
+    }
+  }
+
+  // Update stats
+  stats.queriesExecuted += batchToExecute.length;
+}
+
+/**
+ * Execute a single query
+ * @param db - Database connection
+ * @param query - SQL query
+ * @param params - Query parameters
+ * @returns Query result
+ */
+async function executeQuery(db: any, query: string, params: any[] = []) {
+  try {
+    stats.queriesExecuted++;
+    return await db.query(query, params);
+  } catch (error) {
+    logger.error('Error executing query', { error, query });
     throw error;
   }
 }
 
-// Clean up when the process exits
-process.on('beforeExit', () => {
-  // Flush any pending queries
-  flushBatchQueue();
-  
-  // Log final stats
-  logBatchStats();
-});
+/**
+ * Log batch statistics
+ */
+export function logBatchStats() {
+  const now = Date.now();
+  const elapsedSeconds = (now - stats.lastResetTime) / 1000;
+
+  logger.info('Query batcher stats', {
+    batchesExecuted: stats.batchesExecuted,
+    queriesExecuted: stats.queriesExecuted,
+    avgBatchSize: stats.avgBatchSize.toFixed(2),
+    queriesPerSecond: (stats.queriesExecuted / elapsedSeconds).toFixed(2),
+    avgBatchTimeMs: stats.batchesExecuted > 0 ? 
+      (stats.totalBatchTime / stats.batchesExecuted).toFixed(2) : 0,
+    peakBatchSize: stats.peakBatchSize
+  });
+}
+
+/**
+ * Get batch statistics
+ */
+export function getBatchStats() {
+  return { ...stats };
+}
+
+/**
+ * Reset batch statistics
+ */
+export function resetBatchStats() {
+  stats.batchesExecuted = 0;
+  stats.queriesExecuted = 0;
+  stats.queriesBatched = 0;
+  stats.avgBatchSize = 0;
+  stats.totalBatchTime = 0;
+  stats.peakBatchSize = 0;
+  stats.lastResetTime = Date.now();
+}
+
+/**
+ * Configure batch settings
+ * @param config - Batch configuration
+ */
+export function configureBatcher(config: Partial<typeof BATCH_CONFIG>) {
+  Object.assign(BATCH_CONFIG, config);
+  logger.info('Query batcher configured', { config: BATCH_CONFIG });
+}
