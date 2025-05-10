@@ -840,7 +840,7 @@ const ClientSecuritySettings = () => {
                         <Label htmlFor="reportGeneration">Automated Report Generation</Label>
                         <EnhancedSelect 
                           id="reportGeneration"
-                          value={formValues.fdaCompliance.reportGeneration}
+                          value={formValues.fdaCompliance?.reportGeneration || 'quarterly'}
                           onValueChange={(value) => handleInputChange('fdaCompliance', 'reportGeneration', value)}
                           optionsArray={[
                             { value: 'monthly', label: 'Monthly' },
@@ -860,7 +860,7 @@ const ClientSecuritySettings = () => {
                         <Label htmlFor="submissionFormat">Submission Format</Label>
                         <EnhancedSelect 
                           id="submissionFormat"
-                          value={formValues.fdaCompliance.submissionFormat}
+                          value={formValues.fdaCompliance?.submissionFormat || 'ectd'}
                           onValueChange={(value) => handleInputChange('fdaCompliance', 'submissionFormat', value)}
                           optionsArray={[
                             { value: 'ectd', label: 'eCTD (Electronic Common Technical Document)' },
@@ -927,7 +927,7 @@ const ClientSecuritySettings = () => {
                         </div>
                         <Switch 
                           id="enableEuGmpCompliance" 
-                          checked={formValues.fdaCompliance.enableEuGmpCompliance || false}
+                          checked={formValues.fdaCompliance?.enableEuGmpCompliance || false}
                           onCheckedChange={() => handleToggleChange('fdaCompliance', 'enableEuGmpCompliance')}
                         />
                       </div>
@@ -944,7 +944,7 @@ const ClientSecuritySettings = () => {
                         </div>
                         <Switch 
                           id="enableIchGcpCompliance" 
-                          checked={formValues.fdaCompliance.enableIchGcpCompliance || false}
+                          checked={formValues.fdaCompliance?.enableIchGcpCompliance || false}
                           onCheckedChange={() => handleToggleChange('fdaCompliance', 'enableIchGcpCompliance')}
                         />
                       </div>
@@ -958,7 +958,7 @@ const ClientSecuritySettings = () => {
                         type="button"
                         onClick={() => handleInputChange('fdaCompliance', 'industryType', 'pharma')}
                         className={`rounded-md py-1.5 text-sm font-medium justify-center flex items-center ${
-                          formValues.fdaCompliance.industryType === 'pharma' 
+                          formValues.fdaCompliance?.industryType === 'pharma' 
                             ? 'bg-indigo-100 border border-indigo-200 text-indigo-800' 
                             : 'border border-indigo-100 bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
                         }`}
@@ -969,7 +969,7 @@ const ClientSecuritySettings = () => {
                         type="button"
                         onClick={() => handleInputChange('fdaCompliance', 'industryType', 'device')}
                         className={`rounded-md py-1.5 text-sm font-medium justify-center flex items-center ${
-                          formValues.fdaCompliance.industryType === 'device' 
+                          formValues.fdaCompliance?.industryType === 'device' 
                             ? 'bg-blue-100 border border-blue-200 text-blue-800' 
                             : 'border border-blue-100 bg-blue-50 text-blue-700 hover:bg-blue-100'
                         }`}
@@ -980,7 +980,7 @@ const ClientSecuritySettings = () => {
                         type="button"
                         onClick={() => handleInputChange('fdaCompliance', 'industryType', 'cro')}
                         className={`rounded-md py-1.5 text-sm font-medium justify-center flex items-center ${
-                          formValues.fdaCompliance.industryType === 'cro' 
+                          formValues.fdaCompliance?.industryType === 'cro' 
                             ? 'bg-green-100 border border-green-200 text-green-800' 
                             : 'border border-green-100 bg-green-50 text-green-700 hover:bg-green-100'
                         }`}
