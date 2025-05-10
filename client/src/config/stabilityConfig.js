@@ -88,20 +88,20 @@ export const ERROR_CONFIG = {
  * Freeze Detection Configuration
  */
 export const FREEZE_CONFIG = {
-  // Interval in ms for checking UI responsiveness
-  checkInterval: 5000,
+  // Interval in ms for checking UI responsiveness - increased to reduce frequency
+  checkInterval: 15000,
   
-  // Threshold in ms for considering the UI frozen
-  freezeThreshold: 3000,
+  // Threshold in ms for considering the UI frozen - increased to be less sensitive
+  freezeThreshold: 8000,
   
-  // Whether to attempt recovery from freezes
-  autoRecovery: true,
+  // Whether to attempt recovery from freezes - disabled to prevent unnecessary interventions
+  autoRecovery: false,
   
-  // Whether to log freeze events
+  // Whether to log freeze events - keeping for diagnostic purposes
   logFreezeEvents: true,
   
-  // Whether to show notifications about freeze events
-  showFreezeNotifications: true
+  // Whether to show notifications about freeze events - disabled to improve UX
+  showFreezeNotifications: false
 };
 
 /**

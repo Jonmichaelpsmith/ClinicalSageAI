@@ -10,21 +10,21 @@
 
 // Configuration
 const MEMORY_CONFIG = {
-  // How often to check memory usage (ms)
-  checkInterval: 10000,
+  // How often to check memory usage (ms) - increased to reduce frequency
+  checkInterval: 30000,
   
-  // Memory thresholds (MB)
-  warningThreshold: 150,
-  criticalThreshold: 200,
+  // Memory thresholds (MB) - increased to be less sensitive
+  warningThreshold: 250,
+  criticalThreshold: 350,
   
   // Performance metrics
-  longTaskThreshold: 50, // ms
+  longTaskThreshold: 100, // ms - increased to be less sensitive
   
   // Enable debug logging
   debug: false,
   
-  // Enable aggressive optimization
-  aggressiveOptimization: true,
+  // Disable aggressive optimization to reduce performance impact
+  aggressiveOptimization: false,
 };
 
 // State
@@ -118,24 +118,29 @@ function updateMemoryUsage() {
  * Perform memory optimization
  */
 function performMemoryOptimization() {
+  // Prevent concurrent optimizations or running too frequently
   if (state.isOptimizing) return;
+  const now = Date.now();
+  if (now - state.lastOptimization < 30000) {
+    console.info('Skipping optimization - last one performed too recently');
+    return;
+  }
   
   state.isOptimizing = true;
-  state.lastOptimization = Date.now();
+  state.lastOptimization = now;
   
   try {
     console.info('Performing memory optimization');
     
-    // Clear image caches
-    clearImageCaches();
-    
-    // Clear any application-specific caches
+    // Clear application-specific caches only (less invasive)
     clearApplicationCaches();
     
-    // Clear unused data
-    clearUnusedData();
+    // Clear console logs to free memory (simple, effective)
+    if (console.clear) {
+      console.clear();
+    }
     
-    // Force garbage collection if available
+    // Force garbage collection if available (unlikely in most browsers)
     if (window.gc) {
       try {
         window.gc();
@@ -144,18 +149,20 @@ function performMemoryOptimization() {
       }
     }
     
-    // Remove non-visible image data
-    if (MEMORY_CONFIG.aggressiveOptimization) {
+    // Only perform aggressive optimizations if enabled and we're experiencing critical issues
+    if (MEMORY_CONFIG.aggressiveOptimization && state.observedLongTasks > 5) {
+      // Clear image caches
+      clearImageCaches();
+      
+      // Remove non-visible image data
       unloadNonVisibleImages();
-    }
-    
-    // Detach event listeners from non-visible components
-    if (MEMORY_CONFIG.aggressiveOptimization) {
+      
+      // Clear any large objects in memory
+      cleanupLargeObjects();
+      
+      // Last resort - detach event listeners from non-visible components
       cleanupEventListeners();
     }
-    
-    // Clear any large objects in memory
-    cleanupLargeObjects();
     
     // Update memory usage after optimization
     setTimeout(() => {
