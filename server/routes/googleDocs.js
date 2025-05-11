@@ -166,17 +166,14 @@ router.get('/documents/:documentId', async (req, res) => {
   }
   
   try {
-    // Set up temporary OAuth client with the provided token
-    const tempOAuth2Client = new google.auth.OAuth2();
-    tempOAuth2Client.setCredentials({ access_token });
+    // Use axios to call the Google Docs API directly
+    const response = await axios.get(`https://docs.googleapis.com/v1/documents/${documentId}`, {
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      }
+    });
     
-    // Create Docs API client
-    const docs = google.docs({ version: 'v1', auth: tempOAuth2Client });
-    
-    // Get the document
-    const document = await docs.documents.get({ documentId });
-    
-    res.json(document.data);
+    res.json(response.data);
   } catch (error) {
     console.error(`Error getting document ${documentId}:`, error);
     res.status(500).json({ error: 'Failed to get document' });
@@ -199,25 +196,23 @@ router.post('/documents', async (req, res) => {
   }
   
   try {
-    // Set up temporary OAuth client with the provided token
-    const tempOAuth2Client = new google.auth.OAuth2();
-    tempOAuth2Client.setCredentials({ access_token });
-    
-    // Create Docs API client
-    const docs = google.docs({ version: 'v1', auth: tempOAuth2Client });
-    
-    // Create a new document
-    const document = await docs.documents.create({
-      requestBody: {
-        title
+    // Create a new document using the Docs API
+    const docResponse = await axios.post('https://docs.googleapis.com/v1/documents', 
+      { title },
+      { 
+        headers: {
+          'Authorization': `Bearer ${access_token}`,
+          'Content-Type': 'application/json'
+        }
       }
-    });
+    );
+    
+    const documentId = docResponse.data.documentId;
     
     // If content was provided, update the document
-    if (content) {
-      await docs.documents.batchUpdate({
-        documentId: document.data.documentId,
-        requestBody: {
+    if (content && documentId) {
+      await axios.post(`https://docs.googleapis.com/v1/documents/${documentId}:batchUpdate`, 
+        {
           requests: [
             {
               insertText: {
@@ -228,14 +223,20 @@ router.post('/documents', async (req, res) => {
               }
             }
           ]
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${access_token}`,
+            'Content-Type': 'application/json'
+          }
         }
-      });
+      );
     }
     
-    res.json(document.data);
+    res.json(docResponse.data);
   } catch (error) {
     console.error('Error creating document:', error);
-    res.status(500).json({ error: 'Failed to create document' });
+    res.status(500).json({ error: 'Failed to create document', details: error.response?.data || error.message });
   }
 });
 
