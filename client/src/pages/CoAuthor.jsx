@@ -233,7 +233,8 @@ export default function CoAuthor() {
         
         toast({
           title: "Document Created",
-          description: `"${title}" has been created successfully.`,
+          description: `"${title}" has been created successfully and added to your document list.`,
+          variant: "success",
         });
       } else {
         throw new Error('Failed to create document. No document ID returned.');
@@ -443,7 +444,8 @@ export default function CoAuthor() {
         
         toast({
           title: "Document Created",
-          description: `"${newDocumentTitle}" has been created successfully.`,
+          description: `"${newDocumentTitle}" has been created successfully and added to your document list.`,
+          variant: "success",
         });
       }
     } catch (error) {
@@ -1824,7 +1826,13 @@ export default function CoAuthor() {
                       <div 
                         key={doc.id} 
                         className="p-3 hover:bg-slate-50 cursor-pointer"
-                        onClick={() => setSelectedDocument(doc)}
+                        onClick={() => {
+                          console.log('Selected document:', doc); 
+                          setSelectedDocument(doc);
+                          if (doc.googleDocId) {
+                            openDocumentInIframe(doc.googleDocId);
+                          }
+                        }}
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex items-start space-x-2">
