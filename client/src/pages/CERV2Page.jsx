@@ -54,15 +54,15 @@ export default function CERV2Page() {
   const [showWizard, setShowWizard] = useState(false);
   const [showEvidenceReminder, setShowEvidenceReminder] = useState(true);
   const { toast } = useToast();
-
+  
   // Helper function to format CtQ factors for a specific objective
   const getCtqFactorsForSection = (objectiveId, ctqFactors) => {
     const factors = ctqFactors.filter(factor => factor.objectiveId === objectiveId);
-
+    
     if (factors.length === 0) {
       return "No Critical-to-Quality factors defined.";
     }
-
+    
     return `**Critical-to-Quality Factors:**\n${factors.map(factor => `
 * **${factor.name}**
   * Associated Section: ${factor.associatedSection}
@@ -190,7 +190,7 @@ export default function CERV2Page() {
               <div className="flex items-center mr-4 flex-shrink-0">
                 <span className="text-xs font-medium text-[#605E5C]">{group.label}</span>
               </div>
-
+              
               <div className="inline-flex items-center">
                 {group.tabs.map((tab) => (
                   <button
@@ -248,7 +248,7 @@ export default function CERV2Page() {
                   <span>{sections.length} sections</span>
                 </div>
               </div>
-
+              
               <div className="mb-4">
                 <h3 className="text-md font-medium mb-2 text-[#323130]">Report Title</h3>
                 <input
@@ -259,7 +259,7 @@ export default function CERV2Page() {
                   placeholder="Clinical Evaluation Report"
                 />
               </div>
-
+              
               {sections.length > 0 ? (
                 <div className="space-y-2">
                   {sections.map((section, idx) => (
@@ -288,7 +288,7 @@ export default function CERV2Page() {
         </div>
       );
     }
-
+    
     if (activeTab === 'cep') {
       return (
         <ClinicalEvaluationPlanPanel
@@ -297,7 +297,7 @@ export default function CERV2Page() {
               section => section.type === 'cep' || 
               (section.title && section.title.toLowerCase().includes('evaluation plan'))
             );
-
+            
             if (existingIndex >= 0) {
               const updatedSections = [...sections];
               updatedSections[existingIndex] = {
@@ -306,7 +306,7 @@ export default function CERV2Page() {
                 lastUpdated: new Date().toISOString()
               };
               setSections(updatedSections);
-
+              
               toast({
                 title: "CEP Updated",
                 description: "Clinical Evaluation Plan has been updated in your CER.",
@@ -314,7 +314,7 @@ export default function CERV2Page() {
               });
             } else {
               setSections([...sections, cepData]);
-
+              
               toast({
                 title: "CEP Added",
                 description: "Clinical Evaluation Plan has been added to your CER.",
@@ -328,7 +328,7 @@ export default function CERV2Page() {
         />
       );
     }
-
+    
     if (activeTab === 'qmp') {
       return (
         <QualityManagementPlanPanel
@@ -344,7 +344,7 @@ export default function CERV2Page() {
             const qmpTitle = qmpData.title || "Quality Management Plan";
             const qmpContent = qmpData.content || "";
             const qmpMetadata = qmpData.metadata || {};
-
+            
             const qmsSection = {
               title: qmpTitle,
               type: "qmp",
@@ -352,13 +352,13 @@ export default function CERV2Page() {
               metadata: qmpMetadata,
               lastUpdated: qmpData.lastUpdated || new Date().toISOString()
             };
-
+            
             // Check if a QMS section already exists
             const existingIndex = sections.findIndex(
               section => section.type === 'qmp' || section.type === 'qms-plan' || 
               (section.title && section.title.toLowerCase().includes('quality management'))
             );
-
+            
             if (existingIndex >= 0) {
               const updatedSections = [...sections];
               updatedSections[existingIndex] = {
@@ -368,7 +368,7 @@ export default function CERV2Page() {
                 lastUpdated: new Date().toISOString()
               };
               setSections(updatedSections);
-
+              
               toast({
                 title: "QMP Updated",
                 description: "Quality Management Plan (ICH E6(R3)) has been updated in your CER.",
@@ -376,7 +376,7 @@ export default function CERV2Page() {
               });
             } else {
               setSections([...sections, qmsSection]);
-
+              
               toast({
                 title: "QMP Added",
                 description: "Quality Management Plan (ICH E6(R3)) has been added to your CER.",
@@ -387,7 +387,7 @@ export default function CERV2Page() {
         />
       );
     }
-
+    
     if (activeTab === 'literature') {
       return (
         <Tabs defaultValue="search" className="w-full">
@@ -399,7 +399,7 @@ export default function CERV2Page() {
               Search Methodology
             </TabsTrigger>
           </TabsList>
-
+          
           <TabsContent value="search" className="mt-4">
             <LiteratureSearchPanel
               onAddSection={(newSection) => {
@@ -415,7 +415,7 @@ export default function CERV2Page() {
               cerTitle={title}
             />
           </TabsContent>
-
+          
           <TabsContent value="methodology" className="mt-4">
             <LiteratureMethodologyPanel
               onAddToCER={(newSection) => {
@@ -434,10 +434,10 @@ export default function CERV2Page() {
         </Tabs>
       );
     }
-
+    
     // Add other tab content handlers for literature-review, internal-clinical-data, 
     // documents, data-retrieval, equivalence, gspr-mapping, sota, compliance, assistant
-
+    
     if (activeTab === 'reports') {
       return (
         <CerComprehensiveReportsPanel 
@@ -451,7 +451,7 @@ export default function CERV2Page() {
         />
       );
     }
-
+    
     if (activeTab === 'traceability') {
       return (
         <RegulatoryTraceabilityMatrix
@@ -463,7 +463,7 @@ export default function CERV2Page() {
               section => section.type === 'traceability-report' || 
               (section.title && section.title.toLowerCase().includes('traceability'))
             );
-
+            
             if (existingIndex >= 0) {
               const updatedSections = [...sections];
               updatedSections[existingIndex] = {
@@ -472,7 +472,7 @@ export default function CERV2Page() {
                 lastUpdated: new Date().toISOString()
               };
               setSections(updatedSections);
-
+              
               toast({
                 title: "Traceability Report Updated",
                 description: "Regulatory Traceability Matrix Report has been updated in your CER.",
@@ -480,7 +480,7 @@ export default function CERV2Page() {
               });
             } else {
               setSections([...sections, reportData]);
-
+              
               toast({
                 title: "Traceability Report Added",
                 description: "Regulatory Traceability Matrix Report has been added to your CER.",
@@ -495,7 +495,7 @@ export default function CERV2Page() {
         />
       );
     }
-
+    
     if (activeTab === 'export') {
       return (
         <div className="bg-[#F9F9F9] py-4">
@@ -524,7 +524,7 @@ export default function CERV2Page() {
               section => section.type === 'state-of-art' || 
               (section.title && section.title.toLowerCase().includes('state of the art'))
             );
-
+            
             if (existingIndex >= 0) {
               const updatedSections = [...sections];
               updatedSections[existingIndex] = {
@@ -536,10 +536,10 @@ export default function CERV2Page() {
             } else {
               setSections([...sections, sotaSection]);
             }
-
+            
             // Update localStorage
             saveToLocalStorage('cer-sections', [...sections, sotaSection]);
-
+            
             // Show success message
             toast({
               title: 'State of Art Section Added',
@@ -561,7 +561,7 @@ export default function CERV2Page() {
               section => section.type === 'literature-review' || 
               (section.title && section.title.toLowerCase().includes('literature review'))
             );
-
+            
             if (existingIndex >= 0) {
               const updatedSections = [...sections];
               updatedSections[existingIndex] = {
@@ -570,7 +570,7 @@ export default function CERV2Page() {
                 lastUpdated: new Date().toISOString()
               };
               setSections(updatedSections);
-
+              
               toast({
                 title: "Literature Review Updated",
                 description: "Literature review has been updated in your CER.",
@@ -578,7 +578,7 @@ export default function CERV2Page() {
               });
             } else {
               setSections([...sections, reviewData]);
-
+              
               toast({
                 title: "Literature Review Added",
                 description: "Literature review has been added to your CER.",
@@ -589,7 +589,7 @@ export default function CERV2Page() {
         />
       );
     }
-
+    
     if (activeTab === 'internal-clinical-data') {
       return (
         <InternalClinicalDataPanel
@@ -601,7 +601,7 @@ export default function CERV2Page() {
               section => section.type === 'internal-clinical-data' || 
               (section.title && section.title.toLowerCase().includes('internal clinical data'))
             );
-
+            
             if (existingIndex >= 0) {
               const updatedSections = [...sections];
               updatedSections[existingIndex] = {
@@ -610,7 +610,7 @@ export default function CERV2Page() {
                 lastUpdated: new Date().toISOString()
               };
               setSections(updatedSections);
-
+              
               toast({
                 title: "Internal Clinical Data Updated",
                 description: "Your CER now includes the latest internal clinical evidence.",
@@ -618,7 +618,7 @@ export default function CERV2Page() {
               });
             } else {
               setSections([...sections, internalClinicalData]);
-
+              
               toast({
                 title: "Internal Clinical Data Added",
                 description: "Internal clinical evidence has been added to your CER.",
@@ -629,7 +629,7 @@ export default function CERV2Page() {
         />
       );
     }
-
+    
     if (activeTab === 'documents') {
       return (
         <DocumentVaultPanel 
@@ -637,7 +637,7 @@ export default function CERV2Page() {
         />
       );
     }
-
+    
     if (activeTab === 'data-retrieval') {
       return (
         <>
@@ -689,7 +689,7 @@ export default function CERV2Page() {
               section => section.type === 'gspr' || 
               (section.title && section.title.toLowerCase().includes('gspr'))
             );
-
+            
             if (existingIndex >= 0) {
               const updatedSections = [...sections];
               updatedSections[existingIndex] = {
@@ -698,7 +698,7 @@ export default function CERV2Page() {
                 lastUpdated: new Date().toISOString()
               };
               setSections(updatedSections);
-
+              
               toast({
                 title: "GSPR Mapping Updated",
                 description: "Your CER now includes the latest GSPR mapping data.",
@@ -706,7 +706,7 @@ export default function CERV2Page() {
               });
             } else {
               setSections([...sections, gspr]);
-
+              
               toast({
                 title: "GSPR Mapping Added",
                 description: "GSPR requirements mapping has been added to your CER.",
@@ -717,7 +717,7 @@ export default function CERV2Page() {
         />
       );
     }
-
+    
     if (activeTab === 'equivalence') {
       return (
         <EquivalenceBuilderPanel
@@ -726,7 +726,7 @@ export default function CERV2Page() {
               section => section.type === 'equivalence' || 
               (section.title && section.title.toLowerCase().includes('equivalence'))
             );
-
+            
             if (existingIndex >= 0) {
               const updatedSections = [...sections];
               updatedSections[existingIndex] = {
@@ -735,7 +735,7 @@ export default function CERV2Page() {
                 lastUpdated: new Date().toISOString()
               };
               setSections(updatedSections);
-
+              
               toast({
                 title: "Equivalence Data Updated",
                 description: "Your CER now includes the latest device equivalence data.",
@@ -743,7 +743,7 @@ export default function CERV2Page() {
               });
             } else {
               setSections([...sections, equivalenceData]);
-
+              
               toast({
                 title: "Equivalence Data Added",
                 description: "Device equivalence analysis has been added to your CER.",
@@ -754,7 +754,7 @@ export default function CERV2Page() {
         />
       );
     }
-
+    
     if (activeTab === 'compliance') {
       return (
         <ComplianceScorePanel
@@ -765,7 +765,7 @@ export default function CERV2Page() {
               section => section.type === 'compliance' || 
               (section.title && section.title.toLowerCase().includes('compliance'))
             );
-
+            
             if (existingIndex >= 0) {
               const updatedSections = [...sections];
               updatedSections[existingIndex] = {
@@ -776,7 +776,7 @@ export default function CERV2Page() {
                 lastUpdated: new Date().toISOString()
               };
               setSections(updatedSections);
-
+              
               toast({
                 title: "Compliance Check Updated",
                 description: "Your CER now includes the latest compliance assessment.",
@@ -789,7 +789,7 @@ export default function CERV2Page() {
                 content: JSON.stringify(complianceData),
                 lastUpdated: new Date().toISOString()
               }]);
-
+              
               toast({
                 title: "Compliance Check Added",
                 description: "Regulatory compliance assessment has been added to your CER.",
@@ -805,7 +805,7 @@ export default function CERV2Page() {
         />
       );
     }
-
+    
     if (activeTab === 'assistant') {
       return (
         <CerAssistantPanel
@@ -815,7 +815,7 @@ export default function CERV2Page() {
           sections={sections}
           onAddContent={(assistantContent) => {
             setSections([...sections, assistantContent]);
-
+            
             toast({
               title: "Content Added",
               description: "Assistant-generated content has been added to your CER.",
@@ -836,7 +836,7 @@ export default function CERV2Page() {
   };
 
   return (
-    <div className="container-fluid p-4 bg-gray-50 dark:bg-gray-900 min-h-screen">
+    <div className="max-w-[1200px] mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start p-6 pb-2">
         <div>
           <h1 className="text-2xl font-semibold text-[#323130] mb-1">CER Builder</h1>
@@ -851,7 +851,7 @@ export default function CERV2Page() {
           <FolderOpen className="h-4 w-4" />
           Manage CER Projects
         </Button>
-
+        
         <div className="flex gap-2 mt-2 md:mt-0">
           <Button
             onClick={() => setShowDeviceInfoDialog(true)}
@@ -883,7 +883,7 @@ export default function CERV2Page() {
 
       {/* Custom navigation without Radix UI dependencies */}
       {renderNavigation()}
-
+      
       {/* Content container */}
       <div className="w-full mt-0">
         {renderContent()}
