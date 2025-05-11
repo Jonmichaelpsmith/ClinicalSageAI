@@ -53,7 +53,8 @@ import {
   ListChecks,
   Bot,
   Clipboard,
-  Zap
+  Zap,
+  Send
 } from 'lucide-react';
 
 export default function CoAuthor() {
@@ -359,7 +360,7 @@ export default function CoAuthor() {
         </div>
       </header>
 
-      {/* Main Content Area with optional navigation tree */}
+      {/* Main Content Area with optional navigation tree and AI assistant */}
       <div className="px-6 pb-6 flex">
         {/* Document Tree Navigation - Enterprise Edition Feature */}
         {isTreeOpen && (
@@ -464,6 +465,212 @@ export default function CoAuthor() {
                     </div>
                     <Progress value={63} className="h-2 bg-slate-100" indicatorClassName="bg-amber-600" />
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* AI Assistant Panel - Enterprise Grade Feature */}
+        {aiAssistantOpen && (
+          <div className="w-80 border rounded-md overflow-hidden bg-white shadow-md flex-shrink-0 mr-6">
+            <div className="sticky top-0">
+              <div className="bg-blue-50 border-b p-3 flex justify-between items-center">
+                <div className="flex items-center">
+                  <Sparkles className="h-4 w-4 mr-2 text-blue-600" />
+                  <h3 className="font-medium text-sm">AI Document Assistant</h3>
+                </div>
+                <div className="flex space-x-1">
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setAiAssistantOpen(false)}>
+                    <X className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="border-b">
+                <div className="flex p-1">
+                  <Button 
+                    variant={aiAssistantMode === 'suggestions' ? 'subtle' : 'ghost'} 
+                    className="flex-1 h-8 text-xs rounded-none" 
+                    onClick={() => setAiAssistantMode('suggestions')}
+                  >
+                    <Lightbulb className="h-3 w-3 mr-1" />
+                    Suggestions
+                  </Button>
+                  <Button 
+                    variant={aiAssistantMode === 'compliance' ? 'subtle' : 'ghost'} 
+                    className="flex-1 h-8 text-xs rounded-none" 
+                    onClick={() => setAiAssistantMode('compliance')}
+                  >
+                    <ClipboardCheck className="h-3 w-3 mr-1" />
+                    Compliance
+                  </Button>
+                  <Button 
+                    variant={aiAssistantMode === 'formatting' ? 'subtle' : 'ghost'} 
+                    className="flex-1 h-8 text-xs rounded-none" 
+                    onClick={() => setAiAssistantMode('formatting')}
+                  >
+                    <ListChecks className="h-3 w-3 mr-1" />
+                    Formatting
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="p-3 max-h-[calc(100vh-14rem)] overflow-y-auto space-y-3">
+                {aiAssistantMode === 'suggestions' && (
+                  <>
+                    <div className="pb-2 border-b mb-2">
+                      <div className="flex items-center mb-2 text-sm font-medium text-slate-700">
+                        <Bot className="h-4 w-4 mr-1.5 text-blue-600" />
+                        <span>Content Suggestions</span>
+                      </div>
+                      <p className="text-xs text-slate-500">The AI can suggest text improvements, missing content, and help you complete sections.</p>
+                    </div>
+                  
+                    {aiSuggestions.filter(s => s.type === 'completion').map(suggestion => (
+                      <div key={suggestion.id} className="bg-blue-50 rounded-md p-3 border border-blue-100">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center">
+                            <MessageSquare className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
+                            <span className="text-xs font-medium">Section {suggestion.section}</span>
+                          </div>
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                              <Check className="h-3.5 w-3.5 text-green-600" />
+                            </Button>
+                            <Button size="sm" variant="ghost" className="h-6 w-6 p-0">
+                              <X className="h-3.5 w-3.5 text-red-600" />
+                            </Button>
+                          </div>
+                        </div>
+                        <p className="text-xs text-slate-700">{suggestion.text}</p>
+                        <div className="flex gap-2 mt-2">
+                          <Button size="sm" className="h-7 text-xs bg-blue-600 hover:bg-blue-700">Insert</Button>
+                          <Button size="sm" variant="outline" className="h-7 text-xs">Modify</Button>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <div className="border border-dashed rounded-md p-3 text-center">
+                      <div className="flex flex-col items-center space-y-2">
+                        <Zap className="h-5 w-5 text-amber-500" />
+                        <p className="text-xs text-slate-500">Ask the AI to help you complete this section or improve specific text.</p>
+                        <Button variant="outline" size="sm" className="text-xs h-7">Generate Suggestions</Button>
+                      </div>
+                    </div>
+                  </>
+                )}
+                
+                {aiAssistantMode === 'compliance' && (
+                  <>
+                    <div className="pb-2 border-b mb-2">
+                      <div className="flex items-center mb-2 text-sm font-medium text-slate-700">
+                        <ClipboardCheck className="h-4 w-4 mr-1.5 text-blue-600" />
+                        <span>Regulatory Compliance</span>
+                      </div>
+                      <p className="text-xs text-slate-500">Checks your document against FDA, EMA and ICH guidelines.</p>
+                    </div>
+                    
+                    {aiSuggestions.filter(s => s.type === 'compliance').map(suggestion => (
+                      <div key={suggestion.id} className="bg-amber-50 rounded-md p-3 border border-amber-100">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center">
+                            <AlertCircle className="h-3.5 w-3.5 mr-1.5 text-amber-600" />
+                            <span className="text-xs font-medium">Section {suggestion.section}</span>
+                          </div>
+                          <Badge className="text-xs bg-amber-100 text-amber-800 hover:bg-amber-100">Compliance</Badge>
+                        </div>
+                        <p className="text-xs text-slate-700">{suggestion.text}</p>
+                        <div className="flex gap-2 mt-2">
+                          <Button size="sm" className="h-7 text-xs bg-amber-600 hover:bg-amber-700">Fix Issue</Button>
+                          <Button size="sm" variant="outline" className="h-7 text-xs">Ignore</Button>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <div className="p-3 bg-green-50 rounded-md border border-green-100">
+                      <div className="flex items-center mb-2">
+                        <CheckCircle className="h-4 w-4 mr-1.5 text-green-600" />
+                        <span className="text-sm font-medium">ICH M4E Compliant</span>
+                      </div>
+                      <p className="text-xs text-slate-700">Your document structure follows ICH M4E guidelines for Clinical Overview format.</p>
+                    </div>
+                    
+                    <Button className="w-full text-xs" variant="outline">
+                      <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                      Run Full Compliance Check
+                    </Button>
+                  </>
+                )}
+                
+                {aiAssistantMode === 'formatting' && (
+                  <>
+                    <div className="pb-2 border-b mb-2">
+                      <div className="flex items-center mb-2 text-sm font-medium text-slate-700">
+                        <ListChecks className="h-4 w-4 mr-1.5 text-blue-600" />
+                        <span>Format Assistance</span>
+                      </div>
+                      <p className="text-xs text-slate-500">Fix tables, improve formatting, and apply consistent styles.</p>
+                    </div>
+                    
+                    {aiSuggestions.filter(s => s.type === 'formatting').map(suggestion => (
+                      <div key={suggestion.id} className="bg-slate-50 rounded-md p-3 border border-slate-200">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex items-center">
+                            <Info className="h-3.5 w-3.5 mr-1.5 text-blue-600" />
+                            <span className="text-xs font-medium">Section {suggestion.section}</span>
+                          </div>
+                          <Badge className="text-xs bg-blue-100 text-blue-800 hover:bg-blue-100">Format</Badge>
+                        </div>
+                        <p className="text-xs text-slate-700">{suggestion.text}</p>
+                        <div className="flex gap-2 mt-2">
+                          <Button size="sm" className="h-7 text-xs">Apply Fix</Button>
+                          <Button size="sm" variant="outline" className="h-7 text-xs">Preview</Button>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <div className="p-3 rounded-md border border-slate-200">
+                      <div className="flex items-center mb-2">
+                        <Settings className="h-4 w-4 mr-1.5 text-slate-600" />
+                        <span className="text-sm font-medium">Format Settings</span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span>Apply ICH formatting</span>
+                          <Badge>Enabled</Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span>Auto-fix tables</span>
+                          <Badge>Enabled</Badge>
+                        </div>
+                        <div className="flex items-center justify-between text-xs">
+                          <span>Standardize headings</span>
+                          <Badge>Enabled</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+              
+              <div className="border-t p-2 bg-slate-50">
+                <div className="flex items-center justify-between mb-2 px-1">
+                  <span className="text-xs text-slate-500">Powered by OpenAI GPT-4o</span>
+                  <Button variant="ghost" size="sm" className="h-6 flex items-center justify-center text-xs">
+                    <Settings className="h-3 w-3 mr-1" />
+                    Settings
+                  </Button>
+                </div>
+                <div className="relative">
+                  <input 
+                    type="text" 
+                    className="w-full h-8 text-xs pl-3 pr-8 rounded-md border" 
+                    placeholder="Ask the AI Assistant..." 
+                  />
+                  <Button className="absolute right-1 top-1 h-6 w-6 p-0" size="icon">
+                    <Send className="h-3 w-3" />
+                  </Button>
                 </div>
               </div>
             </div>
