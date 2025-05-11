@@ -40,7 +40,6 @@ import {
   Link,
   BookOpen,
   ArrowUpRight,
-  /* FileOutput not available in this version of lucide-react */
   Filter,
   CheckSquare,
   FileWarning,
@@ -1340,7 +1339,7 @@ export default function CoAuthor() {
                 size="sm" 
                 className="border-blue-200 text-blue-700"
               >
-                <FileOutput className="h-4 w-4 mr-2" />
+                <Download className="h-4 w-4 mr-2" />
                 Export Report
               </Button>
               <Button 
@@ -1362,7 +1361,7 @@ export default function CoAuthor() {
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center">
-              <FileOutput className="h-5 w-5 mr-2" />
+              <Download className="h-5 w-5 mr-2" />
               Export Document
             </DialogTitle>
             <DialogDescription>
