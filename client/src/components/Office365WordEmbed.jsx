@@ -123,6 +123,7 @@ const Office365WordEmbed = ({
       try {
         setIsLoading(true);
         setError(null);
+        console.log('Loading Microsoft Word document with ID:', documentId);
         
         // Get document from vault
         const docData = await getDocument(documentId);
@@ -130,8 +131,38 @@ const Office365WordEmbed = ({
         // Set document content
         setDocumentContent(docData.content || initialContent);
         
-        // Open document in Word
+        // Open document in Word using Microsoft Office JS API
+        console.log('Opening document in Microsoft Word using Office JS API...');
         const wordDocument = await openDocument(documentId, docData.content || initialContent);
+        console.log('Microsoft Word document opened successfully');
+        
+        // Make sure the Word container is properly displayed
+        if (wordDocument && wordDocument.container) {
+          console.log('Making Word container visible...');
+          wordDocument.container.style.display = 'block';
+          
+          // If the container ref is available, append the Word container to it
+          if (containerRef.current) {
+            console.log('Appending Word container to DOM');
+            // Clear container first to avoid duplicates
+            const existingWrapper = document.getElementById('word-iframe-wrapper');
+            if (existingWrapper) {
+              existingWrapper.remove();
+            }
+            
+            // Append the Word container
+            const wrapper = document.createElement('div');
+            wrapper.id = 'word-iframe-wrapper';
+            wrapper.className = 'w-full h-full';
+            wrapper.appendChild(wordDocument.container);
+            containerRef.current.appendChild(wrapper);
+          } else {
+            console.warn('Container ref not available, cannot append Word container');
+          }
+        } else {
+          console.warn('Word document container not available');
+        }
+        
         setDocument(wordDocument);
         
         // Register collaboration status
@@ -557,30 +588,88 @@ const Office365WordEmbed = ({
       <div className="flex flex-1 overflow-hidden">
         {/* Word Editor */}
         <div className="flex-1 overflow-hidden" ref={containerRef}>
-          <div id="office-container" className="w-full h-full min-h-[600px] bg-white">
-            {isOfficeJSReady ? (
-              <div className="p-8">
-                <p className="text-center text-gray-600">
-                  Microsoft Word is ready. The document should be displayed here through Office JS iframe embedding.
-                </p>
-                <p className="text-center text-gray-500 text-sm mt-4">
-                  In a production environment with proper Microsoft licenses, this area would display the actual Microsoft Word interface.
-                </p>
-                <div className="mt-4 p-4 border rounded bg-gray-50">
-                  <p className="font-semibold">Document Content Preview:</p>
-                  <p className="whitespace-pre-wrap mt-2 border p-2 bg-white rounded max-h-[400px] overflow-auto">
-                    {documentContent || 'No content available.'}
+          {isOfficeJSReady && document ? (
+            <div id="word-editor-container" className="w-full h-full min-h-[600px] border-0">
+              {/* This div will be used to mount the Word iframe */}
+              {document.container && (
+                <div
+                  id="word-iframe-wrapper"
+                  className="w-full h-full"
+                  ref={node => {
+                    if (node && document.container) {
+                      // If the container is not already in the DOM, append it
+                      if (!node.firstChild) {
+                        // Show the container if it was hidden
+                        document.container.style.display = 'block';
+                        node.appendChild(document.container);
+                      }
+                    }
+                  }}
+                />
+              )}
+            </div>
+          ) : (
+            <div id="office-container" className="w-full h-full min-h-[600px] bg-white">
+              {isOfficeJSReady ? (
+                <div className="p-8 text-center">
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+                  <p className="text-center text-gray-600 font-medium">
+                    Loading Microsoft Word 365...
+                  </p>
+                  <p className="text-center text-gray-500 text-sm mt-2">
+                    Preparing document for editing
                   </p>
                 </div>
-              </div>
-            ) : (
-              <div className="p-8">
-                <p className="text-center text-red-600">
-                  Microsoft Word Office JS integration is not ready. Please check your connection and Microsoft license.
-                </p>
-              </div>
-            )}
-          </div>
+              ) : (
+                <div className="p-8">
+                  {isAuthenticating ? (
+                    <div className="text-center">
+                      <p className="text-center text-amber-600 font-medium mb-4">
+                        Microsoft Authentication Required
+                      </p>
+                      <Button 
+                        onClick={() => login()} 
+                        className="bg-blue-600 hover:bg-blue-700"
+                      >
+                        Sign in with Microsoft 365
+                      </Button>
+                      <p className="text-center text-gray-500 text-sm mt-4">
+                        You need to authenticate with your Microsoft 365 account to access Word Online.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <p className="text-center text-red-600 font-medium">
+                        Microsoft Word Office JS integration is not ready
+                      </p>
+                      <p className="text-center text-gray-500 text-sm mt-2">
+                        Please check your connection and Microsoft 365 license.
+                      </p>
+                      <div className="mt-6">
+                        <Button 
+                          onClick={() => window.location.reload()}
+                          variant="outline"
+                        >
+                          Retry Connection
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {/* Preview document content if available */}
+              {documentContent && (
+                <div className="mt-4 p-4 border-t">
+                  <p className="font-semibold mb-2">Document Content Preview:</p>
+                  <p className="whitespace-pre-wrap border p-2 bg-white rounded max-h-[300px] overflow-auto text-sm">
+                    {documentContent.substring(0, 500)}
+                    {documentContent.length > 500 ? '...' : ''}
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
         
         {/* Sidebar */}

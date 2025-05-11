@@ -8,25 +8,34 @@
 // API endpoints
 const MS_OFFICE_AUTH_ENDPOINT = '/api/microsoft-office';
 
-// Microsoft authentication configurations - these should be set from environment variables
+// Microsoft authentication configurations
+const clientId = import.meta.env.VITE_MICROSOFT_CLIENT_ID || 'MICROSOFT_CLIENT_ID';
+const tenantId = import.meta.env.VITE_MICROSOFT_TENANT_ID || 'MICROSOFT_TENANT_ID';
+const scopes = 'https://officeapps.live.com/files.readwrite.all https://graph.microsoft.com/User.Read';
 const redirectUri = window.location.origin + '/auth-callback';
 
 /**
  * Generate Microsoft authentication URL
- * @returns {Promise<string>} Microsoft authentication URL
+ * @returns {string} Microsoft authentication URL
  */
-export async function getMicrosoftAuthUrl() {
+export function getMicrosoftAuthUrl() {
   try {
-    const response = await fetch(`${MS_OFFICE_AUTH_ENDPOINT}/auth-url`);
+    // Use MSAL to construct the auth URL directly on the client
+    // This approach allows us to avoid a server roundtrip for generating the URL
     
-    if (!response.ok) {
-      throw new Error(`Failed to get auth URL: ${response.status} ${response.statusText}`);
-    }
+    const authEndpoint = `https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/authorize`;
+    const params = new URLSearchParams({
+      client_id: clientId,
+      response_type: 'code',
+      redirect_uri: redirectUri,
+      scope: scopes,
+      response_mode: 'query',
+      state: Math.random().toString(36).substring(2, 15),
+    });
     
-    const data = await response.json();
-    return data.authUrl;
+    return `${authEndpoint}?${params.toString()}`;
   } catch (error) {
-    console.error('Error getting Microsoft auth URL:', error);
+    console.error('Error generating Microsoft auth URL:', error);
     throw error;
   }
 }
@@ -155,9 +164,19 @@ export function logout() {
  * Log in with Microsoft
  * Redirects to Microsoft login page
  */
-export async function login() {
+export function login() {
   try {
-    const authUrl = await getMicrosoftAuthUrl();
+    // Generate the auth URL
+    const authUrl = getMicrosoftAuthUrl();
+    
+    // Log important info for debugging
+    console.log('Starting Microsoft login process...');
+    console.log('Using client ID:', clientId);
+    console.log('Using tenant ID:', tenantId);
+    console.log('Redirect URI:', redirectUri);
+    console.log('Auth URL:', authUrl);
+    
+    // Redirect to Microsoft login
     window.location.href = authUrl;
   } catch (error) {
     console.error('Error during Microsoft login:', error);
