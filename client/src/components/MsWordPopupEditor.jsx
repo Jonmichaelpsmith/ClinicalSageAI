@@ -1,236 +1,351 @@
+import React, { useState, useEffect } from 'react';
+import { X, Save, Clipboard, Loader, FileText, Maximize2, ExternalLink } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+
+// Import services
+import * as msWordIntegrationService from '../services/msWordIntegrationService';
+import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
+import * as msCopilotService from '../services/msCopilotService';
+
 /**
  * Microsoft Word Popup Editor Component
  * 
- * This component provides a Microsoft Word Online integration experience
- * within a popup dialog, allowing users to edit documents using the
- * familiar Word interface while maintaining integration with the
- * TrialSage VAULT document management system.
+ * This component provides a popup window with embedded Microsoft Word functionality,
+ * allowing users to edit documents in Word and save them back to the VAULT system.
  */
-
-import React, { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { CheckSquare, X, Save, RotateCw, ExternalLink, AlertCircle } from 'lucide-react';
-
-const MsWordPopupEditor = ({
-  isOpen,
-  onClose,
-  documentId,
-  documentTitle,
-  initialContent,
-  onSave
+const MsWordPopupEditor = ({ 
+  isOpen = false, 
+  onClose, 
+  documentId, 
+  documentTitle = "Untitled Document",
+  initialContent = "",
+  onSave 
 }) => {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [wordSession, setWordSession] = useState(null);
+  const [copilotSession, setCopilotSession] = useState(null);
+  const [documentContent, setDocumentContent] = useState(initialContent);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [activeTab, setActiveTab] = useState("editor");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showFullScreen, setShowFullScreen] = useState(false);
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [wordSessionId, setWordSessionId] = useState(null);
 
-  // Initialize the Word editing session when the dialog opens
+  // Initialize the Word editing session when the popup opens
   useEffect(() => {
-    if (isOpen) {
-      initializeWordSession();
+    if (isOpen && documentId) {
+      initializeWordEditing();
     }
 
     return () => {
-      // Cleanup any Word session resources if needed
+      // Clean up the session when the component unmounts
+      if (wordSession) {
+        cleanupWordSession();
+      }
     };
   }, [isOpen, documentId]);
 
-  // Initialize a Word editing session with the document
-  const initializeWordSession = async () => {
-    setIsLoading(true);
+  const initializeWordEditing = async () => {
     try {
-      // In a real implementation, this would call the MS Graph API
-      // or Office Online Server to create an editing session
+      setLoading(true);
+      setErrorMessage("");
+
+      // Check if Word is available
+      const isWordAvailable = await msWordIntegrationService.checkWordAvailability();
+      
+      if (!isWordAvailable) {
+        throw new Error("Microsoft Word integration is not available. Please check your connection or permissions.");
+      }
+
+      // Initialize Word session
+      const session = await msWordIntegrationService.initializeWordSession(documentId);
+      setWordSession(session);
+
+      // Connect to VAULT
+      const vaultConnection = await msOfficeVaultBridge.connectOfficeToVault(
+        documentId,
+        session.sessionId,
+        'word'
+      );
+
+      // Initialize Copilot
+      const copilot = await msCopilotService.initializeCopilot(documentId);
+      setCopilotSession(copilot);
+
+      // Get some initial suggestions
+      if (initialContent) {
+        const initialSuggestions = await msCopilotService.getWritingSuggestions(
+          initialContent,
+          copilot.sessionId
+        );
+        setSuggestions(initialSuggestions);
+      }
+
+      // Simulate loading delay (in a real implementation, this would be the actual loading time)
       setTimeout(() => {
-        setWordSessionId(`word-session-${documentId}-${Date.now()}`);
-        setIsLoading(false);
-        // Simulate that we now have the document loaded in Word
-        setTimeout(() => {
-          setHasUnsavedChanges(true);
-        }, 5000);
+        setLoading(false);
       }, 1500);
     } catch (error) {
-      console.error("Error initializing Word session:", error);
-      toast({
-        title: "Word Session Error",
-        description: "Failed to initialize Microsoft Word editing session. Please try again.",
-        variant: "destructive",
-      });
+      console.error("Failed to initialize Microsoft Word editing:", error);
+      setErrorMessage(error.message || "Failed to initialize Microsoft Word editing. Please try again.");
+      setLoading(false);
     }
   };
 
-  // Save changes back to the document management system
-  const saveChanges = async () => {
-    setIsSaving(true);
+  const cleanupWordSession = async () => {
     try {
-      // In a real implementation, this would save changes back to the document management system
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (wordSession?.sessionId) {
+        await msWordIntegrationService.endWordSession(wordSession.sessionId);
+      }
       
-      setHasUnsavedChanges(false);
-      toast({
-        title: "Document Saved",
-        description: "Your changes have been saved to the document vault.",
-        variant: "default",
-      });
-
-      if (onSave) {
-        onSave("The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects). No serious adverse events were observed.");
+      if (copilotSession?.sessionId) {
+        await msCopilotService.endCopilotSession(copilotSession.sessionId);
       }
     } catch (error) {
-      console.error("Error saving document:", error);
+      console.error("Error cleaning up Word session:", error);
+    }
+  };
+
+  const handleSaveDocument = async () => {
+    try {
+      setSaving(true);
+      
+      // In a real implementation, this would get the actual content from Word
+      // For demo purposes, we'll just use the mock content
+      
+      // Save content to VAULT
+      await msOfficeVaultBridge.saveOfficeContentToVault(
+        documentId,
+        wordSession?.connectionId || 'mock-connection',
+        documentContent
+      );
+      
+      // Call the onSave callback with the content
+      if (onSave) {
+        onSave(documentContent);
+      }
+      
       toast({
-        title: "Save Error",
-        description: "Failed to save document. Please try again.",
+        title: "Document Saved",
+        description: "Your document has been saved successfully.",
+        variant: "default",
+      });
+      
+      setSaving(false);
+    } catch (error) {
+      console.error("Failed to save document:", error);
+      toast({
+        title: "Save Failed",
+        description: error.message || "Failed to save document. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsSaving(false);
+      setSaving(false);
     }
   };
 
-  // Handle dialog close with confirmation if there are unsaved changes
-  const handleClose = () => {
-    if (hasUnsavedChanges) {
-      if (window.confirm("You have unsaved changes. Are you sure you want to close?")) {
-        onClose();
-      }
-    } else {
-      onClose();
-    }
+  const handleCloseEditor = () => {
+    cleanupWordSession();
+    onClose();
   };
+
+  const applySuggestion = (suggestion) => {
+    // In a real implementation, this would apply the suggestion to the Word document
+    toast({
+      title: "Suggestion Applied",
+      description: "The suggestion has been applied to your document.",
+      variant: "default",
+    });
+  };
+
+  // If the popup is not open, don't render anything
+  if (!isOpen) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose} size="lg">
-      <DialogContent className="sm:max-w-[90vw] sm:max-h-[90vh] h-[80vh] p-0 overflow-hidden flex flex-col">
-        <DialogHeader className="bg-blue-50 border-b p-4 flex-shrink-0">
-          <div className="flex justify-between items-center">
-            <DialogTitle className="flex items-center">
-              <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Microsoft_Office_Word_%282019%E2%80%93present%29.svg"
-                alt="Microsoft Word"
-                className="h-6 w-6 mr-2"
-              />
-              <span>Document</span>
+    <Dialog open={isOpen} onOpenChange={handleCloseEditor} modal={true}>
+      <DialogContent className={`sm:max-w-[90vw] ${showFullScreen ? 'h-[90vh]' : 'sm:max-h-[80vh]'}`}>
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div className="flex items-center">
+            <FileText className="h-5 w-5 mr-2 text-blue-600" />
+            <DialogTitle className="text-lg font-semibold">
+              {documentTitle || "Edit Document in Microsoft Word"}
             </DialogTitle>
-            <div className="flex items-center gap-2">
-              <div className="text-sm text-slate-600">
-                Editing document using Microsoft Word Online. Changes are automatically saved.
-              </div>
-            </div>
+          </div>
+          <div className="flex space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setShowFullScreen(!showFullScreen)}
+              title={showFullScreen ? "Exit Full Screen" : "Full Screen"}
+            >
+              <Maximize2 className="h-4 w-4" />
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleCloseEditor}
+              title="Close"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden relative">
-          {isLoading ? (
-            <div className="absolute inset-0 flex items-center justify-center bg-slate-50">
-              <div className="text-center">
-                <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"></div>
-                <p className="mt-2 text-sm text-slate-600">Loading Microsoft Word Online...</p>
-              </div>
-            </div>
-          ) : (
-            <div className="h-full w-full flex flex-col">
-              {/* Word Online Interface - this would be an iframe or embedding of MS Word in a real implementation */}
-              <div className="bg-white p-2 border-b flex items-center">
-                <div className="flex space-x-4 text-sm text-slate-600">
-                  <span>File</span>
-                  <span>Home</span>
-                  <span>Insert</span>
-                  <span>Design</span>
-                  <span>Layout</span>
-                  <span>References</span>
-                  <span>Review</span>
-                  <span>View</span>
-                  <span>Help</span>
-                </div>
-              </div>
-              
-              <div className="bg-gray-100 p-1 border-b">
-                <div className="flex flex-wrap gap-2">
-                  <button className="p-1 text-xs bg-white border rounded hover:bg-gray-50">
-                    <b>B</b>
-                  </button>
-                  <button className="p-1 text-xs bg-white border rounded hover:bg-gray-50">
-                    <i>I</i>
-                  </button>
-                  <button className="p-1 text-xs bg-white border rounded hover:bg-gray-50">
-                    <u>U</u>
-                  </button>
-                  <div className="h-4 border-r border-gray-300 mx-1"></div>
-                  <button className="p-1 text-xs bg-white border rounded hover:bg-gray-50">
-                    Aa
-                  </button>
-                  <button className="p-1 text-xs bg-white border rounded hover:bg-gray-50">
-                    Styles
-                  </button>
-                  <div className="h-4 border-r border-gray-300 mx-1"></div>
-                  <button className="p-1 text-xs bg-white border rounded hover:bg-gray-50">
-                    Paragraph
-                  </button>
-                </div>
-              </div>
-              
-              <div className="flex-1 p-8 bg-gray-200 overflow-auto">
-                <div className="mx-auto bg-white shadow-sm p-10 min-h-[85%] max-w-[800px]">
-                  <h1 className="text-xl font-bold mb-4">{documentTitle || "Document"}</h1>
-                  <h2 className="text-lg font-bold mb-3">2.5.5 Safety Profile</h2>
-                  <p className="mb-4">
-                    The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. 
-                    Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).
-                  </p>
-                  <p>
-                    No serious adverse events were considered related to the study medication, and the discontinuation rate due to 
-                    adverse events was low (3.2%), comparable to placebo (2.8%).
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        {errorMessage && (
+          <div className="bg-red-50 text-red-800 p-3 rounded-md mb-4">
+            {errorMessage}
+          </div>
+        )}
 
-        <DialogFooter className="p-3 border-t bg-slate-50 flex-shrink-0">
-          <div className="w-full flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {hasUnsavedChanges && (
-                <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
-                  <AlertCircle className="h-3 w-3 mr-1" />
-                  Unsaved Changes
-                </Badge>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value="editor">Microsoft Word Editor</TabsTrigger>
+            <TabsTrigger value="copilot">Copilot Suggestions</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="editor" className="w-full">
+            <div className={`border rounded-md ${showFullScreen ? 'h-[70vh]' : 'h-[50vh]'} relative`}>
+              {loading ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-slate-50">
+                  <Loader className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+                  <p className="text-lg font-medium">Loading Microsoft Word...</p>
+                  <Progress value={65} className="w-64 mt-4" />
+                </div>
+              ) : (
+                <div className="p-4 h-full overflow-auto">
+                  {/* This would be the actual Word iframe in a real implementation */}
+                  <div className="flex flex-col h-full">
+                    <div className="bg-[#2b579a] text-white p-2 flex items-center space-x-2">
+                      <span className="font-semibold">Microsoft Word</span>
+                      <Separator orientation="vertical" className="h-4 bg-white/30" />
+                      <span className="text-sm">Home</span>
+                      <span className="text-sm">Insert</span>
+                      <span className="text-sm">Design</span>
+                      <span className="text-sm">Layout</span>
+                      <span className="text-sm">References</span>
+                      <span className="text-sm">Review</span>
+                      <span className="text-sm">View</span>
+                      <span className="text-sm">Help</span>
+                    </div>
+                    <div className="bg-[#f3f2f1] p-2 flex items-center space-x-2 text-xs">
+                      <span>File</span>
+                      <span>Save</span>
+                      <span>Print</span>
+                      <span>|</span>
+                      <span>Cut</span>
+                      <span>Copy</span>
+                      <span>Paste</span>
+                      <span>|</span>
+                      <span>Format</span>
+                      <span>Styles</span>
+                    </div>
+                    <div className="flex-grow p-4 bg-white border">
+                      <textarea
+                        className="w-full h-full p-2 border-none focus:outline-none resize-none font-serif"
+                        value={documentContent}
+                        onChange={(e) => setDocumentContent(e.target.value)}
+                        placeholder="Document content..."
+                      />
+                    </div>
+                    <div className="bg-[#f3f2f1] p-2 flex items-center justify-between">
+                      <div className="text-xs text-gray-600">
+                        Editing as {wordSession?.user || "John Doe"} | Word Online
+                      </div>
+                      <div className="text-xs text-blue-600">
+                        Saved to VAULT
+                      </div>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleClose}
-                className="h-9"
-              >
-                <X className="h-4 w-4 mr-2" />
-                Close
-              </Button>
-              <Button
-                size="sm"
-                className="h-9"
-                onClick={saveChanges}
-                disabled={isSaving || !hasUnsavedChanges}
-              >
-                {isSaving ? (
-                  <>
-                    <RotateCw className="h-4 w-4 mr-2 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save & Update
-                  </>
-                )}
-              </Button>
+          </TabsContent>
+          
+          <TabsContent value="copilot" className={`${showFullScreen ? 'h-[70vh]' : 'h-[50vh]'} overflow-auto`}>
+            <div className="border rounded-md p-4 h-full">
+              <div className="flex items-center mb-4">
+                <div className="bg-blue-600 text-white rounded-full p-2 mr-2">
+                  <Clipboard className="h-4 w-4" />
+                </div>
+                <h3 className="text-lg font-semibold">Microsoft Copilot Suggestions</h3>
+              </div>
+              
+              {loading ? (
+                <div className="flex flex-col items-center justify-center h-40">
+                  <Loader className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+                  <p>Analyzing document...</p>
+                </div>
+              ) : (
+                <div>
+                  <div className="mb-4 p-3 bg-blue-50 rounded-md">
+                    <p className="text-sm text-blue-800">
+                      Copilot has analyzed your document and found {suggestions.length} suggestions 
+                      to improve clarity, precision, and regulatory compliance.
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {suggestions.map((suggestion, index) => (
+                      <div key={index} className="border rounded-md p-3 hover:bg-gray-50">
+                        <div className="flex justify-between items-start mb-2">
+                          <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                            {suggestion.type}
+                          </span>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => applySuggestion(suggestion)}
+                          >
+                            Apply
+                          </Button>
+                        </div>
+                        <div className="mb-2">
+                          <p className="text-sm text-gray-600 mb-1">Original:</p>
+                          <p className="text-sm bg-red-50 p-2 rounded">{suggestion.original}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm text-gray-600 mb-1">Suggestion:</p>
+                          <p className="text-sm bg-green-50 p-2 rounded">{suggestion.suggestion}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
+          </TabsContent>
+        </Tabs>
+
+        <DialogFooter className="flex justify-between items-center">
+          <div className="flex items-center text-sm text-gray-500">
+            <ExternalLink className="h-4 w-4 mr-1" />
+            <span>Microsoft Word Online</span>
+          </div>
+          <div className="flex space-x-2">
+            <Button variant="outline" onClick={handleCloseEditor}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleSaveDocument} 
+              disabled={loading || saving}
+            >
+              {saving ? (
+                <>
+                  <Loader className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save
+                </>
+              )}
+            </Button>
           </div>
         </DialogFooter>
       </DialogContent>

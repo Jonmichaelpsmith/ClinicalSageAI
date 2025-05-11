@@ -310,7 +310,7 @@ const EnhancedDocumentEditor = ({
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <div className="px-6">
-            <TabsList className="grid grid-cols-3">
+            <TabsList className="grid grid-cols-4">
               <TabsTrigger value="edit" className="flex items-center">
                 <Edit className="h-4 w-4 mr-2" />
                 Edit
@@ -318,6 +318,14 @@ const EnhancedDocumentEditor = ({
               <TabsTrigger value="preview" className="flex items-center">
                 <Eye className="h-4 w-4 mr-2" />
                 Preview
+              </TabsTrigger>
+              <TabsTrigger value="msword" className="flex items-center">
+                <img 
+                  src="https://img.icons8.com/color/48/000000/microsoft-word-2019--v2.png"
+                  alt="Microsoft Word"
+                  className="h-4 w-4 mr-2"
+                />
+                Microsoft Word
               </TabsTrigger>
               <TabsTrigger value="ai" className="flex items-center">
                 <Sparkles className="h-4 w-4 mr-2" />

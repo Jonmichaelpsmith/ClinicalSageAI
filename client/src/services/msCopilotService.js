@@ -1,283 +1,171 @@
 /**
- * Microsoft Copilot Integration Service for TrialSage eCTD Co-Author Module
+ * Microsoft Copilot Service
  * 
- * This service provides integration with Microsoft Copilot features
- * for enhanced document editing capabilities.
- * 
- * Version: 1.0.0 - May 11, 2025
- * Status: ENTERPRISE IMPLEMENTATION
- * 
- * PROTECTED CODE - PROPRIETARY INTELLECTUAL PROPERTY
+ * This service integrates with Microsoft Copilot to provide AI-powered
+ * document assistance, content generation, and document analysis.
  */
-
-// Service configuration
-const config = {
-  apiEndpoint: import.meta.env.VITE_MS_COPILOT_API_ENDPOINT || 'https://api.ms-copilot.com',
-  clientId: import.meta.env.VITE_MS_CLIENT_ID,
-  copilotEnabled: import.meta.env.VITE_MS_COPILOT_ENABLED === 'true'
-};
 
 /**
- * Initialize Copilot features for a document editing session
- * @param {string} sessionId - The document editing session ID
- * @param {Object} options - Copilot configuration options
- * @returns {Promise<Object>} - Copilot initialization result
+ * Initialize Microsoft Copilot for document editing
+ * @param {string} documentId - Document ID to connect with Copilot
+ * @returns {Promise<object>} Copilot session details
  */
-export async function initializeCopilot(sessionId, options = {}) {
+export async function initializeCopilot(documentId) {
   try {
-    console.log(`Initializing Microsoft Copilot for session ${sessionId}...`);
+    // In a real implementation, this would initialize a connection to Microsoft Copilot
     
-    // In a real implementation, this would call the Microsoft Copilot API
-    // For demo purposes, we'll simulate a successful response
-    
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
+    // For demo purposes, simulate a successful initialization
     return {
-      success: true,
-      sessionId,
-      features: {
-        contentGeneration: options.contentGeneration !== false,
-        formatting: options.formatting !== false,
-        citations: options.citations !== false,
-        regulatory: options.regulatory !== false,
-        autoRefinement: options.autoRefinement !== false
-      },
-      aiModels: {
-        primary: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        fallback: 'gpt-4-turbo'
-      },
-      contextLimit: options.contextLimit || 32000,
-      timestamp: new Date().toISOString()
+      sessionId: `copilot-${documentId}-${Date.now()}`,
+      active: true,
+      capabilities: [
+        'contentGeneration',
+        'documentAnalysis',
+        'formatting',
+        'citation',
+        'languagePolishing'
+      ]
     };
   } catch (error) {
-    console.error('Failed to initialize Copilot:', error);
-    throw new Error('Copilot initialization failed: ' + error.message);
+    console.error("Failed to initialize Microsoft Copilot:", error);
+    throw new Error("Could not initialize Microsoft Copilot");
   }
 }
 
 /**
- * Generate document content with Microsoft Copilot
- * @param {string} sessionId - The document editing session ID
- * @param {string} prompt - User prompt or instructions
- * @param {Object} context - Additional context for the generation
- * @returns {Promise<Object>} - Generated content
+ * Generate content with Microsoft Copilot
+ * @param {string} prompt - User prompt for content generation
+ * @param {string} sessionId - Copilot session ID
+ * @param {object} options - Generation options
+ * @returns {Promise<object>} Generated content
  */
-export async function generateContent(sessionId, prompt, context = {}) {
+export async function generateContent(prompt, sessionId, options = {}) {
   try {
-    console.log(`Generating content with Microsoft Copilot for session ${sessionId}...`);
+    // In a real implementation, this would call Microsoft Copilot to generate content
     
-    // In a real implementation, this would call the Microsoft Copilot API
-    // For demo purposes, we'll simulate a successful response
+    // For demo purposes, return predetermined content based on prompt keywords
+    let content = "";
     
-    // Simulate API delay (longer for more complex prompts)
-    const genTime = Math.max(800, Math.min(3000, prompt.length * 5));
-    await new Promise(resolve => setTimeout(resolve, genTime));
-    
-    // Simple content generation based on prompt
-    // In a real implementation, this would use the Microsoft Copilot API
-    let generatedContent;
-    
-    if (prompt.includes('introduction') || prompt.includes('intro')) {
-      generatedContent = `# Introduction\n\nThis document provides a comprehensive overview of the clinical evaluation of [Product Name]. The clinical evaluation was conducted in accordance with regulatory requirements and industry best practices.\n\nThe purpose of this evaluation is to assess the safety and performance of [Product Name] based on available clinical data, including clinical trials, post-market surveillance, and relevant scientific literature.\n\n## Scope\n\nThis evaluation covers all aspects of clinical performance, safety, and benefit-risk assessment for [Product Name] in its intended use.`;
-    } else if (prompt.includes('conclusion')) {
-      generatedContent = `# Conclusion\n\nBased on the comprehensive analysis of clinical data, [Product Name] demonstrates a favorable benefit-risk profile for its intended use. The evaluation of clinical data from multiple sources, including clinical trials, post-market surveillance, and scientific literature, supports the safety and performance claims of the device.\n\nThe clinical evidence is sufficient to demonstrate compliance with regulatory requirements, and ongoing monitoring will continue to assess the long-term safety and performance of [Product Name] in real-world settings.`;
-    } else if (prompt.includes('regulatory') || prompt.includes('compliance')) {
-      generatedContent = `# Regulatory Compliance\n\n[Product Name] has been evaluated in accordance with the following regulatory requirements:\n\n- ISO 14155:2020 Clinical investigation of medical devices for human subjects - Good clinical practice\n- FDA 21 CFR Part 820 Quality System Regulation\n- MEDDEV 2.7/1 Rev. 4 Clinical Evaluation Guidelines\n- MDR 2017/745 Article 61 and Annex XIV\n\nThe clinical evaluation process and documentation comply with these regulatory requirements, providing a comprehensive assessment of safety and performance.`;
+    if (prompt.includes("safety profile")) {
+      content = "The safety profile of the investigational product was evaluated in 6 randomized controlled trials including a total of 1,245 subjects. Adverse events were generally mild to moderate in severity, with the most commonly reported adverse events being headache (12%), nausea (8%), and fatigue (6%). No serious adverse events were deemed related to the study drug by investigators. The discontinuation rate due to adverse events was 4.2%, comparable to placebo (3.8%).";
+    } else if (prompt.includes("efficacy")) {
+      content = "Efficacy was demonstrated across all primary endpoints with a statistically significant improvement compared to placebo (p<0.001). The mean reduction in the primary symptom score was 42% in the treatment group versus 18% in the placebo group at 12 weeks. Subgroup analyses showed consistent efficacy across age groups, gender, and disease severity classifications.";
+    } else if (prompt.includes("methods")) {
+      content = "This phase III, double-blind, randomized, placebo-controlled study was conducted at 52 centers across North America and Europe. Eligible patients were adults aged 18-75 years with confirmed diagnosis according to established criteria. Patients were randomized 2:1 to receive either the investigational product or placebo for 12 weeks. The primary endpoint was change from baseline in symptom severity score at week 12, as measured by the validated assessment scale.";
     } else {
-      generatedContent = `# Generated Content\n\nThis section contains relevant information based on your request. The content is generated using Microsoft Copilot with specialized regulatory knowledge and clinical documentation expertise.\n\nThe content is structured according to industry best practices and formatted to integrate seamlessly with the rest of your document.\n\n## Key Points\n\n- Point 1: Important clinical finding or observation\n- Point 2: Relevant data or evidence supporting claims\n- Point 3: Regulatory considerations or compliance aspects\n- Point 4: Recommendations based on clinical evidence`;
+      content = "The requested content has been generated based on available clinical data. Please review and modify as needed to ensure accuracy and compliance with regulatory requirements. Additional context-specific information may be required to complete this section according to ICH guidelines.";
     }
     
     return {
-      success: true,
-      sessionId,
-      content: generatedContent,
-      metadata: {
-        prompt,
-        model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        contentType: 'markdown',
-        tokensUsed: Math.floor(generatedContent.length / 3),
-        timestamp: new Date().toISOString()
-      }
-    };
-  } catch (error) {
-    console.error('Failed to generate content with Copilot:', error);
-    throw new Error('Copilot content generation failed: ' + error.message);
-  }
-}
-
-/**
- * Check document for regulatory compliance using Microsoft Copilot
- * @param {string} sessionId - The document editing session ID
- * @param {string} content - The document content to check
- * @param {Array<string>} standards - Regulatory standards to check against
- * @returns {Promise<Object>} - Compliance check results
- */
-export async function checkRegulatoryCopilot(sessionId, content, standards = ['ICH', 'FDA', 'EMA']) {
-  try {
-    console.log(`Checking regulatory compliance with Microsoft Copilot for session ${sessionId}...`);
-    
-    // In a real implementation, this would call the Microsoft Copilot API
-    // For demo purposes, we'll simulate a successful response
-    
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Sample compliance issues
-    const complianceIssues = [
-      {
-        id: 'issue-1',
-        severity: 'medium',
-        standard: standards[0] || 'ICH',
-        description: 'Consider adding more detailed information about the study design and methodology.',
-        location: 'Section 2.1',
-        suggestion: 'Add a subsection describing the statistical methods used for data analysis.'
-      },
-      {
-        id: 'issue-2',
-        severity: 'low',
-        standard: standards[1] || 'FDA',
-        description: 'References should be formatted consistently throughout the document.',
-        location: 'Multiple sections',
-        suggestion: 'Use a consistent citation format following AMA or Vancouver style.'
-      }
-    ];
-    
-    // Simulate fewer issues in shorter documents (simpler content)
-    const issues = content.length < 1000 ? complianceIssues.slice(0, 1) : complianceIssues;
-    
-    return {
-      success: true,
-      sessionId,
-      standards,
-      issues,
-      summary: `Found ${issues.length} potential regulatory compliance issues. Overall, the document meets most requirements for ${standards.join(', ')} standards.`,
+      content,
+      quality: 0.92,
+      completionStatus: 'complete',
       timestamp: new Date().toISOString()
     };
   } catch (error) {
-    console.error('Failed to check regulatory compliance with Copilot:', error);
-    throw new Error('Copilot regulatory check failed: ' + error.message);
+    console.error("Failed to generate content with Microsoft Copilot:", error);
+    throw new Error("Could not generate content with Microsoft Copilot");
   }
 }
 
 /**
- * Suggest citations and references using Microsoft Copilot
- * @param {string} sessionId - The document editing session ID
- * @param {string} content - The document content
- * @param {Object} options - Options for citation generation
- * @returns {Promise<Object>} - Suggested citations
+ * Analyze document with Microsoft Copilot
+ * @param {string} documentId - Document ID to analyze
+ * @param {string} sessionId - Copilot session ID
+ * @returns {Promise<object>} Analysis results
  */
-export async function suggestCitations(sessionId, content, options = {}) {
+export async function analyzeDocument(documentId, sessionId) {
   try {
-    console.log(`Generating citation suggestions with Microsoft Copilot for session ${sessionId}...`);
+    // In a real implementation, this would call Microsoft Copilot to analyze the document
     
-    // In a real implementation, this would call the Microsoft Copilot API
-    // For demo purposes, we'll simulate a successful response
-    
-    await new Promise(resolve => setTimeout(resolve, 1200));
-    
-    // Sample citations based on content
-    let citations = [
-      {
-        id: 'citation-1',
-        type: 'journal',
-        title: 'Clinical evaluation of medical devices: principles and practice',
-        authors: 'Smith J, Johnson B, Williams T',
-        journal: 'Journal of Medical Devices',
-        year: '2024',
-        volume: '12',
-        issue: '2',
-        pages: '123-145',
-        doi: '10.1234/jmd.2024.1234'
-      },
-      {
-        id: 'citation-2',
-        type: 'guideline',
-        title: 'Guidance for Industry and FDA Staff: Clinical Investigations of Devices',
-        authors: 'Food and Drug Administration',
-        year: '2023',
-        url: 'https://www.fda.gov/medical-devices/guidance'
-      }
-    ];
-    
-    // Add regulatory citations if content mentions regulatory topics
-    if (content.includes('regulatory') || content.includes('compliance')) {
-      citations.push({
-        id: 'citation-3',
-        type: 'regulation',
-        title: 'Medical Device Regulation (EU) 2017/745',
-        authors: 'European Commission',
-        year: '2017',
-        url: 'https://ec.europa.eu/health/medical-devices'
-      });
-    }
-    
-    // Filter citations by types if specified
-    if (options.types && Array.isArray(options.types)) {
-      citations = citations.filter(citation => options.types.includes(citation.type));
-    }
-    
+    // For demo purposes, return mock analysis
     return {
-      success: true,
-      sessionId,
-      citations,
-      suggestedInsertions: [
-        {
-          location: 'Introduction section',
-          citation: 'citation-1',
-          context: 'when discussing evaluation methodologies'
-        },
-        {
-          location: 'Regulatory section',
-          citation: 'citation-2',
-          context: 'when referencing FDA requirements'
-        }
-      ],
-      timestamp: new Date().toISOString()
+      readability: {
+        score: 54,  // 0-100 scale
+        grade: "College",
+        suggestions: [
+          "Consider simplifying technical language in the Methods section",
+          "Break down complex sentences in paragraphs 3 and 7"
+        ]
+      },
+      clinicalAccuracy: {
+        score: 87,  // 0-100 scale
+        potentialIssues: [
+          "Inconsistent reporting of p-values in Table 4",
+          "Missing confidence intervals for secondary endpoints"
+        ]
+      },
+      regulatoryCompliance: {
+        score: 92,  // 0-100 scale
+        missing: [
+          "Subject disposition diagram",
+          "Complete adverse event categorization by system organ class"
+        ]
+      },
+      formattingConsistency: {
+        score: 76,  // 0-100 scale
+        issues: [
+          "Inconsistent heading levels in sections 3 and 4",
+          "Variable table formatting throughout document"
+        ]
+      }
     };
   } catch (error) {
-    console.error('Failed to suggest citations with Copilot:', error);
-    throw new Error('Copilot citation suggestion failed: ' + error.message);
+    console.error("Failed to analyze document with Microsoft Copilot:", error);
+    throw new Error("Could not analyze document with Microsoft Copilot");
   }
 }
 
 /**
- * Check if Microsoft Copilot is available and properly configured
- * @returns {Promise<boolean>} - True if Copilot is available
+ * Get writing suggestions from Microsoft Copilot
+ * @param {string} text - Text to get suggestions for
+ * @param {string} sessionId - Copilot session ID
+ * @returns {Promise<Array>} Suggestions
  */
-export async function checkCopilotAvailability() {
+export async function getWritingSuggestions(text, sessionId) {
   try {
-    console.log('Checking Microsoft Copilot availability...');
+    // In a real implementation, this would call Microsoft Copilot for writing suggestions
     
-    // Check if Copilot is enabled in environment configuration
-    if (!config.copilotEnabled) {
-      console.warn('Microsoft Copilot is disabled in configuration');
-      return false;
-    }
+    // For demo purposes, return mock suggestions
+    return [
+      {
+        type: "clarity",
+        original: "The drug demonstrated activity.",
+        suggestion: "The drug demonstrated statistically significant efficacy in reducing primary symptoms.",
+        position: { start: 120, end: 148 }
+      },
+      {
+        type: "precision",
+        original: "Many patients improved.",
+        suggestion: "62% of patients (95/154) showed clinical improvement (≥30% reduction in symptom score).",
+        position: { start: 200, end: 220 }
+      },
+      {
+        type: "flow",
+        original: "Additionally, furthermore, also, the safety was good.",
+        suggestion: "Moreover, the treatment demonstrated a favorable safety profile.",
+        position: { start: 300, end: 350 }
+      }
+    ];
+  } catch (error) {
+    console.error("Failed to get writing suggestions from Microsoft Copilot:", error);
+    throw new Error("Could not get writing suggestions from Microsoft Copilot");
+  }
+}
+
+/**
+ * End a Copilot session
+ * @param {string} sessionId - Copilot session ID
+ * @returns {Promise<boolean>} Whether the session was successfully ended
+ */
+export async function endCopilotSession(sessionId) {
+  try {
+    // In a real implementation, this would properly close the Copilot session
     
-    // Check if required configuration is present
-    const requiredConfig = ['apiEndpoint', 'clientId'];
-    const missingConfig = requiredConfig.filter(key => !config[key]);
-    
-    if (missingConfig.length > 0) {
-      console.warn(`Missing Microsoft Copilot configuration: ${missingConfig.join(', ')}`);
-      return false;
-    }
-    
-    // In a real implementation, this would make a test API call
-    // For demo purposes, we'll simulate a successful response
-    
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
+    // For demo purposes, simulate successful session end
     return true;
   } catch (error) {
-    console.error('Failed to check Microsoft Copilot availability:', error);
+    console.error("Failed to end Copilot session:", error);
     return false;
   }
 }
-
-export default {
-  initializeCopilot,
-  generateContent,
-  checkRegulatoryCopilot,
-  suggestCitations,
-  checkCopilotAvailability
-};
