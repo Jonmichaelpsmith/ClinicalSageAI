@@ -43,8 +43,8 @@ function Router() {
       <ProtectedRoute path="/analytics/:submissionId" component={AnalyticsDashboard} />
       <ProtectedRoute path="/cmc" component={CMCPage} />
       <ProtectedRoute path="/coauthor" component={CoAuthor} />
-      <ProtectedRoute path="/CSRAnalyzer" component={CSRAnalyzer} />
-      <ProtectedRoute path="/cer" component={CERV2Page} />
+      <ProtectedRoute path="/csr" component={CSRAnalyzer} />
+      <ProtectedRoute path="/cerv2" component={CERV2Page} />
       <ProtectedRoute path="/cer-projects" component={CerProjectsDashboard} />
       <ProtectedRoute path="/reports" component={ReportsPage} />
       <Route path="/auth" component={AuthPage} />
