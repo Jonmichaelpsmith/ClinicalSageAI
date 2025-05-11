@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 import MsWordPopupEditor from './MsWordPopupEditor';
 import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
 import * as documentIntelligenceHub from '../services/documentIntelligenceHub';
@@ -475,22 +476,67 @@ const EnhancedDocumentEditor = ({
             </div>
 
             <div className="flex justify-between mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  toast({
-                    title: "Microsoft Word",
-                    description: "Opening document in Word Online popup for enhanced editing...",
-                    variant: "default",
-                  });
-                  setMsWordPopupOpen(true);
-                }}
-                className="flex items-center"
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                Open in Word Popup
-              </Button>
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    toast({
+                      title: "Microsoft Word",
+                      description: "Opening document in Word Online popup for enhanced editing...",
+                      variant: "default",
+                    });
+                    setMsWordPopupOpen(true);
+                  }}
+                  className="flex items-center"
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Open in Word Popup
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={async () => {
+                    toast({
+                      title: "Microsoft Copilot",
+                      description: "Getting writing suggestions from Microsoft Copilot...",
+                      variant: "default",
+                    });
+                    
+                    try {
+                      const session = await msOfficeVaultBridge.initializeSession(documentId);
+                      const suggestions = await msOfficeVaultBridge.getWritingSuggestions(content, session.id);
+                      
+                      if (suggestions && suggestions.length > 0) {
+                        toast({
+                          title: "Suggestions Ready",
+                          description: `${suggestions.length} writing suggestions available from Microsoft Copilot.`,
+                          variant: "default",
+                        });
+                        setMsWordPopupOpen(true);
+                      } else {
+                        toast({
+                          title: "No Suggestions",
+                          description: "Microsoft Copilot didn't find any suggestions for this document.",
+                          variant: "default",
+                        });
+                      }
+                    } catch (error) {
+                      console.error("Failed to get Microsoft Copilot suggestions:", error);
+                      toast({
+                        title: "Error",
+                        description: "Could not retrieve suggestions from Microsoft Copilot.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                  className="flex items-center"
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Get Copilot Suggestions
+                </Button>
+              </div>
 
               <Button
                 disabled={!hasUnsavedChanges || isSaving || readOnly}
