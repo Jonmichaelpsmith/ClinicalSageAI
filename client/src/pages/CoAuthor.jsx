@@ -65,6 +65,110 @@ export default function CoAuthor() {
 
   return (
     <div className="flex h-full">
+      {/* Document Tree Navigator - conditionally shown */}
+      {isTreeOpen && (
+        <div className="w-72 border-r border-gray-200 bg-gray-50 overflow-y-auto h-full">
+          <div className="p-4 border-b border-gray-200">
+            <h3 className="font-medium text-gray-900 flex items-center">
+              <LayoutTemplate className="h-4 w-4 mr-2" />
+              Document Navigator
+            </h3>
+          </div>
+          <div className="p-2">
+            <div className="text-sm font-medium mb-2 text-gray-500">Module Navigation</div>
+            
+            {/* Module 1 */}
+            <div className="mb-2">
+              <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer">
+                <ChevronRight className="h-4 w-4 mr-1 text-gray-400" />
+                <span className="text-sm">Module 1: Administrative</span>
+              </div>
+            </div>
+            
+            {/* Module 2 - expanded */}
+            <div className="mb-2">
+              <div className="flex items-center py-1 px-2 rounded bg-blue-50 hover:bg-blue-100 cursor-pointer">
+                <ChevronDown className="h-4 w-4 mr-1 text-blue-500" />
+                <span className="text-sm font-medium">Module 2: CTD Summaries</span>
+              </div>
+              <div className="ml-6 mt-1 space-y-1">
+                <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer">
+                  <FileText className="h-3 w-3 mr-2 text-gray-400" />
+                  <span className="text-xs">2.1 TOC</span>
+                </div>
+                <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer">
+                  <FileText className="h-3 w-3 mr-2 text-gray-400" />
+                  <span className="text-xs">2.2 Introduction</span>
+                </div>
+                <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer">
+                  <FileText className="h-3 w-3 mr-2 text-gray-400" />
+                  <span className="text-xs">2.3 Quality Summary</span>
+                </div>
+                <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer">
+                  <FileText className="h-3 w-3 mr-2 text-gray-400" />
+                  <span className="text-xs">2.4 Non-Clinical Summary</span>
+                </div>
+                <div className="flex items-center py-1 px-2 rounded bg-blue-100 cursor-pointer">
+                  <FileText className="h-3 w-3 mr-2 text-blue-500" />
+                  <span className="text-xs font-medium">2.5 Clinical Overview</span>
+                  <Badge className="ml-1 h-4 bg-green-100 text-green-800 text-[10px]">Active</Badge>
+                </div>
+                <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer">
+                  <FileText className="h-3 w-3 mr-2 text-gray-400" />
+                  <span className="text-xs">2.6 Non-Clinical Summary</span>
+                </div>
+                <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer">
+                  <FileText className="h-3 w-3 mr-2 text-gray-400" />
+                  <span className="text-xs">2.7 Clinical Summary</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Module 3 */}
+            <div className="mb-2">
+              <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer">
+                <ChevronRight className="h-4 w-4 mr-1 text-gray-400" />
+                <span className="text-sm">Module 3: Quality</span>
+              </div>
+            </div>
+            
+            {/* Module 4 */}
+            <div className="mb-2">
+              <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer">
+                <ChevronRight className="h-4 w-4 mr-1 text-gray-400" />
+                <span className="text-sm">Module 4: Non-Clinical</span>
+              </div>
+            </div>
+            
+            {/* Module 5 */}
+            <div className="mb-2">
+              <div className="flex items-center py-1 px-2 rounded hover:bg-gray-100 cursor-pointer">
+                <ChevronRight className="h-4 w-4 mr-1 text-gray-400" />
+                <span className="text-sm">Module 5: Clinical</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-4 border-t border-gray-200">
+            <div className="flex flex-col space-y-2">
+              <div className="text-sm font-medium mb-1 text-gray-500">Document Status</div>
+              <div className="flex items-center justify-between text-xs px-3 py-1 bg-white rounded border">
+                <span>Validation Status</span>
+                <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Passed</Badge>
+              </div>
+              <div className="flex items-center justify-between text-xs px-3 py-1 bg-white rounded border">
+                <span>Review Status</span>
+                <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-100">In Review</Badge>
+              </div>
+              <div className="flex items-center justify-between text-xs px-3 py-1 bg-white rounded border">
+                <span>Approval Status</span>
+                <Badge className="bg-gray-100 text-gray-800 hover:bg-gray-100">Pending</Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Main content area */}
       <div className="flex flex-col flex-grow">
         <header className="mb-6 pt-4 px-6">
