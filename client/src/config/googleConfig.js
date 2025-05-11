@@ -43,7 +43,10 @@ export const SAMPLE_DOCUMENTS = {
 export const API_ENDPOINTS = {
   CREATE_DOC: '/api/google-docs/documents',
   EXPORT_DOC: '/api/google-docs/documents/:documentId/export',
-  SAVE_TO_VAULT: '/api/google-docs/save-to-vault'
+  SAVE_TO_VAULT: '/api/google-docs/save-to-vault',
+  FROM_TEMPLATE: '/api/google-docs/documents/template',
+  USER_PROFILE: '/api/google-docs/user',
+  GET_DOC_LIST: '/api/google-docs/documents'
 };
 
 // Templates categorized by module

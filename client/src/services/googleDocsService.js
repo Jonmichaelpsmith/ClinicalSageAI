@@ -43,8 +43,19 @@ export const createNewDoc = async (templateId, title, metadata = {}) => {
   try {
     console.log(`Creating new Google Doc from template ${templateId} with title: ${title}`);
     
+    // Get authentication token
+    const accessToken = googleAuthService.getAccessToken();
+    if (!accessToken) {
+      throw new Error("Authentication required. Please sign in with Google.");
+    }
+    
+    // Use the template endpoint if a template is provided, otherwise use the regular create endpoint
+    const endpoint = templateId ? 
+      `${API_ENDPOINTS.FROM_TEMPLATE}?access_token=${accessToken}` : 
+      `${API_ENDPOINTS.CREATE_DOC}?access_token=${accessToken}`;
+    
     // Call the backend API to create a new document
-    const response = await fetch(API_ENDPOINTS.CREATE_DOC, {
+    const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -54,7 +65,8 @@ export const createNewDoc = async (templateId, title, metadata = {}) => {
         templateId,
         content: metadata.initialContent || '',
         organizationId: metadata.organizationId,
-        folderId: metadata.folderId
+        folderId: metadata.folderId,
+        metadata: metadata  // Pass full metadata for regulatory compliance
       }),
     });
     
