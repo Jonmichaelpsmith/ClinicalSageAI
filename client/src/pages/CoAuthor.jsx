@@ -19,18 +19,51 @@ import {
   Download,
   History,
   Share2,
-  Database
+  Database,
+  BarChart,
+  AlertCircle,
+  Clock
 } from 'lucide-react';
 
 export default function CoAuthor() {
   // Component state
   const [isTreeOpen, setIsTreeOpen] = useState(false);
   
-  // Mock data for modules and documents
+  // Mock data for modules and documents with enhanced details
   const moduleProgress = [
-    { id: 1, name: 'Module 1', description: 'Administrative', percent: 80 },
-    { id: 2, name: 'Quality', description: 'Quality', percent: 60 },
-    { id: 3, name: 'Nonclinical', description: 'Production and General', percent: 40 }
+    { 
+      id: 1, 
+      name: 'Module 1', 
+      description: 'Administrative', 
+      percent: 80,
+      totalDocs: 12,
+      completeDocs: 10,
+      inProgressDocs: 2,
+      notStartedDocs: 0,
+      status: 'On Track'
+    },
+    { 
+      id: 2, 
+      name: 'Quality', 
+      description: 'Quality', 
+      percent: 60,
+      totalDocs: 18,
+      completeDocs: 11,
+      inProgressDocs: 5,
+      notStartedDocs: 2,
+      status: 'In Progress'
+    },
+    { 
+      id: 3, 
+      name: 'Nonclinical', 
+      description: 'Production and General', 
+      percent: 35,
+      totalDocs: 10,
+      completeDocs: 3,
+      inProgressDocs: 4,
+      notStartedDocs: 3,
+      status: 'Needs Attention'
+    }
   ];
   
   const recentDocuments = [
