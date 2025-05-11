@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, BarChart2, Shield, Beaker, Book, FileCheck, Search } from 'lucide-react';
+import { FileText, BarChart2, Shield, Beaker, Book, FileCheck, Search, Dices, FlaskConical, Microscope } from 'lucide-react';
 
 import StabilityDataVisualizer from '@/components/cmc/StabilityDataVisualizer';
 import ManufacturingProcessPanel from '@/components/cmc/ManufacturingProcessPanel';
@@ -10,9 +10,31 @@ import SpecificationsTable from '@/components/cmc/SpecificationsTable';
 import BatchAnalysisPanel from '@/components/cmc/BatchAnalysisPanel';
 import ControlStrategyPanel from '@/components/cmc/ControlStrategyPanel';
 import QualityRiskAssessment from '@/components/cmc/QualityRiskAssessment';
+import MethodValidationSimulator from '@/components/cmc/MethodValidationSimulator';
+import FormulationDecisionTree from '@/components/cmc/FormulationDecisionTree';
+import ICHComplianceChecker from '@/components/cmc/ICHComplianceChecker';
 
 export default function CMCModule() {
   const [activeTab, setActiveTab] = useState('overview');
+  const [showQuickMenu, setShowQuickMenu] = useState(false);
+
+  const quickFeatures = [
+    {
+      id: 'validation',
+      name: 'Method Validation',
+      icon: <Beaker className="h-4 w-4" />,
+    },
+    {
+      id: 'formulation',
+      name: 'Formulation Design',
+      icon: <FlaskConical className="h-4 w-4" />,
+    },
+    {
+      id: 'compliance',
+      name: 'ICH Compliance',
+      icon: <FileCheck className="h-4 w-4" />,
+    },
+  ];
 
   return (
     <div className="container mx-auto py-6">
@@ -47,8 +69,11 @@ export default function CMCModule() {
           <TabsTrigger value="manufacturing">Manufacturing</TabsTrigger>
           <TabsTrigger value="stability">Stability</TabsTrigger>
           <TabsTrigger value="reference-standards">Reference Standards</TabsTrigger>
+          <TabsTrigger value="validation">Method Validation</TabsTrigger>
+          <TabsTrigger value="formulation">Formulation</TabsTrigger>
+          <TabsTrigger value="compliance">ICH Compliance</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="overview" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
@@ -107,7 +132,7 @@ export default function CMCModule() {
 
           <StabilityDataVisualizer />
         </TabsContent>
-        
+
         <TabsContent value="drug-substance" className="space-y-4">
           <Card>
             <CardHeader>
@@ -122,7 +147,7 @@ export default function CMCModule() {
                     [Chemical Structure Visualization]
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <h3 className="text-sm font-medium mb-2">Physicochemical Properties</h3>
@@ -153,7 +178,7 @@ export default function CMCModule() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium mb-2">Solid State Properties</h3>
                     <div className="space-y-2">
@@ -180,13 +205,13 @@ export default function CMCModule() {
                     </div>
                   </div>
                 </div>
-                
+
                 <SpecificationsTable />
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="drug-product" className="space-y-4">
           <Card>
             <CardHeader>
@@ -259,7 +284,7 @@ export default function CMCModule() {
                     </tbody>
                   </table>
                 </div>
-                
+
                 <div className="space-y-2">
                   <h3 className="text-sm font-medium">Excipient Compatibility</h3>
                   <p className="text-sm text-muted-foreground">
@@ -268,7 +293,7 @@ export default function CMCModule() {
                     interactions were observed as confirmed by appearance, assay, and related substances testing.
                   </p>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <h3 className="text-sm font-medium mb-2">Pharmaceutical Development</h3>
@@ -281,14 +306,14 @@ export default function CMCModule() {
                           physical and chemical stability data.
                         </p>
                       </div>
-                      
+
                       <div className="border rounded-md p-2">
                         <span className="text-xs font-medium">Overages</span>
                         <p className="text-xs text-muted-foreground mt-1">
                           No overages were included in the drug product formulation.
                         </p>
                       </div>
-                      
+
                       <div className="border rounded-md p-2">
                         <span className="text-xs font-medium">Dissolution Profile</span>
                         <p className="text-xs text-muted-foreground mt-1">
@@ -298,7 +323,7 @@ export default function CMCModule() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div>
                     <h3 className="text-sm font-medium mb-2">Container Closure System</h3>
                     <div className="space-y-2">
@@ -308,7 +333,7 @@ export default function CMCModule() {
                           High-density polyethylene (HDPE) bottle with child-resistant polypropylene closure and induction seal.
                         </p>
                       </div>
-                      
+
                       <div className="border rounded-md p-2">
                         <span className="text-xs font-medium">Compatibility</span>
                         <p className="text-xs text-muted-foreground mt-1">
@@ -316,7 +341,7 @@ export default function CMCModule() {
                           components under accelerated and long-term stability conditions.
                         </p>
                       </div>
-                      
+
                       <div className="border rounded-md p-2">
                         <span className="text-xs font-medium">Light Protection</span>
                         <p className="text-xs text-muted-foreground mt-1">
@@ -327,13 +352,13 @@ export default function CMCModule() {
                     </div>
                   </div>
                 </div>
-                
+
                 <SpecificationsTable />
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="manufacturing" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <ManufacturingProcessPanel />
@@ -341,7 +366,7 @@ export default function CMCModule() {
           </div>
           <BatchAnalysisPanel />
         </TabsContent>
-        
+
         <TabsContent value="stability" className="space-y-4">
           <Card>
             <CardHeader>
@@ -392,14 +417,14 @@ export default function CMCModule() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="mt-4">
                 <StabilityDataVisualizer fullSize={true} />
               </div>
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="reference-standards" className="space-y-4">
           <Card>
             <CardHeader>
@@ -458,7 +483,7 @@ export default function CMCModule() {
                     </tbody>
                   </table>
                 </div>
-                
+
                 <div className="space-y-2">
                   <h3 className="text-sm font-medium">Characterization of Standards</h3>
                   <p className="text-sm text-muted-foreground">
@@ -474,7 +499,7 @@ export default function CMCModule() {
                     <li>X-ray powder diffraction (for solids)</li>
                   </ul>
                 </div>
-                
+
                 <div className="space-y-2">
                   <h3 className="text-sm font-medium">Qualification of Secondary Standards</h3>
                   <p className="text-sm text-muted-foreground">
@@ -490,6 +515,57 @@ export default function CMCModule() {
                   </ul>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="validation">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center">
+                <Microscope className="h-6 w-6 mr-2" />
+                <CardTitle>Method Validation Simulator</CardTitle>
+              </div>
+              <CardDescription>
+                Simulate and visualize analytical method validation parameters
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <MethodValidationSimulator />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="formulation">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center">
+                <FlaskConical className="h-6 w-6 mr-2" />
+                <CardTitle>Formulation Decision Tree</CardTitle>
+              </div>
+              <CardDescription>
+                Generate optimal formulation recommendations based on API properties
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FormulationDecisionTree />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="compliance">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center">
+                <FileCheck className="h-6 w-6 mr-2" />
+                <CardTitle>ICH Compliance Checker</CardTitle>
+              </div>
+              <CardDescription>
+                Analyze your CMC documentation for compliance with ICH guidelines
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ICHComplianceChecker />
             </CardContent>
           </Card>
         </TabsContent>
