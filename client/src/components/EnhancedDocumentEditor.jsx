@@ -68,6 +68,33 @@ const EnhancedDocumentEditor = ({
   
   return (
     <div className="border rounded-md">
+      {/* MS Word Popup Editor */}
+      <Suspense fallback={null}>
+        {showPopupEditor && (
+          <MsWordPopupEditor
+            isOpen={showPopupEditor}
+            onClose={() => setShowPopupEditor(false)}
+            documentId={documentId}
+            sectionId={sectionId}
+            initialContent={initialContent}
+            documentTitle={documentTitle}
+            sectionTitle={sectionTitle}
+            onSave={(updatedContent) => {
+              if (onSave) {
+                onSave(updatedContent);
+              }
+              setShowPopupEditor(false);
+              
+              toast({
+                title: "Document updated",
+                description: "Changes saved successfully from Microsoft Word.",
+                variant: "default",
+              });
+            }}
+          />
+        )}
+      </Suspense>
+      
       {/* Editor Controls Header */}
       <div className="border-b p-3 bg-slate-50 flex justify-between items-center">
         <div>
@@ -76,6 +103,18 @@ const EnhancedDocumentEditor = ({
         </div>
         
         <div className="flex items-center space-x-2">
+          {/* MS Word Popup Button */}
+          <Button
+            variant="default"
+            size="sm"
+            className="h-8 text-xs bg-blue-600 hover:bg-blue-700 flex items-center mr-2"
+            onClick={() => setShowPopupEditor(true)}
+            disabled={isLocked}
+          >
+            <Maximize2 className="h-3.5 w-3.5 mr-1.5" />
+            Open in MS Word
+          </Button>
+          
           <Tabs 
             defaultValue={editorMode} 
             className="w-auto" 
