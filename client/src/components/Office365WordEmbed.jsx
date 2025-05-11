@@ -125,56 +125,58 @@ const Office365WordEmbed = ({
         setError(null);
         console.log('Loading Microsoft Word document with ID:', documentId);
         
-        // Get document from vault
-        const docData = await getDocument(documentId);
-        
-        // Set document content
-        setDocumentContent(docData.content || initialContent);
-        
-        // Open document in Word using Microsoft Office JS API
-        console.log('Opening document in Microsoft Word using Office JS API...');
-        const wordDocument = await openDocument(documentId, docData.content || initialContent);
-        console.log('Microsoft Word document opened successfully');
-        
-        // Make sure the Word container is properly displayed
-        if (wordDocument && wordDocument.container) {
-          console.log('Making Word container visible...');
-          wordDocument.container.style.display = 'block';
-          
-          // If the container ref is available, append the Word container to it
-          if (containerRef.current) {
-            console.log('Appending Word container to DOM');
-            // Clear container first to avoid duplicates
-            const existingWrapper = document.getElementById('word-iframe-wrapper');
-            if (existingWrapper) {
-              existingWrapper.remove();
-            }
-            
-            // Append the Word container
-            const wrapper = document.createElement('div');
-            wrapper.id = 'word-iframe-wrapper';
-            wrapper.className = 'w-full h-full';
-            wrapper.appendChild(wordDocument.container);
-            containerRef.current.appendChild(wrapper);
-          } else {
-            console.warn('Container ref not available, cannot append Word container');
-          }
-        } else {
-          console.warn('Word document container not available');
+        // Get document from vault or use initial content if available
+        let documentContent;
+        try {
+          const docData = await getDocument(documentId);
+          documentContent = docData.content || initialContent;
+          console.log('Document retrieved from vault successfully');
+        } catch (vaultError) {
+          console.warn('Could not retrieve document from vault, using initial content', vaultError);
+          documentContent = initialContent;
         }
         
+        // Set document content in state
+        setDocumentContent(documentContent);
+        
+        // Open document in Word using Microsoft Office JS API with improved error handling
+        console.log('Opening document in Microsoft Word using Office JS API...');
+        const wordDocument = await openDocument(documentId, documentContent);
+        
+        if (!wordDocument) {
+          throw new Error('Failed to initialize Microsoft Word document');
+        }
+        
+        console.log('Microsoft Word document opened successfully');
+        
+        // If the containerRef is available, we'll handle mounting the Word container 
+        // in the render function using a ref callback to ensure proper display
+        if (!wordDocument.container) {
+          console.warn('Word document container not available from Office JS API');
+          throw new Error('Microsoft Word container not available');
+        }
+        
+        // Set the document in state to make it available for rendering
         setDocument(wordDocument);
         
         // Register collaboration status
-        await registerCollaborationStatus(documentId, 'editing', 'current-user');
+        try {
+          await registerCollaborationStatus(documentId, 'editing', 'current-user');
+        } catch (collaborationError) {
+          console.warn('Failed to register collaboration status', collaborationError);
+          // Non-critical, can continue
+        }
         
-        // Load version history
-        loadVersionHistory();
+        // Load version history in the background
+        loadVersionHistory().catch(versionError => {
+          console.warn('Failed to load version history', versionError);
+          // Non-critical, can continue
+        });
         
         setIsLoading(false);
       } catch (err) {
         console.error('Error loading document:', err);
-        setError('Failed to load document');
+        setError(`Failed to load document: ${err.message || 'Unknown error'}`);
         setIsLoading(false);
       }
     };
@@ -599,9 +601,17 @@ const Office365WordEmbed = ({
                     if (node && document.container) {
                       // If the container is not already in the DOM, append it
                       if (!node.firstChild) {
+                        // Clear anything that might already be in the node
+                        while (node.firstChild) {
+                          node.removeChild(node.firstChild);
+                        }
+                        
                         // Show the container if it was hidden
                         document.container.style.display = 'block';
+                        
+                        // Append Word container
                         node.appendChild(document.container);
+                        console.log('Successfully mounted Microsoft Word iframe');
                       }
                     }
                   }}
@@ -628,7 +638,7 @@ const Office365WordEmbed = ({
                         Microsoft Authentication Required
                       </p>
                       <Button 
-                        onClick={() => login()} 
+                        onClick={handleLogin} 
                         className="bg-blue-600 hover:bg-blue-700"
                       >
                         Sign in with Microsoft 365
