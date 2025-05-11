@@ -2083,9 +2083,17 @@ export default function CoAuthor() {
             
             {/* Google Docs iframe */}
             <iframe 
+              ref={googleDocsIframeRef}
               src={`https://docs.google.com/document/d/${selectedDocument.googleDocId || 'd/e/2PACX-sample-doc-id'}/edit?embedded=true`}
               className="w-full h-full border-none"
-              onLoad={() => setGoogleDocsLoading(false)}
+              onLoad={(e) => {
+                setGoogleDocsLoading(false);
+                setIframeLoaded(true);
+              }}
+              onError={() => {
+                setGoogleDocsLoading(false);
+                setIsDocLoadError(true);
+              }}
             ></iframe>
           </div>
           
@@ -2886,6 +2894,7 @@ export default function CoAuthor() {
                           
                           {/* The actual iframe - with improved loading and error handling */}
                           <iframe
+                            ref={googleDocsIframeRef}
                             key={iframeKey}
                             title="Google Docs Editor"
                             src={`https://docs.google.com/document/d/${
