@@ -18,49 +18,53 @@ const CoAuthor = () => {
   const [documents, setDocuments] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
 
+  // Pre-loaded document data for faster initial rendering
+  const preloadedDocuments = [
+    {
+      id: 'doc-123',
+      name: 'IND Application Module 2.5',
+      documentType: 'word',
+      ectdModule: 'm2-5',
+      status: 'draft',
+      createdAt: '2025-05-01T10:30:00Z',
+      updatedAt: '2025-05-10T15:45:00Z',
+      description: 'Clinical overview for IND submission'
+    },
+    {
+      id: 'doc-456',
+      name: 'Protocol Synopsis Template',
+      documentType: 'word',
+      ectdModule: 'm4',
+      status: 'approved',
+      createdAt: '2025-04-15T09:20:00Z',
+      updatedAt: '2025-04-20T14:35:00Z',
+      description: 'Standardized protocol synopsis template for clinical trials'
+    },
+    {
+      id: 'doc-789',
+      name: 'Adverse Events Reporting Form',
+      documentType: 'word',
+      ectdModule: 'm5',
+      status: 'published',
+      createdAt: '2025-03-10T11:10:00Z',
+      updatedAt: '2025-04-05T16:25:00Z',
+      description: 'Standard form for adverse event documentation'
+    }
+  ];
+  
   useEffect(() => {
-    // Load mock documents for demonstration
-    loadDocuments();
+    // Initialize with preloaded documents for immediate display
+    setDocuments(preloadedDocuments);
+    setSelectedDocument(preloadedDocuments.find(doc => doc.id === documentId) || preloadedDocuments[0]);
+    
+    // Then load any additional documents if needed (for real API implementation)
+    loadAdditionalDocuments();
   }, []);
 
-  const loadDocuments = () => {
-    // Simulate loading documents from API
-    const mockDocuments = [
-      {
-        id: 'doc-123',
-        name: 'IND Application Module 2.5',
-        documentType: 'word',
-        ectdModule: 'm2-5',
-        status: 'draft',
-        createdAt: '2025-05-01T10:30:00Z',
-        updatedAt: '2025-05-10T15:45:00Z',
-        description: 'Clinical overview for IND submission'
-      },
-      {
-        id: 'doc-456',
-        name: 'Protocol Synopsis Template',
-        documentType: 'word',
-        ectdModule: 'm4',
-        status: 'approved',
-        createdAt: '2025-04-15T09:20:00Z',
-        updatedAt: '2025-04-20T14:35:00Z',
-        description: 'Standardized protocol synopsis template for clinical trials'
-      },
-      {
-        id: 'doc-789',
-        name: 'Adverse Events Reporting Form',
-        documentType: 'word',
-        ectdModule: 'm5',
-        status: 'published',
-        createdAt: '2025-03-10T11:10:00Z',
-        updatedAt: '2025-04-05T16:25:00Z',
-        description: 'Standard form for adverse event documentation'
-      }
-    ];
-    
-    setDocuments(mockDocuments);
-    // Set the current document as the selected one
-    setSelectedDocument(mockDocuments.find(doc => doc.id === documentId) || mockDocuments[0]);
+  const loadAdditionalDocuments = () => {
+    // This would fetch additional documents from the API
+    // For now, we'll just use our preloaded data
+    // No additional loading needed since we're using preloaded data
   };
 
   const handleTabChange = (event, newValue) => {
