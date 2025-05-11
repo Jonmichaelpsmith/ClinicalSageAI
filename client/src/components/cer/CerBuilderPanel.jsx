@@ -38,34 +38,34 @@ import CerPreviewPanel from './CerPreviewPanel';
 export default function CerBuilderPanel({ title, faers, comparators, sections, onTitleChange, onSectionsChange, onFaersChange, onComparatorsChange }) {
   const { toast } = useToast();
   const { exportToPDF, exportToWord } = useExportFAERS();
-  
+
   const [selectedSectionType, setSelectedSectionType] = useState('benefit-risk');
   const [sectionContext, setSectionContext] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedSection, setGeneratedSection] = useState(null);
   const [cerSections, setCerSections] = useState(sections || []);
   const [cerTitle, setCerTitle] = useState(title || 'Clinical Evaluation Report'); 
-  
+
   // Quality Gating State
   const [isCheckingQuality, setIsCheckingQuality] = useState(false);
   const [qualityStatus, setQualityStatus] = useState(null);
   const [isQualityOverridden, setIsQualityOverridden] = useState(false);
-  
+
   // Sync local state with props
   useEffect(() => {
     setCerSections(sections || []);
   }, [sections]);
-  
+
   useEffect(() => {
     setCerTitle(title || 'Clinical Evaluation Report');
   }, [title]);
-  
+
   // Reset quality state when section type changes
   useEffect(() => {
     setQualityStatus(null);
     setIsQualityOverridden(false);
   }, [selectedSectionType]);
-  
+
   // Section type options
   const sectionTypes = [
     { id: 'benefit-risk', label: 'Benefit-Risk Analysis' },
@@ -78,7 +78,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
     { id: 'pms-data', label: 'Post-Market Surveillance Data' },
     { id: 'conclusion', label: 'Conclusion' },
   ];
-  
+
   // Generate section using AI with CtQ factor gating
   const generateSection = async () => {
     if (!sectionContext) {
@@ -89,15 +89,15 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       });
       return;
     }
-    
+
     // First check if quality requirements are satisfied
     setIsCheckingQuality(true);
-    
+
     try {
       // Check CtQ factors for this section type
       const qualityCheck = await checkSectionCtqFactors(selectedSectionType);
       setQualityStatus(qualityCheck);
-      
+
       // If cannot proceed due to high-risk factors, show error and abort
       if (!qualityCheck.canProceed && !isQualityOverridden) {
         toast({
@@ -108,15 +108,15 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
         setIsCheckingQuality(false);
         return;
       }
-      
+
       // Proceed with section generation
       setIsGenerating(true);
-      
+
       // If medium-risk factors are not satisfied but user is proceeding, log warning
       if (qualityCheck.mediumRiskBlockers > 0) {
         console.warn('Proceeding with section generation despite medium-risk quality factors not being satisfied');
       }
-      
+
       const response = await fetch('/api/cer/generate-section', {
         method: 'POST',
         headers: {
@@ -128,20 +128,20 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
           context: sectionContext,
         }),
       });
-      
+
       if (!response.ok) {
         throw new Error(`Error generating section: ${response.statusText}`);
       }
-      
+
       const data = await response.json();
-      
+
       // If response includes a section property, use that
       if (data.section) {
         setGeneratedSection(data.section);
       } else {
         setGeneratedSection(data);
       }
-      
+
       toast({
         title: 'Section generated',
         description: `${getSelectedSectionLabel()} section successfully generated.`,
@@ -158,15 +158,15 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       setIsCheckingQuality(false);
     }
   };
-  
+
   // Add the generated section to the report
   const addToReport = () => {
     if (!generatedSection) return;
-    
+
     // Check if we need to handle additional metadata from AI generation
     const content = generatedSection.content;
     const model = generatedSection.model || 'gpt-4o';
-    
+
     // Determine quality status indicators for metadata
     const qualityMetadata = qualityStatus ? {
       qualityRequirementsMet: qualityStatus.canProceed || isQualityOverridden,
@@ -188,7 +188,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
       lowRiskFactors: false,
       ctqFactors: []
     };
-    
+
     const newSection = {
       id: `section-${Date.now()}`,
       type: selectedSectionType,
@@ -204,7 +204,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
         ...qualityMetadata // Include quality metadata
       }
     };
-    
+
     // Add to beginning if it's a device description or clinical background
     // otherwise add to the end
     let updatedSections;
@@ -213,14 +213,14 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
     } else {
       updatedSections = [...cerSections, newSection];
     }
-    
+
     setCerSections(updatedSections);
     onSectionsChange(updatedSections);
-    
+
     // Show toast with quality status if applicable
     let toastVariant = 'default';
     let toastDescription = `${newSection.title} added to report${model ? ` (generated with ${model})` : ''}.`;
-    
+
     if (qualityStatus) {
       if (isQualityOverridden) {
         toastVariant = 'warning';
@@ -233,45 +233,45 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
         toastDescription += ' All quality requirements satisfied.';
       }
     }
-    
+
     toast({
       title: 'Section added',
       description: toastDescription,
       variant: toastVariant
     });
-    
+
     // Clear generated section, context, and quality status for a fresh start
     setGeneratedSection(null);
     setSectionContext('');
     setQualityStatus(null);
     setIsQualityOverridden(false);
   };
-  
+
   // Get the human-readable label for the selected section type
   const getSelectedSectionLabel = () => {
     const section = sectionTypes.find(s => s.id === selectedSectionType);
     return section ? section.label : selectedSectionType;
   };
-  
+
   // Handle title change
   const handleTitleChange = (e) => {
     const newTitle = e.target.value;
     setCerTitle(newTitle);
     onTitleChange(newTitle);
   };
-  
+
   // Remove a section from the report
   const removeSection = (sectionId) => {
     const updatedSections = cerSections.filter(section => section.id !== sectionId);
     setCerSections(updatedSections);
     onSectionsChange(updatedSections);
-    
+
     toast({
       title: 'Section removed',
       description: 'The section has been removed from your report.',
     });
   };
-  
+
   return (
     <div className="space-y-4">
       {/* Section Generator Panel */}
@@ -286,7 +286,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                   AI-Powered
                 </Badge>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="sectionType" className="text-sm font-medium text-[#323130]">Section Type</Label>
@@ -313,7 +313,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="context" className="text-sm font-medium text-[#323130]">Context Information</Label>
                   <Textarea 
@@ -328,7 +328,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                     Include specifics about your device or product for best results.
                   </p>
                 </div>
-                
+
                 {/* Quality Status Display */}
                 {qualityStatus && (
                   <Alert 
@@ -349,7 +349,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                     </AlertTitle>
                     <AlertDescription className="text-xs mt-1">
                       {qualityStatus.message}
-                      
+
                       {/* Show override option for high-risk blockers */}
                       {qualityStatus.highRiskBlockers > 0 && (
                         <div className="mt-2">
@@ -366,7 +366,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                     </AlertDescription>
                   </Alert>
                 )}
-                
+
                 {/* Check Quality button or Generate Section button */}
                 <div className="flex justify-end space-x-2">
                   {sectionContext && !qualityStatus && (
@@ -404,7 +404,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                       )}
                     </Button>
                   )}
-                  
+
                   <Button 
                     onClick={generateSection} 
                     disabled={isGenerating || !sectionContext || 
@@ -434,7 +434,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                 </div>
               </div>
             </div>
-            
+
             {/* Generated Section Display */}
             {generatedSection && (
               <div className="bg-white border border-[#E1DFDD] rounded mt-4">
@@ -489,7 +489,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
             )}
           </div>
         </div>
-        
+
         {/* Right column - Report Sections */}
         <div className="space-y-4">
           <div className="bg-white p-4 border border-[#E1DFDD] rounded">
@@ -499,7 +499,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                 {cerSections.length} section{cerSections.length !== 1 ? 's' : ''}
               </Badge>
             </div>
-            
+
             <div className="space-y-2">
               <div className="space-y-2">
                 <Label htmlFor="report-title" className="text-sm font-medium text-[#323130]">Report Title</Label>
@@ -510,7 +510,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                   className="h-9 border-[#E1DFDD] focus:border-[#0F6CBD] focus:ring-1 focus:ring-[#0F6CBD]"
                 />
               </div>
-              
+
               {cerSections.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-6 bg-[#FAF9F8] rounded border border-[#E1DFDD] text-center">
                   <FileText className="h-8 w-8 text-[#A19F9D] mb-2" />
@@ -535,7 +535,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                           });
                         }}
                       />
-                    
+
                       <div className="flex justify-between items-start">
                         <CerTooltipWrapper 
                           tooltipContent={
@@ -545,7 +545,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                               {section.metadata?.generatedBy && (
                                 <p className="text-xs opacity-80 mt-1">Generated by: {section.metadata.generatedBy}</p>
                               )}
-                              
+
                               {/* Display quality metadata */}
                               {section.metadata?.qualityOverridden && (
                                 <p className="text-xs text-amber-600 mt-1 font-semibold">
@@ -568,7 +568,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                           <div>
                             <div className="flex items-center space-x-1">
                               <span className="text-sm font-medium text-[#323130]">{section.title}</span>
-                              
+
                               {/* Quality indicators */}
                               {section.metadata?.qualityOverridden && (
                                 <Badge variant="outline" className="ml-1 bg-amber-50 text-amber-700 text-xs border-amber-300 px-1.5 py-0">
@@ -591,7 +591,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                             </p>
                           </div>
                         </CerTooltipWrapper>
-                    
+
                         <Button
                           variant="ghost"
                           size="icon"
@@ -606,7 +606,7 @@ export default function CerBuilderPanel({ title, faers, comparators, sections, o
                 </div>
               )}
             </div>
-            
+
             {/* Export button */}
             {cerSections.length > 0 && (
               <div className="mt-4 pt-4 border-t border-[#E1DFDD]">
