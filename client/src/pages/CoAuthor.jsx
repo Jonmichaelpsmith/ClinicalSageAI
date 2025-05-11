@@ -102,6 +102,7 @@ export default function CoAuthor() {
   const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
   const [isGoogleAuthenticated, setIsGoogleAuthenticated] = useState(false);
   const [googleUserInfo, setGoogleUserInfo] = useState(null);
+  const [authLoading, setAuthLoading] = useState(false);
   const [editorType, setEditorType] = useState('google'); // Changed default to 'google'
   // AI Assistant state
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
@@ -917,6 +918,7 @@ export default function CoAuthor() {
                     size="sm" 
                     variant="outline" 
                     className="border-blue-200 text-blue-700"
+                    disabled={authLoading}
                     onClick={async () => {
                       if (selectedDocument) {
                         toast({
@@ -1014,8 +1016,17 @@ export default function CoAuthor() {
                       }
                     }}
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Edit in Google Docs
+                    {authLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Authenticating...
+                      </>
+                    ) : (
+                      <>
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Edit in Google Docs
+                      </>
+                    )}
                   </Button>
                   <Button size="sm" variant="outline" className="border-blue-200">
                     <Upload className="h-4 w-4 mr-2" />
@@ -1500,11 +1511,62 @@ export default function CoAuthor() {
             </DialogDescription>
           </DialogHeader>
           
-          <Suspense fallback={<div className="py-20 text-center">Loading Google Docs...</div>}>
-            <GoogleDocsEmbed 
-              documentId={selectedDocument?.id === 1 ? "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4"}
-              documentName={selectedDocument?.title || "Module 2.5 Clinical Overview"}
-            />
+          <Suspense fallback={
+            <div className="py-20 flex flex-col items-center justify-center">
+              <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
+              <p>Loading Google Docs...</p>
+              <p className="text-xs text-gray-500 mt-2">This may take a few moments</p>
+            </div>
+          }>
+            {!isGoogleAuthenticated ? (
+              <div className="py-16 flex flex-col items-center justify-center">
+                <div className="bg-blue-50 rounded-lg p-6 max-w-md text-center mb-4">
+                  <Lock className="h-12 w-12 mx-auto mb-4 text-blue-600" />
+                  <h3 className="text-lg font-semibold mb-2">Google Authentication Required</h3>
+                  <p className="text-gray-600 mb-4">
+                    To edit documents with Google Docs, you need to sign in with your Google account.
+                  </p>
+                  <Button 
+                    onClick={async () => {
+                      try {
+                        setAuthLoading(true);
+                        const user = await googleAuthService.signInWithGoogle();
+                        setIsGoogleAuthenticated(true);
+                        setGoogleUserInfo(user);
+                        setAuthLoading(false);
+                      } catch (error) {
+                        console.error("Error signing in with Google:", error);
+                        setAuthLoading(false);
+                        toast({
+                          title: "Authentication Error",
+                          description: error.message || "Failed to sign in with Google. Please try again.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    disabled={authLoading}
+                    className="bg-blue-600 hover:bg-blue-700"
+                  >
+                    {authLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Authenticating...
+                      </>
+                    ) : (
+                      <>
+                        <GoogleIcon className="h-4 w-4 mr-2" />
+                        Sign in with Google
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <GoogleDocsEmbed 
+                documentId={selectedDocument?.id === 1 ? "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4"}
+                documentName={selectedDocument?.title || "Module 2.5 Clinical Overview"}
+              />
+            )}
           </Suspense>
           
           <DialogFooter className="mt-4">
