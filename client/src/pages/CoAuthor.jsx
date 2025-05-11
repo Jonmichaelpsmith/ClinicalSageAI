@@ -940,13 +940,21 @@ export default function CoAuthor() {
                     className="border-blue-200 text-blue-700"
                     disabled={authLoading}
                     onClick={async () => {
-                      if (selectedDocument) {
+                      if (!selectedDocument) {
                         toast({
-                          title: "Opening Google Docs",
-                          description: "Preparing document for editing in Google Docs...",
-                          variant: "default",
+                          title: "Select a Document",
+                          description: "Please select a document to edit first.",
+                          variant: "destructive",
                         });
-                        console.log("Creating Google Docs editing session for VAULT document " + selectedDocument.id + "...");
+                        return;
+                      }
+                      
+                      toast({
+                        title: "Opening Google Docs",
+                        description: "Preparing document for editing in Google Docs...",
+                        variant: "default",
+                      });
+                      console.log("Creating Google Docs editing session for VAULT document " + selectedDocument.id + "...");
                         
                         // Check if user is authenticated with Google
                         if (!isGoogleAuthenticated) {
@@ -1027,12 +1035,6 @@ export default function CoAuthor() {
                             });
                           }, 700);
                         }
-                      } else {
-                        toast({
-                          title: "Select a Document",
-                          description: "Please select a document to edit first.",
-                          variant: "destructive",
-                        });
                       }
                     }}
                   >
