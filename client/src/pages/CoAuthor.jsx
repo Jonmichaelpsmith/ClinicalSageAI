@@ -920,7 +920,7 @@ export default function CoAuthor() {
       
       {/* Document Validation Dialog */}
       <Dialog open={showValidationDialog} onOpenChange={setShowValidationDialog}>
-        <DialogContent className="sm:max-w-[800px] max-h-[80vh] flex flex-col">
+        <DialogContent className="sm:max-w-[800px] max-h-[80vh] flex flex-col overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center">
               <FileCheck className="h-5 w-5 mr-2" />
