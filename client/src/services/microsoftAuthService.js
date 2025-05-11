@@ -1,26 +1,19 @@
 /**
- * Microsoft Authentication Service
+ * DEPRECATED - Microsoft Authentication Service
  * 
- * This service provides integration with Microsoft authentication system,
- * enabling login, token management, and session handling for Microsoft 365
- * for the eCTD Co-Author module.
+ * This service is no longer being used as we have moved away from Microsoft solutions.
+ * Keeping a mock version to avoid breaking existing code that might reference it.
  */
 
-// Microsoft Authentication Configuration
+// Empty configuration
 const MS_AUTH_CONFIG = {
-  clientId: process.env.MICROSOFT_CLIENT_ID || '',
-  tenantId: process.env.MICROSOFT_TENANT_ID || '',
-  redirectUri: window.location.origin + '/auth/microsoft/callback',
-  scopes: [
-    'User.Read',
-    'Files.ReadWrite',
-    'Files.ReadWrite.All',
-    'Sites.ReadWrite.All',
-    'Office.Desktop'
-  ]
+  clientId: '',
+  tenantId: '',
+  redirectUri: '',
+  scopes: []
 };
 
-// Token Storage Keys
+// Mock Storage Keys
 const TOKEN_STORAGE_KEYS = {
   accessToken: 'ms_access_token',
   refreshToken: 'ms_refresh_token',
@@ -29,33 +22,13 @@ const TOKEN_STORAGE_KEYS = {
 };
 
 /**
- * Initialize the Microsoft authentication service
+ * Initialize the Microsoft authentication service (MOCK)
  * 
- * @returns {Promise<boolean>} - True if initialization was successful
+ * @returns {Promise<boolean>} - Always returns false since we no longer use Microsoft auth
  */
 export async function initializeAuth() {
-  try {
-    // Check if we have a valid token
-    if (isTokenValid()) {
-      return true;
-    }
-    
-    // Check if we're in a callback scenario
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    
-    if (code) {
-      // Process the code and get tokens
-      const result = await processAuthCode(code);
-      return result;
-    }
-    
-    // Not authenticated and not in callback flow
-    return false;
-  } catch (error) {
-    console.error('Failed to initialize Microsoft authentication:', error);
-    return false;
-  }
+  console.warn('Microsoft authentication is no longer supported');
+  return false;
 }
 
 /**
