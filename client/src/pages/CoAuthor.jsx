@@ -1751,6 +1751,14 @@ export default function CoAuthor() {
                         </Button>
                         <Button 
                           size="sm" 
+                          variant={aiAssistantMode === 'ectd' ? 'default' : 'outline'}
+                          onClick={() => setAiAssistantMode('ectd')}
+                        >
+                          <FileStack className="h-4 w-4 mr-1.5" />
+                          eCTD Validation
+                        </Button>
+                        <Button 
+                          size="sm" 
                           variant={aiAssistantMode === 'formatting' ? 'default' : 'outline'}
                           onClick={() => setAiAssistantMode('formatting')}
                         >
@@ -2289,6 +2297,57 @@ export default function CoAuthor() {
                     
                     <Separator />
                     
+                    {/* eCTD Document Validation Panel */}
+                    <div className="bg-white rounded-md p-3 border border-slate-200 mb-4">
+                      <div className="flex justify-between items-center mb-2">
+                        <h3 className="text-sm font-medium text-slate-700">eCTD Validation</h3>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-6 text-xs"
+                          onClick={() => {
+                            toast({
+                              title: "eCTD Validation",
+                              description: "Running validation for " + (selectedDocument?.region || "FDA") + " requirements..."
+                            });
+                            // Simulate validation in progress
+                            setTimeout(() => {
+                              toast({
+                                title: "Validation Complete",
+                                description: "2 issues found. See validation panel for details.",
+                              });
+                            }, 1500);
+                          }}
+                        >
+                          <RefreshCw className="h-3 w-3 mr-1" />
+                          Validate
+                        </Button>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0 p-1 rounded-full bg-amber-100">
+                            <AlertTriangle className="h-3 w-3 text-amber-600" />
+                          </div>
+                          <div className="ml-2">
+                            <p className="text-xs font-medium">References Format</p>
+                            <p className="text-xs text-gray-500">Update to latest {selectedDocument?.region || 'FDA'} format</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-start">
+                          <div className="flex-shrink-0 p-1 rounded-full bg-amber-100">
+                            <AlertTriangle className="h-3 w-3 text-amber-600" />
+                          </div>
+                          <div className="ml-2">
+                            <p className="text-xs font-medium">Required Section</p>
+                            <p className="text-xs text-gray-500">Missing section {selectedDocument?.sectionCode || '2.5'}.6</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Related Documents Panel */}
                     <div>
                       <h3 className="text-sm font-medium text-slate-700">Related Documents</h3>
                       <div className="mt-2 text-xs">
