@@ -22,7 +22,16 @@ import {
   Database,
   BarChart,
   AlertCircle,
-  Clock
+  Clock,
+  ClockRewind,
+  GitCompareArrows,
+  CheckSquare,
+  Shield,
+  FileCheck,
+  Link,
+  User,
+  FileLock2,
+  GitMerge
 } from 'lucide-react';
 
 export default function CoAuthor() {
@@ -451,41 +460,259 @@ export default function CoAuthor() {
           </CardContent>
         </Card>
         
-        {/* Module Progress Card */}
-        <Card className="border-blue-200">
+        {/* Module Progress Card - Enhanced Enterprise Version */}
+        <Card className="border-blue-200 shadow-md">
           <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-white">
-            <CardTitle className="flex items-center text-lg">
-              <BarChart className="h-5 w-5 mr-2 text-blue-600" />
-              Module Progress
-            </CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center text-lg">
+                <BarChart className="h-5 w-5 mr-2 text-blue-600" />
+                Module Progress & Status
+              </CardTitle>
+              <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                IND-23645
+              </Badge>
+            </div>
             <CardDescription>
-              Monitor completion status across all CTD modules
+              Real-time completion and validation status across CTD modules
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              <div className="space-y-1">
-                <div className="flex justify-between items-center">
-                  <div className="text-sm font-medium text-gray-700">Module 1: Administrative</div>
-                  <div className="text-sm text-gray-500">80%</div>
+            <div className="space-y-4">
+              {/* Module progress tracking */}
+              <div className="border rounded-lg border-blue-100 overflow-hidden">
+                <div className="bg-blue-50 px-3 py-2 border-b border-blue-100 flex justify-between items-center">
+                  <div className="text-sm font-medium text-blue-800">Module Completion</div>
+                  <div className="text-xs text-blue-600">FDA Submission Ready</div>
                 </div>
-                <Progress value={80} className="h-2" />
+                
+                <div className="p-3 space-y-3">
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm font-medium text-gray-700 flex items-center">
+                        <CheckCircle className="h-3 w-3 mr-1.5 text-green-500" />
+                        <span>Module 1: Administrative</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="text-sm text-gray-500 mr-2">80%</div>
+                        <Badge className="bg-green-100 text-green-700 text-xs">Regional</Badge>
+                      </div>
+                    </div>
+                    <Progress value={80} className="h-2 bg-blue-100" />
+                    <div className="text-xs text-gray-500 flex justify-between">
+                      <span>23 of 28 sections complete</span>
+                      <span className="text-blue-600">View Details</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm font-medium text-gray-700 flex items-center">
+                        <AlertCircle className="h-3 w-3 mr-1.5 text-amber-500" />
+                        <span>Module 2: Summaries</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="text-sm text-gray-500 mr-2">62%</div>
+                        <Badge className="bg-amber-100 text-amber-700 text-xs">In Progress</Badge>
+                      </div>
+                    </div>
+                    <Progress value={62} className="h-2 bg-blue-100" />
+                    <div className="text-xs text-gray-500 flex justify-between">
+                      <span>5 of 8 sections complete</span>
+                      <span className="text-blue-600">View Details</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm font-medium text-gray-700 flex items-center">
+                        <AlertCircle className="h-3 w-3 mr-1.5 text-amber-500" />
+                        <span>Module 3: Quality</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="text-sm text-gray-500 mr-2">35%</div>
+                        <Badge className="bg-amber-100 text-amber-700 text-xs">In Progress</Badge>
+                      </div>
+                    </div>
+                    <Progress value={35} className="h-2 bg-blue-100" />
+                    <div className="text-xs text-gray-500 flex justify-between">
+                      <span>12 of 34 sections complete</span>
+                      <span className="text-blue-600">View Details</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm font-medium text-gray-700 flex items-center">
+                        <AlertCircle className="h-3 w-3 mr-1.5 text-red-500" />
+                        <span>Module 4: Nonclinical</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="text-sm text-gray-500 mr-2">15%</div>
+                        <Badge className="bg-red-100 text-red-700 text-xs">Attention</Badge>
+                      </div>
+                    </div>
+                    <Progress value={15} className="h-2 bg-blue-100" />
+                    <div className="text-xs text-gray-500 flex justify-between">
+                      <span>3 of 20 sections complete</span>
+                      <span className="text-blue-600">View Details</span>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm font-medium text-gray-700 flex items-center">
+                        <AlertCircle className="h-3 w-3 mr-1.5 text-amber-500" />
+                        <span>Module 5: Clinical</span>
+                      </div>
+                      <div className="flex items-center">
+                        <div className="text-sm text-gray-500 mr-2">42%</div>
+                        <Badge className="bg-amber-100 text-amber-700 text-xs">In Progress</Badge>
+                      </div>
+                    </div>
+                    <Progress value={42} className="h-2 bg-blue-100" />
+                    <div className="text-xs text-gray-500 flex justify-between">
+                      <span>8 of 19 sections complete</span>
+                      <span className="text-blue-600">View Details</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               
-              <div className="space-y-1">
-                <div className="flex justify-between items-center">
-                  <div className="text-sm font-medium text-gray-700">Module 2: Quality</div>
-                  <div className="text-sm text-gray-500">60%</div>
+              {/* Export actions */}
+              <div className="flex justify-between items-center">
+                <Button size="sm" variant="outline" className="border-blue-200 text-blue-700">
+                  <BarChart className="h-3.5 w-3.5 mr-1.5" />
+                  <span>Detailed Report</span>
+                </Button>
+                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                  <span>eCTD Export</span>
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Document Version Control Card - Enterprise Vault Integration */}
+        <Card className="border-red-200 shadow-md">
+          <CardHeader className="pb-2 bg-gradient-to-r from-red-50 to-white">
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center text-lg">
+                <History className="h-5 w-5 mr-2 text-red-600" />
+                Vault Document Control
+              </CardTitle>
+              <Badge className="bg-red-100 text-red-800 border-red-200">
+                21 CFR Part 11
+              </Badge>
+            </div>
+            <CardDescription>
+              Enterprise-grade document versioning and approval workflows
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {/* Active document */}
+              <div className="border rounded-lg overflow-hidden border-red-200">
+                <div className="bg-red-50 border-b border-red-200 px-3 py-2 flex justify-between items-center">
+                  <div className="font-medium flex items-center">
+                    <FileLock2 className="h-4 w-4 mr-2 text-red-600" />
+                    <span>Active Documents</span>
+                  </div>
+                  <div className="text-xs text-red-600 flex items-center">
+                    <Shield className="h-3 w-3 mr-1" />
+                    <span>Versioned Repository</span>
+                  </div>
                 </div>
-                <Progress value={60} className="h-2" />
+                
+                <div className="p-3 bg-white">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center">
+                      <div className="font-medium">Module 2.5 Clinical Overview</div>
+                      <Badge variant="outline" className="ml-2 bg-red-50 border-red-200 text-red-700">v3.2</Badge>
+                    </div>
+                    <Badge className="bg-amber-100 text-amber-700 border-amber-200">In Review</Badge>
+                  </div>
+                  
+                  <div className="text-sm text-gray-500 flex items-center">
+                    <User className="h-3 w-3 mr-1" />
+                    <span>Last edited by Jane Smith, 2d ago</span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 mt-2 mb-3 text-xs text-gray-600">
+                    <div className="flex items-center">
+                      <Clock className="h-3 w-3 mr-1 text-red-500" />
+                      <span>Modified: May 9, 2025</span>
+                    </div>
+                    <div className="flex items-center">
+                      <FileCheck className="h-3 w-3 mr-1 text-green-500" />
+                      <span>Validated: Yes</span>
+                    </div>
+                    <div className="flex items-center">
+                      <FileText className="h-3 w-3 mr-1 text-blue-500" />
+                      <span>Format: DOCX</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Link className="h-3 w-3 mr-1 text-purple-500" />
+                      <span>Links: 4 cross-references</span>
+                    </div>
+                  </div>
+                  
+                  <div className="flex space-x-2">
+                    <Button size="sm" variant="outline" className="h-7 border-red-200 text-red-700">
+                      <ClockRewind className="h-3 w-3 mr-1" />
+                      <span>Version History</span>
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7 border-red-200 text-red-700">
+                      <GitCompareArrows className="h-3 w-3 mr-1" />
+                      <span>Compare Versions</span>
+                    </Button>
+                    <Button size="sm" variant="outline" className="h-7 border-red-200 text-red-700">
+                      <CheckSquare className="h-3 w-3 mr-1" />
+                      <span>Approval Workflow</span>
+                    </Button>
+                  </div>
+                </div>
               </div>
               
-              <div className="space-y-1">
-                <div className="flex justify-between items-center">
-                  <div className="text-sm font-medium text-gray-700">Module 3: Non-Clinical</div>
-                  <div className="text-sm text-gray-500">35%</div>
+              {/* Document audit trail */}
+              <div className="border rounded-lg border-red-200 overflow-hidden">
+                <div className="bg-red-50 px-3 py-2 border-b border-red-200 flex justify-between items-center">
+                  <div className="font-medium text-sm">Document Audit Trail</div>
+                  <Button variant="ghost" size="sm" className="h-6 text-xs p-0 px-2 text-red-600">
+                    <span>View Full Log</span>
+                    <ChevronRight className="h-3 w-3 ml-1" />
+                  </Button>
                 </div>
-                <Progress value={35} className="h-2" />
+                
+                <div className="p-0 text-sm">
+                  <div className="flex items-center p-2 border-b border-gray-100 hover:bg-red-50">
+                    <div className="w-6 flex-shrink-0">
+                      <Edit className="h-3 w-3 text-amber-500" />
+                    </div>
+                    <div className="flex-grow">
+                      <span className="text-gray-700">Jane Smith edited Module 2.5</span>
+                      <span className="text-xs text-gray-500 ml-2">May 9, 2025 14:32</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-2 border-b border-gray-100 hover:bg-red-50">
+                    <div className="w-6 flex-shrink-0">
+                      <CheckSquare className="h-3 w-3 text-green-500" />
+                    </div>
+                    <div className="flex-grow">
+                      <span className="text-gray-700">John Doe approved v3.1</span>
+                      <span className="text-xs text-gray-500 ml-2">May 8, 2025 09:15</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center p-2 hover:bg-red-50">
+                    <div className="w-6 flex-shrink-0">
+                      <GitMerge className="h-3 w-3 text-blue-500" />
+                    </div>
+                    <div className="flex-grow">
+                      <span className="text-gray-700">System generated v3.0</span>
+                      <span className="text-xs text-gray-500 ml-2">May 7, 2025 16:48</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
