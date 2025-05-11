@@ -234,8 +234,8 @@ export default function CoAuthor() {
           </CardContent>
         </Card>
 
-        {/* Template Library Card - Enhanced */}
-        <Card className="border-yellow-200">
+        {/* Template Library Card - Enhanced with Enterprise UI */}
+        <Card className="border-yellow-200 shadow-sm">
           <CardHeader className="pb-2 bg-gradient-to-r from-yellow-50 to-white">
             <CardTitle className="flex items-center text-lg">
               <LayoutTemplate className="h-5 w-5 mr-2 text-yellow-600" />
@@ -246,48 +246,97 @@ export default function CoAuthor() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="border rounded-md p-2 bg-yellow-50 mb-3">
-              <div className="flex items-center mb-2">
-                <FileText className="h-4 w-4 text-yellow-600 mr-1.5" />
-                <span className="text-sm font-semibold text-yellow-800">Available Regions</span>
+            <div className="border border-yellow-200 rounded-md p-3 bg-gradient-to-r from-yellow-50 to-yellow-25 mb-3">
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-yellow-600 mr-1.5">
+                    <rect width="20" height="14" x="2" y="5" rx="2" />
+                    <line x1="2" x2="22" y1="10" y2="10" />
+                  </svg>
+                  <span className="text-sm font-medium text-yellow-800">Available Regulatory Regions</span>
+                </div>
+                <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-yellow-700 rounded-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                    <path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5" />
+                    <path d="M8.5 8.5v.01" />
+                    <path d="M16 15.5v.01" />
+                    <path d="M12 12v.01" />
+                  </svg>
+                </Button>
               </div>
-              <div className="grid grid-cols-3 gap-1">
-                <Badge variant="outline" className="bg-white">FDA (US)</Badge>
-                <Badge variant="outline" className="bg-white">EMA (EU)</Badge>
-                <Badge variant="outline" className="bg-white">PMDA (JP)</Badge>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="flex flex-col items-center bg-white p-2 rounded-md border border-yellow-100 hover:shadow-sm transition-shadow">
+                  <Badge variant="outline" className="bg-white mb-1 text-yellow-700">FDA (US)</Badge>
+                  <div className="text-xs text-yellow-600 font-medium">24 templates</div>
+                </div>
+                <div className="flex flex-col items-center bg-white p-2 rounded-md border border-yellow-100 hover:shadow-sm transition-shadow">
+                  <Badge variant="outline" className="bg-white mb-1 text-yellow-700">EMA (EU)</Badge>
+                  <div className="text-xs text-yellow-600 font-medium">18 templates</div>
+                </div>
+                <div className="flex flex-col items-center bg-white p-2 rounded-md border border-yellow-100 hover:shadow-sm transition-shadow">
+                  <Badge variant="outline" className="bg-white mb-1 text-yellow-700">PMDA (JP)</Badge>
+                  <div className="text-xs text-yellow-600 font-medium">15 templates</div>
+                </div>
               </div>
             </div>
             
-            <div className="mb-3 space-y-2">
-              <div className="border border-yellow-200 rounded-md p-2 hover:bg-yellow-50 cursor-pointer transition-colors">
+            <div className="mb-3 space-y-2.5">
+              <div className="border border-yellow-200 rounded-md p-2.5 hover:bg-yellow-50 cursor-pointer transition-colors group">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <FileText className="h-4 w-4 mr-2 text-yellow-600" />
-                    <span className="font-medium text-sm">Module 1 Templates</span>
+                    <div className="bg-yellow-100 rounded-md h-8 w-8 flex items-center justify-center mr-2.5 text-yellow-700 group-hover:bg-yellow-200 transition-colors">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="font-medium text-sm text-yellow-900">Module 1 Templates</span>
+                      <div className="text-xs text-yellow-600">Standard administrative documents</div>
+                    </div>
                   </div>
-                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">FDA</Badge>
+                  <div className="flex items-center">
+                    <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200 mr-1.5">FDA</Badge>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <p className="text-xs text-yellow-700 mt-1">Standard administrative documents</p>
               </div>
-              <div className="border border-yellow-200 rounded-md p-2 hover:bg-yellow-50 cursor-pointer transition-colors">
+              <div className="border border-yellow-200 rounded-md p-2.5 hover:bg-yellow-50 cursor-pointer transition-colors group">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <FileText className="h-4 w-4 mr-2 text-yellow-600" />
-                    <span className="font-medium text-sm">Module 2 Templates</span>
+                    <div className="bg-yellow-100 rounded-md h-8 w-8 flex items-center justify-center mr-2.5 text-yellow-700 group-hover:bg-yellow-200 transition-colors">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="font-medium text-sm text-yellow-900">Module 2 Templates</span>
+                      <div className="text-xs text-yellow-600">Overview and summary templates</div>
+                    </div>
                   </div>
-                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">ICH</Badge>
+                  <div className="flex items-center">
+                    <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200 mr-1.5">ICH</Badge>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <p className="text-xs text-yellow-700 mt-1">Overview and summary templates</p>
               </div>
-              <div className="border border-yellow-200 rounded-md p-2 hover:bg-yellow-50 cursor-pointer transition-colors">
+              <div className="border border-yellow-200 rounded-md p-2.5 hover:bg-yellow-50 cursor-pointer transition-colors group">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <FileText className="h-4 w-4 mr-2 text-yellow-600" />
-                    <span className="font-medium text-sm">Regional Templates</span>
+                    <div className="bg-yellow-100 rounded-md h-8 w-8 flex items-center justify-center mr-2.5 text-yellow-700 group-hover:bg-yellow-200 transition-colors">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <span className="font-medium text-sm text-yellow-900">Regional Templates</span>
+                      <div className="text-xs text-yellow-600">Region-specific templates</div>
+                    </div>
                   </div>
-                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">EMA</Badge>
+                  <div className="flex items-center">
+                    <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200 mr-1.5">EMA</Badge>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-yellow-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
-                <p className="text-xs text-yellow-700 mt-1">Region-specific templates</p>
               </div>
             </div>
             
@@ -295,9 +344,13 @@ export default function CoAuthor() {
               <LayoutTemplate className="h-4 w-4 mr-2" />
               Browse All Templates
             </Button>
-            <div className="flex justify-center mt-2">
-              <span className="text-xs text-gray-500">
-                57 templates available across all modules
+            <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+              <span>57 templates available</span>
+              <span className="flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 mr-1 text-yellow-500">
+                  <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+                </svg>
+                Updated May 10, 2025
               </span>
             </div>
           </CardContent>
