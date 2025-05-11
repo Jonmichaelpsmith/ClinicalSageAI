@@ -142,7 +142,15 @@ const AiPoweredWordEditor = ({
     if (documentUrl && wordContainerRef.current && !wordFrameLoaded) {
       loadWordOnline();
     }
-  }, [documentUrl, wordContainerRef.current]);
+    
+    // Cleanup function to safely remove the iframe
+    return () => {
+      if (wordContainerRef.current) {
+        // Use a safer approach to clear the container
+        wordContainerRef.current.innerHTML = '';
+      }
+    };
+  }, [documentUrl]);
   
   /**
    * Load Word Online in an iframe
@@ -150,22 +158,33 @@ const AiPoweredWordEditor = ({
   const loadWordOnline = () => {
     if (!documentUrl || !wordContainerRef.current) return;
     
-    // Clear existing content
-    wordContainerRef.current.innerHTML = '';
-    
-    // Create iframe for Word Online
-    const iframe = document.createElement('iframe');
-    iframe.src = documentUrl;
-    iframe.style.width = '100%';
-    iframe.style.height = '600px';
-    iframe.style.border = 'none';
-    iframe.onload = () => {
-      setWordFrameLoaded(true);
-      console.log('Word Online frame loaded');
-    };
-    
-    // Add iframe to container
-    wordContainerRef.current.appendChild(iframe);
+    try {
+      // Clear existing content safely
+      while (wordContainerRef.current.firstChild) {
+        wordContainerRef.current.removeChild(wordContainerRef.current.firstChild);
+      }
+      
+      // Create iframe for Word Online
+      const iframe = document.createElement('iframe');
+      iframe.src = documentUrl;
+      iframe.style.width = '100%';
+      iframe.style.height = '600px';
+      iframe.style.border = 'none';
+      iframe.onload = () => {
+        setWordFrameLoaded(true);
+        console.log('Word Online frame loaded');
+      };
+      
+      // Add iframe to container
+      wordContainerRef.current.appendChild(iframe);
+    } catch (error) {
+      console.error('Error loading Word Online:', error);
+      toast({
+        title: 'Error Loading Document',
+        description: 'There was a problem loading the document viewer.',
+        variant: 'destructive'
+      });
+    }
   };
   
   /**
