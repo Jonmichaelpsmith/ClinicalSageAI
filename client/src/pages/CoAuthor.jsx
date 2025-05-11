@@ -845,7 +845,46 @@ export default function CoAuthor() {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex space-x-2">
-                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                  <Button 
+                    size="sm" 
+                    className="bg-blue-600 hover:bg-blue-700"
+                    onClick={async () => {
+                      try {
+                        toast({
+                          title: "Creating New Document",
+                          description: "Setting up a new Google Doc...",
+                          variant: "default",
+                        });
+                        
+                        // Create a new document using our service
+                        const result = await googleDocsService.createNewDoc(
+                          googleDocsService.getDocumentId('module_2_5'), // Use clinical overview template
+                          "New Clinical Overview Document",
+                          { 
+                            initialContent: "This document was created from the TrialSage eCTD Co-Author Module.",
+                            organizationId: 1 // Use default organization ID
+                          }
+                        );
+                        
+                        // Set as the selected document
+                        setSelectedDocument({
+                          id: result.documentId,
+                          title: result.title,
+                          url: result.url,
+                          date: new Date().toLocaleDateString(),
+                          status: "Draft",
+                          module: "2.5"
+                        });
+                        
+                        // Open the document editor after creation
+                        setTimeout(() => {
+                          setGoogleDocsPopupOpen(true);
+                        }, 500);
+                      } catch (error) {
+                        console.error("Error creating document:", error);
+                      }
+                    }}
+                  >
                     <FilePlus2 className="h-4 w-4 mr-2" />
                     New Document
                   </Button>
