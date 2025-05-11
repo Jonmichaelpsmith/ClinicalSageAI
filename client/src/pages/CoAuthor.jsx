@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Container, Paper, Tabs, Tab, Button, Divider } from '@mui/material';
+import { Box, Typography, Container, Paper, Tabs, Tab, Button, Divider, Grid } from '@mui/material';
 
 import AiPoweredWordEditor from '../components/office/AiPoweredWordEditor';
+import DocumentUploader from '../components/office/DocumentUploader';
 
 /**
  * CoAuthor Page 
@@ -13,9 +14,105 @@ const CoAuthor = () => {
   const [activeTab, setActiveTab] = useState(0);
   const [documentId, setDocumentId] = useState('doc-123');
   const [templateId, setTemplateId] = useState('template-fda-ind');
+  const [showUploader, setShowUploader] = useState(false);
+  const [documents, setDocuments] = useState([]);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+
+  useEffect(() => {
+    // Load mock documents for demonstration
+    loadDocuments();
+  }, []);
+
+  const loadDocuments = () => {
+    // Simulate loading documents from API
+    const mockDocuments = [
+      {
+        id: 'doc-123',
+        name: 'IND Application Module 2.5',
+        documentType: 'word',
+        ectdModule: 'm2-5',
+        status: 'draft',
+        createdAt: '2025-05-01T10:30:00Z',
+        updatedAt: '2025-05-10T15:45:00Z',
+        description: 'Clinical overview for IND submission'
+      },
+      {
+        id: 'doc-456',
+        name: 'Protocol Synopsis Template',
+        documentType: 'word',
+        ectdModule: 'm4',
+        status: 'approved',
+        createdAt: '2025-04-15T09:20:00Z',
+        updatedAt: '2025-04-20T14:35:00Z',
+        description: 'Standardized protocol synopsis template for clinical trials'
+      },
+      {
+        id: 'doc-789',
+        name: 'Adverse Events Reporting Form',
+        documentType: 'word',
+        ectdModule: 'm5',
+        status: 'published',
+        createdAt: '2025-03-10T11:10:00Z',
+        updatedAt: '2025-04-05T16:25:00Z',
+        description: 'Standard form for adverse event documentation'
+      }
+    ];
+    
+    setDocuments(mockDocuments);
+    // Set the current document as the selected one
+    setSelectedDocument(mockDocuments.find(doc => doc.id === documentId) || mockDocuments[0]);
+  };
 
   const handleTabChange = (event, newValue) => {
     setActiveTab(newValue);
+    // Hide uploader when switching tabs
+    setShowUploader(false);
+  };
+
+  const handleNewDocument = () => {
+    // Create a new blank document
+    const newDocument = {
+      id: `doc-${Date.now()}`,
+      name: 'Untitled Document',
+      description: '',
+      documentType: 'word',
+      status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      ectdModule: 'm2-5'
+    };
+    
+    setDocuments([newDocument, ...documents]);
+    setSelectedDocument(newDocument);
+    setDocumentId(newDocument.id);
+    setShowUploader(false);
+  };
+
+  const handleUploadClick = () => {
+    setShowUploader(true);
+  };
+
+  const handleUploadComplete = (documentInfo) => {
+    // Add the uploaded document to the list
+    const newDocument = {
+      ...documentInfo,
+      id: `doc-${Date.now()}`,
+      status: 'draft',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+    
+    setDocuments([newDocument, ...documents]);
+    setSelectedDocument(newDocument);
+    setDocumentId(newDocument.id);
+    setShowUploader(false);
+  };
+
+  const handleDocumentSelect = (document) => {
+    setSelectedDocument(document);
+    setDocumentId(document.id);
+    setActiveTab(0);
+    setShowUploader(false);
   };
 
   return (
@@ -45,20 +142,22 @@ const CoAuthor = () => {
           {activeTab === 0 && (
             <Box>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h6">IND Application Module 2.5</Typography>
+                <Typography variant="h6">
+                  {selectedDocument ? selectedDocument.name : 'IND Application Module 2.5'}
+                </Typography>
                 <Box>
                   <Button 
                     variant="outlined" 
                     size="small" 
-                    startIcon={<FilePlus />} 
                     sx={{ mr: 1 }}
+                    onClick={handleNewDocument}
                   >
                     New Document
                   </Button>
                   <Button 
                     variant="outlined" 
-                    size="small" 
-                    startIcon={<FileText />}
+                    size="small"
+                    onClick={handleUploadClick}
                   >
                     Upload Document
                   </Button>
@@ -67,40 +166,124 @@ const CoAuthor = () => {
               
               <Divider sx={{ mb: 3 }} />
               
-              <AiPoweredWordEditor 
-                documentId={documentId} 
-                templateId={null} 
-                regulationType="fda" 
-              />
+              {showUploader ? (
+                <DocumentUploader onUploadComplete={handleUploadComplete} />
+              ) : (
+                <AiPoweredWordEditor 
+                  documentId={documentId} 
+                  documentType={selectedDocument?.documentType || 'word'} 
+                  regulationType="fda" 
+                />
+              )}
             </Box>
           )}
           
           {activeTab === 1 && (
             <Box>
-              <Typography variant="h6" gutterBottom>
-                Template Library
-              </Typography>
-              <Typography paragraph>
-                Browse and manage regulatory document templates for IND applications,
-                NDAs, ANDAs, BLAs, and other submission types.
-              </Typography>
-              <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
-                Template library functionality coming in next release
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                <Typography variant="h6">Template Library</Typography>
+                <Button 
+                  variant="outlined" 
+                  size="small"
+                >
+                  Create Template
+                </Button>
               </Box>
+              
+              <Divider sx={{ mb: 3 }} />
+              
+              <Grid container spacing={3}>
+                {[
+                  { id: 'tpl-1', name: 'ICH E3 Clinical Study Report', type: 'CSR', module: 'm5', description: 'Full CSR template following ICH E3 guidance' },
+                  { id: 'tpl-2', name: 'ICH E6 Protocol Template', type: 'Protocol', module: 'm5', description: 'Clinical trial protocol following ICH GCP guidance' },
+                  { id: 'tpl-3', name: 'Module 2.5 Clinical Overview', type: 'CTD', module: 'm2-5', description: 'Template for eCTD Module 2.5 (Clinical Overview)' },
+                  { id: 'tpl-4', name: 'Investigator Brochure Template', type: 'IB', module: 'm1', description: 'Standard template for Investigator Brochure' },
+                  { id: 'tpl-5', name: 'Safety Narrative Template', type: 'Safety', module: 'm5', description: 'Template for patient safety narratives' },
+                  { id: 'tpl-6', name: 'FDA Form 1572', type: 'Form', module: 'm1', description: 'Statement of Investigator form for FDA submission' }
+                ].map(template => (
+                  <Grid item xs={12} md={6} lg={4} key={template.id}>
+                    <Paper sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
+                        {template.name}
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
+                        Type: {template.type} | Module: {template.module}
+                      </Typography>
+                      <Typography variant="body2" sx={{ mb: 2, flexGrow: 1 }}>
+                        {template.description}
+                      </Typography>
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        <Button size="small" variant="outlined">
+                          Use Template
+                        </Button>
+                      </Box>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
             </Box>
           )}
           
           {activeTab === 2 && (
             <Box>
-              <Typography variant="h6" gutterBottom>
-                Document History
-              </Typography>
-              <Typography paragraph>
-                View document revisions, compare versions, and restore previous states.
-              </Typography>
-              <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
-                Document history functionality coming in next release
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                <Typography variant="h6">Document History</Typography>
+                <Button 
+                  variant="outlined" 
+                  size="small"
+                >
+                  Export History
+                </Button>
               </Box>
+              
+              <Divider sx={{ mb: 3 }} />
+              
+              <Typography variant="subtitle1" gutterBottom>
+                Your Documents
+              </Typography>
+              
+              {documents.length > 0 ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {documents.map(document => (
+                    <Paper 
+                      key={document.id} 
+                      sx={{ 
+                        p: 2, 
+                        cursor: 'pointer',
+                        '&:hover': { bgcolor: 'action.hover' },
+                        border: selectedDocument?.id === document.id ? '2px solid' : '1px solid',
+                        borderColor: selectedDocument?.id === document.id ? 'primary.main' : 'divider'
+                      }}
+                      onClick={() => handleDocumentSelect(document)}
+                    >
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Box>
+                          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                            {document.name}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Module: {document.ectdModule || 'Not specified'} | Status: {document.status}
+                          </Typography>
+                          {document.description && (
+                            <Typography variant="body2" sx={{ mt: 1 }}>
+                              {document.description}
+                            </Typography>
+                          )}
+                        </Box>
+                        <Box>
+                          <Typography variant="caption" display="block" textAlign="right" color="text.secondary">
+                            Last updated: {new Date(document.updatedAt).toLocaleDateString()}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Paper>
+                  ))}
+                </Box>
+              ) : (
+                <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
+                  No documents found. Create a new document or upload one to get started.
+                </Box>
+              )}
             </Box>
           )}
           
@@ -109,12 +292,31 @@ const CoAuthor = () => {
               <Typography variant="h6" gutterBottom>
                 Settings
               </Typography>
-              <Typography paragraph>
-                Configure Microsoft Office integration, AI assistance, and other preferences.
+              <Divider sx={{ mb: 3 }} />
+              
+              <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold' }}>
+                Microsoft Office Integration
               </Typography>
-              <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
-                Settings functionality coming in next release
-              </Box>
+              <Typography paragraph>
+                Configure Microsoft Office integration settings including authentication, document storage location,
+                and synchronization preferences.
+              </Typography>
+              
+              <Typography variant="subtitle1" sx={{ mt: 4, mb: 2, fontWeight: 'bold' }}>
+                Regulatory Compliance Settings
+              </Typography>
+              <Typography paragraph>
+                Configure which regulatory guidelines (FDA, EMA, ICH) to check documents against
+                and set compliance thresholds for automated validation.
+              </Typography>
+              
+              <Typography variant="subtitle1" sx={{ mt: 4, mb: 2, fontWeight: 'bold' }}>
+                AI Assistant Configuration
+              </Typography>
+              <Typography paragraph>
+                Adjust AI assistant behavior, including preferred writing style, regulatory focus,
+                and content suggestions sensitivity.
+              </Typography>
             </Box>
           )}
         </Box>

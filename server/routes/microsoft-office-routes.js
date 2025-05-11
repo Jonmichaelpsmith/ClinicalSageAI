@@ -1,202 +1,111 @@
 /**
  * Microsoft Office Integration Routes
  * 
- * These routes provide integration with Microsoft Office applications,
- * particularly Microsoft Word, for eCTD document authoring and management.
- * 
- * Routes include:
- * - Authentication with Microsoft (token verification, refresh)
- * - Document operations (get, save, create)
- * - Template management
- * - Version control
- * - Integration with DocuShare and other repositories
+ * This file contains Express routes for handling Microsoft Office integration,
+ * particularly for Word document management in the eCTD Co-Author module.
  */
 
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
+const { getPool } = require('../database');
 const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const structuredClone = require('structured-clone');
 const { getTenantContext } = require('../middleware/tenantContext');
 
-// Configure multer for file uploads (temporarily storing files)
+// Configure file storage
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadDir = path.join(__dirname, '../uploads');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+    const { organizationId } = getTenantContext(req);
+    const dir = path.join(__dirname, '../../uploads/office-documents', String(organizationId));
+    
+    if (!fs.existsSync(dir)){
+      fs.mkdirSync(dir, { recursive: true });
     }
-    cb(null, uploadDir);
+    
+    cb(null, dir);
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    const ext = path.extname(file.originalname);
+    cb(null, uniqueSuffix + ext);
   }
 });
 
-const upload = multer({ 
-  storage: storage,
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB max file size
-  },
-  fileFilter: function (req, file, cb) {
-    // Accept Office documents and PDFs
-    const filetypes = /docx|doc|xlsx|xls|pptx|ppt|pdf/;
-    const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    const mimetype = filetypes.test(file.mimetype);
-    
-    if (mimetype && extname) {
-      return cb(null, true);
-    } else {
-      cb(new Error('Only Office documents and PDFs are allowed'));
-    }
-  }
-});
+const upload = multer({ storage });
 
 /**
- * Helper function to get Microsoft Graph API access token
- * @param {string} msAccessToken - User's Microsoft access token
- * @returns {Promise<string>} - Microsoft Graph access token
+ * Get all documents for the current user's organization
  */
-async function getGraphToken(msAccessToken) {
+router.get('/api/ms-office/documents', async (req, res) => {
   try {
-    // In a real implementation, you might exchange the token or use it directly
-    // depending on the authentication flow
-    return msAccessToken;
+    const pool = getPool();
+    const { organizationId } = getTenantContext(req);
+    
+    const result = await pool.query(
+      `SELECT id, name, description, document_type, status, created_at, updated_at, 
+       created_by_id, file_path, version, ectd_module, regulatory_type
+       FROM office_documents 
+       WHERE organization_id = $1 
+       ORDER BY updated_at DESC`,
+      [organizationId]
+    );
+    
+    res.json(result.rows);
   } catch (error) {
-    console.error('Error getting Microsoft Graph token:', error);
-    throw error;
-  }
-}
-
-/**
- * Helper function to verify Microsoft token validity
- * @param {string} token - Microsoft access token
- * @returns {Promise<boolean>} - True if token is valid
- */
-async function verifyToken(token) {
-  try {
-    const response = await axios.get('https://graph.microsoft.com/v1.0/me', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    
-    return response.status === 200;
-  } catch (error) {
-    console.error('Token verification error:', error);
-    return false;
-  }
-}
-
-// Routes
-
-/**
- * Verify Microsoft authentication token
- */
-router.post('/verify-token', async (req, res) => {
-  try {
-    const { token } = req.body;
-    
-    if (!token) {
-      return res.status(400).json({ error: 'No token provided' });
-    }
-    
-    const isValid = await verifyToken(token);
-    
-    if (isValid) {
-      return res.json({ valid: true });
-    } else {
-      return res.status(401).json({ valid: false, error: 'Invalid token' });
-    }
-  } catch (error) {
-    console.error('Error verifying token:', error);
-    res.status(500).json({ error: 'Failed to verify token' });
+    console.error('Error fetching documents:', error);
+    res.status(500).json({ error: 'Failed to fetch documents' });
   }
 });
 
 /**
- * Get document from Microsoft OneDrive/SharePoint
+ * Get document by ID
  */
-router.get('/documents/:id', async (req, res) => {
+router.get('/api/ms-office/documents/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    const authHeader = req.headers.authorization;
+    const pool = getPool();
+    const { organizationId } = getTenantContext(req);
+    const documentId = req.params.id;
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Authorization token required' });
+    const result = await pool.query(
+      `SELECT id, name, description, document_type, status, created_at, updated_at, 
+       created_by_id, file_path, content, version, ectd_module, regulatory_type
+       FROM office_documents 
+       WHERE id = $1 AND organization_id = $2`,
+      [documentId, organizationId]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Document not found' });
     }
     
-    const token = authHeader.split(' ')[1];
-    const graphToken = await getGraphToken(token);
-    
-    // Get tenant context for multi-tenant support
-    const tenantContext = getTenantContext();
-    const organizationId = tenantContext.organizationId;
-    
-    // In a real implementation, we would fetch the document from Microsoft Graph API
-    // For demo purposes, we'll simulate a successful response
-    
-    // Simulate retrieving document from OneDrive/SharePoint
-    const documentData = {
-      id: id,
-      name: `Document-${id}.docx`,
-      webUrl: `https://example.sharepoint.com/documents/${id}`,
-      embedUrl: `https://example.com/embed/${id}?auth=${token.substring(0, 10)}...`,
-      createdDateTime: new Date().toISOString(),
-      lastModifiedDateTime: new Date().toISOString(),
-      size: 1024 * 1024 * 2, // 2MB
-      organizationId: organizationId || 'default',
-      content: 'This is the document content placeholder.'
-    };
-    
-    res.json(documentData);
+    res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error getting document:', error);
-    res.status(500).json({ error: 'Failed to get document' });
+    console.error('Error fetching document:', error);
+    res.status(500).json({ error: 'Failed to fetch document' });
   }
 });
 
 /**
- * Create a new document in Microsoft OneDrive/SharePoint
+ * Create a new document
  */
-router.post('/documents', async (req, res) => {
+router.post('/api/ms-office/documents', async (req, res) => {
   try {
-    const { name, isTemplate } = req.body;
-    const authHeader = req.headers.authorization;
+    const pool = getPool();
+    const { organizationId } = getTenantContext(req);
+    const userId = req.user?.id || null;
+    const { name, description, documentType, content, ectdModule, regulatoryType } = req.body;
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Authorization token required' });
-    }
+    const result = await pool.query(
+      `INSERT INTO office_documents 
+       (name, description, document_type, content, organization_id, created_by_id, ectd_module, regulatory_type, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'draft')
+       RETURNING id, name, description, document_type, status, created_at, updated_at, version`,
+      [name, description, documentType, content, organizationId, userId, ectdModule, regulatoryType]
+    );
     
-    const token = authHeader.split(' ')[1];
-    const graphToken = await getGraphToken(token);
-    
-    // Get tenant context for multi-tenant support
-    const tenantContext = getTenantContext();
-    const organizationId = tenantContext.organizationId;
-    
-    // In a real implementation, we would create a document using Microsoft Graph API
-    // For demo purposes, we'll simulate a successful response
-    
-    // Generate a mock document ID
-    const documentId = `doc-${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    
-    // Simulate creating document in OneDrive/SharePoint
-    const documentData = {
-      id: documentId,
-      name: name || 'Untitled Document.docx',
-      webUrl: `https://example.sharepoint.com/documents/${documentId}`,
-      embedUrl: `https://example.com/embed/${documentId}?auth=${token.substring(0, 10)}...`,
-      createdDateTime: new Date().toISOString(),
-      lastModifiedDateTime: new Date().toISOString(),
-      size: 0,
-      organizationId: organizationId || 'default',
-      isTemplate: isTemplate || false
-    };
-    
-    res.json(documentData);
+    res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Error creating document:', error);
     res.status(500).json({ error: 'Failed to create document' });
@@ -204,277 +113,349 @@ router.post('/documents', async (req, res) => {
 });
 
 /**
- * Update document content
+ * Update a document
  */
-router.put('/documents/:id/content', async (req, res) => {
+router.put('/api/ms-office/documents/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { content } = req.body;
-    const authHeader = req.headers.authorization;
+    const pool = getPool();
+    const { organizationId } = getTenantContext(req);
+    const documentId = req.params.id;
+    const userId = req.user?.id || null;
+    const { name, description, content, ectdModule, regulatoryType, status } = req.body;
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Authorization token required' });
+    // First check if document exists and belongs to organization
+    const checkResult = await pool.query(
+      `SELECT id FROM office_documents WHERE id = $1 AND organization_id = $2`,
+      [documentId, organizationId]
+    );
+    
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Document not found' });
     }
     
-    if (!content) {
-      return res.status(400).json({ error: 'No content provided' });
+    // Update the document
+    const updateResult = await pool.query(
+      `UPDATE office_documents
+       SET name = COALESCE($1, name),
+           description = COALESCE($2, description),
+           content = COALESCE($3, content),
+           ectd_module = COALESCE($4, ectd_module),
+           regulatory_type = COALESCE($5, regulatory_type),
+           status = COALESCE($6, status),
+           updated_at = NOW(),
+           version = version + 1
+       WHERE id = $7 AND organization_id = $8
+       RETURNING id, name, description, document_type, status, created_at, updated_at, version`,
+      [name, description, content, ectdModule, regulatoryType, status, documentId, organizationId]
+    );
+    
+    // Store document version history
+    if (content) {
+      await pool.query(
+        `INSERT INTO office_document_versions
+         (document_id, version, content, created_by_id)
+         VALUES ($1, (SELECT version FROM office_documents WHERE id = $1), $2, $3)`,
+        [documentId, content, userId]
+      );
     }
     
-    const token = authHeader.split(' ')[1];
-    const graphToken = await getGraphToken(token);
-    
-    // Get tenant context for multi-tenant support
-    const tenantContext = getTenantContext();
-    const organizationId = tenantContext.organizationId;
-    
-    // In a real implementation, we would update the document using Microsoft Graph API
-    // For demo purposes, we'll simulate a successful response
-    
-    res.json({
-      id: id,
-      updated: true,
-      lastModifiedDateTime: new Date().toISOString(),
-      organizationId: organizationId || 'default'
-    });
+    res.json(updateResult.rows[0]);
   } catch (error) {
-    console.error('Error updating document content:', error);
-    res.status(500).json({ error: 'Failed to update document content' });
+    console.error('Error updating document:', error);
+    res.status(500).json({ error: 'Failed to update document' });
   }
 });
 
 /**
- * Upload document to Microsoft OneDrive/SharePoint
+ * Upload a document file
  */
-router.post('/documents/upload', upload.single('file'), async (req, res) => {
+router.post('/api/ms-office/documents/upload', upload.single('file'), async (req, res) => {
   try {
-    if (!req.file) {
+    const pool = getPool();
+    const { organizationId } = getTenantContext(req);
+    const userId = req.user?.id || null;
+    const file = req.file;
+    const { name, description, documentType, ectdModule, regulatoryType } = req.body;
+    
+    if (!file) {
       return res.status(400).json({ error: 'No file uploaded' });
     }
     
-    const authHeader = req.headers.authorization;
+    const result = await pool.query(
+      `INSERT INTO office_documents 
+       (name, description, document_type, file_path, organization_id, created_by_id, ectd_module, regulatory_type, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'draft')
+       RETURNING id, name, description, document_type, status, created_at, updated_at, file_path`,
+      [
+        name || file.originalname, 
+        description || '', 
+        documentType || 'word', 
+        file.path, 
+        organizationId, 
+        userId, 
+        ectdModule || null, 
+        regulatoryType || null
+      ]
+    );
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      // Clean up temporary file
-      fs.unlinkSync(req.file.path);
-      return res.status(401).json({ error: 'Authorization token required' });
-    }
-    
-    const token = authHeader.split(' ')[1];
-    const graphToken = await getGraphToken(token);
-    
-    // Get tenant context for multi-tenant support
-    const tenantContext = getTenantContext();
-    const organizationId = tenantContext.organizationId;
-    
-    // In a real implementation, we would upload to OneDrive/SharePoint using Microsoft Graph API
-    // For demo purposes, we'll simulate a successful upload
-    
-    // Generate a mock document ID
-    const documentId = `doc-${Date.now()}-${Math.round(Math.random() * 1E9)}`;
-    
-    // Simulate uploading file to OneDrive/SharePoint
-    const documentData = {
-      id: documentId,
-      name: req.file.originalname,
-      webUrl: `https://example.sharepoint.com/documents/${documentId}`,
-      embedUrl: `https://example.com/embed/${documentId}?auth=${token.substring(0, 10)}...`,
-      createdDateTime: new Date().toISOString(),
-      lastModifiedDateTime: new Date().toISOString(),
-      size: req.file.size,
-      organizationId: organizationId || 'default'
-    };
-    
-    // Clean up temporary file
-    fs.unlinkSync(req.file.path);
-    
-    res.json(documentData);
+    res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Error uploading document:', error);
-    
-    // Clean up temporary file if it exists
-    if (req.file && req.file.path) {
-      try {
-        fs.unlinkSync(req.file.path);
-      } catch (unlinkError) {
-        console.error('Error deleting temporary file:', unlinkError);
-      }
-    }
-    
     res.status(500).json({ error: 'Failed to upload document' });
   }
 });
 
 /**
- * List available document templates
+ * Get document versions
  */
-router.get('/templates', async (req, res) => {
+router.get('/api/ms-office/documents/:id/versions', async (req, res) => {
   try {
-    const authHeader = req.headers.authorization;
+    const pool = getPool();
+    const { organizationId } = getTenantContext(req);
+    const documentId = req.params.id;
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Authorization token required' });
+    // First check if document exists and belongs to organization
+    const checkResult = await pool.query(
+      `SELECT id FROM office_documents WHERE id = $1 AND organization_id = $2`,
+      [documentId, organizationId]
+    );
+    
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Document not found' });
     }
     
-    const token = authHeader.split(' ')[1];
-    const graphToken = await getGraphToken(token);
+    const result = await pool.query(
+      `SELECT version, created_at, created_by_id
+       FROM office_document_versions
+       WHERE document_id = $1
+       ORDER BY version DESC`,
+      [documentId]
+    );
     
-    // Get tenant context for multi-tenant support
-    const tenantContext = getTenantContext();
-    const organizationId = tenantContext.organizationId;
-    
-    // In a real implementation, we would fetch templates from a database or SharePoint
-    // For demo purposes, we'll return mock templates
-    
-    const templates = [
-      {
-        id: 'ind-template',
-        name: 'IND Application Template',
-        description: 'FDA IND application structure',
-        createdDateTime: '2025-04-01T12:00:00Z',
-        lastModifiedDateTime: '2025-05-01T15:30:00Z',
-        organizationId: organizationId || 'default',
-        documentId: 'template-ind-123'
-      },
-      {
-        id: 'cmc-template',
-        name: 'CMC Module Template',
-        description: 'Chemistry, Manufacturing and Controls',
-        createdDateTime: '2025-04-15T09:45:00Z',
-        lastModifiedDateTime: '2025-05-05T14:20:00Z',
-        organizationId: organizationId || 'default',
-        documentId: 'template-cmc-456'
-      },
-      {
-        id: 'protocol-template',
-        name: 'Clinical Protocol Template',
-        description: 'Standard clinical trial protocol',
-        createdDateTime: '2025-03-20T11:15:00Z',
-        lastModifiedDateTime: '2025-05-03T16:40:00Z',
-        organizationId: organizationId || 'default',
-        documentId: 'template-protocol-789'
-      }
-    ];
-    
-    res.json(templates);
+    res.json(result.rows);
   } catch (error) {
-    console.error('Error getting templates:', error);
-    res.status(500).json({ error: 'Failed to get templates' });
+    console.error('Error fetching document versions:', error);
+    res.status(500).json({ error: 'Failed to fetch document versions' });
   }
 });
 
 /**
- * Get document version history
+ * Get document version content
  */
-router.get('/documents/:id/versions', async (req, res) => {
+router.get('/api/ms-office/documents/:id/versions/:version', async (req, res) => {
   try {
-    const { id } = req.params;
-    const authHeader = req.headers.authorization;
+    const pool = getPool();
+    const { organizationId } = getTenantContext(req);
+    const documentId = req.params.id;
+    const version = req.params.version;
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Authorization token required' });
+    // First check if document exists and belongs to organization
+    const checkResult = await pool.query(
+      `SELECT id FROM office_documents WHERE id = $1 AND organization_id = $2`,
+      [documentId, organizationId]
+    );
+    
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Document not found' });
     }
     
-    const token = authHeader.split(' ')[1];
-    const graphToken = await getGraphToken(token);
+    const result = await pool.query(
+      `SELECT content, created_at, created_by_id
+       FROM office_document_versions
+       WHERE document_id = $1 AND version = $2`,
+      [documentId, version]
+    );
     
-    // Get tenant context for multi-tenant support
-    const tenantContext = getTenantContext();
-    const organizationId = tenantContext.organizationId;
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Version not found' });
+    }
     
-    // In a real implementation, we would fetch version history from OneDrive/SharePoint
-    // For demo purposes, we'll return mock version history
-    
-    const versions = [
-      {
-        id: `${id}-v1`,
-        versionNumber: '1.0',
-        lastModifiedBy: {
-          user: {
-            displayName: 'John Doe',
-            email: 'john.doe@example.com'
-          }
-        },
-        lastModifiedDateTime: '2025-05-01T10:30:00Z',
-        size: 1024 * 512
-      },
-      {
-        id: `${id}-v2`,
-        versionNumber: '2.0',
-        lastModifiedBy: {
-          user: {
-            displayName: 'Jane Smith',
-            email: 'jane.smith@example.com'
-          }
-        },
-        lastModifiedDateTime: '2025-05-05T14:45:00Z',
-        size: 1024 * 768
-      },
-      {
-        id: `${id}-v3`,
-        versionNumber: '3.0',
-        lastModifiedBy: {
-          user: {
-            displayName: 'John Doe',
-            email: 'john.doe@example.com'
-          }
-        },
-        lastModifiedDateTime: '2025-05-10T09:15:00Z',
-        size: 1024 * 1024
-      }
-    ];
-    
-    res.json(versions);
+    res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error getting version history:', error);
-    res.status(500).json({ error: 'Failed to get version history' });
+    console.error('Error fetching document version:', error);
+    res.status(500).json({ error: 'Failed to fetch document version' });
   }
 });
 
 /**
- * Create a new document version
+ * Get document templates
  */
-router.post('/documents/:id/versions', async (req, res) => {
+router.get('/api/ms-office/templates', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { content, comment } = req.body;
-    const authHeader = req.headers.authorization;
+    const pool = getPool();
+    const { organizationId } = getTenantContext(req);
     
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Authorization token required' });
+    const result = await pool.query(
+      `SELECT id, name, description, template_type, regulatory_type, ectd_module
+       FROM office_templates
+       WHERE organization_id = $1 OR is_global = TRUE
+       ORDER BY name ASC`,
+      [organizationId]
+    );
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching templates:', error);
+    res.status(500).json({ error: 'Failed to fetch templates' });
+  }
+});
+
+/**
+ * Get document template by ID
+ */
+router.get('/api/ms-office/templates/:id', async (req, res) => {
+  try {
+    const pool = getPool();
+    const { organizationId } = getTenantContext(req);
+    const templateId = req.params.id;
+    
+    const result = await pool.query(
+      `SELECT id, name, description, template_type, content, regulatory_type, ectd_module
+       FROM office_templates
+       WHERE id = $1 AND (organization_id = $2 OR is_global = TRUE)`,
+      [templateId, organizationId]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Template not found' });
     }
     
-    if (!content) {
-      return res.status(400).json({ error: 'No content provided' });
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error fetching template:', error);
+    res.status(500).json({ error: 'Failed to fetch template' });
+  }
+});
+
+/**
+ * Perform compliance check on document
+ */
+router.post('/api/ms-office/documents/:id/compliance-check', async (req, res) => {
+  try {
+    const pool = getPool();
+    const { organizationId } = getTenantContext(req);
+    const documentId = req.params.id;
+    const { regulationType } = req.body;
+    
+    // First check if document exists and belongs to organization
+    const docResult = await pool.query(
+      `SELECT id, content 
+       FROM office_documents 
+       WHERE id = $1 AND organization_id = $2`,
+      [documentId, organizationId]
+    );
+    
+    if (docResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Document not found' });
     }
     
-    const token = authHeader.split(' ')[1];
-    const graphToken = await getGraphToken(token);
+    const documentContent = docResult.rows[0].content;
     
-    // Get tenant context for multi-tenant support
-    const tenantContext = getTenantContext();
-    const organizationId = tenantContext.organizationId;
-    
-    // In a real implementation, we would create a new version in OneDrive/SharePoint
-    // For demo purposes, we'll simulate a successful response
-    
-    const newVersion = {
-      id: `${id}-v${Date.now()}`,
-      versionNumber: '4.0',
-      comment: comment || '',
-      lastModifiedBy: {
-        user: {
-          displayName: 'Current User',
-          email: 'current.user@example.com'
-        }
-      },
-      lastModifiedDateTime: new Date().toISOString(),
-      size: content.length || 1024 * 1024
+    // For now, simulate a compliance check
+    // In production, this would call the AI service to perform analysis
+    const simulatedResult = {
+      compliant: Math.random() > 0.3, // 70% chance of compliance for demo
+      score: Math.floor(Math.random() * 40) + 60, // Random score between 60-100
+      issues: []
     };
     
-    res.json(newVersion);
+    // Add some simulated issues
+    if (!simulatedResult.compliant) {
+      const potentialIssues = [
+        {
+          id: 'missing-header',
+          section: 'Document Header',
+          description: 'Missing required header information for eCTD submission',
+          recommendation: 'Add standard header with document ID and version',
+          severity: 'high'
+        },
+        {
+          id: 'improper-formatting',
+          section: 'Section Formatting',
+          description: 'Sections not formatted according to ICH guidelines',
+          recommendation: 'Apply standard heading formats for all sections',
+          severity: 'medium'
+        },
+        {
+          id: 'missing-references',
+          section: 'References',
+          description: 'Missing required literature references',
+          recommendation: 'Add references section with appropriate citations',
+          severity: 'medium'
+        },
+        {
+          id: 'excessive-abbreviations',
+          section: 'Terminology',
+          description: 'Excessive use of undefined abbreviations',
+          recommendation: 'Define all abbreviations at first use',
+          severity: 'low'
+        }
+      ];
+      
+      // Add 1-3 random issues
+      const numIssues = Math.floor(Math.random() * 3) + 1;
+      for (let i = 0; i < numIssues; i++) {
+        const randomIssue = potentialIssues[Math.floor(Math.random() * potentialIssues.length)];
+        // Clone to avoid duplicate references
+        simulatedResult.issues.push(structuredClone(randomIssue));
+      }
+    }
+    
+    // Store the compliance check result
+    await pool.query(
+      `INSERT INTO office_document_compliance
+       (document_id, regulatory_type, is_compliant, compliance_score, issues, check_date)
+       VALUES ($1, $2, $3, $4, $5, NOW())`,
+      [documentId, regulationType, simulatedResult.compliant, simulatedResult.score, JSON.stringify(simulatedResult.issues)]
+    );
+    
+    res.json(simulatedResult);
   } catch (error) {
-    console.error('Error creating version:', error);
-    res.status(500).json({ error: 'Failed to create version' });
+    console.error('Error performing compliance check:', error);
+    res.status(500).json({ error: 'Failed to perform compliance check' });
+  }
+});
+
+/**
+ * Get regulatory section content
+ */
+router.get('/api/ms-office/regulatory-sections/:sectionType', async (req, res) => {
+  try {
+    const sectionType = req.params.sectionType;
+    const { regulationType } = req.query;
+    
+    // Map of pre-defined regulatory section templates
+    const regulatorySections = {
+      'gcp-statement': {
+        title: 'Good Clinical Practice Statement',
+        content: 'This study was conducted in accordance with the principles of the Declaration of Helsinki and Good Clinical Practice guidelines as defined by the International Conference on Harmonisation.'
+      },
+      'adverse-events': {
+        title: 'Adverse Events Reporting',
+        content: 'All adverse events were collected and recorded throughout the study period, from the time of informed consent until the end of follow-up. Events were categorized according to severity, causality, and seriousness in accordance with regulatory guidance.'
+      },
+      'eligibility': {
+        title: 'Eligibility Criteria',
+        content: 'Inclusion Criteria:\n1. Adults aged 18 years or older\n2. Diagnosis confirmed by [specific criteria]\n3. Able to provide informed consent\n\nExclusion Criteria:\n1. Participation in another clinical trial within 30 days\n2. Known hypersensitivity to study medication or components\n3. Significant medical condition that would interfere with study participation'
+      },
+      'consent': {
+        title: 'Informed Consent',
+        content: 'Written informed consent was obtained from all study participants prior to performing any study-related procedures. The consent process included a thorough explanation of the study procedures, potential risks and benefits, alternatives to participation, and the voluntary nature of participation.'
+      },
+      'privacy': {
+        title: 'Privacy and Confidentiality',
+        content: 'All participant information was handled in strict confidence in accordance with applicable data protection laws. Participant data was de-identified using unique identifiers, and all study documents were stored securely with access limited to authorized personnel.'
+      }
+    };
+    
+    if (!regulatorySections[sectionType]) {
+      return res.status(404).json({ error: 'Regulatory section not found' });
+    }
+    
+    res.json(regulatorySections[sectionType]);
+  } catch (error) {
+    console.error('Error fetching regulatory section:', error);
+    res.status(500).json({ error: 'Failed to fetch regulatory section' });
   }
 });
 
