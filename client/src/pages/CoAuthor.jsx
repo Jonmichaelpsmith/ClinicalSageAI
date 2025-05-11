@@ -12,8 +12,14 @@ import {
   CheckCircle, 
   Eye,
   ChevronDown,
+  ChevronRight,
   ExternalLink,
-  FilePlus2
+  FilePlus2,
+  Upload,
+  Download,
+  History,
+  Share2,
+  Database
 } from 'lucide-react';
 
 export default function CoAuthor() {
@@ -226,11 +232,11 @@ export default function CoAuthor() {
         <Card className="lg:col-span-2 row-span-2">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-lg">
-              <FolderOpen className="h-5 w-5 mr-2 text-blue-600" />
-              Vault Document Management
+              <Database className="h-5 w-5 mr-2 text-blue-600" />
+              Enterprise Vault Document Management
             </CardTitle>
             <CardDescription>
-              Organize, track versions, and maintain compliance of submission documents
+              Enterprise-grade document repository with version control
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -252,7 +258,7 @@ export default function CoAuthor() {
               </div>
 
               {isTreeOpen ? (
-                <div className="space-y-4 max-h-96 overflow-y-auto border rounded-md p-3 bg-gray-50">
+                <div className="space-y-4 max-h-96 overflow-y-auto border rounded-md p-3 bg-gray-50 dark:bg-gray-900">
                   {documentTree.map(module => (
                     <div key={module.id} className="space-y-2">
                       <div className="flex items-center font-medium">
@@ -263,7 +269,7 @@ export default function CoAuthor() {
                         </Badge>
                       </div>
                       
-                      <div className="pl-6 space-y-2 border-l border-gray-200 ml-2">
+                      <div className="pl-6 space-y-2 border-l border-gray-200 dark:border-gray-700 ml-2">
                         {module.children.map(child => {
                           if (child.type === 'folder') {
                             return (
@@ -273,15 +279,15 @@ export default function CoAuthor() {
                                   <span className="text-sm font-medium">{child.name}</span>
                                 </div>
                                 
-                                <div className="pl-5 space-y-1 border-l border-gray-200 ml-1">
+                                <div className="pl-5 space-y-1 border-l border-gray-200 dark:border-gray-700 ml-1">
                                   {child.children.map(subChild => (
-                                    <div key={subChild.id} className="flex items-center justify-between">
+                                    <div key={subChild.id} className="flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 rounded p-1">
                                       <div className="flex items-center">
                                         <FileText className="h-3 w-3 mr-2 text-gray-500" />
                                         <span className="text-xs">{subChild.name}</span>
                                       </div>
                                       <div className="flex items-center">
-                                        <Badge variant="outline" className="mr-1 text-xs">
+                                        <Badge variant={subChild.status === 'final' ? 'default' : 'outline'} className="mr-1 text-xs">
                                           {subChild.status}
                                         </Badge>
                                         <Badge variant="outline" className="text-xs">
@@ -295,13 +301,13 @@ export default function CoAuthor() {
                             );
                           } else {
                             return (
-                              <div key={child.id} className="flex items-center justify-between">
+                              <div key={child.id} className="flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 rounded p-1">
                                 <div className="flex items-center">
                                   <FileText className="h-4 w-4 mr-2 text-gray-500" />
                                   <span className="text-sm">{child.name}</span>
                                 </div>
                                 <div className="flex items-center">
-                                  <Badge variant="outline" className="mr-1 text-xs">
+                                  <Badge variant={child.status === 'final' ? 'default' : 'outline'} className="mr-1 text-xs">
                                     {child.status}
                                   </Badge>
                                   <Badge variant="outline" className="text-xs">
@@ -317,15 +323,15 @@ export default function CoAuthor() {
                   ))}
                 </div>
               ) : (
-                <div className="pl-8 space-y-2 border-l-2 border-gray-200 ml-2">
+                <div className="pl-8 space-y-2 border-l-2 border-gray-200 dark:border-gray-700 ml-2">
                   {documentTree[0].children.map(doc => (
-                    <div key={doc.id} className="flex items-center justify-between">
+                    <div key={doc.id} className="flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 rounded p-1">
                       <div className="flex items-center">
                         <FileText className="h-4 w-4 mr-2 text-gray-500" />
                         <span className="text-sm">{doc.name}</span>
                       </div>
                       <div className="flex items-center">
-                        <Badge variant="outline" className="mr-1 text-xs">
+                        <Badge variant={doc.status === 'final' ? 'default' : 'outline'} className="mr-1 text-xs">
                           {doc.status}
                         </Badge>
                         <Badge variant="outline" className="text-xs">
@@ -337,14 +343,26 @@ export default function CoAuthor() {
                 </div>
               )}
 
-              <div className="flex justify-end space-x-2 mt-4">
+              <div className="flex flex-wrap gap-2 mt-4">
                 <Button size="sm" variant="outline" className="flex items-center">
                   <FilePlus2 className="h-4 w-4 mr-1" />
                   New Document
                 </Button>
                 <Button size="sm" variant="outline" className="flex items-center">
-                  <ExternalLink className="h-4 w-4 mr-1" />
-                  Import
+                  <Upload className="h-4 w-4 mr-1" />
+                  Upload
+                </Button>
+                <Button size="sm" variant="outline" className="flex items-center">
+                  <Download className="h-4 w-4 mr-1" />
+                  Download
+                </Button>
+                <Button size="sm" variant="outline" className="flex items-center">
+                  <History className="h-4 w-4 mr-1" />
+                  Version History
+                </Button>
+                <Button size="sm" variant="outline" className="flex items-center">
+                  <Share2 className="h-4 w-4 mr-1" />
+                  Share
                 </Button>
               </div>
             </div>
@@ -378,7 +396,17 @@ export default function CoAuthor() {
         {/* Module Progress Card */}
         <Card className="lg:col-span-3">
           <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Module Progress</CardTitle>
+            <CardTitle className="flex items-center text-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 mr-2 text-blue-600">
+                <path d="M12 20V10"></path>
+                <path d="M18 20V4"></path>
+                <path d="M6 20v-4"></path>
+              </svg>
+              Module Progress Tracker
+            </CardTitle>
+            <CardDescription>
+              Track completion status across eCTD modules
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-5">
@@ -389,26 +417,48 @@ export default function CoAuthor() {
                       <div className="font-medium">Module {module.id}</div>
                       <div className="text-sm text-gray-500 ml-2">{module.description}</div>
                     </div>
-                    <div className="text-sm font-medium">{module.percent}%</div>
+                    <div className="flex items-center">
+                      <Badge 
+                        variant={module.percent > 75 ? "success" : module.percent > 40 ? "warning" : "secondary"} 
+                        className={`mr-3 ${module.percent > 75 ? "bg-green-100 text-green-800 hover:bg-green-200" : 
+                                         module.percent > 40 ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200" : 
+                                         "bg-gray-100 text-gray-800 hover:bg-gray-200"}`}
+                      >
+                        {module.percent > 75 ? "On Track" : module.percent > 40 ? "In Progress" : "Not Started"}
+                      </Badge>
+                      <div className="text-sm font-medium">{module.percent}%</div>
+                    </div>
                   </div>
-                  <Progress value={module.percent} className="h-2" />
+                  <Progress 
+                    value={module.percent} 
+                    className="h-2 bg-gray-100" 
+                    style={{
+                      "--tw-progress-color": module.percent > 75 ? "rgb(34, 197, 94)" : module.percent > 40 ? "rgb(234, 179, 8)" : "rgb(156, 163, 175)"
+                    } as React.CSSProperties}
+                  />
                 </div>
               ))}
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mt-6">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">80%</div>
-                <div className="text-sm text-gray-500">Recent Documents</div>
-              </div>
-              <div className="text-center">
+            <div className="grid grid-cols-3 gap-4 mt-8 border-t pt-6">
+              <div className="text-center p-3 bg-blue-50 rounded-lg">
                 <div className="text-2xl font-bold text-blue-600">60%</div>
-                <div className="text-sm text-gray-500">Module Progress</div>
+                <div className="text-sm text-gray-600 font-medium">Overall Progress</div>
               </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">20%</div>
-                <div className="text-sm text-gray-500"></div>
+              <div className="text-center p-3 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">12</div>
+                <div className="text-sm text-gray-600 font-medium">Documents Complete</div>
               </div>
+              <div className="text-center p-3 bg-purple-50 rounded-lg">
+                <div className="text-2xl font-bold text-purple-600">5</div>
+                <div className="text-sm text-gray-600 font-medium">Pending Review</div>
+              </div>
+            </div>
+            
+            <div className="mt-6 text-center">
+              <Button variant="outline" className="mt-2">
+                Generate Progress Report
+              </Button>
             </div>
           </CardContent>
         </Card>
