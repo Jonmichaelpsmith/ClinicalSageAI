@@ -97,7 +97,7 @@ export default function CoAuthor() {
   const [documentLocked, setDocumentLocked] = useState(false);
   const [lockedBy, setLockedBy] = useState(null);
   const [showValidationDialog, setShowValidationDialog] = useState(false);
-  // Microsoft Word integration state
+  // Microsoft Word 365 integration state
   const [msWordPopupOpen, setMsWordPopupOpen] = useState(false);
   const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
   // AI Assistant state
