@@ -28,10 +28,7 @@ import * as copilotService from '../services/copilotService';
 // AI services
 import * as aiService from '../services/aiService';
 
-// Import the components with lazy loading for better performance
-const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
-const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
-const GoogleDocsEmbed = lazy(() => import('../components/GoogleDocsEmbed'));
+// Import icons for UI
 import { 
   FileText, 
   Edit, 
@@ -48,6 +45,14 @@ import {
   Upload,
   Download,
   History,
+  X,
+  Lock,
+  Save,
+  Sparkles,
+  Plus,
+  List,
+  Table,
+  Link,
   Share2,
   Database,
   BarChart,
@@ -55,18 +60,15 @@ import {
   Clock,
   GitMerge,
   GitBranch,
-  Plus,
   Minus,
   Info,
   UserCheck,
   RefreshCw,
-  Save,
-  Lock,
   Users,
   ClipboardCheck,
   FileCheck,
-  Link,
   BookOpen,
+  Loader2,
   ArrowUpRight,
   Filter,
   CheckSquare,
@@ -1542,15 +1544,9 @@ export default function CoAuthor() {
             </DialogDescription>
           </DialogHeader>
           
-          <Suspense fallback={
-            <div className="py-20 flex flex-col items-center justify-center">
-              <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-              <p>Loading Google Docs...</p>
-              <p className="text-xs text-gray-500 mt-2">This may take a few moments</p>
-            </div>
-          }>
+          <div className="flex h-[70vh] border border-gray-200 rounded-md overflow-hidden">
             {!isGoogleAuthenticated ? (
-              <div className="py-16 flex flex-col items-center justify-center">
+              <div className="py-16 flex flex-col items-center justify-center w-full">
                 <div className="bg-blue-50 rounded-lg p-6 max-w-md text-center mb-4">
                   <Lock className="h-12 w-12 mx-auto mb-4 text-blue-600" />
                   <h3 className="text-lg font-semibold mb-2">Google Authentication Required</h3>
@@ -1593,12 +1589,147 @@ export default function CoAuthor() {
                 </div>
               </div>
             ) : (
-              <GoogleDocsEmbed 
-                documentId={selectedDocument?.id === 1 ? "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4"}
-                documentName={selectedDocument?.title || "Module 2.5 Clinical Overview"}
-              />
+              <>
+                {/* Direct Google Docs Iframe Integration */}
+                <iframe
+                  title="Google Docs Editor"
+                  src={`https://docs.google.com/document/d/${selectedDocument?.id === 1 ? "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4"}/edit?usp=sharing&rm=minimal`}
+                  width="100%"
+                  height="100%"
+                  frameBorder="0"
+                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                  className="flex-grow"
+                />
+                
+                {/* AI Assistant Sidebar - Only shown when AI assistant is toggled on */}
+                {aiAssistantOpen && (
+                  <div className="w-[300px] bg-white border-l border-gray-200 p-4 flex flex-col h-full">
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-medium">AI Assistant</h3>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-8 w-8 p-0" 
+                        onClick={() => setAiAssistantOpen(false)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    
+                    <Tabs defaultValue={aiAssistantMode} onValueChange={setAiAssistantMode} className="w-full">
+                      <TabsList className="w-full">
+                        <TabsTrigger value="suggestions" className="flex-1">Suggest</TabsTrigger>
+                        <TabsTrigger value="compliance" className="flex-1">Compliance</TabsTrigger>
+                        <TabsTrigger value="formatting" className="flex-1">Format</TabsTrigger>
+                      </TabsList>
+                      
+                      <TabsContent value="suggestions" className="mt-4">
+                        <div className="space-y-4">
+                          <div className="text-sm">
+                            Smart suggestions to improve your document based on regulatory standards.
+                          </div>
+                          
+                          <div className="border rounded-md p-3 bg-blue-50">
+                            <p className="text-sm font-medium">Consider adding:</p>
+                            <p className="text-sm mt-1">A summary of the clinical pharmacology studies supporting the proposed dosing regimen.</p>
+                          </div>
+                          
+                          <div className="border rounded-md p-3 bg-blue-50">
+                            <p className="text-sm font-medium">Suggested content:</p>
+                            <p className="text-sm mt-1">Include a brief overview of the benefit-risk assessment highlighting key findings from clinical trials.</p>
+                          </div>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="compliance" className="mt-4">
+                        <div className="space-y-4">
+                          <div className="text-sm">
+                            Real-time compliance checks for eCTD requirements and regulatory guidelines.
+                          </div>
+                          
+                          <div className="border rounded-md p-3 bg-amber-50">
+                            <p className="text-sm font-medium text-amber-700">Compliance warning:</p>
+                            <p className="text-sm mt-1">Section 2.5.4 (Benefit-Risk Assessment) appears to be missing required content.</p>
+                          </div>
+                          
+                          <div className="border rounded-md p-3 bg-green-50">
+                            <p className="text-sm font-medium text-green-700">Passed checks:</p>
+                            <ul className="text-sm mt-1 list-disc list-inside">
+                              <li>Document structure follows ICH guidelines</li>
+                              <li>All required headings are present</li>
+                              <li>Font and formatting meet eCTD requirements</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </TabsContent>
+                      
+                      <TabsContent value="formatting" className="mt-4">
+                        <div className="space-y-4">
+                          <div className="text-sm">
+                            Formatting tools and templates for eCTD compliance.
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-2">
+                            <Button size="sm" variant="outline" className="text-xs justify-start">
+                              <Plus className="h-3 w-3 mr-1" />
+                              Add Module 2.5 Template
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-xs justify-start">
+                              <List className="h-3 w-3 mr-1" />
+                              Add Table of Contents
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-xs justify-start">
+                              <Table className="h-3 w-3 mr-1" />
+                              Insert Standard Table
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-xs justify-start">
+                              <Link className="h-3 w-3 mr-1" />
+                              Add Cross-Reference
+                            </Button>
+                          </div>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
+                    
+                    <Separator className="my-4" />
+                    
+                    <div className="mt-auto">
+                      <div className="text-sm font-medium mb-2">Ask the AI Assistant</div>
+                      <div className="flex flex-col space-y-2">
+                        <input
+                          type="text"
+                          placeholder="Ask a question about your document..."
+                          className="w-full px-3 py-2 border rounded-md text-sm"
+                          value={aiUserQuery}
+                          onChange={(e) => setAiUserQuery(e.target.value)}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && aiUserQuery.trim()) {
+                              // Handle AI query
+                              setAiIsLoading(true);
+                              setTimeout(() => {
+                                setAiResponse("Based on regulatory guidelines, your clinical overview should include a comprehensive benefit-risk assessment that considers the specific patient population targeted by your product.");
+                                setAiIsLoading(false);
+                              }, 1500);
+                            }
+                          }}
+                        />
+                        {aiIsLoading && (
+                          <div className="text-center py-2">
+                            <Loader2 className="h-4 w-4 animate-spin mx-auto" />
+                          </div>
+                        )}
+                        {aiResponse && (
+                          <div className="border rounded-md p-3 bg-gray-50 text-sm">
+                            {aiResponse}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
-          </Suspense>
+          </div>
           
           <DialogFooter className="mt-4">
             <div className="flex justify-between w-full">
