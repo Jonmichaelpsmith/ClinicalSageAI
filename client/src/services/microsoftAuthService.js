@@ -1,191 +1,188 @@
 /**
- * Microsoft 365 Authentication Service
+ * Microsoft Authentication Service
  * 
- * This service handles authentication with Microsoft 365 and Azure AD
- * to enable seamless integration with Microsoft Word, OneDrive, and other Microsoft services.
- * 
- * It uses the proper OAuth 2.0 flow required for Microsoft Graph API access.
+ * This service handles authentication with Microsoft Azure AD for Office integration.
+ * It provides methods for login, token management, and user information retrieval.
  */
 
-// Configuration 
-const MS_AUTH_CONFIG = {
-  clientId: process.env.MICROSOFT_CLIENT_ID || '',
-  tenantId: process.env.MICROSOFT_TENANT_ID || 'common', // 'common' allows any Microsoft account
-  redirectUri: window.location.origin + '/auth/microsoft/callback',
-  authority: 'https://login.microsoftonline.com/',
-  scopes: [
-    'https://graph.microsoft.com/Files.ReadWrite',
-    'https://graph.microsoft.com/Sites.ReadWrite.All',
-    'https://officeapps.live.com/embedded/AllSites.Write',
-    'offline_access', // For refresh tokens
-    'openid',
-    'profile'
-  ]
-};
+// API endpoints
+const MS_OFFICE_AUTH_ENDPOINT = '/api/microsoft-office';
+
+// Microsoft authentication configurations - these should be set from environment variables
+const redirectUri = window.location.origin + '/auth-callback';
 
 /**
- * Initialize the Microsoft authentication context
+ * Generate Microsoft authentication URL
+ * @returns {Promise<string>} Microsoft authentication URL
  */
-export async function initializeMicrosoftAuth() {
+export async function getMicrosoftAuthUrl() {
   try {
-    // In a production implementation, we would:
-    // 1. Initialize MSAL (Microsoft Authentication Library)
-    // 2. Check if user is already logged in
-    // 3. Set up silent refresh for tokens
+    const response = await fetch(`${MS_OFFICE_AUTH_ENDPOINT}/auth-url`);
     
-    // Simulate successful initialization
-    console.log('Microsoft authentication initialized successfully');
-    
-    // Check if user is already logged in
-    const authState = getAuthState();
-    return { isAuthenticated: authState.isAuthenticated };
-  } catch (error) {
-    console.error('Failed to initialize Microsoft authentication:', error);
-    return { isAuthenticated: false, error };
-  }
-}
-
-/**
- * Get the current authentication state
- */
-export function getAuthState() {
-  // In a production implementation, this would check the MSAL cache or localStorage
-  // for valid access tokens and authentication state
-  
-  // Get auth state from localStorage (for demo)
-  try {
-    const storedAuthState = localStorage.getItem('ms_auth_state');
-    return storedAuthState ? JSON.parse(storedAuthState) : { isAuthenticated: false };
-  } catch (error) {
-    console.error('Error getting auth state:', error);
-    return { isAuthenticated: false };
-  }
-}
-
-/**
- * Sign in with Microsoft
- */
-export async function signInWithMicrosoft() {
-  try {
-    // In a production implementation, this would:
-    // 1. Use MSAL to redirect to Microsoft login page
-    // 2. Handle the auth response
-    // 3. Store tokens securely
-    
-    // For demo purposes, generate the auth URL for redirection
-    const authUrl = `${MS_AUTH_CONFIG.authority}${MS_AUTH_CONFIG.tenantId}/oauth2/v2.0/authorize?client_id=${MS_AUTH_CONFIG.clientId}&response_type=code&redirect_uri=${encodeURIComponent(MS_AUTH_CONFIG.redirectUri)}&scope=${encodeURIComponent(MS_AUTH_CONFIG.scopes.join(' '))}&response_mode=query`;
-    
-    // In a real implementation, we would redirect to this URL
-    // window.location.href = authUrl;
-    
-    // For demo, return the URL so the app can handle redirection
-    return { authUrl };
-  } catch (error) {
-    console.error('Failed to sign in with Microsoft:', error);
-    return { error };
-  }
-}
-
-/**
- * Handle authentication callback
- * @param {string} authCode - Authorization code from Microsoft
- */
-export async function handleAuthCallback(authCode) {
-  try {
-    // In a production implementation, this would:
-    // 1. Exchange the auth code for tokens
-    // 2. Store tokens securely
-    // 3. Update auth state
-    
-    // For demo purposes, simulate a successful exchange
-    const mockTokenResponse = {
-      accessToken: 'mock_access_token',
-      refreshToken: 'mock_refresh_token',
-      expiresIn: 3600,
-      tokenType: 'Bearer'
-    };
-    
-    // Store auth state in localStorage (for demo)
-    const authState = {
-      isAuthenticated: true,
-      tokenExpiry: Date.now() + (mockTokenResponse.expiresIn * 1000),
-      userInfo: {
-        name: 'Authenticated User',
-        email: 'user@example.com'
-      }
-    };
-    
-    localStorage.setItem('ms_auth_state', JSON.stringify(authState));
-    
-    return { success: true };
-  } catch (error) {
-    console.error('Failed to handle auth callback:', error);
-    return { error };
-  }
-}
-
-/**
- * Get access token for Microsoft Graph API
- */
-export async function getMicrosoftGraphToken() {
-  try {
-    // In a production implementation, this would:
-    // 1. Check token cache
-    // 2. Refresh token if needed
-    // 3. Return valid access token
-    
-    const authState = getAuthState();
-    
-    if (!authState.isAuthenticated) {
-      throw new Error('User not authenticated with Microsoft');
+    if (!response.ok) {
+      throw new Error(`Failed to get auth URL: ${response.status} ${response.statusText}`);
     }
     
-    // For demo purposes, return a mock token
-    return { accessToken: 'mock_access_token' };
+    const data = await response.json();
+    return data.authUrl;
   } catch (error) {
-    console.error('Failed to get Microsoft Graph token:', error);
-    return { error };
+    console.error('Error getting Microsoft auth URL:', error);
+    throw error;
   }
 }
 
 /**
- * Sign out from Microsoft
+ * Handle the authorization code callback from Microsoft
+ * @param {string} code - Authorization code from Microsoft
+ * @returns {Promise<object>} Token response
  */
-export async function signOutFromMicrosoft() {
+export async function exchangeCodeForToken(code) {
   try {
-    // In a production implementation, this would:
-    // 1. Clear MSAL cache
-    // 2. Optionally redirect to Microsoft logout endpoint
+    if (!code) {
+      throw new Error('Authorization code is required');
+    }
     
-    // Clear auth state from localStorage (for demo)
-    localStorage.removeItem('ms_auth_state');
+    const response = await fetch(`${MS_OFFICE_AUTH_ENDPOINT}/token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ code }),
+    });
     
-    return { success: true };
+    if (!response.ok) {
+      throw new Error(`Failed to exchange code: ${response.status} ${response.statusText}`);
+    }
+    
+    const tokenData = await response.json();
+    
+    // Store tokens securely
+    localStorage.setItem('ms_access_token', tokenData.access_token);
+    localStorage.setItem('ms_refresh_token', tokenData.refresh_token);
+    localStorage.setItem('ms_token_expiry', new Date(Date.now() + tokenData.expires_in * 1000).toISOString());
+    
+    return tokenData;
   } catch (error) {
-    console.error('Failed to sign out from Microsoft:', error);
-    return { error };
+    console.error('Error exchanging code for token:', error);
+    throw error;
   }
 }
 
 /**
- * Check if Microsoft Word is available in the user's subscription
+ * Get current Microsoft access token, refreshing if necessary
+ * @returns {Promise<string>} Access token
  */
-export async function checkMicrosoftWordAvailability() {
+export async function getAccessToken() {
   try {
-    // In a production implementation, this would:
-    // 1. Call Microsoft Graph API to check licenses
-    // 2. Verify Word subscription status
+    // Check if token exists and is not expired
+    const accessToken = localStorage.getItem('ms_access_token');
+    const tokenExpiry = localStorage.getItem('ms_token_expiry');
     
-    // For demo purposes, assume Word is available
-    return { 
-      isAvailable: true,
-      details: {
-        product: 'Microsoft 365',
-        includes: ['Word', 'Excel', 'PowerPoint', 'Outlook']
-      }
-    };
+    if (accessToken && tokenExpiry && new Date(tokenExpiry) > new Date()) {
+      return accessToken;
+    }
+    
+    // Token expired or doesn't exist, try to refresh
+    const refreshToken = localStorage.getItem('ms_refresh_token');
+    
+    if (!refreshToken) {
+      throw new Error('No refresh token available. User needs to login again.');
+    }
+    
+    // Refresh token logic would go here in a real implementation
+    // For now, we'll assume the refresh is successful
+    
+    console.log('Access token expired. In a real implementation, this would refresh the token.');
+    
+    // For demonstration, return the existing token
+    return accessToken || '';
   } catch (error) {
-    console.error('Failed to check Microsoft Word availability:', error);
-    return { error };
+    console.error('Error getting access token:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get current user information from Microsoft
+ * @returns {Promise<object>} User information
+ */
+export async function getCurrentUser() {
+  try {
+    const accessToken = await getAccessToken();
+    
+    if (!accessToken) {
+      throw new Error('No access token available. User needs to login first.');
+    }
+    
+    const response = await fetch(`${MS_OFFICE_AUTH_ENDPOINT}/me`, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to get user info: ${response.status} ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error getting current user:', error);
+    throw error;
+  }
+}
+
+/**
+ * Check if user is authenticated with Microsoft
+ * @returns {boolean} True if authenticated
+ */
+export function isAuthenticated() {
+  const accessToken = localStorage.getItem('ms_access_token');
+  const tokenExpiry = localStorage.getItem('ms_token_expiry');
+  
+  return !!(accessToken && tokenExpiry && new Date(tokenExpiry) > new Date());
+}
+
+/**
+ * Logout from Microsoft
+ */
+export function logout() {
+  localStorage.removeItem('ms_access_token');
+  localStorage.removeItem('ms_refresh_token');
+  localStorage.removeItem('ms_token_expiry');
+}
+
+/**
+ * Log in with Microsoft
+ * Redirects to Microsoft login page
+ */
+export async function login() {
+  try {
+    const authUrl = await getMicrosoftAuthUrl();
+    window.location.href = authUrl;
+  } catch (error) {
+    console.error('Error during Microsoft login:', error);
+    throw error;
+  }
+}
+
+/**
+ * Initialize Microsoft authentication handling
+ * @returns {Promise<void>}
+ */
+export async function initializeAuth() {
+  try {
+    // Handle authorization code in URL if present
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+      await exchangeCodeForToken(code);
+      
+      // Remove code from URL to prevent issues on page refresh
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  } catch (error) {
+    console.error('Error initializing Microsoft auth:', error);
+    throw error;
   }
 }

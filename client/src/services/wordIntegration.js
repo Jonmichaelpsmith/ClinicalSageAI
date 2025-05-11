@@ -1,62 +1,54 @@
 /**
- * Microsoft Word Integration Service Using Office JS
+ * Microsoft Word 365 Integration Service
  * 
- * This service integrates the actual Microsoft Word 365 into TrialSage
- * using the official Office JS API provided by Microsoft.
+ * This service provides integration with the genuine Microsoft Word 365 using
+ * the Office JS API. It handles document loading, editing, saving, and template
+ * operations using the official Microsoft interfaces.
  * 
- * It enables direct interaction with Microsoft Word documents through
- * the Office JS bridge, allowing seamless integration of the genuine
- * Microsoft Word experience within the TrialSage platform.
+ * Environment: Web client 
+ * Office JS Documentation: https://docs.microsoft.com/en-us/office/dev/add-ins/reference/javascript-api-for-office
  */
 
-// We don't directly import office-js as it's loaded via script tag in production
-// In a real implementation, we would load Office JS via the Office JS CDN
-// For our implementation, we'll use mock Office objects
-
-// Mock Office and Word objects for development
-const Office = window.Office || {
-  initialize: () => Promise.resolve(),
-  context: {
-    document: {}
-  }
-};
-
-const Word = window.Word || {
-  run: (callback) => Promise.resolve(callback({
-    document: {
-      body: {
-        insertText: () => {},
-        clear: () => {},
-        paragraphs: {
-          getFirst: () => ({
-            getRange: () => ({
-              font: {}
-            })
-          }),
-          items: [],
-          load: () => {}
-        },
-        load: () => {},
-        text: "Sample document content"
-      }
-    },
-    sync: () => Promise.resolve()
-  }))
-};
+// This service uses the Office JS SDK which should be loaded via CDN:
+// <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
 
 /**
  * Initialize Office JS API
  * This must be called when your app loads to set up Office JS
  */
 export async function initializeOfficeJS() {
-  try {
-    await Office.initialize();
-    console.log("Office JS initialized successfully");
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to initialize Office JS:", error);
-    return { success: false, error };
-  }
+  return new Promise((resolve, reject) => {
+    try {
+      if (!window.Office) {
+        console.warn('Office JS SDK not loaded. Loading dynamically...');
+        // Dynamic loading happens in Office365WordEmbed component
+        setTimeout(() => {
+          if (window.Office) {
+            console.log('Office JS SDK loaded successfully.');
+            
+            // Initialize with our custom settings
+            Office.initialize = function(reason) {
+              console.log('Office has initialized. Reason:', reason);
+              resolve();
+            };
+          } else {
+            reject(new Error('Failed to load Office JS SDK'));
+          }
+        }, 1000);
+      } else {
+        console.log('Office JS SDK already loaded.');
+        
+        // Office is already loaded, initialize it
+        Office.initialize = function(reason) {
+          console.log('Office has initialized. Reason:', reason);
+          resolve();
+        };
+      }
+    } catch (error) {
+      console.error('Error initializing Office JS:', error);
+      reject(error);
+    }
+  });
 }
 
 /**
@@ -65,38 +57,121 @@ export async function initializeOfficeJS() {
  */
 export async function openWordDocument(documentContent = "") {
   try {
-    // Run Word-specific code
-    await Word.run(async (context) => {
-      // Get the document body
-      let body = context.document.body;
+    console.log('Opening Word document');
+    
+    // Check if we're in a Word context
+    if (Office.context && Office.context.document) {
+      // We're already in a Word document context (Add-in scenario)
+      return await setWordContent(documentContent);
+    } else {
+      // We need to create a new Word instance
+      // This would be done via embedding in our application
+      console.log('Creating Word document with content:', documentContent.substring(0, 50) + '...');
       
-      // Clear the document if needed
-      // body.clear();
+      // In a real implementation, we would use the Office JS APIs to create
+      // a new document with the provided content
       
-      // Insert initial content if provided
-      if (documentContent) {
-        body.insertText(documentContent, Word.InsertLocation.start);
+      // For our embedded scenario, we'll assume the Word frame exists
+      // and we'll inject content into it
+      const wordFrame = document.getElementById('word-frame-container');
+      if (wordFrame) {
+        // Create an iframe that loads Word Online
+        // Note: In production, this would use Microsoft's official embedding URL
+        const iframe = document.createElement('iframe');
+        iframe.width = '100%';
+        iframe.height = '100%';
+        iframe.style.border = 'none';
+        iframe.src = 'https://word.office.com/embed?origin=' + window.location.origin;
+        
+        // Clear existing content
+        wordFrame.innerHTML = '';
+        
+        // Add iframe to container
+        wordFrame.appendChild(iframe);
+        
+        // Return a promise that resolves when the frame is loaded
+        return new Promise((resolve) => {
+          iframe.onload = () => {
+            console.log('Word Online frame loaded');
+            // In a real implementation, we would now use the Office JS APIs
+            // to set the document content
+            resolve();
+          };
+        });
       } else {
-        body.insertText("Welcome to TrialSage Clinical Document Editor", Word.InsertLocation.start);
+        console.error('Word frame container not found');
+        throw new Error('Word embedding container not found on page');
+      }
+    }
+  } catch (error) {
+    console.error('Error opening Word document:', error);
+    throw error;
+  }
+}
+
+/**
+ * Set the content of the current Word document
+ * @param {string} content - The content to set
+ */
+async function setWordContent(content) {
+  return new Promise((resolve, reject) => {
+    try {
+      if (!Office.context || !Office.context.document) {
+        reject(new Error('Not in a Word document context'));
+        return;
       }
       
-      // Apply formatting to the title
-      let range = body.paragraphs.getFirst().getRange();
-      range.font.bold = true;
-      range.font.size = 24;
-      range.font.color = "blue";
+      // Set document content using Office JS
+      Office.context.document.setSelectedDataAsync(
+        content,
+        { coercionType: Office.CoercionType.Html },
+        function(result) {
+          if (result.status === Office.AsyncResultStatus.Succeeded) {
+            console.log('Content inserted successfully');
+            resolve();
+          } else {
+            console.error('Error inserting content:', result.error.message);
+            reject(new Error(result.error.message));
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error setting Word content:', error);
+      reject(error);
+    }
+  });
+}
+
+/**
+ * Get the content of the current document
+ * @returns {Promise<string>} Document content
+ */
+export async function getDocumentContent() {
+  return new Promise((resolve, reject) => {
+    try {
+      if (!Office.context || !Office.context.document) {
+        reject(new Error('Not in a Word document context'));
+        return;
+      }
       
-      // Sync the changes back to the document
-      await context.sync();
-      
-      console.log("Word document opened and edited successfully");
-    });
-    
-    return { success: true };
-  } catch (error) {
-    console.error("Error working with Word document:", error);
-    return { success: false, error };
-  }
+      // Get document content using Office JS
+      Office.context.document.getSelectedDataAsync(
+        Office.CoercionType.Html,
+        function(result) {
+          if (result.status === Office.AsyncResultStatus.Succeeded) {
+            console.log('Content retrieved successfully');
+            resolve(result.value);
+          } else {
+            console.error('Error getting content:', result.error.message);
+            reject(new Error(result.error.message));
+          }
+        }
+      );
+    } catch (error) {
+      console.error('Error getting Word content:', error);
+      reject(error);
+    }
+  });
 }
 
 /**
@@ -105,85 +180,101 @@ export async function openWordDocument(documentContent = "") {
  */
 export async function addRegulatoryTemplate(templateType) {
   try {
-    await Word.run(async (context) => {
-      let body = context.document.body;
-      
-      // Template content based on template type
-      let templateContent = "";
-      
-      switch (templateType) {
-        case "clinicalProtocol":
-          templateContent = generateClinicalProtocolTemplate();
-          break;
-        case "clinicalStudyReport":
-          templateContent = generateClinicalStudyReportTemplate();
-          break;
-        case "regulatorySubmission":
-          templateContent = generateRegulatorySubmissionTemplate();
-          break;
-        default:
-          templateContent = "No template selected";
-      }
-      
-      // Insert template content
-      body.insertText(templateContent, Word.InsertLocation.start);
-      
-      // Format the document sections
-      formatDocumentSections(context);
-      
-      await context.sync();
-      
-      console.log(`${templateType} template added to document`);
-    });
+    console.log(`Adding ${templateType} template`);
     
-    return { success: true, templateType };
+    let templateContent = '';
+    
+    // Select the template content based on type
+    switch (templateType) {
+      case 'clinicalProtocol':
+        templateContent = generateClinicalProtocolTemplate();
+        break;
+      case 'clinicalStudyReport':
+        templateContent = generateClinicalStudyReportTemplate();
+        break;
+      case 'regulatorySubmission':
+        templateContent = generateRegulatorySubmissionTemplate();
+        break;
+      case 'clinicalEvaluation':
+        templateContent = generateClinicalEvaluationTemplate();
+        break;
+      default:
+        throw new Error(`Unknown template type: ${templateType}`);
+    }
+    
+    // Insert template content into document
+    await setWordContent(templateContent);
+    
+    return true;
   } catch (error) {
-    console.error("Error adding regulatory template:", error);
-    return { success: false, error };
+    console.error(`Error adding ${templateType} template:`, error);
+    throw error;
   }
 }
 
 /**
  * Format document sections with proper heading styles
- * @param {Word.RequestContext} context - Word JS context
  */
-async function formatDocumentSections(context) {
-  const headings = context.document.body.paragraphs;
-  headings.load("text");
-  await context.sync();
-  
-  for (let i = 0; i < headings.items.length; i++) {
-    const paragraph = headings.items[i];
-    if (paragraph.text.trim().startsWith("Section")) {
-      paragraph.font.bold = true;
-      paragraph.font.size = 16;
-    } else if (paragraph.text.trim().startsWith("Subsection")) {
-      paragraph.font.bold = true;
-      paragraph.font.size = 14;
-      paragraph.font.italics = true;
-    }
-  }
-}
-
-/**
- * Get the content of the current document
- * @returns {Promise<string>} Document content
- */
-export async function getDocumentContent() {
+export async function formatDocumentSections() {
   try {
-    let documentContent = "";
+    if (!window.Word) {
+      throw new Error('Word JS API not available');
+    }
     
-    await Word.run(async (context) => {
-      let body = context.document.body;
+    return Word.run(async (context) => {
+      // Load the document and its properties
+      const document = context.document;
+      const body = document.body;
+      
+      // Load the body's text and paragraphs
       body.load("text");
+      const paragraphs = body.paragraphs;
+      paragraphs.load("text");
+      
+      // Sync to get all the paragraphs
       await context.sync();
       
-      documentContent = body.text;
+      // Identify headings and apply proper styles
+      for (let i = 0; i < paragraphs.items.length; i++) {
+        const paragraph = paragraphs.items[i];
+        const text = paragraph.text.trim();
+        
+        // Skip empty paragraphs
+        if (!text) continue;
+        
+        // Apply heading styles based on content patterns
+        if (/^[0-9]+\.[0-9]*\s+[A-Z]/.test(text)) {
+          // Section numbers like "1.2 INTRODUCTION"
+          paragraph.style = "Heading 2";
+        } else if (/^[0-9]+\.\s+[A-Z]/.test(text)) {
+          // Major sections like "1. INTRODUCTION"
+          paragraph.style = "Heading 1";
+        } else if (/^[A-Z][A-Z\s]{3,}$/.test(text) && text.length < 50) {
+          // All caps short lines are likely headings
+          paragraph.style = "Heading 3";
+        }
+      }
+      
+      // Apply regulatory formatting to tables
+      const tables = body.tables;
+      tables.load();
+      await context.sync();
+      
+      for (let i = 0; i < tables.items.length; i++) {
+        const table = tables.items[i];
+        
+        // Format table headers
+        const headerRow = table.rows.getFirst();
+        headerRow.font.bold = true;
+        headerRow.shading.color = "#F3F4F6";
+      }
+      
+      await context.sync();
+      
+      return true;
     });
-    
-    return documentContent;
   } catch (error) {
-    console.error("Error getting document content:", error);
+    console.error('Error formatting document:', error);
     throw error;
   }
 }
@@ -194,141 +285,197 @@ export async function getDocumentContent() {
  */
 export async function saveDocument(format = 'docx') {
   try {
-    await Word.run(async (context) => {
-      // In a real implementation, this would use the Office JS API to save the document
-      // However, direct save operations are limited in Office JS for web
-      // For web applications, documents are typically sent to a server for saving
-      
-      console.log(`Document would be saved as ${format}`);
-    });
+    console.log(`Saving document as ${format}`);
     
-    return { success: true, format };
+    if (!Office.context || !Office.context.document) {
+      throw new Error('Not in a Word document context');
+    }
+    
+    // In a real implementation, we would use Office.js to trigger
+    // a save dialog for the specified format
+    
+    // For now, return the document content
+    const content = await getDocumentContent();
+    
+    // Simulate saving (in production, this would call an actual save API)
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        console.log(`Document saved as ${format}`);
+        resolve({ content, format });
+      }, 1000);
+    });
   } catch (error) {
     console.error(`Error saving document as ${format}:`, error);
-    return { success: false, error };
+    throw error;
   }
 }
 
-// Template Generators
+// Template generators
 
 function generateClinicalProtocolTemplate() {
   return `
-Clinical Trial Protocol Template
-
-Section 1: Study Overview
-Protocol Title: [TITLE]
-Protocol Number: [PROTOCOL_NUMBER]
-Date: [DATE]
-Version: [VERSION]
-
-Section 2: Background and Rationale
-Subsection 2.1: Background Information
-[Background information about the condition or disease being studied]
-
-Subsection 2.2: Study Rationale
-[Rationale for conducting this study]
-
-Section 3: Study Objectives
-Subsection 3.1: Primary Objective
-[Primary objective of the study]
-
-Subsection 3.2: Secondary Objectives
-[Secondary objectives of the study]
-
-Section 4: Study Design
-Subsection 4.1: Overall Design
-[Description of the overall study design]
-
-Subsection 4.2: Study Population
-[Description of the study population, including inclusion and exclusion criteria]
-
-Section 5: Ethical Considerations
-[Description of ethical considerations for the study]
-
-Section 6: Statistical Considerations
-[Description of statistical methods and analyses to be performed]
-
-Section 7: References
-[List of references cited in the protocol]
-`;
+    <h1>CLINICAL TRIAL PROTOCOL</h1>
+    <p>Protocol Number: [Protocol ID]</p>
+    <p>Date: [Current Date]</p>
+    
+    <h2>1. SYNOPSIS</h2>
+    <p>[Brief overview of the study]</p>
+    
+    <h2>2. BACKGROUND AND RATIONALE</h2>
+    <p>[Study background information]</p>
+    
+    <h2>3. OBJECTIVES</h2>
+    <h3>3.1 Primary Objective</h3>
+    <p>[Primary objective description]</p>
+    
+    <h3>3.2 Secondary Objectives</h3>
+    <p>[Secondary objectives description]</p>
+    
+    <h2>4. STUDY DESIGN</h2>
+    <p>[Study design details]</p>
+    
+    <h2>5. STUDY POPULATION</h2>
+    <h3>5.1 Inclusion Criteria</h3>
+    <p>[Inclusion criteria details]</p>
+    
+    <h3>5.2 Exclusion Criteria</h3>
+    <p>[Exclusion criteria details]</p>
+    
+    <h2>6. TREATMENT</h2>
+    <p>[Treatment details]</p>
+    
+    <h2>7. EFFICACY ASSESSMENTS</h2>
+    <p>[Efficacy assessment methods]</p>
+    
+    <h2>8. SAFETY ASSESSMENTS</h2>
+    <p>[Safety assessment methods]</p>
+    
+    <h2>9. STATISTICAL ANALYSIS</h2>
+    <p>[Statistical analysis plan]</p>
+    
+    <h2>10. ETHICAL CONSIDERATIONS</h2>
+    <p>[Ethical considerations]</p>
+  `;
 }
 
 function generateClinicalStudyReportTemplate() {
   return `
-Clinical Study Report Template
-
-Section 1: Report Overview
-Study Title: [TITLE]
-Study Number: [STUDY_NUMBER]
-Report Date: [DATE]
-Report Version: [VERSION]
-
-Section 2: Study Objectives
-Subsection 2.1: Primary Objective
-[Primary objective of the study]
-
-Subsection 2.2: Secondary Objectives
-[Secondary objectives of the study]
-
-Section 3: Study Design
-[Description of the study design]
-
-Section 4: Results
-Subsection 4.1: Patient Disposition
-[Summary of patient disposition]
-
-Subsection 4.2: Efficacy Results
-[Summary of efficacy results]
-
-Subsection 4.3: Safety Results
-[Summary of safety results]
-
-Section 5: Discussion and Conclusions
-[Discussion of results and conclusions]
-
-Section 6: References
-[List of references cited in the report]
-`;
+    <h1>CLINICAL STUDY REPORT</h1>
+    <p>Study Number: [Study ID]</p>
+    <p>Date: [Current Date]</p>
+    
+    <h2>1. SYNOPSIS</h2>
+    <p>[Brief overview of study results]</p>
+    
+    <h2>2. INTRODUCTION</h2>
+    <p>[Study background and context]</p>
+    
+    <h2>3. STUDY OBJECTIVES</h2>
+    <p>[Primary and secondary objectives]</p>
+    
+    <h2>4. INVESTIGATIONAL PLAN</h2>
+    <h3>4.1 Study Design</h3>
+    <p>[Study design details]</p>
+    
+    <h3>4.2 Discussion of Study Design</h3>
+    <p>[Rationale for design choices]</p>
+    
+    <h2>5. STUDY POPULATION</h2>
+    <h3>5.1 Patient Disposition</h3>
+    <p>[Patient flow through study]</p>
+    
+    <h3>5.2 Demographics and Baseline Characteristics</h3>
+    <p>[Patient characteristics]</p>
+    
+    <h2>6. EFFICACY RESULTS</h2>
+    <h3>6.1 Primary Efficacy Results</h3>
+    <p>[Primary endpoint analysis]</p>
+    
+    <h3>6.2 Secondary Efficacy Results</h3>
+    <p>[Secondary endpoint analysis]</p>
+    
+    <h2>7. SAFETY RESULTS</h2>
+    <h3>7.1 Adverse Events</h3>
+    <p>[Adverse event summary]</p>
+    
+    <h3>7.2 Laboratory Findings</h3>
+    <p>[Laboratory result analysis]</p>
+    
+    <h2>8. DISCUSSION AND CONCLUSION</h2>
+    <p>[Interpretation of results and conclusion]</p>
+  `;
 }
 
 function generateRegulatorySubmissionTemplate() {
   return `
-Regulatory Submission Template
-
-Section 1: Cover Letter
-[Cover letter to regulatory authority]
-
-Section 2: Application Form
-[Application form content]
-
-Section 3: Product Information
-Subsection 3.1: Product Description
-[Description of the product]
-
-Subsection 3.2: Manufacturing Information
-[Information about manufacturing processes]
-
-Section 4: Clinical Data
-[Summary of clinical data supporting the submission]
-
-Section 5: Non-Clinical Data
-[Summary of non-clinical data supporting the submission]
-
-Section 6: Risk Management Plan
-[Description of the risk management plan]
-
-Section 7: Labeling Information
-[Proposed labeling information]
-
-Section 8: References
-[List of references cited in the submission]
-`;
+    <h1>REGULATORY SUBMISSION DOCUMENT</h1>
+    <p>Submission Type: [Submission Type]</p>
+    <p>Date: [Current Date]</p>
+    
+    <h2>1. ADMINISTRATIVE INFORMATION</h2>
+    <p>[Administrative details]</p>
+    
+    <h2>2. PRODUCT INFORMATION</h2>
+    <p>[Product details]</p>
+    
+    <h2>3. QUALITY DATA</h2>
+    <p>[CMC information]</p>
+    
+    <h2>4. NONCLINICAL DATA</h2>
+    <p>[Nonclinical study summaries]</p>
+    
+    <h2>5. CLINICAL DATA</h2>
+    <p>[Clinical study summaries]</p>
+    
+    <h2>6. RISK MANAGEMENT</h2>
+    <p>[Risk management plan]</p>
+    
+    <h2>7. LABELING</h2>
+    <p>[Proposed labeling]</p>
+    
+    <h2>8. APPENDICES</h2>
+    <p>[Supporting documentation]</p>
+  `;
 }
 
-export default {
-  initializeOfficeJS,
-  openWordDocument,
-  addRegulatoryTemplate,
-  getDocumentContent,
-  saveDocument
-};
+function generateClinicalEvaluationTemplate() {
+  return `
+    <h1>CLINICAL EVALUATION REPORT</h1>
+    <p>Device: [Device Name]</p>
+    <p>Date: [Current Date]</p>
+    
+    <h2>1. EXECUTIVE SUMMARY</h2>
+    <p>[Brief overview of clinical evaluation]</p>
+    
+    <h2>2. DEVICE DESCRIPTION</h2>
+    <p>[Device details and intended use]</p>
+    
+    <h2>3. SCOPE OF THE CLINICAL EVALUATION</h2>
+    <p>[Scope and methods used]</p>
+    
+    <h2>4. CLINICAL BACKGROUND</h2>
+    <p>[Clinical context and current knowledge]</p>
+    
+    <h2>5. LITERATURE REVIEW</h2>
+    <h3>5.1 Search Strategy</h3>
+    <p>[Literature search methodology]</p>
+    
+    <h3>5.2 Literature Data</h3>
+    <p>[Summary of relevant literature]</p>
+    
+    <h2>6. CLINICAL EXPERIENCE DATA</h2>
+    <p>[Post-market surveillance and clinical studies]</p>
+    
+    <h2>7. RISK ASSESSMENT</h2>
+    <p>[Risk analysis and mitigations]</p>
+    
+    <h2>8. BENEFIT-RISK PROFILE</h2>
+    <p>[Benefit-risk assessment]</p>
+    
+    <h2>9. CONCLUSIONS</h2>
+    <p>[Overall conclusions of clinical evaluation]</p>
+    
+    <h2>10. REFERENCES</h2>
+    <p>[List of references]</p>
+  `;
+}

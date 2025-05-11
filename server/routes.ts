@@ -229,7 +229,7 @@ export default function registerRoutes(app: Express): void {
   app.use('/api/ai', aiRouter);
   
   // Register Microsoft Office integration routes
-  app.use('/api/microsoft', microsoftOfficeRoutes);
+  app.use('/api/microsoft-office', microsoftOfficeRoutes);
   
   // Create a temporary CER Validation router
   const cerValidationRouter = express.Router();
