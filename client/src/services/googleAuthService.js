@@ -76,25 +76,121 @@ export const getCurrentUser = () => {
  * @returns {Promise<Object>} User information
  */
 export const signInWithGoogle = async () => {
-  // In a real implementation, this would trigger the Google OAuth flow
-  // For now, we simulate a successful authentication
+  console.log('Initiating Google Sign-In with Client ID:', GOOGLE_CONFIG.CLIENT_ID);
   
-  console.log('Signing in with Google');
-  
-  // Simulate successful authentication
-  isAuthenticated = true;
-  currentUser = {
-    id: 'simulated-user-id',
-    email: 'user@example.com',
-    name: 'Test User',
-    picture: 'https://via.placeholder.com/50',
-  };
-  
-  // Cache authentication in localStorage
-  localStorage.setItem('google_access_token', 'simulated-access-token');
-  localStorage.setItem('google_user_info', JSON.stringify(currentUser));
-  
-  return currentUser;
+  return new Promise((resolve, reject) => {
+    try {
+      // Create popup window for OAuth flow
+      const width = 500;
+      const height = 600;
+      const left = window.screen.width / 2 - width / 2;
+      const top = window.screen.height / 2 - height / 2;
+      
+      // Build OAuth URL
+      const scopes = encodeURIComponent(GOOGLE_CONFIG.SCOPES.join(' '));
+      const redirectUri = encodeURIComponent(GOOGLE_CONFIG.REDIRECT_URI);
+      
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?`+
+        `client_id=${GOOGLE_CONFIG.CLIENT_ID}`+
+        `&redirect_uri=${redirectUri}`+
+        `&response_type=token`+
+        `&scope=${scopes}`+
+        `&prompt=select_account`;
+      
+      const popupWindow = window.open(
+        authUrl,
+        'Google Sign In',
+        `width=${width},height=${height},left=${left},top=${top}`
+      );
+      
+      // Check if popup was blocked
+      if (!popupWindow) {
+        reject(new Error('Popup was blocked. Please allow popups for this site.'));
+        return;
+      }
+      
+      // Handle authentication response
+      window.handleGoogleAuthCallback = (result) => {
+        if (result.error) {
+          reject(new Error(result.error));
+          return;
+        }
+        
+        // Set authentication data
+        isAuthenticated = true;
+        currentUser = result.user;
+        
+        // Cache authentication in localStorage
+        localStorage.setItem('google_access_token', result.access_token);
+        localStorage.setItem('google_user_info', JSON.stringify(result.user));
+        
+        // Return user info
+        resolve(result.user);
+      };
+      
+      // Poll for changes in the popup URL
+      const pollPopup = setInterval(() => {
+        try {
+          // Check if popup closed
+          if (popupWindow.closed) {
+            clearInterval(pollPopup);
+            reject(new Error('Authentication cancelled by user'));
+            return;
+          }
+          
+          // Check for redirection to our callback URL
+          const currentUrl = popupWindow.location.href;
+          
+          if (currentUrl.includes('access_token=')) {
+            clearInterval(pollPopup);
+            
+            // Parse token and user info from URL
+            const params = new URLSearchParams(popupWindow.location.hash.substring(1));
+            const access_token = params.get('access_token');
+            
+            // Close popup
+            popupWindow.close();
+            
+            // Get user info with access token
+            fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+              headers: { Authorization: `Bearer ${access_token}` }
+            })
+              .then(response => response.json())
+              .then(userInfo => {
+                const user = {
+                  id: userInfo.sub,
+                  name: userInfo.name,
+                  email: userInfo.email,
+                  picture: userInfo.picture
+                };
+                
+                window.handleGoogleAuthCallback({
+                  user,
+                  access_token
+                });
+              })
+              .catch(error => {
+                reject(error);
+              });
+          }
+        } catch (e) {
+          // Ignore cross-origin errors when polling
+          // This happens when Google is authenticating
+        }
+      }, 500);
+      
+      // Set timeout (2 minutes)
+      setTimeout(() => {
+        clearInterval(pollPopup);
+        if (!popupWindow.closed) {
+          popupWindow.close();
+        }
+        reject(new Error('Authentication timed out'));
+      }, 120000);
+    } catch (error) {
+      reject(error);
+    }
+  });
 };
 
 /**
