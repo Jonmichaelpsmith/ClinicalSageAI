@@ -358,6 +358,34 @@ export default function CoAuthor() {
         };
         
         // Add to our documents array (in real app, would update the database)
+        // Add validation for eCTD compliance
+        const moduleType = selectedTemplate.includes('module_2') ? 'module2' : 
+                         selectedTemplate.includes('module_1') ? 'module1' : 
+                         selectedTemplate.includes('module_3') ? 'module3' : 
+                         selectedTemplate.includes('module_4') ? 'module4' : 'module5';
+        
+        // After creating, trigger eCTD validation (in background)
+        setTimeout(async () => {
+          try {
+            const validationResult = await fetch(`/api/google-docs/validate?access_token=${googleAuthService.getAccessToken()}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                documentId: result.documentId,
+                moduleType: moduleType
+              })
+            }).then(res => res.json());
+            
+            console.log('eCTD validation result:', validationResult);
+            // Auto-fix simple issues like font embedding if needed
+            // This would integrate with your broader eCTD compliance system
+          } catch (error) {
+            console.error('Error validating document:', error);
+          }
+        }, 1000);
+        
         setSelectedDocument(newDoc);
         
         toast({
@@ -372,6 +400,27 @@ export default function CoAuthor() {
         // Reset the form
         setNewDocumentTitle('');
         setSelectedTemplate('');
+        
+        // Save this document to user's recent docs in local storage
+        try {
+          const recentDocs = JSON.parse(localStorage.getItem('recentDocs') || '[]');
+          recentDocs.unshift({
+            id: newDoc.id,
+            title: newDoc.title,
+            googleDocsId: result.documentId,
+            timestamp: new Date().toISOString(),
+            module: newDoc.module,
+            status: newDoc.status,
+            version: newDoc.version
+          });
+          // Keep only 10 most recent documents
+          if (recentDocs.length > 10) {
+            recentDocs.pop();
+          }
+          localStorage.setItem('recentDocs', JSON.stringify(recentDocs));
+        } catch (error) {
+          console.error('Error storing recent documents:', error);
+        }
       }
     } catch (error) {
       console.error("Error creating document:", error);

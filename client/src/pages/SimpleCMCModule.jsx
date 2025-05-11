@@ -10,257 +10,228 @@ import { FileText, PlusCircle, Beaker, Brain, Factory, Search, ClipboardCheck } 
 import withAuthGuard from '../utils/withAuthGuard';
 
 // Simple CMC Module with minimal styling for better readability
-const SimpleCMCModule = () => {
+function SimpleCMCModule() {
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('sections');
-  const [showNewSubmissionDialog, setShowNewSubmissionDialog] = useState(false);
-  
-  // Sample CMC sections data
-  const cmcSections = [
-    {
-      id: 1,
-      title: 'Drug Substance Manufacturing Process',
-      section: 'S.2.2',
-      status: 'Approved',
-      nextRevision: 'June 15, 2025',
-    },
-    {
-      id: 2,
-      title: 'Manufacturing Process Controls',
-      section: 'S.2.4',
-      status: 'In Review',
-      nextRevision: 'May 10, 2025',
-    },
-    {
-      id: 3,
-      title: 'Control of Drug Product',
-      section: 'P.5',
-      status: 'Draft',
-      nextRevision: 'May 25, 2025',
-    }
-  ];
+  const [activeTab, setActiveTab] = useState("blueprints");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    productType: "small-molecule"
+  });
 
-  // Sample submissions data
-  const submissions = [
-    {
-      id: 'FDA-EXP-2025-0042',
-      name: 'Examplinostat NDA Submission',
-      region: 'FDA',
-      status: 'In Preparation',
-      targetApprovalDate: 'August 15, 2025'
-    },
-    {
-      id: 'EMA-EXP-2025-0021',
-      name: 'Examplinostat MAA',
-      region: 'EMA',
-      status: 'Submitted',
-      targetApprovalDate: 'December 20, 2025'
-    }
-  ];
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleCreateBlueprint = () => {
+    toast({
+      title: "Blueprint Created",
+      description: `${formData.name} has been created successfully.`,
+    });
+    setShowCreateDialog(false);
+    setFormData({ name: "", description: "", productType: "small-molecule" });
+  };
 
   return (
-    <div className="container mx-auto p-4 bg-white">
-      <h1 className="text-2xl font-bold mb-6 text-black">CMC Management Suite</h1>
-      <p className="mb-6 text-black">Comprehensive Chemistry, Manufacturing, and Controls management system</p>
-      
-      <div className="flex justify-between mb-6">
-        <div className="relative w-full max-w-md">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-black" />
-          <Input 
-            placeholder="Search CMC documents..." 
-            className="pl-8 border border-gray-300 text-black" 
-          />
-        </div>
-        <Button 
-          onClick={() => setShowNewSubmissionDialog(true)}
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          <PlusCircle className="mr-2 h-4 w-4" /> New Section
+    <div className="container mx-auto p-4 max-w-7xl">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">CMC Documentation Suite</h1>
+        <Button variant="outline" className="flex items-center gap-2">
+          <FileText className="h-4 w-4" />
+          Export Documentation
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <Card className="border border-gray-300 bg-gray-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-black">
-              <Beaker className="h-5 w-5 text-blue-600" />
-              Enterprise CMC Module
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-black">
-              Advanced regulatory capabilities for managing Chemistry, Manufacturing, and Controls documentation for pharmaceutical products.
-            </p>
-          </CardContent>
-        </Card>
-
-        <div className="flex gap-4">
-          <Button variant="outline" className="flex-1 h-full border-gray-300 text-black">
-            <Brain className="mr-2 h-5 w-5 text-blue-600" />
-            <div className="text-left">
-              <div className="font-medium">CMC Regulatory Assistant</div>
-              <div className="text-xs text-gray-600">Powered by OpenAI GPT-4o</div>
-            </div>
-          </Button>
-        </div>
-      </div>
-
-      <Tabs defaultValue="sections" className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 mb-6 bg-gray-100">
-          <TabsTrigger value="sections" className="text-black">
-            <FileText className="h-4 w-4 mr-2" />
-            CMC Sections
-          </TabsTrigger>
-          <TabsTrigger value="manufacturing" className="text-black">
-            <Factory className="h-4 w-4 mr-2" />
-            Manufacturing
-          </TabsTrigger>
-          <TabsTrigger value="submissions" className="text-black">
-            <ClipboardCheck className="h-4 w-4 mr-2" />
-            Submissions
-          </TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+        <TabsList className="bg-background border w-full justify-start">
+          <TabsTrigger value="blueprints">Blueprints</TabsTrigger>
+          <TabsTrigger value="control-strategy">Control Strategy</TabsTrigger>
+          <TabsTrigger value="specifications">Specifications</TabsTrigger>
+          <TabsTrigger value="validation">Method Validation</TabsTrigger>
+          <TabsTrigger value="stability">Stability</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="sections" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {cmcSections.map((section) => (
-              <Card key={section.id} className="border border-gray-300">
-                <CardHeader>
-                  <CardTitle className="text-black">{section.title}</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-black">Section {section.section}</span>
-                    <span className="px-2 py-1 bg-gray-200 rounded text-xs text-black">{section.status}</span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-right">
-                    <span className="text-xs text-gray-600">Next Revision: </span>
-                    <span className="text-xs font-medium text-black">{section.nextRevision}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="submissions" className="mt-0">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-medium text-lg text-black">Active Submissions</h3>
-            <Button 
-              size="sm" 
-              onClick={() => setShowNewSubmissionDialog(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              <PlusCircle className="h-4 w-4 mr-1" /> New Submission
-            </Button>
-          </div>
-          
-          <div className="space-y-3">
-            {submissions.map((submission) => (
-              <Card key={submission.id} className="border border-gray-300">
-                <CardHeader>
-                  <div className="flex justify-between">
-                    <div>
-                      <CardTitle className="text-lg text-black">{submission.name}</CardTitle>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="px-2 py-1 bg-gray-200 rounded text-xs text-black">{submission.region}</span>
-                        <span className="px-2 py-1 bg-gray-200 rounded text-xs text-black">{submission.status}</span>
+        <TabsContent value="blueprints" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex justify-between items-center">
+                <span>CMC Blueprints</span>
+                <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                  <DialogTrigger asChild>
+                    <Button size="sm" className="flex items-center gap-2">
+                      <PlusCircle className="h-4 w-4" />
+                      New Blueprint
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Create New CMC Blueprint</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Blueprint Name</Label>
+                        <Input
+                          id="name"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleInputChange}
+                          placeholder="Enter blueprint name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="description">Description</Label>
+                        <Input
+                          id="description"
+                          name="description"
+                          value={formData.description}
+                          onChange={handleInputChange}
+                          placeholder="Brief description"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="productType">Product Type</Label>
+                        <select
+                          id="productType"
+                          name="productType"
+                          value={formData.productType}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border rounded-md"
+                        >
+                          <option value="small-molecule">Small Molecule</option>
+                          <option value="biologic">Biologic</option>
+                          <option value="combination">Combination Product</option>
+                        </select>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm text-black">ID: {submission.id}</div>
-                      <div className="text-xs text-gray-600 mt-1">Target: {submission.targetApprovalDate}</div>
-                    </div>
-                  </div>
-                </CardHeader>
-              </Card>
-            ))}
-          </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
+                      <Button onClick={handleCreateBlueprint}>Create Blueprint</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Card className="border border-amber-100 bg-amber-50/30">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Small Molecule API (FDA)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xs text-gray-600 mb-4">CTD Module 3.2.S template optimized for FDA submissions</p>
+                    <Button variant="outline" size="sm" className="w-full">Open</Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="border border-amber-100 bg-amber-50/30">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm">Oral Solid Dosage (EMA)</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-xs text-gray-600 mb-4">CTD Module 3.2.P template optimized for EMA submissions</p>
+                    <Button variant="outline" size="sm" className="w-full">Open</Button>
+                  </CardContent>
+                </Card>
+
+                <Card className="border border-dashed border-gray-300 bg-gray-50">
+                  <CardContent className="flex flex-col items-center justify-center py-6">
+                    <PlusCircle className="h-8 w-8 text-gray-400 mb-2" />
+                    <p className="text-sm text-gray-500">Create New Blueprint</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Recent Documents</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-8 text-gray-400">
+                <FileText className="h-12 w-12 mx-auto mb-2 opacity-30" />
+                <p>No recent documents</p>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="control-strategy">
+          <Card>
+            <CardHeader>
+              <CardTitle>Control Strategy</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-6">
+                Define and document your control strategy for critical quality attributes and process parameters.
+              </p>
+              <div className="text-center py-8 border rounded-lg bg-gray-50">
+                <ClipboardCheck className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                <p className="text-gray-400">Select a product to begin control strategy development</p>
+                <Button variant="outline" className="mt-4">Select Product</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="specifications">
+          <Card>
+            <CardHeader>
+              <CardTitle>Specifications Management</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-6">
+                Create and manage specifications for raw materials, intermediates, and final products.
+              </p>
+              <div className="text-center py-8 border rounded-lg bg-gray-50">
+                <Beaker className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                <p className="text-gray-400">Select a product to view or edit specifications</p>
+                <Button variant="outline" className="mt-4">Select Product</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="validation">
+          <Card>
+            <CardHeader>
+              <CardTitle>Method Validation</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-6">
+                Create documentation for analytical method validation according to ICH Q2(R1).
+              </p>
+              <div className="text-center py-8 border rounded-lg bg-gray-50">
+                <Search className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                <p className="text-gray-400">No validation protocols available</p>
+                <Button variant="outline" className="mt-4">Create New Protocol</Button>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="stability">
+          <Card>
+            <CardHeader>
+              <CardTitle>Stability Studies</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600 mb-6">
+                Design, track, and analyze stability studies according to ICH Q1A-Q1E guidelines.
+              </p>
+              <div className="text-center py-8 border rounded-lg bg-gray-50">
+                <Brain className="h-16 w-16 mx-auto mb-4 opacity-20" />
+                <p className="text-gray-400">No stability studies available</p>
+                <Button variant="outline" className="mt-4">Create Stability Protocol</Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
-
-      {/* New Submission Dialog */}
-      <Dialog open={showNewSubmissionDialog} onOpenChange={setShowNewSubmissionDialog}>
-        <DialogContent className="bg-white text-black">
-          <DialogHeader>
-            <DialogTitle className="text-xl text-black">
-              Create New Regulatory Submission
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="submission-name" className="text-black">Submission Name</Label>
-              <Input id="submission-name" placeholder="e.g., Examplinostat NDA Initial Submission" className="border border-gray-300 text-black" />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="submission-region" className="text-black">Target Region</Label>
-                <select className="w-full h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-black">
-                  <option value="FDA">FDA (US)</option>
-                  <option value="EMA">EMA (EU)</option>
-                  <option value="PMDA">PMDA (Japan)</option>
-                  <option value="NMPA">NMPA (China)</option>
-                  <option value="Health Canada">Health Canada</option>
-                </select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="submission-type" className="text-black">Submission Type</Label>
-                <select className="w-full h-10 rounded-md border border-gray-300 bg-white px-3 py-2 text-black">
-                  <option value="nda">New Drug Application (NDA)</option>
-                  <option value="maa">Marketing Authorization Application</option>
-                  <option value="bla">Biologics License Application</option>
-                </select>
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label className="text-black">Required CMC Sections</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="flex items-center space-x-2">
-                  <input type="checkbox" defaultChecked id="section-s1" className="rounded border-gray-300" />
-                  <Label htmlFor="section-s1" className="text-sm font-normal text-black">S.1 General Information</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input type="checkbox" defaultChecked id="section-s2" className="rounded border-gray-300" />
-                  <Label htmlFor="section-s2" className="text-sm font-normal text-black">S.2 Manufacture</Label>
-                </div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="submission-date" className="text-black">Planned Submission Date</Label>
-                <Input type="date" id="submission-date" className="border border-gray-300 text-black" />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="approval-date" className="text-black">Target Approval Date</Label>
-                <Input type="date" id="approval-date" className="border border-gray-300 text-black" />
-              </div>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowNewSubmissionDialog(false)} className="border border-gray-300 text-black">
-              Cancel
-            </Button>
-            <Button onClick={() => {
-              toast({
-                title: "Submission Created",
-                description: "New regulatory submission has been created successfully",
-              });
-              setShowNewSubmissionDialog(false);
-            }} className="bg-blue-600 hover:bg-blue-700 text-white">
-              Create Submission
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
-};
+}
 
 export default withAuthGuard(SimpleCMCModule);
