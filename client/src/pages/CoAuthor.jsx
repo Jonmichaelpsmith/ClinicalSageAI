@@ -1,10 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+import * as aiService from '../services/aiService';
 import { 
   FileText, 
   Edit, 
@@ -34,7 +36,27 @@ import {
   UserCheck,
   RefreshCw,
   Lock,
-  Users
+  Users,
+  ClipboardCheck,
+  FileCheck,
+  Link,
+  BookOpen,
+  ArrowUpRight,
+  Filter,
+  CheckSquare,
+  FileWarning,
+  HelpCircle,
+  MessageSquare,
+  Sparkles,
+  Lightbulb,
+  Check,
+  X,
+  Settings,
+  ListChecks,
+  Bot,
+  Clipboard,
+  Zap,
+  Send
 } from 'lucide-react';
 
 export default function CoAuthor() {
@@ -48,6 +70,153 @@ export default function CoAuthor() {
   const [teamCollabOpen, setTeamCollabOpen] = useState(false);
   const [documentLocked, setDocumentLocked] = useState(false);
   const [lockedBy, setLockedBy] = useState(null);
+  const [showValidationDialog, setShowValidationDialog] = useState(false);
+  
+  // AI Assistant state
+  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
+  const [aiAssistantMode, setAiAssistantMode] = useState('suggestions'); // 'suggestions', 'compliance', 'formatting'
+  const [aiUserQuery, setAiUserQuery] = useState('');
+  const [aiResponse, setAiResponse] = useState(null);
+  const [aiIsLoading, setAiIsLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  
+  const { toast } = useToast();
+  
+  const [validationResults] = useState({
+    completeness: 78,
+    consistency: 92,
+    references: 65,
+    regulatory: 87,
+    issues: [
+      {
+        id: 1,
+        severity: 'critical',
+        section: '2.5.4',
+        description: 'Missing source citations for efficacy claims',
+        suggestion: 'Add references to support the primary endpoint efficacy claims'
+      },
+      {
+        id: 2,
+        severity: 'major',
+        section: '2.5.6',
+        description: 'Incomplete benefit-risk assessment',
+        suggestion: 'Expand the benefit-risk section to include analysis of secondary endpoints'
+      },
+      {
+        id: 3,
+        severity: 'minor',
+        section: '2.5.2',
+        description: 'Inconsistent product name usage',
+        suggestion: 'Standardize product name as "Drug X" throughout the document'
+      },
+      {
+        id: 4,
+        severity: 'info',
+        section: '2.5.1',
+        description: 'FDA guidance updated since last edit',
+        suggestion: 'Review latest FDA guidance on clinical overview format'
+      }
+    ]
+  });
+  
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportFormat, setExportFormat] = useState('pdf');
+  const [exportOptions, setExportOptions] = useState({
+    includeComments: true,
+    includeTrackChanges: false,
+    includeCoverPage: true,
+    includeTableOfContents: true,
+    includeAppendices: true
+  });
+  
+  // AI query submission handler
+  const handleAiQuerySubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!aiUserQuery.trim()) return;
+    
+    setAiIsLoading(true);
+    setAiError(null);
+    
+    try {
+      // Determine which AI service to call based on active mode
+      let response;
+      if (aiAssistantMode === 'compliance') {
+        response = await aiService.checkComplianceAI(
+          selectedDocument?.id || 'current-doc',
+          "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).",
+          ['ICH', 'FDA']
+        );
+      } else if (aiAssistantMode === 'formatting') {
+        response = await aiService.analyzeFormattingAI(
+          selectedDocument?.id || 'current-doc',
+          "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).",
+          'clinicalOverview'
+        );
+      } else {
+        // Default mode: suggestions
+        if (selectedDocument) {
+          response = await aiService.generateContentSuggestions(
+            selectedDocument.id || 'current-doc', 
+            '2.5.5', 
+            "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).",
+            aiUserQuery
+          );
+        } else {
+          // If no document is selected, use the general AI ask endpoint
+          response = await aiService.askDocumentAI(aiUserQuery);
+        }
+      }
+      
+      setAiResponse(response);
+      setAiUserQuery('');
+      
+      // Show success toast
+      toast({
+        title: "AI Response Generated",
+        description: "The AI has generated a response based on your query.",
+        variant: "default",
+      });
+      
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      setAiError(error.message || 'Failed to get AI response. Please try again.');
+      
+      // Show error toast
+      toast({
+        title: "AI Request Failed",
+        description: error.message || "Could not generate AI response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setAiIsLoading(false);
+    }
+  };
+  
+  // Mock AI suggestions (will be replaced by actual AI responses)
+  const [aiSuggestions, setAiSuggestions] = useState([
+    {
+      id: 1,
+      type: 'completion',
+      text: 'The safety profile is consistent with other drugs in this class...',
+      section: '2.5.5',
+      accepted: false
+    },
+    {
+      id: 2,
+      type: 'formatting',
+      text: 'Table formatting for efficacy data does not meet ICH guidelines. Suggested template available.',
+      section: '2.5.4.2',
+      accepted: false
+    },
+    {
+      id: 3,
+      type: 'compliance',
+      text: 'Missing Integrated Summary of Benefits and Risks required by FDA guidance.',
+      section: '2.5.6',
+      accepted: false
+    }
+  ]);
   
   // Version history mock data - in real implementation this would come from the Vault API
   const [versionHistory] = useState([
@@ -81,9 +250,9 @@ export default function CoAuthor() {
     { 
       id: 'v3.0', 
       name: 'Version 3.0', 
-      date: 'April 20, 2025', 
-      author: 'Mark Johnson', 
-      changes: 'Major revision of safety data in Module 2.5',
+      date: 'April 22, 2025', 
+      author: 'John Doe', 
+      changes: 'Major revision with updated clinical data',
       commitHash: '5e4d3c2b1a987',
       status: 'Previous'
     },
@@ -92,81 +261,23 @@ export default function CoAuthor() {
       name: 'Version 2.5', 
       date: 'April 15, 2025', 
       author: 'Emily Chen', 
-      changes: 'Enhanced quality data in Module 3',
+      changes: 'Addressed regulatory feedback on Module 5',
       commitHash: '4d3c2b1a9876',
       status: 'Previous'
     }
   ]);
-  
-  // Mock data for modules and documents with enhanced details
-  const moduleProgress = [
+
+  // Mock documents data
+  const [documents] = useState([
     { 
       id: 1, 
-      name: 'Module 1', 
-      description: 'Administrative', 
-      percent: 80,
-      totalDocs: 12,
-      completeDocs: 10,
-      inProgressDocs: 2,
-      notStartedDocs: 0,
-      status: 'On Track'
-    },
-    { 
-      id: 2, 
-      name: 'Quality', 
-      description: 'Quality', 
-      percent: 60,
-      totalDocs: 18,
-      completeDocs: 10,
-      inProgressDocs: 4,
-      notStartedDocs: 4,
-      status: 'Some Delays'
-    },
-    { 
-      id: 3, 
-      name: 'Module 3', 
-      description: 'Non-Clinical', 
-      percent: 35,
-      totalDocs: 22,
-      completeDocs: 8,
-      inProgressDocs: 5,
-      notStartedDocs: 9,
-      status: 'Needs Attention'
-    },
-    { 
-      id: 4, 
-      name: 'Module 4', 
-      description: 'Clinical', 
-      percent: 75,
-      totalDocs: 30,
-      completeDocs: 22,
-      inProgressDocs: 6,
-      notStartedDocs: 2,
-      status: 'On Track'
-    },
-    { 
-      id: 5, 
-      name: 'Module 5', 
-      description: 'References', 
-      percent: 90,
-      totalDocs: 8,
-      completeDocs: 7,
-      inProgressDocs: 1,
-      notStartedDocs: 0,
-      status: 'On Track'
-    }
-  ];
-  
-  const recentDocuments = [
-    { 
-      id: 1, 
-      title: 'Study Protocol v2.3', 
-      module: 'Module 5',
+      title: 'Module 2.5 Clinical Overview', 
+      module: 'Module 2',
       lastEdited: '2 hours ago',
-      editedBy: 'Alice Chen',
-      status: 'In Review',
-      version: 'v2.3',
-      reviewers: ['John Doe', 'Sarah Kim']
+      editedBy: 'John Doe',
+      status: 'In Progress',
+      version: 'v4.0',
+      reviewers: ['Emily Chen', 'David Kim']
     },
     { 
       id: 2, 
@@ -190,37 +301,69 @@ export default function CoAuthor() {
     },
     { 
       id: 4, 
-      title: 'CTA Submission Summary', 
+      title: 'Module 1.2 Application Form', 
       module: 'Module 1',
+      lastEdited: '5 days ago',
+      editedBy: 'Sarah Williams',
+      status: 'In Review',
+      version: 'v2.1',
+      reviewers: ['John Doe', 'Mark Wilson']
+    },
+    { 
+      id: 5, 
+      title: 'Module 5.3.5 Integrated Summary of Efficacy', 
+      module: 'Module 5',
       lastEdited: '1 week ago',
-      editedBy: 'You',
+      editedBy: 'Emily Chen',
+      status: 'Draft',
+      version: 'v1.8',
+      reviewers: []
+    },
+    { 
+      id: 6, 
+      title: 'Module 4.2.1 Pharmacology Study Reports', 
+      module: 'Module 4',
+      lastEdited: '2 weeks ago',
+      editedBy: 'David Kim',
       status: 'Final',
       version: 'v2.0',
-      reviewers: ['Regulatory Affairs Team']
+      reviewers: ['Jane Smith', 'Emily Chen']
     }
-  ];
-  
-  const templateCategories = [
+  ]);
+
+  // Mock templates data
+  const [templates] = useState([
     {
       id: 1,
-      name: 'FDA Templates',
-      count: 32,
-      templates: [
-        { id: 101, name: 'IND Protocol Template', region: 'US FDA', lastUpdated: '2 months ago' },
-        { id: 102, name: 'FDA NDA CTD Submission', region: 'US FDA', lastUpdated: '1 month ago' },
-        { id: 103, name: 'FDA Module 2 Overview', region: 'US FDA', lastUpdated: '2 weeks ago' }
+      name: 'Clinical Overview Template - ICH Compliant',
+      category: 'Module 2.5',
+      lastUpdated: '2 days ago',
+      regions: [
+        { id: 1, region: 'FDA' },
+        { id: 2, region: 'EMA' },
+        { id: 3, region: 'PMDA' }
       ]
     },
     {
       id: 2,
-      name: 'EMA Templates',
-      count: 28,
-      templates: [
-        { id: 201, name: 'EMA Clinical Trial Protocol', region: 'EU EMA', lastUpdated: '3 months ago' },
-        { id: 202, name: 'EMA Module 1 Regional', region: 'EU EMA', lastUpdated: '1 month ago' }
+      name: 'CMC Section Template - Small Molecule API',
+      category: 'Module 3.2.S',
+      lastUpdated: '1 week ago',
+      regions: [
+        { id: 1, region: 'FDA' },
+        { id: 2, region: 'EMA' }
+      ]
+    },
+    {
+      id: 3,
+      name: 'NDA Cover Letter Template',
+      category: 'Module 1.1',
+      lastUpdated: '2 weeks ago',
+      regions: [
+        { id: 1, region: 'FDA' }
       ]
     }
-  ];
+  ]);
 
   return (
     <div className="flex flex-col h-full">
@@ -250,6 +393,15 @@ export default function CoAuthor() {
               <Users className="h-4 w-4 mr-2" />
               Team Collaboration
             </Button>
+            <Button 
+              variant={aiAssistantOpen ? "default" : "outline"}
+              size="sm"
+              onClick={() => setAiAssistantOpen(!aiAssistantOpen)}
+              className={`flex items-center ${aiAssistantOpen ? "bg-blue-600 text-white" : ""}`}
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              AI Assistant
+            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
@@ -269,766 +421,1054 @@ export default function CoAuthor() {
                 <History className="h-4 w-4 mr-2" />
                 Version History
               </Button>
-              <Badge variant="outline" className="border-blue-200 text-blue-700 flex items-center">
-                <Clock className="h-3 w-3 mr-1" />
-                Current: {activeVersion}
+              <Badge variant="outline" className="border-blue-200 text-sm">
+                Version: {selectedDocument.version}
               </Badge>
-              <div className="text-sm text-gray-500">
-                Last edited by <span className="font-medium text-gray-700">John Doe</span> on May 11, 2025
-              </div>
             </div>
           )}
         </div>
       </header>
 
-      {/* Main Content Area with optional navigation tree */}
-      <div className="px-6 pb-6 flex">
-        {/* Document Tree Navigation - Enterprise Edition Feature */}
+      {/* Main Content Area */}
+      <div className={`flex-1 flex overflow-hidden`}>
+        {/* Document Tree Navigation */}
         {isTreeOpen && (
-          <div className="w-64 border-r pr-4 mr-6 flex-shrink-0">
-            <div className="sticky top-0">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium">Document Structure</h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 w-8 p-0" 
-                  onClick={() => setIsTreeOpen(false)}
-                >
-                  <ChevronLeft className="h-4 w-4" />
+          <div className="w-64 border-r border-gray-200 overflow-y-auto pb-20 flex-shrink-0 bg-gray-50">
+            <div className="p-4 border-b border-gray-200">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-medium text-gray-800">eCTD Structure</h3>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <RefreshCw className="h-4 w-4 text-gray-500" />
                 </Button>
               </div>
-              
-              <div className="space-y-1">
-                <div className="border-l-4 border-blue-600 pl-2 py-1 font-medium">
-                  Module 1: Administrative Information
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Find document..."
+                  className="w-full pl-8 pr-3 py-1.5 text-sm rounded-md border border-gray-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            <div className="p-2">
+              {/* Module 1 */}
+              <div className="mb-1">
+                <div className="flex items-center p-2 rounded-md hover:bg-blue-50 cursor-pointer border-l-4 border-blue-500">
+                  <ChevronDown className="h-4 w-4 text-gray-500 mr-2" />
+                  <span className="font-medium text-blue-700">Module 1: Administrative</span>
                 </div>
-                <div className="pl-4 space-y-1">
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 1.1: Cover Letter
+                <div className="ml-5 space-y-0.5">
+                  <div className="flex items-center p-1.5 rounded hover:bg-gray-100 cursor-pointer">
+                    <div className="w-5 h-5 flex items-center justify-center mr-2">
+                      <FileText className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <span className="text-sm">1.1 Cover Letter</span>
                   </div>
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer text-blue-600">
-                    <FileText className="h-4 w-4 mr-2 text-blue-600" />
-                    Section 1.2: Table of Contents
-                    <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                  <div className="flex items-center p-1.5 rounded hover:bg-gray-100 cursor-pointer">
+                    <div className="w-5 h-5 flex items-center justify-center mr-2">
+                      <FileText className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <span className="text-sm">1.2 Application Form</span>
                   </div>
-                </div>
-                
-                <div className="border-l-4 border-green-600 pl-2 py-1 font-medium flex items-center justify-between group">
-                  <span>Module 2: Common Technical Document</span>
-                  <ChevronDown className="h-4 w-4 opacity-0 group-hover:opacity-100" />
-                </div>
-                <div className="pl-4 space-y-1">
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 2.1: CTD Table of Contents
-                  </div>
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 2.2: Introduction
-                  </div>
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    <span>Section 2.3: Quality Overall Summary</span>
-                  </div>
-                  <div className="flex items-center text-sm py-1 bg-slate-50 rounded px-2 cursor-pointer font-medium">
-                    <FileText className="h-4 w-4 mr-2 text-slate-600" />
-                    <span>Section 2.5: Clinical Overview</span>
-                    <Badge className="ml-2 h-5 bg-amber-100 text-amber-700 border-amber-200 text-[10px]">In Review</Badge>
-                  </div>
-                </div>
-                
-                <div className="border-l-4 border-amber-600 pl-2 py-1 font-medium">
-                  Module 3: Quality
-                </div>
-                <div className="pl-4 space-y-1">
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 3.2.P: Drug Product
-                  </div>
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 3.2.S: Drug Substance
-                  </div>
-                </div>
-                
-                <div className="border-l-4 border-purple-600 pl-2 py-1 font-medium">
-                  Module 4: Nonclinical Study Reports
-                </div>
-                
-                <div className="border-l-4 border-indigo-600 pl-2 py-1 font-medium">
-                  Module 5: Clinical Study Reports
                 </div>
               </div>
-              
-              <div className="mt-6 pt-6 border-t">
-                <div className="text-sm font-medium mb-2">Document Health</div>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span>Completeness</span>
-                      <span className="font-medium">72%</span>
-                    </div>
-                    <Progress value={72} className="h-2 bg-slate-100" indicatorClassName="bg-blue-600" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span>Consistency</span>
-                      <span className="font-medium">86%</span>
-                    </div>
-                    <Progress value={86} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span>Issue Resolution</span>
-                      <span className="font-medium">63%</span>
-                    </div>
-                    <Progress value={63} className="h-2 bg-slate-100" indicatorClassName="bg-amber-600" />
-                  </div>
+
+              {/* Module 2 */}
+              <div className="mb-1">
+                <div className="flex items-center p-2 rounded-md hover:bg-blue-50 cursor-pointer">
+                  <ChevronRight className="h-4 w-4 text-gray-500 mr-2" />
+                  <span className="font-medium">Module 2: CTD Summaries</span>
+                </div>
+              </div>
+
+              {/* Module 3 */}
+              <div className="mb-1">
+                <div className="flex items-center p-2 rounded-md hover:bg-blue-50 cursor-pointer">
+                  <ChevronRight className="h-4 w-4 text-gray-500 mr-2" />
+                  <span className="font-medium">Module 3: Quality</span>
+                </div>
+              </div>
+
+              {/* Module 4 */}
+              <div className="mb-1">
+                <div className="flex items-center p-2 rounded-md hover:bg-blue-50 cursor-pointer">
+                  <ChevronRight className="h-4 w-4 text-gray-500 mr-2" />
+                  <span className="font-medium">Module 4: Nonclinical</span>
+                </div>
+              </div>
+
+              {/* Module 5 */}
+              <div className="mb-1">
+                <div className="flex items-center p-2 rounded-md hover:bg-blue-50 cursor-pointer">
+                  <ChevronRight className="h-4 w-4 text-gray-500 mr-2" />
+                  <span className="font-medium">Module 5: Clinical</span>
                 </div>
               </div>
             </div>
           </div>
         )}
-      
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow">
-        {/* AI-Powered Document Editor Card - Enterprise-Grade Enhanced */}
-        <Card className="border-blue-200 shadow-sm hover:shadow-md transition-shadow duration-300">
-          <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-white">
-            <div className="flex justify-between items-center">
-              <CardTitle className="flex items-center text-lg">
-                <Edit className="h-5 w-5 mr-2 text-blue-600" />
-                AI-Powered Document Editor
-              </CardTitle>
-              <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200 font-medium">Enterprise</Badge>
-            </div>
-            <CardDescription>
-              Create and edit regulatory documents with intelligent assistance
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="flex space-x-2">
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                  <FilePlus2 className="h-4 w-4 mr-2" />
-                  New Document
-                </Button>
-                <Button size="sm" variant="outline" className="border-blue-200 text-blue-700">
-                  <FolderOpen className="h-4 w-4 mr-2" />
-                  Open Existing
-                </Button>
-              </div>
-              
-              <div className="bg-blue-50 rounded-md p-3 text-sm">
-                <h4 className="font-medium text-blue-800 mb-1 flex items-center">
-                  <CheckCircle className="h-4 w-4 mr-1.5 text-blue-600" />
-                  AI Co-Authoring Features
-                </h4>
-                <ul className="list-disc list-inside space-y-1 text-blue-700 pl-1">
-                  <li>Intelligent content suggestions</li>
-                  <li>Regulatory validation checks</li>
-                  <li>Structure &amp; formatting automation</li>
-                  <li>Cross-reference assistance</li>
-                </ul>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Regional Template Library Card - Enhanced */}
-        <Card className="border-yellow-200">
-          <CardHeader className="pb-2 bg-gradient-to-r from-yellow-50 to-white">
-            <CardTitle className="flex items-center text-lg">
-              <LayoutTemplate className="h-5 w-5 mr-2 text-yellow-600" />
-              Regional Template Library
-            </CardTitle>
-            <CardDescription>
-              Access region-specific templates and document frameworks
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {templateCategories.slice(0, 2).map(category => (
-                <div key={category.id} className="bg-yellow-50 rounded-md p-3">
-                  <div className="flex justify-between items-center mb-2">
-                    <h4 className="font-medium text-yellow-800">{category.name}</h4>
-                    <Badge variant="outline" className="bg-white text-yellow-700 border-yellow-200">
-                      {category.count} templates
-                    </Badge>
-                  </div>
-                  <ul className="space-y-2">
-                    {category.templates.slice(0, 2).map(template => (
-                      <li key={template.id} className="flex justify-between items-center text-sm">
-                        <span className="text-gray-700">{template.name}</span>
-                        <Badge className="bg-yellow-100 hover:bg-yellow-200 border-transparent text-yellow-800">
-                          {template.region}
-                        </Badge>
-                      </li>
-                    ))}
-                  </ul>
-                  
-                  <Button 
-                    size="sm" 
-                    variant="link" 
-                    className="text-yellow-700 hover:text-yellow-800 p-0 h-auto mt-1 text-sm flex items-center"
-                  >
-                    View all templates
-                    <ExternalLink className="h-3.5 w-3.5 ml-1" />
+
+        {/* Main Document Area */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Document editing toolbar */}
+          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-2 bg-white z-10">
+            <div className="flex items-center space-x-3">
+              {selectedDocument ? (
+                <>
+                  <h2 className="font-semibold text-lg">{selectedDocument.title}</h2>
+                  <Badge className={
+                    selectedDocument.status === 'Final' ? 'bg-green-100 text-green-800' :
+                    selectedDocument.status === 'In Review' ? 'bg-blue-100 text-blue-800' :
+                    selectedDocument.status === 'In Progress' ? 'bg-yellow-100 text-yellow-800' :
+                    'bg-gray-100 text-gray-800'
+                  }>
+                    {selectedDocument.status}
+                  </Badge>
+                </>
+              ) : (
+                <>
+                  <Button variant="outline" size="sm" className="flex items-center">
+                    <FolderOpen className="h-4 w-4 mr-2" />
+                    Open Document
                   </Button>
-                </div>
-              ))}
-              
-              <Button size="sm" variant="outline" className="w-full border-yellow-200 text-yellow-700">
-                Browse All Templates
-              </Button>
+                  <Button variant="outline" size="sm" className="flex items-center">
+                    <FilePlus2 className="h-4 w-4 mr-2" />
+                    New Document
+                  </Button>
+                </>
+              )}
             </div>
-          </CardContent>
-        </Card>
-        
-        {/* Regulatory Search Card - Enhanced */}
-        <Card className="border-blue-200">
-          <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-white">
-            <CardTitle className="flex items-center text-lg">
-              <Search className="h-5 w-5 mr-2 text-blue-600" />
-              Regulatory Search
-            </CardTitle>
-            <CardDescription>
-              Find and reuse content from approved regulatory documents
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search regulatory content..."
-                  className="w-full rounded-md border border-blue-200 py-2 pl-9 pr-4 text-sm focus:border-blue-500 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div className="flex flex-wrap gap-2 mb-1">
-                <Badge className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 cursor-pointer">
-                  Clinical
-                </Badge>
-                <Badge className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 cursor-pointer">
-                  CMC
-                </Badge>
-                <Badge className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 cursor-pointer">
-                  Nonclinical
-                </Badge>
-                <Badge className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 cursor-pointer">
-                  FDA
-                </Badge>
-                <Badge className="bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200 cursor-pointer">
-                  EMA
-                </Badge>
-              </div>
-              
-              <div className="flex items-center justify-between mt-2 pt-2 border-t border-blue-100">
-                <span className="text-xs text-gray-500">Search across 5000+ approved documents</span>
-                <Button size="sm" variant="link" className="p-0 h-auto text-sm text-blue-600">
-                  Advanced Search
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Vault Document Management Card - Enhanced */}
-        <Card className="lg:col-span-2 row-span-2 border-purple-200">
-          <CardHeader className="pb-2 bg-gradient-to-r from-purple-50 to-white">
-            <CardTitle className="flex items-center text-lg">
-              <Database className="h-5 w-5 mr-2 text-purple-600" />
-              Enterprise Vault Document Management
-            </CardTitle>
-            <CardDescription>
-              Secure document repository with version control and compliance features
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex flex-wrap gap-2 mb-3">
-                <Button size="sm" variant="outline" className="border-purple-200 text-purple-700">
-                  <Upload className="h-3.5 w-3.5 mr-1.5" />
-                  Import
-                </Button>
-                <Button size="sm" variant="outline" className="border-purple-200 text-purple-700">
-                  <Download className="h-3.5 w-3.5 mr-1.5" />
-                  Export
-                </Button>
-                <Button size="sm" variant="outline" className="border-purple-200 text-purple-700">
-                  <History className="h-3.5 w-3.5 mr-1.5" />
-                  Version History
-                </Button>
-                <Button size="sm" variant="outline" className="border-purple-200 text-purple-700">
-                  <Share2 className="h-3.5 w-3.5 mr-1.5" />
-                  Share
-                </Button>
-                <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700">
-                  Supabase Vault
-                </Badge>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Documents Card - Enhanced */}
-        <Card className="border-blue-200">
-          <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-white">
-            <CardTitle className="flex items-center text-lg">
-              <FileText className="h-5 w-5 mr-2 text-blue-600" />
-              Recent Documents
-            </CardTitle>
-            <CardDescription>
-              Quick access to your most recently edited documents
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recentDocuments.slice(0, 3).map(doc => (
-                <div key={doc.id} className="flex items-start rounded-md border border-gray-100 p-2 hover:bg-gray-50 transition-colors duration-200">
-                  <div className="flex-shrink-0 rounded-md bg-blue-100 p-2 mr-3">
-                    <FileText className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex justify-between">
-                      <h4 className="truncate text-sm font-medium text-gray-900">{doc.title}</h4>
-                      <Badge 
-                        className={`ml-1.5 flex-shrink-0 text-xs ${
-                          doc.status === 'Final' ? 'bg-green-100 text-green-800' : 
-                          doc.status === 'In Review' ? 'bg-blue-100 text-blue-800' : 
-                          'bg-gray-100 text-gray-800'
-                        }`}
-                      >
-                        {doc.status}
-                      </Badge>
-                    </div>
-                    <div className="mt-1 flex items-center text-xs text-gray-500">
-                      <span className="truncate">{doc.module}</span>
-                      <span className="mx-1.5">•</span>
-                      <span>{doc.lastEdited}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              
+            <div className="flex items-center space-x-2">
               <Button 
                 variant="outline" 
-                size="sm" 
-                className="w-full border-blue-200 text-blue-700"
+                size="sm"
+                onClick={() => setShowValidationDialog(true)}
+                className="flex items-center"
               >
-                View All Documents
+                <CheckSquare className="h-4 w-4 mr-2" />
+                Validate
               </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* eCTD Document Tree Card - Enhanced */}
-        <Card className="border-green-200 lg:col-span-2">
-          <CardHeader className="pb-2 bg-gradient-to-r from-green-50 to-white">
-            <div className="flex justify-between items-center">
-              <CardTitle className="flex items-center text-lg">
-                <FolderOpen className="h-5 w-5 mr-2 text-green-600" />
-                Document Tree Visualization
-              </CardTitle>
-              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">CTD Format</Badge>
-            </div>
-            <CardDescription>
-              Interactive Common Technical Document (CTD) structure viewer
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 font-mono text-sm">
-              <button
-                className="flex items-center hover:bg-green-50 p-2 w-full rounded text-left transition-colors"
-                onClick={() => setIsTreeOpen(!isTreeOpen)}
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowExportDialog(true)}
+                className="flex items-center"
               >
-                {isTreeOpen ? 
-                  <ChevronDown className="h-4 w-4 mr-2 text-green-600" /> : 
-                  <ChevronRight className="h-4 w-4 mr-2 text-green-600" />}
-                <span className="font-medium">CTD Structure</span>
-              </button>
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+              {documentLocked ? (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex items-center text-red-600 border-red-200"
+                >
+                  <Lock className="h-4 w-4 mr-2" />
+                  Locked by {lockedBy}
+                </Button>
+              ) : (
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => { setDocumentLocked(true); setLockedBy('You'); }}
+                  className="flex items-center"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Document Content */}
+          <div className="flex-1 overflow-auto p-6 bg-gray-50">
+            {selectedDocument ? (
+              <div className="max-w-4xl mx-auto bg-white shadow-sm rounded-lg p-8 border border-gray-200">
+                <h1 className="text-2xl font-bold mb-6 text-gray-800">2.5 Clinical Overview</h1>
+                
+                <div className="prose max-w-none">
+                  <h2 className="text-xl font-semibold mb-4 text-gray-700">2.5.5 Overview of Safety</h2>
+                  
+                  <p className="mb-4">
+                    The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. 
+                    Adverse events were mild to moderate in nature, with headache being the most commonly reported event 
+                    (12% of subjects).
+                  </p>
+                  
+                  <p className="mb-4">
+                    Serious adverse events were reported in 2.3% of treated subjects compared to 2.1% in the placebo group, 
+                    indicating no significant increase in serious adverse events with Drug X treatment.
+                  </p>
+                  
+                  <h3 className="text-lg font-semibold mb-3 mt-6 text-gray-700">2.5.5.1 Adverse Events</h3>
+                  
+                  <p className="mb-4">
+                    The most common adverse events (≥5% and greater than placebo) were:
+                  </p>
+                  
+                  <ul className="list-disc pl-8 mb-6">
+                    <li>Headache (12%)</li>
+                    <li>Nausea (8%)</li>
+                    <li>Dizziness (6%)</li>
+                    <li>Fatigue (5%)</li>
+                  </ul>
+                  
+                  <p className="mb-4">
+                    Most adverse events were mild to moderate in severity and resolved without intervention. 
+                    Discontinuation due to adverse events occurred in 3.2% of Drug X-treated subjects compared to 
+                    2.8% in the placebo group.
+                  </p>
+                  
+                  <h3 className="text-lg font-semibold mb-3 mt-6 text-gray-700">2.5.5.2 Laboratory Findings</h3>
+                  
+                  <p className="mb-4">
+                    No clinically meaningful changes in laboratory parameters were observed during the clinical development 
+                    program. Minor elevations in liver enzymes (ALT/AST) were observed in 2% of treated subjects, 
+                    compared to 1.8% in the placebo group, all of which were transient and resolved without intervention.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="max-w-md mx-auto mt-20 text-center">
+                <FileText className="h-16 w-16 mx-auto text-gray-300 mb-4" />
+                <h3 className="text-xl font-medium text-gray-700 mb-2">No Document Selected</h3>
+                <p className="text-gray-500 mb-6">Open a document from the navigation tree or create a new one to get started.</p>
+                <div className="flex justify-center space-x-3">
+                  <Button size="sm" className="flex items-center">
+                    <FolderOpen className="h-4 w-4 mr-2" />
+                    Open Existing
+                  </Button>
+                  <Button size="sm" variant="outline" className="flex items-center">
+                    <FilePlus2 className="h-4 w-4 mr-2" />
+                    Create New
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* AI Assistant Sidebar */}
+        {aiAssistantOpen && (
+          <div className="w-80 border-l border-gray-200 flex flex-col bg-blue-50/50 flex-shrink-0">
+            <div className="p-4 border-b border-gray-200 bg-white">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold flex items-center text-blue-700">
+                  <Sparkles className="h-4 w-4 mr-2 text-blue-500" />
+                  AI Document Assistant
+                </h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-7 w-7 p-0"
+                  onClick={() => setAiAssistantOpen(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
               
-              {isTreeOpen && (
-                <div className="ml-6 border-l border-green-200 pl-2">
-                  {moduleProgress.map(module => (
-                    <div key={module.id} className="py-1">
-                      <div className="flex items-center">
-                        <ChevronRight className="h-3.5 w-3.5 mr-1.5 text-green-500" />
-                        <span className="font-medium text-gray-700">{module.name}: {module.description}</span>
-                      </div>
-                      <div className="flex items-center ml-6 mt-1 mb-2">
-                        <div className="w-56 mr-3">
-                          <Progress value={module.percent} className="h-2 bg-gray-100" indicatorColor="bg-green-600" />
-                        </div>
-                        <span className="text-xs text-gray-500">
-                          {module.completeDocs}/{module.totalDocs} documents
-                        </span>
-                        <Badge 
-                          className={`ml-2 text-xs ${
-                            module.status === 'On Track' ? 'bg-green-100 text-green-800' : 
-                            module.status === 'Some Delays' ? 'bg-yellow-100 text-yellow-800' : 
-                            'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {module.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
+              <Tabs defaultValue="suggestions" className="w-full">
+                <TabsList className="grid grid-cols-3 mb-2">
+                  <TabsTrigger value="suggestions" onClick={() => setAiAssistantMode('suggestions')}>Suggest</TabsTrigger>
+                  <TabsTrigger value="compliance" onClick={() => setAiAssistantMode('compliance')}>Compliance</TabsTrigger>
+                  <TabsTrigger value="formatting" onClick={() => setAiAssistantMode('formatting')}>Format</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="suggestions" className="mt-0">
+                  <p className="text-xs text-gray-500 mb-2">
+                    Get intelligent content suggestions for your document
+                  </p>
+                </TabsContent>
+                <TabsContent value="compliance" className="mt-0">
+                  <p className="text-xs text-gray-500 mb-2">
+                    Check compliance with regulatory guidelines
+                  </p>
+                </TabsContent>
+                <TabsContent value="formatting" className="mt-0">
+                  <p className="text-xs text-gray-500 mb-2">
+                    Analyze and improve document formatting
+                  </p>
+                </TabsContent>
+              </Tabs>
+              
+              <form onSubmit={handleAiQuerySubmit} className="mt-2">
+                <div className="relative">
+                  <textarea
+                    placeholder={aiAssistantMode === 'suggestions' 
+                      ? "Ask for content suggestions..." 
+                      : aiAssistantMode === 'compliance'
+                      ? "Ask about regulatory compliance..."
+                      : "Ask about formatting issues..."
+                    }
+                    className="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 min-h-[80px] pr-10"
+                    value={aiUserQuery}
+                    onChange={(e) => setAiUserQuery(e.target.value)}
+                  ></textarea>
+                  <Button 
+                    type="submit"
+                    className="absolute bottom-2 right-2 h-7 w-7 p-0 rounded-full bg-blue-600 text-white"
+                    disabled={aiIsLoading || !aiUserQuery.trim()}
+                  >
+                    {aiIsLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </form>
+            </div>
+            
+            <div className="flex-1 overflow-auto p-3 space-y-3">
+              {aiError && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-800">
+                  <div className="flex items-start">
+                    <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 mr-2 flex-shrink-0" />
+                    <span>{aiError}</span>
+                  </div>
                 </div>
               )}
               
-              <div className="bg-green-50 rounded-md p-3 mt-3 border border-green-100">
-                <h4 className="text-sm font-medium text-green-800 mb-1 flex items-center">
-                  <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-600" />
-                  Compliance Information
+              {aiResponse && (
+                <div className="bg-white rounded-md border border-blue-100 p-3 shadow-sm">
+                  <div className="flex items-start mb-2">
+                    <Bot className="h-4 w-4 text-blue-500 mt-0.5 mr-2 flex-shrink-0" />
+                    <span className="font-medium text-sm text-blue-800">AI Assistant</span>
+                  </div>
+                  <div className="text-sm pl-6">
+                    {typeof aiResponse === 'string' ? (
+                      <p>{aiResponse}</p>
+                    ) : (
+                      <>
+                        {aiResponse.suggestion && <p className="mb-2">{aiResponse.suggestion}</p>}
+                        {aiResponse.issues && aiResponse.issues.length > 0 && (
+                          <ul className="list-disc pl-5 space-y-1 mt-2">
+                            {aiResponse.issues.map((issue, i) => (
+                              <li key={i} className="text-xs text-gray-700">{issue}</li>
+                            ))}
+                          </ul>
+                        )}
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* AI Suggestions */}
+              <div className="space-y-2">
+                <h4 className="text-xs font-medium text-gray-500 uppercase tracking-wider px-1">
+                  Suggestions for Current Section
                 </h4>
-                <div className="grid grid-cols-3 gap-2 text-xs">
-                  <div className="bg-white p-2 rounded-md border border-green-100">
-                    <div className="text-gray-500 mb-1">Total Documents</div>
-                    <div className="text-lg font-medium text-gray-900">82</div>
-                  </div>
-                  <div className="bg-white p-2 rounded-md border border-green-100">
-                    <div className="text-gray-500 mb-1">Completion</div>
-                    <div className="text-lg font-medium text-green-600">68%</div>
-                  </div>
-                  <div className="bg-white p-2 rounded-md border border-green-100">
-                    <div className="text-gray-500 mb-1">Compliance</div>
-                    <div className="text-lg font-medium text-blue-600">92%</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Module Progress Card - Enhanced */}
-        <Card className="border-blue-200">
-          <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-white">
-            <CardTitle className="flex items-center text-lg">
-              <BarChart className="h-5 w-5 mr-2 text-blue-600" />
-              Module Progress
-            </CardTitle>
-            <CardDescription>
-              Monitor completion status across all CTD modules
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {moduleProgress.map(module => (
-                <div key={module.id} className="space-y-1">
-                  <div className="flex justify-between items-center">
-                    <div className="text-sm font-medium text-gray-700">{module.name}</div>
-                    <div className="text-sm text-gray-500">{module.percent}%</div>
-                  </div>
-                  <Progress value={module.percent} className="h-2" />
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <div>
-                      <span className="text-green-600">{module.completeDocs} complete</span>
-                      {module.inProgressDocs > 0 && (
-                        <>, <span className="text-yellow-600">{module.inProgressDocs} in progress</span></>
+                
+                {aiSuggestions.map(suggestion => (
+                  <div 
+                    key={suggestion.id} 
+                    className={`rounded-md border p-2 text-sm ${
+                      suggestion.accepted 
+                        ? 'bg-green-50 border-green-200' 
+                        : 'bg-white border-gray-200 hover:border-blue-200'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-1">
+                      <span className={`text-xs font-medium px-1.5 py-0.5 rounded-sm ${
+                        suggestion.type === 'completion' 
+                          ? 'bg-blue-100 text-blue-800' 
+                          : suggestion.type === 'formatting'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {suggestion.type === 'completion' 
+                          ? 'Content' 
+                          : suggestion.type === 'formatting'
+                          ? 'Format'
+                          : 'Compliance'
+                        }
+                      </span>
+                      <span className="text-xs text-gray-500">{suggestion.section}</span>
+                    </div>
+                    <p className="text-gray-700 text-sm mb-1">{suggestion.text}</p>
+                    <div className="flex justify-end space-x-1">
+                      {!suggestion.accepted && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-gray-500"
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            Preview
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-blue-600"
+                            onClick={() => {
+                              const updatedSuggestions = aiSuggestions.map(s => 
+                                s.id === suggestion.id ? {...s, accepted: true} : s
+                              );
+                              setAiSuggestions(updatedSuggestions);
+                              
+                              toast({
+                                title: "Suggestion Applied",
+                                description: "The AI suggestion has been applied to your document.",
+                                variant: "default",
+                              });
+                            }}
+                          >
+                            <Check className="h-3 w-3 mr-1" />
+                            Apply
+                          </Button>
+                        </>
                       )}
-                      {module.notStartedDocs > 0 && (
-                        <>, <span className="text-gray-500">{module.notStartedDocs} not started</span></>
+                      {suggestion.accepted && (
+                        <span className="text-xs text-green-600 flex items-center">
+                          <Check className="h-3 w-3 mr-1" />
+                          Applied
+                        </span>
                       )}
                     </div>
-                    {module.status === 'Needs Attention' && (
-                      <AlertCircle className="h-3.5 w-3.5 text-red-500" />
-                    )}
                   </div>
-                </div>
-              ))}
-              
-              <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                <div className="text-sm">
-                  <span className="font-medium text-gray-900">Overall: 68%</span>
-                  <span className="text-gray-500 ml-1.5">complete</span>
-                </div>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="border-blue-200 text-blue-700 h-8"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Generate Progress Report
-                </Button>
+                ))}
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        )}
       </div>
-      
-      {/* Version History Dialog */}
-      <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>
-        <DialogContent className="sm:max-w-[650px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <History className="h-5 w-5 mr-2" />
-              Document Version History
-            </DialogTitle>
-            <DialogDescription>
-              Review previous versions of this document. You can compare versions or restore a previous version.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="border rounded-md">
-            <div className="grid grid-cols-5 gap-4 p-3 border-b bg-slate-50 font-medium text-sm">
-              <div>Version</div>
-              <div className="col-span-2">Changes</div>
-              <div>Date</div>
-              <div>Author</div>
-            </div>
-            
-            <div className="divide-y max-h-[300px] overflow-y-auto">
-              {versionHistory.map((version) => (
-                <div key={version.id} className="grid grid-cols-5 gap-4 p-3 text-sm hover:bg-slate-50">
-                  <div className="font-medium">
-                    {version.name}
-                    {version.status === 'Current' && (
-                      <Badge className="ml-2 h-5 bg-green-100 text-green-800 border-green-200 text-[10px]">Current</Badge>
-                    )}
-                  </div>
-                  <div className="col-span-2">{version.changes}</div>
-                  <div>{version.date}</div>
-                  <div className="flex justify-between items-center">
-                    <span>{version.author}</span>
-                    <div className="flex space-x-1">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-7 w-7 p-0"
-                        onClick={() => {
-                          setCompareVersions({
-                            base: activeVersion, 
-                            compare: version.id
-                          });
-                          setShowVersionHistory(false);
-                          setShowCompareDialog(true);
-                        }}
-                        title="Compare with current version"
-                      >
-                        <GitMerge className="h-4 w-4" />
-                      </Button>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-7 w-7 p-0"
-                        onClick={() => {
-                          setActiveVersion(version.id);
-                          setShowVersionHistory(false);
-                        }}
-                        title="View this version"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="flex items-center justify-between border-t pt-3 mt-3">
-            <div className="text-xs text-muted-foreground flex items-center">
-              <Info className="h-3 w-3 mr-1 text-blue-500" />
-              All versions are stored securely in Vault with 21 CFR Part 11 compliant audit trails
-            </div>
-            <Button onClick={() => setShowVersionHistory(false)}>Close</Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Version Comparison Dialog */}
-      <Dialog open={showCompareDialog} onOpenChange={setShowCompareDialog} className="max-w-4xl">
-        <DialogContent className="sm:max-w-[900px] max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <GitMerge className="h-5 w-5 mr-2" />
-              Compare Document Versions
-            </DialogTitle>
-            <DialogDescription>
-              Comparing {compareVersions.base} with {compareVersions.compare}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="flex flex-col h-full overflow-hidden">
-            <Tabs defaultValue="side-by-side" className="w-full mb-4">
-              <TabsList className="grid w-[400px] grid-cols-2">
-                <TabsTrigger value="side-by-side" className="flex items-center">
-                  <GitBranch className="h-4 w-4 mr-2" />
-                  Side-by-Side View
-                </TabsTrigger>
-                <TabsTrigger value="inline" className="flex items-center">
-                  <GitMerge className="h-4 w-4 mr-2" />
-                  Inline Differences
-                </TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="side-by-side" className="mt-4">
-                <div className="grid grid-cols-2 gap-4 overflow-auto flex-grow">
-                  <div className="border rounded-md overflow-auto">
-                    <div className="bg-slate-50 p-2 font-medium border-b sticky top-0">
-                      {compareVersions.base} (Current)
-                    </div>
-                    <div className="p-3 text-sm">
-                      <p className="mb-2">
-                        <span className="bg-green-100 px-1">The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects.</span> Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).
-                      </p>
-                      <p className="mb-2">
-                        The efficacy of Drug X was evaluated across multiple endpoints. <span className="bg-green-100 px-1">Primary endpoints showed a statistically significant improvement compared to placebo (p&lt;0.001)</span> with consistent results across all study sites.
-                      </p>
-                      <p className="mb-2">
-                        Long-term safety data from extension studies (up to 24 months) <span className="bg-red-100 px-1 line-through">showed no new safety signals</span> and confirmed the favorable benefit-risk profile observed in shorter studies.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="border rounded-md overflow-auto">
-                    <div className="bg-slate-50 p-2 font-medium border-b sticky top-0">
-                      {compareVersions.compare}
-                    </div>
-                    <div className="p-3 text-sm">
-                      <p className="mb-2">
-                        The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).
-                      </p>
-                      <p className="mb-2">
-                        The efficacy of Drug X was evaluated across multiple endpoints. Primary endpoints showed a statistically significant improvement compared to placebo (p&lt;0.001) with consistent results across all study sites.
-                      </p>
-                      <p className="mb-2">
-                        Long-term safety data from extension studies (up to 24 months) <span className="bg-green-100 px-1">demonstrated a continued absence of significant safety concerns</span> and confirmed the favorable benefit-risk profile observed in shorter studies.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="inline" className="mt-4">
-                <div className="border rounded-md max-h-[400px] overflow-auto">
-                  <div className="bg-slate-50 p-2 font-medium border-b sticky top-0">
-                    Inline Changes
-                  </div>
-                  <div className="p-3 text-sm">
-                    <p className="mb-2">
-                      <span className="bg-blue-50 px-1 border-l-4 border-blue-400 pl-2">The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).</span>
-                    </p>
-                    <p className="mb-2">
-                      <span className="bg-blue-50 px-1 border-l-4 border-blue-400 pl-2">The efficacy of Drug X was evaluated across multiple endpoints. Primary endpoints showed a statistically significant improvement compared to placebo (p&lt;0.001) with consistent results across all study sites.</span>
-                    </p>
-                    <p className="mb-2">
-                      Long-term safety data from extension studies (up to 24 months) 
-                      <span className="bg-red-100 px-1 mx-1 line-through">showed no new safety signals</span>
-                      <span className="bg-green-100 px-1 mx-1">demonstrated a continued absence of significant safety concerns</span>
-                      and confirmed the favorable benefit-risk profile observed in shorter studies.
-                    </p>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
-            
-            <div className="flex items-center justify-between mt-4 pt-4 border-t">
-              <div className="flex items-center space-x-3">
-                <Badge variant="outline" className="flex items-center space-x-1">
-                  <Plus className="h-3 w-3 text-green-600" />
-                  <span className="text-green-600">Added</span>
-                </Badge>
-                <Badge variant="outline" className="flex items-center space-x-1">
-                  <Minus className="h-3 w-3 text-red-600" />
-                  <span className="text-red-600">Removed</span>
-                </Badge>
-                <Badge variant="outline" className="flex items-center space-x-1">
-                  <Info className="h-3 w-3 text-blue-600" />
-                  <span className="text-blue-600">Unchanged</span>
-                </Badge>
-              </div>
-              <div className="space-x-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setActiveVersion(compareVersions.compare)}
-                  className="border-green-200 text-green-700"
-                >
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Restore This Version
-                </Button>
-                <Button onClick={() => setShowCompareDialog(false)}>Close</Button>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-      
+
       {/* Team Collaboration Dialog */}
       <Dialog open={teamCollabOpen} onOpenChange={setTeamCollabOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center">
-              <Users className="h-5 w-5 mr-2" />
+              <Users className="h-5 w-5 mr-2 text-blue-600" />
               Team Collaboration
             </DialogTitle>
             <DialogDescription>
-              View team members working on this document and manage access permissions.
+              Manage document access and control for your team
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4">
-            <div className="border rounded-md">
-              <div className="bg-slate-50 p-2 font-medium border-b text-sm">Active Collaborators</div>
-              <div className="divide-y">
-                <div className="p-3 flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-medium mr-3">JD</div>
+          <div className="space-y-4 py-2">
+            {selectedDocument ? (
+              <>
+                <div className="space-y-2">
+                  <h3 className="text-sm font-medium">Current Document</h3>
+                  <div className="flex justify-between items-center p-3 border rounded-md">
                     <div>
-                      <div className="font-medium">John Doe</div>
-                      <div className="text-xs text-gray-500">Editor</div>
+                      <p className="font-medium">{selectedDocument.title}</p>
+                      <p className="text-sm text-gray-500">Last edited by {selectedDocument.editedBy} • {selectedDocument.lastEdited}</p>
                     </div>
-                  </div>
-                  <Badge className="bg-green-100 text-green-800 border-green-200">Editing</Badge>
-                </div>
-                <div className="p-3 flex justify-between items-center">
-                  <div className="flex items-center">
-                    <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-medium mr-3">JS</div>
-                    <div>
-                      <div className="font-medium">Jane Smith</div>
-                      <div className="text-xs text-gray-500">Reviewer</div>
-                    </div>
-                  </div>
-                  <Badge className="bg-blue-100 text-blue-800 border-blue-200">Viewing</Badge>
-                </div>
-              </div>
-            </div>
-            
-            <div className="border rounded-md">
-              <div className="bg-slate-50 p-2 font-medium border-b text-sm">Document Access Controls</div>
-              <div className="p-3">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="text-sm font-medium">Document Locking</div>
-                    <Button
+                    <Button 
+                      variant="outline" 
                       size="sm"
-                      variant={documentLocked ? "destructive" : "outline"}
-                      onClick={() => setDocumentLocked(!documentLocked)}
-                      className="h-8"
+                      className={`flex items-center ${documentLocked ? 'text-red-600 border-red-200' : ''}`}
+                      onClick={() => {
+                        setDocumentLocked(!documentLocked);
+                        setLockedBy(documentLocked ? null : 'You');
+                      }}
                     >
                       {documentLocked ? (
                         <>
-                          <Lock className="h-3.5 w-3.5 mr-1.5" />
-                          Unlock Document
+                          <Lock className="h-4 w-4 mr-2" />
+                          Unlock
                         </>
                       ) : (
                         <>
-                          <Lock className="h-3.5 w-3.5 mr-1.5" />
+                          <Lock className="h-4 w-4 mr-2" />
                           Lock for Editing
                         </>
                       )}
                     </Button>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {documentLocked ? 
-                      "Document is currently locked. Only you can make changes." : 
-                      "Lock the document to prevent others from making changes while you edit."}
+                </div>
+                
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Reviewers</h3>
+                  <div className="space-y-2">
+                    {selectedDocument.reviewers.length > 0 ? (
+                      selectedDocument.reviewers.map((reviewer, index) => (
+                        <div key={index} className="flex justify-between items-center p-2 border rounded-md">
+                          <div className="flex items-center">
+                            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                              <span className="text-blue-700 font-medium">{reviewer.split(' ').map(n => n[0]).join('')}</span>
+                            </div>
+                            <span>{reviewer}</span>
+                          </div>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <X className="h-4 w-4 text-gray-500" />
+                          </Button>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-3 border rounded-md text-gray-500 text-sm">
+                        No reviewers assigned
+                      </div>
+                    )}
+                    
+                    <Button variant="outline" size="sm" className="w-full mt-2">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Reviewer
+                    </Button>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <FileWarning className="h-12 w-12 mx-auto text-gray-300 mb-2" />
+                <h3 className="text-lg font-medium text-gray-700 mb-1">No Document Selected</h3>
+                <p className="text-gray-500 text-sm mb-4">Please select a document to manage team collaboration</p>
+                <Button size="sm">
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  Open Document
+                </Button>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTeamCollabOpen(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Version History Dialog */}
+      <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <History className="h-5 w-5 mr-2 text-blue-600" />
+              Version History
+            </DialogTitle>
+            <DialogDescription>
+              View and compare document versions
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              {versionHistory.map((version) => (
+                <div 
+                  key={version.id} 
+                  className={`flex justify-between items-center p-3 border rounded-md ${
+                    version.status === 'Current' ? 'border-blue-200 bg-blue-50' : ''
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center">
+                      <span className="font-medium">{version.name}</span>
+                      {version.status === 'Current' && (
+                        <Badge className="ml-2 bg-blue-100 text-blue-800 border-blue-200">Current</Badge>
+                      )}
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      {version.author} • {version.date}
+                    </p>
+                    <p className="text-sm text-gray-700 mt-1">
+                      {version.changes}
+                    </p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => {
+                        setActiveVersion(version.id);
+                        setCompareVersions({...compareVersions, base: version.id});
+                        setShowVersionHistory(false);
+                      }}
+                    >
+                      <Eye className="h-3.5 w-3.5 mr-1.5" />
+                      View
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => {
+                        setCompareVersions({...compareVersions, compare: version.id});
+                        setShowCompareDialog(true);
+                        setShowVersionHistory(false);
+                      }}
+                    >
+                      <GitMerge className="h-3.5 w-3.5 mr-1.5" />
+                      Compare
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowVersionHistory(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Validation Dialog */}
+      <Dialog open={showValidationDialog} onOpenChange={setShowValidationDialog}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <ClipboardCheck className="h-5 w-5 mr-2 text-blue-600" />
+              Document Validation
+            </DialogTitle>
+            <DialogDescription>
+              Check your document against regulatory requirements
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="border rounded-md p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-medium text-sm">Completeness</h3>
+                  <span className={`text-sm font-medium ${
+                    validationResults.completeness >= 90 ? 'text-green-600' : 
+                    validationResults.completeness >= 70 ? 'text-yellow-600' : 
+                    'text-red-600'
+                  }`}>
+                    {validationResults.completeness}%
+                  </span>
+                </div>
+                <Progress 
+                  value={validationResults.completeness} 
+                  className={`h-2 ${
+                    validationResults.completeness >= 90 ? 'bg-green-100' : 
+                    validationResults.completeness >= 70 ? 'bg-yellow-100' : 
+                    'bg-red-100'
+                  }`}
+                  indicatorClassName={
+                    validationResults.completeness >= 90 ? 'bg-green-600' : 
+                    validationResults.completeness >= 70 ? 'bg-yellow-600' : 
+                    'bg-red-600'
+                  }
+                />
+              </div>
+              
+              <div className="border rounded-md p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-medium text-sm">Consistency</h3>
+                  <span className={`text-sm font-medium ${
+                    validationResults.consistency >= 90 ? 'text-green-600' : 
+                    validationResults.consistency >= 70 ? 'text-yellow-600' : 
+                    'text-red-600'
+                  }`}>
+                    {validationResults.consistency}%
+                  </span>
+                </div>
+                <Progress 
+                  value={validationResults.consistency} 
+                  className={`h-2 ${
+                    validationResults.consistency >= 90 ? 'bg-green-100' : 
+                    validationResults.consistency >= 70 ? 'bg-yellow-100' : 
+                    'bg-red-100'
+                  }`}
+                  indicatorClassName={
+                    validationResults.consistency >= 90 ? 'bg-green-600' : 
+                    validationResults.consistency >= 70 ? 'bg-yellow-600' : 
+                    'bg-red-600'
+                  }
+                />
+              </div>
+              
+              <div className="border rounded-md p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-medium text-sm">References</h3>
+                  <span className={`text-sm font-medium ${
+                    validationResults.references >= 90 ? 'text-green-600' : 
+                    validationResults.references >= 70 ? 'text-yellow-600' : 
+                    'text-red-600'
+                  }`}>
+                    {validationResults.references}%
+                  </span>
+                </div>
+                <Progress 
+                  value={validationResults.references} 
+                  className={`h-2 ${
+                    validationResults.references >= 90 ? 'bg-green-100' : 
+                    validationResults.references >= 70 ? 'bg-yellow-100' : 
+                    'bg-red-100'
+                  }`}
+                  indicatorClassName={
+                    validationResults.references >= 90 ? 'bg-green-600' : 
+                    validationResults.references >= 70 ? 'bg-yellow-600' : 
+                    'bg-red-600'
+                  }
+                />
+              </div>
+              
+              <div className="border rounded-md p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-medium text-sm">Regulatory</h3>
+                  <span className={`text-sm font-medium ${
+                    validationResults.regulatory >= 90 ? 'text-green-600' : 
+                    validationResults.regulatory >= 70 ? 'text-yellow-600' : 
+                    'text-red-600'
+                  }`}>
+                    {validationResults.regulatory}%
+                  </span>
+                </div>
+                <Progress 
+                  value={validationResults.regulatory} 
+                  className={`h-2 ${
+                    validationResults.regulatory >= 90 ? 'bg-green-100' : 
+                    validationResults.regulatory >= 70 ? 'bg-yellow-100' : 
+                    'bg-red-100'
+                  }`}
+                  indicatorClassName={
+                    validationResults.regulatory >= 90 ? 'bg-green-600' : 
+                    validationResults.regulatory >= 70 ? 'bg-yellow-600' : 
+                    'bg-red-600'
+                  }
+                />
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="font-medium text-sm mb-2">Issues Found</h3>
+              <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                {validationResults.issues.map(issue => (
+                  <div 
+                    key={issue.id} 
+                    className={`flex p-3 rounded-md border ${
+                      issue.severity === 'critical' ? 'border-red-200 bg-red-50' :
+                      issue.severity === 'major' ? 'border-orange-200 bg-orange-50' :
+                      issue.severity === 'minor' ? 'border-yellow-200 bg-yellow-50' :
+                      'border-blue-200 bg-blue-50'
+                    }`}
+                  >
+                    <div className={`mr-3 mt-0.5 flex-shrink-0 ${
+                      issue.severity === 'critical' ? 'text-red-500' :
+                      issue.severity === 'major' ? 'text-orange-500' :
+                      issue.severity === 'minor' ? 'text-yellow-500' :
+                      'text-blue-500'
+                    }`}>
+                      {issue.severity === 'critical' ? (
+                        <AlertCircle className="h-5 w-5" />
+                      ) : issue.severity === 'major' ? (
+                        <AlertCircle className="h-5 w-5" />
+                      ) : issue.severity === 'minor' ? (
+                        <AlertCircle className="h-5 w-5" />
+                      ) : (
+                        <Info className="h-5 w-5" />
+                      )}
+                    </div>
+                    <div>
+                      <div className="flex items-center">
+                        <span className={`text-xs font-medium px-1.5 py-0.5 rounded uppercase ${
+                          issue.severity === 'critical' ? 'bg-red-100 text-red-800' :
+                          issue.severity === 'major' ? 'bg-orange-100 text-orange-800' :
+                          issue.severity === 'minor' ? 'bg-yellow-100 text-yellow-800' :
+                          'bg-blue-100 text-blue-800'
+                        }`}>
+                          {issue.severity}
+                        </span>
+                        <span className="ml-2 text-sm font-medium">{issue.section}</span>
+                      </div>
+                      <p className="text-sm mt-1 mb-1">{issue.description}</p>
+                      <p className="text-sm text-gray-600 italic">{issue.suggestion}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter className="flex justify-between">
+            <Button 
+              variant="outline" 
+              className="flex items-center"
+              onClick={() => {
+                const percentages = [
+                  validationResults.completeness,
+                  validationResults.consistency,
+                  validationResults.references,
+                  validationResults.regulatory
+                ];
+                const average = percentages.reduce((a, b) => a + b, 0) / percentages.length;
+                
+                toast({
+                  title: `Validation Score: ${Math.round(average)}%`,
+                  description: `${validationResults.issues.length} issues found that need attention.`,
+                  variant: average >= 80 ? "default" : "destructive",
+                });
+                
+                setShowValidationDialog(false);
+              }}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export Report
+            </Button>
+            <div className="space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowValidationDialog(false)}
+              >
+                Close
+              </Button>
+              <Button 
+                onClick={() => {
+                  toast({
+                    title: "AI Fix Requested",
+                    description: "AI is analyzing and fixing issues. This may take a moment.",
+                    variant: "default",
+                  });
+                  setShowValidationDialog(false);
+                }}
+              >
+                <Sparkles className="h-4 w-4 mr-2" />
+                Auto-Fix with AI
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Document Export Dialog */}
+      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Download className="h-5 w-5 mr-2 text-blue-600" />
+              Export Document
+            </DialogTitle>
+            <DialogDescription>
+              Choose your export format and options
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div>
+              <h3 className="text-sm font-medium mb-2">Format</h3>
+              <div className="grid grid-cols-3 gap-2">
+                <div 
+                  className={`border rounded-md p-3 text-center cursor-pointer transition-colors ${
+                    exportFormat === 'pdf' ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => setExportFormat('pdf')}
+                >
+                  <FileText className={`h-6 w-6 mx-auto mb-1 ${exportFormat === 'pdf' ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <span className={`text-sm font-medium ${exportFormat === 'pdf' ? 'text-blue-700' : 'text-gray-700'}`}>PDF</span>
+                </div>
+                <div 
+                  className={`border rounded-md p-3 text-center cursor-pointer transition-colors ${
+                    exportFormat === 'word' ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => setExportFormat('word')}
+                >
+                  <FileText className={`h-6 w-6 mx-auto mb-1 ${exportFormat === 'word' ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <span className={`text-sm font-medium ${exportFormat === 'word' ? 'text-blue-700' : 'text-gray-700'}`}>Word</span>
+                </div>
+                <div 
+                  className={`border rounded-md p-3 text-center cursor-pointer transition-colors ${
+                    exportFormat === 'html' ? 'bg-blue-50 border-blue-200' : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => setExportFormat('html')}
+                >
+                  <FileText className={`h-6 w-6 mx-auto mb-1 ${exportFormat === 'html' ? 'text-blue-600' : 'text-gray-400'}`} />
+                  <span className={`text-sm font-medium ${exportFormat === 'html' ? 'text-blue-700' : 'text-gray-700'}`}>HTML</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-sm font-medium mb-2">Options</h3>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm flex items-center">
+                    <input 
+                      type="checkbox" 
+                      className="mr-2"
+                      checked={exportOptions.includeComments}
+                      onChange={(e) => setExportOptions({...exportOptions, includeComments: e.target.checked})}
+                    />
+                    Include comments
+                  </label>
+                  <MessageSquare className="h-4 w-4 text-gray-400" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm flex items-center">
+                    <input 
+                      type="checkbox" 
+                      className="mr-2"
+                      checked={exportOptions.includeTrackChanges}
+                      onChange={(e) => setExportOptions({...exportOptions, includeTrackChanges: e.target.checked})}
+                    />
+                    Include tracked changes
+                  </label>
+                  <GitBranch className="h-4 w-4 text-gray-400" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm flex items-center">
+                    <input 
+                      type="checkbox" 
+                      className="mr-2"
+                      checked={exportOptions.includeCoverPage}
+                      onChange={(e) => setExportOptions({...exportOptions, includeCoverPage: e.target.checked})}
+                    />
+                    Include cover page
+                  </label>
+                  <BookOpen className="h-4 w-4 text-gray-400" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm flex items-center">
+                    <input 
+                      type="checkbox" 
+                      className="mr-2"
+                      checked={exportOptions.includeTableOfContents}
+                      onChange={(e) => setExportOptions({...exportOptions, includeTableOfContents: e.target.checked})}
+                    />
+                    Include table of contents
+                  </label>
+                  <ListChecks className="h-4 w-4 text-gray-400" />
+                </div>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm flex items-center">
+                    <input 
+                      type="checkbox" 
+                      className="mr-2"
+                      checked={exportOptions.includeAppendices}
+                      onChange={(e) => setExportOptions({...exportOptions, includeAppendices: e.target.checked})}
+                    />
+                    Include appendices
+                  </label>
+                  <Clipboard className="h-4 w-4 text-gray-400" />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowExportDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                toast({
+                  title: "Document Exported",
+                  description: `Successfully exported to ${exportFormat.toUpperCase()} format.`,
+                  variant: "default",
+                });
+                setShowExportDialog(false);
+              }}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Compare Versions Dialog */}
+      <Dialog open={showCompareDialog} onOpenChange={setShowCompareDialog}>
+        <DialogContent className="sm:max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <GitMerge className="h-5 w-5 mr-2 text-blue-600" />
+              Compare Versions
+            </DialogTitle>
+            <DialogDescription>
+              Compare changes between document versions
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div className="flex justify-between space-x-4">
+              <div className="flex-1">
+                <h3 className="text-sm font-medium mb-2">Base Version</h3>
+                <select 
+                  className="w-full rounded-md border border-gray-300 p-2"
+                  value={compareVersions.base}
+                  onChange={(e) => setCompareVersions({...compareVersions, base: e.target.value})}
+                >
+                  {versionHistory.map(v => (
+                    <option key={v.id} value={v.id}>{v.name} ({v.date})</option>
+                  ))}
+                </select>
+              </div>
+              <div className="flex items-center">
+                <GitCompare className="h-5 w-5 text-gray-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium mb-2">Compare Version</h3>
+                <select 
+                  className="w-full rounded-md border border-gray-300 p-2"
+                  value={compareVersions.compare}
+                  onChange={(e) => setCompareVersions({...compareVersions, compare: e.target.value})}
+                >
+                  {versionHistory.map(v => (
+                    <option key={v.id} value={v.id}>{v.name} ({v.date})</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            <div className="border rounded-md overflow-hidden">
+              <div className="bg-gray-50 p-3 border-b flex justify-between items-center">
+                <h3 className="font-medium">Comparison Results</h3>
+                <div className="flex items-center text-sm">
+                  <span className="flex items-center mr-3">
+                    <span className="h-3 w-3 bg-green-500 rounded-full mr-1.5"></span>
+                    Added
+                  </span>
+                  <span className="flex items-center mr-3">
+                    <span className="h-3 w-3 bg-red-500 rounded-full mr-1.5"></span>
+                    Removed
+                  </span>
+                  <span className="flex items-center">
+                    <span className="h-3 w-3 bg-yellow-500 rounded-full mr-1.5"></span>
+                    Changed
+                  </span>
+                </div>
+              </div>
+              <div className="p-4 max-h-[300px] overflow-y-auto">
+                <div className="text-sm mb-4">
+                  <h4 className="font-medium mb-2">2.5.5 Overview of Safety</h4>
+                  <div className="pl-4 border-l-2 border-gray-200">
+                    <p className="mb-2 bg-red-100 line-through">
+                      The safety profile of Drug X was assessed in <span className="font-bold">5</span> randomized controlled 
+                      trials involving <span className="font-bold">998</span> subjects. Adverse events were mild to moderate 
+                      in nature, with headache being the most commonly reported event (10% of subjects).
+                    </p>
+                    <p className="mb-2 bg-green-100">
+                      The safety profile of Drug X was assessed in <span className="font-bold">6</span> randomized controlled 
+                      trials involving <span className="font-bold">1,245</span> subjects. Adverse events were mild to moderate 
+                      in nature, with headache being the most commonly reported event (12% of subjects).
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="text-sm">
+                  <h4 className="font-medium mb-2">2.5.5.1 Adverse Events</h4>
+                  <div className="pl-4 border-l-2 border-gray-200">
+                    <p className="mb-2 bg-yellow-100">
+                      The most common adverse events (≥5% and greater than placebo) were:
+                    </p>
+                    <ul className="list-disc pl-8 mb-2">
+                      <li className="bg-red-100 line-through">Headache (10%)</li>
+                      <li className="bg-green-100">Headache (12%)</li>
+                      <li>Nausea (8%)</li>
+                      <li className="bg-red-100 line-through">Dizziness (5%)</li>
+                      <li className="bg-green-100">Dizziness (6%)</li>
+                      <li>Fatigue (5%)</li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div className="text-sm mt-4">
+                  <h4 className="font-medium mb-2">2.5.5.2 Laboratory Findings</h4>
+                  <div className="pl-4 border-l-2 border-gray-200 bg-green-100">
+                    <p className="mb-2">
+                      No clinically meaningful changes in laboratory parameters were observed during the clinical development 
+                      program. Minor elevations in liver enzymes (ALT/AST) were observed in 2% of treated subjects, 
+                      compared to 1.8% in the placebo group, all of which were transient and resolved without intervention.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -1036,11 +1476,12 @@ export default function CoAuthor() {
           </div>
           
           <DialogFooter>
-            <div className="text-xs text-muted-foreground flex items-center">
-              <Info className="h-3 w-3 mr-1 text-blue-500" />
-              All document access is logged for audit purposes
-            </div>
-            <Button onClick={() => setTeamCollabOpen(false)}>Close</Button>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowCompareDialog(false)}
+            >
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
