@@ -209,35 +209,35 @@ export default function CoAuthor() {
             </div>
             
             <div className="mb-3 space-y-2">
-              <div className="border rounded-md p-2">
+              <div className="border border-yellow-200 rounded-md p-2 hover:bg-yellow-50 cursor-pointer transition-colors">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                    <FileText className="h-4 w-4 mr-2 text-yellow-600" />
                     <span className="font-medium text-sm">Module 1 Templates</span>
                   </div>
-                  <Badge variant="outline" className="text-xs">FDA</Badge>
+                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">FDA</Badge>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Standard administrative documents</p>
+                <p className="text-xs text-yellow-700 mt-1">Standard administrative documents</p>
               </div>
-              <div className="border rounded-md p-2">
+              <div className="border border-yellow-200 rounded-md p-2 hover:bg-yellow-50 cursor-pointer transition-colors">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                    <FileText className="h-4 w-4 mr-2 text-yellow-600" />
                     <span className="font-medium text-sm">Module 2 Templates</span>
                   </div>
-                  <Badge variant="outline" className="text-xs">ICH</Badge>
+                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">ICH</Badge>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Overview and summary templates</p>
+                <p className="text-xs text-yellow-700 mt-1">Overview and summary templates</p>
               </div>
-              <div className="border rounded-md p-2">
+              <div className="border border-yellow-200 rounded-md p-2 hover:bg-yellow-50 cursor-pointer transition-colors">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center">
-                    <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                    <FileText className="h-4 w-4 mr-2 text-yellow-600" />
                     <span className="font-medium text-sm">Regional Templates</span>
                   </div>
-                  <Badge variant="outline" className="text-xs">EMA</Badge>
+                  <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">EMA</Badge>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">Region-specific templates</p>
+                <p className="text-xs text-yellow-700 mt-1">Region-specific templates</p>
               </div>
             </div>
             
@@ -513,24 +513,31 @@ export default function CoAuthor() {
               )}
 
               <div className="flex flex-wrap gap-2 mt-4">
-                <Button size="sm" variant="outline" className="flex items-center">
-                  <FilePlus2 className="h-4 w-4 mr-1" />
+                <Button size="sm" variant="outline" className="flex items-center border-purple-200 text-purple-700 hover:bg-purple-50">
+                  <FilePlus2 className="h-4 w-4 mr-1.5" />
                   New Document
                 </Button>
-                <Button size="sm" variant="outline" className="flex items-center">
-                  <Upload className="h-4 w-4 mr-1" />
+                <Button size="sm" variant="outline" className="flex items-center border-purple-200 text-purple-700 hover:bg-purple-50">
+                  <Upload className="h-4 w-4 mr-1.5" />
                   Upload
                 </Button>
-                <Button size="sm" variant="outline" className="flex items-center">
-                  <Download className="h-4 w-4 mr-1" />
+                <Button size="sm" variant="outline" className="flex items-center border-purple-200 text-purple-700 hover:bg-purple-50">
+                  <Download className="h-4 w-4 mr-1.5" />
                   Download
                 </Button>
-                <Button size="sm" variant="outline" className="flex items-center">
-                  <History className="h-4 w-4 mr-1" />
+                <Button size="sm" variant="outline" className="flex items-center border-purple-200 text-purple-700 hover:bg-purple-50">
+                  <History className="h-4 w-4 mr-1.5" />
                   Version History
                 </Button>
-                <Button size="sm" variant="outline" className="flex items-center">
-                  <Share2 className="h-4 w-4 mr-1" />
+                <Button size="sm" variant="outline" className="flex items-center ml-auto bg-purple-50 border-purple-300 text-purple-800 hover:bg-purple-100">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 mr-1.5">
+                    <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
+                    <path d="M22 12A10 10 0 0 0 12 2v10z"></path>
+                  </svg>
+                  Run Compliance Check
+                </Button>
+                <Button size="sm" variant="outline" className="flex items-center border-purple-200 text-purple-700 hover:bg-purple-50">
+                  <Share2 className="h-4 w-4 mr-1.5" />
                   Share
                 </Button>
               </div>
@@ -562,15 +569,15 @@ export default function CoAuthor() {
           </CardContent>
         </Card>
 
-        {/* Module Progress Card */}
-        <Card className="lg:col-span-3">
-          <CardHeader className="pb-2">
+        {/* Module Progress Card - Enhanced */}
+        <Card className="lg:col-span-3 border-blue-200">
+          <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-white">
             <CardTitle className="flex items-center text-lg">
               <BarChart className="h-5 w-5 mr-2 text-blue-600" />
               Module Progress Tracker
             </CardTitle>
             <CardDescription>
-              Track completion status across eCTD modules
+              Track completion status across eCTD modules with real-time metrics
             </CardDescription>
           </CardHeader>
           <CardContent>
