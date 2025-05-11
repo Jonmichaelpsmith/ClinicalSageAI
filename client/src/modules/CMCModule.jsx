@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, BarChart2, Shield, Beaker, Book, FileCheck, Search, Dices, FlaskConical, Microscope, Clipboard, Activity, Flask } from 'lucide-react';
+import { FileText, BarChart2, Shield, Beaker, Book, FileCheck, Search, Dices, FlaskConical, Microscope, Clipboard, Activity, Flask, Users } from 'lucide-react';
 
 import StabilityDataVisualizer from '@/components/cmc/StabilityDataVisualizer';
 import ManufacturingProcessPanel from '@/components/cmc/ManufacturingProcessPanel';
@@ -17,6 +17,7 @@ import StabilityDataAnalyzer from '@/components/cmc/StabilityDataAnalyzer';
 import RegulatoryDocumentGenerator from '@/components/cmc/RegulatoryDocumentGenerator';
 import QualityControlDashboard from '@/components/cmc/QualityControlDashboard';
 import ExcipientCompatibilityAnalyzer from '@/components/cmc/ExcipientCompatibilityAnalyzer';
+import CollaborativeWorkspace from '@/components/cmc/CollaborativeWorkspace';
 
 export default function CMCModule() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -88,6 +89,7 @@ export default function CMCModule() {
           <TabsTrigger value="compliance">ICH Compliance</TabsTrigger>
           <TabsTrigger value="quality-control">Quality Control</TabsTrigger>
           <TabsTrigger value="documentation">Documentation</TabsTrigger>
+          <TabsTrigger value="collaboration">Collaboration</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-4">
@@ -258,6 +260,10 @@ export default function CMCModule() {
 
         <TabsContent value="documentation" className="space-y-4">
           <RegulatoryDocumentGenerator />
+        </TabsContent>
+
+        <TabsContent value="collaboration" className="space-y-4">
+          <CollaborativeWorkspace />
         </TabsContent>
       </Tabs>
     </div>
