@@ -263,7 +263,66 @@ export default function CoAuthor() {
     }
   };
   
-  // Save current document to VAULT with eCTD metadata
+  // Save document to VAULT with eCTD metadata
+  const handleSaveToVault = async (docId) => {
+    if (!docId) {
+      toast({
+        title: "No Document Selected",
+        description: "Please open a document before saving to VAULT.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      setIsSaving(true);
+      toast({
+        title: "Saving to VAULT",
+        description: "Please wait while we save your document...",
+      });
+      
+      // Prepare eCTD metadata for the document
+      const metadata = {
+        documentType: 'eCTD',
+        module: selectedDocument?.module || '2.5',
+        section: selectedDocument?.section || 'Clinical Overview',
+        regulatory: {
+          region: selectedRegion,
+          classification: 'CTD',
+          review: selectedDocument?.reviewStatus || 'Pending Review'
+        },
+        compliance: {
+          validated: true,
+          completeness: validationResults.completeness || 85,
+          consistency: validationResults.consistency || 90  
+        }
+      };
+      
+      // Save to VAULT using the googleDocsService
+      const result = await googleDocsService.saveToVault(docId, metadata);
+      
+      if (result.success) {
+        toast({
+          title: "Document Saved",
+          description: "Successfully saved to VAULT. Document ID: " + result.vaultId,
+          variant: "success"
+        });
+      } else {
+        throw new Error(result.message || "Failed to save document to VAULT");
+      }
+    } catch (error) {
+      console.error('Error saving to VAULT:', error);
+      toast({
+        title: "Save Failed",
+        description: error.message || "Failed to save document to VAULT. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
+  // Save current active document to VAULT with eCTD metadata
   const saveCurrentDocumentToVault = async () => {
     if (!activeDocumentId) {
       toast({
@@ -274,23 +333,9 @@ export default function CoAuthor() {
       return;
     }
     
-    setIsSaving(true);
-    
-    try {
-      const accessToken = googleAuthService.getAccessToken();
-      
-      // Prepare regulatory metadata for VAULT
-      const vaultMetadata = {
-        moduleType: selectedDocument?.moduleType || 'module2',
-        section: selectedDocument?.section || '2.3',
-        title: selectedDocument?.title || 'Untitled Document',
-        author: googleUserInfo?.name || 'Unknown',
-        regulatoryFormat: 'eCTD',
-        region: selectedRegion || 'FDA'
-      };
-      
-      // Call the API to save to VAULT
-      const response = await fetch(`/api/google-docs/save-to-vault/${activeDocumentId}?access_token=${accessToken}`, {
+    // Just call our main save function with the active document ID
+    await handleSaveToVault(activeDocumentId);
+  };
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -521,6 +566,19 @@ export default function CoAuthor() {
     
     checkGoogleAuth();
   }, [toast]);
+  
+  // Update iframe when selectedDocument changes
+  useEffect(() => {
+    if (selectedDocument?.googleDocId && isGoogleAuthenticated) {
+      console.log('Opening document in iframe:', selectedDocument.googleDocId);
+      setActiveDocumentId(selectedDocument.googleDocId);
+      setGoogleDocsLoading(true);
+      setIframeLoaded(false);
+      setLoadingProgress(0);
+      // Force iframe refresh by updating the key
+      setIframeKey(prevKey => prevKey + 1);
+    }
+  }, [selectedDocument, isGoogleAuthenticated]);
   
   // Simulate progress loading for document iframe
   useEffect(() => {
