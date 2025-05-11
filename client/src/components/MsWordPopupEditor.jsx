@@ -156,6 +156,18 @@ const MsWordPopupEditor = ({
 
   const applySuggestion = (suggestion) => {
     // In a real implementation, this would apply the suggestion to the Word document
+    // For our demo, actually update the content with the suggestion
+    setDocumentContent((prevContent) => {
+      // Replace the original text with the suggested text
+      // In a real implementation, this would use proper text replacement
+      // For this demo, we'll just append the suggestion
+      const updatedContent = prevContent.includes(suggestion.original) 
+        ? prevContent.replace(suggestion.original, suggestion.suggestion)
+        : prevContent + "\n\n" + suggestion.suggestion;
+      
+      return updatedContent;
+    });
+    
     toast({
       title: "Suggestion Applied",
       description: "The suggestion has been applied to your document.",
@@ -291,7 +303,7 @@ const MsWordPopupEditor = ({
                   
                   <div className="space-y-4">
                     {suggestions.map((suggestion, index) => (
-                      <div key={index} className="border rounded-md p-3 hover:bg-gray-50">
+                      <div key={suggestion.id || index} className="border rounded-md p-3 hover:bg-gray-50">
                         <div className="flex justify-between items-start mb-2">
                           <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
                             {suggestion.type}
