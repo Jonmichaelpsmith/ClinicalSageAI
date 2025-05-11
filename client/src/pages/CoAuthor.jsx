@@ -477,78 +477,107 @@ export default function CoAuthor() {
           </CardContent>
         </Card>
 
-        {/* Vault Document Management Card - Enhanced */}
-        <Card className="lg:col-span-2 row-span-2 border-purple-200">
+        {/* Vault Document Management Card - Enhanced with Enterprise UI */}
+        <Card className="lg:col-span-2 row-span-2 border-purple-200 shadow-sm">
           <CardHeader className="pb-2 bg-gradient-to-r from-purple-50 to-white">
-            <CardTitle className="flex items-center text-lg">
-              <Database className="h-5 w-5 mr-2 text-purple-600" />
-              Enterprise Vault Document Management
-            </CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center text-lg">
+                <Database className="h-5 w-5 mr-2 text-purple-600" />
+                Enterprise Vault Document Management
+              </CardTitle>
+              <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 mr-1 text-purple-500">
+                  <path d="M21 2H3v16h5v4l4-4h9V2z"></path>
+                  <path d="M10 8h4"></path>
+                  <path d="M10 12h4"></path>
+                  <path d="M10 16h4"></path>
+                </svg>
+                Enterprise
+              </Badge>
+            </div>
             <CardDescription>
-              Secure document repository with version control and compliance features
+              Secure document repository with version control and compliance tracking
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              <div className="flex flex-wrap gap-2 mb-3">
-                <Button size="sm" variant="outline" className="border-purple-200 text-purple-700">
-                  <Upload className="h-3.5 w-3.5 mr-1.5" />
-                  Import
-                </Button>
-                <Button size="sm" variant="outline" className="border-purple-200 text-purple-700">
-                  <Download className="h-3.5 w-3.5 mr-1.5" />
-                  Export
-                </Button>
-                <Button size="sm" variant="outline" className="border-purple-200 text-purple-700">
-                  <History className="h-3.5 w-3.5 mr-1.5" />
-                  Version History
-                </Button>
-                <Button size="sm" variant="outline" className="border-purple-200 text-purple-700">
-                  <Share2 className="h-3.5 w-3.5 mr-1.5" />
-                  Share
-                </Button>
-                <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700">
-                  Supabase Vault
-                </Badge>
-              </div>
-            
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 mr-2 text-purple-600">
-                    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 1 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-                    <path d="M12 10v6" />
-                    <path d="m15 13-3 3-3-3" />
-                  </svg>
-                  <div>
-                    <span className="font-medium">eCTD Document Tree</span>
-                    <div className="text-xs text-purple-600">ICH conformant structure</div>
+              <div className="bg-gradient-to-r from-purple-50 to-purple-25 border border-purple-100 rounded-md p-3 mb-3">
+                <div className="flex justify-between items-center mb-2">
+                  <div className="text-sm font-medium text-purple-800 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 mr-1.5 text-purple-600">
+                      <path d="M21 9V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"></path>
+                      <path d="M3 16v3a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-3"></path>
+                      <line x1="3" x2="21" y1="12" y2="12"></line>
+                    </svg>
+                    Document Management Actions
+                  </div>
+                  <div className="text-xs px-2 py-1 bg-white rounded-md border border-purple-100 text-purple-700">
+                    <span className="font-medium">Last sync:</span> 10 minutes ago
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 mr-1">
-                      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
-                      <path d="m9 12 2 2 4-4" />
-                    </svg>
-                    <span>Compliant</span>
-                  </Badge>
-                  <Button 
-                    size="sm" 
-                    variant="outline"
-                    onClick={() => setIsTreeOpen(!isTreeOpen)}
-                    className="flex items-center border-purple-200 text-purple-700"
-                  >
-                    <span>{isTreeOpen ? "Collapse" : "Expand"}</span>
-                    <ChevronDown className={`h-4 w-4 ml-1 ${isTreeOpen ? "transform rotate-180" : ""}`} />
+                
+                <div className="grid grid-cols-4 gap-2">
+                  <Button size="sm" variant="outline" className="border-purple-200 text-purple-700 bg-white hover:bg-purple-50 transition-colors h-9">
+                    <Upload className="h-3.5 w-3.5 mr-1.5" />
+                    Import
+                  </Button>
+                  <Button size="sm" variant="outline" className="border-purple-200 text-purple-700 bg-white hover:bg-purple-50 transition-colors h-9">
+                    <Download className="h-3.5 w-3.5 mr-1.5" />
+                    Export
+                  </Button>
+                  <Button size="sm" variant="outline" className="border-purple-200 text-purple-700 bg-white hover:bg-purple-50 transition-colors h-9">
+                    <History className="h-3.5 w-3.5 mr-1.5" />
+                    History
+                  </Button>
+                  <Button size="sm" variant="outline" className="border-purple-200 text-purple-700 bg-white hover:bg-purple-50 transition-colors h-9">
+                    <Share2 className="h-3.5 w-3.5 mr-1.5" />
+                    Share
                   </Button>
                 </div>
               </div>
-
-              {isTreeOpen ? (
-                <div className="space-y-4 max-h-96 overflow-y-auto border border-purple-200 rounded-md p-3 bg-white shadow-sm">
-                  <div className="flex flex-wrap justify-between items-center gap-3 mb-3 bg-purple-50 p-2 rounded-md">
-                    <div className="flex items-center space-x-2">
-                      <div className="flex items-center space-x-1.5">
+              
+              <div className="bg-white rounded-md border border-purple-200 p-3">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center">
+                    <div className="bg-purple-100 rounded-md h-9 w-9 flex items-center justify-center mr-2.5 text-purple-700">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                        <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 1 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+                        <path d="M12 10v6" />
+                        <path d="m15 13-3 3-3-3" />
+                      </svg>
+                    </div>
+                    <div>
+                      <div className="font-medium text-purple-900">eCTD Document Tree</div>
+                      <div className="text-xs text-purple-600 mt-0.5">ICH conformant structure with multi-region validation</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-1">
+                      <Badge variant="outline" className="bg-green-50 border-green-200 text-green-700 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 mr-1">
+                          <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                          <path d="m9 12 2 2 4-4" />
+                        </svg>
+                        <span>Compliant</span>
+                      </Badge>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => setIsTreeOpen(!isTreeOpen)}
+                        className="flex items-center border-purple-200 text-purple-700 h-7"
+                      >
+                        <span>{isTreeOpen ? "Collapse" : "Expand"}</span>
+                        <ChevronDown className={`h-4 w-4 ml-1 ${isTreeOpen ? "transform rotate-180" : ""}`} />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                
+                {isTreeOpen && (
+                  <div className="space-y-4 max-h-96 overflow-y-auto border border-purple-200 rounded-md p-3 mt-3 bg-white shadow-sm">
+                    <div className="flex flex-wrap justify-between items-center gap-3 mb-3 bg-purple-50 p-2 rounded-md">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-1.5">
                         <span className="text-xs font-medium text-purple-800">Filter:</span>
                         <select className="text-xs rounded border border-purple-200 px-2 py-1 bg-white focus:ring-purple-400 focus:border-purple-400">
                           <option>All Documents</option>
