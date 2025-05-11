@@ -116,6 +116,7 @@ export default function CoAuthor() {
   // GOOGLE DOCS INTEGRATION - FULLY IMPLEMENTED
   const googleDocsIframeRef = useRef(null);
   const [activeDocumentId, setActiveDocumentId] = useState(null);
+  const [selectedDocument, setSelectedDocument] = useState(null);
   
   // Embedded Google Docs functions
   const openDocumentInIframe = (docId) => {
