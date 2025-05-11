@@ -15,10 +15,11 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { FileWarning, Settings } from 'lucide-react';
+import { FileWarning, Settings, Maximize2, ExternalLink } from 'lucide-react';
 
 // Import the MS Word document editor with lazy loading
 const MsWordDocumentEditor = lazy(() => import('./MsWordDocumentEditor'));
+const MsWordPopupEditor = lazy(() => import('./MsWordPopupEditor'));
 
 const EnhancedDocumentEditor = ({
   documentId,
@@ -34,6 +35,7 @@ const EnhancedDocumentEditor = ({
   const [editorMode, setEditorMode] = useState('msword'); // 'msword', 'basic', 'source'
   const [documentUrl, setDocumentUrl] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showPopupEditor, setShowPopupEditor] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
