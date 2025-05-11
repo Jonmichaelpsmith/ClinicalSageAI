@@ -582,6 +582,50 @@ function purgeWeakReferences() {
 }
 
 /**
+ * Clears stored blobs and frees up memory used by them
+ */
+function clearStoredBlobs() {
+  try {
+    // Revoke any object URLs that might be stored
+    if (window.URL && typeof window.URL.revokeObjectURL === 'function') {
+      // Find blob URLs in the window object
+      Object.keys(window).forEach(key => {
+        if (typeof window[key] === 'string' && 
+            window[key].startsWith('blob:')) {
+          try {
+            URL.revokeObjectURL(window[key]);
+            window[key] = null;
+          } catch (e) {
+            // Ignore errors for individual revokes
+          }
+        }
+      });
+    }
+    
+    // Clear any application-specific blob storage
+    if (window.blobCache && typeof window.blobCache === 'object') {
+      Object.keys(window.blobCache).forEach(key => {
+        try {
+          if (window.blobCache[key] && 
+              typeof window.blobCache[key] === 'string' && 
+              window.blobCache[key].startsWith('blob:')) {
+            URL.revokeObjectURL(window.blobCache[key]);
+          }
+        } catch (e) {
+          // Ignore individual errors
+        }
+      });
+      window.blobCache = {};
+    }
+    
+    return true;
+  } catch (err) {
+    console.warn('Error clearing stored blobs:', err);
+    return false;
+  }
+}
+
+/**
  * Clean up any detached DOM nodes that might be in memory
  */
 function cleanUpDetachedDomNodes() {
