@@ -29,6 +29,8 @@ import { DOCUMENT_TEMPLATES } from '../config/googleConfig';
 // AI services
 import * as aiService from '../services/aiService';
 
+// (GoogleIcon component already exists elsewhere in the file)
+
 // Import icons for UI
 import { 
   FileText, 
@@ -2200,6 +2202,27 @@ export default function CoAuthor() {
                               </p>
                             </div>
                           </div>
+                          
+                          {!isGoogleAuthenticated && (
+                            <div className="absolute inset-0 flex items-center justify-center z-20 bg-gray-50/90">
+                              <div className="text-center max-w-md px-8 py-10 bg-white shadow-lg rounded-lg border border-gray-200">
+                                <div className="rounded-full bg-amber-100 w-16 h-16 mb-4 flex items-center justify-center mx-auto">
+                                  <Lock className="h-8 w-8 text-amber-600" />
+                                </div>
+                                <h3 className="text-xl font-semibold mb-2">Google Authentication Required</h3>
+                                <p className="text-gray-600 mb-6">
+                                  Sign in with Google to access and edit documents with full permissions.
+                                </p>
+                                <Button 
+                                  onClick={() => googleAuthService.initiateAuth()}
+                                  className="bg-blue-600 hover:bg-blue-700"
+                                >
+                                  <GoogleIcon className="h-4 w-4 mr-2" />
+                                  Sign in with Google
+                                </Button>
+                              </div>
+                            </div>
+                          )}
                           
                           <iframe
                             title="Google Docs Editor"
