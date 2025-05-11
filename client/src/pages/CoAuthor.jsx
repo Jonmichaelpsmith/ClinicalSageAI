@@ -596,91 +596,98 @@ export default function CoAuthor() {
     includeAppendices: true
   });
   
-  // Handle creating a new Google Doc
-  const handleCreateNewDocument = async () => {
+  // Additional helper functions for document creation workflow
+  
+  // Google Docs validation helper
+  const validateDocumentRequirements = () => {
     if (!isGoogleAuthenticated) {
       toast({
         title: "Authentication Required",
         description: "Please sign in with Google to create documents.",
         variant: "destructive",
       });
-      return;
+      return false;
     }
     
-    if (!newDocumentTitle.trim()) {
-      toast({
-        title: "Title Required",
-        description: "Please enter a title for your new document.",
-        variant: "destructive",
-      });
-      return;
+    return true;
+  };
+  
+  // Template helper to map templates to eCTD module info
+  const getTemplateInfo = (templateId) => {
+    if (!templateId) {
+      return {
+        moduleType: 'module_2',
+        sectionCode: '2.5'
+      };
     }
     
-    if (!selectedTemplate) {
-      toast({
-        title: "Template Required",
-        description: "Please select a template for your new document.",
-        variant: "destructive",
-      });
-      return;
+    // Determine the eCTD module and section from the selected template
+    let moduleType = '';
+    let sectionCode = '';
+    
+    // Parse the template selection to determine proper eCTD classification
+    if (templateId.includes('clinical_overview')) {
+      moduleType = 'module_2';
+      sectionCode = '2.5';
+    } else if (templateId.includes('clinical_summary')) {
+      moduleType = 'module_2';
+      sectionCode = '2.7';
+    } else if (templateId.includes('quality_overall_summary')) {
+      moduleType = 'module_2';
+      sectionCode = '2.3';
+    } else if (templateId.includes('cover_letter')) {
+      moduleType = 'module_1';
+      sectionCode = '1.0';
+    } else if (templateId.includes('quality_manufacturing')) {
+      moduleType = 'module_3';
+      sectionCode = '3.2.P';
+    } else if (templateId.includes('clinical_study_report')) {
+      moduleType = 'module_5';
+      sectionCode = '5.3.5';
+    } else if (templateId.includes('protocol')) {
+      moduleType = 'module_5';
+      sectionCode = '5.3.5.1';
+    } else if (templateId.includes('toxicology_summary')) {
+      moduleType = 'module_4';
+      sectionCode = '4.2.3';
+    } else {
+      // Default if none matches exactly
+      moduleType = 'module_2';
+      sectionCode = '2.5';
     }
     
+    return {
+      moduleType,
+      sectionCode
+    };
+  };
+  
+  // Function to create a new document using the template
+  const createDocFromTemplate = async (templateId, title, region) => {
     try {
       setCreatingDocument(true);
       
-      // Determine the eCTD module and section from the selected template
-      let moduleType = '';
-      let sectionCode = '';
-      let region = selectedRegion; // Use the user-selected region
+      // Get template info
+      const { moduleType, sectionCode } = getTemplateInfo(templateId);
       
-      // Parse the template selection to determine proper eCTD classification
-      if (selectedTemplate.includes('clinical_overview')) {
-        moduleType = 'module_2';
-        sectionCode = '2.5';
-      } else if (selectedTemplate.includes('clinical_summary')) {
-        moduleType = 'module_2';
-        sectionCode = '2.7';
-      } else if (selectedTemplate.includes('quality_overall_summary')) {
-        moduleType = 'module_2';
-        sectionCode = '2.3';
-      } else if (selectedTemplate.includes('cover_letter')) {
-        moduleType = 'module_1';
-        sectionCode = '1.0';
-      } else if (selectedTemplate.includes('quality_manufacturing')) {
-        moduleType = 'module_3';
-        sectionCode = '3.2.P';
-      } else if (selectedTemplate.includes('clinical_study_report')) {
-        moduleType = 'module_5';
-        sectionCode = '5.3.5';
-      } else if (selectedTemplate.includes('protocol')) {
-        moduleType = 'module_5';
-        sectionCode = '5.3.5.1';
-      } else if (selectedTemplate.includes('toxicology_summary')) {
-        moduleType = 'module_4';
-        sectionCode = '4.2.3';
-      } else {
-        // Default if none matches exactly
-        moduleType = 'module_2';
-        sectionCode = '2.5';
-      }
-      
-      // Call Google Docs service to create a new document with enhanced metadata
+      // Notification
       toast({
         title: "Creating Document",
         description: "Preparing your eCTD document template...",
       });
       
+      // Call Google Docs service
       const result = await googleDocsService.createNewDoc(
-        selectedTemplate,
-        newDocumentTitle,
+        templateId,
+        title,
         {
-          organizationId: 'current-org', // This would come from your auth context
+          organizationId: '1', // Placeholder - would come from auth context
           moduleType: moduleType,
           sectionCode: sectionCode,
           region: region,
           documentType: 'scientific', // Default document type
           submissionType: 'IND', // Default submission type
-          initialContent: `# ${newDocumentTitle}\n\neCTD Section: ${sectionCode}\nRegion: ${region}\n\n`,
+          initialContent: `# ${title}\n\neCTD Section: ${sectionCode}\nRegion: ${region}\n\n`,
           approvalWorkflow: 'standard',
           documentStatus: 'Draft'
         }
