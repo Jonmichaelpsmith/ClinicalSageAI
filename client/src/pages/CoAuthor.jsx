@@ -91,8 +91,6 @@ export default function CoAuthor() {
       ]
     }
   ];
-  
-  const [isTreeOpen, setIsTreeOpen] = useState(false);
 
   return (
     <div className="flex flex-col h-full">
