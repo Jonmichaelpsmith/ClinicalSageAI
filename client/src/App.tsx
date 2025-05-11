@@ -47,6 +47,11 @@ function Router() {
       <ProtectedRoute path="/cerv2" component={CERV2Page} />
       <ProtectedRoute path="/cer-projects" component={CerProjectsDashboard} />
       <ProtectedRoute path="/reports" component={ReportsPage} />
+      <ProtectedRoute path="/vault" component={ClientPortalLanding} />
+      <ProtectedRoute path="/ind-wizard" component={IndDashboard} />
+      <ProtectedRoute path="/regulatory-intelligence-hub" component={ClientPortalLanding} />
+      <ProtectedRoute path="/regulatory-risk-dashboard" component={ClientPortalLanding} />
+      <ProtectedRoute path="/study-architect" component={ClientPortalLanding} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
