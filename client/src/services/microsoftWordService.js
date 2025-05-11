@@ -533,6 +533,136 @@ export const simulateVersionHistory = async () => {
 };
 
 /**
+ * Insert template into document
+ * @param {string} documentId - Document ID
+ * @param {string} templateId - Template ID
+ * @returns {Promise<boolean>} - Success status
+ */
+export const insertTemplate = async (documentId, templateId) => {
+  try {
+    console.log(`Inserting template ${templateId} into document ${documentId}`);
+    
+    // Get Microsoft Graph token
+    const token = await microsoftAuthService.getGraphToken();
+    
+    const response = await fetch(`/api/office/documents/${documentId}/insert-template`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ templateId })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to insert template: ${response.statusText}`);
+    }
+    
+    return true;
+  } catch (err) {
+    console.error('Error inserting template:', err);
+    return false;
+  }
+};
+
+/**
+ * Insert AI-generated content into document
+ * @param {string} documentId - Document ID
+ * @param {string} contentType - Type of content to generate
+ * @param {string} position - Position to insert content
+ * @returns {Promise<boolean>} - Success status
+ */
+export const insertAIContent = async (documentId, contentType, position = 'cursor') => {
+  try {
+    console.log(`Inserting AI content of type ${contentType} into document ${documentId}`);
+    
+    // Get Microsoft Graph token
+    const token = await microsoftAuthService.getGraphToken();
+    
+    const response = await fetch(`/api/office/documents/${documentId}/insert-ai-content`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ contentType, position })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to insert AI content: ${response.statusText}`);
+    }
+    
+    return true;
+  } catch (err) {
+    console.error('Error inserting AI content:', err);
+    return false;
+  }
+};
+
+/**
+ * Format document headings according to regulatory standards
+ * @param {string} documentId - Document ID
+ * @param {string} regulationType - Regulation type (e.g., 'fda', 'ema')
+ * @returns {Promise<boolean>} - Success status
+ */
+export const formatDocumentHeadings = async (documentId, regulationType = 'fda') => {
+  try {
+    console.log(`Formatting document ${documentId} headings according to ${regulationType} standards`);
+    
+    // Get Microsoft Graph token
+    const token = await microsoftAuthService.getGraphToken();
+    
+    const response = await fetch(`/api/office/documents/${documentId}/format-headings`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ regulationType })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to format document headings: ${response.statusText}`);
+    }
+    
+    return true;
+  } catch (err) {
+    console.error('Error formatting document headings:', err);
+    return false;
+  }
+};
+
+/**
+ * Export document to PDF format
+ * @param {string} documentId - Document ID
+ * @returns {Promise<Object>} - PDF document information
+ */
+export const exportToPDF = async (documentId) => {
+  try {
+    console.log(`Exporting document ${documentId} to PDF`);
+    
+    // Get Microsoft Graph token
+    const token = await microsoftAuthService.getGraphToken();
+    
+    const response = await fetch(`/api/office/documents/${documentId}/export-pdf`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to export document to PDF: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (err) {
+    console.error('Error exporting document to PDF:', err);
+    throw err;
+  }
+};
+
+/**
  * Simulate available templates for development
  * @returns {Promise<Array>} - Simulated templates
  */
@@ -610,6 +740,8 @@ export const simulateComplianceCheck = async () => {
 
 // Default export as a service object
 const microsoftWordService = {
+  initializeOfficeJS,
+  openDocument,
   createDocument,
   getDocument,
   saveDocumentContent,
@@ -617,6 +749,10 @@ const microsoftWordService = {
   createDocumentVersion,
   getTemplates,
   applyTemplate,
+  insertTemplate,
+  insertAIContent,
+  formatDocumentHeadings,
+  exportToPDF,
   insertRegulatorySection,
   checkRegulatoryCompliance,
   applyEctdFormatting,
