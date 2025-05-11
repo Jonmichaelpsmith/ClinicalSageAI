@@ -398,40 +398,74 @@ export default function CoAuthor() {
             
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center">
-                  <FileText className="h-5 w-5 mr-2 text-purple-600" />
-                  <span className="font-medium">eCTD Document Tree</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 mr-2 text-purple-600">
+                    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 1 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+                    <path d="M12 10v6" />
+                    <path d="m15 13-3 3-3-3" />
+                  </svg>
+                  <div>
+                    <span className="font-medium">eCTD Document Tree</span>
+                    <div className="text-xs text-purple-600">ICH conformant structure</div>
+                  </div>
                 </div>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  onClick={() => setIsTreeOpen(!isTreeOpen)}
-                  className="flex items-center border-purple-200 text-purple-700"
-                >
-                  <span>{isTreeOpen ? "Close full eCTD tree" : "Open full eCTD tree"}</span>
-                  <ChevronDown className={`h-4 w-4 ml-1 ${isTreeOpen ? "transform rotate-180" : ""}`} />
-                </Button>
+                <div className="flex items-center space-x-2">
+                  <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 mr-1">
+                      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+                      <path d="m9 12 2 2 4-4" />
+                    </svg>
+                    <span>Compliant</span>
+                  </Badge>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => setIsTreeOpen(!isTreeOpen)}
+                    className="flex items-center border-purple-200 text-purple-700"
+                  >
+                    <span>{isTreeOpen ? "Collapse" : "Expand"}</span>
+                    <ChevronDown className={`h-4 w-4 ml-1 ${isTreeOpen ? "transform rotate-180" : ""}`} />
+                  </Button>
+                </div>
               </div>
 
               {isTreeOpen ? (
                 <div className="space-y-4 max-h-96 overflow-y-auto border border-purple-200 rounded-md p-3 bg-white shadow-sm">
-                  <div className="flex justify-between mb-2">
+                  <div className="flex flex-wrap justify-between items-center gap-3 mb-3 bg-purple-50 p-2 rounded-md">
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs font-medium">Filter:</span>
-                      <select className="text-xs rounded border border-purple-100 px-2 py-1">
-                        <option>All Documents</option>
-                        <option>Draft Only</option>
-                        <option>Final Only</option>
-                        <option>Recently Modified</option>
-                      </select>
+                      <div className="flex items-center space-x-1.5">
+                        <span className="text-xs font-medium text-purple-800">Filter:</span>
+                        <select className="text-xs rounded border border-purple-200 px-2 py-1 bg-white focus:ring-purple-400 focus:border-purple-400">
+                          <option>All Documents</option>
+                          <option>Draft Only</option>
+                          <option>Final Only</option>
+                          <option>Recently Modified</option>
+                        </select>
+                      </div>
+                      <div className="flex items-center space-x-1.5">
+                        <span className="text-xs font-medium text-purple-800">Module:</span>
+                        <select className="text-xs rounded border border-purple-200 px-2 py-1 bg-white focus:ring-purple-400 focus:border-purple-400">
+                          <option>All Modules</option>
+                          <option>Module 1</option>
+                          <option>Module 2</option>
+                          <option>Module 3</option>
+                          <option>Module 4</option>
+                          <option>Module 5</option>
+                        </select>
+                      </div>
                     </div>
-                    <div className="text-xs text-purple-600">
-                      <span className="font-medium">43 documents</span> • 18 final
+                    <div className="flex items-center space-x-3">
+                      <div className="text-xs text-purple-700 bg-white px-2 py-1 rounded border border-purple-100">
+                        <span className="font-medium">43 documents</span> • 18 final
+                      </div>
+                      <Button size="sm" variant="ghost" className="h-7 w-7 p-0 rounded-full text-purple-600">
+                        <RefreshCw className="h-3.5 w-3.5" />
+                      </Button>
                     </div>
                   </div>
                 
                   {documentTree.map(module => (
-                    <div key={module.id} className="space-y-2">
-                      <div className="flex items-center justify-between font-medium bg-purple-50 p-1.5 rounded-md">
+                    <div key={module.id} className="space-y-2 bg-white border border-purple-100 rounded-md overflow-hidden shadow-sm">
+                      <div className="flex items-center justify-between font-medium bg-gradient-to-r from-purple-100 to-purple-50 p-2 rounded-t-md">
                         <div className="flex items-center">
                           <FolderOpen className="h-4 w-4 mr-2 text-purple-500" />
                           <span className="text-purple-800">{module.name}</span>
@@ -439,7 +473,14 @@ export default function CoAuthor() {
                             {module.status}
                           </Badge>
                         </div>
-                        <div className="flex items-center space-x-1">
+                        <div className="flex items-center space-x-2">
+                          <Badge variant="outline" className="text-xs bg-white text-purple-700 border-purple-200">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 mr-1 text-green-500">
+                              <path d="m9 11-6 6v3h9l3-3" />
+                              <path d="m22 12-4.37 4.37a2.12 2.12 0 0 1-3.83-1.02V3.65a2.12 2.12 0 0 1 3.83-1.02L22 7" />
+                            </svg>
+                            FDA Required
+                          </Badge>
                           <Button size="sm" variant="ghost" className="h-6 w-6 p-0 rounded-full">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 text-purple-600">
                               <circle cx="12" cy="12" r="1" />
@@ -450,29 +491,36 @@ export default function CoAuthor() {
                         </div>
                       </div>
                       
-                      <div className="pl-6 space-y-2 border-l border-gray-200 dark:border-gray-700 ml-2">
+                      <div className="pl-6 space-y-2 border-l border-purple-100 ml-3 pr-3 pb-3">
                         {module.children.map(child => {
                           if (child.type === 'folder') {
                             return (
                               <div key={child.id} className="space-y-1">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between bg-purple-50 rounded-md p-1.5">
                                   <div className="flex items-center">
-                                    <FolderOpen className="h-4 w-4 mr-2 text-purple-400" />
-                                    <span className="text-sm font-medium">{child.name}</span>
+                                    <FolderOpen className="h-4 w-4 mr-2 text-purple-500" />
+                                    <span className="text-sm font-medium text-purple-800">{child.name}</span>
                                   </div>
-                                  <div className="flex space-x-1">
-                                    <Badge variant="outline" className="text-xs bg-purple-50 border-purple-100 text-purple-600">
+                                  <div className="flex space-x-2">
+                                    <Badge variant="outline" className="text-xs bg-white border-purple-100 text-purple-600">
                                       {child.children.length} docs
                                     </Badge>
+                                    <Button size="sm" variant="ghost" className="h-5 w-5 p-0 text-purple-600 hover:text-purple-700">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                                        <polyline points="17 8 12 3 7 8" />
+                                        <line x1="12" y1="3" x2="12" y2="15" />
+                                      </svg>
+                                    </Button>
                                   </div>
                                 </div>
                                 
                                 <div className="pl-5 space-y-1 border-l border-purple-100 ml-1">
                                   {child.children.map(subChild => (
-                                    <div key={subChild.id} className="flex items-center justify-between hover:bg-purple-50 rounded p-1">
+                                    <div key={subChild.id} className="flex items-center justify-between hover:bg-purple-50 rounded-md p-1.5 transition-colors group">
                                       <div className="flex items-center">
-                                        <FileText className="h-3 w-3 mr-2 text-purple-400" />
-                                        <span className="text-xs">{subChild.name}</span>
+                                        <FileText className="h-3.5 w-3.5 mr-2 text-purple-500" />
+                                        <span className="text-xs text-purple-900 group-hover:text-purple-700">{subChild.name}</span>
                                       </div>
                                       <div className="flex items-center space-x-1">
                                         <Badge 
@@ -484,7 +532,7 @@ export default function CoAuthor() {
                                         <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200">
                                           {subChild.format}
                                         </Badge>
-                                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity">
                                           <Eye className="h-3 w-3 text-purple-500" />
                                         </Button>
                                       </div>
@@ -495,10 +543,15 @@ export default function CoAuthor() {
                             );
                           } else {
                             return (
-                              <div key={child.id} className="flex items-center justify-between hover:bg-purple-50 rounded p-1">
+                              <div key={child.id} className="flex items-center justify-between hover:bg-purple-50 rounded-md p-1.5 transition-colors group">
                                 <div className="flex items-center">
-                                  <FileText className="h-4 w-4 mr-2 text-purple-400" />
-                                  <span className="text-sm">{child.name}</span>
+                                  <div className="relative">
+                                    <FileText className="h-4 w-4 mr-2 text-purple-500" />
+                                    {child.status === 'final' && (
+                                      <div className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full"></div>
+                                    )}
+                                  </div>
+                                  <span className="text-sm text-purple-900 group-hover:text-purple-700">{child.name}</span>
                                 </div>
                                 <div className="flex items-center space-x-1">
                                   <Badge 
@@ -510,9 +563,19 @@ export default function CoAuthor() {
                                   <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200">
                                     {child.format}
                                   </Badge>
-                                  <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
-                                    <Eye className="h-3 w-3 text-purple-500" />
-                                  </Button>
+                                  <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 text-purple-500">
+                                        <path d="M12 19l7-7 3 3-7 7-3-3z" />
+                                        <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" />
+                                        <path d="m2 2 7.586 7.586" />
+                                        <circle cx="11" cy="11" r="2" />
+                                      </svg>
+                                    </Button>
+                                    <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                                      <Eye className="h-3 w-3 text-purple-500" />
+                                    </Button>
+                                  </div>
                                 </div>
                               </div>
                             );
@@ -521,23 +584,98 @@ export default function CoAuthor() {
                       </div>
                     </div>
                   ))}
+                  
+                  <div className="flex justify-between items-center pt-2 text-xs text-purple-700">
+                    <div className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 mr-1.5 text-green-500">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                        <polyline points="22 4 12 14.01 9 11.01" />
+                      </svg>
+                      <span>FDA and EMA eCTD compliance verification active</span>
+                    </div>
+                    <Button size="sm" variant="link" className="h-6 text-xs text-purple-700 hover:text-purple-900 flex items-center p-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 mr-1">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <line x1="3" y1="9" x2="21" y2="9" />
+                        <line x1="9" y1="21" x2="9" y2="9" />
+                      </svg>
+                      View compliance report
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className="border border-purple-200 rounded-md p-3 bg-white shadow-sm">
-                  <div className="flex justify-between items-center mb-2">
-                    <div className="text-xs text-purple-600">
-                      <span className="font-medium">Recent documents</span>
+                  <div className="bg-gradient-to-r from-purple-50 to-white p-2 rounded-md border border-purple-100 mb-3">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 mr-2 text-purple-600">
+                          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                        </svg>
+                        <span className="text-sm font-medium text-purple-800">eCTD Module Status</span>
+                      </div>
+                      <Badge variant="outline" className="text-xs bg-green-50 border-green-200 text-green-700 flex items-center">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        FDA Compliant
+                      </Badge>
                     </div>
-                    <div className="text-xs text-purple-600">
+                    
+                    <div className="grid grid-cols-3 gap-2 mt-2">
+                      <div className="p-1.5 bg-white rounded-md border border-purple-100">
+                        <div className="text-xs font-medium text-purple-800 mb-1 flex items-center">
+                          <FolderOpen className="h-3.5 w-3.5 text-purple-500 mr-1" />
+                          Module 1
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-purple-600">5 docs</span>
+                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">Ready</Badge>
+                        </div>
+                      </div>
+                      <div className="p-1.5 bg-white rounded-md border border-purple-100">
+                        <div className="text-xs font-medium text-purple-800 mb-1 flex items-center">
+                          <FolderOpen className="h-3.5 w-3.5 text-purple-500 mr-1" />
+                          Module 2
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-purple-600">8 docs</span>
+                          <Badge variant="outline" className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200">In Progress</Badge>
+                        </div>
+                      </div>
+                      <div className="p-1.5 bg-white rounded-md border border-purple-100">
+                        <div className="text-xs font-medium text-purple-800 mb-1 flex items-center">
+                          <FolderOpen className="h-3.5 w-3.5 text-purple-500 mr-1" />
+                          Module 3
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-purple-600">12 docs</span>
+                          <Badge variant="outline" className="text-xs bg-green-50 text-green-700 border-green-200">Ready</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 mr-1.5 text-purple-600">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="M12 8v4l3 3"></path>
+                      </svg>
+                      <span className="text-sm font-medium text-purple-800">Recent documents</span>
+                    </div>
+                    <div className="text-xs text-purple-600 bg-purple-50 px-2 py-1 rounded-md">
                       <span className="font-medium">43 total documents</span> • 18 final
                     </div>
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     {documentTree[0].children.map(doc => (
-                      <div key={doc.id} className="flex items-center justify-between hover:bg-purple-50 rounded p-1">
+                      <div key={doc.id} className="flex items-center justify-between hover:bg-purple-50 rounded-md p-1.5 transition-colors group">
                         <div className="flex items-center">
-                          <FileText className="h-4 w-4 mr-2 text-purple-400" />
-                          <span className="text-sm">{doc.name}</span>
+                          <div className="relative">
+                            <FileText className="h-4 w-4 mr-2 text-purple-500" />
+                            {doc.status === 'final' && (
+                              <div className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full"></div>
+                            )}
+                          </div>
+                          <span className="text-sm text-purple-900 group-hover:text-purple-700">{doc.name}</span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <Badge 
@@ -549,15 +687,26 @@ export default function CoAuthor() {
                           <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200">
                             {doc.format}
                           </Badge>
-                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
-                            {doc.status === 'final' ? 
-                              <Eye className="h-3 w-3 text-purple-500" /> :
-                              <Edit className="h-3 w-3 text-purple-500" />
-                            }
-                          </Button>
+                          <div className="flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {doc.status === 'final' ? (
+                              <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                                <Eye className="h-3 w-3 text-purple-500" />
+                              </Button>
+                            ) : (
+                              <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                                <Edit className="h-3 w-3 text-purple-500" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
+                  </div>
+                  <div className="text-center pt-3">
+                    <Button variant="link" className="text-xs text-purple-600 hover:text-purple-800" onClick={() => setIsTreeOpen(true)}>
+                      View full eCTD structure
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    </Button>
                   </div>
                 </div>
               )}
