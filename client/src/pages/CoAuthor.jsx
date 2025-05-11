@@ -1522,12 +1522,45 @@ export default function CoAuthor() {
       <Dialog open={googleDocsPopupOpen} onOpenChange={setGoogleDocsPopupOpen} className="max-w-[90%] w-[1200px]">
         <DialogContent className="max-w-[90%] w-[1200px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center">
-              <FileText className="h-5 w-5 mr-2" />
-              Google Docs - {selectedDocument?.title || "Module 2.5 Clinical Overview"}
-            </DialogTitle>
+            <div className="flex justify-between items-center">
+              <DialogTitle className="flex items-center">
+                <FileText className="h-5 w-5 mr-2" />
+                {selectedDocument?.title || "Module 2.5 Clinical Overview"}
+              </DialogTitle>
+              <div className="flex items-center space-x-2">
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 px-2 py-1 text-xs">
+                  {selectedDocument?.status || "Draft"}
+                </Badge>
+                <Badge variant="outline" className="bg-slate-50 text-slate-700 px-2 py-1 text-xs">
+                  v{selectedDocument?.version || "1.0"}
+                </Badge>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="h-8 px-2 text-xs border-green-200 text-green-700 hover:bg-green-50"
+                  onClick={() => {
+                    toast({
+                      title: "Saving to VAULT",
+                      description: "Saving document to DocuShare VAULT...",
+                    });
+                    
+                    // Simulate saving to VAULT
+                    setTimeout(() => {
+                      toast({
+                        title: "Saved to VAULT",
+                        description: "Document successfully saved to DocuShare VAULT.",
+                        variant: "success",
+                      });
+                    }, 1500);
+                  }}
+                >
+                  <Database className="h-3 w-3 mr-1" />
+                  Save to VAULT
+                </Button>
+              </div>
+            </div>
             <DialogDescription>
-              Edit your document with Google Docs, embedded directly in TrialSage.
+              Edit your document with Google Docs, embedded directly in the eCTD Co-Author system.
               {!isGoogleAuthenticated && (
                 <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
                   <p className="text-amber-700 text-sm">
@@ -1584,6 +1617,146 @@ export default function CoAuthor() {
               </div>
             ) : (
               <>
+                {/* Left Sidebar - Document Metadata and Workflow Controls */}
+                <div className="w-[250px] bg-slate-50 border-r border-gray-200 p-4 flex flex-col h-full">
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="text-sm font-medium text-slate-700">Document Info</h3>
+                      <div className="mt-2 space-y-2 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Module:</span>
+                          <span className="font-medium">Module 2.5</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Region:</span>
+                          <span className="font-medium">FDA (US)</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Status:</span>
+                          <span className="font-medium">{selectedDocument?.status || "Draft"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Version:</span>
+                          <span className="font-medium">v{selectedDocument?.version || "1.0"}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Last Modified:</span>
+                          <span className="font-medium">Today, 3:45 PM</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-slate-700">Workflow Actions</h3>
+                      <div className="mt-2 space-y-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full justify-start text-xs"
+                          onClick={() => {
+                            toast({
+                              title: "Template Insertion",
+                              description: "Opening template selection dialog...",
+                            });
+                          }}
+                        >
+                          <FileText className="h-3 w-3 mr-2" />
+                          Insert Template
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full justify-start text-xs"
+                          onClick={() => {
+                            toast({
+                              title: "Document Status Change",
+                              description: "Submitting document for review...",
+                            });
+                          }}
+                        >
+                          <CheckSquare className="h-3 w-3 mr-2" />
+                          Submit for Review
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full justify-start text-xs"
+                          onClick={() => {
+                            toast({
+                              title: "Saving to VAULT",
+                              description: "Saving document to DocuShare VAULT...",
+                            });
+                          }}
+                        >
+                          <Database className="h-3 w-3 mr-2" />
+                          Save to VAULT
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="text-sm font-medium text-slate-700">Related Documents</h3>
+                      <div className="mt-2 text-xs">
+                        <ul className="space-y-2">
+                          <li>
+                            <Button 
+                              variant="link" 
+                              className="h-auto p-0 text-blue-600 text-xs justify-start font-normal"
+                              onClick={() => {
+                                toast({
+                                  title: "Related Document",
+                                  description: "Opening Module 2.7.3 Summary of Clinical Efficacy...",
+                                });
+                              }}
+                            >
+                              Module 2.7.3 Summary of Clinical Efficacy
+                            </Button>
+                          </li>
+                          <li>
+                            <Button 
+                              variant="link" 
+                              className="h-auto p-0 text-blue-600 text-xs justify-start font-normal"
+                              onClick={() => {
+                                toast({
+                                  title: "Related Document",
+                                  description: "Opening Module 2.7.4 Summary of Clinical Safety...",
+                                });
+                              }}
+                            >
+                              Module 2.7.4 Summary of Clinical Safety
+                            </Button>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-auto pt-4">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full text-xs"
+                      onClick={() => setAiAssistantOpen(!aiAssistantOpen)}
+                    >
+                      {aiAssistantOpen ? (
+                        <>
+                          <X className="h-3 w-3 mr-2" />
+                          Close AI Assistant
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-3 w-3 mr-2" />
+                          Open AI Assistant
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
                 {/* Direct Google Docs Iframe Integration */}
                 <iframe
                   title="Google Docs Editor"
@@ -1595,11 +1768,11 @@ export default function CoAuthor() {
                   className="flex-grow"
                 />
                 
-                {/* AI Assistant Sidebar - Only shown when AI assistant is toggled on */}
+                {/* Regulatory AI Assistant Sidebar - Only shown when AI assistant is toggled on */}
                 {aiAssistantOpen && (
                   <div className="w-[300px] bg-white border-l border-gray-200 p-4 flex flex-col h-full">
                     <div className="flex justify-between items-center mb-4">
-                      <h3 className="font-medium">AI Assistant</h3>
+                      <h3 className="font-medium">Regulatory AI Assistant</h3>
                       <Button 
                         variant="ghost" 
                         size="sm" 
@@ -1620,18 +1793,48 @@ export default function CoAuthor() {
                       <TabsContent value="suggestions" className="mt-4">
                         <div className="space-y-4">
                           <div className="text-sm">
-                            Smart suggestions to improve your document based on regulatory standards.
+                            Smart suggestions to improve your document based on ICH eCTD standards.
                           </div>
                           
                           <div className="border rounded-md p-3 bg-blue-50">
                             <p className="text-sm font-medium">Consider adding:</p>
                             <p className="text-sm mt-1">A summary of the clinical pharmacology studies supporting the proposed dosing regimen.</p>
+                            <Button variant="ghost" size="sm" className="mt-2 h-6 text-xs">Insert This Content</Button>
                           </div>
                           
                           <div className="border rounded-md p-3 bg-blue-50">
                             <p className="text-sm font-medium">Suggested content:</p>
                             <p className="text-sm mt-1">Include a brief overview of the benefit-risk assessment highlighting key findings from clinical trials.</p>
+                            <Button variant="ghost" size="sm" className="mt-2 h-6 text-xs">Insert This Content</Button>
                           </div>
+                          
+                          <Button 
+                            className="w-full text-xs mt-4" 
+                            size="sm"
+                            onClick={() => {
+                              setAiIsLoading(true);
+                              // Simulate AI response
+                              setTimeout(() => {
+                                setAiIsLoading(false);
+                                toast({
+                                  title: "AI Suggestions Generated",
+                                  description: "New content suggestions are now available.",
+                                });
+                              }, 1500);
+                            }}
+                          >
+                            {aiIsLoading ? (
+                              <>
+                                <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                                Generating...
+                              </>
+                            ) : (
+                              <>
+                                <RefreshCw className="h-3 w-3 mr-2" />
+                                Generate More Suggestions
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </TabsContent>
                       
