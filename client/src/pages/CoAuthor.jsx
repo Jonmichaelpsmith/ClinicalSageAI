@@ -164,6 +164,88 @@ export default function CoAuthor() {
     }
   };
   
+  /**
+   * Create a new document from a template
+   * @param {string} title - Document title
+   * @param {string} templateId - Template document ID
+   * @param {object} metadata - Additional document metadata
+   */
+  const createNewDocument = async (title, templateId, metadata = {}) => {
+    try {
+      setCreatingDocument(true);
+      
+      if (!title || !templateId) {
+        throw new Error('Document title and template are required');
+      }
+      
+      if (!isGoogleAuthenticated) {
+        throw new Error('Please sign in with Google to create documents');
+      }
+      
+      // Enhanced toast with regulatory information
+      toast({
+        title: "Creating eCTD Document",
+        description: `Preparing ${metadata.moduleType || 'Module 2.5'} document from template...`,
+      });
+      
+      // Add eCTD-specific metadata
+      const ectdMetadata = {
+        ...metadata,
+        organizationId: '1',  // Would normally come from context
+        regulatoryFormat: 'eCTD',
+        region: selectedRegion || 'FDA',
+        submissionType: metadata.submissionType || 'IND',
+        initialContent: metadata.initialContent || '',
+        moduleSection: metadata.moduleType || 'module_2_5'
+      };
+      
+      // Call the service to create the document
+      const result = await googleDocsService.createNewDoc(
+        templateId,
+        title,
+        ectdMetadata
+      );
+      
+      if (result && result.documentId) {
+        // Update the selected document with the new information
+        const newDocument = {
+          id: Date.now(),  // Temporary ID until DB sync
+          title: title,
+          moduleType: ectdMetadata.moduleType || 'module_2_5',
+          section: ectdMetadata.section || '2.5',
+          googleDocId: result.documentId,
+          status: 'Draft',
+          lastEdited: new Date().toLocaleDateString(),
+          createdBy: googleUserInfo?.name || 'Current User',
+          regulatoryFormat: 'eCTD',
+          region: selectedRegion || 'FDA'
+        };
+        
+        setSelectedDocument(newDocument);
+        
+        // Open the new document in the iframe
+        openDocumentInIframe(result.documentId);
+        
+        toast({
+          title: "Document Created",
+          description: `"${title}" has been created successfully.`,
+        });
+      } else {
+        throw new Error('Failed to create document. No document ID returned.');
+      }
+    } catch (error) {
+      console.error('Error creating document:', error);
+      toast({
+        title: "Document Creation Failed",
+        description: error.message || "Failed to create a new document.",
+        variant: "destructive"
+      });
+    } finally {
+      setCreatingDocument(false);
+      setCreateNewDocDialogOpen(false);
+    }
+  };
+  
   // Handle sign in with Google
   const handleGoogleSignIn = () => {
     setAuthLoading(true);
@@ -278,6 +360,63 @@ export default function CoAuthor() {
   const [aiError, setAiError] = useState(null);
   
   const { toast } = useToast();
+  
+  // Handle create new document button click
+  const handleCreateNewDocument = async () => {
+    if (!newDocumentTitle.trim() || !selectedTemplate) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide a document title and select a template.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (!isGoogleAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in with Google to create documents.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Determine module type from the template selection
+    let moduleType = 'module_2_5';
+    let section = '2.5';
+    
+    if (selectedTemplate === DOCUMENT_TEMPLATES.module_1.cover_letter) {
+      moduleType = 'module_1';
+      section = '1.0';
+    } else if (selectedTemplate === DOCUMENT_TEMPLATES.module_2.clinical_overview) {
+      moduleType = 'module_2_5';
+      section = '2.5';
+    } else if (selectedTemplate === DOCUMENT_TEMPLATES.module_2.clinical_summary) {
+      moduleType = 'module_2_7';
+      section = '2.7';
+    } else if (selectedTemplate.includes('module_3') || selectedTemplate.includes('quality')) {
+      moduleType = 'module_3';
+      section = '3.2';
+    } else if (selectedTemplate.includes('module_4') || selectedTemplate.includes('nonclinical')) {
+      moduleType = 'module_4';
+      section = '4.2';
+    } else if (selectedTemplate.includes('module_5') || selectedTemplate.includes('clinical')) {
+      moduleType = 'module_5';
+      section = '5.3';
+    }
+    
+    // Create metadata object for the document
+    const metadata = {
+      moduleType,
+      section,
+      region: selectedRegion,
+      submissionType: 'IND',  // Default to IND, could be made configurable
+      author: googleUserInfo?.name || 'eCTD Author'
+    };
+    
+    // Call the method to create the document
+    await createNewDocument(newDocumentTitle, selectedTemplate, metadata);
+  };
   
   // Check Google authentication on component mount
   useEffect(() => {
