@@ -25,6 +25,8 @@ import internalClinicalDataRouter from './routes/internal-clinical-data.js';
 import qmpApiRouter from './routes/qmp-api.js';
 // @ts-ignore
 import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
+// @ts-ignore
+import googleDocsRoutes from './routes/googleDocs.js';
 
 export default function registerRoutes(app: Express): void {
   // Create a router for basic CER routes
