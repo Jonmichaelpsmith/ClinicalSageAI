@@ -35,7 +35,7 @@ router.get('/google/callback', (req, res) => {
               
               // Get user info with the token
               fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { Authorization: `Bearer ${accessToken}` }
+                headers: { 'Authorization': `Bearer ${accessToken}` }
               })
               .then(response => response.json())
               .then(userInfo => {

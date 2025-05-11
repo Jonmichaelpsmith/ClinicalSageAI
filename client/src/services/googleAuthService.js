@@ -166,7 +166,7 @@ export const signInWithGoogle = async () => {
               
               // Get user info with access token
               fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { Authorization: `Bearer ${access_token}` }
+                headers: { 'Authorization': `Bearer ${access_token}` }
               })
                 .then(response => {
                   if (!response.ok) {
