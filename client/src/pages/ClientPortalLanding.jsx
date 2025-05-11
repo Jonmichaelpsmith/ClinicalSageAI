@@ -38,7 +38,7 @@ const ClientPortalLanding = () => {
         status: 'active', 
         progress: 65, 
         lastUpdated: '2025-04-20',
-        modules: ['IND Wizard', 'CMC Wizard', 'Regulatory Submissions Hub'] 
+        modules: ['IND Wizard', 'CMC Wizard', 'Vault'] 
       },
       { 
         id: 'proj-002', 
@@ -62,7 +62,7 @@ const ClientPortalLanding = () => {
         status: 'active', 
         progress: 75, 
         lastUpdated: '2025-05-05',
-        modules: ['Regulatory Submissions Hub', 'Vault'] 
+        modules: ['eCTD Co-Author', 'Vault'] 
       }
     ];
     
@@ -78,7 +78,6 @@ const ClientPortalLanding = () => {
   const moduleCards = [
     { id: 'ind', title: 'IND Wizard™', description: 'FDA-compliant INDs with automated form generation', path: '/ind-wizard' },
     { id: 'coauthor', title: 'eCTD Co-Author™', description: 'AI-assisted co-authoring of CTD submission sections', path: '/coauthor' },
-    { id: 'regulatory-submissions', title: 'Regulatory Submissions Hub™', description: 'Unified platform for managing IND and eCTD submissions with comprehensive document management and version control', path: '/regulatory-submissions', highlight: true, isNew: true },
     { id: 'cer', title: 'CER Generator™', description: 'The TrialSage CER Generator is a next-generation regulatory automation module designed to eliminate bottlenecks in medical device and combination product submissions. Built for compliance with EU MDR 2017/745, FDA post-market expectations, and ISO 14155 guidance, it fuses real-world adverse event data with literature review automation, GPT-4o reasoning, and structured risk modeling. This CRO-ready platform includes multi-client project management for complete control of your entire CER portfolio.', path: '/cerv2', highlight: true },
     { id: 'cmc', title: 'CMC Wizard™', description: 'Chemistry, Manufacturing, and Controls documentation', path: '/cmc' },
     { id: 'vault', title: 'TrialSage Vault™', description: 'Secure document storage with intelligent retrieval', path: '/vault' },
