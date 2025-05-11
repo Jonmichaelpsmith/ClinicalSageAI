@@ -20,26 +20,31 @@ const networkState = {
 };
 
 /**
- * Initialize basic network resilience features
+ * Initialize network resilience features
  */
-export function initNetworkResilience() {
-  // Listen for online/offline events
-  window.addEventListener('online', handleOnline);
-  window.addEventListener('offline', handleOffline);
-  
-  // Start retry queue processor
-}
-
-/**
- * Initialize advanced network resilience features with extended options
- */
-export function initAdvancedNetworkResilience(options = {}) {
+export function initNetworkResilience(options = {}) {
   // Listen for online/offline events
   window.addEventListener('online', handleOnline);
   window.addEventListener('offline', handleOffline);
   
   // Start retry queue processor
   processRetryQueue();
+  
+  return {
+    isOnline: () => networkState.isOnline,
+    getQueueLength: () => networkState.retryQueue.length,
+    getStats: () => ({
+      successfulRequests: 0, // Placeholder for actual tracking
+      failedRequests: networkState.failedRequests.size,
+      retriedRequests: 0 // Placeholder for actual tracking
+    }),
+    getConnectionQuality: () => 'good', // Placeholder for actual implementation
+    cleanup: () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      networkState.retryQueue = [];
+    }
+  };
 }
 
 /**
