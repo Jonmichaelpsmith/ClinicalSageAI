@@ -137,6 +137,7 @@ export default function CoAuthor() {
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [iframeKey, setIframeKey] = useState(1); // Used to force refresh iframe
   const [currentZoom, setCurrentZoom] = useState(1); // Document zoom level
+  const [selectedRegion, setSelectedRegion] = useState('FDA'); // Default region for regulatory requirements
   const [createNewDocDialogOpen, setCreateNewDocDialogOpen] = useState(false);
   const [newDocumentTitle, setNewDocumentTitle] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('');
@@ -361,14 +362,61 @@ export default function CoAuthor() {
     try {
       setCreatingDocument(true);
       
-      // Call Google Docs service to create a new document
+      // Determine the eCTD module and section from the selected template
+      let moduleType = '';
+      let sectionCode = '';
+      let region = selectedRegion; // Use the user-selected region
+      
+      // Parse the template selection to determine proper eCTD classification
+      if (selectedTemplate.includes('clinical_overview')) {
+        moduleType = 'module_2';
+        sectionCode = '2.5';
+      } else if (selectedTemplate.includes('clinical_summary')) {
+        moduleType = 'module_2';
+        sectionCode = '2.7';
+      } else if (selectedTemplate.includes('quality_overall_summary')) {
+        moduleType = 'module_2';
+        sectionCode = '2.3';
+      } else if (selectedTemplate.includes('cover_letter')) {
+        moduleType = 'module_1';
+        sectionCode = '1.0';
+      } else if (selectedTemplate.includes('quality_manufacturing')) {
+        moduleType = 'module_3';
+        sectionCode = '3.2.P';
+      } else if (selectedTemplate.includes('clinical_study_report')) {
+        moduleType = 'module_5';
+        sectionCode = '5.3.5';
+      } else if (selectedTemplate.includes('protocol')) {
+        moduleType = 'module_5';
+        sectionCode = '5.3.5.1';
+      } else if (selectedTemplate.includes('toxicology_summary')) {
+        moduleType = 'module_4';
+        sectionCode = '4.2.3';
+      } else {
+        // Default if none matches exactly
+        moduleType = 'module_2';
+        sectionCode = '2.5';
+      }
+      
+      // Call Google Docs service to create a new document with enhanced metadata
+      toast({
+        title: "Creating Document",
+        description: "Preparing your eCTD document template...",
+      });
+      
       const result = await googleDocsService.createNewDoc(
         selectedTemplate,
         newDocumentTitle,
         {
           organizationId: 'current-org', // This would come from your auth context
-          moduleType: selectedTemplate.includes('clinical_overview') ? 'module_2_5' : 
-                      selectedTemplate.includes('clinical_summary') ? 'module_2_7' : 'default'
+          moduleType: moduleType,
+          sectionCode: sectionCode,
+          region: region,
+          documentType: 'scientific', // Default document type
+          submissionType: 'IND', // Default submission type
+          initialContent: `# ${newDocumentTitle}\n\neCTD Section: ${sectionCode}\nRegion: ${region}\n\n`,
+          approvalWorkflow: 'standard',
+          documentStatus: 'Draft'
         }
       );
       
@@ -378,24 +426,24 @@ export default function CoAuthor() {
         const newDoc = {
           id: documents.length + 1, // Generate a unique local ID
           title: newDocumentTitle,
-          module: selectedTemplate.includes('module_2') ? 'Module 2' : 
-                 selectedTemplate.includes('module_1') ? 'Module 1' : 
-                 selectedTemplate.includes('module_3') ? 'Module 3' : 
-                 selectedTemplate.includes('module_4') ? 'Module 4' : 'Module 5',
+          module: moduleType.replace('_', ' ').charAt(0).toUpperCase() + moduleType.replace('_', ' ').slice(1),
+          sectionCode: sectionCode,
+          region: region,
           lastEdited: 'Just now',
           editedBy: googleUserInfo?.name || 'Current User',
           status: 'Draft',
-          version: 'v1.0',
+          version: {
+            major: 1,
+            minor: 0,
+            label: 'v1.0'
+          },
           reviewers: [],
           googleDocsId: result.documentId, // Store the actual Google Doc ID
+          submissionType: 'IND', // Default submission type
+          documentType: 'scientific', // Default document type
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         };
-        
-        // Add to our documents array (in real app, would update the database)
-        // Add validation for eCTD compliance
-        const moduleType = selectedTemplate.includes('module_2') ? 'module2' : 
-                         selectedTemplate.includes('module_1') ? 'module1' : 
-                         selectedTemplate.includes('module_3') ? 'module3' : 
-                         selectedTemplate.includes('module_4') ? 'module4' : 'module5';
         
         // After creating, trigger eCTD validation (in background)
         setTimeout(async () => {
@@ -1838,28 +1886,68 @@ export default function CoAuthor() {
               <label htmlFor="template-select" className="block text-sm font-medium mb-1">
                 Select Template
               </label>
-              <select
-                id="template-select"
-                value={selectedTemplate}
-                onChange={(e) => setSelectedTemplate(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Select a template...</option>
-                <optgroup label="Module 2 Templates">
-                  <option value={DOCUMENT_TEMPLATES.module_2.clinical_overview}>Clinical Overview (2.5)</option>
-                  <option value={DOCUMENT_TEMPLATES.module_2.clinical_summary}>Clinical Summary (2.7)</option>
-                  <option value={DOCUMENT_TEMPLATES.module_2.quality_overall_summary}>Quality Overall Summary (2.3)</option>
-                </optgroup>
-                <optgroup label="Module 1 Templates">
-                  <option value={DOCUMENT_TEMPLATES.module_1.cover_letter}>Cover Letter</option>
-                </optgroup>
-                <optgroup label="Module 3 Templates">
-                  <option value={DOCUMENT_TEMPLATES.module_3.quality_manufacturing}>Quality Manufacturing</option>
-                </optgroup>
-                <optgroup label="Module 5 Templates">
-                  <option value={DOCUMENT_TEMPLATES.module_5.clinical_study_report}>Clinical Study Report</option>
-                </optgroup>
-              </select>
+              <div className="space-y-4">
+                <div className="flex flex-col space-y-2">
+                  <label htmlFor="region-select" className="text-sm font-medium">
+                    Regulatory Region
+                  </label>
+                  <select
+                    id="region-select"
+                    value={selectedRegion}
+                    onChange={(e) => setSelectedRegion(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="FDA">FDA (United States)</option>
+                    <option value="EMA">EMA (European Union)</option>
+                    <option value="PMDA">PMDA (Japan)</option>
+                    <option value="Health Canada">Health Canada</option>
+                    <option value="MHRA">MHRA (United Kingdom)</option>
+                  </select>
+                </div>
+                
+                <div className="flex flex-col space-y-2">
+                  <label htmlFor="template-select" className="text-sm font-medium">
+                    Document Template
+                  </label>
+                  <select
+                    id="template-select"
+                    value={selectedTemplate}
+                    onChange={(e) => setSelectedTemplate(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  >
+                    <option value="">Select a template...</option>
+                    <optgroup label="Module 1 - Administrative Information">
+                      <option value={DOCUMENT_TEMPLATES.module_1.cover_letter}>Cover Letter</option>
+                      <option value={DOCUMENT_TEMPLATES.module_1.form_1571}>FDA Form 1571 (IND)</option>
+                      <option value={DOCUMENT_TEMPLATES.module_1.investigator_brochure}>Investigator Brochure</option>
+                    </optgroup>
+                    <optgroup label="Module 2 - CTD Summaries">
+                      <option value={DOCUMENT_TEMPLATES.module_2.clinical_overview}>Clinical Overview (2.5)</option>
+                      <option value={DOCUMENT_TEMPLATES.module_2.clinical_summary}>Clinical Summary (2.7)</option>
+                      <option value={DOCUMENT_TEMPLATES.module_2.quality_overall_summary}>Quality Overall Summary (2.3)</option>
+                      <option value={DOCUMENT_TEMPLATES.module_2.nonclinical_overview}>Nonclinical Overview (2.4)</option>
+                      <option value={DOCUMENT_TEMPLATES.module_2.nonclinical_summary}>Nonclinical Summary (2.6)</option>
+                    </optgroup>
+                    <optgroup label="Module 3 - Quality">
+                      <option value={DOCUMENT_TEMPLATES.module_3.quality_manufacturing}>Quality Manufacturing (3.2.P)</option>
+                      <option value={DOCUMENT_TEMPLATES.module_3.batch_analysis}>Batch Analysis and Specifications (3.2.P.5)</option>
+                      <option value={DOCUMENT_TEMPLATES.module_3.stability}>Stability Report (3.2.P.8)</option>
+                    </optgroup>
+                    <optgroup label="Module 4 - Nonclinical">
+                      <option value={DOCUMENT_TEMPLATES.module_4.toxicology_summary}>Toxicology Summary (4.2.3)</option>
+                      <option value={DOCUMENT_TEMPLATES.module_4.pharmacology}>Pharmacology Studies (4.2.1)</option>
+                    </optgroup>
+                    <optgroup label="Module 5 - Clinical">
+                      <option value={DOCUMENT_TEMPLATES.module_5.clinical_study_report}>Clinical Study Report (5.3.5)</option>
+                      <option value={DOCUMENT_TEMPLATES.module_5.protocol}>Study Protocol (5.3.5.1)</option>
+                      <option value={DOCUMENT_TEMPLATES.module_5.statistical_analysis}>Statistical Analysis Plan (5.3.5.3)</option>
+                    </optgroup>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Templates comply with ICH CTD structure and {selectedRegion} regional requirements.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
           
