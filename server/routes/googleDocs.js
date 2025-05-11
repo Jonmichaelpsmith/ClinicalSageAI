@@ -13,11 +13,9 @@ const router = express.Router();
 // Load environment variables
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '1045075234440-sve60m8va1d4djdistod8g4lbo8vp791.apps.googleusercontent.com';
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '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';
-// Dynamic redirect URI based on host
-const getRedirectUri = (req) => {
-  const protocol = req.headers['x-forwarded-proto'] || req.protocol;
-  const host = req.headers['x-forwarded-host'] || req.get('host');
-  return `${protocol}://${host}/api/google-docs/auth/google/callback`;
+// Fixed redirect URI to match Google OAuth Console registration and Replit environment
+const getRedirectUri = () => {
+  return `https://abb15664-61d9-4852-884c-d59384023199-00-1rbx8h3zks8bw.picard.replit.dev/api/google-docs/auth/google/callback`;
 };
 
 // Google API endpoints
@@ -348,29 +346,34 @@ router.post('/save-to-vault/:documentId', async (req, res) => {
   }
   
   try {
-    // Set up temporary OAuth client with the provided token
-    const tempOAuth2Client = new google.auth.OAuth2();
-    tempOAuth2Client.setCredentials({ access_token });
+    // Make direct API calls with axios
     
-    // Create Docs and Drive API clients
-    const docs = google.docs({ version: 'v1', auth: tempOAuth2Client });
-    const drive = google.drive({ version: 'v3', auth: tempOAuth2Client });
+    // Get the document using Docs API
+    const documentResponse = await axios.get(`https://docs.googleapis.com/v1/documents/${documentId}`, {
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      }
+    });
     
-    // Get the document
-    const document = await docs.documents.get({ documentId });
+    const document = documentResponse.data;
     
-    // Export the document as PDF
-    const pdfResponse = await drive.files.export({
-      fileId: documentId,
-      mimeType: 'application/pdf'
-    }, { responseType: 'arraybuffer' });
+    // Export the document as PDF using Drive API
+    const pdfResponse = await axios.get(`https://www.googleapis.com/drive/v3/files/${documentId}/export`, {
+      params: {
+        mimeType: 'application/pdf'
+      },
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      },
+      responseType: 'arraybuffer'
+    });
     
     // Here you would integrate with your VAULT system
     // For now, we'll simulate a successful save
     
     // Record metadata about the document
     const documentMetadata = {
-      title: document.data.title,
+      title: document.title,
       lastModified: new Date().toISOString(),
       vaultFolderId: vaultMetadata?.folderId || 'default',
       size: pdfResponse.data.length,
@@ -413,21 +416,20 @@ router.post('/validate', async (req, res) => {
   }
   
   try {
-    // Set up temporary OAuth client with the provided token
-    const tempOAuth2Client = new google.auth.OAuth2();
-    tempOAuth2Client.setCredentials({ access_token });
+    // Make direct API call to get the document
+    const documentResponse = await axios.get(`https://docs.googleapis.com/v1/documents/${documentId}`, {
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      }
+    });
     
-    // Create Docs API client
-    const docs = google.docs({ version: 'v1', auth: tempOAuth2Client });
-    
-    // Get the document content
-    const document = await docs.documents.get({ documentId });
+    const document = documentResponse.data;
     
     // Perform eCTD validation based on document content
     // This implementation provides detailed regulatory compliance checks
     
     // Extract text content from the document for analysis
-    const content = document.data.body.content
+    const content = document.body?.content
       .filter(item => item.paragraph)
       .map(item => {
         if (item.paragraph && item.paragraph.elements) {
@@ -438,12 +440,12 @@ router.post('/validate', async (req, res) => {
         }
         return '';
       })
-      .join('\n');
+      .join('\n') || '';
       
     // Initialize validation results
     const validationResults = {
       documentId,
-      title: document.data.title,
+      title: document.title,
       timestamp: new Date().toISOString(),
       moduleType: moduleType || 'unknown',
       status: 'checking',
