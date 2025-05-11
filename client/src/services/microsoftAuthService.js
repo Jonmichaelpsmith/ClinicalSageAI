@@ -1,227 +1,189 @@
 /**
  * Microsoft Authentication Service
  * 
- * This service handles authentication with Microsoft services for integration
- * with Office 365, SharePoint, and OneDrive. It provides methods for sign-in,
- * token management, and authorization for Microsoft Graph API access.
+ * This service handles authentication with Microsoft services for accessing
+ * Microsoft Graph API, SharePoint, and other Microsoft services.
  * 
- * Note: This is a simplified implementation that simulates Microsoft authentication
- * for development purposes. In a production environment, you would implement
- * proper authentication using the Microsoft Authentication Library (MSAL).
+ * NOTE: This is a simplified version that simulates authentication without
+ * actual MSAL integration. In production, this would use @azure/msal-browser.
  */
 
-// Configuration for Microsoft Authentication
-const msConfig = {
-  clientId: import.meta.env.VITE_MICROSOFT_CLIENT_ID || '',
-  tenantId: import.meta.env.VITE_MICROSOFT_TENANT_ID || 'common',
-  redirectUri: window.location.origin,
-};
+import { loginRequest } from '../config/microsoftConfig';
 
-// Microsoft Graph API scopes needed for our application
-const graphScopes = [
-  'User.Read',
-  'Files.ReadWrite',
-  'Files.ReadWrite.All',
-  'Sites.ReadWrite.All',
-  'offline_access'
-];
+// Mock user account and authentication state
+let authenticatedAccount = null;
+let accessToken = null;
+let tokenExpiresOn = null;
 
-// Simulation state
-let simulatedAuthState = {
-  isAuthenticated: false,
-  accessToken: null,
-  user: null,
-  tokenExpiry: null
+/**
+ * Initialize the Microsoft Authentication Library (simulation)
+ * @returns {Object} The auth instance
+ */
+export const initializeMsal = () => {
+  console.log('Initializing Microsoft authentication (simulation)');
+  return {
+    getAllAccounts: () => authenticatedAccount ? [authenticatedAccount] : [],
+    getActiveAccount: () => authenticatedAccount,
+    loginPopup: async () => simulateLogin(),
+    acquireTokenSilent: async () => {
+      if (!accessToken || new Date() > tokenExpiresOn) {
+        throw new Error('Token expired or not available');
+      }
+      return { accessToken, expiresOn: tokenExpiresOn };
+    },
+    acquireTokenPopup: async () => simulateLogin(),
+    logout: async () => {
+      authenticatedAccount = null;
+      accessToken = null;
+      tokenExpiresOn = null;
+      return true;
+    }
+  };
 };
 
 /**
- * Initialize the Microsoft Auth service
- * @returns {Promise<boolean>} True if initialized successfully
+ * Simulate a login response
+ * @returns {Object} The auth result
  */
-export const initializeMicrosoftAuth = async () => {
+const simulateLogin = async () => {
+  // Generate a mock token that expires in 1 hour
+  const mockToken = `eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJDbGluaWNhbFNhZ2VBSSIsImlhdCI6JHtEYXRlLm5vdygpfSwiZXhwIjoke0RhdGUubm93KCkgKyAzNjAwMDAwfSwiYXVkIjoid3d3LmNsaW5pY2Fsc2FnZWFpLmNvbSIsInN1YiI6InVzZXJAY2xpbmljYWxzYWdlYWkuY29tIn0.${Math.random().toString(36).substring(2)}`;
+  tokenExpiresOn = new Date(Date.now() + 3600000); // 1 hour from now
+  
+  // Create a mock user account
+  authenticatedAccount = {
+    homeAccountId: 'user-1',
+    environment: 'msft.com',
+    tenantId: 'tenant-1',
+    username: 'user@example.com',
+    name: 'Demo User',
+    localAccountId: 'user-1'
+  };
+  
+  accessToken = mockToken;
+  
+  return {
+    account: authenticatedAccount,
+    accessToken: mockToken,
+    expiresOn: tokenExpiresOn
+  };
+};
+
+/**
+ * Sign in the user with Microsoft
+ * @returns {Promise<Object>} The authentication result
+ */
+export const signInWithMicrosoft = async () => {
   try {
-    console.log('Initializing Microsoft authentication simulation');
-    
-    // In a real implementation, you would initialize MSAL here
-    // For now, we'll just check if the config is valid
-    
-    if (!msConfig.clientId) {
-      console.warn('Microsoft Client ID not configured. Using simulated authentication.');
+    // Check if user is already signed in
+    if (authenticatedAccount && accessToken && new Date() < tokenExpiresOn) {
+      return {
+        success: true,
+        account: authenticatedAccount,
+        accessToken,
+        expiresOn: tokenExpiresOn
+      };
     }
+    
+    // Simulate new login
+    const result = await simulateLogin();
+    
+    return {
+      success: true,
+      account: result.account,
+      accessToken: result.accessToken,
+      expiresOn: result.expiresOn
+    };
+  } catch (error) {
+    console.error('Error signing in with Microsoft:', error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+};
+
+/**
+ * Sign out the user from Microsoft
+ * @returns {Promise<boolean>} Whether sign out succeeded
+ */
+export const signOutFromMicrosoft = async () => {
+  try {
+    // Clear authentication state
+    authenticatedAccount = null;
+    accessToken = null;
+    tokenExpiresOn = null;
     
     return true;
   } catch (error) {
-    console.error('Error initializing Microsoft authentication:', error);
+    console.error('Error signing out from Microsoft:', error);
     return false;
   }
 };
 
 /**
- * Alias for initializeMicrosoftAuth to match imports
+ * Get the current authenticated user
+ * @returns {Object|null} The authenticated user or null if not authenticated
  */
-export const initializeAuth = initializeMicrosoftAuth;
-
-/**
- * Sign in with Microsoft
- * @returns {Promise<Object>} Authentication result
- */
-export const signInWithMicrosoft = async () => {
-  try {
-    console.log('Simulating Microsoft sign-in');
-    
-    // Simulate a network delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Generate a fake token that expires in 1 hour
-    const expiryTime = new Date();
-    expiryTime.setHours(expiryTime.getHours() + 1);
-    
-    // Set the simulated auth state
-    simulatedAuthState = {
-      isAuthenticated: true,
-      accessToken: `simulated-ms-token-${Date.now()}`,
-      user: {
-        username: 'demo.user@example.com',
-        name: 'Demo User',
-        tenantId: msConfig.tenantId,
-        localAccountId: `local-account-${Date.now()}`,
-        environment: 'development'
-      },
-      tokenExpiry: expiryTime
-    };
-    
-    return {
-      accessToken: simulatedAuthState.accessToken,
-      account: simulatedAuthState.user,
-      scopes: graphScopes,
-      expiresOn: simulatedAuthState.tokenExpiry
-    };
-  } catch (error) {
-    console.error('Sign-in error:', error);
-    throw error;
-  }
+export const getCurrentUser = () => {
+  return authenticatedAccount;
 };
 
 /**
- * Sign out from Microsoft
- * @returns {Promise<void>}
+ * Get an access token for Microsoft services
+ * @param {Array<string>} scopes OAuth scopes to request
+ * @returns {Promise<string>} The access token
  */
-export const signOutFromMicrosoft = async () => {
+export const getAccessToken = async (scopes = loginRequest.scopes) => {
   try {
-    console.log('Simulating Microsoft sign-out');
-    
-    // Simulate a network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Reset the simulated auth state
-    simulatedAuthState = {
-      isAuthenticated: false,
-      accessToken: null,
-      user: null,
-      tokenExpiry: null
-    };
-    
-    return;
-  } catch (error) {
-    console.error('Sign-out error:', error);
-    throw error;
-  }
-};
-
-/**
- * Get access token for Microsoft Graph API
- * @returns {Promise<string>} Access token
- */
-export const getMicrosoftGraphToken = async () => {
-  try {
-    // Check if we have a valid token
-    if (simulatedAuthState.isAuthenticated && simulatedAuthState.accessToken) {
-      // Check if token is expired
-      if (simulatedAuthState.tokenExpiry && new Date() < simulatedAuthState.tokenExpiry) {
-        return simulatedAuthState.accessToken;
-      }
+    if (!authenticatedAccount) {
+      throw new Error('No authenticated user');
     }
     
-    // If no valid token, sign in
-    console.log('No valid token found, signing in...');
-    const authResult = await signInWithMicrosoft();
-    return authResult.accessToken;
+    if (!accessToken || new Date() > tokenExpiresOn) {
+      const result = await simulateLogin();
+      return result.accessToken;
+    }
+    
+    return accessToken;
   } catch (error) {
-    console.error('Error getting Microsoft Graph token:', error);
+    console.error('Error getting access token:', error);
     throw error;
   }
 };
 
 /**
- * Check if user is signed in to Microsoft
- * @returns {boolean} True if signed in
+ * Check if the user is authenticated
+ * @returns {boolean} Whether the user is authenticated
  */
-export const isSignedInToMicrosoft = () => {
-  return simulatedAuthState.isAuthenticated;
+export const isAuthenticated = () => {
+  return !!authenticatedAccount && !!accessToken && new Date() < tokenExpiresOn;
 };
 
 /**
- * Alias for isSignedInToMicrosoft to match imports 
+ * Get Microsoft Graph client authentication headers
+ * @returns {Promise<Object>} Headers for Graph API requests
  */
-export const isAuthenticated = isSignedInToMicrosoft;
-
-/**
- * Get current Microsoft user information
- * @returns {Object|null} User information or null if not signed in
- */
-export const getCurrentMicrosoftUser = () => {
-  if (!simulatedAuthState.isAuthenticated) {
-    return null;
+export const getGraphAuthHeaders = async () => {
+  try {
+    const token = await getAccessToken();
+    return {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    };
+  } catch (error) {
+    console.error('Error getting Graph auth headers:', error);
+    throw error;
   }
-  
-  return simulatedAuthState.user;
 };
 
-/**
- * Simulate Microsoft authentication for development
- * @returns {Promise<Object>} Simulated auth result
- */
-export const simulateMicrosoftAuth = async () => {
-  // This function is used for development/demo purposes when actual Microsoft credentials are not available
-  console.warn('Using simulated Microsoft authentication for development');
-  
-  // Simulate a delay to mimic network request
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  return {
-    accessToken: 'simulated-microsoft-access-token-for-development',
-    account: {
-      username: 'demo.user@example.com',
-      name: 'Demo User',
-      tenantId: 'demo-tenant-id',
-      localAccountId: 'demo-local-account-id',
-      environment: 'demo-environment'
-    },
-    scopes: graphScopes,
-    expiresOn: new Date(Date.now() + 3600 * 1000)
-  };
+// Export a default API for importing
+export default {
+  initializeMsal,
+  signInWithMicrosoft,
+  signOutFromMicrosoft,
+  getCurrentUser,
+  getAccessToken,
+  isAuthenticated,
+  getGraphAuthHeaders
 };
-
-/**
- * Alias for signInWithMicrosoft to match imports
- */
-export const login = signInWithMicrosoft;
-
-/**
- * Get access token for external services
- * @returns {Promise<string>} Access token
- */
-export const getAccessToken = getMicrosoftGraphToken;
-
-// Default export as a service object
-const microsoftAuthService = {
-  initialize: initializeMicrosoftAuth,
-  signIn: signInWithMicrosoft,
-  signOut: signOutFromMicrosoft,
-  getGraphToken: getMicrosoftGraphToken,
-  isSignedIn: isSignedInToMicrosoft,
-  getCurrentUser: getCurrentMicrosoftUser,
-  simulateAuth: simulateMicrosoftAuth
-};
-
-export default microsoftAuthService;

@@ -1,291 +1,661 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from '@/hooks/use-toast';
+
 import { 
-  Box, 
-  Button, 
-  Typography, 
-  Paper, 
-  LinearProgress, 
-  TextField, 
-  FormControl, 
-  InputLabel, 
-  Select, 
-  MenuItem,
-  Alert,
-  Divider
-} from '@mui/material';
+  Upload, 
+  FileText, 
+  File, 
+  FileImage, 
+  FileArchive,
+  FileSpreadsheet,
+  CloudUpload,
+  FolderPlus,
+  Check,
+  X,
+  AlertTriangle
+} from 'lucide-react';
+
+// Import SharePoint service for file upload to Microsoft 365
+import * as SharePointService from '../../services/sharePointService';
+import * as MsOfficeVaultBridge from '../../services/msOfficeVaultBridge';
+import * as MicrosoftAuthService from '../../services/microsoftAuthService';
 
 /**
  * Document Uploader Component
  * 
- * This component provides a user interface for uploading documents to the Microsoft Office
- * integration system. It supports Word documents, PDFs, and allows for document metadata.
+ * This component allows users to upload documents from their desktop to the Vault,
+ * SharePoint, or OneDrive. It supports various document types including PDFs and
+ * Microsoft Office documents.
  */
-const DocumentUploader = ({ onUploadComplete }) => {
-  // Upload states
-  const [selectedFile, setSelectedFile] = useState(null);
+const DocumentUploader = ({ 
+  onUploadComplete = () => {}, 
+  defaultEctdSection = '',
+  targetLocation = 'vault' // 'vault', 'sharepoint', or 'onedrive'
+}) => {
+  // Upload state
+  const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadError, setUploadError] = useState(null);
-  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const [uploadComplete, setUploadComplete] = useState(false);
+  const [uploadLocation, setUploadLocation] = useState(targetLocation);
+  const [ectdSection, setEctdSection] = useState(defaultEctdSection);
   
-  // Document metadata
-  const [documentName, setDocumentName] = useState('');
-  const [documentType, setDocumentType] = useState('word');
-  const [documentDescription, setDocumentDescription] = useState('');
-  const [ectdModule, setEctdModule] = useState('');
+  // File input ref
+  const fileInputRef = useRef(null);
   
-  // Simulated eCTD module options
-  const ectdModules = [
-    { id: 'm1', name: 'Module 1 - Administrative Information' },
-    { id: 'm2', name: 'Module 2 - Common Technical Document Summaries' },
-    { id: 'm2-2', name: 'Module 2.2 - Introduction' },
-    { id: 'm2-3', name: 'Module 2.3 - Quality Overall Summary' },
-    { id: 'm2-4', name: 'Module 2.4 - Nonclinical Overview' },
-    { id: 'm2-5', name: 'Module 2.5 - Clinical Overview' },
-    { id: 'm2-6', name: 'Module 2.6 - Nonclinical Written and Tabulated Summaries' },
-    { id: 'm2-7', name: 'Module 2.7 - Clinical Summary' },
-    { id: 'm3', name: 'Module 3 - Quality' },
-    { id: 'm4', name: 'Module 4 - Nonclinical Study Reports' },
-    { id: 'm5', name: 'Module 5 - Clinical Study Reports' },
+  // Common eCTD sections
+  const ectdSections = [
+    { value: 'm1.1', label: 'Module 1.1 - Forms and Administrative Info' },
+    { value: 'm1.2', label: 'Module 1.2 - Cover Letters' },
+    { value: 'm1.3', label: 'Module 1.3 - Administrative Information' },
+    { value: 'm2.2', label: 'Module 2.2 - Introduction' },
+    { value: 'm2.3', label: 'Module 2.3 - Quality Overall Summary' },
+    { value: 'm2.4', label: 'Module 2.4 - Nonclinical Overview' },
+    { value: 'm2.5', label: 'Module 2.5 - Clinical Overview' },
+    { value: 'm2.6', label: 'Module 2.6 - Nonclinical Written and Tabulated Summaries' },
+    { value: 'm2.7', label: 'Module 2.7 - Clinical Summary' },
+    { value: 'm3.2.p', label: 'Module 3.2.P - Drug Product' },
+    { value: 'm3.2.s', label: 'Module 3.2.S - Drug Substance' },
+    { value: 'm4.2.1', label: 'Module 4.2.1 - Pharmacology' },
+    { value: 'm4.2.2', label: 'Module 4.2.2 - Pharmacokinetics' },
+    { value: 'm4.2.3', label: 'Module 4.2.3 - Toxicology' },
+    { value: 'm5.2', label: 'Module 5.2 - Tabular Listing of Clinical Studies' },
+    { value: 'm5.3.1', label: 'Module 5.3.1 - Reports of Biopharmaceutic Studies' },
+    { value: 'm5.3.3', label: 'Module 5.3.3 - Reports of Human PK Studies' },
+    { value: 'm5.3.5', label: 'Module 5.3.5 - Reports of Efficacy and Safety Studies' }
   ];
   
-  const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      // Auto-fill document name from file name if not already set
-      if (!documentName) {
-        const nameWithoutExtension = file.name.split('.').slice(0, -1).join('.');
-        setDocumentName(nameWithoutExtension);
+  // Upload locations
+  const uploadLocations = [
+    { value: 'vault', label: 'Document Vault' },
+    { value: 'sharepoint', label: 'SharePoint' },
+    { value: 'onedrive', label: 'OneDrive' }
+  ];
+  
+  /**
+   * Handle file selection via the file input
+   */
+  const handleFileSelect = (event) => {
+    const selectedFiles = Array.from(event.target.files);
+    
+    // Check file types and sizes
+    const validFiles = selectedFiles.filter(file => {
+      // Check file type
+      const validTypes = [
+        'application/pdf', 
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/vnd.ms-powerpoint',
+        'text/plain'
+      ];
+      
+      const isValidType = validTypes.includes(file.type);
+      
+      // Check file size (max 100MB)
+      const isValidSize = file.size <= 100 * 1024 * 1024;
+      
+      if (!isValidType) {
+        toast({
+          title: 'Invalid File Type',
+          description: `${file.name} is not a supported document type.`,
+          variant: 'destructive'
+        });
       }
-      // Reset states
-      setUploadError(null);
-      setUploadSuccess(false);
+      
+      if (!isValidSize) {
+        toast({
+          title: 'File Too Large',
+          description: `${file.name} exceeds the maximum size limit of 100MB.`,
+          variant: 'destructive'
+        });
+      }
+      
+      return isValidType && isValidSize;
+    });
+    
+    // Add files to the list with status
+    setFiles(prevFiles => [
+      ...prevFiles,
+      ...validFiles.map(file => ({
+        file,
+        status: 'pending', // 'pending', 'uploading', 'success', 'error'
+        progress: 0,
+        id: `file-${Date.now()}-${file.name}`
+      }))
+    ]);
+    
+    // Reset the file input
+    event.target.value = null;
+  };
+  
+  /**
+   * Get file icon based on MIME type
+   */
+  const getFileIcon = (mimeType) => {
+    if (mimeType === 'application/pdf') {
+      return <FileText className="text-red-500" />;
+    } else if (mimeType.includes('word')) {
+      return <FileText className="text-blue-500" />;
+    } else if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) {
+      return <FileSpreadsheet className="text-green-500" />;
+    } else if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) {
+      return <FileText className="text-orange-500" />;
+    } else if (mimeType.includes('image')) {
+      return <FileImage className="text-purple-500" />;
+    } else if (mimeType.includes('zip') || mimeType.includes('archive')) {
+      return <FileArchive className="text-yellow-500" />;
+    } else {
+      return <File className="text-gray-500" />;
     }
   };
   
+  /**
+   * Remove a file from the list
+   */
+  const handleRemoveFile = (fileId) => {
+    setFiles(prevFiles => prevFiles.filter(file => file.id !== fileId));
+  };
+  
+  /**
+   * Handle file upload to the selected location
+   */
   const handleUpload = async () => {
-    if (!selectedFile) return;
-    
-    // Validation
-    if (!documentName.trim()) {
-      setUploadError('Please provide a document name');
-      return;
-    }
-    
     try {
+      if (files.length === 0) {
+        toast({
+          title: 'No Files Selected',
+          description: 'Please select at least one file to upload.',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      // Check if eCTD section is selected when uploading to Vault
+      if (uploadLocation === 'vault' && !ectdSection) {
+        toast({
+          title: 'Missing Information',
+          description: 'Please select an eCTD section for the document(s).',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      // Start uploading
       setUploading(true);
       setUploadProgress(0);
-      setUploadError(null);
+      setUploadComplete(false);
       
-      // Create form data
-      const formData = new FormData();
-      formData.append('file', selectedFile);
-      formData.append('name', documentName);
-      formData.append('description', documentDescription);
-      formData.append('documentType', documentType);
-      if (ectdModule) {
-        formData.append('ectdModule', ectdModule);
-      }
+      // Update file statuses to uploading
+      setFiles(prevFiles => 
+        prevFiles.map(file => ({
+          ...file,
+          status: 'uploading',
+          progress: 0
+        }))
+      );
       
-      // Simulate progress updates
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prevProgress) => {
-          if (prevProgress >= 95) {
-            clearInterval(progressInterval);
-            return 95;
+      // Track overall progress
+      let totalFiles = files.length;
+      let completedFiles = 0;
+      
+      // Process each file
+      for (let i = 0; i < files.length; i++) {
+        const fileObj = files[i];
+        const file = fileObj.file;
+        
+        try {
+          // Update current file status
+          setFiles(prevFiles => {
+            const newFiles = [...prevFiles];
+            newFiles[i] = {
+              ...newFiles[i],
+              status: 'uploading',
+              progress: 0
+            };
+            return newFiles;
+          });
+          
+          // Read file content
+          const fileContent = await readFileAsArrayBuffer(file);
+          
+          // Upload based on selected location
+          let uploadResult;
+          
+          if (uploadLocation === 'vault') {
+            // Upload to document vault
+            uploadResult = await uploadToVault(file, fileContent, ectdSection);
+          } else if (uploadLocation === 'sharepoint') {
+            // Upload to SharePoint
+            uploadResult = await uploadToSharePoint(file, fileContent);
+          } else if (uploadLocation === 'onedrive') {
+            // Upload to OneDrive
+            uploadResult = await uploadToOneDrive(file, fileContent);
           }
-          return prevProgress + 5;
-        });
-      }, 300);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      // Simulate successful upload
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-      setUploadSuccess(true);
-      
-      // Notify parent component
-      if (onUploadComplete) {
-        onUploadComplete({
-          id: `doc-${Date.now()}`,
-          name: documentName,
-          description: documentDescription,
-          documentType,
-          ectdModule,
-          uploadedBy: 'Current User',
-          uploadedDate: new Date().toISOString(),
-          file: selectedFile.name
-        });
+          
+          // Simulate upload progress
+          await simulateUploadProgress(i);
+          
+          // Update file status to success
+          setFiles(prevFiles => {
+            const newFiles = [...prevFiles];
+            newFiles[i] = {
+              ...newFiles[i],
+              status: 'success',
+              progress: 100,
+              resultId: uploadResult.id || '',
+              resultUrl: uploadResult.webUrl || ''
+            };
+            return newFiles;
+          });
+          
+          // Update overall progress
+          completedFiles++;
+          const overallProgress = Math.round((completedFiles / totalFiles) * 100);
+          setUploadProgress(overallProgress);
+          
+        } catch (error) {
+          console.error(`Error uploading ${file.name}:`, error);
+          
+          // Update file status to error
+          setFiles(prevFiles => {
+            const newFiles = [...prevFiles];
+            newFiles[i] = {
+              ...newFiles[i],
+              status: 'error',
+              progress: 0,
+              error: error.message || 'Upload failed'
+            };
+            return newFiles;
+          });
+          
+          // Update overall progress
+          completedFiles++;
+          const overallProgress = Math.round((completedFiles / totalFiles) * 100);
+          setUploadProgress(overallProgress);
+          
+          // Show error toast
+          toast({
+            title: 'Upload Error',
+            description: `Failed to upload ${file.name}: ${error.message || 'Unknown error'}`,
+            variant: 'destructive'
+          });
+        }
       }
-    } catch (error) {
-      console.error('Upload failed:', error);
-      setUploadError('Failed to upload document. Please try again.');
-    } finally {
+      
+      // All files processed
       setUploading(false);
+      setUploadComplete(true);
+      
+      // Check if all files were successful
+      const allSuccess = files.every(file => file.status === 'success');
+      
+      if (allSuccess) {
+        toast({
+          title: 'Upload Complete',
+          description: `Successfully uploaded ${files.length} file(s).`,
+          variant: 'default'
+        });
+        
+        // Notify parent component
+        onUploadComplete(files.map(file => ({
+          name: file.file.name,
+          id: file.resultId,
+          url: file.resultUrl,
+          ectdSection
+        })));
+      } else {
+        const successCount = files.filter(file => file.status === 'success').length;
+        const errorCount = files.filter(file => file.status === 'error').length;
+        
+        toast({
+          title: 'Upload Partially Complete',
+          description: `${successCount} file(s) uploaded successfully. ${errorCount} file(s) failed.`,
+          variant: 'default'
+        });
+        
+        // Notify parent component with successful files only
+        const successfulFiles = files.filter(file => file.status === 'success');
+        onUploadComplete(successfulFiles.map(file => ({
+          name: file.file.name,
+          id: file.resultId,
+          url: file.resultUrl,
+          ectdSection
+        })));
+      }
+      
+    } catch (error) {
+      console.error('Upload error:', error);
+      setUploading(false);
+      
+      toast({
+        title: 'Upload Error',
+        description: error.message || 'An error occurred during upload.',
+        variant: 'destructive'
+      });
     }
   };
   
-  const handleCancel = () => {
-    setSelectedFile(null);
-    setDocumentName('');
-    setDocumentDescription('');
-    setEctdModule('');
+  /**
+   * Read a file as ArrayBuffer
+   */
+  const readFileAsArrayBuffer = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = () => {
+        resolve(reader.result);
+      };
+      
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
+      
+      reader.readAsArrayBuffer(file);
+    });
+  };
+  
+  /**
+   * Simulate progress updates for a file upload
+   */
+  const simulateUploadProgress = async (fileIndex) => {
+    // Simulate upload progress steps
+    const steps = [10, 30, 50, 70, 90, 100];
+    
+    for (const progress of steps) {
+      // Update progress for this file
+      setFiles(prevFiles => {
+        const newFiles = [...prevFiles];
+        if (newFiles[fileIndex]) {
+          newFiles[fileIndex] = {
+            ...newFiles[fileIndex],
+            progress
+          };
+        }
+        return newFiles;
+      });
+      
+      // Wait a bit to simulate network activity
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+  };
+  
+  /**
+   * Upload a file to the Vault
+   */
+  const uploadToVault = async (file, fileContent, ectdSection) => {
+    // Simulate actual vault upload
+    console.log(`Uploading ${file.name} to Vault (${ectdSection})`);
+    
+    // In a real implementation, this would call your Vault API
+    // For now, simulate a response after a delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    return {
+      id: `vault-doc-${Date.now()}`,
+      name: file.name,
+      webUrl: `#/vault/documents/${Date.now()}`,
+      ectdSection
+    };
+  };
+  
+  /**
+   * Upload a file to SharePoint
+   */
+  const uploadToSharePoint = async (file, fileContent) => {
+    try {
+      // Check if authenticated with Microsoft
+      const isAuth = await MicrosoftAuthService.isAuthenticated();
+      
+      if (!isAuth) {
+        await MicrosoftAuthService.signInWithMicrosoft();
+      }
+      
+      console.log(`Uploading ${file.name} to SharePoint`);
+      
+      // In a real implementation, this would use the SharePoint API
+      // via the Microsoft Graph service
+      
+      // Get SharePoint site ID from configuration
+      const siteId = 'site-id-1'; // In real app, get from SharePointService.getSharePointSiteId()
+      const driveId = 'drive-1'; // In real app, get from SharePointService.getSharePointLibraries()
+      const folderPath = 'Regulatory';
+      
+      // Upload the file to SharePoint
+      const uploadedFile = await SharePointService.uploadSharePointFile(
+        siteId,
+        driveId,
+        folderPath,
+        file.name,
+        fileContent
+      );
+      
+      return uploadedFile;
+    } catch (error) {
+      console.error('Error uploading to SharePoint:', error);
+      throw new Error(`SharePoint upload failed: ${error.message}`);
+    }
+  };
+  
+  /**
+   * Upload a file to OneDrive
+   */
+  const uploadToOneDrive = async (file, fileContent) => {
+    try {
+      // Check if authenticated with Microsoft
+      const isAuth = await MicrosoftAuthService.isAuthenticated();
+      
+      if (!isAuth) {
+        await MicrosoftAuthService.signInWithMicrosoft();
+      }
+      
+      console.log(`Uploading ${file.name} to OneDrive`);
+      
+      // In a real implementation, this would use the OneDrive API
+      // via the Microsoft Graph service
+      
+      // For now, simulate a response after a delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      return {
+        id: `onedrive-doc-${Date.now()}`,
+        name: file.name,
+        webUrl: `https://onedrive.live.com/edit.aspx?resid=${Date.now()}`
+      };
+    } catch (error) {
+      console.error('Error uploading to OneDrive:', error);
+      throw new Error(`OneDrive upload failed: ${error.message}`);
+    }
+  };
+  
+  /**
+   * Reset the uploader
+   */
+  const handleReset = () => {
+    setFiles([]);
     setUploadProgress(0);
-    setUploadError(null);
-    setUploadSuccess(false);
+    setUploadComplete(false);
   };
   
   return (
-    <Paper elevation={3} sx={{ p: 3, mb: 2 }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Upload Document
-      </Typography>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <CloudUpload className="mr-2 h-5 w-5" />
+          Document Uploader
+        </CardTitle>
+        <CardDescription>
+          Upload documents from your computer to the regulatory document repository
+        </CardDescription>
+      </CardHeader>
       
-      <Divider sx={{ mb: 3 }} />
-      
-      {uploadSuccess ? (
-        <Box sx={{ mb: 3 }}>
-          <Alert severity="success" sx={{ mb: 2 }}>
-            Document uploaded successfully!
-          </Alert>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            onClick={handleCancel}
+      <CardContent className="space-y-4">
+        {/* Upload location selector */}
+        <div className="space-y-2">
+          <Label htmlFor="upload-location">Upload Location</Label>
+          <Select 
+            value={uploadLocation}
+            onValueChange={setUploadLocation}
+            disabled={uploading}
           >
-            Upload Another Document
-          </Button>
-        </Box>
-      ) : (
-        <Box component="form" noValidate autoComplete="off" sx={{ width: '100%' }}>
-          {/* File Selection */}
-          <Box sx={{ mb: 3 }}>
-            <input
-              accept=".doc,.docx,.pdf"
-              style={{ display: 'none' }}
-              id="document-upload-button"
-              type="file"
-              onChange={handleFileChange}
+            <SelectTrigger id="upload-location">
+              <SelectValue placeholder="Select upload location" />
+            </SelectTrigger>
+            <SelectContent>
+              {uploadLocations.map(location => (
+                <SelectItem key={location.value} value={location.value}>
+                  {location.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        {/* eCTD section selector (only for Vault uploads) */}
+        {uploadLocation === 'vault' && (
+          <div className="space-y-2">
+            <Label htmlFor="ectd-section">eCTD Section</Label>
+            <Select 
+              value={ectdSection}
+              onValueChange={setEctdSection}
               disabled={uploading}
-            />
-            <label htmlFor="document-upload-button">
-              <Button 
-                variant="outlined" 
-                component="span" 
-                disabled={uploading}
-                sx={{ mr: 2 }}
-              >
-                Select File
-              </Button>
-            </label>
-            
-            {selectedFile && (
-              <Typography component="span">
-                {selectedFile.name} ({Math.round(selectedFile.size / 1024)} KB)
-              </Typography>
-            )}
-          </Box>
-          
-          {/* Document Metadata */}
-          <Box sx={{ display: 'grid', gap: 2, mb: 3, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-            <TextField
-              label="Document Name"
-              variant="outlined"
-              fullWidth
-              value={documentName}
-              onChange={(e) => setDocumentName(e.target.value)}
-              required
-              disabled={uploading}
-            />
-            
-            <FormControl fullWidth>
-              <InputLabel id="document-type-label">Document Type</InputLabel>
-              <Select
-                labelId="document-type-label"
-                value={documentType}
-                label="Document Type"
-                onChange={(e) => setDocumentType(e.target.value)}
-                disabled={uploading}
-              >
-                <MenuItem value="word">Microsoft Word</MenuItem>
-                <MenuItem value="pdf">PDF</MenuItem>
-                <MenuItem value="excel">Microsoft Excel</MenuItem>
-                <MenuItem value="powerpoint">Microsoft PowerPoint</MenuItem>
-              </Select>
-            </FormControl>
-            
-            <TextField
-              label="Description"
-              variant="outlined"
-              fullWidth
-              multiline
-              rows={2}
-              value={documentDescription}
-              onChange={(e) => setDocumentDescription(e.target.value)}
-              disabled={uploading}
-              sx={{ gridColumn: { xs: '1', sm: '1 / span 2' } }}
-            />
-            
-            <FormControl fullWidth sx={{ gridColumn: { xs: '1', sm: '1 / span 2' } }}>
-              <InputLabel id="ectd-module-label">eCTD Module</InputLabel>
-              <Select
-                labelId="ectd-module-label"
-                value={ectdModule}
-                label="eCTD Module"
-                onChange={(e) => setEctdModule(e.target.value)}
-                disabled={uploading}
-              >
-                <MenuItem value=""><em>None</em></MenuItem>
-                {ectdModules.map((module) => (
-                  <MenuItem key={module.id} value={module.id}>{module.name}</MenuItem>
+            >
+              <SelectTrigger id="ectd-section">
+                <SelectValue placeholder="Select eCTD section" />
+              </SelectTrigger>
+              <SelectContent>
+                {ectdSections.map(section => (
+                  <SelectItem key={section.value} value={section.value}>
+                    {section.label}
+                  </SelectItem>
                 ))}
-              </Select>
-            </FormControl>
-          </Box>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        
+        {/* File selection area */}
+        <div 
+          className={`border-2 border-dashed rounded-md p-6 text-center transition-colors ${
+            uploading ? 'bg-muted cursor-not-allowed' : 'hover:bg-muted cursor-pointer'
+          }`}
+          onClick={() => !uploading && fileInputRef.current?.click()}
+        >
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            multiple
+            onChange={handleFileSelect}
+            disabled={uploading}
+          />
           
-          {/* Upload Progress */}
-          {uploading && (
-            <Box sx={{ mb: 2 }}>
-              <LinearProgress variant="determinate" value={uploadProgress} sx={{ height: 10, borderRadius: 5 }} />
-              <Typography variant="caption" align="center" display="block" sx={{ mt: 1 }}>
-                Uploading... {uploadProgress}%
-              </Typography>
-            </Box>
-          )}
-          
-          {/* Error Message */}
-          {uploadError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {uploadError}
-            </Alert>
-          )}
-          
-          {/* Action Buttons */}
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-            <Button 
-              variant="outlined" 
-              onClick={handleCancel} 
-              disabled={uploading}
-              sx={{ mr: 2 }}
-            >
-              Cancel
-            </Button>
-            
-            <Button 
-              variant="contained" 
-              color="primary" 
-              onClick={handleUpload}
-              disabled={!selectedFile || uploading}
-            >
-              Upload
-            </Button>
-          </Box>
-        </Box>
-      )}
-    </Paper>
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <Upload className="h-10 w-10 text-muted-foreground" />
+            <h3 className="text-lg font-medium">Drag and drop files here</h3>
+            <p className="text-sm text-muted-foreground">
+              or click to select files
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Supports PDF, Word, Excel, PowerPoint, and text files (max 100MB)
+            </p>
+          </div>
+        </div>
+        
+        {/* Selected files list */}
+        {files.length > 0 && (
+          <div className="space-y-2">
+            <h4 className="text-sm font-medium">Selected Files ({files.length})</h4>
+            <ul className="space-y-2">
+              {files.map((fileObj) => (
+                <li key={fileObj.id} className="flex items-center p-2 border rounded-md">
+                  <div className="mr-2">
+                    {getFileIcon(fileObj.file.type)}
+                  </div>
+                  
+                  <div className="flex-grow text-sm">
+                    <div className="font-medium truncate" title={fileObj.file.name}>
+                      {fileObj.file.name}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {(fileObj.file.size / 1024).toFixed(0)} KB
+                    </div>
+                  </div>
+                  
+                  {fileObj.status === 'uploading' && (
+                    <div className="w-24">
+                      <Progress value={fileObj.progress} className="h-2" />
+                    </div>
+                  )}
+                  
+                  {fileObj.status === 'success' && (
+                    <div className="w-6 h-6 flex items-center justify-center text-green-500">
+                      <Check className="h-4 w-4" />
+                    </div>
+                  )}
+                  
+                  {fileObj.status === 'error' && (
+                    <div className="w-6 h-6 flex items-center justify-center text-red-500" title={fileObj.error}>
+                      <AlertTriangle className="h-4 w-4" />
+                    </div>
+                  )}
+                  
+                  {fileObj.status === 'pending' && !uploading && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveFile(fileObj.id);
+                      }}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        
+        {/* Overall upload progress */}
+        {uploading && (
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Uploading...</span>
+              <span>{uploadProgress}%</span>
+            </div>
+            <Progress value={uploadProgress} className="h-2" />
+          </div>
+        )}
+      </CardContent>
+      
+      <CardFooter className="flex justify-between">
+        <Button 
+          variant="outline" 
+          onClick={handleReset}
+          disabled={uploading || (files.length === 0)}
+        >
+          Reset
+        </Button>
+        
+        <Button 
+          onClick={handleUpload}
+          disabled={uploading || (files.length === 0)}
+        >
+          {uploadComplete ? 'Upload More Files' : 'Upload Files'}
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 

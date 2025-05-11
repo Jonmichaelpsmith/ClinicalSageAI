@@ -1,348 +1,573 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Container, Paper, Tabs, Tab, Button, Divider, Grid } from '@mui/material';
+import { useParams, useLocation } from 'wouter';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger,
+  Button,
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter
+} from '@/components/ui';
+import { toast } from '@/hooks/use-toast';
 
-import AiPoweredWordEditor from '../components/office/AiPoweredWordEditor';
+import { 
+  Book, 
+  Upload, 
+  FileText, 
+  Save, 
+  RefreshCw, 
+  ExternalLink, 
+  PlusCircle,
+  Building,
+  BookOpen,
+  FileCheck
+} from 'lucide-react';
+
+// Import our custom components
 import DocumentUploader from '../components/office/DocumentUploader';
+import AiPoweredWordEditor from '../components/office/AiPoweredWordEditor';
+
+// Import Microsoft service integrations
+import * as MicrosoftAuthService from '../services/microsoftAuthService';
 
 /**
- * CoAuthor Page 
+ * eCTD Co-Author Page Component
  * 
- * This page showcases the eCTD Co-Author module with embedded Microsoft Word
- * and AI-powered compliance checking for IND applications.
+ * This is the main page for the eCTD Co-Author module that integrates Microsoft Word
+ * with AI-powered compliance capabilities for regulatory document authoring.
  */
 const CoAuthor = () => {
-  const [activeTab, setActiveTab] = useState(0);
-  const [documentId, setDocumentId] = useState('doc-123');
-  const [templateId, setTemplateId] = useState('template-fda-ind');
-  const [showUploader, setShowUploader] = useState(false);
-  const [documents, setDocuments] = useState([]);
-  const [selectedDocument, setSelectedDocument] = useState(null);
-
-  // Pre-loaded document data for faster initial rendering
-  const preloadedDocuments = [
-    {
-      id: 'doc-123',
-      name: 'IND Application Module 2.5',
-      documentType: 'word',
-      ectdModule: 'm2-5',
-      status: 'draft',
-      createdAt: '2025-05-01T10:30:00Z',
-      updatedAt: '2025-05-10T15:45:00Z',
-      description: 'Clinical overview for IND submission'
-    },
-    {
-      id: 'doc-456',
-      name: 'Protocol Synopsis Template',
-      documentType: 'word',
-      ectdModule: 'm4',
-      status: 'approved',
-      createdAt: '2025-04-15T09:20:00Z',
-      updatedAt: '2025-04-20T14:35:00Z',
-      description: 'Standardized protocol synopsis template for clinical trials'
-    },
-    {
-      id: 'doc-789',
-      name: 'Adverse Events Reporting Form',
-      documentType: 'word',
-      ectdModule: 'm5',
-      status: 'published',
-      createdAt: '2025-03-10T11:10:00Z',
-      updatedAt: '2025-04-05T16:25:00Z',
-      description: 'Standard form for adverse event documentation'
-    }
-  ];
+  // State for active document
+  const [activeDocument, setActiveDocument] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [activeTenant, setActiveTenant] = useState('Pharma Company A');
   
+  // State for Microsoft authentication
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authenticating, setAuthenticating] = useState(false);
+  
+  // State for UI
+  const [activeTab, setActiveTab] = useState('documents');
+  const [recentDocuments, setRecentDocuments] = useState([]);
+  const [templates, setTemplates] = useState([]);
+  
+  // Get document ID from URL if available
+  const [location] = useLocation();
+  const { id } = useParams('/coauthor/:id') || {};
+  
+  // Load recent documents on component mount
   useEffect(() => {
-    // Initialize with preloaded documents for immediate display
-    setDocuments(preloadedDocuments);
-    setSelectedDocument(preloadedDocuments.find(doc => doc.id === documentId) || preloadedDocuments[0]);
+    // Fetch recent documents when component mounts
+    fetchRecentDocuments();
     
-    // Then load any additional documents if needed (for real API implementation)
-    loadAdditionalDocuments();
-  }, []);
-
-  const loadAdditionalDocuments = () => {
-    // This would fetch additional documents from the API
-    // For now, we'll just use our preloaded data
-    // No additional loading needed since we're using preloaded data
-  };
-
-  const handleTabChange = (event, newValue) => {
-    setActiveTab(newValue);
-    // Hide uploader when switching tabs
-    setShowUploader(false);
-  };
-
-  const handleNewDocument = () => {
-    // Create a new blank document
-    const newDocument = {
-      id: `doc-${Date.now()}`,
-      name: 'Untitled Document',
-      description: '',
-      documentType: 'word',
-      status: 'draft',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      ectdModule: 'm2-5'
-    };
+    // Fetch templates
+    fetchTemplates();
     
-    setDocuments([newDocument, ...documents]);
-    setSelectedDocument(newDocument);
-    setDocumentId(newDocument.id);
-    setShowUploader(false);
-  };
-
-  const handleUploadClick = () => {
-    setShowUploader(true);
-  };
-
-  const handleUploadComplete = (documentInfo) => {
-    // Add the uploaded document to the list
-    const newDocument = {
-      ...documentInfo,
-      id: `doc-${Date.now()}`,
-      status: 'draft',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+    // Check Microsoft authentication status
+    checkAuthentication();
     
-    setDocuments([newDocument, ...documents]);
-    setSelectedDocument(newDocument);
-    setDocumentId(newDocument.id);
-    setShowUploader(false);
+    // If document ID is provided in URL, load it
+    if (id) {
+      loadDocument(id);
+    }
+  }, [id]);
+  
+  /**
+   * Check Microsoft authentication status
+   */
+  const checkAuthentication = async () => {
+    try {
+      const auth = await MicrosoftAuthService.isAuthenticated();
+      setIsAuthenticated(auth);
+    } catch (error) {
+      console.error('Error checking authentication:', error);
+      setIsAuthenticated(false);
+    }
   };
-
-  const handleDocumentSelect = (document) => {
-    setSelectedDocument(document);
-    setDocumentId(document.id);
-    setActiveTab(0);
-    setShowUploader(false);
-  };
-
-  return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" component="h1" sx={{ mb: 1 }}>
-          eCTD Co-Author
-        </Typography>
-        <Typography variant="subtitle1" color="text.secondary">
-          Collaborative authoring of regulatory documents with embedded Microsoft Word and AI assistance
-        </Typography>
-      </Box>
-
-      <Paper sx={{ mb: 3 }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          sx={{ borderBottom: 1, borderColor: 'divider' }}
-        >
-          <Tab label="Document Editor" />
-          <Tab label="Template Library" />
-          <Tab label="Document History" />
-          <Tab label="Settings" />
-        </Tabs>
-        
-        <Box sx={{ p: 3 }}>
-          {activeTab === 0 && (
-            <Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h6">
-                  {selectedDocument ? selectedDocument.name : 'IND Application Module 2.5'}
-                </Typography>
-                <Box>
-                  <Button 
-                    variant="outlined" 
-                    size="small" 
-                    sx={{ mr: 1 }}
-                    onClick={handleNewDocument}
-                  >
-                    New Document
-                  </Button>
-                  <Button 
-                    variant="outlined" 
-                    size="small"
-                    onClick={handleUploadClick}
-                  >
-                    Upload Document
-                  </Button>
-                </Box>
-              </Box>
-              
-              <Divider sx={{ mb: 3 }} />
-              
-              {showUploader ? (
-                <DocumentUploader onUploadComplete={handleUploadComplete} />
-              ) : (
-                <AiPoweredWordEditor 
-                  documentId={documentId} 
-                  documentType={selectedDocument?.documentType || 'word'} 
-                  regulationType="fda" 
-                />
-              )}
-            </Box>
-          )}
-          
-          {activeTab === 1 && (
-            <Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h6">Template Library</Typography>
-                <Button 
-                  variant="outlined" 
-                  size="small"
-                >
-                  Create Template
-                </Button>
-              </Box>
-              
-              <Divider sx={{ mb: 3 }} />
-              
-              <Grid container spacing={3}>
-                {[
-                  { id: 'tpl-1', name: 'ICH E3 Clinical Study Report', type: 'CSR', module: 'm5', description: 'Full CSR template following ICH E3 guidance' },
-                  { id: 'tpl-2', name: 'ICH E6 Protocol Template', type: 'Protocol', module: 'm5', description: 'Clinical trial protocol following ICH GCP guidance' },
-                  { id: 'tpl-3', name: 'Module 2.5 Clinical Overview', type: 'CTD', module: 'm2-5', description: 'Template for eCTD Module 2.5 (Clinical Overview)' },
-                  { id: 'tpl-4', name: 'Investigator Brochure Template', type: 'IB', module: 'm1', description: 'Standard template for Investigator Brochure' },
-                  { id: 'tpl-5', name: 'Safety Narrative Template', type: 'Safety', module: 'm5', description: 'Template for patient safety narratives' },
-                  { id: 'tpl-6', name: 'FDA Form 1572', type: 'Form', module: 'm1', description: 'Statement of Investigator form for FDA submission' }
-                ].map(template => (
-                  <Grid item xs={12} md={6} lg={4} key={template.id}>
-                    <Paper sx={{ p: 2, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 'bold', mb: 1 }}>
-                        {template.name}
-                      </Typography>
-                      <Typography variant="body2" sx={{ color: 'text.secondary', mb: 1 }}>
-                        Type: {template.type} | Module: {template.module}
-                      </Typography>
-                      <Typography variant="body2" sx={{ mb: 2, flexGrow: 1 }}>
-                        {template.description}
-                      </Typography>
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Button size="small" variant="outlined">
-                          Use Template
-                        </Button>
-                      </Box>
-                    </Paper>
-                  </Grid>
-                ))}
-              </Grid>
-            </Box>
-          )}
-          
-          {activeTab === 2 && (
-            <Box>
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h6">Document History</Typography>
-                <Button 
-                  variant="outlined" 
-                  size="small"
-                >
-                  Export History
-                </Button>
-              </Box>
-              
-              <Divider sx={{ mb: 3 }} />
-              
-              <Typography variant="subtitle1" gutterBottom>
-                Your Documents
-              </Typography>
-              
-              {documents.length > 0 ? (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {documents.map(document => (
-                    <Paper 
-                      key={document.id} 
-                      sx={{ 
-                        p: 2, 
-                        cursor: 'pointer',
-                        '&:hover': { bgcolor: 'action.hover' },
-                        border: selectedDocument?.id === document.id ? '2px solid' : '1px solid',
-                        borderColor: selectedDocument?.id === document.id ? 'primary.main' : 'divider'
-                      }}
-                      onClick={() => handleDocumentSelect(document)}
-                    >
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                        <Box>
-                          <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                            {document.name}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Module: {document.ectdModule || 'Not specified'} | Status: {document.status}
-                          </Typography>
-                          {document.description && (
-                            <Typography variant="body2" sx={{ mt: 1 }}>
-                              {document.description}
-                            </Typography>
-                          )}
-                        </Box>
-                        <Box>
-                          <Typography variant="caption" display="block" textAlign="right" color="text.secondary">
-                            Last updated: {new Date(document.updatedAt).toLocaleDateString()}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Paper>
-                  ))}
-                </Box>
-              ) : (
-                <Box sx={{ p: 4, textAlign: 'center', color: 'text.secondary' }}>
-                  No documents found. Create a new document or upload one to get started.
-                </Box>
-              )}
-            </Box>
-          )}
-          
-          {activeTab === 3 && (
-            <Box>
-              <Typography variant="h6" gutterBottom>
-                Settings
-              </Typography>
-              <Divider sx={{ mb: 3 }} />
-              
-              <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: 'bold' }}>
-                Microsoft Office Integration
-              </Typography>
-              <Typography paragraph>
-                Configure Microsoft Office integration settings including authentication, document storage location,
-                and synchronization preferences.
-              </Typography>
-              
-              <Typography variant="subtitle1" sx={{ mt: 4, mb: 2, fontWeight: 'bold' }}>
-                Regulatory Compliance Settings
-              </Typography>
-              <Typography paragraph>
-                Configure which regulatory guidelines (FDA, EMA, ICH) to check documents against
-                and set compliance thresholds for automated validation.
-              </Typography>
-              
-              <Typography variant="subtitle1" sx={{ mt: 4, mb: 2, fontWeight: 'bold' }}>
-                AI Assistant Configuration
-              </Typography>
-              <Typography paragraph>
-                Adjust AI assistant behavior, including preferred writing style, regulatory focus,
-                and content suggestions sensitivity.
-              </Typography>
-            </Box>
-          )}
-        </Box>
-      </Paper>
+  
+  /**
+   * Authenticate with Microsoft
+   */
+  const handleAuthenticate = async () => {
+    try {
+      setAuthenticating(true);
       
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          About eCTD Co-Author
-        </Typography>
-        <Typography paragraph>
-          The eCTD Co-Author module provides a seamless integration of Microsoft Word with 
-          AI-powered compliance checking for regulatory documents. It enables subject matter 
-          experts to create, edit, and collaborate on regulatory documents while ensuring 
-          compliance with FDA, EMA, and ICH standards.
-        </Typography>
-        <Typography paragraph>
-          Key features include document templates for various submission types, automated 
-          formatting for eCTD submissions, AI-powered compliance checking, and integration 
-          with regulatory databases for reference information.
-        </Typography>
-      </Box>
-    </Container>
+      const authResult = await MicrosoftAuthService.signInWithMicrosoft();
+      
+      if (authResult.success) {
+        setIsAuthenticated(true);
+        toast({
+          title: 'Authentication Successful',
+          description: 'Successfully authenticated with Microsoft Office 365',
+          variant: 'default'
+        });
+      } else {
+        throw new Error(authResult.error || 'Authentication failed');
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      toast({
+        title: 'Authentication Error',
+        description: error.message || 'Failed to authenticate with Microsoft',
+        variant: 'destructive'
+      });
+    } finally {
+      setAuthenticating(false);
+    }
+  };
+  
+  /**
+   * Fetch recent documents
+   */
+  const fetchRecentDocuments = async () => {
+    // In a real implementation, this would call your API to get recent documents
+    // For now, use placeholder data
+    
+    setRecentDocuments([
+      {
+        id: 'doc-1',
+        name: '2.5 Clinical Overview - Study XYZ-123',
+        ectdSection: 'm2.5',
+        lastModified: '2025-05-10T15:30:00Z',
+        modifiedBy: 'John Smith',
+        status: 'draft',
+        url: 'https://tenant.sharepoint.com/sites/ClinicalSageAI/Shared%20Documents/Regulatory/2.5%20Clinical%20Overview.docx'
+      },
+      {
+        id: 'doc-2',
+        name: '2.7.3 Summary of Clinical Efficacy',
+        ectdSection: 'm2.7.3',
+        lastModified: '2025-05-09T12:15:00Z',
+        modifiedBy: 'Jane Doe',
+        status: 'in-review',
+        url: 'https://tenant.sharepoint.com/sites/ClinicalSageAI/Shared%20Documents/Regulatory/2.7.3%20Summary%20of%20Clinical%20Efficacy.docx'
+      },
+      {
+        id: 'doc-3',
+        name: '2.4 Nonclinical Overview',
+        ectdSection: 'm2.4',
+        lastModified: '2025-05-08T10:45:00Z',
+        modifiedBy: 'Alice Johnson',
+        status: 'approved',
+        url: 'https://tenant.sharepoint.com/sites/ClinicalSageAI/Shared%20Documents/Regulatory/2.4%20Nonclinical%20Overview.docx'
+      }
+    ]);
+  };
+  
+  /**
+   * Fetch document templates
+   */
+  const fetchTemplates = async () => {
+    // In a real implementation, this would call your API to get templates
+    // For now, use placeholder data
+    
+    setTemplates([
+      {
+        id: 'template-1',
+        name: 'Clinical Overview Template',
+        ectdSection: 'm2.5',
+        description: 'Standard template for Module 2.5 Clinical Overview'
+      },
+      {
+        id: 'template-2',
+        name: 'Summary of Clinical Efficacy Template',
+        ectdSection: 'm2.7.3',
+        description: 'Template for Module 2.7.3 Summary of Clinical Efficacy'
+      },
+      {
+        id: 'template-3',
+        name: 'Nonclinical Overview Template',
+        ectdSection: 'm2.4',
+        description: 'Template for Module 2.4 Nonclinical Overview'
+      }
+    ]);
+  };
+  
+  /**
+   * Load a document
+   */
+  const loadDocument = async (documentId) => {
+    try {
+      // In a real implementation, this would call your API to get document details
+      // For now, find the document in our recent documents list
+      
+      const document = recentDocuments.find(doc => doc.id === documentId);
+      
+      if (document) {
+        setActiveDocument(document);
+        setActiveTab('editor');
+      } else {
+        // Simulate API call to get document
+        // This would be an actual API call in a real implementation
+        setTimeout(() => {
+          const mockDocument = {
+            id: documentId,
+            name: `Document ${documentId}`,
+            ectdSection: 'm2.5',
+            lastModified: new Date().toISOString(),
+            modifiedBy: 'Current User',
+            status: 'draft',
+            url: `https://tenant.sharepoint.com/sites/ClinicalSageAI/Shared%20Documents/Regulatory/Document_${documentId}.docx`
+          };
+          
+          setActiveDocument(mockDocument);
+          setActiveTab('editor');
+        }, 500);
+      }
+    } catch (error) {
+      console.error('Error loading document:', error);
+      toast({
+        title: 'Document Error',
+        description: 'Failed to load the document',
+        variant: 'destructive'
+      });
+    }
+  };
+  
+  /**
+   * Create a new document from template
+   */
+  const createNewDocument = async (templateId) => {
+    try {
+      // Find the template
+      const template = templates.find(t => t.id === templateId);
+      
+      if (!template) {
+        throw new Error('Template not found');
+      }
+      
+      // In a real implementation, this would call your API to create a new document
+      // based on the selected template
+      
+      // For now, simulate document creation
+      setTimeout(() => {
+        const newDocument = {
+          id: `doc-${Date.now()}`,
+          name: `New ${template.name.replace(' Template', '')}`,
+          ectdSection: template.ectdSection,
+          lastModified: new Date().toISOString(),
+          modifiedBy: 'Current User',
+          status: 'draft',
+          url: `https://tenant.sharepoint.com/sites/ClinicalSageAI/Shared%20Documents/Regulatory/New_Document_${Date.now()}.docx`
+        };
+        
+        // Add to recent documents
+        setRecentDocuments(prevDocs => [newDocument, ...prevDocs]);
+        
+        // Set as active document
+        setActiveDocument(newDocument);
+        setActiveTab('editor');
+        
+        toast({
+          title: 'Document Created',
+          description: `Created new document from ${template.name}`,
+          variant: 'default'
+        });
+      }, 800);
+    } catch (error) {
+      console.error('Error creating document:', error);
+      toast({
+        title: 'Document Creation Error',
+        description: error.message || 'Failed to create document',
+        variant: 'destructive'
+      });
+    }
+  };
+  
+  /**
+   * Handle document upload complete
+   */
+  const handleUploadComplete = (uploadedDocuments) => {
+    if (uploadedDocuments.length > 0) {
+      // Add uploaded documents to recent documents
+      const newDocs = uploadedDocuments.map(doc => ({
+        id: doc.id,
+        name: doc.name,
+        ectdSection: doc.ectdSection,
+        lastModified: new Date().toISOString(),
+        modifiedBy: 'Current User',
+        status: 'draft',
+        url: doc.url
+      }));
+      
+      setRecentDocuments(prevDocs => [...newDocs, ...prevDocs]);
+      
+      // Set the first uploaded document as active
+      setActiveDocument(newDocs[0]);
+      setActiveTab('editor');
+    }
+  };
+  
+  /**
+   * Handle document save
+   */
+  const handleDocumentSave = (saveResult) => {
+    // Update the active document with the new version info
+    if (activeDocument && saveResult) {
+      setActiveDocument(prev => ({
+        ...prev,
+        lastModified: new Date().toISOString(),
+        versionId: saveResult.versionId
+      }));
+      
+      // Also update in recent documents list
+      setRecentDocuments(prevDocs => 
+        prevDocs.map(doc => 
+          doc.id === activeDocument.id 
+            ? {
+                ...doc,
+                lastModified: new Date().toISOString(),
+                versionId: saveResult.versionId
+              }
+            : doc
+        )
+      );
+    }
+  };
+  
+  /**
+   * Render status badge for a document
+   */
+  const renderStatusBadge = (status) => {
+    const statusClasses = {
+      'draft': 'bg-blue-100 text-blue-800',
+      'in-review': 'bg-yellow-100 text-yellow-800',
+      'approved': 'bg-green-100 text-green-800',
+      'rejected': 'bg-red-100 text-red-800'
+    };
+    
+    return (
+      <span className={`px-2 py-1 text-xs rounded-full ${statusClasses[status] || 'bg-gray-100'}`}>
+        {status.charAt(0).toUpperCase() + status.slice(1).replace('-', ' ')}
+      </span>
+    );
+  };
+  
+  return (
+    <div className="container mx-auto py-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold flex items-center">
+            <Book className="h-8 w-8 mr-2 text-primary" />
+            eCTD Co-Author
+          </h1>
+          <p className="text-muted-foreground">
+            Create and edit regulatory documents with AI-powered compliance assistance
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <div className="text-sm text-muted-foreground mr-2">
+            <span className="font-medium">Tenant:</span> {activeTenant}
+          </div>
+          
+          {isAuthenticated ? (
+            <div className="flex items-center gap-1 px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm">
+              <FileCheck className="h-4 w-4" />
+              Microsoft Authenticated
+            </div>
+          ) : (
+            <Button 
+              size="sm" 
+              onClick={handleAuthenticate}
+              disabled={authenticating}
+            >
+              {authenticating ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Authenticating...
+                </>
+              ) : (
+                <>
+                  <Building className="h-4 w-4 mr-2" />
+                  Connect Microsoft 365
+                </>
+              )}
+            </Button>
+          )}
+        </div>
+      </div>
+      
+      {/* Main content */}
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="documents" className="flex items-center">
+            <FileText className="h-4 w-4 mr-2" />
+            Documents
+          </TabsTrigger>
+          <TabsTrigger value="upload" className="flex items-center">
+            <Upload className="h-4 w-4 mr-2" />
+            Upload
+          </TabsTrigger>
+          <TabsTrigger 
+            value="editor" 
+            className="flex items-center"
+            disabled={!activeDocument}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            {activeDocument ? `Editing: ${activeDocument.name}` : 'Editor'}
+          </TabsTrigger>
+        </TabsList>
+        
+        {/* Documents Tab */}
+        <TabsContent value="documents" className="space-y-4">
+          {/* Recent Documents */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2" />
+                  Recent Documents
+                </span>
+                
+                <div className="flex gap-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => fetchRecentDocuments()}
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Refresh
+                  </Button>
+                </div>
+              </CardTitle>
+              <CardDescription>
+                Recently edited regulatory documents
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {recentDocuments.length > 0 ? (
+                <div className="space-y-2">
+                  {recentDocuments.map(doc => (
+                    <div 
+                      key={doc.id} 
+                      className="p-3 border rounded-md hover:bg-muted transition-colors cursor-pointer"
+                      onClick={() => loadDocument(doc.id)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex items-start">
+                          <FileText className="h-5 w-5 mr-3 mt-1 text-primary" />
+                          <div>
+                            <h3 className="font-medium">{doc.name}</h3>
+                            <div className="text-sm text-muted-foreground">
+                              <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs mr-2">
+                                {doc.ectdSection}
+                              </span>
+                              Last modified: {new Date(doc.lastModified).toLocaleString()} by {doc.modifiedBy}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          {renderStatusBadge(doc.status)}
+                          
+                          <Button 
+                            size="icon" 
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              window.open(doc.url, '_blank');
+                            }}
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  No recent documents found
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          
+          {/* Document Templates */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <BookOpen className="h-5 w-5 mr-2" />
+                Document Templates
+              </CardTitle>
+              <CardDescription>
+                Create a new document from a regulatory template
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {templates.map(template => (
+                  <div 
+                    key={template.id}
+                    className="border rounded-md p-4 hover:bg-muted transition-colors"
+                  >
+                    <h3 className="font-medium mb-1">{template.name}</h3>
+                    <div className="text-sm text-muted-foreground mb-3">
+                      <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs">
+                        {template.ectdSection}
+                      </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      {template.description}
+                    </p>
+                    <Button 
+                      size="sm" 
+                      onClick={() => createNewDocument(template.id)}
+                      className="w-full"
+                    >
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      Create Document
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        {/* Upload Tab */}
+        <TabsContent value="upload">
+          <DocumentUploader onUploadComplete={handleUploadComplete} />
+        </TabsContent>
+        
+        {/* Editor Tab */}
+        <TabsContent value="editor" className="space-y-4">
+          {activeDocument ? (
+            <AiPoweredWordEditor
+              documentId={activeDocument.id}
+              documentUrl={activeDocument.url}
+              documentName={activeDocument.name}
+              ectdSection={activeDocument.ectdSection}
+              readOnly={false}
+              onSave={handleDocumentSave}
+            />
+          ) : (
+            <Card>
+              <CardContent className="py-12 text-center">
+                <FileText className="h-16 w-16 mx-auto text-muted-foreground" />
+                <h3 className="text-lg font-medium mt-4">No Document Selected</h3>
+                <p className="text-muted-foreground mt-2">
+                  Please select a document from the Documents tab or upload a new document
+                </p>
+                <div className="mt-6">
+                  <Button variant="outline" onClick={() => setActiveTab('documents')}>
+                    Browse Documents
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
