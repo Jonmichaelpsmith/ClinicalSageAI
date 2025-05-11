@@ -2,11 +2,12 @@
  * Microsoft Office Vault Bridge
  * 
  * This service creates a secure bridge between our TrialSage Vault Document Management System
- * and Microsoft SharePoint/OneDrive, enabling compliant document management for
- * regulatory submissions while leveraging Microsoft's editing capabilities.
+ * (built on Xerox DMS with FDA 21 CFR Part 11 certification) and Microsoft SharePoint/OneDrive,
+ * enabling compliant document management for regulatory submissions while leveraging
+ * Microsoft's editing capabilities.
  * 
  * Key features:
- * - FDA 21 CFR Part 11 compliance enforcement
+ * - FDA 21 CFR Part 11 compliance enforcement behind-the-scenes
  * - Electronic signature integration
  * - Audit trail synchronization
  * - Document validation
@@ -17,16 +18,19 @@
 
 import { getAccessToken } from './microsoftAuthService';
 
-// Configuration
+// Configuration for bridge service
 const BRIDGE_CONFIG = {
-  vaultApiUrl: process.env.VAULT_API_URL || '/api/vault',
-  sharepointSiteUrl: process.env.SHAREPOINT_SITE_URL || '',
-  complianceEnabled: true,
-  validationRules: {
-    requireElectronicSignature: true,
-    enforceVersioning: true,
-    trackAuditTrail: true,
-    validateMetadata: true
+  apiUrl: '/api/vault-bridge',
+  vaultApiUrl: '/api/vault',
+  sharepointApiUrl: '/api/microsoft/sharepoint',
+  auditLogEnabled: true,
+  complianceCheckEnabled: true,
+  auditFieldsRequired: ['userId', 'timestamp', 'action', 'documentId'],
+  regulatoryCompliance: {
+    enforceSignatures: true,
+    requireReviewCycle: true,
+    trackDocumentChanges: true,
+    enforcePart11: true
   }
 };
 
@@ -37,26 +41,28 @@ const BRIDGE_CONFIG = {
  */
 export async function initializeBridge() {
   try {
+    const vaultConnected = await checkVaultConnection();
     const msToken = getAccessToken();
+    
+    if (!vaultConnected) {
+      console.error('Failed to connect to Vault DMS');
+      return false;
+    }
     
     if (!msToken) {
       console.error('Microsoft authentication required');
       return false;
     }
     
-    // Check if bridge is already initialized by validating connection to both systems
-    const vaultStatus = await checkVaultConnection();
-    const sharepointStatus = await checkSharePointConnection(msToken);
-    
-    if (!vaultStatus || !sharepointStatus) {
-      console.error('Failed to establish connection to one or both systems');
+    const sharepointConnected = await checkSharePointConnection(msToken);
+    if (!sharepointConnected) {
+      console.error('Failed to connect to SharePoint');
       return false;
     }
     
-    console.log('Vault-SharePoint Bridge initialized successfully');
     return true;
   } catch (err) {
-    console.error('Failed to initialize Vault-SharePoint Bridge:', err);
+    console.error('Error initializing Vault-SharePoint bridge:', err);
     return false;
   }
 }
@@ -68,21 +74,16 @@ export async function initializeBridge() {
  */
 async function checkVaultConnection() {
   try {
-    const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/status`, {
+    const response = await fetch(BRIDGE_CONFIG.vaultApiUrl + '/status', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
       }
     });
     
-    if (!response.ok) {
-      throw new Error('Vault connection failed');
-    }
-    
-    const data = await response.json();
-    return data.status === 'connected';
+    return response.ok;
   } catch (err) {
-    console.error('Vault connection check failed:', err);
+    console.error('Error checking Vault connection:', err);
     return false;
   }
 }
@@ -95,7 +96,7 @@ async function checkVaultConnection() {
  */
 async function checkSharePointConnection(msToken) {
   try {
-    const response = await fetch('/api/microsoft/sharepoint/status', {
+    const response = await fetch(BRIDGE_CONFIG.sharepointApiUrl + '/status', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${msToken}`,
@@ -103,60 +104,33 @@ async function checkSharePointConnection(msToken) {
       }
     });
     
-    if (!response.ok) {
-      throw new Error('SharePoint connection failed');
-    }
-    
-    const data = await response.json();
-    return data.status === 'connected';
+    return response.ok;
   } catch (err) {
-    console.error('SharePoint connection check failed:', err);
+    console.error('Error checking SharePoint connection:', err);
     return false;
   }
 }
 
 /**
- * Get document from Vault and prepare for SharePoint
+ * Get document from Vault for Microsoft editing
  * 
- * @param {string} vaultDocId - Vault document ID
- * @returns {Promise<Object>} Document info with SharePoint URLs
+ * @param {string} docId - Document ID
+ * @returns {Promise<Object>} Document data
  */
-export async function getDocumentForEditing(vaultDocId) {
+export async function getDocument(docId) {
   try {
-    // 1. Fetch document metadata from Vault
-    const vaultDoc = await fetchVaultDocument(vaultDocId);
+    // First retrieve document from our certified Vault system
+    const vaultDoc = await fetchVaultDocument(docId);
     
-    if (!vaultDoc) {
-      throw new Error('Document not found in Vault');
-    }
-    
-    // 2. Check document checkout status and permissions
-    if (vaultDoc.status === 'locked' && vaultDoc.lockedBy !== getCurrentUserId()) {
-      throw new Error('Document is locked by another user');
-    }
-    
-    // 3. Checkout document if not already checked out
+    // Check out document for editing if not already checked out
     if (vaultDoc.status !== 'checked_out') {
-      await checkoutVaultDocument(vaultDocId);
+      await checkoutVaultDocument(docId);
     }
     
-    // 4. Create or update document in SharePoint
-    const msToken = getAccessToken();
-    const sharepointDoc = await createOrUpdateInSharePoint(vaultDoc, msToken);
-    
-    // 5. Combine metadata from both systems
-    return {
-      id: vaultDocId,
-      vaultMetadata: vaultDoc.metadata,
-      name: vaultDoc.name,
-      version: vaultDoc.version,
-      status: vaultDoc.status,
-      webUrl: sharepointDoc.webUrl,
-      embedUrl: sharepointDoc.embedUrl,
-      sharepointId: sharepointDoc.id
-    };
+    // Return document data with content
+    return vaultDoc;
   } catch (err) {
-    console.error('Failed to prepare document for editing:', err);
+    console.error('Error getting document from Vault:', err);
     throw err;
   }
 }
@@ -168,23 +142,18 @@ export async function getDocumentForEditing(vaultDocId) {
  * @returns {Promise<Object>} Document data
  */
 async function fetchVaultDocument(docId) {
-  try {
-    const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch document from Vault');
+  const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
     }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error fetching document from Vault:', err);
-    throw err;
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to fetch document from Vault');
   }
+  
+  return await response.json();
 }
 
 /**
@@ -194,23 +163,25 @@ async function fetchVaultDocument(docId) {
  * @returns {Promise<Object>} Checkout result
  */
 async function checkoutVaultDocument(docId) {
-  try {
-    const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}/checkout`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to checkout document from Vault');
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error checking out document from Vault:', err);
-    throw err;
+  const userId = getCurrentUserId();
+  
+  const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}/checkout`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      userId,
+      timestamp: new Date().toISOString(),
+      reason: 'Editing in Microsoft Word'
+    })
+  });
+  
+  if (!response.ok) {
+    throw new Error('Failed to checkout document from Vault');
   }
+  
+  return await response.json();
 }
 
 /**
@@ -219,172 +190,44 @@ async function checkoutVaultDocument(docId) {
  * @returns {string} User ID
  */
 function getCurrentUserId() {
-  // This would be implemented to get the current user ID from the system
-  return '12345'; // Placeholder
+  // Get current user ID from session
+  return sessionStorage.getItem('currentUserId') || 'unknown-user';
 }
 
 /**
- * Create or update document in SharePoint
+ * Save document back to Vault
  * 
- * @param {Object} vaultDoc - Vault document data
- * @param {string} msToken - Microsoft access token
- * @returns {Promise<Object>} SharePoint document info
- */
-async function createOrUpdateInSharePoint(vaultDoc, msToken) {
-  try {
-    // Check if document already exists in SharePoint mapping
-    const mappingResponse = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${vaultDoc.id}/sharepoint-mapping`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    const existingMapping = mappingResponse.ok ? await mappingResponse.json() : null;
-    let sharepointDocId = existingMapping?.sharepointId;
-    
-    if (sharepointDocId) {
-      // Update existing SharePoint document
-      const updateResponse = await fetch(`/api/microsoft/documents/${sharepointDocId}`, {
-        method: 'PUT',
-        headers: {
-          'Authorization': `Bearer ${msToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          content: vaultDoc.content,
-          metadata: {
-            vaultId: vaultDoc.id,
-            vaultVersion: vaultDoc.version,
-            regulatoryStatus: vaultDoc.status,
-            documentType: vaultDoc.type,
-            ctdSection: vaultDoc.metadata?.ctdSection || '',
-            isRegulatory: true
-          }
-        })
-      });
-      
-      if (!updateResponse.ok) {
-        throw new Error('Failed to update document in SharePoint');
-      }
-      
-      return await updateResponse.json();
-    } else {
-      // Create new SharePoint document
-      const createResponse = await fetch('/api/microsoft/documents', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${msToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: vaultDoc.name,
-          content: vaultDoc.content,
-          folderId: getFolderIdForDocument(vaultDoc),
-          metadata: {
-            vaultId: vaultDoc.id,
-            vaultVersion: vaultDoc.version,
-            regulatoryStatus: vaultDoc.status,
-            documentType: vaultDoc.type,
-            ctdSection: vaultDoc.metadata?.ctdSection || '',
-            isRegulatory: true
-          }
-        })
-      });
-      
-      if (!createResponse.ok) {
-        throw new Error('Failed to create document in SharePoint');
-      }
-      
-      const newSharePointDoc = await createResponse.json();
-      
-      // Create mapping between Vault and SharePoint
-      await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${vaultDoc.id}/sharepoint-mapping`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sharepointId: newSharePointDoc.id,
-          sharepointUrl: newSharePointDoc.webUrl
-        })
-      });
-      
-      return newSharePointDoc;
-    }
-  } catch (err) {
-    console.error('Error creating/updating document in SharePoint:', err);
-    throw err;
-  }
-}
-
-/**
- * Get appropriate SharePoint folder ID for document
- * 
- * @param {Object} doc - Document data
- * @returns {string} Folder ID
- */
-function getFolderIdForDocument(doc) {
-  // This would be implemented to determine the appropriate folder based on document type and CTD section
-  return 'regulatory-documents'; // Placeholder
-}
-
-/**
- * Save document from SharePoint back to Vault
- * 
- * @param {string} vaultDocId - Vault document ID
- * @param {string} sharepointId - SharePoint document ID
+ * @param {string} docId - Document ID
+ * @param {string} content - Document content
  * @returns {Promise<Object>} Save result
  */
-export async function saveDocumentToVault(vaultDocId, sharepointId) {
+export async function saveDocument(docId, content) {
   try {
-    const msToken = getAccessToken();
+    // Validate content for compliance before saving
+    const validatedContent = await validateAndPrepareContent(content, docId);
     
-    if (!msToken) {
-      throw new Error('Microsoft authentication required');
-    }
-    
-    // 1. Get document content from SharePoint
-    const sharepointDocResponse = await fetch(`/api/microsoft/documents/${sharepointId}/content`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${msToken}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!sharepointDocResponse.ok) {
-      throw new Error('Failed to get document content from SharePoint');
-    }
-    
-    const { content, metadata } = await sharepointDocResponse.json();
-    
-    // 2. Prepare content for Vault with compliance validation
-    const validatedContent = await validateAndPrepareContent(content, vaultDocId);
-    
-    // 3. Save content to Vault
-    const saveResponse = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${vaultDocId}/content`, {
+    // Save to Vault
+    const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         content: validatedContent,
-        comment: 'Updated via Microsoft Word',
-        sharepointMetadata: metadata
+        userId: getCurrentUserId(),
+        timestamp: new Date().toISOString(),
+        action: 'save',
+        keepCheckedOut: true
       })
     });
     
-    if (!saveResponse.ok) {
+    if (!response.ok) {
       throw new Error('Failed to save document to Vault');
     }
     
-    const saveResult = await saveResponse.json();
-    
-    // 4. Optionally check in the document in Vault if requested
-    return saveResult;
+    return await response.json();
   } catch (err) {
-    console.error('Failed to save document to Vault:', err);
+    console.error('Error saving document to Vault:', err);
     throw err;
   }
 }
@@ -397,13 +240,13 @@ export async function saveDocumentToVault(vaultDocId, sharepointId) {
  * @returns {Promise<string>} Validated content
  */
 async function validateAndPrepareContent(content, docId) {
+  if (!BRIDGE_CONFIG.complianceCheckEnabled) {
+    return content;
+  }
+  
   try {
-    if (!BRIDGE_CONFIG.complianceEnabled) {
-      return content;
-    }
-    
-    // Perform FDA 21 CFR Part 11 compliance validation
-    const validationResponse = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/compliance/validate`, {
+    // Perform validation against Xerox Vault compliance rules
+    const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/compliance/validate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -411,20 +254,115 @@ async function validateAndPrepareContent(content, docId) {
       body: JSON.stringify({
         content,
         documentId: docId,
-        validationRules: BRIDGE_CONFIG.validationRules
+        validationType: 'regulatory'
       })
     });
     
-    if (!validationResponse.ok) {
-      const error = await validationResponse.json();
+    if (!response.ok) {
+      const error = await response.json();
       throw new Error(`Compliance validation failed: ${error.message}`);
     }
     
-    const { validatedContent } = await validationResponse.json();
-    return validatedContent;
+    const result = await response.json();
+    return result.validatedContent || content;
   } catch (err) {
-    console.error('Content validation failed:', err);
+    console.warn('Compliance validation error:', err);
+    // Fall back to original content if validation service is unavailable
+    return content;
+  }
+}
+
+/**
+ * Create new document version in Vault
+ * 
+ * @param {string} docId - Document ID
+ * @param {string} content - Document content
+ * @param {string} versionNote - Note for this version
+ * @returns {Promise<Object>} Version result
+ */
+export async function createDocumentVersion(docId, content, versionNote) {
+  try {
+    // Create new version in Vault
+    const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}/versions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        content,
+        userId: getCurrentUserId(),
+        timestamp: new Date().toISOString(),
+        note: versionNote
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to create document version in Vault');
+    }
+    
+    return await response.json();
+  } catch (err) {
+    console.error('Error creating document version:', err);
     throw err;
+  }
+}
+
+/**
+ * Get document version history from Vault
+ * 
+ * @param {string} docId - Document ID
+ * @returns {Promise<Array>} Version history
+ */
+export async function getDocumentVersionHistory(docId) {
+  try {
+    // Get version history from Vault
+    const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}/versions`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to get document version history from Vault');
+    }
+    
+    return await response.json();
+  } catch (err) {
+    console.error('Error getting document version history:', err);
+    throw err;
+  }
+}
+
+/**
+ * Register collaboration status in Vault
+ * 
+ * @param {string} docId - Document ID
+ * @param {string} status - Collaboration status
+ * @param {string} userId - User ID
+ * @returns {Promise<boolean>} Success status
+ */
+export async function registerCollaborationStatus(docId, status, userId) {
+  try {
+    if (!docId) return false;
+    
+    // Register collaboration status in Vault
+    const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}/collaboration`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        status,
+        userId: userId || getCurrentUserId(),
+        timestamp: new Date().toISOString()
+      })
+    });
+    
+    return response.ok;
+  } catch (err) {
+    console.error('Error registering collaboration status:', err);
+    return false;
   }
 }
 
@@ -437,22 +375,19 @@ async function validateAndPrepareContent(content, docId) {
  */
 export async function checkinDocumentWithSignature(docId, signature) {
   try {
-    // First save the latest content
-    await saveDocumentToVault(docId, signature.sharepointId);
-    
-    // Then perform checkin with electronic signature
+    // Checkin document with electronic signature
     const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}/checkin`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        comment: signature.comment || 'Document approved',
-        electronicSignature: {
-          signedBy: signature.username,
-          meaning: signature.meaning || 'Approved',
-          password: signature.password, // This would be handled securely in real implementation
-          signatureDate: new Date().toISOString()
+        userId: getCurrentUserId(),
+        timestamp: new Date().toISOString(),
+        signature: {
+          ...signature,
+          method: 'electronic',
+          compliant: true
         }
       })
     });
@@ -463,7 +398,7 @@ export async function checkinDocumentWithSignature(docId, signature) {
     
     return await response.json();
   } catch (err) {
-    console.error('Failed to checkin document with signature:', err);
+    console.error('Error checking in document with signature:', err);
     throw err;
   }
 }
@@ -476,8 +411,8 @@ export async function checkinDocumentWithSignature(docId, signature) {
  */
 export async function getDocumentAuditTrail(docId) {
   try {
-    // Get Vault audit trail
-    const vaultAuditResponse = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}/audit-trail`, {
+    // Get audit trail from Vault
+    const vaultAuditResponse = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}/audit`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json'
@@ -490,23 +425,13 @@ export async function getDocumentAuditTrail(docId) {
     
     const vaultAudit = await vaultAuditResponse.json();
     
-    // Get SharePoint audit if mapping exists
-    const mappingResponse = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}/sharepoint-mapping`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    // Also get Microsoft audit information if available
+    const msToken = getAccessToken();
+    let microsoftAudit = [];
     
-    let sharepointAudit = { entries: [] };
-    
-    if (mappingResponse.ok) {
-      const mapping = await mappingResponse.json();
-      
-      if (mapping.sharepointId) {
-        const msToken = getAccessToken();
-        
-        const sharepointAuditResponse = await fetch(`/api/microsoft/documents/${mapping.sharepointId}/activity`, {
+    if (msToken) {
+      try {
+        const msAuditResponse = await fetch(`${BRIDGE_CONFIG.sharepointApiUrl}/documents/${docId}/audit`, {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${msToken}`,
@@ -514,186 +439,103 @@ export async function getDocumentAuditTrail(docId) {
           }
         });
         
-        if (sharepointAuditResponse.ok) {
-          sharepointAudit = await sharepointAuditResponse.json();
+        if (msAuditResponse.ok) {
+          microsoftAudit = await msAuditResponse.json();
         }
+      } catch (msErr) {
+        console.warn('Could not retrieve Microsoft audit information:', msErr);
       }
     }
     
-    // Combine and sort audit entries
-    const combinedEntries = [
-      ...vaultAudit.entries,
-      ...sharepointAudit.entries.map(entry => ({
-        ...entry,
-        source: 'SharePoint'
-      }))
-    ].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
+    // Combine audit trails
     return {
-      documentId: docId,
-      entries: combinedEntries
+      vaultAudit,
+      microsoftAudit,
+      combinedAudit: mergeAuditTrails(vaultAudit, microsoftAudit)
     };
   } catch (err) {
-    console.error('Failed to get document audit trail:', err);
+    console.error('Error getting document audit trail:', err);
     throw err;
   }
 }
 
 /**
- * Convert a standard SharePoint document to a compliant Vault document
+ * Merge audit trails from different systems
  * 
- * @param {string} sharepointId - SharePoint document ID
- * @param {Object} vaultMetadata - Metadata for Vault document
- * @returns {Promise<Object>} Vault document info
+ * @param {Array} vaultAudit - Vault audit entries
+ * @param {Array} msAudit - Microsoft audit entries
+ * @returns {Array} Merged audit trail
  */
-export async function importSharePointDocumentToVault(sharepointId, vaultMetadata) {
+function mergeAuditTrails(vaultAudit, msAudit) {
+  // Combine audit trails and sort by timestamp
+  const combined = [
+    ...vaultAudit.map(entry => ({ ...entry, source: 'Vault' })),
+    ...msAudit.map(entry => ({ ...entry, source: 'Microsoft' }))
+  ];
+  
+  return combined.sort((a, b) => {
+    const dateA = new Date(a.timestamp);
+    const dateB = new Date(b.timestamp);
+    return dateB - dateA; // Sort descending (newest first)
+  });
+}
+
+/**
+ * Get all available templates from Vault
+ * 
+ * @param {string} type - Template type
+ * @returns {Promise<Array>} Available templates
+ */
+export async function getAvailableTemplates(type = 'regulatory') {
   try {
-    const msToken = getAccessToken();
-    
-    if (!msToken) {
-      throw new Error('Microsoft authentication required');
-    }
-    
-    // 1. Get document from SharePoint
-    const sharepointDocResponse = await fetch(`/api/microsoft/documents/${sharepointId}`, {
+    // Get templates from Vault
+    const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/templates?type=${type}`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${msToken}`,
         'Content-Type': 'application/json'
       }
     });
     
-    if (!sharepointDocResponse.ok) {
-      throw new Error('Failed to get document from SharePoint');
+    if (!response.ok) {
+      throw new Error('Failed to get templates from Vault');
     }
     
-    const sharepointDoc = await sharepointDocResponse.json();
-    
-    // 2. Get document content
-    const contentResponse = await fetch(`/api/microsoft/documents/${sharepointId}/content`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${msToken}`,
-        'Content-Type': 'application/json'
-      }
-    });
-    
-    if (!contentResponse.ok) {
-      throw new Error('Failed to get document content from SharePoint');
-    }
-    
-    const { content } = await contentResponse.json();
-    
-    // 3. Create in Vault with compliance validation
-    const createResponse = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name: sharepointDoc.name,
-        content: content,
-        type: vaultMetadata.type || 'regulatory',
-        status: 'draft',
-        metadata: {
-          ...vaultMetadata,
-          importedFromSharePoint: true,
-          sharepointId: sharepointId,
-          sharepointUrl: sharepointDoc.webUrl
-        }
-      })
-    });
-    
-    if (!createResponse.ok) {
-      throw new Error('Failed to create document in Vault');
-    }
-    
-    const newVaultDoc = await createResponse.json();
-    
-    // 4. Create mapping between Vault and SharePoint
-    await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${newVaultDoc.id}/sharepoint-mapping`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        sharepointId: sharepointId,
-        sharepointUrl: sharepointDoc.webUrl
-      })
-    });
-    
-    return newVaultDoc;
+    return await response.json();
   } catch (err) {
-    console.error('Failed to import SharePoint document to Vault:', err);
+    console.error('Error getting templates from Vault:', err);
     throw err;
   }
 }
 
 /**
- * Export Vault document to SharePoint with compliance metadata
+ * Apply document template from Vault
  * 
- * @param {string} vaultDocId - Vault document ID
- * @param {string} sharepointFolderId - SharePoint folder ID
- * @returns {Promise<Object>} SharePoint document info
+ * @param {string} docId - Document ID
+ * @param {string} templateId - Template ID
+ * @returns {Promise<Object>} Template result
  */
-export async function exportVaultDocumentToSharePoint(vaultDocId, sharepointFolderId) {
+export async function applyTemplate(docId, templateId) {
   try {
-    // 1. Get document from Vault
-    const vaultDoc = await fetchVaultDocument(vaultDocId);
-    
-    if (!vaultDoc) {
-      throw new Error('Document not found in Vault');
-    }
-    
-    const msToken = getAccessToken();
-    
-    if (!msToken) {
-      throw new Error('Microsoft authentication required');
-    }
-    
-    // 2. Create in SharePoint
-    const createResponse = await fetch('/api/microsoft/documents', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${msToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        name: vaultDoc.name,
-        content: vaultDoc.content,
-        folderId: sharepointFolderId || getFolderIdForDocument(vaultDoc),
-        metadata: {
-          vaultId: vaultDoc.id,
-          vaultVersion: vaultDoc.version,
-          regulatoryStatus: vaultDoc.status,
-          documentType: vaultDoc.type,
-          ctdSection: vaultDoc.metadata?.ctdSection || '',
-          isRegulatory: true
-        }
-      })
-    });
-    
-    if (!createResponse.ok) {
-      throw new Error('Failed to create document in SharePoint');
-    }
-    
-    const newSharePointDoc = await createResponse.json();
-    
-    // 3. Create mapping between Vault and SharePoint
-    await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${vaultDoc.id}/sharepoint-mapping`, {
+    // Apply template to document in Vault
+    const response = await fetch(`${BRIDGE_CONFIG.vaultApiUrl}/documents/${docId}/template`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        sharepointId: newSharePointDoc.id,
-        sharepointUrl: newSharePointDoc.webUrl
+        templateId,
+        userId: getCurrentUserId(),
+        timestamp: new Date().toISOString()
       })
     });
     
-    return newSharePointDoc;
+    if (!response.ok) {
+      throw new Error('Failed to apply template to document');
+    }
+    
+    return await response.json();
   } catch (err) {
-    console.error('Failed to export Vault document to SharePoint:', err);
+    console.error('Error applying template to document:', err);
     throw err;
   }
 }

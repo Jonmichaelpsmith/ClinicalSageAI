@@ -1,189 +1,287 @@
 /**
- * Microsoft Copilot Service
+ * Microsoft Copilot Integration Service
  * 
- * This service provides integration with Microsoft Copilot for document-based AI assistance,
- * enabling enhanced writing, editing, and document generation capabilities.
+ * This service provides integration with Microsoft Copilot for regulatory document authoring,
+ * enabling AI-assisted document creation while maintaining compliance with the
+ * Xerox-based Vault Document Management System requirements.
+ * 
+ * Key features:
+ * - Regulatory-focused content generation
+ * - Compliance awareness
+ * - Integration with TrialSage knowledge base
+ * - Document structure recommendations
  */
 
-import axios from 'axios';
+import { getAccessToken } from './microsoftAuthService';
+
+// Configuration for Copilot service
+const COPILOT_CONFIG = {
+  apiUrl: '/api/microsoft/copilot',
+  regulatoryTemplates: {
+    ind: ['protocol', 'cmc', 'nonclinical', 'clinical', 'cover-letter'],
+    ctd: ['module1', 'module2', 'module3', 'module4', 'module5'],
+    general: ['executive-summary', 'rationale', 'methods', 'results', 'discussion', 'conclusion']
+  },
+  maxResponseTokens: 2048
+};
 
 /**
- * Ask Microsoft Copilot a question or provide a prompt related to document content
+ * Ask Copilot a question with document context
  * 
- * @param {string} prompt - The user's question or request
- * @param {Object} options - Additional context options
+ * @param {string} prompt - User prompt
+ * @param {Object} options - Additional options
  * @param {string} options.documentContext - Current document content for context
- * @returns {Promise<Object>} - Copilot response with text and suggestions
+ * @param {string} options.documentType - Document type (ind, ctd, etc.)
+ * @param {string} options.regulatoryAuthority - Regulatory authority (FDA, EMA, etc.)
+ * @returns {Promise<Object>} - Copilot response
  */
 export async function askCopilot(prompt, options = {}) {
   try {
-    const token = localStorage.getItem('ms_access_token');
-    if (!token) {
+    const accessToken = getAccessToken();
+    
+    if (!accessToken) {
       throw new Error('Microsoft authentication required');
     }
     
-    const response = await axios.post(
-      '/api/microsoft-office/copilot/ask',
-      {
-        prompt,
-        documentContext: options.documentContext || '',
+    // Create request with regulatory context
+    const response = await fetch(COPILOT_CONFIG.apiUrl + '/ask', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
       },
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      body: JSON.stringify({
+        prompt,
+        options: {
+          ...options,
+          maxTokens: COPILOT_CONFIG.maxResponseTokens,
+          temperature: 0.7,
+          isRegulatory: true
         }
-      }
-    );
+      })
+    });
     
-    return response.data;
-  } catch (error) {
-    console.error('Error asking Copilot:', error);
-    // Graceful fallback - provide a less capable but functional response
-    return { 
-      text: "I'm unable to connect to Microsoft Copilot right now. Please try again later or use the AI tools available in the application.",
-      suggestions: []
-    };
+    if (!response.ok) {
+      throw new Error('Failed to get response from Copilot');
+    }
+    
+    return await response.json();
+  } catch (err) {
+    console.error('Error asking Copilot:', err);
+    throw err;
   }
 }
 
 /**
- * Get writing suggestions and improvements for the current document content
+ * Get writing suggestions for regulatory document
  * 
- * @param {string} documentContent - The current document content
- * @returns {Promise<Array>} - List of writing suggestions
+ * @param {string} documentContent - Document content
+ * @param {string} documentType - Document type (ind, ctd, etc.)
+ * @returns {Promise<Array>} - Array of writing suggestions
  */
-export async function getWritingSuggestions(documentContent) {
+export async function getWritingSuggestions(documentContent, documentType = 'general') {
   try {
-    const token = localStorage.getItem('ms_access_token');
-    if (!token) {
+    const accessToken = getAccessToken();
+    
+    if (!accessToken) {
       throw new Error('Microsoft authentication required');
     }
     
-    const response = await axios.post(
-      '/api/microsoft-office/copilot/suggestions',
-      { documentContent },
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      }
-    );
+    // Request suggestions with regulatory focus
+    const response = await fetch(COPILOT_CONFIG.apiUrl + '/suggestions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        content: documentContent,
+        documentType,
+        suggestionTypes: ['regulatory', 'technical', 'clarity', 'structure']
+      })
+    });
     
-    return response.data.suggestions || [];
-  } catch (error) {
-    console.error('Error getting writing suggestions:', error);
-    // Return empty suggestions array to avoid breaking UI
-    return [];
+    if (!response.ok) {
+      throw new Error('Failed to get writing suggestions');
+    }
+    
+    return await response.json();
+  } catch (err) {
+    console.error('Error getting writing suggestions:', err);
+    throw err;
   }
 }
 
 /**
- * Generate regulatory document section content based on standards
+ * Generate regulatory document section
  * 
- * @param {string} sectionName - Name of the section to generate
- * @param {string} additionalContext - Additional context or requirements
+ * @param {string} sectionName - Name of the section
+ * @param {string} context - Additional context
+ * @param {Object} options - Additional options
+ * @param {string} options.documentType - Document type (ind, ctd, etc.)
+ * @param {string} options.regulatoryAuthority - Regulatory authority (FDA, EMA, etc.)
+ * @param {string} options.moduleSection - CTD module section (e.g. 2.5, 3.2.P)
  * @returns {Promise<string>} - Generated section content
  */
-export async function generateRegulatorySection(sectionName, additionalContext = '') {
+export async function generateRegulatorySection(sectionName, context = '', options = {}) {
   try {
-    const token = localStorage.getItem('ms_access_token');
-    if (!token) {
+    const accessToken = getAccessToken();
+    
+    if (!accessToken) {
       throw new Error('Microsoft authentication required');
     }
     
-    const response = await axios.post(
-      '/api/microsoft-office/copilot/regulatory-section',
-      {
+    // Request section generation with regulatory focus
+    const response = await fetch(COPILOT_CONFIG.apiUrl + '/generate-section', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
         sectionName,
-        additionalContext
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`
+        context,
+        options: {
+          ...options,
+          maxTokens: COPILOT_CONFIG.maxResponseTokens * 2,
+          temperature: 0.4, // Lower temperature for more consistent regulatory content
+          includeHeadings: true,
+          includeFormatting: true
         }
-      }
-    );
+      })
+    });
     
-    return response.data.content || '';
-  } catch (error) {
-    console.error('Error generating regulatory section:', error);
-    return `[Unable to generate ${sectionName} section. Please try again later.]`;
+    if (!response.ok) {
+      throw new Error('Failed to generate regulatory section');
+    }
+    
+    const data = await response.json();
+    return data.content;
+  } catch (err) {
+    console.error('Error generating regulatory section:', err);
+    throw err;
   }
 }
 
 /**
- * Format document according to regulatory standards
+ * Get regulatory compliance suggestions
  * 
- * @param {string} documentContent - The current document content
- * @param {string} regulationType - Type of regulatory document
- * @returns {Promise<Object>} - Formatting recommendations and properly formatted content
+ * @param {string} documentContent - Document content
+ * @param {Object} options - Additional options
+ * @param {string} options.documentType - Document type (ind, ctd, etc.)
+ * @param {string} options.regulatoryAuthority - Regulatory authority (FDA, EMA, etc.)
+ * @param {string} options.moduleSection - CTD module section (e.g. 2.5, 3.2.P)
+ * @returns {Promise<Array>} - Array of compliance suggestions
  */
-export async function getFormattingRecommendations(documentContent, regulationType) {
+export async function getComplianceSuggestions(documentContent, options = {}) {
   try {
-    const token = localStorage.getItem('ms_access_token');
-    if (!token) {
+    const accessToken = getAccessToken();
+    
+    if (!accessToken) {
       throw new Error('Microsoft authentication required');
     }
     
-    const response = await axios.post(
-      '/api/microsoft-office/copilot/format',
-      {
-        documentContent,
-        regulationType
+    // Request compliance suggestions
+    const response = await fetch(COPILOT_CONFIG.apiUrl + '/compliance', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
       },
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`
+      body: JSON.stringify({
+        content: documentContent,
+        options: {
+          ...options,
+          checkAgainstXeroxVaultStandards: true, // Ensure compatibility with Xerox Vault standards
+          includeReferences: true,
+          includeReasonings: true
         }
-      }
-    );
+      })
+    });
     
-    return response.data;
-  } catch (error) {
-    console.error('Error getting formatting recommendations:', error);
-    return {
-      recommendations: [],
-      formattedContent: documentContent // Return original content if formatting fails
-    };
+    if (!response.ok) {
+      throw new Error('Failed to get compliance suggestions');
+    }
+    
+    return await response.json();
+  } catch (err) {
+    console.error('Error getting compliance suggestions:', err);
+    throw err;
   }
 }
 
 /**
- * Check regulatory compliance of document content
+ * Get available templates for document type
  * 
- * @param {string} documentContent - The current document content
- * @param {string} regulationType - Type of regulatory document
- * @returns {Promise<Object>} - Compliance check results
+ * @param {string} documentType - Document type (ind, ctd, etc.)
+ * @returns {Promise<Array>} - Array of available templates
  */
-export async function checkCompliance(documentContent, regulationType) {
+export async function getAvailableTemplates(documentType = 'general') {
   try {
-    const token = localStorage.getItem('ms_access_token');
-    if (!token) {
+    const accessToken = getAccessToken();
+    
+    if (!accessToken) {
       throw new Error('Microsoft authentication required');
     }
     
-    const response = await axios.post(
-      '/api/microsoft-office/copilot/compliance',
-      {
-        documentContent,
-        regulationType
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      }
-    );
+    // Get templates from predefined list or from API
+    const templates = COPILOT_CONFIG.regulatoryTemplates[documentType] || 
+                      COPILOT_CONFIG.regulatoryTemplates.general;
     
-    return response.data;
-  } catch (error) {
-    console.error('Error checking compliance:', error);
-    return {
-      compliant: false,
-      issues: [{
-        severity: 'error',
-        message: 'Unable to check compliance due to service error'
-      }]
-    };
+    // Format templates with additional metadata
+    return templates.map(templateId => ({
+      id: templateId,
+      name: formatTemplateName(templateId),
+      description: getTemplateDescription(templateId, documentType),
+      documentType
+    }));
+  } catch (err) {
+    console.error('Error getting available templates:', err);
+    throw err;
   }
+}
+
+/**
+ * Format template name for display
+ * 
+ * @param {string} templateId - Template ID
+ * @returns {string} - Formatted template name
+ */
+function formatTemplateName(templateId) {
+  // Convert template ID to display name
+  return templateId
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+/**
+ * Get template description
+ * 
+ * @param {string} templateId - Template ID
+ * @param {string} documentType - Document type
+ * @returns {string} - Template description
+ */
+function getTemplateDescription(templateId, documentType) {
+  // Template descriptions
+  const descriptions = {
+    'protocol': 'Standard protocol template for IND submissions',
+    'cmc': 'Chemistry, Manufacturing, and Controls template',
+    'nonclinical': 'Nonclinical safety assessment template',
+    'clinical': 'Clinical evaluation template',
+    'cover-letter': 'Regulatory submission cover letter template',
+    'module1': 'CTD Module 1 - Administrative Information',
+    'module2': 'CTD Module 2 - Common Technical Document Summaries',
+    'module3': 'CTD Module 3 - Quality Documentation',
+    'module4': 'CTD Module 4 - Nonclinical Study Reports',
+    'module5': 'CTD Module 5 - Clinical Study Reports',
+    'executive-summary': 'Executive summary template',
+    'rationale': 'Study rationale template',
+    'methods': 'Research methods template',
+    'results': 'Study results template',
+    'discussion': 'Results discussion template',
+    'conclusion': 'Study conclusion template'
+  };
+  
+  return descriptions[templateId] || `Template for ${formatTemplateName(templateId)}`;
 }
