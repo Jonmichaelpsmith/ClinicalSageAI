@@ -8,8 +8,8 @@
 // Microsoft Authentication Configuration
 export const msalConfig = {
   auth: {
-    clientId: process.env.MICROSOFT_CLIENT_ID || import.meta.env.VITE_MICROSOFT_CLIENT_ID,
-    authority: `https://login.microsoftonline.com/${process.env.MICROSOFT_TENANT_ID || import.meta.env.VITE_MICROSOFT_TENANT_ID}`,
+    clientId: import.meta.env.VITE_MICROSOFT_CLIENT_ID || 'demo-client-id',
+    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_MICROSOFT_TENANT_ID || 'common'}`,
     redirectUri: window.location.origin,
   },
   cache: {
@@ -38,7 +38,7 @@ export const loginRequest = {
 
 // SharePoint Site Configuration
 export const sharePointConfig = {
-  siteUrl: process.env.SHAREPOINT_SITE_URL || import.meta.env.VITE_SHAREPOINT_SITE_URL || 'https://tenant.sharepoint.com/sites/ClinicalSageAI',
+  siteUrl: import.meta.env.VITE_SHAREPOINT_SITE_URL || 'https://tenant.sharepoint.com/sites/ClinicalSageAI',
   driveLibrary: 'Shared Documents',
   rootFolder: 'Regulatory'
 };

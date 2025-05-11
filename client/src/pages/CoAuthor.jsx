@@ -25,7 +25,8 @@ import {
   PlusCircle,
   Building,
   BookOpen,
-  FileCheck
+  FileCheck,
+  // Remove ParagraphIcon which doesn't exist
 } from 'lucide-react';
 
 // Import our custom components
