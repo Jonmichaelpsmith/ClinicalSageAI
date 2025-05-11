@@ -140,9 +140,9 @@ export default function CoAuthor() {
 
       {/* Main Content Grid */}
       <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Document Editor Card */}
-        <Card>
-          <CardHeader className="pb-2">
+        {/* Document Editor Card - Enhanced */}
+        <Card className="border-blue-200">
+          <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-white">
             <CardTitle className="flex items-center text-lg">
               <Edit className="h-5 w-5 mr-2 text-blue-600" />
               AI-Powered Document Editor
@@ -171,22 +171,43 @@ export default function CoAuthor() {
                 <span className="text-sm font-medium">OpenAI-powered suggestions</span>
               </div>
             </div>
-            <Button className="w-full">Launch Editor</Button>
+            <div className="space-y-2">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                <Edit className="h-4 w-4 mr-2" />
+                Launch Editor
+              </Button>
+              <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
+                <span>AI-powered with GPT-4o</span>
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">New</Badge>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Template Library Card */}
-        <Card>
-          <CardHeader className="pb-2">
+        {/* Template Library Card - Enhanced */}
+        <Card className="border-yellow-200">
+          <CardHeader className="pb-2 bg-gradient-to-r from-yellow-50 to-white">
             <CardTitle className="flex items-center text-lg">
-              <LayoutTemplate className="h-5 w-5 mr-2 text-blue-600" />
-              Template Library
+              <LayoutTemplate className="h-5 w-5 mr-2 text-yellow-600" />
+              Regional Template Library
             </CardTitle>
             <CardDescription>
               Pre-approved document templates for regulatory submissions
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="border rounded-md p-2 bg-yellow-50 mb-3">
+              <div className="flex items-center mb-2">
+                <FileText className="h-4 w-4 text-yellow-600 mr-1.5" />
+                <span className="text-sm font-semibold text-yellow-800">Available Regions</span>
+              </div>
+              <div className="grid grid-cols-3 gap-1">
+                <Badge variant="outline" className="bg-white">FDA (US)</Badge>
+                <Badge variant="outline" className="bg-white">EMA (EU)</Badge>
+                <Badge variant="outline" className="bg-white">PMDA (JP)</Badge>
+              </div>
+            </div>
+            
             <div className="mb-3 space-y-2">
               <div className="border rounded-md p-2">
                 <div className="flex justify-between items-center">
@@ -219,15 +240,24 @@ export default function CoAuthor() {
                 <p className="text-xs text-gray-500 mt-1">Region-specific templates</p>
               </div>
             </div>
-            <Button className="w-full">Browse All Templates</Button>
+            
+            <Button className="w-full bg-yellow-500 hover:bg-yellow-600 text-white">
+              <LayoutTemplate className="h-4 w-4 mr-2" />
+              Browse All Templates
+            </Button>
+            <div className="flex justify-center mt-2">
+              <span className="text-xs text-gray-500">
+                57 templates available across all modules
+              </span>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Regulatory Search Card */}
-        <Card>
-          <CardHeader className="pb-2">
+        {/* Regulatory Search Card - Enhanced */}
+        <Card className="border-green-200">
+          <CardHeader className="pb-2 bg-gradient-to-r from-green-50 to-white">
             <CardTitle className="flex items-center text-lg">
-              <Search className="h-5 w-5 mr-2 text-blue-600" />
+              <Search className="h-5 w-5 mr-2 text-green-600" />
               Intelligent Regulatory Search
             </CardTitle>
             <CardDescription>
@@ -237,54 +267,95 @@ export default function CoAuthor() {
           <CardContent>
             <div className="space-y-3 mb-3">
               <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-green-600" />
                 <input 
                   type="text" 
                   placeholder="Search regulatory guidelines..." 
-                  className="pl-8 h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors"
+                  className="pl-8 h-9 w-full rounded-md border border-green-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus:border-green-400 focus:ring-1 focus:ring-green-400"
                 />
               </div>
-              <div className="flex flex-wrap gap-2 mt-2">
-                <Badge variant="secondary" className="text-xs cursor-pointer">FDA Guidelines</Badge>
-                <Badge variant="secondary" className="text-xs cursor-pointer">ICH Standards</Badge>
-                <Badge variant="secondary" className="text-xs cursor-pointer">eCTD Requirements</Badge>
-                <Badge variant="secondary" className="text-xs cursor-pointer">EMA</Badge>
+              
+              <div className="flex items-center text-xs text-green-700 bg-green-50 p-1.5 rounded-md">
+                <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-600" />
+                <span>AI-powered search using natural language</span>
               </div>
-              <div className="border-t pt-2 mt-2">
-                <div className="text-xs text-muted-foreground mb-1">Recent searches:</div>
+              
+              <div className="flex flex-wrap gap-2 mt-2">
+                <Badge variant="outline" className="text-xs cursor-pointer bg-green-50 text-green-700 border-green-200 hover:bg-green-100">FDA Guidelines</Badge>
+                <Badge variant="outline" className="text-xs cursor-pointer bg-green-50 text-green-700 border-green-200 hover:bg-green-100">ICH Standards</Badge>
+                <Badge variant="outline" className="text-xs cursor-pointer bg-green-50 text-green-700 border-green-200 hover:bg-green-100">eCTD Requirements</Badge>
+                <Badge variant="outline" className="text-xs cursor-pointer bg-green-50 text-green-700 border-green-200 hover:bg-green-100">EMA</Badge>
+              </div>
+              
+              <div className="border-t border-green-100 pt-2 mt-2">
+                <div className="text-xs font-medium text-green-700 mb-1 flex items-center">
+                  <History className="h-3.5 w-3.5 mr-1" />
+                  Recent searches:
+                </div>
                 <div className="space-y-1">
-                  <div className="text-xs text-blue-600 cursor-pointer">Module 2.5 clinical overview requirements</div>
-                  <div className="text-xs text-blue-600 cursor-pointer">FDA guidance investigational drugs</div>
+                  <div className="text-xs text-green-600 cursor-pointer hover:underline">Module 2.5 clinical overview requirements</div>
+                  <div className="text-xs text-green-600 cursor-pointer hover:underline">FDA guidance investigational drugs</div>
                 </div>
               </div>
+              
+              <div className="border rounded-md p-2 bg-green-50 mt-2">
+                <div className="text-xs font-medium mb-1">Suggested search topics:</div>
+                <div className="text-xs text-gray-600">Common Module 1-5 guidelines, ICH M4 structure, FDA/EMA submission requirements</div>
+              </div>
             </div>
-            <Button className="w-full">Advanced Search</Button>
+            
+            <Button className="w-full bg-green-600 hover:bg-green-700">
+              <Search className="h-4 w-4 mr-2" />
+              Advanced Regulatory Search
+            </Button>
           </CardContent>
         </Card>
 
-        {/* Vault Document Management Card */}
-        <Card className="lg:col-span-2 row-span-2">
-          <CardHeader className="pb-2">
+        {/* Vault Document Management Card - Enhanced */}
+        <Card className="lg:col-span-2 row-span-2 border-purple-200">
+          <CardHeader className="pb-2 bg-gradient-to-r from-purple-50 to-white">
             <CardTitle className="flex items-center text-lg">
-              <Database className="h-5 w-5 mr-2 text-blue-600" />
+              <Database className="h-5 w-5 mr-2 text-purple-600" />
               Enterprise Vault Document Management
             </CardTitle>
             <CardDescription>
-              Enterprise-grade document repository with version control
+              Secure document repository with version control and compliance features
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
+              <div className="flex flex-wrap gap-2 mb-3">
+                <Button size="sm" variant="outline" className="border-purple-200 text-purple-700">
+                  <Upload className="h-3.5 w-3.5 mr-1.5" />
+                  Import
+                </Button>
+                <Button size="sm" variant="outline" className="border-purple-200 text-purple-700">
+                  <Download className="h-3.5 w-3.5 mr-1.5" />
+                  Export
+                </Button>
+                <Button size="sm" variant="outline" className="border-purple-200 text-purple-700">
+                  <History className="h-3.5 w-3.5 mr-1.5" />
+                  Version History
+                </Button>
+                <Button size="sm" variant="outline" className="border-purple-200 text-purple-700">
+                  <Share2 className="h-3.5 w-3.5 mr-1.5" />
+                  Share
+                </Button>
+                <Badge variant="outline" className="bg-purple-50 border-purple-200 text-purple-700">
+                  Supabase Vault
+                </Badge>
+              </div>
+            
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center">
-                  <FileText className="h-5 w-5 mr-2 text-blue-500" />
+                  <FileText className="h-5 w-5 mr-2 text-purple-600" />
                   <span className="font-medium">eCTD Document Tree</span>
                 </div>
                 <Button 
                   size="sm" 
-                  variant="ghost"
+                  variant="outline"
                   onClick={() => setIsTreeOpen(!isTreeOpen)}
-                  className="flex items-center"
+                  className="flex items-center border-purple-200 text-purple-700"
                 >
                   <span>{isTreeOpen ? "Close full eCTD tree" : "Open full eCTD tree"}</span>
                   <ChevronDown className={`h-4 w-4 ml-1 ${isTreeOpen ? "transform rotate-180" : ""}`} />
@@ -292,13 +363,13 @@ export default function CoAuthor() {
               </div>
 
               {isTreeOpen ? (
-                <div className="space-y-4 max-h-96 overflow-y-auto border rounded-md p-3 bg-gray-50 dark:bg-gray-900">
+                <div className="space-y-4 max-h-96 overflow-y-auto border border-purple-200 rounded-md p-3 bg-white shadow-sm">
                   {documentTree.map(module => (
                     <div key={module.id} className="space-y-2">
-                      <div className="flex items-center font-medium">
-                        <FolderOpen className="h-4 w-4 mr-2 text-blue-500" />
-                        <span>{module.name}</span>
-                        <Badge variant="outline" className="ml-2 text-xs">
+                      <div className="flex items-center font-medium bg-purple-50 p-1.5 rounded-md">
+                        <FolderOpen className="h-4 w-4 mr-2 text-purple-500" />
+                        <span className="text-purple-800">{module.name}</span>
+                        <Badge variant="outline" className="ml-2 text-xs bg-purple-100 border-purple-200 text-purple-700">
                           {module.status}
                         </Badge>
                       </div>
