@@ -30,7 +30,7 @@ import {
   getDocumentVersionHistory, 
   registerCollaborationStatus 
 } from '../services/msOfficeVaultBridge';
-import { isAuthenticated, login } from '../services/microsoftAuthService';
+import { isAuthenticated, login, initializeAuth } from '../services/microsoftAuthService';
 
 /**
  * Microsoft Word 365 Embedding Component
@@ -68,41 +68,62 @@ const Office365WordEmbed = ({
   
   const containerRef = useRef(null);
   const { toast } = useToast();
+  
+  // Handle Microsoft login
+  const handleLogin = async () => {
+    try {
+      setIsLoading(true);
+      console.log('Starting Microsoft login process...');
+      await login(); // This will redirect to Microsoft login
+    } catch (err) {
+      console.error('Error during login:', err);
+      setError('Failed to authenticate with Microsoft: ' + (err.message || 'Unknown error'));
+      setIsLoading(false);
+    }
+  };
 
-  // Initialize Office JS API
+  // Initialize Microsoft auth and Office JS API
   useEffect(() => {
-    const loadOfficeJS = async () => {
+    const initializeServices = async () => {
       try {
         setIsLoading(true);
+        setError(null);
+        
+        // Initialize Microsoft auth
+        console.log('Initializing Microsoft authentication...');
+        const authInitialized = await initializeAuth();
         
         // Check if user is authenticated with Microsoft
-        if (!isAuthenticated()) {
+        if (!authInitialized || !isAuthenticated()) {
           console.log('User not authenticated with Microsoft, prompting login...');
           setIsAuthenticating(true);
+          setIsLoading(false);
           return; // Wait for user to authenticate
         }
         
         console.log('User authenticated with Microsoft, initializing Office JS...');
         
         // Initialize Office JS
-        const initialized = await initializeOfficeJS();
-        console.log('Office JS initialization result:', initialized);
-        setIsOfficeJSReady(initialized);
+        const jsInitialized = await initializeOfficeJS();
+        console.log('Office JS initialization result:', jsInitialized);
         
-        if (!initialized) {
-          setError('Failed to initialize Microsoft Office API');
+        if (!jsInitialized) {
+          setError('Failed to initialize Microsoft Office API. Please check your Microsoft 365 license.');
+          setIsLoading(false);
           return;
         }
         
+        setIsOfficeJSReady(true);
         setIsLoading(false);
       } catch (err) {
-        console.error('Error initializing Office JS:', err);
+        console.error('Error initializing Microsoft services:', err);
         setError('Failed to initialize Microsoft Office integration: ' + (err.message || 'Unknown error'));
         setIsLoading(false);
+        setIsAuthenticating(false);
       }
     };
     
-    loadOfficeJS();
+    initializeServices();
   }, []);
   
   // Register cleanup on unmount

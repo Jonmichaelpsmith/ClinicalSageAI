@@ -228,7 +228,7 @@ export default function registerRoutes(app: Express): void {
   // Register AI Document Intelligence routes
   app.use('/api/ai', aiRouter);
   
-  // Register Microsoft Office integration routes
+  // Register Microsoft Office Integration routes
   app.use('/api/microsoft-office', microsoftOfficeRoutes);
   
   // Create a temporary CER Validation router
