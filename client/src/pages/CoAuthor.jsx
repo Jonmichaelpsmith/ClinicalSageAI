@@ -23,6 +23,9 @@ import {
 } from 'lucide-react';
 
 export default function CoAuthor() {
+  // Component state
+  const [isTreeOpen, setIsTreeOpen] = useState(false);
+  
   // Mock data for modules and documents
   const moduleProgress = [
     { id: 1, name: 'Module 1', description: 'Administrative', percent: 80 },
