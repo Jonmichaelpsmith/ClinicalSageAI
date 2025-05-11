@@ -34,6 +34,84 @@ export async function initializeWord(containerElement) {
 }
 
 /**
+ * Initialize Office JS API
+ * This function is needed by Office365WordEmbed.jsx
+ */
+export async function initializeOfficeJS() {
+  try {
+    await loadOfficeJS();
+    return true;
+  } catch (error) {
+    console.error('Failed to initialize Office JS:', error);
+    return false;
+  }
+}
+
+/**
+ * Save document content
+ * This function is needed by Office365WordEmbed.jsx
+ */
+export async function saveDocumentContent(documentId, content) {
+  try {
+    console.log(`Saving content for document ${documentId}`);
+    // This would be implemented to save the document content
+    return true;
+  } catch (error) {
+    console.error('Failed to save document content:', error);
+    return false;
+  }
+}
+
+/**
+ * Insert template
+ * This function is needed by Office365WordEmbed.jsx
+ */
+export async function insertTemplate(wordInstance, templateId) {
+  try {
+    return await applyTemplate(wordInstance, templateId);
+  } catch (error) {
+    console.error('Failed to insert template:', error);
+    return false;
+  }
+}
+
+/**
+ * Insert AI content
+ * This function is needed by Office365WordEmbed.jsx
+ */
+export async function insertAIContent(wordInstance, content) {
+  try {
+    return await insertContent(wordInstance, content);
+  } catch (error) {
+    console.error('Failed to insert AI content:', error);
+    return false;
+  }
+}
+
+/**
+ * Format document headings
+ * This function is needed by Office365WordEmbed.jsx
+ */
+export async function formatDocumentHeadings(wordInstance) {
+  try {
+    const document = wordInstance.documents.active;
+    
+    // Apply heading styles
+    const headings = await document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    for (let i = 0; i < headings.length; i++) {
+      const heading = headings[i];
+      const level = parseInt(heading.tagName.substring(1), 10);
+      await heading.styleAs(`Heading${level}`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to format document headings:', error);
+    return false;
+  }
+}
+
+/**
  * Load Office JS API dynamically
  * 
  * @returns {Promise<void>}
