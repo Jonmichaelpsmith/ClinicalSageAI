@@ -20,9 +20,20 @@ const networkState = {
 };
 
 /**
- * Initialize network resilience features
+ * Initialize basic network resilience features
  */
 export function initNetworkResilience() {
+  // Listen for online/offline events
+  window.addEventListener('online', handleOnline);
+  window.addEventListener('offline', handleOffline);
+  
+  // Start retry queue processor
+}
+
+/**
+ * Initialize advanced network resilience features with extended options
+ */
+export function initAdvancedNetworkResilience(options = {}) {
   // Listen for online/offline events
   window.addEventListener('online', handleOnline);
   window.addEventListener('offline', handleOffline);
