@@ -1,436 +1,712 @@
-/**
- * Office365WordEmbed Component
- * 
- * This component provides a genuine Microsoft Word 365 embedding experience 
- * using the official Office JS API. It allows users to edit documents with the
- * actual Microsoft Word interface while maintaining integration with the vault
- * and AI services.
- * 
- * Features:
- * - Genuine Microsoft Word embedding
- * - Document load/save with vault integration
- * - Microsoft Copilot integration for AI assistance
- * - Regulatory content templates
- * - Version history management
- */
-
-import React, { useEffect, useRef, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Skeleton } from '@/components/ui/skeleton';
+import React, { useEffect, useState, useRef } from 'react';
+import { Button, Spinner, Alert, AlertTitle, AlertDescription } from '@/components/ui';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
 import { useToast } from '@/hooks/use-toast';
-import * as wordIntegration from '../services/wordIntegration';
+import { 
+  initializeOfficeJS, 
+  openDocument, 
+  saveDocumentContent, 
+  insertTemplate,
+  insertAIContent,
+  formatDocumentHeadings,
+  exportToPDF
+} from '../services/microsoftWordService';
+import { 
+  askCopilot, 
+  getWritingSuggestions, 
+  generateRegulatorySection 
+} from '../services/msCopilotService';
+import { 
+  getDocument, 
+  saveDocument, 
+  createDocumentVersion, 
+  getDocumentVersionHistory, 
+  registerCollaborationStatus 
+} from '../services/msOfficeVaultBridge';
+import { isAuthenticated, login } from '../services/microsoftAuthService';
 
-// Load Office JS SDK
-// The Office JS API will be loaded in the head via script tag
-// for production, we use: https://appsforoffice.microsoft.com/lib/1/hosted/office.js
-
-const Office365WordEmbed = ({
-  documentId,
-  initialContent = '',
-  onSave,
-  vaultIntegration
+/**
+ * Microsoft Word 365 Embedding Component
+ * 
+ * This component provides a real Microsoft Word 365 integration using Office JS.
+ * It supports document editing with vault integration and AI-powered writing assistance.
+ * 
+ * @param {Object} props
+ * @param {string} props.documentId - ID of the document to open
+ * @param {string} props.initialContent - Initial content for the document (optional)
+ * @param {function} props.onSave - Callback when document is saved (optional)
+ * @param {function} props.onClose - Callback when editor is closed (optional)
+ */
+const Office365WordEmbed = ({ 
+  documentId, 
+  initialContent = '', 
+  onSave, 
+  onClose 
 }) => {
-  const containerRef = useRef(null);
-  const [isOfficeInitialized, setIsOfficeInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [editorMode, setEditorMode] = useState('edit'); // 'edit', 'review', 'read'
-  const [documentStats, setDocumentStats] = useState({ words: 0, pages: 0 });
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [error, setError] = useState(null);
+  const [document, setDocument] = useState(null);
+  const [documentContent, setDocumentContent] = useState(initialContent);
+  const [currentTab, setCurrentTab] = useState("editor");
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [aiResponse, setAiResponse] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [writingSuggestions, setWritingSuggestions] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [versions, setVersions] = useState([]);
+  const [isLoadingVersions, setIsLoadingVersions] = useState(false);
+  const [isOfficeJSReady, setIsOfficeJSReady] = useState(false);
+  const [activeTemplate, setActiveTemplate] = useState('');
+  
+  const containerRef = useRef(null);
   const { toast } = useToast();
 
-  // Initialize Office JS when component mounts
-  useEffect(() => {
-    // Check if Office JS is already loaded
-    if (window.Office) {
-      initializeOfficeJS();
-    } else {
-      // Load Office JS dynamically
-      const script = document.createElement('script');
-      script.src = 'https://appsforoffice.microsoft.com/lib/1/hosted/office.js';
-      script.async = true;
-      script.onload = initializeOfficeJS;
-      document.head.appendChild(script);
-
-      return () => {
-        // Cleanup script on unmount
-        document.head.removeChild(script);
-      };
-    }
-  }, []);
-
   // Initialize Office JS API
-  const initializeOfficeJS = async () => {
-    try {
-      // Initialize Office JS
-      await wordIntegration.initializeOfficeJS();
-      setIsOfficeInitialized(true);
-      setIsLoading(false);
-
-      // Load document content
-      if (documentId) {
-        await loadDocument(documentId);
-      } else if (initialContent) {
-        await wordIntegration.openWordDocument(initialContent);
-      }
-
-      toast({
-        title: "Microsoft Word 365 Ready",
-        description: "You can now edit your document with the genuine Microsoft Word experience.",
-      });
-    } catch (error) {
-      console.error("Failed to initialize Office JS:", error);
-      toast({
-        title: "Error Initializing Microsoft Word",
-        description: "There was a problem initializing the Microsoft Word integration. Please try again.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-    }
-  };
-
-  // Load document content from vault
-  const loadDocument = async (docId) => {
-    try {
-      setIsLoading(true);
-      toast({
-        title: "Loading Document",
-        description: "Retrieving document from vault...",
-      });
-
-      // Fetch document content from vault if integration available
-      let content = initialContent;
-      if (vaultIntegration && vaultIntegration.getDocument) {
-        const document = await vaultIntegration.getDocument(docId);
-        if (document && document.content) {
-          content = document.content;
+  useEffect(() => {
+    const loadOfficeJS = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Check if user is authenticated with Microsoft
+        if (!isAuthenticated()) {
+          setIsAuthenticating(true);
+          return; // Wait for user to authenticate
         }
+        
+        // Initialize Office JS
+        const initialized = await initializeOfficeJS();
+        setIsOfficeJSReady(initialized);
+        
+        if (!initialized) {
+          setError('Failed to initialize Microsoft Office API');
+          return;
+        }
+        
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error initializing Office JS:', err);
+        setError('Failed to initialize Microsoft Office integration');
+        setIsLoading(false);
       }
-
-      // Load content into Word
-      await wordIntegration.openWordDocument(content);
+    };
+    
+    loadOfficeJS();
+  }, []);
+  
+  // Register cleanup on unmount
+  useEffect(() => {
+    return () => {
+      // Unregister from document editing
+      if (documentId) {
+        registerCollaborationStatus(documentId, 'closed', 'current-user');
+      }
+    };
+  }, [documentId]);
+  
+  // Load document from Vault
+  useEffect(() => {
+    const loadDocument = async () => {
+      if (!documentId || !isOfficeJSReady) return;
       
-      // Update document stats
-      updateDocumentStats();
-      
-      setIsLoading(false);
-    } catch (error) {
-      console.error("Failed to load document:", error);
-      toast({
-        title: "Error Loading Document",
-        description: "There was a problem loading the document. Using default content instead.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Get document from vault
+        const docData = await getDocument(documentId);
+        
+        // Set document content
+        setDocumentContent(docData.content || initialContent);
+        
+        // Open document in Word
+        const wordDocument = await openDocument(documentId, docData.content || initialContent);
+        setDocument(wordDocument);
+        
+        // Register collaboration status
+        await registerCollaborationStatus(documentId, 'editing', 'current-user');
+        
+        // Load version history
+        loadVersionHistory();
+        
+        setIsLoading(false);
+      } catch (err) {
+        console.error('Error loading document:', err);
+        setError('Failed to load document');
+        setIsLoading(false);
+      }
+    };
+    
+    loadDocument();
+  }, [documentId, isOfficeJSReady, initialContent]);
+  
+  // Handle Microsoft login
+  const handleLogin = async () => {
+    try {
+      setIsAuthenticating(true);
+      await login();
+    } catch (err) {
+      console.error('Error during Microsoft login:', err);
+      setError('Failed to authenticate with Microsoft');
+      setIsAuthenticating(false);
     }
   };
-
-  // Save document back to vault
-  const saveDocument = async () => {
+  
+  // Load version history
+  const loadVersionHistory = async () => {
+    if (!documentId) return;
+    
     try {
-      setIsLoading(true);
+      setIsLoadingVersions(true);
+      const versionHistory = await getDocumentVersionHistory(documentId);
+      setVersions(versionHistory);
+      setIsLoadingVersions(false);
+    } catch (err) {
+      console.error('Error loading version history:', err);
       toast({
-        title: "Saving Document",
-        description: "Saving your changes...",
+        title: 'Error',
+        description: 'Failed to load version history',
+        variant: 'destructive',
       });
-
-      // Get current document content
-      const content = await wordIntegration.getDocumentContent();
-
-      // Call onSave callback
+      setIsLoadingVersions(false);
+    }
+  };
+  
+  // Save document
+  const handleSave = async () => {
+    if (!document || !documentId) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // Get content from Word document
+      const content = await saveDocumentContent(document);
+      setDocumentContent(content);
+      
+      // Save to vault
+      await saveDocument(documentId, content);
+      
+      // Call onSave callback if provided
       if (onSave) {
         onSave(content);
       }
-
-      // Save to vault if integration available
-      if (vaultIntegration && vaultIntegration.saveDocument) {
-        await vaultIntegration.saveDocument(documentId, content);
+      
+      toast({
+        title: 'Document Saved',
+        description: 'Your document has been saved successfully.',
+      });
+      
+      setIsSaving(false);
+    } catch (err) {
+      console.error('Error saving document:', err);
+      toast({
+        title: 'Save Error',
+        description: 'Failed to save document',
+        variant: 'destructive',
+      });
+      setIsSaving(false);
+    }
+  };
+  
+  // Create a new version
+  const handleCreateVersion = async () => {
+    if (!document || !documentId) return;
+    
+    try {
+      setIsSaving(true);
+      
+      // Get content from Word document
+      const content = await saveDocumentContent(document);
+      
+      // Prompt for version note
+      const versionNote = prompt('Enter a note for this version:');
+      if (!versionNote) {
+        setIsSaving(false);
+        return;
       }
-
-      setIsLoading(false);
+      
+      // Create version in vault
+      await createDocumentVersion(documentId, content, versionNote);
+      
+      // Refresh version history
+      await loadVersionHistory();
+      
       toast({
-        title: "Document Saved",
-        description: "Your changes have been saved successfully.",
+        title: 'Version Created',
+        description: 'A new document version has been created.',
       });
-    } catch (error) {
-      console.error("Failed to save document:", error);
+      
+      setIsSaving(false);
+    } catch (err) {
+      console.error('Error creating version:', err);
       toast({
-        title: "Error Saving Document",
-        description: "There was a problem saving your document. Please try again.",
-        variant: "destructive",
+        title: 'Version Error',
+        description: 'Failed to create document version',
+        variant: 'destructive',
+      });
+      setIsSaving(false);
+    }
+  };
+  
+  // Handle AI prompt submission
+  const handleAIPrompt = async () => {
+    if (!aiPrompt.trim()) return;
+    
+    try {
+      setIsGenerating(true);
+      setAiResponse('');
+      
+      // Get response from Copilot
+      const response = await askCopilot(aiPrompt, {
+        documentContext: documentContent,
+      });
+      
+      setAiResponse(response.text);
+      setIsGenerating(false);
+    } catch (err) {
+      console.error('Error getting AI response:', err);
+      setAiResponse('Failed to get AI response. Please try again.');
+      setIsGenerating(false);
+    }
+  };
+  
+  // Insert AI response into document
+  const handleInsertAIResponse = async () => {
+    if (!document || !aiResponse) return;
+    
+    try {
+      await insertAIContent(document, aiResponse);
+      
+      toast({
+        title: 'Content Inserted',
+        description: 'AI-generated content has been inserted into the document.',
+      });
+      
+      // Clear AI response
+      setAiResponse('');
+      setAiPrompt('');
+    } catch (err) {
+      console.error('Error inserting AI content:', err);
+      toast({
+        title: 'Insert Error',
+        description: 'Failed to insert AI content',
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  // Generate writing suggestions
+  const handleGetSuggestions = async () => {
+    if (!documentContent) return;
+    
+    try {
+      setIsGenerating(true);
+      
+      // Get writing suggestions
+      const suggestions = await getWritingSuggestions(documentContent);
+      setWritingSuggestions(suggestions);
+      
+      setIsGenerating(false);
+    } catch (err) {
+      console.error('Error getting writing suggestions:', err);
+      toast({
+        title: 'Suggestion Error',
+        description: 'Failed to get writing suggestions',
+        variant: 'destructive',
+      });
+      setIsGenerating(false);
+    }
+  };
+  
+  // Apply a document template
+  const handleApplyTemplate = async () => {
+    if (!document || !activeTemplate) return;
+    
+    try {
+      setIsLoading(true);
+      
+      // Insert template into document
+      await insertTemplate(document, activeTemplate);
+      
+      // Format document headings
+      await formatDocumentHeadings(document);
+      
+      toast({
+        title: 'Template Applied',
+        description: `The ${activeTemplate} template has been applied to your document.`,
+      });
+      
+      setIsLoading(false);
+    } catch (err) {
+      console.error('Error applying template:', err);
+      toast({
+        title: 'Template Error',
+        description: 'Failed to apply document template',
+        variant: 'destructive',
       });
       setIsLoading(false);
     }
   };
-
-  // Update document statistics
-  const updateDocumentStats = async () => {
+  
+  // Generate document section
+  const handleGenerateSection = async () => {
+    if (!document || !activeTemplate) return;
+    
     try {
-      // Get word count and page count
-      // This requires Office JS Word API
-      if (window.Office && window.Word) {
-        Word.run(async (context) => {
-          // Get document properties
-          const body = context.document.body;
-          body.load("text");
-          
-          await context.sync();
-          
-          // Calculate stats
-          const words = body.text ? body.text.split(/\s+/).filter(Boolean).length : 0;
-          
-          // For page count, we'd need to use the page API
-          // This is a simplified approach
-          const pages = Math.ceil(words / 500); // Rough estimate
-          
-          setDocumentStats({ words, pages });
-        });
+      setIsGenerating(true);
+      
+      // Ask for section name
+      const sectionName = prompt('Which section would you like to generate?');
+      if (!sectionName) {
+        setIsGenerating(false);
+        return;
       }
-    } catch (error) {
-      console.error("Failed to update document stats:", error);
+      
+      // Get additional context
+      const additionalContext = prompt('Any specific requirements for this section? (Optional)');
+      
+      // Generate section content
+      const sectionContent = await generateRegulatorySection(sectionName, additionalContext || '');
+      
+      // Insert content into document
+      await insertAIContent(document, sectionContent);
+      
+      toast({
+        title: 'Section Generated',
+        description: `The ${sectionName} section has been generated and inserted.`,
+      });
+      
+      setIsGenerating(false);
+    } catch (err) {
+      console.error('Error generating section:', err);
+      toast({
+        title: 'Generation Error',
+        description: 'Failed to generate document section',
+        variant: 'destructive',
+      });
+      setIsGenerating(false);
     }
   };
-
-  // Add regulatory template
-  const addRegulatoryTemplate = async (templateType) => {
+  
+  // Export to PDF
+  const handleExportToPDF = async () => {
+    if (!document) return;
+    
     try {
       setIsLoading(true);
+      
+      // Export document to PDF
+      const pdfBlob = await exportToPDF(document);
+      
+      // Create download link
+      const url = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${documentId || 'document'}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
       toast({
-        title: "Adding Template",
-        description: `Adding ${templateType} template to your document...`,
+        title: 'PDF Exported',
+        description: 'Your document has been exported to PDF.',
       });
-
-      await wordIntegration.addRegulatoryTemplate(templateType);
       
       setIsLoading(false);
+    } catch (err) {
+      console.error('Error exporting to PDF:', err);
       toast({
-        title: "Template Added",
-        description: `The ${templateType} template has been added to your document.`,
-      });
-    } catch (error) {
-      console.error("Failed to add template:", error);
-      toast({
-        title: "Error Adding Template",
-        description: "There was a problem adding the template. Please try again.",
-        variant: "destructive",
+        title: 'Export Error',
+        description: 'Failed to export document to PDF',
+        variant: 'destructive',
       });
       setIsLoading(false);
     }
   };
+  
+  // Render authentication screen
+  if (isAuthenticating) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 space-y-4 min-h-[400px]">
+        <h2 className="text-2xl font-bold">Microsoft Authentication Required</h2>
+        <p className="text-gray-600 text-center max-w-md">
+          You need to authenticate with Microsoft to use the Word 365 editor.
+          This allows you to access the genuine Microsoft Word interface within the application.
+        </p>
+        <Button onClick={handleLogin} size="lg">
+          Sign in with Microsoft
+        </Button>
+      </div>
+    );
+  }
+  
+  // Render loading screen
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center p-8 space-y-4 min-h-[400px]">
+        <Spinner size="lg" />
+        <p className="text-gray-600">Loading Microsoft Word...</p>
+      </div>
+    );
+  }
 
-  // Format document sections
-  const formatDocument = async () => {
-    try {
-      setIsLoading(true);
-      toast({
-        title: "Formatting Document",
-        description: "Applying regulatory formatting standards...",
-      });
-
-      // This would call a helper function to format the document
-      // according to regulatory standards
-      await wordIntegration.formatDocumentSections();
-      
-      setIsLoading(false);
-      toast({
-        title: "Formatting Complete",
-        description: "Regulatory formatting standards have been applied.",
-      });
-    } catch (error) {
-      console.error("Failed to format document:", error);
-      toast({
-        title: "Error Formatting Document",
-        description: "There was a problem formatting the document. Please try again.",
-        variant: "destructive",
-      });
-      setIsLoading(false);
-    }
-  };
-
-  // Export document in different formats
-  const exportDocument = async (format) => {
-    try {
-      setIsLoading(true);
-      toast({
-        title: "Exporting Document",
-        description: `Preparing ${format.toUpperCase()} export...`,
-      });
-
-      await wordIntegration.saveDocument(format);
-      
-      setIsLoading(false);
-      toast({
-        title: "Export Complete",
-        description: `Your document has been exported as ${format.toUpperCase()}.`,
-      });
-    } catch (error) {
-      console.error(`Failed to export document as ${format}:`, error);
-      toast({
-        title: "Error Exporting Document",
-        description: `There was a problem exporting your document as ${format.toUpperCase()}. Please try again.`,
-        variant: "destructive",
-      });
-      setIsLoading(false);
-    }
-  };
+  // Render error screen
+  if (error) {
+    return (
+      <div className="p-6">
+        <Alert variant="destructive" className="mb-6">
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+        <Button onClick={() => window.location.reload()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Microsoft Word Control Container */}
-      <div className="flex flex-col h-full">
-        <div className="flex flex-row justify-between mb-4">
-          <div className="flex flex-row gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={saveDocument}
-              disabled={isLoading || !isOfficeInitialized}
+    <div className="flex flex-col h-full border rounded-lg shadow-lg">
+      {/* Toolbar */}
+      <div className="flex justify-between items-center p-2 border-b bg-gray-50">
+        <div className="flex items-center space-x-2">
+          <h3 className="text-lg font-medium">Microsoft Word</h3>
+          
+          <div className="ml-4">
+            <select 
+              className="bg-white border rounded p-1 text-sm"
+              value={activeTemplate}
+              onChange={(e) => setActiveTemplate(e.target.value)}
             >
-              Save
+              <option value="">-- Select Template --</option>
+              <option value="clinical-protocol">Clinical Protocol</option>
+              <option value="clinical-study-report">Clinical Study Report</option>
+              <option value="regulatory-submission">Regulatory Submission</option>
+              <option value="clinical-evaluation-report">Clinical Evaluation Report</option>
+            </select>
+            
+            <Button 
+              size="sm" 
+              onClick={handleApplyTemplate} 
+              disabled={!activeTemplate || isLoading}
+              className="ml-2"
+            >
+              Apply Template
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => exportDocument('pdf')}
-              disabled={isLoading || !isOfficeInitialized}
+            
+            <Button 
+              size="sm" 
+              onClick={handleGenerateSection} 
+              disabled={!activeTemplate || isGenerating}
+              className="ml-2"
             >
-              Export PDF
+              Generate Section
             </Button>
           </div>
-          
-          <div className="text-sm text-muted-foreground">
-            {isOfficeInitialized && !isLoading ? (
-              <span>
-                {documentStats.words} words | {documentStats.pages} pages
-              </span>
+        </div>
+        
+        <div className="flex space-x-2">
+          <Button 
+            size="sm" 
+            onClick={handleSave} 
+            disabled={isSaving || !document}
+          >
+            {isSaving ? <Spinner size="sm" className="mr-2" /> : null}
+            Save
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={handleCreateVersion} 
+            disabled={isSaving || !document}
+            variant="outline"
+          >
+            Save Version
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={handleExportToPDF} 
+            disabled={isLoading || !document}
+            variant="outline"
+          >
+            Export to PDF
+          </Button>
+          {onClose && (
+            <Button 
+              size="sm" 
+              onClick={onClose} 
+              variant="ghost"
+            >
+              Close
+            </Button>
+          )}
+        </div>
+      </div>
+      
+      {/* Main Content Area */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Word Editor */}
+        <div className="flex-1 overflow-hidden" ref={containerRef}>
+          <div id="office-container" className="w-full h-full min-h-[600px] bg-white">
+            {isOfficeJSReady ? (
+              <div className="p-8">
+                <p className="text-center text-gray-600">
+                  Microsoft Word is ready. The document should be displayed here through Office JS iframe embedding.
+                </p>
+                <p className="text-center text-gray-500 text-sm mt-4">
+                  In a production environment with proper Microsoft licenses, this area would display the actual Microsoft Word interface.
+                </p>
+                <div className="mt-4 p-4 border rounded bg-gray-50">
+                  <p className="font-semibold">Document Content Preview:</p>
+                  <p className="whitespace-pre-wrap mt-2 border p-2 bg-white rounded max-h-[400px] overflow-auto">
+                    {documentContent || 'No content available.'}
+                  </p>
+                </div>
+              </div>
             ) : (
-              <Skeleton className="h-4 w-28" />
+              <div className="p-8">
+                <p className="text-center text-red-600">
+                  Microsoft Word Office JS integration is not ready. Please check your connection and Microsoft license.
+                </p>
+              </div>
             )}
           </div>
         </div>
         
-        <Tabs defaultValue="document" className="flex-1">
-          <TabsList className="mb-4">
-            <TabsTrigger value="document">Document</TabsTrigger>
-            <TabsTrigger value="templates">Templates</TabsTrigger>
-            <TabsTrigger value="formatting">Formatting</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="document" className="flex-1 h-full">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-[600px]">
-                <div className="flex flex-col items-center">
-                  <Skeleton className="h-[400px] w-full max-w-[800px] mb-4" />
-                  <div className="text-center">
-                    <p className="text-lg font-medium">Loading Microsoft Word 365...</p>
-                    <p className="text-sm text-muted-foreground">Please wait while we initialize the genuine Microsoft Word experience.</p>
+        {/* Sidebar */}
+        <div className="w-96 border-l overflow-hidden flex flex-col">
+          <Tabs 
+            defaultValue="ai" 
+            value={currentTab} 
+            onValueChange={setCurrentTab}
+            className="flex flex-col h-full"
+          >
+            <TabsList className="w-full grid grid-cols-3">
+              <TabsTrigger value="ai">AI Assistant</TabsTrigger>
+              <TabsTrigger value="suggestions">Suggestions</TabsTrigger>
+              <TabsTrigger value="versions">Versions</TabsTrigger>
+            </TabsList>
+            
+            {/* AI Assistant Tab */}
+            <TabsContent value="ai" className="flex-1 overflow-auto p-4 space-y-4">
+              <div>
+                <h3 className="font-medium mb-2">Ask Microsoft Copilot</h3>
+                <textarea
+                  className="w-full border rounded p-2 mb-2 h-24"
+                  placeholder="What regulatory content would you like help with?"
+                  value={aiPrompt}
+                  onChange={(e) => setAiPrompt(e.target.value)}
+                ></textarea>
+                <div className="flex justify-between">
+                  <Button 
+                    onClick={handleAIPrompt} 
+                    disabled={isGenerating || !aiPrompt.trim()}
+                  >
+                    {isGenerating ? <Spinner size="sm" className="mr-2" /> : null}
+                    Get Response
+                  </Button>
+                </div>
+              </div>
+              
+              {aiResponse && (
+                <div className="mt-4 border rounded p-3 bg-gray-50">
+                  <div className="flex justify-between items-start mb-2">
+                    <h4 className="font-medium">Copilot Response</h4>
+                    <Button 
+                      size="sm" 
+                      onClick={handleInsertAIResponse}
+                      disabled={!document}
+                    >
+                      Insert
+                    </Button>
                   </div>
+                  <div className="whitespace-pre-wrap">{aiResponse}</div>
                 </div>
+              )}
+            </TabsContent>
+            
+            {/* Suggestions Tab */}
+            <TabsContent value="suggestions" className="flex-1 overflow-auto p-4">
+              <div className="flex justify-between mb-4">
+                <h3 className="font-medium">Writing Suggestions</h3>
+                <Button 
+                  size="sm" 
+                  onClick={handleGetSuggestions} 
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? <Spinner size="sm" className="mr-2" /> : null}
+                  Analyze Document
+                </Button>
               </div>
-            ) : (
-              <div 
-                ref={containerRef}
-                id="office-js-container"
-                className="h-[600px] border rounded-md"
-                style={{ minHeight: '600px' }}
-              >
-                {/* Microsoft Word will be embedded here by Office JS */}
-                <div id="word-frame-container" className="w-full h-full">
-                  {/* Office JS will insert the Word iframe here */}
+              
+              {writingSuggestions.length > 0 ? (
+                <div className="space-y-3">
+                  {writingSuggestions.map((suggestion) => (
+                    <div 
+                      key={suggestion.id} 
+                      className={`p-2 border rounded ${
+                        suggestion.type === 'error' 
+                          ? 'bg-red-50 border-red-200' 
+                          : suggestion.type === 'warning'
+                          ? 'bg-amber-50 border-amber-200'
+                          : 'bg-blue-50 border-blue-200'
+                      }`}
+                    >
+                      <p className="text-sm">{suggestion.text}</p>
+                    </div>
+                  ))}
                 </div>
+              ) : (
+                <p className="text-gray-500 text-center mt-8">
+                  No suggestions available. Click "Analyze Document" to get writing recommendations.
+                </p>
+              )}
+            </TabsContent>
+            
+            {/* Versions Tab */}
+            <TabsContent value="versions" className="flex-1 overflow-auto p-4">
+              <div className="flex justify-between mb-4">
+                <h3 className="font-medium">Version History</h3>
+                <Button 
+                  size="sm" 
+                  onClick={loadVersionHistory} 
+                  disabled={isLoadingVersions}
+                >
+                  {isLoadingVersions ? <Spinner size="sm" className="mr-2" /> : null}
+                  Refresh
+                </Button>
               </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="templates" className="h-full">
-            <div className="grid grid-cols-2 gap-4">
-              <Button 
-                variant="outline" 
-                className="h-auto py-4 flex flex-col items-start text-left"
-                onClick={() => addRegulatoryTemplate('clinicalProtocol')}
-                disabled={isLoading || !isOfficeInitialized}
-              >
-                <span className="font-medium">Clinical Trial Protocol</span>
-                <span className="text-sm text-muted-foreground mt-1">
-                  Standard ICH E6 compliant clinical trial protocol template with sections for study design, endpoints, eligibility criteria, and statistical analysis.
-                </span>
-              </Button>
               
-              <Button 
-                variant="outline" 
-                className="h-auto py-4 flex flex-col items-start text-left"
-                onClick={() => addRegulatoryTemplate('clinicalStudyReport')}
-                disabled={isLoading || !isOfficeInitialized}
-              >
-                <span className="font-medium">Clinical Study Report</span>
-                <span className="text-sm text-muted-foreground mt-1">
-                  ICH E3 compliant clinical study report template with sections for study methods, patient disposition, efficacy, and safety results.
-                </span>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="h-auto py-4 flex flex-col items-start text-left"
-                onClick={() => addRegulatoryTemplate('regulatorySubmission')}
-                disabled={isLoading || !isOfficeInitialized}
-              >
-                <span className="font-medium">Regulatory Submission</span>
-                <span className="text-sm text-muted-foreground mt-1">
-                  FDA/EMA submission template with properly formatted sections for all required regulatory documents and cross-references.
-                </span>
-              </Button>
-              
-              <Button 
-                variant="outline" 
-                className="h-auto py-4 flex flex-col items-start text-left"
-                onClick={() => addRegulatoryTemplate('clinicalEvaluation')}
-                disabled={isLoading || !isOfficeInitialized}
-              >
-                <span className="font-medium">Clinical Evaluation Report</span>
-                <span className="text-sm text-muted-foreground mt-1">
-                  EU MDR compliant clinical evaluation report template with literature review, risk assessment, and equivalence analysis sections.
-                </span>
-              </Button>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="formatting" className="h-full">
-            <div className="grid grid-cols-1 gap-4">
-              <Button 
-                variant="outline" 
-                className="h-auto py-4 flex flex-col items-start text-left"
-                onClick={formatDocument}
-                disabled={isLoading || !isOfficeInitialized}
-              >
-                <span className="font-medium">Apply Regulatory Formatting</span>
-                <span className="text-sm text-muted-foreground mt-1">
-                  Format document according to regulatory standards with proper heading levels, numbering, and citation formats.
-                </span>
-              </Button>
-              
-              <div className="border rounded-md p-4">
-                <h3 className="font-medium mb-2">Document Export Options</h3>
-                <div className="flex flex-row gap-2">
-                  <Button 
-                    size="sm"
-                    variant="outline"
-                    onClick={() => exportDocument('docx')}
-                    disabled={isLoading || !isOfficeInitialized}
-                  >
-                    DOCX
-                  </Button>
-                  <Button 
-                    size="sm"
-                    variant="outline"
-                    onClick={() => exportDocument('pdf')}
-                    disabled={isLoading || !isOfficeInitialized}
-                  >
-                    PDF
-                  </Button>
+              {versions.length > 0 ? (
+                <div className="space-y-3">
+                  {versions.map((version) => (
+                    <div 
+                      key={version.id} 
+                      className="p-3 border rounded bg-gray-50"
+                    >
+                      <div className="flex justify-between">
+                        <span className="font-medium">Version {version.versionNumber}</span>
+                        <span className="text-sm text-gray-500">
+                          {new Date(version.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-700 mt-1">{version.note}</p>
+                      <p className="text-sm text-gray-500 mt-1">By: {version.createdBy}</p>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
+              ) : (
+                <p className="text-gray-500 text-center mt-8">
+                  No versions available. Save a version to see it here.
+                </p>
+              )}
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
   );
