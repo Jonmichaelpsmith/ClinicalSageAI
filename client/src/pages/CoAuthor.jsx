@@ -23,9 +23,14 @@ import * as msWordService from '../services/msWordIntegrationService';
 import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
 import * as msCopilotService from '../services/msCopilotService';
 
-// Import the Enhanced Document Editor with lazy loading for better performance
+// Import the components with lazy loading for better performance
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
 const MsWordPopupEditor = lazy(() => import('../components/MsWordPopupEditor'));
+const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
+
+// Import Microsoft Office Integration Services
+import * as microsoftAuthService from '../services/microsoftAuthService';
+import * as microsoftWordService from '../services/microsoftWordService';
 import { 
   FileText, 
   Edit, 

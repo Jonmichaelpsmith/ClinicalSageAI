@@ -1,6 +1,9 @@
 import { Express, Router } from 'express';
 import path from 'path';
 
+// Microsoft Office route declarations
+import microsoftOfficeRoutes from './routes/microsoft-office-routes';
+
 // Declare module types to avoid TypeScript errors
 declare module './routes/indWizardAPI.js' {
   const router: express.Router;
@@ -224,6 +227,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register AI Document Intelligence routes
   app.use('/api/ai', aiRouter);
+  
+  // Register Microsoft Office integration routes
+  app.use('/api/microsoft', microsoftOfficeRoutes);
   
   // Create a temporary CER Validation router
   const cerValidationRouter = express.Router();
