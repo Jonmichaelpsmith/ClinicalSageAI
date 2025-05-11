@@ -146,7 +146,7 @@ const MethodValidationSimulator = () => {
                   value={specificity.peakResolution} 
                   onChange={(e) => setSpecificity({...specificity, peakResolution: parseFloat(e.target.value)})} 
                 />
-                <p className="text-sm text-muted-foreground mt-1">Target: > 1.5</p>
+                <p className="text-sm text-muted-foreground mt-1">Target: more than 1.5</p>
               </div>
               <div>
                 <Label htmlFor="signalToNoise">Signal-to-Noise Ratio</Label>
@@ -156,7 +156,7 @@ const MethodValidationSimulator = () => {
                   value={specificity.signalToNoise} 
                   onChange={(e) => setSpecificity({...specificity, signalToNoise: parseFloat(e.target.value)})} 
                 />
-                <p className="text-sm text-muted-foreground mt-1">Target: > 10</p>
+                <p className="text-sm text-muted-foreground mt-1">Target: more than 10</p>
               </div>
             </div>
           </TabsContent>
@@ -228,7 +228,7 @@ const MethodValidationSimulator = () => {
                   value={precision.repeatability} 
                   onChange={(e) => setPrecision({...precision, repeatability: parseFloat(e.target.value)})} 
                 />
-                <p className="text-sm text-muted-foreground mt-1">Target: < 2.0%</p>
+                <p className="text-sm text-muted-foreground mt-1">Target: less than 2.0%</p>
               </div>
               <div>
                 <Label htmlFor="intermediate">Intermediate Precision RSD (%)</Label>
