@@ -1,3 +1,15 @@
+/**
+ * !!!!! IMPORTANT - OFFICIAL eCTD CO-AUTHOR MODULE !!!!!
+ * 
+ * This is the ONE AND ONLY official implementation of the eCTD Co-Author Module
+ * 
+ * Version: 4.0.0 - May 11, 2025
+ * Status: STABLE - DO NOT MODIFY WITHOUT APPROVAL
+ * 
+ * Any attempt to create duplicate modules or alternate implementations
+ * should be prevented. This is the golden source implementation.
+ */
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
