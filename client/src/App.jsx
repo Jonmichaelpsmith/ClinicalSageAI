@@ -58,6 +58,7 @@ const CoAuthor = lazy(() => import('./pages/CoAuthor'));
 const CanvasPage = lazy(() => import('./pages/CanvasPage'));
 const TimelinePage = lazy(() => import('./pages/TimelinePage'));
 const ModuleSectionEditor = lazy(() => import('./components/ModuleSectionEditor'));
+const GoogleAuthCallback = lazy(() => import('./pages/GoogleAuthCallback'));
 
 // Regulatory-related pages (excluding Regulatory Submissions Hub)
 const RegulatoryRiskDashboard = lazy(() => import('./pages/RegulatoryRiskDashboard'));
@@ -215,6 +216,7 @@ function App() {
               <Route path="/coauthor/timeline" component={CoAuthor} /> {/* CoAuthor timeline tab */}
               <Route path="/coauthor/ask-lumen" component={CoAuthor} /> {/* CoAuthor Ask Lumen tab */}
               <Route path="/coauthor/canvas" component={CoAuthor} /> {/* CoAuthor Canvas Workbench tab */}
+              <Route path="/google/auth/callback" component={GoogleAuthCallback} /> {/* Google Auth Callback page */}
               <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
               <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}
               <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
