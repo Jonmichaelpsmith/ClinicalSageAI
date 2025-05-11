@@ -3,8 +3,8 @@
  * 
  * This is the ONE AND ONLY official implementation of the eCTD Co-Author Module
  * 
- * Version: 5.0.0 - May 11, 2025
- * Status: STABLE - MICROSOFT WORD INTEGRATION ACTIVE
+ * Version: 5.1.0 - May 11, 2025
+ * Status: STABLE - GOOGLE DOCS INTEGRATION ACTIVE
  * 
  * Any attempt to create duplicate modules or alternate implementations
  * should be prevented. This is the golden source implementation.
@@ -19,15 +19,12 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 
-// Import genuine Microsoft Office services
-import * as wordIntegration from '../services/wordIntegration';
+// Import Google Docs services
+import * as googleDocsService from '../services/googleDocsService';
 import * as copilotService from '../services/copilotService';
 
-// Legacy services - keeping for backward compatibility
+// AI services
 import * as aiService from '../services/aiService';
-import * as msWordService from '../services/msWordIntegrationService';
-import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
-import * as msCopilotService from '../services/msCopilotService';
 
 // Import the components with lazy loading for better performance
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));

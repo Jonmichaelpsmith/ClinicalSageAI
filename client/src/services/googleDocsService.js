@@ -26,8 +26,8 @@ export const getDocumentId = (moduleIdOrType) => {
   // If a number is provided, map it to a document
   if (typeof moduleIdOrType === 'number') {
     switch(moduleIdOrType) {
-      case 1: return SAMPLE_DOCUMENTS['module_2.5'];
-      case 2: return SAMPLE_DOCUMENTS['module_2.7'];
+      case 1: return SAMPLE_DOCUMENTS.module_2_5;
+      case 2: return SAMPLE_DOCUMENTS.module_2_7;
       default: return SAMPLE_DOCUMENTS.default;
     }
   }
