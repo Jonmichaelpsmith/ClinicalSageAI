@@ -3,6 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+import * as aiService from '../services/aiService';
 import { 
   FileText, 
   Edit, 
@@ -22,12 +25,100 @@ import {
   Database,
   BarChart,
   AlertCircle,
-  Clock
+  Clock,
+  Sparkles,
+  RefreshCw,
+  Send,
+  X
 } from 'lucide-react';
 
 export default function CoAuthor() {
   // Component state
   const [isTreeOpen, setIsTreeOpen] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showCompareDialog, setShowCompareDialog] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [activeVersion, setActiveVersion] = useState('v4.0');
+  const [compareVersions, setCompareVersions] = useState({ base: 'v4.0', compare: 'v3.2' });
+  const [teamCollabOpen, setTeamCollabOpen] = useState(false);
+  const [documentLocked, setDocumentLocked] = useState(false);
+  const [lockedBy, setLockedBy] = useState(null);
+  const [showValidationDialog, setShowValidationDialog] = useState(false);
+  
+  // AI Assistant state
+  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
+  const [aiAssistantMode, setAiAssistantMode] = useState('suggestions'); // 'suggestions', 'compliance', 'formatting'
+  const [aiUserQuery, setAiUserQuery] = useState('');
+  const [aiResponse, setAiResponse] = useState(null);
+  const [aiIsLoading, setAiIsLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  const [aiSuggestions, setAiSuggestions] = useState([]);
+  
+  const { toast } = useToast();
+  
+  // AI query submission handler
+  const handleAiQuerySubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!aiUserQuery.trim()) return;
+    
+    setAiIsLoading(true);
+    setAiError(null);
+    
+    try {
+      // Determine which AI service to call based on active mode
+      let response;
+      if (aiAssistantMode === 'compliance') {
+        response = await aiService.checkComplianceAI(
+          selectedDocument?.id || 'current-doc',
+          "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).",
+          ['ICH', 'FDA']
+        );
+      } else if (aiAssistantMode === 'formatting') {
+        response = await aiService.analyzeFormattingAI(
+          selectedDocument?.id || 'current-doc',
+          "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).",
+          'clinicalOverview'
+        );
+      } else {
+        // Default mode: suggestions
+        if (selectedDocument) {
+          response = await aiService.generateContentSuggestions(
+            selectedDocument.id || 'current-doc', 
+            '2.5.5', 
+            "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).",
+            aiUserQuery
+          );
+        } else {
+          // If no document is selected, use the general AI ask endpoint
+          response = await aiService.askDocumentAI(aiUserQuery);
+        }
+      }
+      
+      setAiResponse(response);
+      setAiUserQuery('');
+      
+      // Show success toast
+      toast({
+        title: "AI Response Generated",
+        description: "The AI has generated a response based on your query.",
+        variant: "default",
+      });
+      
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      setAiError(error.message || 'Failed to get AI response. Please try again.');
+      
+      // Show error toast
+      toast({
+        title: "AI Request Failed",
+        description: error.message || "Could not generate AI response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setAiIsLoading(false);
+    }
+  };
   
   // Mock data for modules and documents with enhanced details
   const moduleProgress = [
@@ -536,6 +627,133 @@ export default function CoAuthor() {
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Floating action buttons */}
+      <div className="fixed bottom-8 right-8 flex flex-col gap-2">
+        <Button 
+          size="lg" 
+          variant={aiAssistantOpen ? "default" : "outline"}
+          onClick={() => setAiAssistantOpen(!aiAssistantOpen)}
+          className={`flex items-center ${aiAssistantOpen ? "bg-blue-600 text-white" : ""}`}
+        >
+          <Sparkles className="h-5 w-5 mr-2" />
+          AI Assistant
+        </Button>
+      </div>
+      
+      {/* AI Assistant Sidebar */}
+      <div className="flex h-full">
+        <div className="flex-1"></div>
+        
+        {aiAssistantOpen && (
+          <div className="w-80 border-l border-gray-200 flex flex-col bg-blue-50/50 flex-shrink-0 fixed top-0 bottom-0 right-0 z-10 overflow-hidden">
+            <div className="p-4 border-b border-gray-200 bg-white">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-semibold flex items-center text-blue-700">
+                  <Sparkles className="h-4 w-4 mr-2 text-blue-500" />
+                  AI Document Assistant
+                </h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-7 w-7 p-0"
+                  onClick={() => setAiAssistantOpen(false)}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <Tabs defaultValue="suggestions" className="w-full">
+                <TabsList className="grid grid-cols-3 mb-2">
+                  <TabsTrigger value="suggestions" onClick={() => setAiAssistantMode('suggestions')}>Suggest</TabsTrigger>
+                  <TabsTrigger value="compliance" onClick={() => setAiAssistantMode('compliance')}>Compliance</TabsTrigger>
+                  <TabsTrigger value="formatting" onClick={() => setAiAssistantMode('formatting')}>Format</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="suggestions" className="mt-0">
+                  <p className="text-xs text-gray-500 mb-2">
+                    Get intelligent content suggestions for your document
+                  </p>
+                </TabsContent>
+                <TabsContent value="compliance" className="mt-0">
+                  <p className="text-xs text-gray-500 mb-2">
+                    Check compliance with regulatory guidelines
+                  </p>
+                </TabsContent>
+                <TabsContent value="formatting" className="mt-0">
+                  <p className="text-xs text-gray-500 mb-2">
+                    Analyze and improve document formatting
+                  </p>
+                </TabsContent>
+              </Tabs>
+              
+              <form onSubmit={handleAiQuerySubmit} className="mt-2">
+                <div className="relative">
+                  <textarea
+                    placeholder={aiAssistantMode === 'suggestions' 
+                      ? "Ask for content suggestions..." 
+                      : aiAssistantMode === 'compliance'
+                      ? "Ask about regulatory compliance..."
+                      : "Ask about formatting issues..."
+                    }
+                    className="w-full rounded-md border border-gray-300 py-2 px-3 text-sm focus:border-blue-500 focus:ring-blue-500 min-h-[80px] pr-10"
+                    value={aiUserQuery}
+                    onChange={(e) => setAiUserQuery(e.target.value)}
+                  ></textarea>
+                  <Button 
+                    type="submit"
+                    className="absolute bottom-2 right-2 h-7 w-7 p-0 rounded-full bg-blue-600 text-white"
+                    disabled={aiIsLoading || !aiUserQuery.trim()}
+                  >
+                    {aiIsLoading ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </form>
+            </div>
+            
+            <div className="flex-1 overflow-auto p-3 space-y-3">
+              {aiError && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-800">
+                  <p className="font-medium flex items-center">
+                    <AlertCircle className="h-4 w-4 mr-1.5 text-red-600" />
+                    Error
+                  </p>
+                  <p className="mt-1">{aiError}</p>
+                </div>
+              )}
+              
+              {aiResponse && (
+                <div className="bg-white border border-blue-100 rounded-md p-3 shadow-sm">
+                  <h4 className="text-sm font-medium text-blue-700 mb-1">AI Response</h4>
+                  <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                    {typeof aiResponse === 'object' ? JSON.stringify(aiResponse, null, 2) : aiResponse.answer || aiResponse.suggestion || aiResponse}
+                  </div>
+                </div>
+              )}
+              
+              {aiSuggestions.map((suggestion) => (
+                <div key={suggestion.id} className="bg-white border border-blue-100 rounded-md p-3 shadow-sm">
+                  <h4 className="text-sm font-medium text-blue-700 mb-1">
+                    {suggestion.type === 'completion' ? 'Content Suggestion' : 
+                     suggestion.type === 'compliance' ? 'Compliance Check' : 
+                     suggestion.type === 'formatting' ? 'Formatting Suggestion' : 'AI Suggestion'}
+                  </h4>
+                  <div className="text-sm text-gray-700 whitespace-pre-wrap">
+                    {suggestion.content}
+                  </div>
+                </div>
+              ))}
+              
+              {!aiError && !aiResponse && aiSuggestions.length === 0 && !aiIsLoading && (
+                <div className="flex flex-col items-center justify-center h-40 text-gray-500 text-sm">
+                  <Sparkles className="h-8 w-8 mb-2 text-blue-300" />
+                  <p>Ask the AI Assistant a question to get started</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
