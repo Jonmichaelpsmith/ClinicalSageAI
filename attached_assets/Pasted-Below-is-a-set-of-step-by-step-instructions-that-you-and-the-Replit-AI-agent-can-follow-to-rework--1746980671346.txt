@@ -1,0 +1,159 @@
+Below is a set of step‐by‐step instructions that you (and the Replit AI agent) can follow to rework your document editing workflow using Google Docs instead of Microsoft Word. In this new plan, Google Docs will serve as your in‑workflow embedded document editor, with all edited documents saving into your TrialSage Vault. The goal is to build a simpler, yet powerful, interface that lets users create, edit, and save regulatory documents without the complexity inherent to the Microsoft ecosystem.
+
+---
+
+## **Plan Overview**
+
+1. **Google Cloud Setup for Google Docs/Drive APIs**  
+   • Create a Google Cloud project.  
+   • Enable the Google Docs API and Google Drive API.  
+   • Configure OAuth2 credentials (client ID, client secret, and redirect URI).  
+   • This authentication will let your app create and manage documents on behalf of the user.
+
+2. **Frontend – Embedding Google Docs in TrialSage Vault Interface**  
+   • On your TrialSage Vault screen (the attached screen), add an “Edit Document” button.  
+   • When clicked, open a modal or dedicated section that loads a Google Docs editor through an iframe.  
+   • For example, embed a document via URL:  
+     ```html
+     <iframe 
+       src="https://docs.google.com/document/d/YOUR_DOCUMENT_ID/edit?usp=sharing&embedded=true" 
+       style="width: 100%; height: 600px; border: none;">
+     </iframe>
+     ```  
+   • Ensure that the Google Docs document is set with appropriate sharing permissions (or automatically generated via the API) so that the iframe can display it.
+
+3. **Backend – Document Creation and Management Using Google APIs**  
+   • Implement endpoints in your Replit (or Express) backend that utilize the Google APIs to:
+   - Create a new Google Doc (if a document isn’t already created)
+   - Retrieve the document’s ID and metadata
+   - Export the document’s content when needed (for example, on “Save” action)
+     
+   • Sample code using Node’s Google APIs (install with `npm install googleapis axios`):
+     
+     ```javascript
+     // Example: createDoc.js
+     const { google } = require('googleapis');
+     const oauth2Client = new google.auth.OAuth2(
+       process.env.CLIENT_ID,
+       process.env.CLIENT_SECRET,
+       process.env.REDIRECT_URI
+     );
+
+     // Ensure oauth2Client has a valid token (process.env.TOKEN or via your OAuth flow)
+     oauth2Client.setCredentials({ access_token: 'YOUR_ACCESS_TOKEN' });
+
+     async function createNewDoc(title = 'TrialSage Document') {
+       const docs = google.docs({ version: 'v1', auth: oauth2Client });
+       const res = await docs.documents.create({
+         requestBody: { title }
+       });
+       return res.data; // Contains the documentId and title
+     }
+
+     module.exports = { createNewDoc };
+     ```
+
+4. **Integrate “Save Document” Operations into TrialSage Vault**  
+   • Add a “Save Document” button that, when clicked, triggers an API call to export the Google Docs content.  
+   • For example, use the Google Drive API to download/export the doc—this content then gets submitted to your TrialSage Vault backend for permanent storage.  
+     
+   • Example snippet for exporting (using axios):
+     
+     ```javascript
+     // Example: exportDoc.js
+     const axios = require('axios');
+
+     async function exportDocument(documentId, exportMimeType = 'application/pdf') {
+       // URL: export the Google Doc as a PDF (or your choice of MIME type)
+       const url = `https://www.googleapis.com/drive/v3/files/${documentId}/export?mimeType=${exportMimeType}`;
+       const response = await axios.get(url, {
+         headers: { Authorization: `Bearer YOUR_ACCESS_TOKEN` },
+         responseType: 'arraybuffer'
+       });
+       return response.data; // PDF file data (or binary content)
+     }
+
+     module.exports = { exportDocument };
+     ```
+     
+   • After exporting, invoke your existing logic to upload the file into TrialSage Vault (your storage/database system).
+
+5. **Multi-Tenant Considerations**  
+   • Ensure the OAuth process is configured per tenant.  
+   • When a CRO or sub-client logs in, assign specific credentials or separate document spaces to keep data isolated.  
+   • The API endpoints should map documents back to the correct tenant in your TrialSage Vault.
+
+6. **UI Enhancements and Testing**  
+   • Design your embedded Google Docs iframe area to blend seamlessly with your TrialSage Vault interface (colors, fonts, layout).  
+   • Test the complete flow:  
+     - Create/open a document  
+     - Display it within your interface  
+     - Make edits  
+     - Click “Save” to export the document and upload it to TrialSage Vault  
+   • Iterate over the design until you achieve the professional look and user experience you envision.
+
+---
+
+## **Instructions for Replit AI Agent**
+
+Please follow the ordered rollout plan below:
+
+### **Step 1: Setup Google Cloud Credentials**
+- Create a Google Cloud project.
+- Enable the Google Docs API and Google Drive API.
+- Set up OAuth2 credentials. (Store the Client ID, Client Secret, and Redirect URI in environment variables.)
+
+### **Step 2: Backend Integration**
+- **Implement Document Creation Endpoint:**
+  - Create a file (e.g., `createDoc.js`) that uses the Google APIs to create a new document. (See sample code above.)
+- **Implement Document Export Endpoint:**
+  - Create another file (e.g., `exportDoc.js`) that, given a document ID, retrieves the exported content (e.g., PDF) using the Google Drive API.
+
+### **Step 3: Frontend Integration**
+- **Embedding Google Docs:**
+  - Update the main document editing screen (on your TrialSage Vault dashboard) to include an “Edit Document” button.
+  - When clicked, launch a modal or dedicated section with an iframe loading the Google Docs editor URL (using the document ID created/obtained by the backend).
+  
+  Example snippet to embed in your React component:
+  ```jsx
+  // Example component: GoogleDocsEditor.jsx
+  import React from 'react';
+
+  const GoogleDocsEditor = ({ documentId }) => {
+    if (!documentId) return <div>Loading document...</div>;
+
+    const iframeSrc = `https://docs.google.com/document/d/${documentId}/edit?usp=sharing&embedded=true`;
+    return (
+      <iframe
+        src={iframeSrc}
+        style={{ width: '100%', height: '600px', border: 'none' }}
+        title="Google Docs Editor"
+      />
+    );
+  };
+
+  export default GoogleDocsEditor;
+  ```
+  
+- **Integrate a “Save Document” Button:**
+  - On your document editing screen, add a button that makes an API call to export the Google Doc (using the backend function) and uploads it to TrialSage Vault.
+  - Ensure proper error handling and user feedback.
+
+### **Step 4: Multi-Tenant & Workflow Integration**
+- Make sure that every tenant’s session passes the correct OAuth tokens and document IDs.
+- Map stored documents to the appropriate tenant in TrialSage Vault.
+- Update your UI navigation and document list to show Google Docs documents associated with each tenant.
+
+### **Step 5: Testing and Deployment**
+- Test the full flow locally on Replit:
+  1. User logs in and receives proper Google OAuth authentication.
+  2. The backend endpoint successfully creates a Google Doc.
+  3. The front end displays the document in an iframe.
+  4. The “Save Document” functionality exports the document and saves it to TrialSage Vault.
+- Once confirmed working for one or two pilot clients, prepare to raise funds and later migrate to AWS (or another production-grade cloud platform).
+
+---
+
+By following these instructions, your new plan leverages the simplicity and robust collaboration features of Google Docs. It seamlessly fits within your TrialSage Vault interface to handle all document editing and saving needs—all while being simpler than integrating Microsoft Word.
+
+Let me know if you need further refinements or additional code examples!
