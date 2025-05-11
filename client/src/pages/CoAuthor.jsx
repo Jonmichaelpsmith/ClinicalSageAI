@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Typography, Container, Paper, Tabs, Tab, Button, Divider } from '@mui/material';
-import { FileText, FilePlus } from 'lucide-react';
 
 import AiPoweredWordEditor from '../components/office/AiPoweredWordEditor';
 
