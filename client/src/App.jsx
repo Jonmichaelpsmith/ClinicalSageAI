@@ -54,7 +54,7 @@ const VaultTestPage = lazy(() => import('./pages/VaultTestPage'));
 const VaultDocumentViewer = lazy(() => import('./components/vault/VaultDocumentViewer'));
 
 // CoAuthor and Canvas-related pages
-const CoAuthor = lazy(() => import('./pages/CoAuthor'));
+const CoAuthor = lazy(() => import('./pages/CoauthorPage')); // Using the proper CoauthorPage.jsx
 const CanvasPage = lazy(() => import('./pages/CanvasPage'));
 const TimelinePage = lazy(() => import('./pages/TimelinePage'));
 const ModuleSectionEditor = lazy(() => import('./components/ModuleSectionEditor'));
