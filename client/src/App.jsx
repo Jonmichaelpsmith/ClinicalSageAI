@@ -53,8 +53,7 @@ const VaultPage = lazy(() => import('./pages/VaultPage'));
 const VaultTestPage = lazy(() => import('./pages/VaultTestPage'));
 const VaultDocumentViewer = lazy(() => import('./components/vault/VaultDocumentViewer'));
 
-// CoAuthor and Canvas-related pages
-const CoAuthor = lazy(() => import('./pages/CoauthorPage')); // Using the proper CoauthorPage.jsx
+// Canvas-related pages
 const CanvasPage = lazy(() => import('./pages/CanvasPage'));
 const TimelinePage = lazy(() => import('./pages/TimelinePage'));
 const ModuleSectionEditor = lazy(() => import('./components/ModuleSectionEditor'));
@@ -138,17 +137,14 @@ function App() {
     };
   }, []);
 
-  // Check if we're on the landing page, regulatory hub, coauthor pages, or dashboard (which have their own navigation)
+  // Check if we're on the landing page, regulatory hub, canvas pages, or dashboard (which have their own navigation)
   const isLandingPage = location === '/' || location === '/client-portal';
   const isRegulatoryHub = location === '/regulatory-intelligence-hub' || 
                           location === '/client-portal/regulatory-intel';
-  const isCoAuthorPage = location === '/coauthor' || 
-                         location.startsWith('/coauthor/') ||
-                         location === '/canvas' ||
-                         location === '/timeline';
+  const isCanvasPage = location === '/canvas' || location === '/timeline';
   const isDashboardPage = location === '/dashboard';
 
-  const shouldShowNav = !isLandingPage && !isRegulatoryHub && !isCoAuthorPage && !isDashboardPage;
+  const shouldShowNav = !isLandingPage && !isRegulatoryHub && !isCanvasPage && !isDashboardPage;
 
   useEffect(() => {
     console.log('✅ Application stability measures initialized');
@@ -161,14 +157,14 @@ function App() {
           <TenantProvider>
             {/* Wrap the entire application in the StabilityEnabledLayout */}
             <StabilityEnabledLayout>
-              {/* Only show the UnifiedTopNavV3 if we're not on the landing page, regulatory hub, or dashboard */}
+              {/* Only show the UnifiedTopNavV3 if we're not on the landing page, regulatory hub, canvas pages, or dashboard */}
               {shouldShowNav && (
                 <UnifiedTopNavV3 activeTab={activeTab} onTabChange={setActiveTab} />
               )}
               <div className={
                 isLandingPage ? "p-4" : 
                 isRegulatoryHub ? "p-0" : 
-                isCoAuthorPage ? "p-0" : // No padding for CoAuthor pages
+                isCanvasPage ? "p-0" : // No padding for Canvas pages
                 isDashboardPage ? "p-0" : // No padding for Dashboard page
                 "p-4 mt-24"
               }>
@@ -211,10 +207,7 @@ function App() {
               <Route path="/vault-page" component={VaultPage} />
               <Route path="/vault-test" component={VaultTestPage} /> {/* Add route for test page */}
               <Route path="/context-demo" component={ContextDemoPage} /> {/* Add our context demo page */}
-              <Route path="/coauthor" component={CoAuthor} /> {/* Add our CoAuthor page */}
-              <Route path="/coauthor/timeline" component={CoAuthor} /> {/* CoAuthor timeline tab */}
-              <Route path="/coauthor/ask-lumen" component={CoAuthor} /> {/* CoAuthor Ask Lumen tab */}
-              <Route path="/coauthor/canvas" component={CoAuthor} /> {/* CoAuthor Canvas Workbench tab */}
+              {/* CoAuthor module removed */}
               <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
               <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}
               <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
