@@ -113,9 +113,7 @@ export default function CoAuthor() {
   const [documentLocked, setDocumentLocked] = useState(false);
   const [lockedBy, setLockedBy] = useState(null);
   const [showValidationDialog, setShowValidationDialog] = useState(false);
-  // Document editor integration state
-  const [msWordPopupOpen, setMsWordPopupOpen] = useState(false);
-  const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
+  // Document editor integration state - Google Docs only
   const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
   const [isGoogleAuthenticated, setIsGoogleAuthenticated] = useState(false);
   const [googleUserInfo, setGoogleUserInfo] = useState(null);
