@@ -485,9 +485,9 @@ const FormulationDecisionTree = () => {
                     <SelectValue placeholder="Select batch size" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="small">Small (<10 kg)</SelectItem>
+                    <SelectItem value="small">Small (less than 10 kg)</SelectItem>
                     <SelectItem value="medium">Medium (10-100 kg)</SelectItem>
-                    <SelectItem value="large">Large (>100 kg)</SelectItem>
+                    <SelectItem value="large">Large (more than 100 kg)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
