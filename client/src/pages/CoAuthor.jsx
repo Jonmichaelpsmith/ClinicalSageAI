@@ -749,6 +749,7 @@ export default function CoAuthor() {
           lastEdited: 'Just now',
           editedBy: googleUserInfo?.name || 'Current User',
           status: 'Draft',
+          googleDocId: result.documentId, // Add the Google Doc ID
           version: {
             major: 1,
             minor: 0,
@@ -784,6 +785,10 @@ export default function CoAuthor() {
           }
         }, 1000);
         
+        // Update documents array with the new document
+        setDocuments(prevDocs => [newDoc, ...prevDocs]);
+        
+        // Set as selected document
         setSelectedDocument(newDoc);
         
         toast({
