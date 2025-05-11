@@ -15,6 +15,12 @@ import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { 
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger 
+} from "@/components/ui/tabs";
 import MsWordPopupEditor from './MsWordPopupEditor';
 import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
 import * as documentIntelligenceHub from '../services/documentIntelligenceHub';
