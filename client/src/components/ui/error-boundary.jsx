@@ -122,3 +122,99 @@ class ErrorBoundary extends React.Component {
 }
 
 export default ErrorBoundary;
+import React from 'react';
+import { AlertTriangle } from 'lucide-react';
+import { Alert, AlertTitle, AlertDescription } from './alert';
+import { Button } from './button';
+
+/**
+ * Error boundary component for handling application errors
+ * Specifically designed to catch Vite module loading errors
+ */
+export class ModuleErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.error("Module error caught:", error, errorInfo);
+    
+    // Check if this is a Vite module loading error
+    const isViteModuleError = error.message && 
+      (error.message.includes('does not provide an export') || 
+       error.message.includes('Failed to load module'));
+       
+    if (isViteModuleError) {
+      this.setState({ isViteError: true });
+    }
+  }
+
+  handleReload = () => {
+    // Clear any cached resources that might be causing the issue
+    if (window.localStorage) {
+      const viteKeys = Object.keys(localStorage).filter(key => 
+        key.startsWith('vite') || key.includes('hmr') || key.includes('react-refresh')
+      );
+      
+      viteKeys.forEach(key => localStorage.removeItem(key));
+    }
+    
+    // Force reload the page
+    window.location.reload();
+  }
+
+  render() {
+    if (!this.state.hasError) {
+      return this.props.children;
+    }
+
+    return (
+      <div className="fixed inset-0 bg-black/30 z-[9999] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-white dark:bg-slate-950 shadow-lg rounded-lg overflow-hidden">
+          <div className="bg-red-600 dark:bg-red-800 p-4 flex items-center space-x-3">
+            <AlertTriangle className="h-6 w-6 text-white" />
+            <h2 className="text-lg font-bold text-white">Module Loading Error</h2>
+          </div>
+          
+          <Alert variant="destructive" className="border-0 rounded-none">
+            <AlertTitle className="text-lg font-bold mb-2">Application Error</AlertTitle>
+            <AlertDescription className="text-base">
+              {this.state.isViteError ? 
+                "A Vite module loading error occurred. This is often caused by cache issues or incompatible modules." :
+                "An unexpected application error occurred."}
+            </AlertDescription>
+          </Alert>
+          
+          <div className="p-4 bg-slate-50 dark:bg-slate-900 flex flex-col space-y-3">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {this.state.error?.message || "Unknown error"}
+            </p>
+            
+            <div className="flex space-x-2 justify-end">
+              <Button 
+                variant="outline" 
+                onClick={this.handleReload}
+                className="font-medium"
+              >
+                Clear Cache & Reload
+              </Button>
+              
+              <Button 
+                variant="destructive" 
+                onClick={() => window.location.href = '/'}
+                className="font-bold"
+              >
+                Go to Homepage
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
