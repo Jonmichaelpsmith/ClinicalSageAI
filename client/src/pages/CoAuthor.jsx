@@ -2355,15 +2355,32 @@ export default function CoAuthor() {
                 </Button>
               </div>
             ) : (
-              <iframe 
-                key={iframeKey} 
-                ref={googleDocsIframeRef}
-                src={activeDocumentId 
-                  ? `https://docs.google.com/document/d/${activeDocumentId}/edit?embedded=true&usp=drive_web` 
-                  : (selectedDocument?.googleDocId 
-                    ? `https://docs.google.com/document/d/${selectedDocument.googleDocId}/edit?embedded=true&usp=drive_web` 
-                    : undefined)
-                }
+              <>
+              {!selectedDocument && !activeDocumentId ? (
+                <div className="flex flex-col items-center justify-center h-full bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 p-8">
+                  <FileText className="h-16 w-16 text-blue-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No document selected</h3>
+                  <p className="text-gray-500 text-center mb-4 max-w-md">
+                    Select a document from the list above or create a new document to get started.
+                  </p>
+                  <Button 
+                    onClick={() => setCreateNewDocDialogOpen(true)}
+                    className="flex items-center bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <FilePlus2 className="h-4 w-4 mr-2" />
+                    Create New Document
+                  </Button>
+                </div>
+              ) : (
+                <iframe 
+                  key={iframeKey} 
+                  ref={googleDocsIframeRef}
+                  src={activeDocumentId 
+                    ? `https://docs.google.com/document/d/${activeDocumentId}/edit?embedded=true&usp=drive_web` 
+                    : (selectedDocument?.googleDocId 
+                      ? `https://docs.google.com/document/d/${selectedDocument.googleDocId}/edit?embedded=true&usp=drive_web` 
+                      : undefined)
+                  }
                 className="w-full h-full border-none"
                 style={{ 
                   zoom: currentZoom, 
@@ -2388,6 +2405,8 @@ export default function CoAuthor() {
                   });
                 }}
               />
+              )}
+              </>
             )}
           </div>
           
