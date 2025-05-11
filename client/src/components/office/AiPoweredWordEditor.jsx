@@ -1,721 +1,978 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  TextField, 
-  Button, 
-  Divider, 
-  Select, 
-  MenuItem, 
-  FormControl, 
-  InputLabel,
-  CircularProgress,
-  Snackbar,
-  Alert,
-  Chip,
-  Grid,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails
-} from '@mui/material';
+import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { toast } from '@/hooks/use-toast';
 
-// Service imports
 import { 
-  openWordDocument,
-  insertRegulatorySection,
-  applyEctdFormatting,
-  performComplianceCheck
-} from '../../services/wordIntegration';
+  BoldIcon, 
+  ItalicIcon, 
+  UnderlineIcon, 
+  ListIcon, 
+  FileTextIcon, 
+  CheckCircleIcon,
+  AlignLeftIcon,
+  AlignCenterIcon,
+  AlignRightIcon,
+  TableIcon,
+  ImageIcon,
+  ParagraphIcon,
+  CheckSquareIcon,
+  AlertTriangleIcon,
+  SaveIcon,
+  RefreshCwIcon,
+  BookOpenIcon,
+  FileSearchIcon,
+  Upload,
+  Download,
+  Share,
+  Clock
+} from 'lucide-react';
+
+// Import Microsoft Office services
+import { initializeOfficeJs, isOfficeInitialized } from '../../services/officeJsService';
+import * as OfficeService from '../../services/officeJsService';
+import * as MsOfficeVaultBridge from '../../services/msOfficeVaultBridge';
+import * as MicrosoftAuthService from '../../services/microsoftAuthService';
+import * as SharePointService from '../../services/sharePointService';
 
 /**
- * AI-Powered Word Editor Component
+ * AI-Powered Microsoft Word Editor Component
  * 
- * This component provides a Microsoft Word-like editing experience with AI
- * compliance capabilities specifically tailored for regulatory document authoring.
+ * This component embeds Microsoft Word Online/Office 365 with AI compliance assistance
+ * for regulatory document authoring and editing.
  */
-const AiPoweredWordEditor = ({ documentId, documentType, initialContent, readOnly }) => {
-  // Editor state
-  const [content, setContent] = useState(initialContent || '');
-  const [docTitle, setDocTitle] = useState('Untitled Document');
-  const [selectedSection, setSelectedSection] = useState('');
+const AiPoweredWordEditor = ({ 
+  documentId,
+  documentUrl,
+  documentName = "New Document",
+  ectdSection = "",
+  readOnly = false,
+  onSave = () => {}
+}) => {
+  // State for Word frame
+  const [wordFrameLoaded, setWordFrameLoaded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isWordAvailable, setIsWordAvailable] = useState(false);
+  const [checkoutInfo, setCheckoutInfo] = useState(null);
+  
+  // State for AI assistance
+  const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [complianceStatus, setComplianceStatus] = useState(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState('');
+  
+  // UI state
+  const [activeTab, setActiveTab] = useState('document');
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState('');
-  const [editorMode, setEditorMode] = useState('edit'); // 'edit', 'review', 'ai-assist'
-  const [saving, setSaving] = useState(false);
-  const [checking, setChecking] = useState(false);
   const [templates, setTemplates] = useState([]);
-  const [regulatorySections, setRegulatorySections] = useState([]);
-  const [complianceResults, setComplianceResults] = useState(null);
-  const [notification, setNotification] = useState({ open: false, message: '', severity: 'info' });
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [versions, setVersions] = useState([]);
   
-  // References
-  const editorRef = useRef(null);
+  // Refs
+  const wordContainerRef = useRef(null);
+  const officeSdkLoaded = useRef(false);
   
-  // Simulated Microsoft Word interface initialized state
-  const [wordInitialized, setWordInitialized] = useState(false);
-  
+  // Load Microsoft Office SDK and initialize
   useEffect(() => {
-    // Initialize editor - optimized for faster loading
-    const initEditor = async () => {
+    async function initializeOffice() {
       try {
-        // Load templates and regulatory sections in parallel
-        Promise.all([
-          loadTemplates(),
-          loadRegulatorySections(),
-          // Initialize Word with shorter delay
-          new Promise(resolve => {
-            setTimeout(() => {
-              setWordInitialized(true);
-              resolve();
-            }, 500); // Reduced from 1500ms
-          })
-        ]).then(() => {
-          setNotification({
-            open: true,
-            message: 'Word editor initialized successfully',
-            severity: 'success'
-          });
-          
-          // If documentId is provided, load the document
-          if (documentId) {
-            loadDocument(documentId);
+        if (!officeSdkLoaded.current) {
+          // Add Office.js script to the page if not already loaded
+          if (!document.getElementById('office-js-script')) {
+            const script = document.createElement('script');
+            script.id = 'office-js-script';
+            script.src = 'https://appsforoffice.microsoft.com/lib/1/hosted/office.js';
+            script.async = true;
+            script.onload = async () => {
+              const isInitialized = await initializeOfficeJs();
+              setIsWordAvailable(isInitialized);
+              officeSdkLoaded.current = true;
+            };
+            document.head.appendChild(script);
+          } else {
+            const isInitialized = await initializeOfficeJs();
+            setIsWordAvailable(isInitialized);
+            officeSdkLoaded.current = true;
           }
-        });
+        }
       } catch (error) {
-        console.error('Failed to initialize editor:', error);
-        setNotification({
-          open: true,
-          message: 'Failed to initialize Microsoft Word editor',
-          severity: 'error'
+        console.error('Error initializing Office.js:', error);
+        toast({
+          title: 'Office Integration Error',
+          description: 'Failed to initialize Office.js. Using embedded Word Online instead.',
+          variant: 'destructive'
         });
+        
+        // Fall back to embedded Word Online
+        loadWordOnline();
+      }
+    }
+    
+    initializeOffice();
+    
+    // Load templates
+    fetchTemplates();
+    
+    // If we have a document ID, load version history
+    if (documentId) {
+      fetchVersionHistory(documentId);
+    }
+    
+    return () => {
+      // Cleanup function
+      if (checkoutInfo && checkoutInfo.documentId) {
+        // Auto-save document on component unmount if checked out
+        handleSaveDocument();
       }
     };
-    
-    initEditor();
   }, [documentId]);
   
-  const loadDocument = async (id) => {
-    try {
-      // In a real implementation, this would use Office.js to load the document
-      // For now, we'll simulate it with pre-loaded content to improve performance
-      setContent('Loading document content...');
-      
-      // Simulate API call with minimal delay (300ms)
-      setTimeout(() => {
-        // Use a more lightweight document structure for better performance
-        setContent(
-          `# ICH E3 Clinical Study Report
-          
-## 1. TITLE PAGE
-Study Title: Randomized, Double-Blind, Placebo-Controlled Phase 3 Study of Drug ABC in Patients with Condition XYZ
-Protocol Number: ABC-3001
-Study Phase: Phase 3
-Study Period: January 2023 - December 2024
-          
-## 2. SYNOPSIS
-This study evaluated the efficacy and safety of Drug ABC compared to placebo in patients with Condition XYZ.
-
-## 3. TABLE OF CONTENTS
-1. Title Page
-2. Synopsis
-3. Table of Contents
-4. Introduction
-5. Study Objectives
-6. Investigational Plan
-7. Efficacy Results
-8. Safety Results
-9. Discussion and Conclusions
-10. References
-
-## 4. INTRODUCTION
-Condition XYZ is a chronic disease affecting approximately 5% of the adult population worldwide...`
-        );
-        setDocTitle(`Document-${id}.docx`);
-      }, 300); // Reduced from 1000ms
-    } catch (error) {
-      console.error('Failed to load document:', error);
-      setNotification({
-        open: true,
-        message: 'Failed to load document',
-        severity: 'error'
-      });
+  // Use effect to check if document is already loaded and load it if needed
+  useEffect(() => {
+    if (documentUrl && wordContainerRef.current && !wordFrameLoaded) {
+      loadWordOnline();
     }
-  };
+  }, [documentUrl, wordContainerRef.current]);
   
-  const loadTemplates = async () => {
-    // Simulate loading templates from API
-    setTemplates([
-      { id: 'ich-e3', name: 'ICH E3 Clinical Study Report', description: 'Full CSR template following ICH E3 guidance' },
-      { id: 'ich-e6', name: 'ICH E6 Protocol Template', description: 'Clinical trial protocol following ICH GCP guidance' },
-      { id: 'fda-1572', name: 'FDA Form 1572', description: 'Statement of Investigator form for FDA submission' },
-      { id: 'informed-consent', name: 'Informed Consent Template', description: 'Standard informed consent document with all required elements' },
-      { id: 'safety-narrative', name: 'Safety Narrative Template', description: 'Template for adverse event narratives' }
-    ]);
-  };
-  
-  const loadRegulatorySections = async () => {
-    // Simulate loading regulatory sections from API
-    setRegulatorySections([
-      { id: 'gcp-statement', name: 'GCP Compliance Statement', description: 'Standard statement of compliance with Good Clinical Practice' },
-      { id: 'adverse-events', name: 'Adverse Events Reporting', description: 'Standard language for adverse events reporting methodology' },
-      { id: 'eligibility', name: 'Eligibility Criteria', description: 'Common inclusion/exclusion criteria format' },
-      { id: 'consent', name: 'Informed Consent Process', description: 'Standard description of informed consent process' },
-      { id: 'privacy', name: 'Privacy & Confidentiality', description: 'Standard privacy and confidentiality protection language' },
-    ]);
-  };
-  
-  const handleContentChange = (e) => {
-    setContent(e.target.value);
-  };
-  
-  const handleSave = async () => {
-    try {
-      setSaving(true);
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simulate successful save
-      setNotification({
-        open: true,
-        message: 'Document saved successfully',
-        severity: 'success'
-      });
-    } catch (error) {
-      console.error('Failed to save document:', error);
-      setNotification({
-        open: true,
-        message: 'Failed to save document',
-        severity: 'error'
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-  
-  const handleExport = async () => {
-    try {
-      setNotification({
-        open: true,
-        message: 'Exporting document to PDF...',
-        severity: 'info'
-      });
-      
-      // Simulate export process
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setNotification({
-        open: true,
-        message: 'Document exported successfully',
-        severity: 'success'
-      });
-    } catch (error) {
-      console.error('Failed to export document:', error);
-      setNotification({
-        open: true,
-        message: 'Failed to export document',
-        severity: 'error'
-      });
-    }
-  };
-  
-  const handleApplyTemplate = async () => {
-    if (!selectedTemplate) return;
+  /**
+   * Load Word Online in an iframe
+   */
+  const loadWordOnline = () => {
+    if (!documentUrl || !wordContainerRef.current) return;
     
+    // Clear existing content
+    wordContainerRef.current.innerHTML = '';
+    
+    // Create iframe for Word Online
+    const iframe = document.createElement('iframe');
+    iframe.src = documentUrl;
+    iframe.style.width = '100%';
+    iframe.style.height = '600px';
+    iframe.style.border = 'none';
+    iframe.onload = () => {
+      setWordFrameLoaded(true);
+      console.log('Word Online frame loaded');
+    };
+    
+    // Add iframe to container
+    wordContainerRef.current.appendChild(iframe);
+  };
+  
+  /**
+   * Checkout document for editing
+   */
+  const handleCheckoutDocument = async () => {
     try {
-      // Simulate template application
-      const template = templates.find(t => t.id === selectedTemplate);
-      setNotification({
-        open: true,
-        message: `Applying template: ${template.name}`,
-        severity: 'info'
+      if (!documentId) {
+        toast({
+          title: 'Document Error',
+          description: 'No document ID provided for checkout',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      // Checkout document from Vault to Word
+      const checkout = await MsOfficeVaultBridge.checkoutDocumentToOffice({
+        documentId,
+        checkoutLocation: 'word'
       });
       
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      setCheckoutInfo(checkout);
+      setIsEditing(true);
       
-      // Update content based on selected template
-      if (selectedTemplate === 'ich-e3') {
-        setContent(
-          `# ICH E3 Clinical Study Report
-          
-## 1. TITLE PAGE
-Study Title: [Enter Study Title]
-Protocol Number: [Enter Protocol Number]
-Study Phase: [Enter Study Phase]
-Study Period: [Enter Study Period]
-          
-## 2. SYNOPSIS
-[Enter Brief Study Synopsis]
-
-## 3. TABLE OF CONTENTS
-1. Title Page
-2. Synopsis
-3. Table of Contents
-4. Introduction
-5. Study Objectives
-6. Investigational Plan
-7. Efficacy Results
-8. Safety Results
-9. Discussion and Conclusions
-10. References
-
-## 4. INTRODUCTION
-[Enter Introduction Text]
-
-## 5. STUDY OBJECTIVES
-[Enter Primary and Secondary Objectives]
-
-## 6. INVESTIGATIONAL PLAN
-[Enter Study Design Details]
-
-## 7. EFFICACY RESULTS
-[Enter Efficacy Results]
-
-## 8. SAFETY RESULTS
-[Enter Safety Results]
-
-## 9. DISCUSSION AND CONCLUSIONS
-[Enter Discussion and Conclusions]
-
-## 10. REFERENCES
-[Enter References]`
-        );
-      } else if (selectedTemplate === 'ich-e6') {
-        setContent(
-          `# Clinical Trial Protocol
-          
-## 1. GENERAL INFORMATION
-Protocol Title: [Enter Protocol Title]
-Protocol Number: [Enter Protocol Number]
-Phase: [Enter Study Phase]
-Version: 1.0
-Date: [Enter Date]
-
-## 2. SYNOPSIS
-[Enter Brief Protocol Synopsis]
-
-## 3. BACKGROUND AND RATIONALE
-[Enter Background Information and Study Rationale]
-
-## 4. STUDY OBJECTIVES
-[Enter Primary and Secondary Objectives]
-
-## 5. STUDY DESIGN
-[Enter Study Design Details]
-
-## 6. ELIGIBILITY CRITERIA
-### 6.1 Inclusion Criteria
-1. [Enter Inclusion Criterion 1]
-2. [Enter Inclusion Criterion 2]
-3. [Enter Inclusion Criterion 3]
-
-### 6.2 Exclusion Criteria
-1. [Enter Exclusion Criterion 1]
-2. [Enter Exclusion Criterion 2]
-3. [Enter Exclusion Criterion 3]
-
-## 7. TREATMENT PLAN
-[Enter Treatment Details]
-
-## 8. SAFETY ASSESSMENTS
-[Enter Safety Assessment Procedures]
-
-## 9. EFFICACY ASSESSMENTS
-[Enter Efficacy Assessment Procedures]
-
-## 10. DATA MANAGEMENT AND STATISTICAL ANALYSIS
-[Enter Data Management and Statistical Analysis Plans]`
-        );
-      } else {
-        // For other templates, just notify but don't change content
-        setNotification({
-          open: true,
-          message: 'Template applied successfully',
-          severity: 'success'
+      // Load the document in Word Online
+      if (checkout.documentLink) {
+        // Update the iframe with the new document URL
+        wordContainerRef.current.innerHTML = '';
+        
+        const iframe = document.createElement('iframe');
+        iframe.src = checkout.documentLink;
+        iframe.style.width = '100%';
+        iframe.style.height = '600px';
+        iframe.style.border = 'none';
+        iframe.onload = () => {
+          setWordFrameLoaded(true);
+          console.log('Word Online checkout frame loaded');
+        };
+        
+        // Add iframe to container
+        wordContainerRef.current.appendChild(iframe);
+        
+        toast({
+          title: 'Document Checked Out',
+          description: 'You can now edit the document in Word',
+          variant: 'default'
         });
       }
     } catch (error) {
-      console.error('Failed to apply template:', error);
-      setNotification({
-        open: true,
-        message: 'Failed to apply template',
-        severity: 'error'
+      console.error('Error checking out document:', error);
+      toast({
+        title: 'Checkout Error',
+        description: error.message || 'Failed to check out document',
+        variant: 'destructive'
       });
-    } finally {
-      setSelectedTemplate('');
     }
   };
   
-  const handleInsertSection = async () => {
-    if (!selectedSection) return;
-    
+  /**
+   * Save document back to Vault
+   */
+  const handleSaveDocument = async () => {
     try {
-      // Simulate section insertion
-      const section = regulatorySections.find(s => s.id === selectedSection);
-      setNotification({
-        open: true,
-        message: `Inserting section: ${section.name}`,
-        severity: 'info'
-      });
-      
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update content by adding the section
-      let sectionContent = '';
-      
-      if (selectedSection === 'gcp-statement') {
-        sectionContent = `\n\n## GCP COMPLIANCE STATEMENT
-This study was conducted in accordance with the principles of the Declaration of Helsinki and Good Clinical Practice guidelines as defined by the International Conference on Harmonisation.`;
-      } else if (selectedSection === 'adverse-events') {
-        sectionContent = `\n\n## ADVERSE EVENTS REPORTING
-All adverse events were collected and recorded throughout the study period, from the time of informed consent until the end of follow-up. Events were categorized according to severity, causality, and seriousness in accordance with regulatory guidance.`;
-      } else if (selectedSection === 'eligibility') {
-        sectionContent = `\n\n## ELIGIBILITY CRITERIA
-### Inclusion Criteria
-1. Adults aged 18 years or older
-2. Diagnosis confirmed by [specific criteria]
-3. Able to provide informed consent
-
-### Exclusion Criteria
-1. Participation in another clinical trial within 30 days
-2. Known hypersensitivity to study medication or components
-3. Significant medical condition that would interfere with study participation`;
-      } else if (selectedSection === 'consent') {
-        sectionContent = `\n\n## INFORMED CONSENT
-Written informed consent was obtained from all study participants prior to performing any study-related procedures. The consent process included a thorough explanation of the study procedures, potential risks and benefits, alternatives to participation, and the voluntary nature of participation.`;
-      } else if (selectedSection === 'privacy') {
-        sectionContent = `\n\n## PRIVACY AND CONFIDENTIALITY
-All participant information was handled in strict confidence in accordance with applicable data protection laws. Participant data was de-identified using unique identifiers, and all study documents were stored securely with access limited to authorized personnel.`;
+      if (!checkoutInfo || !checkoutInfo.documentId || !checkoutInfo.checkoutId) {
+        toast({
+          title: 'Save Error',
+          description: 'Document is not checked out',
+          variant: 'destructive'
+        });
+        return;
       }
       
-      setContent(content + sectionContent);
+      // Show saving toast
+      const savingToast = toast({
+        title: 'Saving Document',
+        description: 'Please wait while the document is saved...',
+        variant: 'default'
+      });
       
-      setNotification({
-        open: true,
-        message: 'Section inserted successfully',
-        severity: 'success'
+      // Check in document from Word to Vault
+      const checkin = await MsOfficeVaultBridge.checkinDocumentFromOffice({
+        documentId: checkoutInfo.documentId,
+        checkoutId: checkoutInfo.checkoutId,
+        comment: 'Saved from Word Editor',
+        source: 'word'
+      });
+      
+      // Clear checkout info
+      setCheckoutInfo(null);
+      setIsEditing(false);
+      
+      // Refresh version history
+      fetchVersionHistory(documentId);
+      
+      // Notify parent component
+      onSave(checkin);
+      
+      // Show success toast
+      toast({
+        title: 'Document Saved',
+        description: `Document saved successfully (Version ${checkin.versionId})`,
+        variant: 'default'
       });
     } catch (error) {
-      console.error('Failed to insert section:', error);
-      setNotification({
-        open: true,
-        message: 'Failed to insert section',
-        severity: 'error'
-      });
-    } finally {
-      setSelectedSection('');
-    }
-  };
-  
-  const handleApplyFormatting = async () => {
-    try {
-      setNotification({
-        open: true,
-        message: 'Applying eCTD formatting...',
-        severity: 'info'
-      });
-      
-      // Simulate formatting process
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // In a real implementation, this would use Office.js to apply formatting
-      // For now, just show a notification
-      setNotification({
-        open: true,
-        message: 'eCTD formatting applied successfully',
-        severity: 'success'
-      });
-    } catch (error) {
-      console.error('Failed to apply formatting:', error);
-      setNotification({
-        open: true,
-        message: 'Failed to apply formatting',
-        severity: 'error'
+      console.error('Error saving document:', error);
+      toast({
+        title: 'Save Error',
+        description: error.message || 'Failed to save document',
+        variant: 'destructive'
       });
     }
   };
   
+  /**
+   * Run compliance check on the document
+   */
   const handleComplianceCheck = async () => {
     try {
-      setChecking(true);
+      setIsAnalyzing(true);
       
-      setNotification({
-        open: true,
-        message: 'Performing regulatory compliance check...',
-        severity: 'info'
+      // Get current document content
+      let documentContent;
+      
+      if (isWordAvailable && window.Word) {
+        // Get content directly from Word
+        documentContent = await OfficeService.getWordDocumentContent();
+      } else {
+        // For Word Online, we need to get content from the server
+        // This is a placeholder - in a real implementation, you would use the
+        // Office 365 API to get the document content
+        documentContent = "Document content placeholder";
+      }
+      
+      // Run compliance check
+      const complianceResults = await MsOfficeVaultBridge.performComplianceCheck({
+        documentId,
+        ectdSection,
+        content: documentContent
       });
       
-      // Simulate compliance check process
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Update compliance status
+      setComplianceStatus(complianceResults);
       
-      // Simulate compliance check results
-      const results = {
-        score: 85,
-        compliant: true,
-        issues: [
-          {
-            id: 'missing-references',
-            section: 'References',
-            description: 'References section appears to be incomplete',
-            recommendation: 'Add all references cited in the document to the References section',
-            severity: 'medium'
-          },
-          {
-            id: 'abbreviations',
-            section: 'Various Sections',
-            description: 'Some abbreviations are used without definition',
-            recommendation: 'Define all abbreviations at first use',
-            severity: 'low'
-          }
-        ]
-      };
+      // Generate AI suggestions based on compliance issues
+      if (complianceResults.issues && complianceResults.issues.length > 0) {
+        setAiSuggestions(complianceResults.recommendations || []);
+      } else {
+        setAiSuggestions([
+          'Document complies with regulatory requirements',
+          'No issues found'
+        ]);
+      }
       
-      setComplianceResults(results);
+      // Switch to AI tab
+      setActiveTab('ai');
       
-      setNotification({
-        open: true,
-        message: `Compliance check complete: Score ${results.score}%`,
-        severity: results.compliant ? 'success' : 'warning'
+      toast({
+        title: 'Compliance Check Complete',
+        description: `Compliance score: ${complianceResults.score || 'N/A'}`,
+        variant: 'default'
       });
     } catch (error) {
-      console.error('Failed to perform compliance check:', error);
-      setNotification({
-        open: true,
-        message: 'Failed to perform compliance check',
-        severity: 'error'
+      console.error('Error performing compliance check:', error);
+      toast({
+        title: 'Compliance Check Error',
+        description: error.message || 'Failed to perform compliance check',
+        variant: 'destructive'
       });
     } finally {
-      setChecking(false);
+      setIsAnalyzing(false);
     }
   };
   
-  const handleCloseNotification = () => {
-    setNotification({ ...notification, open: false });
+  /**
+   * Apply AI suggestion to document
+   */
+  const handleApplySuggestion = async (suggestion) => {
+    try {
+      if (!isWordAvailable) {
+        toast({
+          title: 'Word API Unavailable',
+          description: 'Cannot apply suggestion in Word Online. Please copy and paste manually.',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      // Insert suggestion at current cursor position
+      await OfficeService.insertParagraphInWord(suggestion);
+      
+      toast({
+        title: 'Suggestion Applied',
+        description: 'AI suggestion has been applied to the document',
+        variant: 'default'
+      });
+    } catch (error) {
+      console.error('Error applying suggestion:', error);
+      toast({
+        title: 'Error',
+        description: error.message || 'Failed to apply suggestion',
+        variant: 'destructive'
+      });
+    }
   };
   
-  // Render loading state while word is initializing
-  if (!wordInitialized) {
-    return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '500px' }}>
-        <CircularProgress />
-        <Typography variant="h6" sx={{ mt: 2 }}>
-          Initializing Microsoft Word...
-        </Typography>
-      </Box>
-    );
-  }
+  /**
+   * Submit custom AI prompt
+   */
+  const handleSubmitPrompt = async () => {
+    try {
+      if (!aiPrompt) return;
+      
+      setIsAnalyzing(true);
+      
+      // In a real implementation, this would call your AI service
+      // For now, simulate a response
+      setTimeout(() => {
+        const newSuggestions = [
+          `Based on your question: "${aiPrompt}"`,
+          "Here is a suggested paragraph for your document...",
+          "You should consider adding references to the following regulatory guidelines..."
+        ];
+        
+        setAiSuggestions(newSuggestions);
+        setAiPrompt('');
+        setIsAnalyzing(false);
+      }, 1500);
+    } catch (error) {
+      console.error('Error processing AI prompt:', error);
+      toast({
+        title: 'AI Error',
+        description: error.message || 'Failed to process AI prompt',
+        variant: 'destructive'
+      });
+      setIsAnalyzing(false);
+    }
+  };
   
+  /**
+   * Apply formatting to selected text
+   */
+  const handleFormatText = async (formatType) => {
+    try {
+      if (!isWordAvailable) {
+        toast({
+          title: 'Word API Unavailable',
+          description: 'Cannot apply formatting in Word Online. Please use the built-in formatting tools.',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      switch (formatType) {
+        case 'bold':
+          await OfficeService.applyBoldInWord(true);
+          break;
+        case 'italic':
+          await OfficeService.applyItalicInWord(true);
+          break;
+        case 'underline':
+          await OfficeService.applyUnderlineInWord(true);
+          break;
+        case 'heading1':
+          // Get the selected text first
+          const selectedText = await OfficeService.getWordSelectionContent();
+          await OfficeService.insertHeadingInWord(selectedText, 1);
+          break;
+        case 'heading2':
+          const selectedText2 = await OfficeService.getWordSelectionContent();
+          await OfficeService.insertHeadingInWord(selectedText2, 2);
+          break;
+        default:
+          break;
+      }
+    } catch (error) {
+      console.error('Error applying formatting:', error);
+      toast({
+        title: 'Formatting Error',
+        description: error.message || 'Failed to apply formatting',
+        variant: 'destructive'
+      });
+    }
+  };
+  
+  /**
+   * Fetch available templates
+   */
+  const fetchTemplates = async () => {
+    try {
+      // In a real implementation, this would call your template API
+      // For now, use placeholder data
+      setTemplates([
+        { id: 'template-1', name: 'Clinical Overview (2.5)', ectdSection: 'm2.5' },
+        { id: 'template-2', name: 'Clinical Summary (2.7)', ectdSection: 'm2.7' },
+        { id: 'template-3', name: 'Nonclinical Overview (2.4)', ectdSection: 'm2.4' },
+        { id: 'template-4', name: 'Quality Overall Summary (2.3)', ectdSection: 'm2.3' }
+      ]);
+    } catch (error) {
+      console.error('Error fetching templates:', error);
+    }
+  };
+  
+  /**
+   * Apply selected template to document
+   */
+  const handleApplyTemplate = async () => {
+    try {
+      if (!selectedTemplate) return;
+      
+      // Close template dialog
+      setShowTemplateDialog(false);
+      
+      // Apply template
+      const result = await MsOfficeVaultBridge.applyRegulatoryTemplate({
+        templateId: selectedTemplate,
+        ectdSection: templates.find(t => t.id === selectedTemplate)?.ectdSection || ''
+      });
+      
+      toast({
+        title: 'Template Applied',
+        description: `Template "${result.templateName}" has been applied`,
+        variant: 'default'
+      });
+    } catch (error) {
+      console.error('Error applying template:', error);
+      toast({
+        title: 'Template Error',
+        description: error.message || 'Failed to apply template',
+        variant: 'destructive'
+      });
+    }
+  };
+  
+  /**
+   * Fetch version history for a document
+   */
+  const fetchVersionHistory = async (docId) => {
+    try {
+      if (!docId) return;
+      
+      const history = await MsOfficeVaultBridge.getDocumentVersionHistory(docId);
+      setVersions(history);
+    } catch (error) {
+      console.error('Error fetching version history:', error);
+    }
+  };
+  
+  /**
+   * Compare document versions
+   */
+  const handleCompareVersions = async (version1, version2) => {
+    try {
+      if (!documentId || !version1 || !version2) {
+        toast({
+          title: 'Comparison Error',
+          description: 'Please select two versions to compare',
+          variant: 'destructive'
+        });
+        return;
+      }
+      
+      const comparison = await MsOfficeVaultBridge.compareDocumentVersions({
+        documentId,
+        version1,
+        version2
+      });
+      
+      // In a real implementation, this would open a comparison view
+      // For now, just show a toast
+      toast({
+        title: 'Comparison Complete',
+        description: `Found ${comparison.differences} differences between versions`,
+        variant: 'default'
+      });
+    } catch (error) {
+      console.error('Error comparing versions:', error);
+      toast({
+        title: 'Comparison Error',
+        description: error.message || 'Failed to compare versions',
+        variant: 'destructive'
+      });
+    }
+  };
+  
+  // Render document editor UI
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-      {/* Editor Toolbar */}
-      <Paper 
-        elevation={1} 
-        sx={{ 
-          p: 1, 
-          mb: 2, 
-          display: 'flex', 
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap'
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: { xs: 1, md: 0 } }}>
-          <Typography variant="subtitle1" sx={{ mr: 2 }}>
-            {docTitle}
-          </Typography>
-          
-          <Button 
-            variant="contained" 
-            size="small" 
-            color="primary" 
-            onClick={handleSave} 
-            disabled={saving || readOnly}
-            sx={{ mr: 1 }}
-          >
-            {saving ? 'Saving...' : 'Save'}
-          </Button>
-          
-          <Button 
-            variant="outlined" 
-            size="small"
-            onClick={handleExport}
-            sx={{ mr: 1 }}
-          >
-            Export PDF
-          </Button>
-        </Box>
+    <div className="flex flex-col w-full h-full">
+      {/* Editor toolbar */}
+      <div className="flex flex-wrap items-center gap-2 p-2 bg-card border-b">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={handleCheckoutDocument}
+          disabled={isEditing || !documentId}
+        >
+          <FileTextIcon className="w-4 h-4 mr-2" />
+          Edit
+        </Button>
         
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <FormControl size="small" sx={{ minWidth: 150, mr: 1 }}>
-            <InputLabel id="template-select-label">Apply Template</InputLabel>
-            <Select
-              labelId="template-select-label"
-              value={selectedTemplate}
-              label="Apply Template"
-              onChange={(e) => setSelectedTemplate(e.target.value)}
-              disabled={readOnly}
-            >
-              <MenuItem value=""><em>Select...</em></MenuItem>
-              {templates.map((template) => (
-                <MenuItem key={template.id} value={template.id}>{template.name}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          
-          <Button 
-            variant="outlined" 
-            size="small" 
-            onClick={handleApplyTemplate}
-            disabled={!selectedTemplate || readOnly}
-            sx={{ mr: 1 }}
-          >
-            Apply
-          </Button>
-          
-          <Button 
-            variant="outlined" 
-            size="small" 
-            onClick={handleComplianceCheck}
-            disabled={checking}
-            sx={{ mr: 1 }}
-          >
-            {checking ? 'Checking...' : 'Check Compliance'}
-          </Button>
-        </Box>
-      </Paper>
-      
-      {/* Regulatory Tools */}
-      <Paper elevation={1} sx={{ p: 1, mb: 2 }}>
-        <Typography variant="subtitle2" sx={{ mb: 1 }}>
-          Regulatory Tools
-        </Typography>
+        <Button 
+          variant={isEditing ? "default" : "outline"} 
+          size="sm" 
+          onClick={handleSaveDocument}
+          disabled={!isEditing}
+        >
+          <SaveIcon className="w-4 h-4 mr-2" />
+          Save
+        </Button>
         
-        <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1 }}>
-          <FormControl size="small" sx={{ minWidth: 200, mr: 1 }}>
-            <InputLabel id="section-select-label">Insert Regulatory Section</InputLabel>
-            <Select
-              labelId="section-select-label"
-              value={selectedSection}
-              label="Insert Regulatory Section"
-              onChange={(e) => setSelectedSection(e.target.value)}
-              disabled={readOnly}
+        <div className="border-r h-6 mx-2"></div>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => handleFormatText('bold')}
+                disabled={!isEditing || !isWordAvailable}
+              >
+                <BoldIcon className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Bold</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => handleFormatText('italic')}
+                disabled={!isEditing || !isWordAvailable}
+              >
+                <ItalicIcon className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Italic</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => handleFormatText('underline')}
+                disabled={!isEditing || !isWordAvailable}
+              >
+                <UnderlineIcon className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Underline</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <div className="border-r h-6 mx-2"></div>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => handleFormatText('heading1')}
+                disabled={!isEditing || !isWordAvailable}
+              >
+                <span className="font-bold">H1</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Heading 1</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => handleFormatText('heading2')}
+                disabled={!isEditing || !isWordAvailable}
+              >
+                <span className="font-bold">H2</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Heading 2</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
+        <div className="border-r h-6 mx-2"></div>
+        
+        <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+          <DialogTrigger asChild>
+            <Button 
+              variant="outline" 
+              size="sm"
+              disabled={!isEditing}
             >
-              <MenuItem value=""><em>Select...</em></MenuItem>
-              {regulatorySections.map((section) => (
-                <MenuItem key={section.id} value={section.id}>{section.name}</MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          
-          <Button 
-            variant="outlined" 
-            size="small" 
-            onClick={handleInsertSection}
-            disabled={!selectedSection || readOnly}
-            sx={{ mr: 1 }}
-          >
-            Insert
-          </Button>
-          
-          <Button 
-            variant="outlined" 
-            size="small" 
-            onClick={handleApplyFormatting}
-            disabled={readOnly}
-          >
-            Apply eCTD Formatting
-          </Button>
-        </Box>
-      </Paper>
-      
-      {/* Main Editor */}
-      <Paper elevation={3} sx={{ p: 2, mb: 2, flexGrow: 1 }}>
-        <TextField
-          multiline
-          fullWidth
-          minRows={15}
-          maxRows={30}
-          value={content}
-          onChange={handleContentChange}
-          variant="outlined"
-          InputProps={{
-            readOnly: readOnly,
-            sx: { 
-              fontFamily: 'monospace',
-              fontSize: '0.9rem',
-              whiteSpace: 'pre-wrap'
-            }
-          }}
-        />
-      </Paper>
-      
-      {/* Compliance Results */}
-      {complianceResults && (
-        <Paper elevation={2} sx={{ p: 2, mb: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-            <Typography variant="h6">
-              Compliance Check Results
-            </Typography>
+              <BookOpenIcon className="w-4 h-4 mr-2" />
+              Templates
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Apply Regulatory Template</DialogTitle>
+              <DialogDescription>
+                Choose a template to apply to your document. This will replace the current content.
+              </DialogDescription>
+            </DialogHeader>
             
-            <Chip 
-              label={`Score: ${complianceResults.score}%`} 
-              color={complianceResults.compliant ? "success" : "warning"}
-              variant="outlined"
-            />
-          </Box>
-          
-          <Divider sx={{ mb: 2 }} />
-          
-          {complianceResults.issues.length === 0 ? (
-            <Alert severity="success">
-              No compliance issues found.
-            </Alert>
+            <div className="py-4">
+              <Label htmlFor="template-select">Template</Label>
+              <Select 
+                value={selectedTemplate} 
+                onValueChange={setSelectedTemplate}
+              >
+                <SelectTrigger id="template-select">
+                  <SelectValue placeholder="Select a template" />
+                </SelectTrigger>
+                <SelectContent>
+                  {templates.map(template => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowTemplateDialog(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleApplyTemplate} disabled={!selectedTemplate}>
+                Apply Template
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+        
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => setShowVersionHistory(!showVersionHistory)}
+          disabled={!documentId}
+        >
+          <Clock className="w-4 h-4 mr-2" />
+          History
+        </Button>
+        
+        <div className="flex-grow"></div>
+        
+        <Button 
+          variant="default" 
+          size="sm"
+          onClick={handleComplianceCheck}
+          disabled={!documentId || isAnalyzing}
+        >
+          {isAnalyzing ? (
+            <>
+              <RefreshCwIcon className="w-4 h-4 mr-2 animate-spin" />
+              Analyzing...
+            </>
           ) : (
-            <Grid container spacing={2}>
-              {complianceResults.issues.map((issue) => (
-                <Grid item xs={12} key={issue.id}>
-                  <Accordion>
-                    <AccordionSummary
-                      expandIcon={"▼"}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                        <Typography sx={{ flexGrow: 1 }}>{issue.section}: {issue.description}</Typography>
-                        <Chip 
-                          label={issue.severity} 
-                          size="small"
-                          color={issue.severity === 'high' ? 'error' : issue.severity === 'medium' ? 'warning' : 'info'}
-                          sx={{ ml: 2 }}
-                        />
-                      </Box>
-                    </AccordionSummary>
-                    <AccordionDetails>
-                      <Alert severity="info">
-                        <Typography variant="subtitle2">Recommendation:</Typography>
-                        <Typography variant="body2">{issue.recommendation}</Typography>
-                      </Alert>
-                    </AccordionDetails>
-                  </Accordion>
-                </Grid>
-              ))}
-            </Grid>
+            <>
+              <CheckCircleIcon className="w-4 h-4 mr-2" />
+              Check Compliance
+            </>
           )}
-        </Paper>
-      )}
+        </Button>
+      </div>
       
-      {/* Notifications */}
-      <Snackbar 
-        open={notification.open} 
-        autoHideDuration={6000} 
-        onClose={handleCloseNotification}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert onClose={handleCloseNotification} severity={notification.severity}>
-          {notification.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+      {/* Editor content */}
+      <div className="flex flex-grow">
+        {/* Main content area */}
+        <div className="flex-grow">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="document">Document</TabsTrigger>
+              <TabsTrigger value="ai">AI Assistance</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="document" className="flex-grow">
+              <div className="relative">
+                {/* Word container */}
+                <div 
+                  ref={wordContainerRef} 
+                  className="w-full h-[600px] border rounded-md bg-white"
+                >
+                  {!wordFrameLoaded && !documentUrl && (
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <FileTextIcon className="w-12 h-12 text-muted-foreground mb-4" />
+                      <h3 className="text-lg font-medium">No Document Loaded</h3>
+                      <p className="text-sm text-muted-foreground mt-2">
+                        Select or upload a document to get started
+                      </p>
+                    </div>
+                  )}
+                  
+                  {!wordFrameLoaded && documentUrl && (
+                    <div className="p-4">
+                      <div className="space-y-3">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-2/3" />
+                        <Skeleton className="h-[400px] w-full rounded-md" />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="ai" className="flex-grow flex flex-col">
+              <Card className="flex-grow">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <CheckCircleIcon className="w-5 h-5 mr-2 text-primary" />
+                    AI Compliance Assistant
+                  </CardTitle>
+                  <CardDescription>
+                    AI-powered recommendations to ensure regulatory compliance
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Compliance status */}
+                  {complianceStatus && (
+                    <div className="mb-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">Compliance Score</h4>
+                        <Badge variant={complianceStatus.score > 80 ? "default" : "destructive"}>
+                          {complianceStatus.score || 'N/A'}/100
+                        </Badge>
+                      </div>
+                      
+                      {complianceStatus.issues && complianceStatus.issues.length > 0 && (
+                        <div className="mt-4">
+                          <h4 className="font-medium mb-2">Issues Detected</h4>
+                          <ul className="space-y-2">
+                            {complianceStatus.issues.map((issue, idx) => (
+                              <li key={idx} className="flex items-start">
+                                <AlertTriangleIcon className="w-4 h-4 mr-2 text-amber-500 mt-0.5" />
+                                <div>
+                                  <span className="font-medium">{issue.section}: </span>
+                                  <span>{issue.description}</span>
+                                  <Badge variant="outline" className="ml-2">
+                                    {issue.severity}
+                                  </Badge>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* AI suggestions */}
+                  <div>
+                    <h4 className="font-medium mb-2">AI Recommendations</h4>
+                    {aiSuggestions.length > 0 ? (
+                      <ul className="space-y-2">
+                        {aiSuggestions.map((suggestion, idx) => (
+                          <li key={idx} className="flex items-start p-2 border rounded-md">
+                            <div className="flex-grow">
+                              <p>{suggestion}</p>
+                            </div>
+                            {isEditing && isWordAvailable && (
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                onClick={() => handleApplySuggestion(suggestion)}
+                              >
+                                Apply
+                              </Button>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-muted-foreground">
+                        Run a compliance check to get AI recommendations
+                      </p>
+                    )}
+                  </div>
+                  
+                  {/* AI prompt input */}
+                  <div className="mt-6">
+                    <h4 className="font-medium mb-2">Ask AI Assistant</h4>
+                    <div className="flex space-x-2">
+                      <Textarea
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        placeholder="Ask a question about regulatory requirements..."
+                        className="flex-grow"
+                      />
+                      <Button 
+                        onClick={handleSubmitPrompt}
+                        disabled={!aiPrompt || isAnalyzing}
+                      >
+                        {isAnalyzing ? (
+                          <RefreshCwIcon className="w-4 h-4 animate-spin" />
+                        ) : (
+                          "Submit"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+        
+        {/* Version history sidebar (collapsible) */}
+        {showVersionHistory && (
+          <div className="w-80 border-l p-4 overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-medium">Version History</h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowVersionHistory(false)}
+              >
+                &times;
+              </Button>
+            </div>
+            
+            {versions.length > 0 ? (
+              <div className="space-y-2">
+                {versions.map((version, idx) => (
+                  <div key={idx} className="border rounded-md p-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline">v{version.id}</Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(version.lastModifiedDateTime).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="text-sm mt-1">
+                      <span className="font-medium">By: </span>
+                      {version.lastModifiedBy?.user?.displayName || 'Unknown'}
+                    </div>
+                    <div className="flex mt-2">
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => {
+                          // In a real implementation, this would open the version
+                          // For now, just show a toast
+                          toast({
+                            title: 'Version Selected',
+                            description: `Viewing version ${version.id}`,
+                            variant: 'default'
+                          });
+                        }}
+                      >
+                        View
+                      </Button>
+                      {idx < versions.length - 1 && (
+                        <Button 
+                          variant="ghost" 
+                          size="sm"
+                          onClick={() => handleCompareVersions(version.id, versions[idx + 1].id)}
+                        >
+                          Compare
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No version history available</p>
+            )}
+          </div>
+        )}
+      </div>
+      
+      {/* Status bar */}
+      <div className="flex items-center justify-between p-2 bg-muted text-xs">
+        <div className="flex items-center space-x-2">
+          <span>{documentName || 'Untitled Document'}</span>
+          {ectdSection && (
+            <Badge variant="outline" className="text-xs">
+              {ectdSection}
+            </Badge>
+          )}
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          {isEditing && checkoutInfo && (
+            <span className="text-primary">
+              Checked out until {new Date(checkoutInfo.expiresAt).toLocaleString()}
+            </span>
+          )}
+          
+          <span>
+            {isWordAvailable ? 'Word API Available' : 'Using Word Online'}
+          </span>
+        </div>
+      </div>
+    </div>
   );
 };
 
