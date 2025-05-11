@@ -281,14 +281,36 @@ export async function openDocument(documentId, documentContent) {
       console.warn('Error accessing Microsoft Graph:', graphError);
     }
     
-    // If we couldn't get a real URL, use a fallback for development
+    // If we couldn't get a real URL, attempt to get one via our backend bridge
     if (!wordOnlineUrl) {
-      console.warn('Using fallback Word Online URL for development');
+      try {
+        console.log('Attempting to get Word Online URL via server-side bridge');
+        const serverResponse = await fetch(`/api/microsoft-office/embed-url/${documentId}`, {
+          headers: {
+            'Authorization': 'Bearer ' + accessToken
+          }
+        });
+        
+        if (serverResponse.ok) {
+          const urlData = await serverResponse.json();
+          wordOnlineUrl = urlData.embedUrl;
+          console.log('Got Word Online URL from server bridge:', wordOnlineUrl);
+        } else {
+          console.warn('Failed to get document URL from server bridge:', await serverResponse.text());
+        }
+      } catch (serverError) {
+        console.warn('Error accessing server bridge for Word embedding:', serverError);
+      }
+    }
+    
+    // Final fallback for development - only used if all other methods fail
+    if (!wordOnlineUrl) {
+      console.warn('Using fallback Word Online URL for development (last resort)');
       
-      // Generate a development URL for Word Online with document ID
+      // Generate a development URL for Word Online with document ID and token
       wordOnlineUrl = `https://www.office.com/launch/word?auth=2&auth_upn=${encodeURIComponent(
-        'user@example.com'
-      )}&sourcedoc=${encodeURIComponent(documentId)}`;
+        'user@trialsage.com'
+      )}&sourcedoc=${encodeURIComponent(documentId)}&access_token=${encodeURIComponent(accessToken)}`;
     }
     
     console.log('Word Online URL:', wordOnlineUrl);
