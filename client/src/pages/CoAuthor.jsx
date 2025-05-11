@@ -23,14 +23,13 @@ import {
   BarChart,
   AlertCircle,
   Clock,
-  ClockRewind,
-  GitCompareArrows,
-  CheckSquare,
+  Check,
+  GitBranch,
   Shield,
   FileCheck,
   Link,
   User,
-  FileLock2,
+  FileLock,
   GitMerge
 } from 'lucide-react';
 
@@ -615,7 +614,7 @@ export default function CoAuthor() {
               <div className="border rounded-lg overflow-hidden border-red-200">
                 <div className="bg-red-50 border-b border-red-200 px-3 py-2 flex justify-between items-center">
                   <div className="font-medium flex items-center">
-                    <FileLock2 className="h-4 w-4 mr-2 text-red-600" />
+                    <FileLock className="h-4 w-4 mr-2 text-red-600" />
                     <span>Active Documents</span>
                   </div>
                   <div className="text-xs text-red-600 flex items-center">
@@ -659,15 +658,15 @@ export default function CoAuthor() {
                   
                   <div className="flex space-x-2">
                     <Button size="sm" variant="outline" className="h-7 border-red-200 text-red-700">
-                      <ClockRewind className="h-3 w-3 mr-1" />
+                      <History className="h-3 w-3 mr-1" />
                       <span>Version History</span>
                     </Button>
                     <Button size="sm" variant="outline" className="h-7 border-red-200 text-red-700">
-                      <GitCompareArrows className="h-3 w-3 mr-1" />
+                      <GitBranch className="h-3 w-3 mr-1" />
                       <span>Compare Versions</span>
                     </Button>
                     <Button size="sm" variant="outline" className="h-7 border-red-200 text-red-700">
-                      <CheckSquare className="h-3 w-3 mr-1" />
+                      <Check className="h-3 w-3 mr-1" />
                       <span>Approval Workflow</span>
                     </Button>
                   </div>
