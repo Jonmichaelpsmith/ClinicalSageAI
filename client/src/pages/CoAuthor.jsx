@@ -431,10 +431,7 @@ export default function CoAuthor() {
                   </div>
                   <Progress 
                     value={module.percent} 
-                    className="h-2 bg-gray-100" 
-                    style={{
-                      "--tw-progress-color": module.percent > 75 ? "rgb(34, 197, 94)" : module.percent > 40 ? "rgb(234, 179, 8)" : "rgb(156, 163, 175)"
-                    } as React.CSSProperties}
+                    className={`h-2 ${module.percent > 75 ? "bg-green-100" : module.percent > 40 ? "bg-yellow-100" : "bg-gray-100"}`}
                   />
                 </div>
               ))}
