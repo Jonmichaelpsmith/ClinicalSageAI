@@ -459,7 +459,7 @@ export default function CoAuthor() {
           </CardContent>
         </Card>
         
-        {/* Module Progress Card - Enhanced Enterprise Version */}
+        {/* Module Progress Card - Advanced Enterprise Version */}
         <Card className="border-blue-200 shadow-md">
           <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-white">
             <div className="flex justify-between items-center">
@@ -467,21 +467,51 @@ export default function CoAuthor() {
                 <BarChart className="h-5 w-5 mr-2 text-blue-600" />
                 Module Progress & Status
               </CardTitle>
-              <Badge className="bg-blue-100 text-blue-700 border-blue-200">
-                IND-23645
-              </Badge>
+              <div className="flex space-x-2">
+                <Badge className="bg-blue-100 text-blue-700 border-blue-200">
+                  IND-23645
+                </Badge>
+                <Badge className="bg-purple-100 text-purple-700 border-purple-200">
+                  FDA
+                </Badge>
+              </div>
             </div>
             <CardDescription>
-              Real-time completion and validation status across CTD modules
+              Real-time completion and validation status across CTD modules with advanced compliance monitoring
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {/* Module progress tracking */}
+              {/* Enterprise submission information */}
+              <div className="bg-blue-50 rounded-lg p-3 border border-blue-100 mb-4">
+                <div className="flex flex-wrap gap-4 text-xs">
+                  <div>
+                    <span className="text-gray-500">Submission Type:</span>
+                    <span className="ml-1 font-medium">Original IND</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">FDA Due Date:</span>
+                    <span className="ml-1 font-medium text-amber-600">Jun 15, 2025 (23 days)</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Submission Status:</span>
+                    <span className="ml-1 font-medium text-blue-600">In Preparation</span>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Project Lead:</span>
+                    <span className="ml-1 font-medium">Dr. Jane Smith</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Module progress tracking with enhanced enterprise features */}
               <div className="border rounded-lg border-blue-100 overflow-hidden">
                 <div className="bg-blue-50 px-3 py-2 border-b border-blue-100 flex justify-between items-center">
                   <div className="text-sm font-medium text-blue-800">Module Completion</div>
-                  <div className="text-xs text-blue-600">FDA Submission Ready</div>
+                  <div className="flex items-center">
+                    <Shield className="h-3 w-3 mr-1 text-blue-600" />
+                    <span className="text-xs text-blue-600">FDA Submission Ready</span>
+                  </div>
                 </div>
                 
                 <div className="p-3 space-y-3">
@@ -499,7 +529,10 @@ export default function CoAuthor() {
                     <Progress value={80} className="h-2 bg-blue-100" />
                     <div className="text-xs text-gray-500 flex justify-between">
                       <span>23 of 28 sections complete</span>
-                      <span className="text-blue-600">View Details</span>
+                      <div className="flex items-center text-blue-600 cursor-pointer">
+                        <Eye className="h-3 w-3 mr-1" />
+                        <span>View Details</span>
+                      </div>
                     </div>
                   </div>
                   
@@ -517,7 +550,10 @@ export default function CoAuthor() {
                     <Progress value={62} className="h-2 bg-blue-100" />
                     <div className="text-xs text-gray-500 flex justify-between">
                       <span>5 of 8 sections complete</span>
-                      <span className="text-blue-600">View Details</span>
+                      <div className="flex items-center text-blue-600 cursor-pointer">
+                        <Eye className="h-3 w-3 mr-1" />
+                        <span>View Details</span>
+                      </div>
                     </div>
                   </div>
                   
@@ -535,7 +571,10 @@ export default function CoAuthor() {
                     <Progress value={35} className="h-2 bg-blue-100" />
                     <div className="text-xs text-gray-500 flex justify-between">
                       <span>12 of 34 sections complete</span>
-                      <span className="text-blue-600">View Details</span>
+                      <div className="flex items-center text-blue-600 cursor-pointer">
+                        <Eye className="h-3 w-3 mr-1" />
+                        <span>View Details</span>
+                      </div>
                     </div>
                   </div>
                   
@@ -553,7 +592,10 @@ export default function CoAuthor() {
                     <Progress value={15} className="h-2 bg-blue-100" />
                     <div className="text-xs text-gray-500 flex justify-between">
                       <span>3 of 20 sections complete</span>
-                      <span className="text-blue-600">View Details</span>
+                      <div className="flex items-center text-red-600 cursor-pointer">
+                        <AlertCircle className="h-3 w-3 mr-1 text-red-500" />
+                        <span>Critical Issues</span>
+                      </div>
                     </div>
                   </div>
                   
@@ -571,22 +613,71 @@ export default function CoAuthor() {
                     <Progress value={42} className="h-2 bg-blue-100" />
                     <div className="text-xs text-gray-500 flex justify-between">
                       <span>8 of 19 sections complete</span>
-                      <span className="text-blue-600">View Details</span>
+                      <div className="flex items-center text-blue-600 cursor-pointer">
+                        <Eye className="h-3 w-3 mr-1" />
+                        <span>View Details</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
               
-              {/* Export actions */}
-              <div className="flex justify-between items-center">
-                <Button size="sm" variant="outline" className="border-blue-200 text-blue-700">
-                  <BarChart className="h-3.5 w-3.5 mr-1.5" />
-                  <span>Detailed Report</span>
-                </Button>
-                <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
-                  <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                  <span>eCTD Export</span>
-                </Button>
+              {/* Advanced validation metrics for enterprise */}
+              <div className="border rounded-lg border-blue-100 overflow-hidden">
+                <div className="bg-blue-50 px-3 py-2 border-b border-blue-100 flex justify-between items-center">
+                  <div className="text-sm font-medium text-blue-800 flex items-center">
+                    <FileCheck className="h-4 w-4 mr-1.5 text-blue-600" />
+                    <span>Enterprise Validation Status</span>
+                  </div>
+                  <Badge className="bg-green-100 text-green-700">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    <span>Preliminary Pass</span>
+                  </Badge>
+                </div>
+                
+                <div className="p-3">
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div className="bg-white p-2 rounded border border-gray-100">
+                      <div className="text-xs font-medium text-gray-600 mb-1">ICH eCTD Compliance</div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium text-green-600">3/3 Specifications</div>
+                        <Shield className="h-4 w-4 text-green-500" />
+                      </div>
+                    </div>
+                    <div className="bg-white p-2 rounded border border-gray-100">
+                      <div className="text-xs font-medium text-gray-600 mb-1">21 CFR Part 11</div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium text-green-600">Compliant</div>
+                        <Check className="h-4 w-4 text-green-500" />
+                      </div>
+                    </div>
+                    <div className="bg-white p-2 rounded border border-gray-100">
+                      <div className="text-xs font-medium text-gray-600 mb-1">PDF Technical</div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium text-amber-600">2 Warnings</div>
+                        <AlertCircle className="h-4 w-4 text-amber-500" />
+                      </div>
+                    </div>
+                    <div className="bg-white p-2 rounded border border-gray-100">
+                      <div className="text-xs font-medium text-gray-600 mb-1">XML Backbone</div>
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium text-green-600">Valid</div>
+                        <Check className="h-4 w-4 text-green-500" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-2 mt-2 border-t border-blue-100 flex justify-between">
+                    <Button size="sm" variant="outline" className="h-7 text-xs border-blue-200 text-blue-700">
+                      <Download className="h-3 w-3 mr-1" />
+                      <span>Export Report</span>
+                    </Button>
+                    <Button size="sm" className="h-7 text-xs bg-blue-600 hover:bg-blue-700">
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      <span>eCTD Export</span>
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
