@@ -10,7 +10,7 @@
  * should be prevented. This is the golden source implementation.
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +19,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import * as aiService from '../services/aiService';
+
+// Import the EnhancedDocumentEditor component
+const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
 import { 
   FileText, 
   Edit, 
