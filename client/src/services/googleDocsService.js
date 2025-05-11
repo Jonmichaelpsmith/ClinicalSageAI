@@ -6,16 +6,7 @@
  */
 
 import { toast } from '@/hooks/use-toast';
-
-/**
- * Sample document IDs for testing - these are publicly accessible Google Docs 
- * Change these to actual document IDs in your Google Drive
- */
-const SAMPLE_DOCUMENTS = {
-  "module_2_5": "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8", // Clinical Overview template 
-  "module_2_7": "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4", // Clinical Summary template
-  "default": "1B1AYPsjPO-Fvdovua3vPg9PY14IXLujk4lvkEiH0wNo"
-};
+import { SAMPLE_DOCUMENTS, API_ENDPOINTS, DOCUMENT_TEMPLATES } from '../config/googleConfig';
 
 /**
  * Get a document ID based on module type or ID
@@ -44,22 +35,41 @@ export const getDocumentId = (moduleIdOrType) => {
  * Create a new Google Doc from a template
  * @param {string} templateId - Template document ID
  * @param {string} title - Title for the new document
- * @returns {Promise<string>} New document ID
+ * @param {Object} metadata - Additional metadata for the document
+ * @returns {Promise<Object>} New document information
  */
-export const createNewDoc = async (templateId, title) => {
+export const createNewDoc = async (templateId, title, metadata = {}) => {
   try {
     console.log(`Creating new Google Doc from template ${templateId} with title: ${title}`);
     
-    // In a real implementation, this would call the Google Drive API
-    // For now, just simulate creating a doc by returning a template ID
-    const newDocId = SAMPLE_DOCUMENTS.default;
+    // Call the backend API to create a new document
+    const response = await fetch(API_ENDPOINTS.CREATE_DOC, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        title,
+        templateId,
+        content: metadata.initialContent || '',
+        organizationId: metadata.organizationId,
+        folderId: metadata.folderId
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create new document');
+    }
+    
+    const result = await response.json();
     
     toast({
       title: "New Document Created",
       description: `Created "${title}" in Google Docs`,
     });
     
-    return newDocId;
+    return result;
   } catch (error) {
     console.error("Error creating Google Doc:", error);
     toast({
@@ -81,22 +91,30 @@ export const saveToVault = async (docId, vaultMetadata = {}) => {
   try {
     console.log(`Saving Google Doc ${docId} to VAULT with metadata:`, vaultMetadata);
     
-    // In a real implementation, this would:
-    // 1. Export the Google Doc as DOCX/PDF
-    // 2. Save the file to the VAULT storage system
-    // For now, just simulate the operation
+    // Call the backend API to save the document to VAULT
+    const response = await fetch(`${API_ENDPOINTS.SAVE_TO_VAULT}/${docId}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        vaultMetadata
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to save document to VAULT');
+    }
+    
+    const result = await response.json();
     
     toast({
       title: "Document Saved to VAULT",
       description: "Your Google Doc has been successfully saved to the document VAULT.",
     });
     
-    return { 
-      success: true, 
-      docId, 
-      vaultId: `vault-${docId}`,
-      timestamp: new Date().toISOString()
-    };
+    return result;
   } catch (error) {
     console.error("Error saving to VAULT:", error);
     toast({

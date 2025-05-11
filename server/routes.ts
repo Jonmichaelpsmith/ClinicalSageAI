@@ -1,10 +1,15 @@
 import { Express, Router } from 'express';
 import path from 'path';
 
-// Microsoft Office route declarations
-import microsoftOfficeRoutes from './routes/microsoft-office-routes';
+// Document integration routes
+import googleDocsRoutes from './routes/googleDocs';
 
 // Declare module types to avoid TypeScript errors
+declare module './routes/googleDocs' {
+  const router: express.Router;
+  export default router;
+}
+
 declare module './routes/indWizardAPI.js' {
   const router: express.Router;
   export default router;
@@ -228,8 +233,8 @@ export default function registerRoutes(app: Express): void {
   // Register AI Document Intelligence routes
   app.use('/api/ai', aiRouter);
   
-  // Register Microsoft Office Integration routes
-  app.use('/api/microsoft-office', microsoftOfficeRoutes);
+  // Register Google Docs Integration routes
+  app.use('/api/google-docs', googleDocsRoutes);
   
   // Create a temporary CER Validation router
   const cerValidationRouter = express.Router();
