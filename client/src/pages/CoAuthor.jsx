@@ -1031,6 +1031,240 @@ export default function CoAuthor() {
             </CardContent>
           </Card>
         </div>
+        
+        {/* Active Document Content Area (Displayed when document is selected) */}
+        {selectedDocument && (
+          <div className="mt-8 border rounded-md shadow">
+            <div className="bg-slate-50 border-b p-4 flex justify-between items-center">
+              <div className="flex items-center">
+                <FileText className="h-5 w-5 mr-2 text-blue-600" />
+                <div>
+                  <h2 className="text-xl font-semibold">{selectedDocument.title}</h2>
+                  <div className="text-sm text-slate-500">
+                    {selectedDocument.module} • Last edited {selectedDocument.lastEdited}
+                  </div>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-blue-200 text-blue-700"
+                  onClick={() => setShowValidationDialog(true)}
+                >
+                  <FileCheck className="h-4 w-4 mr-2" />
+                  Validate
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-green-200 text-green-700"
+                  onClick={() => setShowExportDialog(true)}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </Button>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-6">
+              {/* Editor Tabs */}
+              <Tabs defaultValue="edit" className="w-full">
+                <TabsList className="grid w-[400px] grid-cols-3">
+                  <TabsTrigger value="edit" className="flex items-center">
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </TabsTrigger>
+                  <TabsTrigger value="view" className="flex items-center">
+                    <Eye className="h-4 w-4 mr-2" />
+                    Preview
+                  </TabsTrigger>
+                  <TabsTrigger value="history" className="flex items-center">
+                    <History className="h-4 w-4 mr-2" />
+                    Changes
+                  </TabsTrigger>
+                </TabsList>
+                
+                {/* Edit Tab Content */}
+                <TabsContent value="edit" className="pt-4 space-y-4">
+                  <div className="border rounded-md p-4">
+                    <h3 className="text-lg font-medium border-b pb-2 mb-4">Section 2.5.5 - Safety Profile</h3>
+                    
+                    <div className="min-h-[200px] mb-6 prose max-w-none">
+                      <p>
+                        The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).
+                      </p>
+                      <p>
+                        The efficacy of Drug X was evaluated across multiple endpoints. Primary endpoints showed a statistically significant improvement compared to placebo (p&lt;0.001) with consistent results across all study sites.
+                      </p>
+                    </div>
+                    
+                    {/* AI-Generated Suggestions Area */}
+                    <div className="bg-slate-50 border rounded-md p-4 my-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center">
+                          <Sparkles className="h-4 w-4 mr-2 text-blue-600" />
+                          <h4 className="font-medium">AI-Generated Suggestion</h4>
+                        </div>
+                        
+                        {aiIsLoading && (
+                          <Badge className="bg-blue-50 text-blue-600 border border-blue-200">
+                            <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse mr-1.5" />
+                            Processing...
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <div className="bg-white border border-slate-200 rounded-md p-3 relative">
+                        {aiResponse && aiAssistantMode === 'suggestions' ? (
+                          <div className="prose prose-sm max-w-none text-slate-700">
+                            <div dangerouslySetInnerHTML={{ __html: aiResponse.suggestion?.replace(/\n/g, '<br />') || '' }} />
+                          </div>
+                        ) : (
+                          <div className="prose prose-sm max-w-none text-slate-700">
+                            <p>
+                              The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in severity, with headache (12%), nausea (8%), and dizziness (5%) being the most commonly reported events.
+                            </p>
+                            <p>
+                              No serious adverse events were considered related to the study medication, and the discontinuation rate due to adverse events was low (3.2%), comparable to placebo (2.8%).
+                            </p>
+                          </div>
+                        )}
+                        
+                        {aiResponse && aiResponse.references && aiResponse.references.length > 0 && (
+                          <div className="mt-3 pt-3 border-t border-slate-200 text-xs text-slate-600">
+                            <strong>References:</strong>
+                            <ul className="mt-1 list-disc pl-5 space-y-1">
+                              {aiResponse.references.map((ref, idx) => (
+                                <li key={idx}>{ref}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                        
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <Button 
+                            size="sm" 
+                            className="h-7 text-xs"
+                            disabled={aiIsLoading}
+                          >
+                            <Clipboard className="h-3.5 w-3.5 mr-1.5" />
+                            Copy Full Text
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-7 text-xs"
+                            disabled={aiIsLoading}
+                          >
+                            <FilePlus2 className="h-3.5 w-3.5 mr-1.5" />
+                            Insert as New Paragraph
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-7 text-xs"
+                            disabled={aiIsLoading}
+                            onClick={() => {
+                              // Create a regeneration request
+                              setAiUserQuery("Suggest improvements for the safety profile section");
+                              handleAiQuerySubmit({ preventDefault: () => {} });
+                            }}
+                          >
+                            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                            Regenerate
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <form onSubmit={handleAiQuerySubmit} className="mt-3 flex gap-2">
+                        <input
+                          type="text"
+                          className="flex-1 h-9 rounded-md border text-sm px-3"
+                          placeholder="Ask the AI to help you complete this section or improve specific text..."
+                          value={aiUserQuery}
+                          onChange={(e) => setAiUserQuery(e.target.value)}
+                          disabled={aiIsLoading}
+                        />
+                        <Button 
+                          type="submit"
+                          size="sm" 
+                          className="h-9"
+                          disabled={aiIsLoading || !aiUserQuery.trim()}
+                        >
+                          <Sparkles className="h-4 w-4 mr-1.5" />
+                          Generate Suggestions
+                        </Button>
+                      </form>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                {/* Preview Tab Content */}
+                <TabsContent value="view" className="pt-4 space-y-4">
+                  <div className="border rounded-md p-6">
+                    <div className="prose prose-headings:font-semibold prose-headings:text-gray-900 prose-p:text-gray-600 max-w-none">
+                      <h1>2.5 Clinical Overview</h1>
+                      <h2>2.5.5 Safety Profile</h2>
+                      
+                      <p>
+                        The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).
+                      </p>
+                      <p>
+                        The efficacy of Drug X was evaluated across multiple endpoints. Primary endpoints showed a statistically significant improvement compared to placebo (p&lt;0.001) with consistent results across all study sites.
+                      </p>
+                      <p>
+                        No serious adverse events were considered related to the study medication, and the discontinuation rate due to adverse events was low (3.2%), comparable to placebo (2.8%).
+                      </p>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                {/* Changes Tab Content */}
+                <TabsContent value="history" className="pt-4 space-y-4">
+                  <div className="border rounded-md divide-y">
+                    <div className="p-3 bg-slate-50 flex justify-between items-center">
+                      <div className="flex items-center text-sm font-medium">
+                        <History className="h-4 w-4 mr-1.5 text-blue-600" />
+                        Recent Changes
+                      </div>
+                      <Button variant="outline" size="sm" className="h-8 text-xs">
+                        View Full History
+                      </Button>
+                    </div>
+                    
+                    <div className="p-3 flex items-start space-x-3">
+                      <div className="flex flex-col items-center">
+                        <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-medium">JD</div>
+                        <div className="w-0.5 bg-slate-200 h-full mt-2"></div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">John Doe</div>
+                        <div className="text-xs text-slate-500">Updated safety profile section</div>
+                        <div className="text-xs text-slate-400">Today at 10:32 AM</div>
+                        <div className="mt-2 border-l-2 border-blue-400 pl-3 ml-1 text-sm">
+                          <p>Added additional data on adverse event rates and discontinuation percentages.</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="p-3 flex items-start space-x-3">
+                      <div className="flex flex-col items-center">
+                        <div className="w-7 h-7 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 text-xs font-medium">SW</div>
+                        <div className="w-0.5 bg-slate-200 h-full mt-2"></div>
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium">Sarah Williams</div>
+                        <div className="text-xs text-slate-500">Edited introduction paragraph</div>
+                        <div className="text-xs text-slate-400">Yesterday at 4:15 PM</div>
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Version History Dialog */}
