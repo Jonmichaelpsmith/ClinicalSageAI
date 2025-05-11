@@ -26,7 +26,9 @@ import qmpApiRouter from './routes/qmp-api.js';
 // @ts-ignore
 import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
 // @ts-ignore
-import googleDocsRoutes from './routes/googleDocs.js';
+import * as googleDocsModule from './routes/googleDocs.js';
+// Access the router exported by the module
+const googleDocsRoutes = googleDocsModule.router;
 
 export default function registerRoutes(app: Express): void {
   // Create a router for basic CER routes
@@ -341,6 +343,10 @@ export default function registerRoutes(app: Express): void {
   // Register the validation router
   app.use('/api/cer', cerValidationRouter);
   console.log('CER Validation routes registered');
+  
+  // Register Google Docs routes
+  app.use('/api/google-docs', googleDocsRoutes);
+  console.log('Google Docs routes registered');
   
   // Error handler for API routes
   app.use('/api', (err: any, req: any, res: any, next: any) => {

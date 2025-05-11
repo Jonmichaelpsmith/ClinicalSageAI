@@ -5,10 +5,11 @@
  * for the eCTD Co-Author module.
  */
 
-const express = require('express');
-const { google } = require('googleapis');
+import express from 'express';
+import { google } from 'googleapis';
+import axios from 'axios';
+
 const router = express.Router();
-const axios = require('axios');
 
 // Load environment variables
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '1045075234440-sve60m8va1d4djdistod8g4lbo8vp791.apps.googleusercontent.com';
