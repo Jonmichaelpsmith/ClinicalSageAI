@@ -8,7 +8,6 @@ import { ClientWorkspaceSwitcher } from '../components/tenant/ClientWorkspaceSwi
 import { Building, Users, Settings, Info } from 'lucide-react';
 
 // Import component placeholders (these would be real components in production)
-import ProjectManagerGrid from '../components/ProjectManagerGrid';
 import NextActionsSidebar from '../components/NextActionsSidebar';
 import VaultQuickAccess from '../components/VaultQuickAccess';
 import AnalyticsQuickView from '../components/AnalyticsQuickView';
@@ -216,7 +215,9 @@ const ClientPortalLanding = () => {
                     </div>
                   )}
                 </div>
-                <ProjectManagerGrid projects={projects} />
+                <div className="bg-gray-50 p-4 rounded-lg">
+                  <p className="text-gray-500 text-center">Project list temporarily unavailable while system maintenance is performed.</p>
+                </div>
               </div>
               
               {/* Quick Insight Metrics */}
