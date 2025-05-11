@@ -930,7 +930,45 @@ export default function CoAuthor() {
                         if (!isGoogleAuthenticated) {
                           try {
                             console.log("User not authenticated with Google, initiating sign-in");
+                            // Add loading state
+                            setAuthLoading(true);
+                            
+                            // Set up event listener for the auth callback
+                            // This is important for handling the auth response from the popup
+                            window.addEventListener('message', function handleAuthMessage(event) {
+                              if (event.data && event.data.type === 'GOOGLE_AUTH_SUCCESS') {
+                                window.removeEventListener('message', handleAuthMessage);
+                                setIsGoogleAuthenticated(true);
+                                setGoogleUserInfo(event.data.user);
+                                setAuthLoading(false);
+                                
+                                toast({
+                                  title: "Google Sign-In Successful",
+                                  description: `Signed in as ${event.data.user.name}`,
+                                  variant: "default",
+                                });
+                                
+                                // Continue with opening the document after successful authentication
+                                setTimeout(() => {
+                                  setGoogleDocsPopupOpen(true);
+                                }, 500);
+                              } else if (event.data && event.data.type === 'GOOGLE_AUTH_ERROR') {
+                                window.removeEventListener('message', handleAuthMessage);
+                                setAuthLoading(false);
+                                
+                                toast({
+                                  title: "Authentication Error",
+                                  description: event.data.error || "Failed to sign in with Google. Please try again.",
+                                  variant: "destructive",
+                                });
+                              }
+                            });
+                            
                             const user = await googleAuthService.signInWithGoogle();
+                            
+                            // If we get here synchronously (without going through the message event),
+                            // it means the authentication was handled by the service directly
+                            setAuthLoading(false);
                             setIsGoogleAuthenticated(true);
                             setGoogleUserInfo(user);
                             
@@ -946,6 +984,8 @@ export default function CoAuthor() {
                             }, 500);
                           } catch (error) {
                             console.error("Error signing in with Google:", error);
+                            setAuthLoading(false);
+                            
                             toast({
                               title: "Authentication Error",
                               description: error.message || "Failed to sign in with Google. Please try again.",
@@ -954,6 +994,7 @@ export default function CoAuthor() {
                             return;
                           }
                         } else {
+                          console.log("User already authenticated with Google, opening document editor");
                           // User is already authenticated, open the document
                           setTimeout(() => {
                             setGoogleDocsPopupOpen(true);
