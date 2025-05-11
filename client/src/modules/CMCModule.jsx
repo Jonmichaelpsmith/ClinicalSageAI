@@ -13,6 +13,8 @@ import QualityRiskAssessment from '@/components/cmc/QualityRiskAssessment';
 import MethodValidationSimulator from '@/components/cmc/MethodValidationSimulator';
 import FormulationDecisionTree from '@/components/cmc/FormulationDecisionTree';
 import ICHComplianceChecker from '@/components/cmc/ICHComplianceChecker';
+import StabilityDataAnalyzer from '@/components/cmc/StabilityDataAnalyzer';
+import RegulatoryDocumentGenerator from '@/components/cmc/RegulatoryDocumentGenerator';
 
 export default function CMCModule() {
   const [activeTab, setActiveTab] = useState('overview');

@@ -419,10 +419,11 @@ export default function CoAuthor() {
                     </div>
                     <div className="flex items-center">
                       <Badge 
-                        variant={module.percent > 75 ? "success" : module.percent > 40 ? "warning" : "secondary"} 
-                        className={`mr-3 ${module.percent > 75 ? "bg-green-100 text-green-800 hover:bg-green-200" : 
-                                         module.percent > 40 ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200" : 
-                                         "bg-gray-100 text-gray-800 hover:bg-gray-200"}`}
+                        className={`mr-3 ${
+                          module.percent > 75 ? "bg-green-100 text-green-800 hover:bg-green-200" : 
+                          module.percent > 40 ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200" : 
+                          "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                        }`}
                       >
                         {module.percent > 75 ? "On Track" : module.percent > 40 ? "In Progress" : "Not Started"}
                       </Badge>
@@ -431,7 +432,11 @@ export default function CoAuthor() {
                   </div>
                   <Progress 
                     value={module.percent} 
-                    className={`h-2 ${module.percent > 75 ? "bg-green-100" : module.percent > 40 ? "bg-yellow-100" : "bg-gray-100"}`}
+                    className={`h-2 ${
+                      module.percent > 75 ? "bg-green-50" : 
+                      module.percent > 40 ? "bg-yellow-50" : 
+                      "bg-gray-50"
+                    }`} 
                   />
                 </div>
               ))}
