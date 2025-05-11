@@ -48,6 +48,7 @@ import {
   HelpCircle,
   MessageSquare,
   Sparkles,
+  GitCompare,
   Lightbulb,
   Check,
   X,
