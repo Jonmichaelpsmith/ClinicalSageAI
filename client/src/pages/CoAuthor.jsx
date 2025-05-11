@@ -431,11 +431,7 @@ export default function CoAuthor() {
         <Card className="lg:col-span-3">
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-lg">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 mr-2 text-blue-600">
-                <path d="M12 20V10"></path>
-                <path d="M18 20V4"></path>
-                <path d="M6 20v-4"></path>
-              </svg>
+              <BarChart className="h-5 w-5 mr-2 text-blue-600" />
               Module Progress Tracker
             </CardTitle>
             <CardDescription>
@@ -444,55 +440,103 @@ export default function CoAuthor() {
           </CardHeader>
           <CardContent>
             <div className="space-y-5">
-              {moduleProgress.map(module => (
-                <div key={module.id} className="space-y-1">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <div className="font-medium">Module {module.id}</div>
-                      <div className="text-sm text-gray-500 ml-2">{module.description}</div>
+              {moduleProgress.map(module => {
+                // Define status colors and icons based on completion
+                const getStatusConfig = (percent) => {
+                  if (percent >= 75) return { 
+                    badge: "bg-green-100 text-green-800 hover:bg-green-200",
+                    progressBg: "bg-green-50",
+                    icon: <CheckCircle className="h-4 w-4 text-green-600 mr-2" />,
+                    label: "On Track"
+                  };
+                  if (percent >= 40) return { 
+                    badge: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+                    progressBg: "bg-yellow-50",
+                    icon: <Clock className="h-4 w-4 text-yellow-600 mr-2" />,
+                    label: "In Progress"
+                  };
+                  return { 
+                    badge: "bg-red-100 text-red-800 hover:bg-red-200",
+                    progressBg: "bg-red-50",
+                    icon: <AlertCircle className="h-4 w-4 text-red-600 mr-2" />,
+                    label: "Needs Attention"
+                  };
+                };
+                
+                const statusConfig = getStatusConfig(module.percent);
+                
+                return (
+                  <div key={module.id} className="space-y-2 p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center">
+                        <div className="font-medium text-base">Module {module.id}</div>
+                        <div className="text-sm text-gray-500 ml-2">{module.description}</div>
+                      </div>
+                      <div className="flex items-center">
+                        <Badge className={`mr-3 ${statusConfig.badge}`}>
+                          <div className="flex items-center">
+                            {statusConfig.icon}
+                            {module.status}
+                          </div>
+                        </Badge>
+                        <div className="text-sm font-medium">{module.percent}%</div>
+                      </div>
                     </div>
-                    <div className="flex items-center">
-                      <Badge 
-                        className={`mr-3 ${
-                          module.percent > 75 ? "bg-green-100 text-green-800 hover:bg-green-200" : 
-                          module.percent > 40 ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-200" : 
-                          "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                        }`}
-                      >
-                        {module.percent > 75 ? "On Track" : module.percent > 40 ? "In Progress" : "Not Started"}
-                      </Badge>
-                      <div className="text-sm font-medium">{module.percent}%</div>
+                    
+                    <div className="flex items-center text-xs text-gray-500 mb-1">
+                      <span className="mr-3">
+                        <span className="font-semibold text-green-600">{module.completeDocs}</span> completed
+                      </span>
+                      <span className="mr-3">
+                        <span className="font-semibold text-yellow-600">{module.inProgressDocs}</span> in progress
+                      </span>
+                      <span>
+                        <span className="font-semibold text-gray-600">{module.notStartedDocs}</span> not started
+                      </span>
                     </div>
+                    
+                    <Progress 
+                      value={module.percent} 
+                      className={`h-3 ${statusConfig.progressBg}`} 
+                    />
                   </div>
-                  <Progress 
-                    value={module.percent} 
-                    className={`h-2 ${
-                      module.percent > 75 ? "bg-green-50" : 
-                      module.percent > 40 ? "bg-yellow-50" : 
-                      "bg-gray-50"
-                    }`} 
-                  />
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            <div className="grid grid-cols-3 gap-4 mt-8 border-t pt-6">
-              <div className="text-center p-3 bg-blue-50 rounded-lg">
-                <div className="text-2xl font-bold text-blue-600">60%</div>
-                <div className="text-sm text-gray-600 font-medium">Overall Progress</div>
-              </div>
-              <div className="text-center p-3 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">12</div>
-                <div className="text-sm text-gray-600 font-medium">Documents Complete</div>
-              </div>
-              <div className="text-center p-3 bg-purple-50 rounded-lg">
-                <div className="text-2xl font-bold text-purple-600">5</div>
-                <div className="text-sm text-gray-600 font-medium">Pending Review</div>
-              </div>
-            </div>
+            {/* Calculate overall statistics */}
+            {(() => {
+              const totalDocs = moduleProgress.reduce((acc, module) => acc + module.totalDocs, 0);
+              const completeDocs = moduleProgress.reduce((acc, module) => acc + module.completeDocs, 0);
+              const inProgressDocs = moduleProgress.reduce((acc, module) => acc + module.inProgressDocs, 0);
+              const notStartedDocs = moduleProgress.reduce((acc, module) => acc + module.notStartedDocs, 0);
+              const overallProgress = Math.round((completeDocs / totalDocs) * 100);
+              
+              return (
+                <div className="grid grid-cols-3 gap-4 mt-8 border-t pt-6">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-100 shadow-sm">
+                    <div className="text-2xl font-bold text-blue-600">{overallProgress}%</div>
+                    <div className="text-sm text-gray-600 font-medium">Overall Progress</div>
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg border border-green-100 shadow-sm">
+                    <div className="text-2xl font-bold text-green-600">{completeDocs}</div>
+                    <div className="text-sm text-gray-600 font-medium">Documents Complete</div>
+                  </div>
+                  <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-100 shadow-sm">
+                    <div className="text-2xl font-bold text-yellow-600">{inProgressDocs}</div>
+                    <div className="text-sm text-gray-600 font-medium">In Progress</div>
+                  </div>
+                </div>
+              );
+            })()}
             
             <div className="mt-6 text-center">
-              <Button variant="outline" className="mt-2">
+              <Button 
+                variant="outline" 
+                className="mt-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border-blue-200"
+                onClick={() => alert('Generating progress report...')}
+              >
+                <Download className="h-4 w-4 mr-2" />
                 Generate Progress Report
               </Button>
             </div>
