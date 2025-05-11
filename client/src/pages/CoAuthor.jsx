@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import {
   FileText,
   Edit,
@@ -36,6 +37,11 @@ import {
   Plus,
   MoreHorizontal,
   PanelLeft,
+  ShieldCheck,
+  PlayCircle,
+  UserCheck,
+  AlertTriangle,
+  CheckSquare
 } from 'lucide-react';
 
 export default function CoAuthor() {
@@ -427,11 +433,62 @@ export default function CoAuthor() {
               </Button>
             </div>
 
-            <div className="bg-green-50 p-2 rounded-md border border-green-100 text-xs text-green-800 mb-4 flex items-center">
+            <div className="bg-green-50 p-2 rounded-md border border-green-100 text-xs text-green-800 mb-3 flex items-center">
               <Info className="h-3.5 w-3.5 mr-1.5 text-green-600" />
               <span>
                 Drag documents to reposition within regulatory structure or drop files to import
               </span>
+            </div>
+            
+            {/* Document Validation Toolbar - Enterprise Edition */}
+            <div 
+              className="mb-4 p-3 rounded-md border border-green-200 shadow-sm flex flex-col gap-2" 
+              style={{ background: "linear-gradient(to right, rgba(236, 252, 246, 1) 0%, rgba(249, 253, 255, 0.8) 100%)" }}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <ShieldCheck className="h-4 w-4 text-green-600 mr-1.5" />
+                  <span className="text-sm font-medium text-gray-800">Document Validation</span>
+                </div>
+                <Button size="sm" variant="outline" className="h-7 text-xs border-green-500 text-green-700 hover:bg-green-50">
+                  <PlayCircle className="h-3.5 w-3.5 mr-1" />
+                  Run All Checks
+                </Button>
+              </div>
+              
+              <div className="grid grid-cols-4 gap-2 mt-1">
+                <div className="flex flex-col bg-white p-2 rounded border border-gray-100 shadow-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium">Structure</span>
+                    <Badge className="bg-green-100 text-green-700 text-[10px]">Passed</Badge>
+                  </div>
+                  <Progress value={100} className="h-1.5" indicatorClassName="bg-green-500" />
+                </div>
+                
+                <div className="flex flex-col bg-white p-2 rounded border border-gray-100 shadow-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium">Metadata</span>
+                    <Badge className="bg-amber-100 text-amber-700 text-[10px]">2 Warnings</Badge>
+                  </div>
+                  <Progress value={75} className="h-1.5" indicatorClassName="bg-amber-500" />
+                </div>
+                
+                <div className="flex flex-col bg-white p-2 rounded border border-gray-100 shadow-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium">References</span>
+                    <Badge className="bg-gray-100 text-gray-500 text-[10px]">Not Run</Badge>
+                  </div>
+                  <Progress value={0} className="h-1.5" indicatorClassName="bg-gray-200" />
+                </div>
+                
+                <div className="flex flex-col bg-white p-2 rounded border border-gray-100 shadow-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium">Compliance</span>
+                    <Badge className="bg-red-100 text-red-700 text-[10px]">3 Errors</Badge>
+                  </div>
+                  <Progress value={45} className="h-1.5" indicatorClassName="bg-red-500" />
+                </div>
+              </div>
             </div>
 
             <div className="mt-2 space-y-1 max-h-[400px] overflow-y-auto pr-1 border border-green-100 rounded-md bg-white shadow-sm">
@@ -1106,6 +1163,93 @@ export default function CoAuthor() {
             </div>
           </CardContent>
         </Card>
+        
+        {/* Document Validation Dialog - Enterprise Edition */}
+        <Dialog>
+          <DialogTrigger asChild>
+            <span className="hidden">Open Validation Details</span>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[600px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center">
+                <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />
+                Document Validation Results
+              </DialogTitle>
+              <DialogDescription>
+                The following issues were detected in your document structure and content.
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 my-2">
+              <div className="border rounded p-3 bg-amber-50 border-amber-200">
+                <div className="flex items-start mb-2">
+                  <AlertTriangle className="h-5 w-5 text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-medium text-amber-800">Metadata Warning</h4>
+                    <p className="text-sm text-amber-700">Missing required field "Study Duration" in section 1.2</p>
+                  </div>
+                </div>
+                <div className="flex justify-between mt-2">
+                  <span className="text-xs text-amber-600">Impact: Medium - May delay review process</span>
+                  <Button variant="outline" size="sm" className="h-7 text-xs">
+                    <Edit className="h-3 w-3 mr-1" />
+                    Fix Issue
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="border rounded p-3 bg-red-50 border-red-200">
+                <div className="flex items-start mb-2">
+                  <AlertCircle className="h-5 w-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-medium text-red-800">Compliance Error</h4>
+                    <p className="text-sm text-red-700">Section 2.5 is missing required references to clinical data</p>
+                  </div>
+                </div>
+                <div className="flex justify-between mt-2">
+                  <span className="text-xs text-red-600">Impact: High - Will prevent submission approval</span>
+                  <Button variant="outline" size="sm" className="h-7 text-xs border-red-300">
+                    <Link className="h-3 w-3 mr-1" />
+                    Add Reference
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="border rounded p-3 bg-green-50 border-green-200">
+                <div className="flex items-start mb-2">
+                  <CheckSquare className="h-5 w-5 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="font-medium text-green-800">Structure Validation Passed</h4>
+                    <p className="text-sm text-green-700">eCTD folder structure conforms to FDA requirements</p>
+                  </div>
+                </div>
+                <div className="flex justify-between mt-2">
+                  <span className="text-xs text-green-600">All 24 structure checks passed</span>
+                  <Button variant="outline" size="sm" className="h-7 text-xs border-green-300">
+                    <FileCheck className="h-3 w-3 mr-1" />
+                    View Details
+                  </Button>
+                </div>
+              </div>
+            </div>
+            
+            <DialogFooter className="flex items-center justify-between">
+              <div className="text-sm text-gray-500">
+                Last validated: May 11, 2025 at 09:45 AM
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline">
+                  <Download className="h-4 w-4 mr-1" />
+                  Export Report
+                </Button>
+                <Button>
+                  <PlayCircle className="h-4 w-4 mr-1" />
+                  Run Again
+                </Button>
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
