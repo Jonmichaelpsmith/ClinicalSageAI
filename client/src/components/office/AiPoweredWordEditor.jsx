@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { MessageSquare, PenTool, Lightbulb, ChevronRight, BookOpen, CheckCircle, 
-  RefreshCcw, HelpCircle, Wand2, FileText, List, BookOpen as BookIcon } from 'lucide-react';
+  RefreshCcw, HelpCircle, Wand2, FileText, List, BookOpen as BookIcon, AlertTriangle } from 'lucide-react';
 import MicrosoftWordEmbed from './MicrosoftWordEmbed';
 
 /**
