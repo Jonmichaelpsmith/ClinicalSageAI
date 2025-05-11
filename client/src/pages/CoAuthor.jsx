@@ -1297,33 +1297,32 @@ export default function CoAuthor() {
                 
                 {/* Edit Tab Content */}
                 <TabsContent value="edit" className="pt-4 space-y-4">
-                  <Suspense fallback={
-                    <div className="flex items-center justify-center p-8">
-                      <div className="text-center">
-                        <div className="h-8 w-8 mb-4 rounded-full border-t-2 border-b-2 border-blue-600 animate-spin mx-auto"></div>
-                        <p className="text-sm text-slate-500">Loading Microsoft Word editor...</p>
+                  <div className="flex flex-col space-y-4">
+                    <Button 
+                      className="w-full flex justify-center items-center py-8 bg-blue-50 hover:bg-blue-100 border-blue-200 text-blue-700"
+                      variant="outline"
+                      onClick={() => setGoogleDocsPopupOpen(true)}
+                    >
+                      <GoogleIcon className="h-6 w-6 mr-3" />
+                      <div className="flex flex-col items-start">
+                        <span className="font-semibold">Open in Google Docs</span>
+                        <span className="text-sm text-blue-600">Edit this document using Google Docs</span>
+                      </div>
+                    </Button>
+                    
+                    {/* Document status and info */}
+                    <div className="flex justify-between bg-slate-50 p-3 rounded-md border text-sm">
+                      <div>
+                        <span className="font-medium">Status:</span> {documentLocked ? 
+                          <Badge variant="outline" className="ml-1 bg-red-50 text-red-700 border-red-200">Locked by {lockedBy}</Badge> : 
+                          <Badge variant="outline" className="ml-1 bg-green-50 text-green-700 border-green-200">Available for editing</Badge>
+                        }
+                      </div>
+                      <div>
+                        <span className="font-medium">Last edited:</span> <span className="text-slate-600">Today at 3:45 PM</span>
                       </div>
                     </div>
-                  }>
-                    <EnhancedDocumentEditor 
-                      documentId={selectedDocument?.id?.toString() || 'current-doc'}
-                      sectionId="2.5.5"
-                      initialContent="The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects)."
-                      documentTitle={selectedDocument?.title || "Module 2.5 Clinical Overview"}
-                      sectionTitle="Safety Profile"
-                      onSave={(content) => {
-                        console.log("Saving document content:", content);
-                        toast({
-                          title: "Document Saved",
-                          description: "Your changes have been saved to the document vault.",
-                          variant: "default",
-                        });
-                      }}
-                      onLockDocument={(locked) => setDocumentLocked(locked)}
-                      isLocked={documentLocked}
-                      lockedBy={lockedBy}
-                    />
-                  </Suspense>
+                  </div>
                   
                   {/* AI Assistance Panel when in document editing mode */}
                   {aiAssistantOpen && (
@@ -2606,11 +2605,11 @@ export default function CoAuthor() {
                     <span>PDF Format</span>
                   </div>
                   <div 
-                    className={`border rounded-md p-3 cursor-pointer hover:bg-slate-50 flex items-center space-x-2 ${exportFormat === 'word' ? 'border-blue-500 bg-blue-50' : ''}`}
-                    onClick={() => setExportFormat('word')}
+                    className={`border rounded-md p-3 cursor-pointer hover:bg-slate-50 flex items-center space-x-2 ${exportFormat === 'gdoc' ? 'border-blue-500 bg-blue-50' : ''}`}
+                    onClick={() => setExportFormat('gdoc')}
                   >
-                    <div className={`w-4 h-4 rounded-full border ${exportFormat === 'word' ? 'border-blue-500 bg-blue-500' : 'border-slate-300'}`} />
-                    <span>Word Document</span>
+                    <div className={`w-4 h-4 rounded-full border ${exportFormat === 'gdoc' ? 'border-blue-500 bg-blue-500' : 'border-slate-300'}`} />
+                    <span>Google Docs Format</span>
                   </div>
                   <div 
                     className={`border rounded-md p-3 cursor-pointer hover:bg-slate-50 flex items-center space-x-2 ${exportFormat === 'html' ? 'border-blue-500 bg-blue-50' : ''}`}
