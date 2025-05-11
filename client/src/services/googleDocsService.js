@@ -92,21 +92,38 @@ export const saveToVault = async (docId, vaultMetadata = {}) => {
   try {
     console.log(`Saving Google Doc ${docId} to VAULT with metadata:`, vaultMetadata);
     
-    // Get Google access token for authorization
-    const accessToken = googleAuthService.getAccessToken();
-    if (!accessToken) {
-      throw new Error("No Google access token available. Please sign in again.");
+    // Get authentication info
+    let accessToken = googleAuthService.getAccessToken();
+    let authHeaders = {};
+    
+    // Check for authentication method
+    if (accessToken === 'replit-auth-token') {
+      console.log('Using Replit Auth for document saving');
+      
+      // When using Replit Auth, we don't send a token in the headers
+      // The server will handle authentication through the Replit Auth cookie
+      authHeaders = {
+        'Content-Type': 'application/json',
+        'X-Auth-Provider': 'replit'
+      };
+    } else if (accessToken) {
+      // When using standard OAuth token
+      console.log('Using OAuth token for document saving');
+      authHeaders = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
+      };
+    } else {
+      throw new Error("No authentication available. Please sign in again.");
     }
     
     // Call the backend API to save the document to VAULT
-    const response = await fetch(`${API_ENDPOINTS.SAVE_TO_VAULT}/${docId}?access_token=${accessToken}`, {
+    const response = await fetch(`${API_ENDPOINTS.SAVE_TO_VAULT}/${docId}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`
-      },
+      headers: authHeaders,
       body: JSON.stringify({
-        vaultMetadata
+        vaultMetadata,
+        userInfo: googleAuthService.getCurrentUser() // Include user info in the request
       }),
     });
     
