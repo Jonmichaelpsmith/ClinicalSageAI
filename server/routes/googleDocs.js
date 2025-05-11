@@ -271,10 +271,12 @@ router.post('/documents/template', async (req, res) => {
 
 /**
  * Save document to VAULT
+ * Endpoint matches client-side API_ENDPOINTS.SAVE_TO_VAULT
  */
-router.post('/vault/save', async (req, res) => {
+router.post('/save-to-vault/:documentId', async (req, res) => {
   const { access_token } = req.query;
-  const { documentId, vaultFolderId, metadata } = req.body;
+  const { documentId } = req.params;
+  const { vaultMetadata } = req.body;
   
   if (!access_token) {
     return res.status(401).json({ error: 'No access token provided' });
@@ -309,11 +311,14 @@ router.post('/vault/save', async (req, res) => {
     const documentMetadata = {
       title: document.data.title,
       lastModified: new Date().toISOString(),
-      vaultFolderId: vaultFolderId || 'default',
+      vaultFolderId: vaultMetadata?.folderId || 'default',
       size: pdfResponse.data.length,
       format: 'PDF',
       googleDocsId: documentId,
-      ...metadata
+      moduleType: vaultMetadata?.moduleType || 'unknown',
+      section: vaultMetadata?.section || 'unknown',
+      organizationId: vaultMetadata?.organizationId || '1',
+      userId: vaultMetadata?.userId || 'anonymous'
     };
     
     // Simulate API response from VAULT
