@@ -27,6 +27,18 @@ export async function initializeOfficeJS() {
     script.onload = () => {
       console.log('Office JS API loaded');
       
+      // Add Microsoft Fabric UI
+      const fabricUIScript = document.createElement('script');
+      fabricUIScript.type = 'text/javascript';
+      fabricUIScript.src = 'https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/js/fabric.min.js';
+      document.head.appendChild(fabricUIScript);
+      
+      // Add Office UI styles
+      const officeUIStyles = document.createElement('link');
+      officeUIStyles.rel = 'stylesheet';
+      officeUIStyles.href = 'https://static2.sharepointonline.com/files/fabric/office-ui-fabric-js/1.4.0/css/fabric.min.css';
+      document.head.appendChild(officeUIStyles);
+      
       // Initialize Office
       window.Office.initialize = (reason) => {
         console.log('Office initialized:', reason);
@@ -120,14 +132,354 @@ export async function openDocument(documentId, documentContent) {
       throw new Error('No access token available. User needs to login first.');
     }
     
-    const Word = await getWordApplication();
-    
-    // In a real implementation, this would open the document in Word Online
-    // For now, we'll simulate this by returning a Word document object
-    
     console.log(`Opening document ${documentId} with content:`, documentContent?.substring(0, 50) + '...');
     
-    return await createDocument(documentContent);
+    // Create a container to hold the Word Online iframe
+    const container = document.createElement('div');
+    container.id = `word-container-${documentId}`;
+    container.style.width = '100%';
+    container.style.height = '600px';
+    container.style.border = 'none';
+    
+    // Create an iframe that will host Word Online
+    const iframe = document.createElement('iframe');
+    iframe.id = `word-frame-${documentId}`;
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    
+    // Add the iframe to the container
+    container.appendChild(iframe);
+    
+    // Add container to the document but make it hidden initially
+    // It will be added to the appropriate location in the UI
+    document.body.appendChild(container);
+    
+    // Create a Word document session using Office JS
+    const session = {
+      documentId,
+      container,
+      iframe,
+      content: documentContent,
+      loaded: false,
+      
+      /**
+       * Insert text at specified location
+       */
+      insertText: async (text, location = 'end') => {
+        if (!window.Office || !window.Word) {
+          console.error('Office JS not initialized');
+          return;
+        }
+        
+        try {
+          // In a real implementation, we would use Office.js to insert text
+          // This would be something like:
+          // await Word.run(async (context) => {
+          //   let range;
+          //   if (location === 'start') {
+          //     range = context.document.body.getRange('start');
+          //   } else if (location === 'end') {
+          //     range = context.document.body.getRange('end');
+          //   } else {
+          //     range = context.document.getSelection();
+          //   }
+          //   range.insertText(text, 'Replace');
+          //   await context.sync();
+          // });
+          
+          // For now, we'll update our content property
+          if (location === 'replace') {
+            session.content = text;
+          } else if (location === 'start') {
+            session.content = text + session.content;
+          } else {
+            session.content += text;
+          }
+          
+          console.log('Text inserted:', text);
+          
+          // Update iframe content
+          if (iframe.contentWindow && iframe.contentWindow.document) {
+            iframe.contentWindow.document.body.innerHTML = `<div style="font-family: 'Calibri', sans-serif; padding: 20px;">${session.content}</div>`;
+          }
+        } catch (error) {
+          console.error('Error inserting text:', error);
+        }
+      },
+      
+      /**
+       * Insert HTML at specified location
+       */
+      insertHtml: async (html, location = 'end') => {
+        if (!window.Office || !window.Word) {
+          console.error('Office JS not initialized');
+          return;
+        }
+        
+        try {
+          // In a real implementation, we would use Office.js to insert HTML
+          
+          // For now, we'll update our content property
+          if (location === 'replace') {
+            session.content = html;
+          } else if (location === 'start') {
+            session.content = html + session.content;
+          } else {
+            session.content += html;
+          }
+          
+          console.log('HTML inserted:', html);
+          
+          // Update iframe content
+          if (iframe.contentWindow && iframe.contentWindow.document) {
+            iframe.contentWindow.document.body.innerHTML = `<div style="font-family: 'Calibri', sans-serif; padding: 20px;">${session.content}</div>`;
+          }
+        } catch (error) {
+          console.error('Error inserting HTML:', error);
+        }
+      },
+      
+      /**
+       * Get document content
+       */
+      getText: async () => {
+        if (!window.Office || !window.Word) {
+          console.error('Office JS not initialized');
+          return session.content;
+        }
+        
+        try {
+          // In a real implementation, we would use Office.js to get text
+          // Something like:
+          // let content = '';
+          // await Word.run(async (context) => {
+          //   const body = context.document.body;
+          //   body.load('text');
+          //   await context.sync();
+          //   content = body.text;
+          // });
+          // return content;
+          
+          return session.content;
+        } catch (error) {
+          console.error('Error getting text:', error);
+          return session.content;
+        }
+      },
+      
+      /**
+       * Save document
+       */
+      save: async () => {
+        if (!window.Office || !window.Word) {
+          console.error('Office JS not initialized');
+          return false;
+        }
+        
+        try {
+          // In a real implementation, we would use Office.js to save
+          // Something like:
+          // await Word.run(async (context) => {
+          //   context.document.save();
+          //   await context.sync();
+          // });
+          
+          console.log('Document saved');
+          return true;
+        } catch (error) {
+          console.error('Error saving document:', error);
+          return false;
+        }
+      },
+      
+      /**
+       * Initialize the Word Online frame
+       */
+      initialize: async () => {
+        try {
+          // Set up iframe content to simulate Word Online
+          // In a real implementation, this would load Word Online in the iframe
+          const wordOnlineHTML = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+              <meta charset="utf-8">
+              <title>Microsoft Word Online</title>
+              <style>
+                body {
+                  font-family: 'Segoe UI', 'Calibri', sans-serif;
+                  margin: 0;
+                  padding: 0;
+                  overflow: hidden;
+                }
+                .word-ribbon {
+                  background: #2b579a;
+                  color: white;
+                  padding: 4px 8px;
+                  display: flex;
+                  align-items: center;
+                }
+                .word-ribbon-title {
+                  margin-right: 20px;
+                }
+                .word-ribbon-tabs {
+                  display: flex;
+                }
+                .word-ribbon-tab {
+                  padding: 6px 12px;
+                  cursor: pointer;
+                }
+                .word-ribbon-tab.active {
+                  background: #fff;
+                  color: #2b579a;
+                }
+                .word-toolbar {
+                  background: #f4f4f4;
+                  border-bottom: 1px solid #d6d6d6;
+                  padding: 4px 8px;
+                  display: flex;
+                  align-items: center;
+                }
+                .word-toolbar-button {
+                  background: transparent;
+                  border: 1px solid transparent;
+                  padding: 4px 8px;
+                  margin-right: 4px;
+                  cursor: pointer;
+                  border-radius: 2px;
+                }
+                .word-toolbar-button:hover {
+                  border-color: #d6d6d6;
+                }
+                .word-editor {
+                  padding: 20px;
+                  height: calc(100vh - 80px);
+                  overflow: auto;
+                }
+                .word-content {
+                  background: white;
+                  padding: 40px;
+                  min-height: 500px;
+                  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+                  max-width: 816px; /* US Letter width */
+                  margin: 0 auto;
+                }
+                .word-statusbar {
+                  background: #f4f4f4;
+                  border-top: 1px solid #d6d6d6;
+                  padding: 2px 8px;
+                  font-size: 12px;
+                  position: fixed;
+                  bottom: 0;
+                  left: 0;
+                  right: 0;
+                  display: flex;
+                  justify-content: space-between;
+                }
+              </style>
+            </head>
+            <body>
+              <div class="word-ribbon">
+                <div class="word-ribbon-title">Word</div>
+                <div class="word-ribbon-tabs">
+                  <div class="word-ribbon-tab active">Home</div>
+                  <div class="word-ribbon-tab">Insert</div>
+                  <div class="word-ribbon-tab">Design</div>
+                  <div class="word-ribbon-tab">Layout</div>
+                  <div class="word-ribbon-tab">References</div>
+                  <div class="word-ribbon-tab">Review</div>
+                  <div class="word-ribbon-tab">View</div>
+                </div>
+              </div>
+              <div class="word-toolbar">
+                <button class="word-toolbar-button">Bold</button>
+                <button class="word-toolbar-button">Italic</button>
+                <button class="word-toolbar-button">Underline</button>
+                <button class="word-toolbar-button">Copy</button>
+                <button class="word-toolbar-button">Paste</button>
+                <button class="word-toolbar-button">Format</button>
+              </div>
+              <div class="word-editor">
+                <div class="word-content" contenteditable="true">
+                  ${documentContent || 'Type your document here...'}
+                </div>
+              </div>
+              <div class="word-statusbar">
+                <div>Page 1 of 1</div>
+                <div>100%</div>
+                <div>English (US)</div>
+              </div>
+              <script>
+                // Track changes to content
+                document.querySelector('.word-content').addEventListener('input', (e) => {
+                  console.log('Content changed');
+                  // In a real implementation, we would sync with Office.js
+                  window.parent.postMessage({
+                    type: 'content-changed',
+                    content: e.target.innerHTML
+                  }, '*');
+                });
+                
+                // Set up communication with parent window
+                window.addEventListener('message', (event) => {
+                  if (event.data.type === 'get-content') {
+                    window.parent.postMessage({
+                      type: 'content',
+                      content: document.querySelector('.word-content').innerHTML
+                    }, '*');
+                  } else if (event.data.type === 'set-content') {
+                    document.querySelector('.word-content').innerHTML = event.data.content;
+                  }
+                });
+              </script>
+            </body>
+            </html>
+          `;
+          
+          // Set the iframe src to load Word Online
+          // In a real implementation, this would be a URL to Word Online
+          iframe.onload = () => {
+            console.log('Word Online iframe loaded');
+            session.loaded = true;
+            
+            // Set up message listener for iframe communication
+            window.addEventListener('message', (event) => {
+              if (event.data.type === 'content-changed') {
+                session.content = event.data.content;
+              } else if (event.data.type === 'content') {
+                session.content = event.data.content;
+              }
+            });
+          };
+          
+          // Write the Word Online HTML to the iframe
+          iframe.contentWindow.document.open();
+          iframe.contentWindow.document.write(wordOnlineHTML);
+          iframe.contentWindow.document.close();
+          
+          return session;
+        } catch (error) {
+          console.error('Error initializing Word Online iframe:', error);
+          throw error;
+        }
+      }
+    };
+    
+    // Initialize the session
+    await session.initialize();
+    
+    return {
+      documentId,
+      body: {
+        insertText: session.insertText,
+        insertHtml: session.insertHtml,
+        getText: session.getText
+      },
+      save: session.save,
+      container,
+      iframe
+    };
   } catch (error) {
     console.error('Error opening Word document:', error);
     throw error;
