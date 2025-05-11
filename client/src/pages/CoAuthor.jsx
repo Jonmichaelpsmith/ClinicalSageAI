@@ -917,7 +917,7 @@ export default function CoAuthor() {
                     size="sm" 
                     variant="outline" 
                     className="border-blue-200 text-blue-700"
-                    onClick={() => {
+                    onClick={async () => {
                       if (selectedDocument) {
                         toast({
                           title: "Opening Google Docs",
@@ -926,15 +926,44 @@ export default function CoAuthor() {
                         });
                         console.log("Creating Google Docs editing session for VAULT document " + selectedDocument.id + "...");
                         
-                        // Simulate a brief loading period
-                        setTimeout(() => {
-                          setGoogleDocsPopupOpen(true);
-                          toast({
-                            title: "Google Docs Ready",
-                            description: "Document is now ready for editing in Google Docs.",
-                            variant: "default",
-                          });
-                        }, 700);
+                        // Check if user is authenticated with Google
+                        if (!isGoogleAuthenticated) {
+                          try {
+                            console.log("User not authenticated with Google, initiating sign-in");
+                            const user = await googleAuthService.signInWithGoogle();
+                            setIsGoogleAuthenticated(true);
+                            setGoogleUserInfo(user);
+                            
+                            toast({
+                              title: "Google Sign-In Successful",
+                              description: `Signed in as ${user.name}`,
+                              variant: "default",
+                            });
+                            
+                            // Continue with opening the document after successful authentication
+                            setTimeout(() => {
+                              setGoogleDocsPopupOpen(true);
+                            }, 500);
+                          } catch (error) {
+                            console.error("Error signing in with Google:", error);
+                            toast({
+                              title: "Authentication Error",
+                              description: error.message || "Failed to sign in with Google. Please try again.",
+                              variant: "destructive",
+                            });
+                            return;
+                          }
+                        } else {
+                          // User is already authenticated, open the document
+                          setTimeout(() => {
+                            setGoogleDocsPopupOpen(true);
+                            toast({
+                              title: "Google Docs Ready",
+                              description: "Document is now ready for editing in Google Docs.",
+                              variant: "default",
+                            });
+                          }, 700);
+                        }
                       } else {
                         toast({
                           title: "Select a Document",

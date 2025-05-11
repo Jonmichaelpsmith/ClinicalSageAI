@@ -7,9 +7,9 @@
 
 // OAuth configuration
 export const GOOGLE_CONFIG = {
-  // These values would come from your Google Cloud Console project
-  CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID || 'your-client-id',
-  API_KEY: import.meta.env.VITE_GOOGLE_API_KEY || 'your-api-key',
+  // Using Google OAuth client ID from the user-provided credentials file
+  CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID || '1045075234440-sve60m8va1d4djdistod8g4lbo8vp791.apps.googleusercontent.com',
+  API_KEY: import.meta.env.VITE_GOOGLE_API_KEY || '',
   DISCOVERY_DOCS: [
     'https://docs.googleapis.com/$discovery/rest?version=v1',
     'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'
@@ -17,13 +17,16 @@ export const GOOGLE_CONFIG = {
   SCOPES: [
     'https://www.googleapis.com/auth/documents',
     'https://www.googleapis.com/auth/drive.file',
-    'https://www.googleapis.com/auth/drive.metadata.readonly'
+    'https://www.googleapis.com/auth/drive.metadata.readonly',
+    'profile',
+    'email'
   ],
   // Authorized domains for OAuth
   AUTHORIZED_ORIGINS: [
     window.location.origin,
     'https://trialsage.com',
-    'https://app.trialsage.com'
+    'https://app.trialsage.com',
+    'https://regulatory-pilot.com'
   ],
   // OAuth redirect URI
   REDIRECT_URI: `${window.location.origin}/auth/google/callback`

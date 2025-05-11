@@ -27,19 +27,32 @@ const GoogleDocsEmbed = ({
   const [error, setError] = useState(null);
   
   // Build the Google Docs URL with appropriate parameters
-  const embedUrl = `https://docs.google.com/document/d/${documentId}/${readOnly ? 'preview' : 'edit'}?embedded=true`;
+  const embedUrl = `https://docs.google.com/document/d/${documentId}/${readOnly ? 'preview' : 'edit'}?embedded=true&ouid=${encodeURIComponent(window.location.origin)}`;
   
   // Log loading status for debugging
   useEffect(() => {
     console.log(`Loading Google Doc: ${documentName} (${documentId})`);
+    console.log(`Embedding URL: ${embedUrl}`);
     
-    // Simulate verifying document access
+    // Add auth check event listener
+    const handleAuthError = () => {
+      console.log("Received auth error from Google Docs iframe");
+      setError("Authentication required. Please make sure you're signed in with Google.");
+    };
+    
+    window.addEventListener('googleDocsAuthError', handleAuthError);
+    
+    // Simulate verifying document access with a slightly longer timeout
+    // to ensure Google can properly authenticate
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 1500);
+    }, 2500);
     
-    return () => clearTimeout(timer);
-  }, [documentId, documentName]);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('googleDocsAuthError', handleAuthError);
+    };
+  }, [documentId, documentName, embedUrl]);
   
   // Handle iframe load events
   const handleIframeLoad = () => {
