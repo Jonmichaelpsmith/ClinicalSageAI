@@ -29,15 +29,56 @@ export default function CoAuthor() {
     { id: 2, name: 'Module 1.20 Introduction', description: 'and General...', lastEdited: '3 days ago' }
   ];
 
+  // Enhanced document tree structure based on eCTD modules
   const documentTree = [
     {
       id: 1,
       name: 'Module 1',
       type: 'folder',
+      status: 'active',
       children: [
-        { id: 101, name: 'Form : 1574', type: 'document', format: 'docx' },
-        { id: 102, name: 'Cover Letter', type: 'document', format: 'docx' },
-        { id: 103, name: 'Investigational drug labeling', type: 'document', format: 'pdf' }
+        { id: 101, name: 'Form : 1574', type: 'document', format: 'docx', status: 'final' },
+        { id: 102, name: 'Cover Letter', type: 'document', format: 'docx', status: 'final' },
+        { id: 103, name: 'Investigational drug labeling', type: 'document', format: 'pdf', status: 'draft' }
+      ]
+    },
+    {
+      id: 2,
+      name: 'Module 2',
+      type: 'folder',
+      status: 'active',
+      children: [
+        { id: 201, name: 'Module 2.2 Overview', type: 'document', format: 'docx', status: 'draft' },
+        { id: 202, name: 'Module 2.3 Quality Overall Summary', type: 'document', format: 'docx', status: 'draft' },
+        { id: 203, name: 'Module 2.4 Nonclinical Overview', type: 'document', format: 'docx', status: 'draft' }
+      ]
+    },
+    {
+      id: 3,
+      name: 'Module 3',
+      type: 'folder',
+      status: 'active',
+      children: [
+        { 
+          id: 301, 
+          name: 'Module 3.2.S', 
+          type: 'folder', 
+          status: 'active',
+          children: [
+            { id: 3011, name: 'General Information', type: 'document', format: 'docx', status: 'draft' },
+            { id: 3012, name: 'Manufacturer', type: 'document', format: 'docx', status: 'draft' }
+          ]
+        },
+        { 
+          id: 302, 
+          name: 'Module 3.2.P', 
+          type: 'folder', 
+          status: 'active',
+          children: [
+            { id: 3021, name: 'Description and composition', type: 'document', format: 'docx', status: 'draft' },
+            { id: 3022, name: 'Pharmaceutical development', type: 'document', format: 'docx', status: 'draft' }
+          ]
+        }
       ]
     }
   ];
@@ -53,7 +94,7 @@ export default function CoAuthor() {
           <h1 className="text-2xl font-bold">eCTD Co-Author Module</h1>
         </div>
         <p className="text-muted-foreground text-sm ml-10">
-          AI-driven regulatory document authoring maunest
+          AI-driven regulatory document authoring module
         </p>
       </header>
 
@@ -123,7 +164,7 @@ export default function CoAuthor() {
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center">
                   <FileText className="h-5 w-5 mr-2 text-blue-500" />
-                  <span className="font-medium">Module 1</span>
+                  <span className="font-medium">eCTD Document Tree</span>
                 </div>
                 <Button 
                   size="sm" 
@@ -131,22 +172,92 @@ export default function CoAuthor() {
                   onClick={() => setIsTreeOpen(!isTreeOpen)}
                   className="flex items-center"
                 >
-                  <span>Open full eCTD tree</span>
-                  <ChevronDown className="h-4 w-4 ml-1" />
+                  <span>{isTreeOpen ? "Close full eCTD tree" : "Open full eCTD tree"}</span>
+                  <ChevronDown className={`h-4 w-4 ml-1 ${isTreeOpen ? "transform rotate-180" : ""}`} />
                 </Button>
               </div>
 
-              {isTreeOpen && (
+              {isTreeOpen ? (
+                <div className="space-y-4 max-h-96 overflow-y-auto border rounded-md p-3 bg-gray-50">
+                  {documentTree.map(module => (
+                    <div key={module.id} className="space-y-2">
+                      <div className="flex items-center font-medium">
+                        <FolderOpen className="h-4 w-4 mr-2 text-blue-500" />
+                        <span>{module.name}</span>
+                        <Badge variant="outline" className="ml-2 text-xs">
+                          {module.status}
+                        </Badge>
+                      </div>
+                      
+                      <div className="pl-6 space-y-2 border-l border-gray-200 ml-2">
+                        {module.children.map(child => {
+                          if (child.type === 'folder') {
+                            return (
+                              <div key={child.id} className="space-y-1">
+                                <div className="flex items-center">
+                                  <FolderOpen className="h-4 w-4 mr-2 text-gray-500" />
+                                  <span className="text-sm font-medium">{child.name}</span>
+                                </div>
+                                
+                                <div className="pl-5 space-y-1 border-l border-gray-200 ml-1">
+                                  {child.children.map(subChild => (
+                                    <div key={subChild.id} className="flex items-center justify-between">
+                                      <div className="flex items-center">
+                                        <FileText className="h-3 w-3 mr-2 text-gray-500" />
+                                        <span className="text-xs">{subChild.name}</span>
+                                      </div>
+                                      <div className="flex items-center">
+                                        <Badge variant="outline" className="mr-1 text-xs">
+                                          {subChild.status}
+                                        </Badge>
+                                        <Badge variant="outline" className="text-xs">
+                                          {subChild.format}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            );
+                          } else {
+                            return (
+                              <div key={child.id} className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <FileText className="h-4 w-4 mr-2 text-gray-500" />
+                                  <span className="text-sm">{child.name}</span>
+                                </div>
+                                <div className="flex items-center">
+                                  <Badge variant="outline" className="mr-1 text-xs">
+                                    {child.status}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs">
+                                    {child.format}
+                                  </Badge>
+                                </div>
+                              </div>
+                            );
+                          }
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
                 <div className="pl-8 space-y-2 border-l-2 border-gray-200 ml-2">
                   {documentTree[0].children.map(doc => (
-                    <div key={doc.id} className="flex items-center">
-                      <FileText className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="text-sm">{doc.name}</span>
-                      {doc.format && (
-                        <Badge variant="outline" className="ml-2 text-xs">
+                    <div key={doc.id} className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <FileText className="h-4 w-4 mr-2 text-gray-500" />
+                        <span className="text-sm">{doc.name}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Badge variant="outline" className="mr-1 text-xs">
+                          {doc.status}
+                        </Badge>
+                        <Badge variant="outline" className="text-xs">
                           {doc.format}
                         </Badge>
-                      )}
+                      </div>
                     </div>
                   ))}
                 </div>
