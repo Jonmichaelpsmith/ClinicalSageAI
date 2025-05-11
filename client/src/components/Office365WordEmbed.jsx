@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Button, Spinner, Alert, AlertTitle, AlertDescription } from '@/components/ui';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { 
   Tabs, 
   TabsContent, 
   TabsList, 
   TabsTrigger 
 } from "@/components/ui/tabs";
+import { Loader2 } from "lucide-react";
 import { useToast } from '@/hooks/use-toast';
 import { 
   initializeOfficeJS, 
@@ -449,7 +451,7 @@ const Office365WordEmbed = ({
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center p-8 space-y-4 min-h-[400px]">
-        <Spinner size="lg" />
+        <Loader2 className="w-8 h-8 animate-spin" />
         <p className="text-gray-600">Loading Microsoft Word...</p>
       </div>
     );
@@ -516,7 +518,7 @@ const Office365WordEmbed = ({
             onClick={handleSave} 
             disabled={isSaving || !document}
           >
-            {isSaving ? <Spinner size="sm" className="mr-2" /> : null}
+            {isSaving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
             Save
           </Button>
           <Button 
@@ -606,7 +608,7 @@ const Office365WordEmbed = ({
                     onClick={handleAIPrompt} 
                     disabled={isGenerating || !aiPrompt.trim()}
                   >
-                    {isGenerating ? <Spinner size="sm" className="mr-2" /> : null}
+                    {isGenerating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                     Get Response
                   </Button>
                 </div>
@@ -638,7 +640,7 @@ const Office365WordEmbed = ({
                   onClick={handleGetSuggestions} 
                   disabled={isGenerating}
                 >
-                  {isGenerating ? <Spinner size="sm" className="mr-2" /> : null}
+                  {isGenerating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   Analyze Document
                 </Button>
               </div>
@@ -676,7 +678,7 @@ const Office365WordEmbed = ({
                   onClick={loadVersionHistory} 
                   disabled={isLoadingVersions}
                 >
-                  {isLoadingVersions ? <Spinner size="sm" className="mr-2" /> : null}
+                  {isLoadingVersions ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
                   Refresh
                 </Button>
               </div>
