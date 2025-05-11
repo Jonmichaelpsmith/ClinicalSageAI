@@ -77,12 +77,16 @@ const Office365WordEmbed = ({
         
         // Check if user is authenticated with Microsoft
         if (!isAuthenticated()) {
+          console.log('User not authenticated with Microsoft, prompting login...');
           setIsAuthenticating(true);
           return; // Wait for user to authenticate
         }
         
+        console.log('User authenticated with Microsoft, initializing Office JS...');
+        
         // Initialize Office JS
         const initialized = await initializeOfficeJS();
+        console.log('Office JS initialization result:', initialized);
         setIsOfficeJSReady(initialized);
         
         if (!initialized) {
@@ -93,7 +97,7 @@ const Office365WordEmbed = ({
         setIsLoading(false);
       } catch (err) {
         console.error('Error initializing Office JS:', err);
-        setError('Failed to initialize Microsoft Office integration');
+        setError('Failed to initialize Microsoft Office integration: ' + (err.message || 'Unknown error'));
         setIsLoading(false);
       }
     };
@@ -474,7 +478,7 @@ const Office365WordEmbed = ({
 
   return (
     <div className="flex flex-col h-full border rounded-lg shadow-lg">
-      {/* Toolbar */}
+      {/* Microsoft Word Embed Component */}
       <div className="flex justify-between items-center p-2 border-b bg-gray-50">
         <div className="flex items-center space-x-2">
           <h3 className="text-lg font-medium">Microsoft Word</h3>
