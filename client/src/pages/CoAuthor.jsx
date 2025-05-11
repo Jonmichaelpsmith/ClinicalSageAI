@@ -462,55 +462,109 @@ export default function CoAuthor() {
               </div>
 
               {isTreeOpen && (
-                <div className="space-y-1 ml-5 mb-2">
-                  <div className="border-l-2 border-green-100 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                <div className="space-y-1.5 ml-4 pb-2 border-l border-green-200">
+                  {/* Module 1.1 with enterprise features */}
+                  <div 
+                    className="border-l-2 border-green-400 pl-3 py-1.5 hover:bg-green-50 rounded-r-md transition-colors group" 
+                    style={{ background: "linear-gradient(to right, rgba(240, 253, 244, 0.8) 0%, rgba(255, 255, 255, 1) 100%)" }}
+                  >
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center text-xs text-gray-700">
+                      <div className="flex items-center text-xs">
                         <FileText className="h-3.5 w-3.5 text-green-500 mr-1.5" />
-                        <span>1.1 Forms</span>
+                        <span className="font-medium text-gray-800">1.1 Forms</span>
+                        <Badge className="ml-2 text-[10px] bg-indigo-50 text-indigo-600 border-indigo-100">FDA 1571</Badge>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Badge className="text-[10px] px-1 h-4 bg-green-100 text-green-700">
-                          Signed
-                        </Badge>
-                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
-                          <MoreHorizontal className="h-3 w-3 text-gray-500" />
-                        </Button>
+                        <Badge className="text-[10px] px-1 h-4 bg-green-100 text-green-700">Signed</Badge>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex">
+                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0" title="Preview">
+                            <Eye className="h-3 w-3 text-gray-500" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0" title="Check-in">
+                            <GitMerge className="h-3 w-3 text-gray-500" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0" title="Lock">
+                            <FileLock className="h-3 w-3 text-gray-500" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0" title="More options">
+                            <MoreHorizontal className="h-3 w-3 text-gray-500" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
+                    <div className="text-[10px] text-gray-500 ml-5 mt-0.5">
+                      <span>Last modified: 2 hours ago by John Smith</span>
+                      <span className="mx-1">•</span>
+                      <span>v2.3</span>
+                      <span className="mx-1">•</span>
+                      <span className="text-green-600">3 validations passed</span>
+                    </div>
                   </div>
-
-                  <div className="border-l-2 border-green-100 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                  
+                  {/* Module 1.2 with enhanced metadata */}
+                  <div className="border-l-2 border-amber-300 pl-3 py-1.5 hover:bg-amber-50 rounded-r-md transition-colors group">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center text-xs text-gray-700">
+                      <div className="flex items-center text-xs">
                         <FileText className="h-3.5 w-3.5 text-amber-500 mr-1.5" />
-                        <span>1.2 Cover Letters</span>
+                        <span className="font-medium text-gray-800">1.2 Cover Letters</span>
+                        <Badge className="ml-2 text-[10px] bg-blue-50 text-blue-600 border-blue-100">Required</Badge>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Badge className="text-[10px] px-1 h-4 bg-amber-100 text-amber-700">
-                          Draft
-                        </Badge>
-                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
-                          <MoreHorizontal className="h-3 w-3 text-gray-500" />
-                        </Button>
+                        <Badge className="text-[10px] px-1 h-4 bg-amber-100 text-amber-700">Draft</Badge>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex">
+                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0" title="Edit">
+                            <Edit className="h-3 w-3 text-gray-500" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0" title="Preview">
+                            <Eye className="h-3 w-3 text-gray-500" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0" title="More options">
+                            <MoreHorizontal className="h-3 w-3 text-gray-500" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
+                    <div className="text-[10px] text-gray-500 ml-5 mt-0.5">
+                      <span>Edited: 30 minutes ago by Sarah Johnson</span>
+                      <span className="mx-1">•</span>
+                      <span>v1.2</span>
+                      <span className="mx-1">•</span>
+                      <span className="text-amber-600">1 validation issue</span>
+                    </div>
                   </div>
-
-                  <div className="border-l-2 border-green-100 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                  
+                  {/* Module 1.3 with revision tracking */}
+                  <div className="border-l-2 border-red-300 pl-3 py-1.5 hover:bg-red-50 rounded-r-md transition-colors group">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center text-xs text-gray-700">
-                        <FileText className="h-3.5 w-3.5 text-green-500 mr-1.5" />
-                        <span>1.3 Administrative Information</span>
+                      <div className="flex items-center text-xs">
+                        <FileText className="h-3.5 w-3.5 text-red-500 mr-1.5" />
+                        <span className="font-medium text-gray-800">1.3 Administrative Information</span>
+                        <Badge className="ml-2 text-[10px] bg-gray-50 text-gray-600 border-gray-100">Awaiting Signature</Badge>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <Badge className="text-[10px] px-1 h-4 bg-green-100 text-green-700">
-                          Complete
-                        </Badge>
-                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
-                          <MoreHorizontal className="h-3 w-3 text-gray-500" />
-                        </Button>
+                        <Badge className="text-[10px] px-1 h-4 bg-red-100 text-red-700">Needs Review</Badge>
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity flex">
+                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0" title="Edit">
+                            <Edit className="h-3 w-3 text-gray-500" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0" title="Preview">
+                            <Eye className="h-3 w-3 text-gray-500" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0" title="Request Review">
+                            <UserCheck className="h-3 w-3 text-gray-500" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0" title="More options">
+                            <MoreHorizontal className="h-3 w-3 text-gray-500" />
+                          </Button>
+                        </div>
                       </div>
+                    </div>
+                    <div className="text-[10px] text-gray-500 ml-5 mt-0.5">
+                      <span>Created: yesterday by Robert Davis</span>
+                      <span className="mx-1">•</span>
+                      <span>v0.8</span>
+                      <span className="mx-1">•</span>
+                      <span className="text-red-600">3 validation errors</span>
                     </div>
                   </div>
 
