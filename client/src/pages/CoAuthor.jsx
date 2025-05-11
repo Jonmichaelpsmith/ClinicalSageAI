@@ -105,14 +105,33 @@ export default function CoAuthor() {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-lg">
               <Edit className="h-5 w-5 mr-2 text-blue-600" />
-              Document Editor
+              AI-Powered Document Editor
             </CardTitle>
             <CardDescription>
-              Create and edit regulatory document with AI assistance
+              Create and edit regulatory documents with intelligent assistance
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button className="w-full mt-2">Launch Editor</Button>
+            <div className="space-y-3 mb-3">
+              <div className="flex items-center space-x-2">
+                <FileText className="h-4 w-4 text-blue-500" />
+                <span className="text-sm font-medium">Start from templates for each eCTD module</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+                <span className="text-sm font-medium">Real-time compliance checks</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-purple-500">
+                  <path d="M21 8v13H3V8"></path>
+                  <path d="M1 3h22v5H1z"></path>
+                  <path d="M10 12h4"></path>
+                  <circle cx="12" cy="15" r="1"></circle>
+                </svg>
+                <span className="text-sm font-medium">OpenAI-powered suggestions</span>
+              </div>
+            </div>
+            <Button className="w-full">Launch Editor</Button>
           </CardContent>
         </Card>
 
@@ -124,11 +143,43 @@ export default function CoAuthor() {
               Template Library
             </CardTitle>
             <CardDescription>
-              Browse a library of pre-built templates for regulatory submissions
+              Pre-approved document templates for regulatory submissions
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button className="w-full mt-2">Browse Templates</Button>
+            <div className="mb-3 space-y-2">
+              <div className="border rounded-md p-2">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                    <span className="font-medium text-sm">Module 1 Templates</span>
+                  </div>
+                  <Badge variant="outline" className="text-xs">FDA</Badge>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Standard administrative documents</p>
+              </div>
+              <div className="border rounded-md p-2">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                    <span className="font-medium text-sm">Module 2 Templates</span>
+                  </div>
+                  <Badge variant="outline" className="text-xs">ICH</Badge>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Overview and summary templates</p>
+              </div>
+              <div className="border rounded-md p-2">
+                <div className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <FileText className="h-4 w-4 mr-2 text-blue-500" />
+                    <span className="font-medium text-sm">Regional Templates</span>
+                  </div>
+                  <Badge variant="outline" className="text-xs">EMA</Badge>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Region-specific templates</p>
+              </div>
+            </div>
+            <Button className="w-full">Browse All Templates</Button>
           </CardContent>
         </Card>
 
@@ -137,14 +188,37 @@ export default function CoAuthor() {
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center text-lg">
               <Search className="h-5 w-5 mr-2 text-blue-600" />
-              Regulatory Search
+              Intelligent Regulatory Search
             </CardTitle>
             <CardDescription>
-              Find regulatory guidelines, standards, and precedents
+              Find relevant guidance and precedents for regulatory documents
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Button className="w-full mt-2">Start Search</Button>
+            <div className="space-y-3 mb-3">
+              <div className="relative">
+                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                <input 
+                  type="text" 
+                  placeholder="Search regulatory guidelines..." 
+                  className="pl-8 h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2 mt-2">
+                <Badge variant="secondary" className="text-xs cursor-pointer">FDA Guidelines</Badge>
+                <Badge variant="secondary" className="text-xs cursor-pointer">ICH Standards</Badge>
+                <Badge variant="secondary" className="text-xs cursor-pointer">eCTD Requirements</Badge>
+                <Badge variant="secondary" className="text-xs cursor-pointer">EMA</Badge>
+              </div>
+              <div className="border-t pt-2 mt-2">
+                <div className="text-xs text-muted-foreground mb-1">Recent searches:</div>
+                <div className="space-y-1">
+                  <div className="text-xs text-blue-600 cursor-pointer">Module 2.5 clinical overview requirements</div>
+                  <div className="text-xs text-blue-600 cursor-pointer">FDA guidance investigational drugs</div>
+                </div>
+              </div>
+            </div>
+            <Button className="w-full">Advanced Search</Button>
           </CardContent>
         </Card>
 
