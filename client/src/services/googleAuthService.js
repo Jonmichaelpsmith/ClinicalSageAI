@@ -16,18 +16,38 @@ let currentUser = null;
  * @returns {Promise<void>}
  */
 export const initGoogleAuth = async () => {
-  // In a real implementation, this would load the Google API client and initialize auth
-  // For now, we simulate the authentication process
-  
   console.log('Initializing Google Auth Service');
   
   // Check if we already have cached credentials in localStorage
   const cachedToken = localStorage.getItem('google_access_token');
   if (cachedToken) {
-    isAuthenticated = true;
-    currentUser = JSON.parse(localStorage.getItem('google_user_info') || '{}');
-    console.log('Using cached authentication');
-    return;
+    // Verify the token is still valid
+    try {
+      const response = await fetch('https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=' + cachedToken);
+      const data = await response.json();
+      
+      if (data.error) {
+        console.log('Cached token is invalid, clearing');
+        localStorage.removeItem('google_access_token');
+        localStorage.removeItem('google_user_info');
+        isAuthenticated = false;
+        currentUser = null;
+        return;
+      }
+      
+      // Token is valid
+      isAuthenticated = true;
+      currentUser = JSON.parse(localStorage.getItem('google_user_info') || '{}');
+      console.log('Using cached authentication');
+      return;
+    } catch (error) {
+      console.error('Error verifying token:', error);
+      localStorage.removeItem('google_access_token');
+      localStorage.removeItem('google_user_info');
+      isAuthenticated = false;
+      currentUser = null;
+      return;
+    }
   }
   
   // No cached credentials, we'd need to authenticate
