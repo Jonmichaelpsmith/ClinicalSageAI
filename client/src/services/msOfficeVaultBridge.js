@@ -1,238 +1,159 @@
 /**
  * Microsoft Office VAULT Bridge Service
  * 
- * This service bridges the Microsoft Office Online editing experience with 
- * TrialSage's VAULT Document Management system, allowing users to edit documents 
- * using the familiar Microsoft Word interface while maintaining all document 
- * storage, versioning, and metadata in VAULT.
- * 
- * Version: 1.0.0 - May 11, 2025
- * Status: ENTERPRISE IMPLEMENTATION
- * 
- * PROTECTED CODE - PROPRIETARY INTELLECTUAL PROPERTY
+ * This service provides functionality for bridging between Microsoft Office applications
+ * (Word, Excel, PowerPoint) and the TrialSage VAULT document management system.
+ * It handles document synchronization, versioning, and content transformation.
  */
-
-// Microsoft Graph API configuration for authentication and document editing
-const msConfig = {
-  apiEndpoint: import.meta.env.VITE_MS_GRAPH_API_ENDPOINT || 'https://graph.microsoft.com/v1.0',
-  clientId: import.meta.env.VITE_MS_CLIENT_ID,
-  authority: import.meta.env.VITE_MS_AUTHORITY || 'https://login.microsoftonline.com/common'
-};
 
 /**
- * Initialize a Microsoft Office Online editing session for a VAULT document
- * 
- * This creates a temporary session that allows editing a VAULT document in Word Online,
- * with changes automatically synced back to VAULT.
- * 
- * @param {string} vaultDocumentId - The document ID in VAULT
- * @param {Object} options - Additional options for the editing session
- * @returns {Promise<Object>} - Session details for Word Online editing
+ * Connect a Microsoft Office document to the VAULT system
+ * @param {string} documentId - VAULT document ID
+ * @param {string} officeSessionId - Microsoft Office session ID
+ * @param {string} officeApp - Office application type ('word', 'excel', 'powerpoint')
+ * @returns {Promise<object>} Connection details
  */
-export async function initOfficeEditingSession(vaultDocumentId, options = {}) {
+export async function connectOfficeToVault(documentId, officeSessionId, officeApp = 'word') {
   try {
-    console.log(`Creating Microsoft Office editing session for VAULT document ${vaultDocumentId}...`);
+    // In a real implementation, this would establish a connection between
+    // the Office document and your VAULT document management system
     
-    // The actual implementation would:
-    // 1. Fetch the document from VAULT
-    // 2. Create a temporary storage container in Microsoft's service
-    // 3. Set up the appropriate WOPI frame for editing
-    // 4. Configure sync behavior for changes
-    
-    // For demo purposes, we'll simulate this with mock data
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
+    // For demo purposes, simulate a successful connection
     return {
-      sessionId: `office-session-${Date.now()}`,
-      vaultDocumentId,
-      editUrl: `https://word-edit.office.com/we/wordeditorframe.aspx?ui=en-US&rs=en-US&WOPISrc=${encodeURIComponent(`https://api.trialsage.com/vault/wopi/${vaultDocumentId}`)}`,
-      accessToken: 'simulated-access-token',
-      expiresAt: new Date(Date.now() + 3600000).toISOString(),
-      documentInfo: {
-        name: options.documentName || 'VAULT Document',
-        lastModified: new Date().toISOString(),
-        editor: options.username || 'Current User',
-        editMode: options.readOnly ? 'view' : 'edit',
-        autoSave: options.autoSave !== false // Enabled by default
+      connectionId: `vault-office-${documentId}-${Date.now()}`,
+      status: 'connected',
+      syncEnabled: true,
+      autoSave: true
+    };
+  } catch (error) {
+    console.error("Failed to connect Office to VAULT:", error);
+    throw new Error("Could not establish connection between Microsoft Office and VAULT");
+  }
+}
+
+/**
+ * Get the VAULT document metadata for an Office document
+ * @param {string} documentId - VAULT document ID
+ * @returns {Promise<object>} Document metadata
+ */
+export async function getVaultDocumentMetadata(documentId) {
+  try {
+    // In a real implementation, this would fetch metadata from your document system
+    
+    // For demo purposes, return mock metadata
+    return {
+      id: documentId,
+      title: "Module 2.5 Clinical Overview",
+      version: "v4.0",
+      lastModified: new Date().toISOString(),
+      modifiedBy: "John Doe",
+      status: "In Progress",
+      locked: false,
+      lockedBy: null,
+      sections: [
+        { id: "2.5.1", title: "Overview" },
+        { id: "2.5.2", title: "Summary of Results" },
+        { id: "2.5.3", title: "Clinical Summary" },
+        { id: "2.5.4", title: "Risk-Benefit" },
+        { id: "2.5.5", title: "Safety Profile" }
+      ],
+      permissions: {
+        canEdit: true,
+        canDelete: false,
+        canShare: true
       }
     };
   } catch (error) {
-    console.error('Failed to create Office editing session:', error);
-    throw new Error('Office editing session initialization failed: ' + error.message);
+    console.error("Failed to get VAULT document metadata:", error);
+    throw new Error("Could not retrieve VAULT document metadata");
   }
 }
 
 /**
- * Save changes from Microsoft Office back to VAULT
- * 
- * @param {string} sessionId - The editing session ID
- * @param {string} vaultDocumentId - The document ID in VAULT
- * @param {Object} changes - Document change metadata
- * @returns {Promise<Object>} - Save result details
+ * Save document content from Office back to VAULT
+ * @param {string} documentId - VAULT document ID
+ * @param {string} connectionId - Office-VAULT connection ID
+ * @param {string} content - Document content
+ * @returns {Promise<object>} Save result
  */
-export async function saveChangesToVault(sessionId, vaultDocumentId, changes = {}) {
+export async function saveOfficeContentToVault(documentId, connectionId, content) {
   try {
-    console.log(`Saving changes from Office session ${sessionId} to VAULT document ${vaultDocumentId}...`);
+    // In a real implementation, this would save the content to your document system
     
-    // The actual implementation would:
-    // 1. Retrieve the modified document content from Microsoft's service
-    // 2. Save it back to VAULT with appropriate versioning
-    // 3. Update any metadata, comments, or tracking information
-    
-    // For demo purposes, we'll simulate this
-    await new Promise(resolve => setTimeout(resolve, 600));
-    
+    // For demo purposes, simulate a successful save
     return {
       success: true,
-      vaultDocumentId,
-      newVersion: changes.versionLabel || `v${Date.now()}`,
+      newVersion: "v4.1",
       timestamp: new Date().toISOString(),
-      editor: changes.editor || 'Current User',
-      changesSummary: changes.summary || 'Edited in Microsoft Word'
+      changeDescription: "Updated via Microsoft Office"
     };
   } catch (error) {
-    console.error('Failed to save changes to VAULT:', error);
-    throw new Error('Saving changes to VAULT failed: ' + error.message);
+    console.error("Failed to save Office content to VAULT:", error);
+    throw new Error("Could not save Microsoft Office content to VAULT");
   }
 }
 
 /**
- * End an Office editing session
- * 
- * @param {string} sessionId - The editing session ID
- * @param {string} vaultDocumentId - The document ID in VAULT
- * @param {Object} options - Options for ending the session
- * @returns {Promise<Object>} - Session end result
+ * Sync VAULT document changes to Office
+ * @param {string} documentId - VAULT document ID
+ * @param {string} connectionId - Office-VAULT connection ID
+ * @returns {Promise<object>} Sync result
  */
-export async function endEditingSession(sessionId, vaultDocumentId, options = {}) {
+export async function syncVaultChangesToOffice(documentId, connectionId) {
   try {
-    console.log(`Ending Office editing session ${sessionId} for VAULT document ${vaultDocumentId}...`);
+    // In a real implementation, this would push changes from your document system to Office
     
-    // The actual implementation would:
-    // 1. Ensure all changes are saved to VAULT
-    // 2. Clean up any temporary storage in Microsoft's service
-    // 3. Update document status in VAULT (e.g., unlock document)
-    
-    // For demo purposes, we'll simulate this
-    await new Promise(resolve => setTimeout(resolve, 400));
-    
+    // For demo purposes, simulate a successful sync
     return {
       success: true,
-      sessionId,
-      vaultDocumentId,
       timestamp: new Date().toISOString(),
-      finalStatus: options.forceClosed ? 'force_closed' : 'closed_normally'
+      changesSynced: true,
+      changesCount: 2
     };
   } catch (error) {
-    console.error('Failed to end Office editing session:', error);
-    throw new Error('Ending Office editing session failed: ' + error.message);
+    console.error("Failed to sync VAULT changes to Office:", error);
+    throw new Error("Could not sync VAULT changes to Microsoft Office");
   }
 }
 
 /**
- * Get user authentication status for Microsoft services
- * 
- * @returns {Promise<Object>} - Authentication status
+ * Get revision history for a VAULT document
+ * @param {string} documentId - VAULT document ID
+ * @returns {Promise<Array>} Revision history
  */
-export async function getMsAuthStatus() {
+export async function getVaultDocumentHistory(documentId) {
   try {
-    // Check if we have valid authentication for Microsoft services
+    // In a real implementation, this would fetch revision history from your document system
     
-    // In a real implementation, this would check:
-    // 1. If the user is logged in to their Microsoft account
-    // 2. If they have appropriate licenses for Office Online
-    // 3. If they have permission to access the Document Intelligence features
-    
-    // For demo purposes, we'll simulate this
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    return {
-      isAuthenticated: true, // Simulated for demo
-      accountType: 'Microsoft 365 Enterprise',
-      permissions: {
-        wordOnline: true,
-        excelOnline: true,
-        powerPointOnline: true,
-        copilot: import.meta.env.VITE_MS_COPILOT_ENABLED === 'true'
+    // For demo purposes, return mock revision history
+    return [
+      {
+        version: "v4.0",
+        timestamp: new Date(Date.now() - 3600000).toISOString(),
+        author: "John Doe",
+        changes: "Updated safety profile section"
       },
-      expiresAt: new Date(Date.now() + 86400000).toISOString() // 24 hours from now
-    };
-  } catch (error) {
-    console.error('Failed to get Microsoft authentication status:', error);
-    return {
-      isAuthenticated: false,
-      error: error.message
-    };
-  }
-}
-
-/**
- * Check if Microsoft Word Online integration is properly configured
- * 
- * @returns {Promise<boolean>} - True if configured properly
- */
-export async function checkConfiguration() {
-  try {
-    // Check if we have the necessary configuration for Microsoft services
-    const requiredConfig = ['apiEndpoint', 'clientId', 'authority'];
-    const missingConfig = requiredConfig.filter(key => !msConfig[key]);
-    
-    if (missingConfig.length > 0) {
-      console.warn(`Missing Microsoft Office configuration: ${missingConfig.join(', ')}`);
-      return false;
-    }
-    
-    // In a real implementation, this would make a test API call
-    
-    return true;
-  } catch (error) {
-    console.error('Microsoft Office configuration check failed:', error);
-    return false;
-  }
-}
-
-/**
- * Enable Microsoft Copilot features for document editing
- * 
- * @param {string} sessionId - The editing session ID
- * @param {Object} options - Copilot configuration options
- * @returns {Promise<Object>} - Copilot enablement result
- */
-export async function enableCopilotFeatures(sessionId, options = {}) {
-  try {
-    console.log(`Enabling Microsoft Copilot features for session ${sessionId}...`);
-    
-    // In a real implementation, this would configure Copilot features for the session
-    
-    // For demo purposes, we'll simulate this
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return {
-      success: true,
-      sessionId,
-      copilotFeatures: {
-        contentGeneration: options.contentGeneration !== false,
-        formatting: options.formatting !== false,
-        citations: options.citations !== false,
-        regulatory: options.regulatory !== false, // TrialSage-specific regulatory knowledge
-        domain: 'pharmaceutical' // Industry-specific knowledge base
+      {
+        version: "v3.2",
+        timestamp: new Date(Date.now() - 86400000).toISOString(),
+        author: "Jane Smith",
+        changes: "Added efficacy data and patient demographics"
       },
-      timestamp: new Date().toISOString()
-    };
+      {
+        version: "v3.1",
+        timestamp: new Date(Date.now() - 172800000).toISOString(),
+        author: "Robert Johnson",
+        changes: "Fixed formatting issues in methods section"
+      },
+      {
+        version: "v3.0",
+        timestamp: new Date(Date.now() - 604800000).toISOString(),
+        author: "Sarah Williams",
+        changes: "Major revision with updated clinical results"
+      }
+    ];
   } catch (error) {
-    console.error('Failed to enable Copilot features:', error);
-    return {
-      success: false,
-      error: error.message
-    };
+    console.error("Failed to get VAULT document history:", error);
+    throw new Error("Could not retrieve VAULT document history");
   }
 }
-
-export default {
-  initOfficeEditingSession,
-  saveChangesToVault,
-  endEditingSession,
-  getMsAuthStatus,
-  checkConfiguration,
-  enableCopilotFeatures
-};
