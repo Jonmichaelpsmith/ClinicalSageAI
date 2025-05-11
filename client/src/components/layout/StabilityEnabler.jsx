@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { optimizeMemory, getMemoryUsage } from '../../utils/memoryOptimizer';
 import { initFreezeDetection, analyzeFreezeRisks } from '../../utils/freezeDetection';
 import networkResilience from '../../utils/networkResilience';
+import { EmergencyStability } from '../../utils/emergencyStability';
 import { useToast } from '@/hooks/use-toast';
 
 /**
@@ -111,6 +112,9 @@ export default function StabilityEnabler({ children }) {
 
   useEffect(() => {
     console.log('🛡️ Initializing all stability features...');
+
+    // First, apply the emergency stability patch to ensure baseline stability
+    EmergencyStability.applyPatch();
 
     // Initialize network resilience
     networkResilienceRef.current = networkResilience.initNetworkResilience({
