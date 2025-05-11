@@ -237,11 +237,161 @@ export async function generateExecutiveSummary(cerData) {
   }
 }
 
+/**
+ * Generate a method validation protocol based on method information and regulatory requirements
+ * @param {Object} methodData - Information about the analytical method
+ * @returns {Promise<Object>} Generated validation protocol
+ */
+export async function generateMethodValidationProtocol(methodData) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert analytical method validation specialist. Create a comprehensive
+            validation protocol based on the provided method information and relevant regulatory
+            guidelines (ICH, FDA, etc.). Include acceptance criteria, experimental design, and
+            appropriate calculations for each validation parameter.`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            task: "Generate a method validation protocol",
+            methodData
+          })
+        }
+      ],
+      temperature: 0.2,
+      max_tokens: 3000,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
+  } catch (error) {
+    console.error("Error generating method validation protocol:", error);
+    throw new Error(`Failed to generate method validation protocol: ${error.message}`);
+  }
+}
+
+/**
+ * Assess regulatory compliance of a specification or document
+ * @param {Object} specificationData - Specification information
+ * @param {string} regulatoryFramework - Target regulatory framework (ICH, FDA, etc.)
+ * @returns {Promise<Object>} Compliance assessment results
+ */
+export async function assessRegulatoryCompliance(specificationData, regulatoryFramework) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert regulatory compliance specialist. Assess the provided specification
+            against the specified regulatory framework. Identify any gaps, potential compliance issues,
+            and provide recommendations for improvement. Focus on technical and scientific aspects
+            of compliance.`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            task: "Assess regulatory compliance",
+            specificationData,
+            regulatoryFramework
+          })
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
+  } catch (error) {
+    console.error("Error assessing regulatory compliance:", error);
+    throw new Error(`Failed to assess regulatory compliance: ${error.message}`);
+  }
+}
+
+/**
+ * Simulate an OpenAI response for testing and demo purposes
+ * @param {Object} data - Input data for the simulation
+ * @param {string} responseType - Type of response to simulate
+ * @returns {Promise<Object>} Simulated response
+ */
+export async function simulateOpenAIResponse(data, responseType = 'general') {
+  // Simulate API latency
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  // Return appropriate simulated response based on responseType
+  switch(responseType) {
+    case 'methodValidation':
+      return {
+        protocol: {
+          title: `Validation Protocol for ${data.methodName || 'Analytical Method'}`,
+          document_id: `VAL-${Date.now().toString().substring(5)}`,
+          version: "1.0",
+          date: new Date().toISOString().split('T')[0],
+          prepared_by: "AI Validation Expert",
+          regulatory_basis: "ICH Q2(R1), FDA, USP <1225>",
+          introduction: "This protocol describes the validation procedures for the analytical method.",
+          scope: "This validation protocol applies to the method for the determination of content.",
+          parameters: ["Specificity", "Linearity", "Accuracy", "Precision", "Range"]
+        },
+        acceptance_criteria: {
+          specificity: "No interference at the retention time of the analyte peak from blank, placebo, or known impurities.",
+          linearity: "Correlation coefficient (r) ≥ 0.999. Y-intercept ≤ 2.0% of the response at 100% concentration.",
+          accuracy: "Recovery: 98.0-102.0% at each concentration level.",
+          precision: "RSD ≤ 2.0% for repeatability. RSD ≤ 3.0% for intermediate precision.",
+          range: "The range is established when linearity, accuracy, and precision meet their respective acceptance criteria."
+        },
+        experimental_design: {
+          specificity: "Analyze blank, placebo, sample solution, and sample spiked with known impurities.",
+          linearity: "Prepare and analyze 5 standard solutions covering 50-150% of the working concentration.",
+          accuracy: "Prepare and analyze samples at 3 concentration levels (80%, 100%, 120%) in triplicate.",
+          precision: "Repeatability: Analyze 6 replicate preparations at 100% concentration.",
+          range: "Use data from linearity, accuracy, and precision studies to establish the range."
+        }
+      };
+      
+    case 'complianceAssessment':
+      return {
+        compliance_status: "Partially Compliant",
+        overall_score: 75,
+        findings: [
+          {
+            section: "Acceptance Criteria",
+            issue: "Acceptance criteria for impurity XYZ slightly outside ICH Q3A limits",
+            recommendation: "Adjust acceptance criteria to align with ICH Q3A requirements",
+            severity: "Moderate"
+          },
+          {
+            section: "Test Method",
+            issue: "Validation data incomplete for specificity",
+            recommendation: "Complete specificity validation with stressed samples",
+            severity: "High"
+          }
+        ],
+        summary: "The specification is generally aligned with regulatory expectations but requires modifications to fully comply with current standards."
+      };
+      
+    default:
+      return {
+        status: "success",
+        message: "Simulated response generated successfully",
+        data: data
+      };
+  }
+}
+
 export default {
   generateCER,
   analyzeClinicalData,
   generateLiteratureReview,
   generateRiskAssessment,
   analyzeDocument,
-  generateExecutiveSummary
+  generateExecutiveSummary,
+  generateMethodValidationProtocol,
+  assessRegulatoryCompliance,
+  simulateOpenAIResponse
 };
