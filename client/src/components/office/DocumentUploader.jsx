@@ -40,7 +40,9 @@ const DocumentUploader = ({
     { id: 'csr-template', name: 'Clinical Study Report Template', category: 'ICH' },
     { id: 'nda-template', name: 'New Drug Application Template', category: 'FDA' },
     { id: 'bla-template', name: 'Biologics License Application Template', category: 'FDA' },
-    { id: 'pv-template', name: 'Pharmacovigilance Report Template', category: 'EMA' }
+    { id: 'pv-template', name: 'Pharmacovigilance Report Template', category: 'EMA' },
+    { id: 'protocol-template', name: 'Clinical Protocol Template', category: 'FDA/ICH' },
+    { id: 'ib-template', name: 'Investigator\'s Brochure Template', category: 'FDA/ICH' }
   ]);
   
   const fileInputRef = useRef(null);
@@ -80,13 +82,13 @@ const DocumentUploader = ({
     if (!file) return;
     
     // Validate file type (Word documents and PDFs)
-    const validExtensions = ['.docx', '.doc', '.pdf', '.dotx', '.dotm'];
+    const validExtensions = ['.docx', '.doc', '.pdf', '.dotx', '.dotm', '.xlsx', '.xls', '.pptx', '.ppt'];
     const isValidFile = validExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
     
     if (!isValidFile) {
       toast({
         title: 'Invalid File Type',
-        description: 'Please select a Microsoft Word document (.docx, .doc, .dotx, .dotm) or PDF file (.pdf)',
+        description: 'Please select a Microsoft Office document (Word, Excel, PowerPoint) or PDF file',
         variant: 'destructive',
       });
       return;
@@ -268,14 +270,14 @@ const DocumentUploader = ({
                     <span className="font-semibold">Click to upload</span> or drag and drop
                   </p>
                   <p className="text-xs text-gray-500">
-                    Word Documents (DOCX, DOC)
+                    Office Documents (Word, Excel, PowerPoint) & PDF Files
                   </p>
                   
                   <Input 
                     ref={fileInputRef}
                     type="file" 
                     className="hidden" 
-                    accept=".docx,.doc" 
+                    accept=".docx,.doc,.pdf,.dotx,.dotm,.xlsx,.xls,.pptx,.ppt" 
                     onChange={handleFileSelected}
                   />
                   

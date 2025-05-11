@@ -1,525 +1,653 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
-import { Loader2, MessageSquare, FileText, Settings, Save, FilePlus, FileCheck, Download } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import Office365WordEmbed from './MicrosoftWordEmbed';
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { MessageSquare, PenTool, Lightbulb, ChevronRight, BookOpen, CheckCircle, 
+  RefreshCcw, HelpCircle, Wand2, FileText, List, BookOpen as BookIcon } from 'lucide-react';
+import MicrosoftWordEmbed from './MicrosoftWordEmbed';
 
 /**
  * AI-Powered Word Editor Component
  * 
- * This component integrates Microsoft Word with AI capabilities,
- * providing a unified interface for document editing and AI assistance.
+ * This component integrates Microsoft Word with AI assistance specifically for regulatory document authoring.
+ * It provides a pop-up Word editor with AI formatting suggestions, content recommendations,
+ * and regulatory compliance checking.
  * 
- * @param {Object} props
- * @param {string} props.documentId - ID of the document to open
- * @param {string} props.initialContent - Initial content for the document (optional)
- * @param {function} props.onSave - Callback when document is saved (optional)
- * @param {function} props.onClose - Callback when editor is closed (optional)
+ * Features:
+ * - Microsoft Word editor embedded directly in the application
+ * - AI-powered formatting suggestions for regulatory documents
+ * - Content recommendations based on document type and context
+ * - Real-time compliance checking for regulatory guidelines
+ * - Template library for common regulatory document types
  */
-const AiPoweredWordEditor = ({ 
-  documentId, 
-  initialContent = '', 
-  onSave, 
-  onClose 
+const AiPoweredWordEditor = ({
+  isOpen,
+  onOpenChange,
+  documentId,
+  documentName = "Untitled Document",
+  documentType = "ind",
+  moduleSection = "",
+  readOnly = false
 }) => {
-  const [aiPrompt, setAiPrompt] = useState('');
-  const [aiResponse, setAiResponse] = useState('');
+  const [activeTab, setActiveTab] = useState("editor");
+  const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [formatSuggestions, setFormatSuggestions] = useState([]);
+  const [complianceIssues, setComplianceIssues] = useState([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [activeTab, setActiveTab] = useState("document");
-  const [documentState, setDocumentState] = useState({
-    isDirty: false,
-    lastSaved: null
-  });
-  const [suggestions, setSuggestions] = useState([]);
-  const [regulatoryChecklist, setRegulatoryChecklist] = useState([]);
-  const [documentHelp, setDocumentHelp] = useState({
-    title: 'Document Assistant',
-    content: 'Ask for help with document formatting, content suggestions, or regulatory compliance. You can also use this panel to view your document metrics and track your progress.'
-  });
+  const [documentStatus, setDocumentStatus] = useState('loading');
+  const [userPrompt, setUserPrompt] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [availableTemplates, setAvailableTemplates] = useState([]);
   
-  const wordEmbedRef = useRef(null);
+  const messagesEndRef = useRef(null);
   const { toast } = useToast();
   
-  // Handle sending prompt to AI assistant
-  const handleSendPrompt = async () => {
-    if (!aiPrompt.trim()) return;
+  // Scroll to bottom of messages when new suggestions are added
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [aiSuggestions]);
+  
+  // Fetch templates based on document type
+  useEffect(() => {
+    if (isOpen) {
+      fetchTemplates();
+    }
+  }, [isOpen, documentType]);
+  
+  // Mock fetch templates
+  const fetchTemplates = async () => {
+    // This would be an API call in a real implementation
+    const templates = [
+      {
+        id: 'ind-proto',
+        name: 'IND Protocol Template',
+        description: 'Standard protocol template for IND submissions',
+        type: 'ind',
+        section: 'protocol'
+      },
+      {
+        id: 'ind-cmc',
+        name: 'Chemistry, Manufacturing, and Controls',
+        description: 'Template for CMC section of IND submissions',
+        type: 'ind',
+        section: 'cmc'
+      },
+      {
+        id: 'ind-safety',
+        name: 'Nonclinical Safety Assessment',
+        description: 'Template for safety assessment section of IND submissions',
+        type: 'ind',
+        section: 'safety'
+      },
+      {
+        id: 'ctd-overview',
+        name: 'CTD Clinical Overview',
+        description: 'Template for Module 2.5 Clinical Overview',
+        type: 'ctd',
+        section: 'overview'
+      }
+    ];
     
-    try {
-      setIsProcessing(true);
-      setAiResponse('Thinking...');
-      
-      // In a real implementation, you would call your AI service here
-      // For now, we'll simulate a response after a delay
-      setTimeout(() => {
-        setAiResponse(
-          `Here's a response to your query: "${aiPrompt}"\n\n` +
-          `I can help you improve this document by providing content suggestions, formatting assistance, or regulatory compliance checks. ` +
-          `Would you like me to help with anything specific about your document?`
-        );
-        setIsProcessing(false);
-      }, 2000);
-      
-    } catch (error) {
-      console.error('Error processing AI prompt:', error);
-      setAiResponse('Sorry, I encountered an error processing your request. Please try again.');
-      setIsProcessing(false);
+    // Filter templates based on document type
+    const filteredTemplates = templates.filter(
+      template => template.type === documentType || template.type === 'general'
+    );
+    
+    setAvailableTemplates(filteredTemplates);
+  };
+  
+  // Handle document status change from Word editor
+  const handleDocumentStatusChange = (status) => {
+    setDocumentStatus(status);
+    
+    // Generate AI suggestions based on document status and content
+    if (status === 'loaded' || status === 'edited') {
+      generateAiSuggestions();
     }
   };
   
-  // Insert AI response into document
-  const handleInsertResponse = async () => {
-    if (!aiResponse || !wordEmbedRef.current) return;
+  // Handle template selection
+  const handleSelectTemplate = (template) => {
+    setSelectedTemplate(template);
     
-    try {
-      // Call the word embed component's insert method
-      // This is just a mock implementation
-      toast({
-        title: 'Content Inserted',
-        description: 'AI-generated content has been inserted into your document.',
-      });
-      
-      // Reset AI prompt and response
-      setAiPrompt('');
-      setAiResponse('');
-    } catch (error) {
-      console.error('Error inserting AI response:', error);
-      toast({
-        title: 'Insert Error',
-        description: 'Failed to insert content into document',
-        variant: 'destructive',
-      });
-    }
+    toast({
+      title: "Template Selected",
+      description: `Applied template: ${template.name}`
+    });
+    
+    // In a real implementation, this would apply the template to the Word document
+    // For now, generate formatting suggestions based on the template
+    generateFormatSuggestions(template);
   };
   
-  // Get writing suggestions for the document
-  const handleGetSuggestions = async () => {
+  // Handle save from Word editor
+  const handleSaveDocument = (documentInfo) => {
+    toast({
+      title: "Document Saved",
+      description: `Successfully saved: ${documentName}`
+    });
+    
+    // Check document compliance after save
+    checkComplianceAfterSave();
+  };
+  
+  // Check document compliance after save
+  const checkComplianceAfterSave = async () => {
+    setIsProcessing(true);
+    
     try {
-      setIsProcessing(true);
-      
-      // In a real implementation, you would call your AI service here
-      // For now, we'll simulate suggestions after a delay
+      // In a real implementation, this would be an API call to check compliance
+      // For demo purposes, generate mock compliance issues
       setTimeout(() => {
-        setSuggestions([
+        const mockComplianceIssues = [
           {
             id: 1,
-            type: 'grammar',
-            text: 'Consider rephrasing the sentence in paragraph 2 for better clarity.',
-            location: 'Page 1, Paragraph 2',
+            severity: 'warning',
+            section: 'Introduction',
+            message: 'Missing standard regulatory disclaimer'
           },
           {
             id: 2,
-            type: 'structure',
-            text: 'Add a subheading before section 3 to improve document navigation.',
-            location: 'Page 2, Section 3',
+            severity: 'info',
+            section: 'Methods',
+            message: 'Consider adding cross-reference to related protocols in Module 5'
           },
           {
             id: 3,
-            type: 'regulatory',
-            text: 'Include a reference to the relevant regulatory standard in section 4.2.',
-            location: 'Page 3, Section 4.2',
+            severity: 'error',
+            section: 'Safety Data',
+            message: 'Reference to unpublished data requires additional documentation'
           }
-        ]);
-        setIsProcessing(false);
-      }, 2000);
-    } catch (error) {
-      console.error('Error getting suggestions:', error);
-      toast({
-        title: 'Suggestion Error',
-        description: 'Failed to generate writing suggestions',
-        variant: 'destructive',
-      });
-      setIsProcessing(false);
-    }
-  };
-  
-  // Run regulatory compliance check
-  const handleComplianceCheck = async () => {
-    try {
-      setIsProcessing(true);
-      
-      // In a real implementation, you would call your compliance service here
-      // For now, we'll simulate a compliance check after a delay
-      setTimeout(() => {
-        setRegulatoryChecklist([
-          {
-            id: 1,
-            status: 'pass',
-            requirement: 'Document includes required section headers',
-            details: 'All mandatory sections are present in the document.'
-          },
-          {
-            id: 2,
-            status: 'warning',
-            requirement: 'References to regulatory standards',
-            details: 'Consider adding specific references to ISO 10993-1 in the biocompatibility section.'
-          },
-          {
-            id: 3,
-            status: 'fail',
-            requirement: 'Risk assessment documentation',
-            details: 'Missing required risk assessment matrix in section 5.'
-          }
-        ]);
-        setIsProcessing(false);
-      }, 2000);
-    } catch (error) {
-      console.error('Error checking compliance:', error);
-      toast({
-        title: 'Compliance Error',
-        description: 'Failed to check regulatory compliance',
-        variant: 'destructive',
-      });
-      setIsProcessing(false);
-    }
-  };
-  
-  // Handle document save
-  const handleSave = async () => {
-    try {
-      // Call the word embed component's save method
-      if (wordEmbedRef.current) {
-        // This would call the actual save method in a real implementation
-        // wordEmbedRef.current.save();
+        ];
         
-        setDocumentState({
-          isDirty: false,
-          lastSaved: new Date()
-        });
+        setComplianceIssues(mockComplianceIssues);
+        setIsProcessing(false);
         
         toast({
-          title: 'Document Saved',
-          description: 'Your document has been saved successfully.',
+          title: "Compliance Check Complete",
+          description: `Found ${mockComplianceIssues.length} issues to review`
         });
-        
-        if (onSave) {
-          onSave();
-        }
-      }
-    } catch (error) {
-      console.error('Error saving document:', error);
+      }, 2000);
+    } catch (err) {
+      console.error('Error checking compliance:', err);
+      setIsProcessing(false);
+      
       toast({
-        title: 'Save Error',
-        description: 'Failed to save document',
-        variant: 'destructive',
+        variant: "destructive",
+        title: "Compliance Check Failed",
+        description: "An error occurred while checking document compliance"
       });
     }
+  };
+  
+  // Generate AI suggestions
+  const generateAiSuggestions = async () => {
+    setIsProcessing(true);
+    
+    try {
+      // In a real implementation, this would be an API call to an AI service
+      // For demo purposes, generate mock suggestions based on document type
+      setTimeout(() => {
+        const suggestions = [];
+        
+        if (documentType === 'ind') {
+          suggestions.push({
+            id: 'sug1',
+            type: 'content',
+            text: 'Your protocol introduction should include the rationale for the study design based on preclinical findings.'
+          });
+          
+          suggestions.push({
+            id: 'sug2',
+            type: 'format',
+            text: 'Consider using standard headings for Protocol sections to comply with FDA guidance.'
+          });
+          
+          suggestions.push({
+            id: 'sug3',
+            type: 'reference',
+            text: 'Add reference to the Investigator's Brochure in the background section.'
+          });
+        } else if (documentType === 'ctd') {
+          suggestions.push({
+            id: 'sug1',
+            type: 'content',
+            text: 'Include a comprehensive benefit-risk assessment as required by ICH guidelines.'
+          });
+          
+          suggestions.push({
+            id: 'sug2',
+            type: 'format',
+            text: 'Tables should be numbered sequentially with a descriptive caption above each table.'
+          });
+        }
+        
+        setAiSuggestions(suggestions);
+        setIsProcessing(false);
+      }, 1500);
+    } catch (err) {
+      console.error('Error generating AI suggestions:', err);
+      setIsProcessing(false);
+    }
+  };
+  
+  // Generate formatting suggestions
+  const generateFormatSuggestions = (template) => {
+    setIsProcessing(true);
+    
+    try {
+      // In a real implementation, this would be an API call to get formatting guidance
+      // For demo purposes, generate mock formatting suggestions
+      setTimeout(() => {
+        const suggestions = [
+          {
+            id: 'fmt1',
+            type: 'heading',
+            text: 'Use Heading 1 for main sections and Heading 2 for subsections'
+          },
+          {
+            id: 'fmt2',
+            type: 'style',
+            text: 'Apply \'Normal\' style to body text with 12pt font and 1.15 line spacing'
+          },
+          {
+            id: 'fmt3',
+            type: 'table',
+            text: 'Use the \'Table Grid\' style for data tables with borders'
+          },
+          {
+            id: 'fmt4',
+            type: 'page',
+            text: 'Add page numbers in the footer centered with the format "Page X of Y"'
+          },
+          {
+            id: 'fmt5',
+            type: 'header',
+            text: 'Include the document title and confidentiality statement in the header'
+          }
+        ];
+        
+        setFormatSuggestions(suggestions);
+        setIsProcessing(false);
+      }, 1000);
+    } catch (err) {
+      console.error('Error generating formatting suggestions:', err);
+      setIsProcessing(false);
+    }
+  };
+  
+  // Handle user prompt submission
+  const handlePromptSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!userPrompt.trim()) return;
+    
+    // Add user question to suggestions
+    const newSuggestion = {
+      id: `usr-${Date.now()}`,
+      type: 'user',
+      text: userPrompt
+    };
+    
+    setAiSuggestions(prev => [...prev, newSuggestion]);
+    setUserPrompt('');
+    
+    // Generate AI response
+    setIsProcessing(true);
+    setTimeout(() => {
+      const aiResponse = {
+        id: `ai-${Date.now()}`,
+        type: 'ai',
+        text: `Based on your question about "${userPrompt.substring(0, 30)}...", I recommend enhancing the Methods section with more details about subject eligibility criteria and primary endpoints. This aligns with FDA guidance for IND protocols.`
+      };
+      
+      setAiSuggestions(prev => [...prev, aiResponse]);
+      setIsProcessing(false);
+    }, 2000);
+  };
+  
+  // Apply formatting to document
+  const handleApplyFormatting = (suggestion) => {
+    toast({
+      title: "Formatting Applied",
+      description: suggestion.text
+    });
+    
+    // In a real implementation, this would apply the formatting to the Word document
+  };
+  
+  // Fix compliance issue
+  const handleFixComplianceIssue = (issue) => {
+    toast({
+      title: "Fixing Issue",
+      description: `Addressing: ${issue.message}`
+    });
+    
+    // In a real implementation, this would navigate to the issue location in the Word document
+    // and provide guidance on how to fix it
+    
+    // Mark issue as fixed (for demo)
+    setComplianceIssues(prev => 
+      prev.filter(item => item.id !== issue.id)
+    );
+  };
+  
+  // Render suggestion item
+  const renderSuggestionItem = (suggestion) => {
+    // Determine icon based on suggestion type
+    let icon;
+    let badgeClass = "bg-blue-100 text-blue-800";
+    let badgeText = "Suggestion";
+    
+    switch (suggestion.type) {
+      case 'content':
+        icon = <BookOpen className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />;
+        break;
+      case 'format':
+        icon = <PenTool className="h-5 w-5 text-purple-500 mr-2 flex-shrink-0" />;
+        badgeClass = "bg-purple-100 text-purple-800";
+        badgeText = "Format";
+        break;
+      case 'reference':
+        icon = <BookIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />;
+        badgeClass = "bg-green-100 text-green-800";
+        badgeText = "Reference";
+        break;
+      case 'user':
+        icon = <MessageSquare className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />;
+        badgeClass = "bg-gray-100 text-gray-800";
+        badgeText = "Question";
+        break;
+      case 'ai':
+        icon = <Lightbulb className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />;
+        badgeClass = "bg-amber-100 text-amber-800";
+        badgeText = "Answer";
+        break;
+      default:
+        icon = <Lightbulb className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />;
+    }
+    
+    return (
+      <div key={suggestion.id} className="p-3 border rounded-md mb-3">
+        <div className="flex items-start">
+          {icon}
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-1">
+              <Badge className={badgeClass}>{badgeText}</Badge>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-sm">{suggestion.text}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Render format suggestion item
+  const renderFormatItem = (format) => {
+    return (
+      <div key={format.id} className="p-3 border rounded-md mb-3">
+        <div className="flex items-start">
+          <PenTool className="h-5 w-5 text-purple-500 mr-2 flex-shrink-0" />
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-1">
+              <Badge className="bg-purple-100 text-purple-800">{format.type}</Badge>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-7 text-xs"
+                onClick={() => handleApplyFormatting(format)}
+              >
+                Apply
+              </Button>
+            </div>
+            <p className="text-sm">{format.text}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Render compliance issue item
+  const renderComplianceItem = (issue) => {
+    let severityClass;
+    let icon;
+    
+    switch (issue.severity) {
+      case 'error':
+        severityClass = "bg-red-100 text-red-800";
+        icon = <AlertTriangle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0" />;
+        break;
+      case 'warning':
+        severityClass = "bg-amber-100 text-amber-800";
+        icon = <AlertTriangle className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />;
+        break;
+      case 'info':
+        severityClass = "bg-blue-100 text-blue-800";
+        icon = <HelpCircle className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />;
+        break;
+      default:
+        severityClass = "bg-gray-100 text-gray-800";
+        icon = <HelpCircle className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />;
+    }
+    
+    return (
+      <div key={issue.id} className="p-3 border rounded-md mb-3">
+        <div className="flex items-start">
+          {icon}
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center">
+                <Badge className={severityClass}>{issue.severity}</Badge>
+                <span className="text-xs text-muted-foreground ml-2">{issue.section}</span>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-7 text-xs"
+                onClick={() => handleFixComplianceIssue(issue)}
+              >
+                Fix Issue
+              </Button>
+            </div>
+            <p className="text-sm">{issue.message}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Render template item
+  const renderTemplateItem = (template) => {
+    return (
+      <Card key={template.id} className="mb-3 cursor-pointer hover:bg-muted/50" onClick={() => handleSelectTemplate(template)}>
+        <CardContent className="p-3">
+          <div className="flex items-start">
+            <FileText className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
+            <div className="flex-1">
+              <div className="flex justify-between items-center mb-1">
+                <div className="font-medium">{template.name}</div>
+                <Badge className="bg-gray-100 text-gray-800">{template.type}</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">{template.description}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
   
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 bg-background border-b flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <FileText className="h-6 w-6" />
-          <div>
-            <h2 className="text-xl font-semibold">eCTD Co-Author</h2>
-            <p className="text-sm text-muted-foreground">
-              {documentState.lastSaved ? 
-                `Last saved: ${documentState.lastSaved.toLocaleTimeString()}` : 
-                'Not saved yet'}
-            </p>
-          </div>
-        </div>
-        <div className="flex space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={handleSave}
-          >
-            <Save className="h-4 w-4 mr-2" />
-            Save
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Export
-          </Button>
-          {onClose && (
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={onClose}
-            >
-              Close
-            </Button>
-          )}
-        </div>
-      </div>
-      
-      <div className="flex flex-1 overflow-hidden">
-        {/* Main editor area */}
-        <div className="flex-1 overflow-auto">
-          <Office365WordEmbed
-            ref={wordEmbedRef}
-            documentId={documentId}
-            initialContent={initialContent}
-            onSave={handleSave}
-          />
-        </div>
+    <Dialog open={isOpen} onOpenChange={onOpenChange} className="max-w-6xl">
+      <DialogContent className="max-w-6xl max-h-[90vh] p-0 overflow-hidden">
+        <DialogHeader className="p-4 border-b">
+          <DialogTitle>AI-Powered Document Editor - {documentName}</DialogTitle>
+        </DialogHeader>
         
-        {/* AI Assistant panel */}
-        <div className="w-96 border-l bg-muted/20 overflow-auto">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-            <div className="border-b px-4 py-2">
-              <TabsList className="w-full">
-                <TabsTrigger value="document" className="flex-1">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Document
-                </TabsTrigger>
-                <TabsTrigger value="assistant" className="flex-1">
-                  <MessageSquare className="h-4 w-4 mr-2" />
+        <div className="flex h-[calc(90vh-3.5rem)]">
+          {/* Word Editor (left side) */}
+          <div className="flex-1 border-r">
+            <MicrosoftWordEmbed
+              documentId={documentId}
+              documentName={documentName}
+              onStatusChange={handleDocumentStatusChange}
+              onSave={handleSaveDocument}
+              onClose={() => onOpenChange(false)}
+              readOnly={readOnly}
+            />
+          </div>
+          
+          {/* AI Assistant Panel (right side) */}
+          <div className="w-80 flex flex-col h-full bg-muted/20">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+              <TabsList className="flex justify-between px-2 pt-2 bg-transparent h-auto">
+                <TabsTrigger value="editor" className="flex-1">
+                  <MessageSquare className="h-4 w-4 mr-1" />
                   Assistant
                 </TabsTrigger>
-                <TabsTrigger value="settings" className="flex-1">
-                  <Settings className="h-4 w-4 mr-2" />
-                  Tools
+                <TabsTrigger value="format" className="flex-1">
+                  <PenTool className="h-4 w-4 mr-1" />
+                  Format
+                </TabsTrigger>
+                <TabsTrigger value="compliance" className="flex-1">
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Compliance
+                </TabsTrigger>
+                <TabsTrigger value="templates" className="flex-1">
+                  <List className="h-4 w-4 mr-1" />
+                  Templates
                 </TabsTrigger>
               </TabsList>
-            </div>
-            
-            <TabsContent value="document" className="flex-1 p-4 overflow-auto space-y-4">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle>Document Overview</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Document ID:</span>
-                      <span className="text-sm font-medium">{documentId || 'New Document'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Status:</span>
-                      <span className="text-sm font-medium">{documentState.isDirty ? 'Modified' : 'Saved'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Document Type:</span>
-                      <span className="text-sm font-medium">eCTD Module 3</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
               
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle>Writing Suggestions</CardTitle>
-                  <CardDescription>AI-powered suggestions to improve your document</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {suggestions.length === 0 ? (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-muted-foreground">No suggestions yet</p>
-                      <Button 
-                        variant="outline" 
-                        className="mt-2"
-                        onClick={handleGetSuggestions}
-                        disabled={isProcessing}
-                      >
-                        {isProcessing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                        Get Suggestions
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {suggestions.map(suggestion => (
-                        <div key={suggestion.id} className="p-2 border rounded-md text-sm">
-                          <div className="flex justify-between">
-                            <span className="font-medium">{suggestion.type}</span>
-                            <span className="text-xs text-muted-foreground">{suggestion.location}</span>
-                          </div>
-                          <p className="mt-1">{suggestion.text}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle>Regulatory Compliance</CardTitle>
-                  <CardDescription>Check your document against regulatory standards</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  {regulatoryChecklist.length === 0 ? (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-muted-foreground">No compliance checks run yet</p>
-                      <Button 
-                        variant="outline" 
-                        className="mt-2"
-                        onClick={handleComplianceCheck}
-                        disabled={isProcessing}
-                      >
-                        {isProcessing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                        Run Compliance Check
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {regulatoryChecklist.map(item => (
-                        <div 
-                          key={item.id} 
-                          className={`p-2 border rounded-md text-sm ${
-                            item.status === 'pass' ? 'border-green-200 bg-green-50' :
-                            item.status === 'warning' ? 'border-yellow-200 bg-yellow-50' :
-                            'border-red-200 bg-red-50'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">{item.requirement}</span>
-                            <span 
-                              className={`text-xs px-2 py-1 rounded-full ${
-                                item.status === 'pass' ? 'bg-green-100 text-green-800' :
-                                item.status === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                                'bg-red-100 text-red-800'
-                              }`}
-                            >
-                              {item.status}
-                            </span>
-                          </div>
-                          <p className="mt-1 text-xs">{item.details}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="assistant" className="flex flex-col h-full p-0 overflow-hidden">
-              <div className="flex-1 overflow-auto p-4 space-y-4">
-                {aiResponse ? (
-                  <div className="mb-4">
-                    <Card>
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-sm">AI Assistant</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="whitespace-pre-wrap text-sm">
-                          {aiResponse}
-                        </div>
-                      </CardContent>
-                      <CardFooter>
-                        <Button 
-                          variant="secondary" 
-                          size="sm" 
-                          onClick={handleInsertResponse}
-                          className="ml-auto"
-                        >
-                          <FileCheck className="h-4 w-4 mr-2" />
-                          Insert into Document
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  </div>
-                ) : (
-                  <Card className="mb-4">
-                    <CardHeader>
-                      <CardTitle>{documentHelp.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground">{documentHelp.content}</p>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
-              
-              <div className="p-4 border-t mt-auto">
-                <div className="flex items-start space-x-2">
-                  <Textarea
-                    placeholder="Ask the AI assistant for help..."
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    className="flex-1 min-h-[80px]"
-                  />
-                  <Button 
-                    onClick={handleSendPrompt}
-                    disabled={!aiPrompt.trim() || isProcessing}
-                  >
-                    {isProcessing ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+              <div className="flex-1 overflow-hidden">
+                <TabsContent value="editor" className="h-full flex flex-col p-0 m-0 pt-2">
+                  <div className="flex-1 overflow-y-auto px-3">
+                    {aiSuggestions.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                        <Lightbulb className="h-12 w-12 text-muted-foreground mb-4" />
+                        <h3 className="font-medium mb-2">AI Assistant</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          I'll help you create regulatory-compliant documents with AI-powered suggestions.
+                        </p>
+                      </div>
                     ) : (
-                      <MessageSquare className="h-4 w-4" />
+                      <div>
+                        {aiSuggestions.map(suggestion => renderSuggestionItem(suggestion))}
+                        <div ref={messagesEndRef} />
+                      </div>
                     )}
-                  </Button>
-                </div>
+                    
+                    {isProcessing && (
+                      <div className="p-3 border rounded-md mb-3 bg-muted/50">
+                        <div className="flex items-center">
+                          <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
+                          <p className="text-sm">Analyzing document...</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="p-3 border-t">
+                    <form onSubmit={handlePromptSubmit} className="flex items-center">
+                      <Input
+                        placeholder="Ask about this document..."
+                        value={userPrompt}
+                        onChange={(e) => setUserPrompt(e.target.value)}
+                        className="flex-1 mr-2"
+                      />
+                      <Button type="submit" size="sm">
+                        <Wand2 className="h-4 w-4" />
+                      </Button>
+                    </form>
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="format" className="h-full flex flex-col p-0 m-0 overflow-hidden">
+                  <div className="flex-1 overflow-y-auto p-3">
+                    {formatSuggestions.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                        <PenTool className="h-12 w-12 text-muted-foreground mb-4" />
+                        <h3 className="font-medium mb-2">Formatting Assistant</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Select a template or edit your document to get formatting suggestions.
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setActiveTab("templates")}
+                        >
+                          Browse Templates
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <h3 className="font-medium mb-3">Formatting Suggestions</h3>
+                        {formatSuggestions.map(format => renderFormatItem(format))}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="compliance" className="h-full flex flex-col p-0 m-0 overflow-hidden">
+                  <div className="flex-1 overflow-y-auto p-3">
+                    {complianceIssues.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                        <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                        <h3 className="font-medium mb-2">Compliance Checker</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Save your document to check for regulatory compliance issues.
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          onClick={checkComplianceAfterSave}
+                          disabled={isProcessing}
+                        >
+                          {isProcessing ? (
+                            <>
+                              <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
+                              Checking...
+                            </>
+                          ) : (
+                            <>
+                              Check Compliance
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <h3 className="font-medium mb-3">Compliance Issues</h3>
+                        {complianceIssues.map(issue => renderComplianceItem(issue))}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="templates" className="h-full flex flex-col p-0 m-0 overflow-hidden">
+                  <div className="flex-1 overflow-y-auto p-3">
+                    <h3 className="font-medium mb-3">Available Templates</h3>
+                    {availableTemplates.map(template => renderTemplateItem(template))}
+                  </div>
+                </TabsContent>
               </div>
-            </TabsContent>
-            
-            <TabsContent value="settings" className="flex-1 p-4 overflow-auto space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Document Templates</CardTitle>
-                  <CardDescription>Apply predefined templates to your document</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start">
-                    <FilePlus className="h-4 w-4 mr-2" />
-                    eCTD Module 3 Quality Template
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    <FilePlus className="h-4 w-4 mr-2" />
-                    Clinical Study Report Template
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    <FilePlus className="h-4 w-4 mr-2" />
-                    NDA Cover Letter Template
-                  </Button>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Document Formatting</CardTitle>
-                  <CardDescription>Apply regulatory-compliant formatting</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Format Headings to eCTD Standard
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Generate Table of Contents
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    <Settings className="h-4 w-4 mr-2" />
-                    Apply FDA Pagination Standards
-                  </Button>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader>
-                  <CardTitle>Export Options</CardTitle>
-                  <CardDescription>Export your document in different formats</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <Button variant="outline" className="w-full justify-start">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export as PDF
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export as Word Document
-                  </Button>
-                  <Button variant="outline" className="w-full justify-start">
-                    <Download className="h-4 w-4 mr-2" />
-                    Export with Tracked Changes
-                  </Button>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+            </Tabs>
+          </div>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
+};
+
+// Mock AlertTriangle component for compliance issues
+const AlertTriangle = ({ className }) => {
+  return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>;
 };
 
 export default AiPoweredWordEditor;

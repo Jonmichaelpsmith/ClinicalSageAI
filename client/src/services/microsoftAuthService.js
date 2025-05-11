@@ -2,14 +2,31 @@
  * Microsoft Authentication Service
  * 
  * This service provides integration with Microsoft authentication system,
- * enabling login, token management, and session handling for Microsoft 365.
+ * enabling login, token management, and session handling for Microsoft 365
+ * for the eCTD Co-Author module.
  */
 
-import axios from 'axios';
+// Microsoft Authentication Configuration
+const MS_AUTH_CONFIG = {
+  clientId: process.env.MICROSOFT_CLIENT_ID || '',
+  tenantId: process.env.MICROSOFT_TENANT_ID || '',
+  redirectUri: window.location.origin + '/auth/microsoft/callback',
+  scopes: [
+    'User.Read',
+    'Files.ReadWrite',
+    'Files.ReadWrite.All',
+    'Sites.ReadWrite.All',
+    'Office.Desktop'
+  ]
+};
 
-// Authentication state
-let _isAuthenticated = false;
-let _isInitialized = false;
+// Token Storage Keys
+const TOKEN_STORAGE_KEYS = {
+  accessToken: 'ms_access_token',
+  refreshToken: 'ms_refresh_token',
+  expiresAt: 'ms_expires_at',
+  userInfo: 'ms_user_info'
+};
 
 /**
  * Initialize the Microsoft authentication service
@@ -18,52 +35,25 @@ let _isInitialized = false;
  */
 export async function initializeAuth() {
   try {
-    if (_isInitialized) {
+    // Check if we have a valid token
+    if (isTokenValid()) {
       return true;
     }
     
-    console.log('Initializing Microsoft authentication...');
+    // Check if we're in a callback scenario
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
     
-    // Check if we have a valid token in local storage
-    const accessToken = localStorage.getItem('ms_access_token');
-    const expiresAt = localStorage.getItem('ms_token_expires_at');
-    
-    if (accessToken && expiresAt) {
-      const now = new Date();
-      const expirationDate = new Date(parseInt(expiresAt, 10));
-      
-      // Check if token is still valid
-      if (expirationDate > now) {
-        console.log('Found valid Microsoft token in local storage');
-        _isAuthenticated = true;
-      } else {
-        console.log('Microsoft token expired, will need to refresh');
-        
-        // Try to refresh the token
-        const refreshToken = localStorage.getItem('ms_refresh_token');
-        if (refreshToken) {
-          try {
-            await refreshTokenSilently(refreshToken);
-          } catch (refreshError) {
-            console.warn('Failed to refresh token silently:', refreshError);
-            clearTokens();
-            _isAuthenticated = false;
-          }
-        } else {
-          clearTokens();
-          _isAuthenticated = false;
-        }
-      }
-    } else {
-      console.log('No Microsoft token found in local storage');
-      _isAuthenticated = false;
+    if (code) {
+      // Process the code and get tokens
+      const result = await processAuthCode(code);
+      return result;
     }
     
-    _isInitialized = true;
-    return true;
+    // Not authenticated and not in callback flow
+    return false;
   } catch (error) {
-    console.error('Error initializing Microsoft authentication:', error);
-    _isInitialized = false;
+    console.error('Failed to initialize Microsoft authentication:', error);
     return false;
   }
 }
@@ -74,7 +64,28 @@ export async function initializeAuth() {
  * @returns {boolean} - True if user is authenticated
  */
 export function isAuthenticated() {
-  return _isAuthenticated;
+  return isTokenValid();
+}
+
+/**
+ * Check if current token is valid
+ * 
+ * @returns {boolean} - True if token is valid and not expired
+ */
+function isTokenValid() {
+  const accessToken = localStorage.getItem(TOKEN_STORAGE_KEYS.accessToken);
+  const expiresAt = localStorage.getItem(TOKEN_STORAGE_KEYS.expiresAt);
+  
+  if (!accessToken || !expiresAt) {
+    return false;
+  }
+  
+  // Check if token is expired
+  const now = Date.now();
+  const expiration = parseInt(expiresAt, 10);
+  
+  // Add a 5-minute buffer to ensure we don't use tokens that are about to expire
+  return now < (expiration - 5 * 60 * 1000);
 }
 
 /**
@@ -83,7 +94,31 @@ export function isAuthenticated() {
  * @returns {string|null} - Access token or null if not authenticated
  */
 export function getAccessToken() {
-  return localStorage.getItem('ms_access_token');
+  if (!isTokenValid()) {
+    return null;
+  }
+  
+  return localStorage.getItem(TOKEN_STORAGE_KEYS.accessToken);
+}
+
+/**
+ * Get user information
+ * 
+ * @returns {Object|null} - User information or null if not authenticated
+ */
+export function getUserInfo() {
+  const userInfoStr = localStorage.getItem(TOKEN_STORAGE_KEYS.userInfo);
+  
+  if (!userInfoStr) {
+    return null;
+  }
+  
+  try {
+    return JSON.parse(userInfoStr);
+  } catch (error) {
+    console.error('Failed to parse user info:', error);
+    return null;
+  }
 }
 
 /**
@@ -93,17 +128,34 @@ export function getAccessToken() {
  */
 export async function login() {
   try {
-    // Get login URL from server
-    const response = await axios.get('/api/microsoft-office/auth/login-url');
+    const { clientId, tenantId, redirectUri, scopes } = MS_AUTH_CONFIG;
     
-    // Store current location to redirect back after login
-    localStorage.setItem('ms_auth_redirect', window.location.pathname);
+    if (!clientId || !tenantId) {
+      console.error('Microsoft authentication is not configured correctly');
+      return false;
+    }
     
-    // Redirect to Microsoft login page
-    window.location.href = response.data.url;
+    // Construct the authorization URL
+    const authUrl = new URL('https://login.microsoftonline.com/' + tenantId + '/oauth2/v2.0/authorize');
+    authUrl.searchParams.append('client_id', clientId);
+    authUrl.searchParams.append('response_type', 'code');
+    authUrl.searchParams.append('redirect_uri', redirectUri);
+    authUrl.searchParams.append('scope', scopes.join(' '));
+    authUrl.searchParams.append('response_mode', 'query');
+    
+    // Generate and store a state parameter to prevent CSRF
+    const state = generateRandomString(32);
+    localStorage.setItem('ms_auth_state', state);
+    authUrl.searchParams.append('state', state);
+    
+    // Redirect to Microsoft login
+    window.location.href = authUrl.toString();
+    
+    // Return true to indicate login flow initiated
+    return true;
   } catch (error) {
-    console.error('Error initiating Microsoft login:', error);
-    throw error;
+    console.error('Failed to initiate Microsoft login:', error);
+    return false;
   }
 }
 
@@ -115,35 +167,105 @@ export async function login() {
  */
 export async function handleAuthCallback(params) {
   try {
-    if (!params.code) {
-      throw new Error('No authorization code provided');
+    const code = params.get('code');
+    const state = params.get('state');
+    const error = params.get('error');
+    const errorDescription = params.get('error_description');
+    
+    // Check for errors
+    if (error) {
+      throw new Error(`Authentication error: ${error}. ${errorDescription}`);
     }
     
+    // Verify state to prevent CSRF
+    const storedState = localStorage.getItem('ms_auth_state');
+    if (!storedState || storedState !== state) {
+      throw new Error('Invalid state parameter');
+    }
+    
+    // Clear state
+    localStorage.removeItem('ms_auth_state');
+    
+    // Process the authorization code
+    const result = await processAuthCode(code);
+    return result;
+  } catch (error) {
+    console.error('Failed to handle auth callback:', error);
+    throw error;
+  }
+}
+
+/**
+ * Process the authorization code to get tokens
+ * 
+ * @param {string} code - Authorization code
+ * @returns {Promise<boolean>} - Success status
+ */
+async function processAuthCode(code) {
+  try {
+    const { clientId, redirectUri } = MS_AUTH_CONFIG;
+    
     // Exchange code for tokens
-    const response = await axios.post('/api/microsoft-office/auth/token', {
-      code: params.code
+    const tokenResponse = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        client_id: clientId,
+        grant_type: 'authorization_code',
+        code,
+        redirect_uri: redirectUri,
+        scope: MS_AUTH_CONFIG.scopes.join(' ')
+      })
     });
     
-    // Store tokens in local storage
-    storeTokens(response.data);
+    const tokenData = await tokenResponse.json();
     
-    _isAuthenticated = true;
+    if (tokenData.error) {
+      throw new Error(`Token error: ${tokenData.error}. ${tokenData.error_description}`);
+    }
     
-    // Return to the original location
-    const redirectPath = localStorage.getItem('ms_auth_redirect') || '/';
-    localStorage.removeItem('ms_auth_redirect');
+    // Store tokens
+    storeTokens(tokenData);
     
-    return {
-      success: true,
-      redirectPath
-    };
+    // Get user info
+    await fetchAndStoreUserInfo(tokenData.access_token);
+    
+    return true;
   } catch (error) {
-    console.error('Error handling Microsoft auth callback:', error);
-    _isAuthenticated = false;
-    return {
-      success: false,
-      error: error.message || 'Authentication failed'
-    };
+    console.error('Failed to process authorization code:', error);
+    return false;
+  }
+}
+
+/**
+ * Fetch and store user information
+ * 
+ * @param {string} accessToken - Access token
+ * @returns {Promise<Object>} - User information
+ */
+async function fetchAndStoreUserInfo(accessToken) {
+  try {
+    const response = await fetch('https://graph.microsoft.com/v1.0/me', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
+    
+    const userInfo = await response.json();
+    
+    if (userInfo.error) {
+      throw new Error(`User info error: ${userInfo.error.code}. ${userInfo.error.message}`);
+    }
+    
+    // Store user info
+    localStorage.setItem(TOKEN_STORAGE_KEYS.userInfo, JSON.stringify(userInfo));
+    
+    return userInfo;
+  } catch (error) {
+    console.error('Failed to fetch user info:', error);
+    throw error;
   }
 }
 
@@ -153,21 +275,46 @@ export async function handleAuthCallback(params) {
  * @param {string} refreshToken - Refresh token
  * @returns {Promise<Object>} - New tokens
  */
-async function refreshTokenSilently(refreshToken) {
+export async function refreshTokenSilently() {
   try {
-    const response = await axios.post('/api/microsoft-office/auth/refresh', {
-      refreshToken
+    const refreshToken = localStorage.getItem(TOKEN_STORAGE_KEYS.refreshToken);
+    
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+    
+    const { clientId } = MS_AUTH_CONFIG;
+    
+    // Exchange refresh token for new tokens
+    const tokenResponse = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: new URLSearchParams({
+        client_id: clientId,
+        grant_type: 'refresh_token',
+        refresh_token: refreshToken,
+        scope: MS_AUTH_CONFIG.scopes.join(' ')
+      })
     });
     
-    // Store new tokens
-    storeTokens(response.data);
+    const tokenData = await tokenResponse.json();
     
-    _isAuthenticated = true;
+    if (tokenData.error) {
+      throw new Error(`Token refresh error: ${tokenData.error}. ${tokenData.error_description}`);
+    }
     
-    return response.data;
+    // Store tokens
+    storeTokens(tokenData);
+    
+    return tokenData;
   } catch (error) {
-    console.error('Error refreshing token:', error);
-    _isAuthenticated = false;
+    console.error('Failed to refresh token:', error);
+    
+    // Clear tokens on refresh failure
+    clearTokens();
+    
     throw error;
   }
 }
@@ -178,21 +325,27 @@ async function refreshTokenSilently(refreshToken) {
  * @param {Object} tokens - Auth tokens
  */
 function storeTokens(tokens) {
-  const now = new Date();
-  const expiresAt = now.getTime() + (tokens.expiresIn * 1000);
+  const now = Date.now();
+  const expiresIn = tokens.expires_in || 3600; // Default to 1 hour if not provided
+  const expiresAt = now + (expiresIn * 1000);
   
-  localStorage.setItem('ms_access_token', tokens.accessToken);
-  localStorage.setItem('ms_refresh_token', tokens.refreshToken);
-  localStorage.setItem('ms_token_expires_at', expiresAt.toString());
+  localStorage.setItem(TOKEN_STORAGE_KEYS.accessToken, tokens.access_token);
+  
+  if (tokens.refresh_token) {
+    localStorage.setItem(TOKEN_STORAGE_KEYS.refreshToken, tokens.refresh_token);
+  }
+  
+  localStorage.setItem(TOKEN_STORAGE_KEYS.expiresAt, expiresAt.toString());
 }
 
 /**
  * Clear tokens from local storage
  */
 function clearTokens() {
-  localStorage.removeItem('ms_access_token');
-  localStorage.removeItem('ms_refresh_token');
-  localStorage.removeItem('ms_token_expires_at');
+  localStorage.removeItem(TOKEN_STORAGE_KEYS.accessToken);
+  localStorage.removeItem(TOKEN_STORAGE_KEYS.refreshToken);
+  localStorage.removeItem(TOKEN_STORAGE_KEYS.expiresAt);
+  localStorage.removeItem(TOKEN_STORAGE_KEYS.userInfo);
 }
 
 /**
@@ -202,20 +355,39 @@ function clearTokens() {
  */
 export async function logout() {
   try {
-    // Call logout endpoint
-    await axios.post('/api/microsoft-office/auth/logout');
+    const { clientId, tenantId, redirectUri } = MS_AUTH_CONFIG;
     
     // Clear tokens
     clearTokens();
     
-    _isAuthenticated = false;
+    // Redirect to logout endpoint
+    const logoutUrl = new URL(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/logout`);
+    logoutUrl.searchParams.append('post_logout_redirect_uri', redirectUri);
+    logoutUrl.searchParams.append('client_id', clientId);
+    
+    window.location.href = logoutUrl.toString();
+    
+    return true;
   } catch (error) {
-    console.error('Error logging out from Microsoft:', error);
-    
-    // Still clear tokens even if the API call fails
-    clearTokens();
-    _isAuthenticated = false;
-    
-    throw error;
+    console.error('Failed to logout:', error);
+    return false;
   }
+}
+
+/**
+ * Generate a random string for state parameter
+ * 
+ * @param {number} length - Length of the random string
+ * @returns {string} - Random string
+ */
+function generateRandomString(length) {
+  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    result += charset[randomIndex];
+  }
+  
+  return result;
 }
