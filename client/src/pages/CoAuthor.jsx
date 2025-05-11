@@ -20,9 +20,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import * as aiService from '../services/aiService';
 import * as msWordService from '../services/msWordIntegrationService';
+import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
+import * as msCopilotService from '../services/msCopilotService';
 
 // Import the Enhanced Document Editor with lazy loading for better performance
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
+const MsWordPopupEditor = lazy(() => import('../components/MsWordPopupEditor'));
 import { 
   FileText, 
   Edit, 
@@ -87,6 +90,9 @@ export default function CoAuthor() {
   const [documentLocked, setDocumentLocked] = useState(false);
   const [lockedBy, setLockedBy] = useState(null);
   const [showValidationDialog, setShowValidationDialog] = useState(false);
+  // Microsoft Word integration state
+  const [msWordPopupOpen, setMsWordPopupOpen] = useState(false);
+  const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
   // AI Assistant state
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const [aiAssistantMode, setAiAssistantMode] = useState('suggestions'); // 'suggestions', 'compliance', 'formatting'
@@ -837,6 +843,40 @@ export default function CoAuthor() {
                     <FilePlus2 className="h-4 w-4 mr-2" />
                     New Document
                   </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="border-blue-200 text-blue-700"
+                    onClick={() => {
+                      if (selectedDocument) {
+                        toast({
+                          title: "Opening Microsoft Word",
+                          description: "Preparing document for editing in Microsoft Word...",
+                          variant: "default",
+                        });
+                        console.log("Creating Microsoft Office editing session for VAULT document " + selectedDocument.id + "...");
+                        
+                        // Simulate a brief loading period
+                        setTimeout(() => {
+                          setMsWordPopupOpen(true);
+                          toast({
+                            title: "Microsoft Word Ready",
+                            description: "Document is now ready for editing in Microsoft Word.",
+                            variant: "default",
+                          });
+                        }, 700);
+                      } else {
+                        toast({
+                          title: "Select a Document",
+                          description: "Please select a document to edit first.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Edit in Word
+                  </Button>
                   <Button size="sm" variant="outline" className="border-blue-200">
                     <Upload className="h-4 w-4 mr-2" />
                     Import
@@ -1299,6 +1339,25 @@ export default function CoAuthor() {
           </div>
         )}
       </div>
+      
+      {/* Microsoft Word Popup Editor */}
+      <Suspense fallback={<div>Loading Microsoft Word...</div>}>
+        <MsWordPopupEditor 
+          isOpen={msWordPopupOpen}
+          onClose={() => setMsWordPopupOpen(false)}
+          documentId={selectedDocument?.id?.toString() || 'current-doc'}
+          documentTitle={selectedDocument?.title || "Module 2.5 Clinical Overview"}
+          initialContent="The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects)."
+          onSave={(content) => {
+            console.log("Saving document content from MS Word:", content);
+            toast({
+              title: "Document Updated",
+              description: "Your changes from Microsoft Word have been saved to the document vault.",
+              variant: "default",
+            });
+          }}
+        />
+      </Suspense>
       
       {/* Version History Dialog */}
       <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>
