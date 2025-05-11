@@ -1026,8 +1026,8 @@ export default function CoAuthor() {
     }
   ]);
 
-  // Mock documents data
-  const [documents] = useState([
+  // Documents data
+  const [documents, setDocuments] = useState([
     { 
       id: 1, 
       title: 'Module 2.5 Clinical Overview', 
