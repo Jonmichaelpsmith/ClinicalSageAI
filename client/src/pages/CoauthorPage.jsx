@@ -1,29 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useNavigate } from 'wouter';
 import CoauthorModule from '../components/coauthor/CoauthorModule';
-import DocumentSelector from '../components/coauthor/DocumentSelector';
 
 export default function CoauthorPage() {
-  const [view, setView] = useState('selector');
-  const [selectedModule, setSelectedModule] = useState(null);
-
-  const handleDocumentSelection = (moduleId) => {
-    setSelectedModule(moduleId);
-    setView('editor');
-  };
-
-  const handleBackToSelector = () => {
-    setView('selector');
-  };
-
-  return (
-    <>
-      {view === 'selector' && (
-        <DocumentSelector onSelectDocument={handleDocumentSelection} />
-      )}
-      
-      {view === 'editor' && (
-        <CoauthorModule onBackToSelector={handleBackToSelector} />
-      )}
-    </>
-  );
+  const navigate = useNavigate();
+  return <CoauthorModule />;
 }
