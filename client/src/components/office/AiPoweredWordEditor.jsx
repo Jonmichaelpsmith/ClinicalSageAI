@@ -1,9 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Box, Button, Card, CardContent, Divider, Typography, Alert, CircularProgress } from '@mui/material';
-import { 
-  FileText, Save, CheckCircle, FileSearch, 
-  FileOutput, PenTool, LayoutTemplate, AlertTriangle 
-} from 'lucide-react';
 
 import microsoftWordService from '../../services/microsoftWordService';
 import microsoftAuthService from '../../services/microsoftAuthService';
@@ -199,11 +195,23 @@ const AiPoweredWordEditor = ({ documentId, templateId, regulationType = 'fda' })
             Compliance Check Results
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-            <CheckCircle 
-              color={complianceResults.compliant ? 'green' : 'orange'} 
-              size={20} 
-              style={{ marginRight: 8 }}
-            />
+            <Box 
+              sx={{ 
+                width: 20, 
+                height: 20, 
+                borderRadius: '50%', 
+                bgcolor: complianceResults.compliant ? 'green' : 'orange',
+                mr: 1,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '14px',
+                fontWeight: 'bold'
+              }}
+            >
+              ✓
+            </Box>
             <Typography>
               {complianceResults.compliant 
                 ? 'Document is compliant with regulatory standards' 
@@ -256,7 +264,6 @@ const AiPoweredWordEditor = ({ documentId, templateId, regulationType = 'fda' })
           variant="contained" 
           color="primary" 
           onClick={handleLogin}
-          startIcon={<FileText />}
         >
           Sign in with Microsoft
         </Button>
@@ -278,7 +285,6 @@ const AiPoweredWordEditor = ({ documentId, templateId, regulationType = 'fda' })
         <Button 
           variant="outlined" 
           size="small" 
-          startIcon={<Save />}
           onClick={handleSaveDocument}
           disabled={loading}
         >
@@ -287,7 +293,6 @@ const AiPoweredWordEditor = ({ documentId, templateId, regulationType = 'fda' })
         <Button 
           variant="outlined" 
           size="small"
-          startIcon={<FileOutput />}
           onClick={handleExportToPDF}
           disabled={loading}
         >
@@ -296,7 +301,6 @@ const AiPoweredWordEditor = ({ documentId, templateId, regulationType = 'fda' })
         <Button 
           variant="outlined" 
           size="small"
-          startIcon={<FileSearch />}
           onClick={handleCheckCompliance}
           disabled={loading || complianceLoading}
         >
@@ -305,7 +309,6 @@ const AiPoweredWordEditor = ({ documentId, templateId, regulationType = 'fda' })
         <Button 
           variant="outlined" 
           size="small"
-          startIcon={<LayoutTemplate />}
           onClick={handleApplyEctdFormatting}
           disabled={loading}
         >
@@ -382,7 +385,6 @@ const AiPoweredWordEditor = ({ documentId, templateId, regulationType = 'fda' })
           <Button 
             variant="outlined" 
             size="small"
-            startIcon={<PenTool />}
             onClick={() => handleInsertRegulatorySection('gcp-statement')}
             disabled={loading}
           >
@@ -391,7 +393,6 @@ const AiPoweredWordEditor = ({ documentId, templateId, regulationType = 'fda' })
           <Button 
             variant="outlined" 
             size="small"
-            startIcon={<PenTool />}
             onClick={() => handleInsertRegulatorySection('adverse-events')}
             disabled={loading}
           >
@@ -400,7 +401,6 @@ const AiPoweredWordEditor = ({ documentId, templateId, regulationType = 'fda' })
           <Button 
             variant="outlined" 
             size="small"
-            startIcon={<PenTool />}
             onClick={() => handleInsertRegulatorySection('eligibility')}
             disabled={loading}
           >
@@ -409,7 +409,6 @@ const AiPoweredWordEditor = ({ documentId, templateId, regulationType = 'fda' })
           <Button 
             variant="outlined" 
             size="small"
-            startIcon={<PenTool />}
             onClick={() => handleInsertRegulatorySection('consent')}
             disabled={loading}
           >
@@ -418,7 +417,6 @@ const AiPoweredWordEditor = ({ documentId, templateId, regulationType = 'fda' })
           <Button 
             variant="outlined" 
             size="small"
-            startIcon={<PenTool />}
             onClick={() => handleInsertRegulatorySection('privacy')}
             disabled={loading}
           >
