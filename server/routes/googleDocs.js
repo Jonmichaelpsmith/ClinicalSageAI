@@ -72,8 +72,9 @@ router.get('/auth/google/callback', async (req, res) => {
     
     // Create session or JWT here if needed
     
-    // Redirect to frontend with tokens - fixed to use the correct callback route
-    res.redirect(`/google/auth/callback#access_token=${tokens.access_token}&refresh_token=${tokens.refresh_token}&expires_in=${tokens.expiry_date - Date.now()}`);
+    // Redirect to frontend with tokens using hash parameters
+    // Must match the client-side REDIRECT_URI path in googleConfig.js
+    res.redirect(`/google/auth/callback#access_token=${tokens.access_token}&refresh_token=${tokens.refresh_token || ''}&expires_in=${tokens.expiry_date - Date.now()}&token_type=Bearer`);
     
   } catch (error) {
     console.error('Error in OAuth callback:', error);

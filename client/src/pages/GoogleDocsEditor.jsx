@@ -407,6 +407,7 @@ const GoogleDocsEditor = () => {
             </div>
           </div>
         </div>
+        )}
       </div>
     </div>
   );
