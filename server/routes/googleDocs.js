@@ -7,6 +7,7 @@
 
 import express from 'express';
 import axios from 'axios';
+import { google } from 'googleapis';
 
 const router = express.Router();
 
@@ -406,16 +407,119 @@ router.post('/validate', async (req, res) => {
       issues: []
     };
     
-    // Perform eCTD-specific validation checks
+    // Module-specific validation rules
+    const moduleValidations = {
+      module1: [
+        { 
+          check: content => !content.includes('Administrative Information'),
+          issue: {
+            type: 'error',
+            message: 'Module 1 document is missing required "Administrative Information" section',
+            rule: 'eCTD.M1.1',
+            location: 'Document structure',
+            suggestion: 'Add an Administrative Information section that includes all required regional content'
+          }
+        },
+        {
+          check: content => !content.toLowerCase().includes('cover letter') && !content.toLowerCase().includes('application form'),
+          issue: {
+            type: 'warning',
+            message: 'Module 1 should typically include Cover Letter and Application Form references',
+            rule: 'eCTD.M1.2',
+            location: 'Document structure',
+            suggestion: 'Consider adding sections for Cover Letter and Application Form as appropriate'
+          }
+        }
+      ],
+      module2: [
+        {
+          check: content => !content.toLowerCase().includes('quality overall summary') && !content.toLowerCase().includes('qos'),
+          issue: {
+            type: 'error',
+            message: 'Module 2 document is missing required "Quality Overall Summary" section',
+            rule: 'ICH.M2.2',
+            location: 'Document structure',
+            suggestion: 'Add the Quality Overall Summary section as required by ICH M2'
+          }
+        },
+        {
+          check: content => !content.toLowerCase().includes('clinical overview') && (moduleType === 'module2' || moduleType === 'module2_5'),
+          issue: {
+            type: 'error',
+            message: 'Module 2.5 document is missing required "Clinical Overview" section',
+            rule: 'ICH.M2.5',
+            location: 'Document structure',
+            suggestion: 'Add the Clinical Overview section as required by ICH M2.5'
+          }
+        },
+        {
+          check: content => !content.toLowerCase().includes('clinical summary') && (moduleType === 'module2' || moduleType === 'module2_7'),
+          issue: {
+            type: 'error',
+            message: 'Module 2.7 document is missing required "Clinical Summary" section',
+            rule: 'ICH.M2.7',
+            location: 'Document structure',
+            suggestion: 'Add the Clinical Summary section as required by ICH M2.7'
+          }
+        }
+      ],
+      module3: [
+        {
+          check: content => !content.toLowerCase().includes('quality'),
+          issue: {
+            type: 'error',
+            message: 'Module 3 document is missing required "Quality" content',
+            rule: 'ICH.M3.1',
+            location: 'Document structure',
+            suggestion: 'Add Quality information sections as required by ICH M3'
+          }
+        },
+        {
+          check: content => !content.toLowerCase().includes('manufacture'),
+          issue: {
+            type: 'warning',
+            message: 'Module 3 typically contains manufacturing information',
+            rule: 'ICH.M3.2',
+            location: 'Document structure',
+            suggestion: 'Consider adding sections for manufacturing process description'
+          }
+        }
+      ],
+      module4: [
+        {
+          check: content => !content.toLowerCase().includes('nonclinical') && !content.toLowerCase().includes('non-clinical') && !content.toLowerCase().includes('toxicology'),
+          issue: {
+            type: 'error',
+            message: 'Module 4 document is missing required nonclinical study information',
+            rule: 'ICH.M4.1',
+            location: 'Document structure',
+            suggestion: 'Add nonclinical study information as required by ICH M4'
+          }
+        }
+      ],
+      module5: [
+        {
+          check: content => !content.toLowerCase().includes('clinical') && !content.toLowerCase().includes('study reports'),
+          issue: {
+            type: 'error',
+            message: 'Module 5 document is missing required clinical study information',
+            rule: 'ICH.M5.1',
+            location: 'Document structure',
+            suggestion: 'Add clinical study information as required by ICH M5'
+          }
+        }
+      ]
+    };
     
+    // Common validation checks for all document types
     // Check 1: Document structuring - Verify heading hierarchy
     if (!content.includes('1. Introduction') && !content.includes('1 Introduction')) {
       validationResults.issues.push({
-        type: 'error',
-        message: 'Missing standard introduction section required by ICH M4',
-        rule: 'ICH.M4.1.2',
+        type: 'warning',
+        message: 'Document may be missing standard introduction section recommended by ICH',
+        rule: 'ICH.FORMAT.1.2',
         location: 'Document structure',
-        suggestion: 'Add a properly formatted Introduction section (Section 1)'
+        suggestion: 'Consider adding a properly formatted Introduction section (Section 1)'
       });
     }
     
@@ -431,14 +535,21 @@ router.post('/validate', async (req, res) => {
       });
     }
     
-    // Check 3: Regulatory compliance - Required elements for module type
-    if (moduleType === 'module2' && !content.toLowerCase().includes('quality overall summary')) {
-      validationResults.issues.push({
-        type: 'error',
-        message: 'Module 2 document is missing required "Quality Overall Summary" section',
-        rule: 'ICH.M2.2',
-        location: 'Document structure',
-        suggestion: 'Add the Quality Overall Summary section as required by ICH M2'
+    // Apply module-specific validations
+    const normalizedModuleType = moduleType?.toLowerCase()?.replace(/[^a-z0-9]/g, '') || '';
+    let moduleKey = '';
+    
+    if (normalizedModuleType.includes('module1')) moduleKey = 'module1';
+    else if (normalizedModuleType.includes('module2')) moduleKey = 'module2';
+    else if (normalizedModuleType.includes('module3')) moduleKey = 'module3';
+    else if (normalizedModuleType.includes('module4')) moduleKey = 'module4';
+    else if (normalizedModuleType.includes('module5')) moduleKey = 'module5';
+    
+    if (moduleKey && moduleValidations[moduleKey]) {
+      moduleValidations[moduleKey].forEach(validation => {
+        if (validation.check(content)) {
+          validationResults.issues.push(validation.issue);
+        }
       });
     }
     
@@ -459,6 +570,34 @@ router.post('/validate', async (req, res) => {
       location: 'Export process',
       suggestion: 'Run final exported PDF through a dedicated eCTD validation tool'
     });
+    
+    // Check for regulatory mention and references
+    if (!content.toLowerCase().includes('ich') && !content.toLowerCase().includes('fda') && 
+        !content.toLowerCase().includes('ema') && !content.toLowerCase().includes('pmda')) {
+      validationResults.issues.push({
+        type: 'info',
+        message: 'Document does not appear to reference relevant regulatory authorities',
+        rule: 'eCTD.CONTENT.REF.1',
+        location: 'Document content',
+        suggestion: 'Consider adding references to relevant regulatory guidelines or authorities'
+      });
+    }
+    
+    // Check for hyperlinks
+    const hasHyperlinks = document.data.body.content.some(item => 
+      item.paragraph && item.paragraph.elements && 
+      item.paragraph.elements.some(element => element.textRun && element.textRun.textStyle && element.textRun.textStyle.link)
+    );
+    
+    if (!hasHyperlinks) {
+      validationResults.issues.push({
+        type: 'info',
+        message: 'Document does not contain hyperlinks, which may be useful for navigation',
+        rule: 'eCTD.FORMAT.LINK.1',
+        location: 'Document content',
+        suggestion: 'Consider adding hyperlinks to improve document navigation and references'
+      });
+    }
     
     // Set the overall status based on the issues found
     if (validationResults.issues.some(issue => issue.type === 'error')) {
