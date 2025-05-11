@@ -40,7 +40,7 @@ import {
   Link,
   BookOpen,
   ArrowUpRight,
-  FileOutput,
+  /* FileOutput not available in this version of lucide-react */
   Filter,
   CheckSquare,
   FileWarning,
@@ -625,7 +625,7 @@ export default function CoAuthor() {
                     className="border-blue-200 text-blue-700 h-8"
                     onClick={() => setShowExportDialog(true)}
                   >
-                    <FileOutput className="h-4 w-4 mr-2" />
+                    <Download className="h-4 w-4 mr-2" />
                     Export Document
                   </Button>
                 </div>
