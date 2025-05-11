@@ -78,7 +78,6 @@ import {
   GitMerge,
   GitBranch,
   Minus,
-  Info,
   UserCheck,
   Users,
   ClipboardCheck,
@@ -1931,33 +1930,55 @@ export default function CoAuthor() {
                           </div>
                         </div>
                         
-                        {/* Updated Google Docs iframe */}
-                        <iframe
-                          title="Google Docs Editor"
-                          src={`https://docs.google.com/document/d/${
-                            // First check if we have a docId directly from Google integration
-                            selectedDocument?.googleDocsId || 
-                            // Then check for predefined mapping based on document id
-                            (selectedDocument?.id === 1 
-                              ? "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" 
-                              : selectedDocument?.id === 2
-                                ? "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4"
-                                : "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" // Default document
-                            )
-                          }/edit?usp=sharing&rm=minimal&embedded=true`}
-                          width="100%"
-                          height="calc(100% - 38px)" // Adjust for status bar
-                          frameBorder="0"
-                          style={{marginTop: "38px"}} // Adjust for status bar
-                          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                          className="flex-grow"
-                          onLoad={() => {
-                            console.log("Google Docs document loaded successfully");
-                            toast({
-                              title: "Document Loaded",
-                              description: "Google Docs document loaded successfully.",
-                            });
-                          }}
+                        {/* Enhanced Google Docs iframe with improved error handling */}
+                        <div className="w-full h-full relative" style={{marginTop: "38px"}}>
+                          {/* Loading overlay */}
+                          <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-0">
+                            <div className="text-center max-w-md p-8">
+                              <Loader2 className="h-10 w-10 text-blue-500 mb-4 mx-auto animate-spin" />
+                              <h3 className="text-lg font-semibold mb-2">Loading Document...</h3>
+                              <p className="text-gray-500 text-sm mb-4">
+                                Please wait while we connect to Google Docs. This may take a few moments.
+                              </p>
+                            </div>
+                          </div>
+                          
+                          <iframe
+                            title="Google Docs Editor"
+                            src={`https://docs.google.com/document/d/${
+                              // First check if we have a docId directly from Google integration
+                              selectedDocument?.googleDocsId || 
+                              // Then check for predefined mapping based on document id
+                              (selectedDocument?.id === 1 
+                                ? "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" 
+                                : selectedDocument?.id === 2
+                                  ? "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4"
+                                  : "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" // Default document
+                              )
+                            }/edit?usp=sharing&rm=minimal&embedded=true`}
+                            width="100%"
+                            height="100%" 
+                            frameBorder="0"
+                            allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            className="z-10 relative bg-white opacity-0 transition-opacity duration-300"
+                            style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0
+                            }}
+                            onLoad={(e) => {
+                              console.log("Google Docs document loaded successfully");
+                              // Make iframe visible once loaded
+                              e.target.classList.add('opacity-100');
+                              
+                              // Notify user
+                              toast({
+                                title: "Document Loaded",
+                                description: "Google Docs document loaded successfully.",
+                              });
+                            }}
                           onError={(e) => {
                             console.error("Error loading Google Docs:", e);
                             toast({
