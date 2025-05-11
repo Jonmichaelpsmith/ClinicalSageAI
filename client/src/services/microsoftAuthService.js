@@ -8,8 +8,8 @@
 
 // Microsoft Authentication Configuration
 const MS_AUTH_CONFIG = {
-  clientId: process.env.MICROSOFT_CLIENT_ID || '',
-  tenantId: process.env.MICROSOFT_TENANT_ID || '',
+  clientId: import.meta.env.VITE_MICROSOFT_CLIENT_ID || '',
+  tenantId: import.meta.env.VITE_MICROSOFT_TENANT_ID || '',
   redirectUri: window.location.origin + '/auth/microsoft/callback',
   scopes: [
     'User.Read',
