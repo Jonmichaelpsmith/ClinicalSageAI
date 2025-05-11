@@ -4,8 +4,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import { AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
-import { useMemoryOptimization } from "../../hooks/useMemoryOptimization";
-import { useHealthMonitor } from "../../hooks/useHealthMonitor";
+import useMemoryOptimization from "../../hooks/useMemoryOptimization";
+import useHealthMonitor from "../../hooks/useHealthMonitor";
 
 const BatchProcessOptimizer = () => {
   const [batchJobs, setBatchJobs] = useState([]);

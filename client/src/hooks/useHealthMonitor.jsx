@@ -1,113 +1,101 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+
+import { useState, useEffect } from 'react';
 
 /**
- * Health Monitor Hook
- * 
- * This hook manages the connection to the health monitoring worker and handles
- * responding to application health events.
+ * Hook to monitor application health and performance
+ * Connects to a shared worker for coordinated monitoring
  */
-export function useHealthMonitor() {
-  const [alarmActive, setAlarmActive] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const workerRef = useRef(null);
+export const useHealthMonitor = (options = {}) => {
+  const [status, setStatus] = useState('initializing');
+  const [metrics, setMetrics] = useState({});
+  const { interval = 10000, critical = false } = options;
 
-  // Initialize health monitor worker
   useEffect(() => {
+    let worker;
     try {
-      // Create a new worker
-      const worker = new Worker('/src/workers/healthMonitor.worker.js', { type: 'module' });
-      workerRef.current = worker;
-      
-      // Set up message handler
-      worker.addEventListener('message', handleWorkerMessage);
-      
-      console.log('Connected to health monitor shared worker');
-      
-      // Clean up on unmount
-      return () => {
-        worker.removeEventListener('message', handleWorkerMessage);
-        worker.terminate();
-        workerRef.current = null;
-      };
-    } catch (error) {
-      console.error('Failed to initialize health monitor worker:', error);
-    }
-  }, []);
-
-  // Handle messages from the worker
-  const handleWorkerMessage = useCallback((event) => {
-    const { type, message, timestamp } = event.data;
-    
-    switch (type) {
-      case 'ALARM_ACTIVATED':
-        console.error(`🚨 APPLICATION ALARM ACTIVATED: ${message}`);
-        setAlarmActive(true);
-        setErrorMessage(message || 'The application is experiencing technical difficulties.');
-        break;
+      // Try to connect to shared worker if available
+      if (window.SharedWorker) {
+        worker = new SharedWorker('/src/workers/healthMonitor.worker.js');
         
-      case 'ALARM_DEACTIVATED':
-        console.log('Application alarm deactivated');
-        setAlarmActive(false);
-        setErrorMessage('');
-        break;
+        worker.port.onmessage = (event) => {
+          if (event.data.type === 'health_update') {
+            setStatus(event.data.status);
+            setMetrics(event.data.metrics);
+          }
+        };
         
-      default:
-        // Ignore unknown message types
-        break;
-    }
-  }, []);
-
-  // Request an immediate health check
-  const checkHealth = useCallback(() => {
-    if (workerRef.current) {
-      workerRef.current.postMessage({ type: 'CHECK_NOW' });
-    }
-  }, []);
-
-  // Reset the alarm state
-  const resetAlarm = useCallback(() => {
-    if (workerRef.current) {
-      workerRef.current.postMessage({ type: 'RESET_ALARM' });
-    }
-    setAlarmActive(false);
-    setErrorMessage('');
-  }, []);
-
-  // Restart the application server
-  const restartServer = useCallback(() => {
-    // Show a loading indicator
-    setErrorMessage('Attempting to restart the server...');
-    
-    // Make a request to restart the server
-    fetch('/api/restart', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ force: true })
-    })
-    .then(response => {
-      if (response.ok) {
-        // Wait a moment and then reset the alarm
-        setTimeout(() => {
-          resetAlarm();
-          checkHealth();
-        }, 5000);
+        worker.port.start();
+        
+        // Register this component
+        worker.port.postMessage({
+          type: 'register',
+          componentId: Math.random().toString(36).substr(2, 9),
+          critical
+        });
+        
+        console.log('Connected to health monitor shared worker');
       } else {
-        setErrorMessage('Failed to restart the server. Manual intervention required.');
+        // Fallback to local monitoring
+        console.log('SharedWorker not available, using local health monitoring');
+        const intervalId = setInterval(() => {
+          // Basic health check
+          const memory = window.performance && window.performance.memory 
+            ? window.performance.memory
+            : { usedJSHeapSize: 0, totalJSHeapSize: 0 };
+            
+          setMetrics({
+            memory: {
+              used: memory.usedJSHeapSize,
+              total: memory.totalJSHeapSize
+            },
+            timestamp: Date.now()
+          });
+          
+          setStatus('healthy');
+        }, interval);
+        
+        return () => clearInterval(intervalId);
       }
-    })
-    .catch(error => {
-      console.error('Failed to restart server:', error);
-      setErrorMessage('Failed to restart the server. Network error occurred.');
-    });
-  }, [resetAlarm, checkHealth]);
+    } catch (err) {
+      console.error('Failed to initialize health monitor:', err);
+      setStatus('failed');
+    }
+    
+    return () => {
+      if (worker && worker.port) {
+        worker.port.postMessage({ type: 'unregister' });
+      }
+    };
+  }, [interval, critical]);
+
+  // Methods to report issues
+  const reportProblem = (problem) => {
+    if (worker && worker.port) {
+      worker.port.postMessage({
+        type: 'report_problem',
+        problem
+      });
+    }
+    
+    console.warn('Health monitor problem:', problem);
+  };
+
+  const reportRecovery = () => {
+    if (worker && worker.port) {
+      worker.port.postMessage({
+        type: 'report_recovery'
+      });
+    }
+    
+    console.log('Health monitor recovery reported');
+  };
 
   return {
-    alarmActive,
-    errorMessage,
-    checkHealth,
-    resetAlarm,
-    restartServer
+    status,
+    metrics,
+    reportProblem,
+    reportRecovery
   };
-}
+};
+
+export default useHealthMonitor;

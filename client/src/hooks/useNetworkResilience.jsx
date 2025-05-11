@@ -20,7 +20,7 @@ import { NETWORK_CONFIG } from '@/config/stabilityConfig';
  * @param {boolean} options.queueOfflineRequests - Whether to queue requests when offline (default from config)
  * @returns {Object} - Network status and resilient fetch operations
  */
-export default function useNetworkResilience(options = {}) {
+export function useNetworkResilience(options = {}) {
   // Extract configuration with fallbacks to global config
   const {
     maxRetries = NETWORK_CONFIG.maxRetries,
