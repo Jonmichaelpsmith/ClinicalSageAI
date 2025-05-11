@@ -2355,8 +2355,7 @@ export default function CoAuthor() {
                 </Button>
               </div>
             ) : (
-              <>
-              {!selectedDocument && !activeDocumentId ? (
+              !selectedDocument && !activeDocumentId ? (
                 <div className="flex flex-col items-center justify-center h-full bg-gray-50 rounded-lg border-2 border-dashed border-gray-200 p-8">
                   <FileText className="h-16 w-16 text-blue-400 mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No document selected</h3>
@@ -2405,8 +2404,7 @@ export default function CoAuthor() {
                   });
                 }}
               />
-              )}
-              </>
+              )
             )}
           </div>
           
