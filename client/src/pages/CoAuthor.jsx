@@ -525,32 +525,88 @@ export default function CoAuthor() {
     setAiError(null);
     
     try {
+      // Determine document context for better AI assistance
+      const moduleType = selectedDocument?.moduleType || 
+                        (selectedDocument?.module ? selectedDocument.module.toLowerCase().replace(' ', '_') : 'module_2');
+      
+      const sectionCode = selectedDocument?.sectionCode || 
+                          (moduleType === 'module_2' ? '2.5' : 
+                          moduleType === 'module_1' ? '1.0' : 
+                          moduleType === 'module_3' ? '3.2' : 
+                          moduleType === 'module_4' ? '4.2' : '5.3');
+      
+      const region = selectedDocument?.region || 'FDA';
+      const docType = selectedDocument?.title || "Clinical Overview";
+      const submissionType = selectedDocument?.submissionType || 'IND';
+      
+      // Enhanced toast notification to show processing
+      toast({
+        title: "AI Assistant Processing",
+        description: `Analyzing ${docType} (eCTD ${sectionCode}) for ${region} ${submissionType} requirements...`,
+      });
+      
       // Determine which AI service to call based on active mode
       let response;
       if (aiAssistantMode === 'compliance') {
+        // Regulatory compliance check - enhanced with actual section code
         response = await aiService.checkComplianceAI(
           selectedDocument?.id || 'current-doc',
-          "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).",
-          ['ICH', 'FDA']
+          aiUserQuery,
+          ['ICH', region, 'eCTD'],
+          {
+            sectionCode: sectionCode,
+            moduleType: moduleType,
+            region: region,
+            submissionType: submissionType,
+            documentType: selectedDocument?.documentType || 'scientific'
+          }
         );
       } else if (aiAssistantMode === 'formatting') {
+        // Document formatting analysis - eCTD specific
         response = await aiService.analyzeFormattingAI(
           selectedDocument?.id || 'current-doc',
-          "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).",
-          'clinicalOverview'
+          aiUserQuery,
+          {
+            documentType: moduleType === 'module_2' ? 'clinicalOverview' : 
+                          moduleType === 'module_3' ? 'qualityOverview' : 
+                          moduleType === 'module_4' ? 'nonclinicalOverview' : 'clinicalStudyReport',
+            formatRequirements: ['heading_structure', 'ectd_compliance', 'style_consistency'],
+            regulatoryContext: {
+              sectionCode: sectionCode,
+              moduleType: moduleType,
+              region: region
+            }
+          }
         );
       } else {
-        // Default mode: suggestions
+        // Content suggestions mode
         if (selectedDocument) {
+          // Get suggested content based on active document section
           response = await aiService.generateContentSuggestions(
             selectedDocument.id || 'current-doc', 
-            '2.5.5', 
-            "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).",
-            aiUserQuery
+            sectionCode, 
+            aiUserQuery,
+            {
+              moduleType: moduleType,
+              region: region,
+              submissionType: submissionType,
+              documentContext: {
+                title: docType,
+                type: selectedDocument?.documentType || 'scientific',
+                section: sectionCode
+              }
+            }
           );
         } else {
-          // If no document is selected, use the general AI ask endpoint
-          response = await aiService.askDocumentAI(aiUserQuery);
+          // If no document is selected, use the general AI ask endpoint with eCTD context
+          response = await aiService.askDocumentAI(
+            aiUserQuery,
+            {
+              context: 'ectd',
+              preferredRegion: region,
+              submissionType: submissionType
+            }
+          );
         }
       }
       
@@ -2755,10 +2811,11 @@ export default function CoAuthor() {
                     </div>
                     
                     <Tabs defaultValue={aiAssistantMode} onValueChange={setAiAssistantMode} className="w-full">
-                      <TabsList className="w-full">
-                        <TabsTrigger value="suggestions" className="flex-1">Suggest</TabsTrigger>
-                        <TabsTrigger value="compliance" className="flex-1">Compliance</TabsTrigger>
-                        <TabsTrigger value="formatting" className="flex-1">Format</TabsTrigger>
+                      <TabsList className="w-full grid grid-cols-4">
+                        <TabsTrigger value="suggestions" className="text-xs">Suggest</TabsTrigger>
+                        <TabsTrigger value="compliance" className="text-xs">Compliance</TabsTrigger>
+                        <TabsTrigger value="formatting" className="text-xs">Format</TabsTrigger>
+                        <TabsTrigger value="ectd" className="text-xs">eCTD</TabsTrigger>
                       </TabsList>
                       
                       <TabsContent value="suggestions" className="mt-4">
@@ -2940,6 +2997,106 @@ export default function CoAuthor() {
                                 <Checkbox id="validation" defaultChecked className="mr-2 h-4 w-4" />
                                 <label htmlFor="validation" className="text-xs">Run eCTD validation on export</label>
                               </div>
+                            </div>
+                          </div>
+                        </div>
+                      </TabsContent>
+
+                      <TabsContent value="ectd" className="mt-4">
+                        <div className="space-y-4">
+                          <div className="text-sm">
+                            Comprehensive eCTD validation for {selectedDocument?.region || 'FDA'} submission requirements.
+                          </div>
+                          
+                          {selectedDocument && (
+                            <div className="bg-blue-50 p-3 rounded-md text-xs">
+                              <div className="font-medium">Document Information:</div>
+                              <div className="mt-1">
+                                <span className="font-medium">eCTD Section:</span> {selectedDocument.sectionCode || 'Not Specified'}
+                              </div>
+                              <div>
+                                <span className="font-medium">Module:</span> {selectedDocument.module || 'Not Specified'}
+                              </div>
+                              <div>
+                                <span className="font-medium">Region:</span> {selectedDocument.region || 'FDA'}
+                              </div>
+                              <div>
+                                <span className="font-medium">Submission Type:</span> {selectedDocument.submissionType || 'IND'}
+                              </div>
+                            </div>
+                          )}
+                          
+                          <div className="border rounded-md p-3 bg-white">
+                            <div className="flex justify-between items-center">
+                              <p className="text-sm font-medium">eCTD Validation Report</p>
+                              <Button variant="outline" size="sm" className="h-6 text-xs">
+                                <RefreshCw className="h-3 w-3 mr-1" />
+                                Run Check
+                              </Button>
+                            </div>
+                            
+                            <div className="mt-3 space-y-2">
+                              <div className="flex items-start">
+                                <div className="flex-shrink-0 p-1 rounded-full bg-green-100">
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                </div>
+                                <div className="ml-2">
+                                  <p className="text-xs font-medium">PDF/A Compliance</p>
+                                  <p className="text-xs text-gray-500">Format meets PDF/A requirements</p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-start">
+                                <div className="flex-shrink-0 p-1 rounded-full bg-green-100">
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                </div>
+                                <div className="ml-2">
+                                  <p className="text-xs font-medium">Document Hierarchy</p>
+                                  <p className="text-xs text-gray-500">Correctly structured for XML backbone</p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-start">
+                                <div className="flex-shrink-0 p-1 rounded-full bg-amber-100">
+                                  <AlertTriangle className="h-3 w-3 text-amber-600" />
+                                </div>
+                                <div className="ml-2">
+                                  <p className="text-xs font-medium">Regulatory References</p>
+                                  <p className="text-xs text-gray-500">Update references to latest {selectedDocument?.region || 'FDA'} guidance</p>
+                                </div>
+                              </div>
+                              
+                              <div className="flex items-start">
+                                <div className="flex-shrink-0 p-1 rounded-full bg-amber-100">
+                                  <AlertTriangle className="h-3 w-3 text-amber-600" />
+                                </div>
+                                <div className="ml-2">
+                                  <p className="text-xs font-medium">Section Content</p>
+                                  <p className="text-xs text-gray-500">Missing required subsection for {selectedDocument?.sectionCode || '2.5'}</p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="border rounded-md p-3 bg-white">
+                            <p className="text-sm font-medium">Regional Requirements</p>
+                            <div className="mt-2">
+                              <Select defaultValue={selectedDocument?.region || "FDA"}>
+                                <SelectTrigger className="w-full text-xs h-7">
+                                  <SelectValue placeholder="Select Region" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="FDA">FDA (United States)</SelectItem>
+                                  <SelectItem value="EMA">EMA (European Union)</SelectItem>
+                                  <SelectItem value="PMDA">PMDA (Japan)</SelectItem>
+                                  <SelectItem value="Health Canada">Health Canada</SelectItem>
+                                  <SelectItem value="MHRA">MHRA (United Kingdom)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                              
+                              <Button className="w-full mt-2 text-xs" size="sm">
+                                Apply Regional Template
+                              </Button>
                             </div>
                           </div>
                         </div>
