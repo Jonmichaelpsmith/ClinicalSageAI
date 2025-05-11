@@ -113,7 +113,7 @@ export default function StabilityEnabler({ children }) {
     console.log('🛡️ Initializing all stability features...');
 
     // Initialize network resilience
-    networkResilienceRef.current = networkResilience.initNetworkResilience({
+    networkResilienceRef.current = networkResilience.initAdvancedNetworkResilience({
       onStatusChange: (status) => {
         if (!status.online) {
           stabilityMetricsRef.current.networkDisconnects++;
