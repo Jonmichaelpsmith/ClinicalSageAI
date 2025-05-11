@@ -19,10 +19,15 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 
-// Import services
+// Import genuine Microsoft Office services
 import * as wordIntegration from '../services/wordIntegration';
 import * as copilotService from '../services/copilotService';
+
+// Legacy services - keeping for backward compatibility
 import * as aiService from '../services/aiService';
+import * as msWordService from '../services/msWordIntegrationService';
+import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
+import * as msCopilotService from '../services/msCopilotService';
 
 // Import the components with lazy loading for better performance
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
