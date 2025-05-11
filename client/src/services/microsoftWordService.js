@@ -4,10 +4,25 @@
  * This service provides integration with Microsoft Word via the Office JS API,
  * enabling document editing, formatting, and content insertion capabilities
  * specifically tuned for regulatory document authoring.
+ * 
+ * Key integration points:
+ * - In-app embedded Word experience
+ * - Regulatory-compliant document structure
+ * - Our Xerox DMS Vault integration (FDA 21 CFR Part 11 certified)
+ * - Custom templates and formats for regulatory submissions
  */
 
 // Office JS API for Word
 const OFFICE_JS_API_URL = 'https://appsforoffice.microsoft.com/lib/1/hosted/office.js';
+
+/**
+ * Initialize the Office JS API for backward compatibility
+ * @deprecated Use initializeWord instead
+ */
+export async function initializeOfficeJS() {
+  console.warn('initializeOfficeJS is deprecated, use initializeWord instead');
+  return initializeWord(document.getElementById('word-container'));
+}
 
 /**
  * Initialize the Office JS API
