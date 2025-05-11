@@ -545,26 +545,48 @@ export default function CoAuthor() {
           </CardContent>
         </Card>
 
-        {/* Recent Documents Card */}
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Recent Documents</CardTitle>
+        {/* Recent Documents Card - Enhanced */}
+        <Card className="border-blue-200">
+          <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-white">
+            <CardTitle className="flex items-center text-lg">
+              <Clock className="h-5 w-5 mr-2 text-blue-600" />
+              Recent Documents
+            </CardTitle>
+            <CardDescription>
+              Recently edited regulatory documents
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3 mb-4">
               {recentDocuments.map(doc => (
-                <div key={doc.id} className="flex justify-between items-start border-b pb-2">
-                  <div>
-                    <div className="font-medium text-sm">{doc.name}</div>
-                    <div className="text-xs text-gray-500">{doc.description}</div>
-                    <div className="text-xs text-gray-400">Edited {doc.lastEdited}</div>
+                <div key={doc.id} className="flex justify-between items-start border-b border-blue-100 pb-3 hover:bg-blue-50 p-2 rounded-md transition-colors">
+                  <div className="flex items-start">
+                    <FileText className="h-5 w-5 mr-3 text-blue-500 mt-0.5" />
+                    <div>
+                      <div className="font-medium text-sm text-blue-800">{doc.name}</div>
+                      <div className="text-xs text-blue-600">{doc.description}</div>
+                      <div className="text-xs text-blue-400 mt-1 flex items-center">
+                        <Clock className="h-3 w-3 mr-1.5" />
+                        Edited {doc.lastEdited}
+                      </div>
+                    </div>
                   </div>
-                  <Button size="sm" variant="ghost" className="h-6 px-2">
-                    <Eye className="h-3 w-3 mr-1" />
-                    <span className="text-xs">View</span>
-                  </Button>
+                  <div className="flex space-x-1">
+                    <Button size="sm" variant="outline" className="h-7 px-2 border-blue-200 text-blue-700 hover:bg-blue-100">
+                      <Eye className="h-3 w-3 mr-1.5" />
+                      <span className="text-xs">View</span>
+                    </Button>
+                    <Button size="sm" variant="ghost" className="h-7 w-7 p-0 text-blue-600">
+                      <Edit className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
               ))}
+            </div>
+            <div className="flex justify-end">
+              <Button variant="link" size="sm" className="text-xs text-blue-600">
+                View all documents
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -608,11 +630,14 @@ export default function CoAuthor() {
                 const statusConfig = getStatusConfig(module.percent);
                 
                 return (
-                  <div key={module.id} className="space-y-2 p-3 border rounded-lg shadow-sm hover:shadow-md transition-shadow duration-200">
+                  <div key={module.id} className="space-y-3 p-4 border border-blue-200 rounded-lg bg-white hover:bg-blue-50 transition-colors duration-200">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center">
-                        <div className="font-medium text-base">Module {module.id}</div>
-                        <div className="text-sm text-gray-500 ml-2">{module.description}</div>
+                        <div className="bg-blue-100 text-blue-800 px-2.5 py-1.5 rounded-md font-medium mr-3">M{module.id}</div>
+                        <div>
+                          <div className="font-medium text-blue-900">{module.name}</div>
+                          <div className="text-sm text-blue-600">{module.description}</div>
+                        </div>
                       </div>
                       <div className="flex items-center">
                         <Badge className={`mr-3 ${statusConfig.badge}`}>
@@ -621,26 +646,38 @@ export default function CoAuthor() {
                             {module.status}
                           </div>
                         </Badge>
-                        <div className="text-sm font-medium">{module.percent}%</div>
+                        <div className="text-sm font-medium bg-blue-100 text-blue-800 px-2 py-0.5 rounded">{module.percent}%</div>
                       </div>
                     </div>
                     
-                    <div className="flex items-center text-xs text-gray-500 mb-1">
-                      <span className="mr-3">
-                        <span className="font-semibold text-green-600">{module.completeDocs}</span> completed
-                      </span>
-                      <span className="mr-3">
-                        <span className="font-semibold text-yellow-600">{module.inProgressDocs}</span> in progress
-                      </span>
-                      <span>
-                        <span className="font-semibold text-gray-600">{module.notStartedDocs}</span> not started
-                      </span>
+                    <div className="bg-blue-50 p-2 rounded-md">
+                      <div className="text-xs text-blue-800 mb-1.5 font-medium">Document Status</div>
+                      <div className="grid grid-cols-3 gap-2">
+                        <div className="flex flex-col items-center rounded-md bg-green-50 text-green-700 py-1.5 px-2 border border-green-100">
+                          <span className="font-bold text-lg">{module.completeDocs}</span>
+                          <span className="text-xs">Complete</span>
+                        </div>
+                        <div className="flex flex-col items-center rounded-md bg-yellow-50 text-yellow-700 py-1.5 px-2 border border-yellow-100">
+                          <span className="font-bold text-lg">{module.inProgressDocs}</span>
+                          <span className="text-xs">In Progress</span>
+                        </div>
+                        <div className="flex flex-col items-center rounded-md bg-gray-50 text-gray-700 py-1.5 px-2 border border-gray-100">
+                          <span className="font-bold text-lg">{module.notStartedDocs}</span>
+                          <span className="text-xs">Not Started</span>
+                        </div>
+                      </div>
                     </div>
                     
-                    <Progress 
-                      value={module.percent} 
-                      className={`h-3 ${statusConfig.progressBg}`} 
-                    />
+                    <div>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-blue-600">Progress</span>
+                        <span className="text-blue-800 font-medium">{module.completeDocs}/{module.totalDocs} documents</span>
+                      </div>
+                      <Progress 
+                        value={module.percent} 
+                        className={`h-2.5 ${statusConfig.progressBg}`} 
+                      />
+                    </div>
                   </div>
                 );
               })}
