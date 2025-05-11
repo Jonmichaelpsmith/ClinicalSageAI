@@ -1,177 +1,114 @@
 import React, { useEffect, useState } from 'react';
-import { Redirect } from 'wouter';
+import { useLocation } from 'wouter';
+import googleAuthService from '../services/googleAuthService';
+import { Loader2 } from 'lucide-react';
 
 /**
- * Google Auth Callback Page
- * 
- * This page handles the OAuth callback from Google and processes the
- * authentication data before passing it back to the opener window.
+ * Component for handling Google OAuth callback
+ * This component will extract tokens from the URL hash fragment
+ * and store them in the local authentication service.
  */
 const GoogleAuthCallback = () => {
+  const [status, setStatus] = useState('processing');
   const [message, setMessage] = useState('Processing authentication...');
   const [error, setError] = useState(null);
-  
+  const [location, setLocation] = useLocation();
+
   useEffect(() => {
-    // Extract tokens from URL hash or query params
-    const processAuth = async () => {
+    const processAuthentication = async () => {
       try {
-        console.log('Processing Google auth callback');
+        console.log('Processing Google authentication callback');
         
-        // Check for token in hash (implicit flow)
-        if (window.location.hash) {
-          console.log('Found token in hash fragment');
-          
-          const params = new URLSearchParams(window.location.hash.substring(1));
-          const accessToken = params.get('access_token');
-          
-          if (accessToken) {
-            console.log('Access token found, fetching user info');
-            
-            // Get user info with the token
-            const userInfoResponse = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-              headers: { Authorization: `Bearer ${accessToken}` }
-            });
-            
-            if (!userInfoResponse.ok) {
-              throw new Error(`Failed to fetch user info: ${userInfoResponse.status}`);
-            }
-            
-            const userInfo = await userInfoResponse.json();
-            
-            const user = {
-              id: userInfo.sub,
-              name: userInfo.name,
-              email: userInfo.email,
-              picture: userInfo.picture
-            };
-            
-            console.log('User info retrieved:', user.email);
-            setMessage(`Authentication successful! Signed in as ${user.name}`);
-            
-            // Pass data back to opener
-            if (window.opener && !window.opener.closed) {
-              window.opener.handleGoogleAuthCallback({
-                user,
-                access_token: accessToken,
-                token_type: params.get('token_type'),
-                expires_in: params.get('expires_in')
-              });
-              
-              // Close this window after a short delay
-              setTimeout(() => {
-                window.close();
-              }, 1000);
-            } else {
-              setMessage('Authentication successful, but unable to communicate with opener window.');
-            }
-          } else {
-            setError('No access token found in the callback URL.');
-          }
-        } 
-        // Check for code in query (authorization code flow)
-        else if (window.location.search && window.location.search.includes('code=')) {
-          console.log('Authorization code found, sending to opener');
-          
-          const params = new URLSearchParams(window.location.search.substring(1));
-          const code = params.get('code');
-          
-          if (code) {
-            setMessage('Authorization code received, processing...');
-            
-            // Pass code to opener
-            if (window.opener && !window.opener.closed) {
-              window.opener.handleGoogleAuthCallback({ 
-                code,
-                state: params.get('state')
-              });
-              
-              // Close this window after a short delay
-              setTimeout(() => {
-                window.close();
-              }, 1000);
-            } else {
-              setError('Unable to communicate with opener window.');
-            }
-          } else {
-            setError('No authorization code found in the callback URL.');
-          }
-        } 
-        // Check for errors
-        else if (window.location.search && window.location.search.includes('error=')) {
-          const params = new URLSearchParams(window.location.search.substring(1));
-          const errorMsg = params.get('error');
-          const errorDescription = params.get('error_description');
-          
-          setError(`Authentication error: ${errorMsg}${errorDescription ? ` - ${errorDescription}` : ''}`);
-          
-          if (window.opener && !window.opener.closed) {
-            window.opener.handleGoogleAuthCallback({ 
-              error: errorMsg,
-              error_description: errorDescription
-            });
-            
-            // Close this window after a short delay to show the error
-            setTimeout(() => {
-              window.close();
-            }, 3000);
-          }
-        } 
-        // No auth data
-        else {
-          setError('No authentication data found in the URL.');
-        }
-      } catch (error) {
-        console.error('Error processing auth callback:', error);
-        setError(`Error processing authentication: ${error.message}`);
+        // Get the full URL including hash fragment
+        const callbackUrl = window.location.href;
+        console.log('Callback URL:', callbackUrl);
         
-        // Pass error to opener
-        if (window.opener && !window.opener.closed) {
-          window.opener.handleGoogleAuthCallback({ 
-            error: error.message
-          });
+        // Let the auth service handle the callback
+        const result = await googleAuthService.handleAuthCallback(callbackUrl);
+        
+        if (result.success) {
+          setStatus('success');
+          setMessage('Authentication successful!');
           
-          // Close this window after a short delay to show the error
+          // Wait a moment before redirecting
           setTimeout(() => {
-            window.close();
+            setLocation('/coauthor/editor');
+          }, 1500);
+        } else {
+          setStatus('error');
+          setMessage('Authentication failed');
+          setError(result.message || 'Unknown error occurred');
+          
+          // Wait a moment before redirecting to login
+          setTimeout(() => {
+            setLocation('/coauthor');
           }, 3000);
         }
+      } catch (error) {
+        console.error('Error handling authentication callback:', error);
+        setStatus('error');
+        setMessage('Authentication failed');
+        setError(error.message || 'Unknown error occurred');
+        
+        // Wait a moment before redirecting to login
+        setTimeout(() => {
+          setLocation('/coauthor');
+        }, 3000);
       }
     };
-    
-    processAuth();
-  }, []);
-  
+
+    // Process authentication when component mounts
+    processAuthentication();
+  }, [setLocation]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="bg-white p-8 rounded-lg shadow-md max-w-md w-full">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50">
+      <div className="w-full max-w-md p-8 space-y-4 bg-white rounded-lg shadow-lg">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Google Authentication</h1>
+          {status === 'processing' && (
+            <Loader2 className="mx-auto h-12 w-12 text-blue-600 animate-spin" />
+          )}
           
-          {!error ? (
+          {status === 'success' && (
+            <div className="h-12 w-12 rounded-full bg-green-100 mx-auto flex items-center justify-center">
+              <svg className="h-6 w-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          )}
+          
+          {status === 'error' && (
+            <div className="h-12 w-12 rounded-full bg-red-100 mx-auto flex items-center justify-center">
+              <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </div>
+          )}
+          
+          <h2 className="mt-4 text-xl font-bold text-gray-900">
+            {message}
+          </h2>
+          
+          {status === 'processing' && (
+            <p className="mt-2 text-sm text-gray-500">
+              Please wait while we authenticate your account...
+            </p>
+          )}
+          
+          {status === 'success' && (
+            <p className="mt-2 text-sm text-gray-500">
+              Redirecting you to the editor...
+            </p>
+          )}
+          
+          {status === 'error' && (
             <>
-              <div className="animate-pulse mx-auto h-16 w-16 text-blue-600 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p className="text-gray-600">{message}</p>
-              <p className="text-sm text-gray-500 mt-2">This window will close automatically once the process is complete.</p>
-            </>
-          ) : (
-            <>
-              <div className="mx-auto h-16 w-16 text-red-600 mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-              </div>
-              <p className="text-red-600 font-medium">{error}</p>
-              <p className="text-sm text-gray-500 mt-2">This window will close automatically in a few seconds.</p>
-              <button 
-                onClick={() => window.close()} 
-                className="mt-4 px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 transition-colors"
-              >
-                Close Window
-              </button>
+              <p className="mt-2 text-sm text-red-500">
+                {error}
+              </p>
+              <p className="mt-2 text-sm text-gray-500">
+                Redirecting back to login...
+              </p>
             </>
           )}
         </div>
