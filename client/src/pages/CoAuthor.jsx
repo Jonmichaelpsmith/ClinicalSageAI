@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import * as aiService from '../services/aiService';
 
-// Import the EnhancedDocumentEditor component
+// Import the Enhanced Document Editor with lazy loading for better performance
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
 import { 
   FileText, 
@@ -1077,24 +1077,41 @@ export default function CoAuthor() {
                 
                 {/* Edit Tab Content */}
                 <TabsContent value="edit" className="pt-4 space-y-4">
-                  <div className="border rounded-md p-4">
-                    <h3 className="text-lg font-medium border-b pb-2 mb-4">Section 2.5.5 - Safety Profile</h3>
-                    
-                    <div className="min-h-[200px] mb-6 prose max-w-none">
-                      <p>
-                        The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).
-                      </p>
-                      <p>
-                        The efficacy of Drug X was evaluated across multiple endpoints. Primary endpoints showed a statistically significant improvement compared to placebo (p&lt;0.001) with consistent results across all study sites.
-                      </p>
+                  <Suspense fallback={
+                    <div className="flex items-center justify-center p-8">
+                      <div className="text-center">
+                        <div className="h-8 w-8 mb-4 rounded-full border-t-2 border-b-2 border-blue-600 animate-spin mx-auto"></div>
+                        <p className="text-sm text-slate-500">Loading Microsoft Word editor...</p>
+                      </div>
                     </div>
-                    
-                    {/* AI-Generated Suggestions Area */}
+                  }>
+                    <EnhancedDocumentEditor 
+                      documentId={selectedDocument?.id?.toString() || 'current-doc'}
+                      sectionId="2.5.5"
+                      initialContent="The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects)."
+                      documentTitle={selectedDocument?.title || "Module 2.5 Clinical Overview"}
+                      sectionTitle="Safety Profile"
+                      onSave={(content) => {
+                        console.log("Saving document content:", content);
+                        toast({
+                          title: "Document Saved",
+                          description: "Your changes have been saved to the document vault.",
+                          variant: "default",
+                        });
+                      }}
+                      onLockDocument={(locked) => setDocumentLocked(locked)}
+                      isLocked={documentLocked}
+                      lockedBy={lockedBy}
+                    />
+                  </Suspense>
+                  
+                  {/* AI Assistance Panel when in document editing mode */}
+                  {aiAssistantOpen && (
                     <div className="bg-slate-50 border rounded-md p-4 my-4">
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center">
                           <Sparkles className="h-4 w-4 mr-2 text-blue-600" />
-                          <h4 className="font-medium">AI-Generated Suggestion</h4>
+                          <h4 className="font-medium">AI Document Assistant</h4>
                         </div>
                         
                         {aiIsLoading && (
@@ -1105,18 +1122,43 @@ export default function CoAuthor() {
                         )}
                       </div>
                       
+                      <div className="flex space-x-2 mb-3">
+                        <Button 
+                          size="sm" 
+                          variant={aiAssistantMode === 'suggestions' ? 'default' : 'outline'}
+                          onClick={() => setAiAssistantMode('suggestions')}
+                        >
+                          <Lightbulb className="h-4 w-4 mr-1.5" />
+                          Content Suggestions
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant={aiAssistantMode === 'compliance' ? 'default' : 'outline'}
+                          onClick={() => setAiAssistantMode('compliance')}
+                        >
+                          <ClipboardCheck className="h-4 w-4 mr-1.5" />
+                          Compliance Check
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant={aiAssistantMode === 'formatting' ? 'default' : 'outline'}
+                          onClick={() => setAiAssistantMode('formatting')}
+                        >
+                          <ListChecks className="h-4 w-4 mr-1.5" />
+                          Format & Structure
+                        </Button>
+                      </div>
+                      
                       <div className="bg-white border border-slate-200 rounded-md p-3 relative">
-                        {aiResponse && aiAssistantMode === 'suggestions' ? (
+                        {aiResponse ? (
                           <div className="prose prose-sm max-w-none text-slate-700">
                             <div dangerouslySetInnerHTML={{ __html: aiResponse.suggestion?.replace(/\n/g, '<br />') || '' }} />
                           </div>
                         ) : (
                           <div className="prose prose-sm max-w-none text-slate-700">
                             <p>
-                              The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in severity, with headache (12%), nausea (8%), and dizziness (5%) being the most commonly reported events.
-                            </p>
-                            <p>
-                              No serious adverse events were considered related to the study medication, and the discontinuation rate due to adverse events was low (3.2%), comparable to placebo (2.8%).
+                              Ask the AI assistant for help with your document. You can request suggestions for content improvements, 
+                              check compliance with regulatory guidelines, or get help with formatting and structure.
                             </p>
                           </div>
                         )}
@@ -1136,25 +1178,25 @@ export default function CoAuthor() {
                           <Button 
                             size="sm" 
                             className="h-7 text-xs"
-                            disabled={aiIsLoading}
+                            disabled={aiIsLoading || !aiResponse}
                           >
                             <Clipboard className="h-3.5 w-3.5 mr-1.5" />
-                            Copy Full Text
+                            Copy to Clipboard
                           </Button>
                           <Button 
                             size="sm" 
                             variant="outline" 
                             className="h-7 text-xs"
-                            disabled={aiIsLoading}
+                            disabled={aiIsLoading || !aiResponse}
                           >
                             <FilePlus2 className="h-3.5 w-3.5 mr-1.5" />
-                            Insert as New Paragraph
+                            Insert to Document
                           </Button>
                           <Button 
                             size="sm" 
                             variant="outline" 
                             className="h-7 text-xs"
-                            disabled={aiIsLoading}
+                            disabled={aiIsLoading || !aiResponse}
                             onClick={() => {
                               // Create a regeneration request
                               setAiUserQuery("Suggest improvements for the safety profile section");
@@ -1162,7 +1204,7 @@ export default function CoAuthor() {
                             }}
                           >
                             <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-                            Regenerate
+                            Regenerate Response
                           </Button>
                         </div>
                       </div>
@@ -1182,12 +1224,12 @@ export default function CoAuthor() {
                           className="h-9"
                           disabled={aiIsLoading || !aiUserQuery.trim()}
                         >
-                          <Sparkles className="h-4 w-4 mr-1.5" />
-                          Generate Suggestions
+                          <Send className="h-4 w-4 mr-1.5" />
+                          Ask AI
                         </Button>
                       </form>
                     </div>
-                  </div>
+                  )}
                 </TabsContent>
                 
                 {/* Preview Tab Content */}
