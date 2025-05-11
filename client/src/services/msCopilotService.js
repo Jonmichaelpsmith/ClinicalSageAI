@@ -5,6 +5,28 @@
  * document assistance, content generation, and document analysis.
  */
 
+// Demo suggestions for Microsoft Word integration testing
+const DEMO_SUGGESTIONS = [
+  {
+    id: 'suggestion-1',
+    type: 'Clarity Improvement',
+    original: 'The safety profile of Drug X was good with only a few adverse events.',
+    suggestion: 'The safety profile of Drug X was favorable, with adverse events observed in only 12% of subjects, primarily consisting of mild to moderate reactions.',
+  },
+  {
+    id: 'suggestion-2',
+    type: 'Regulatory Compliance',
+    original: 'The study showed that our product is better than the competitor\'s product.',
+    suggestion: 'The study demonstrated a statistically significant improvement in the primary endpoint when compared to the active comparator (p<0.001, 95% CI: 0.78-0.92).',
+  },
+  {
+    id: 'suggestion-3',
+    type: 'Scientific Precision',
+    original: 'Patients felt better after taking the medication.',
+    suggestion: 'Patient-reported outcomes showed a clinically meaningful improvement in the treatment group, with a mean 7.2-point reduction in the validated symptom severity score (baseline 22.3 ± 3.1 to 15.1 ± 2.9 at week 12).',
+  }
+];
+
 /**
  * Initialize Microsoft Copilot for document editing
  * @param {string} documentId - Document ID to connect with Copilot
@@ -126,27 +148,8 @@ export async function getWritingSuggestions(text, sessionId) {
   try {
     // In a real implementation, this would call Microsoft Copilot for writing suggestions
     
-    // For demo purposes, return mock suggestions
-    return [
-      {
-        type: "clarity",
-        original: "The drug demonstrated activity.",
-        suggestion: "The drug demonstrated statistically significant efficacy in reducing primary symptoms.",
-        position: { start: 120, end: 148 }
-      },
-      {
-        type: "precision",
-        original: "Many patients improved.",
-        suggestion: "62% of patients (95/154) showed clinical improvement (≥30% reduction in symptom score).",
-        position: { start: 200, end: 220 }
-      },
-      {
-        type: "flow",
-        original: "Additionally, furthermore, also, the safety was good.",
-        suggestion: "Moreover, the treatment demonstrated a favorable safety profile.",
-        position: { start: 300, end: 350 }
-      }
-    ];
+    // For demo purposes, use our predefined DEMO_SUGGESTIONS
+    return DEMO_SUGGESTIONS;
   } catch (error) {
     console.error("Failed to get writing suggestions from Microsoft Copilot:", error);
     throw new Error("Could not get writing suggestions from Microsoft Copilot");
