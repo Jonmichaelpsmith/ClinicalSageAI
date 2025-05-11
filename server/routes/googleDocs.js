@@ -13,7 +13,7 @@ const router = express.Router();
 // Load environment variables
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '1045075234440-sve60m8va1d4djdistod8g4lbo8vp791.apps.googleusercontent.com';
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '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';
-const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:3000/google/auth/callback';
+const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:5000/api/google-docs/auth/google/callback';
 
 // Google API endpoints
 const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
@@ -90,8 +90,8 @@ router.get('/auth/google/callback', async (req, res) => {
     // Create session or JWT here if needed
     
     // Redirect to frontend with tokens using hash parameters
-    // Must match the client-side REDIRECT_URI path in googleConfig.js
-    res.redirect(`/google/auth/callback#access_token=${tokens.access_token}&refresh_token=${tokens.refresh_token || ''}&expires_in=${tokens.expiry_date - Date.now()}&token_type=Bearer`);
+    // Redirect back to the CoAuthor module page with token information
+    res.redirect(`/coauthor#access_token=${tokens.access_token}&refresh_token=${tokens.refresh_token || ''}&expires_in=${tokens.expiresIn || 3600}&token_type=Bearer`);
     
   } catch (error) {
     console.error('Error in OAuth callback:', error);

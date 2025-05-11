@@ -9,7 +9,7 @@ import { useToast } from '../hooks/use-toast';
 
 // Google OAuth configuration
 const GOOGLE_CLIENT_ID = '1045075234440-sve60m8va1d4djdistod8g4lbo8vp791.apps.googleusercontent.com';
-const REDIRECT_URI = `${window.location.origin}/google/auth/callback`;
+const REDIRECT_URI = `${window.location.origin}/api/google-docs/auth/google/callback`;
 
 // Scopes required for Google Docs integration
 const SCOPES = [
