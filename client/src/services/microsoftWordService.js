@@ -297,19 +297,25 @@ export async function openDocument(documentId, documentContent) {
     iframe.src = wordOnlineUrl;
     
     // Set up message event listener for communication with Word Online
-    window.addEventListener('message', (event) => {
+    const messageHandler = (event) => {
       // Verify the origin for security
       if (event.origin.includes('office.com') || event.origin.includes('microsoft.com')) {
         console.log('Received message from Word Online:', event.data);
         
         // Handle Word Online messages
-        if (event.data.messageType === 'documentReady') {
+        if (event.data && event.data.messageType === 'documentReady') {
           console.log('Word document is ready');
           // Show the container when the document is ready
           container.style.display = 'block';
         }
       }
-    });
+    };
+    
+    // Add message event listener
+    window.addEventListener('message', messageHandler);
+    
+    // Store the handler reference so it can be removed later if needed
+    container.messageHandler = messageHandler;
     
     // Create document interface object
     const wordDocument = {
@@ -644,9 +650,35 @@ export async function openDocument(documentId, documentContent) {
     });
     
     // Return the document object
+    // Add cleanup method to properly dispose resources
+    wordDocument.close = () => {
+      // Remove event listener
+      if (container.messageHandler) {
+        window.removeEventListener('message', container.messageHandler);
+        delete container.messageHandler;
+      }
+      
+      // Remove container from DOM
+      if (document.body.contains(container)) {
+        document.body.removeChild(container);
+      }
+      
+      console.log(`Word document ${documentId} closed`);
+    };
+    
+    console.log('Word document interface created successfully');
     return wordDocument;
   } catch (error) {
     console.error('Error opening Word document:', error);
+    
+    // Cleanup any DOM elements that might have been created
+    if (document.body.contains(container)) {
+      if (container.messageHandler) {
+        window.removeEventListener('message', container.messageHandler);
+      }
+      document.body.removeChild(container);
+    }
+    
     throw error;
   }
 }
