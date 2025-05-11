@@ -13,7 +13,7 @@ const axios = require('axios');
 // Load environment variables
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '1045075234440-sve60m8va1d4djdistod8g4lbo8vp791.apps.googleusercontent.com';
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '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';
-const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:3000/api/auth/google/callback';
+const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:3000/google/auth/callback';
 
 // Create OAuth2 client
 const oauth2Client = new google.auth.OAuth2(
