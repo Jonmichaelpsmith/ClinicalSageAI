@@ -39,7 +39,6 @@ import {
   FileCheck,
   Link,
   BookOpen,
-  FileText2,
   ArrowUpRight,
   FileOutput,
   Filter,
@@ -1244,7 +1243,7 @@ export default function CoAuthor() {
                     <div className="divide-y">
                       <div className="p-3 hover:bg-slate-50">
                         <div className="flex items-start space-x-2">
-                          <FileText2 className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <FileText className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                           <div>
                             <div className="font-medium text-sm">ICH M4E(R2) - Guideline on Clinical Overview and Clinical Summary</div>
                             <div className="text-xs text-slate-500 mt-1">Last updated: January 2023</div>
@@ -1262,7 +1261,7 @@ export default function CoAuthor() {
                       
                       <div className="p-3 hover:bg-slate-50">
                         <div className="flex items-start space-x-2">
-                          <FileText2 className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <FileText className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                           <div>
                             <div className="font-medium text-sm">FDA Guidance - Format and Content of the Clinical and Statistical Sections</div>
                             <div className="text-xs text-slate-500 mt-1">Last updated: March 2022</div>
@@ -1280,7 +1279,7 @@ export default function CoAuthor() {
                       
                       <div className="p-3 hover:bg-slate-50">
                         <div className="flex items-start space-x-2">
-                          <FileText2 className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <FileText className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                           <div>
                             <div className="font-medium text-sm">EMA Clinical Documentation Requirements</div>
                             <div className="text-xs text-slate-500 mt-1 flex items-center">
