@@ -15,6 +15,7 @@ import {
   Eye,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   ExternalLink,
   FilePlus2,
   Upload,
@@ -225,19 +226,174 @@ export default function CoAuthor() {
     <div className="flex flex-col h-full">
       {/* Header Section */}
       <header className="mb-6 pt-4 px-6">
-        <div className="flex items-center mb-1">
-          <img src="https://www.trialsage.com/logo.svg" alt="TrialSage" className="h-8 mr-2" />
-          <h1 className="text-2xl font-bold">eCTD Co-Author Module</h1>
+        <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center">
+            <img src="https://www.trialsage.com/logo.svg" alt="TrialSage" className="h-8 mr-2" />
+            <h1 className="text-2xl font-bold">eCTD Co-Author Module</h1>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsTreeOpen(!isTreeOpen)}
+              className="flex items-center"
+            >
+              <LayoutTemplate className="h-4 w-4 mr-2" />
+              {isTreeOpen ? "Hide Navigation" : "Show Navigation"}
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setTeamCollabOpen(true)}
+              className="flex items-center"
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Team Collaboration
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center text-sm text-gray-500">
-          <span className="mr-2">Enterprise Edition</span>
-          <span className="mx-2">|</span>
-          <span>Powered by AI Document Intelligence</span>
+        <div className="flex justify-between items-center">
+          <div className="flex items-center text-sm text-gray-500">
+            <span className="mr-2">Enterprise Edition</span>
+            <span className="mx-2">|</span>
+            <span>Powered by AI Document Intelligence</span>
+          </div>
+          {selectedDocument && (
+            <div className="flex items-center space-x-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setShowVersionHistory(true)}
+                className="flex items-center text-blue-700 border-blue-200"
+              >
+                <History className="h-4 w-4 mr-2" />
+                Version History
+              </Button>
+              <Badge variant="outline" className="border-blue-200 text-blue-700 flex items-center">
+                <Clock className="h-3 w-3 mr-1" />
+                Current: {activeVersion}
+              </Badge>
+              <div className="text-sm text-gray-500">
+                Last edited by <span className="font-medium text-gray-700">John Doe</span> on May 11, 2025
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
-      {/* Main Content Grid */}
-      <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Main Content Area with optional navigation tree */}
+      <div className="px-6 pb-6 flex">
+        {/* Document Tree Navigation - Enterprise Edition Feature */}
+        {isTreeOpen && (
+          <div className="w-64 border-r pr-4 mr-6 flex-shrink-0">
+            <div className="sticky top-0">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">Document Structure</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0" 
+                  onClick={() => setIsTreeOpen(false)}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+              </div>
+              
+              <div className="space-y-1">
+                <div className="border-l-4 border-blue-600 pl-2 py-1 font-medium">
+                  Module 1: Administrative Information
+                </div>
+                <div className="pl-4 space-y-1">
+                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
+                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                    Section 1.1: Cover Letter
+                  </div>
+                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer text-blue-600">
+                    <FileText className="h-4 w-4 mr-2 text-blue-600" />
+                    Section 1.2: Table of Contents
+                    <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                  </div>
+                </div>
+                
+                <div className="border-l-4 border-green-600 pl-2 py-1 font-medium flex items-center justify-between group">
+                  <span>Module 2: Common Technical Document</span>
+                  <ChevronDown className="h-4 w-4 opacity-0 group-hover:opacity-100" />
+                </div>
+                <div className="pl-4 space-y-1">
+                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
+                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                    Section 2.1: CTD Table of Contents
+                  </div>
+                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
+                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                    Section 2.2: Introduction
+                  </div>
+                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
+                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                    <span>Section 2.3: Quality Overall Summary</span>
+                  </div>
+                  <div className="flex items-center text-sm py-1 bg-slate-50 rounded px-2 cursor-pointer font-medium">
+                    <FileText className="h-4 w-4 mr-2 text-slate-600" />
+                    <span>Section 2.5: Clinical Overview</span>
+                    <Badge className="ml-2 h-5 bg-amber-100 text-amber-700 border-amber-200 text-[10px]">In Review</Badge>
+                  </div>
+                </div>
+                
+                <div className="border-l-4 border-amber-600 pl-2 py-1 font-medium">
+                  Module 3: Quality
+                </div>
+                <div className="pl-4 space-y-1">
+                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
+                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                    Section 3.2.P: Drug Product
+                  </div>
+                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
+                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                    Section 3.2.S: Drug Substance
+                  </div>
+                </div>
+                
+                <div className="border-l-4 border-purple-600 pl-2 py-1 font-medium">
+                  Module 4: Nonclinical Study Reports
+                </div>
+                
+                <div className="border-l-4 border-indigo-600 pl-2 py-1 font-medium">
+                  Module 5: Clinical Study Reports
+                </div>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t">
+                <div className="text-sm font-medium mb-2">Document Health</div>
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span>Completeness</span>
+                      <span className="font-medium">72%</span>
+                    </div>
+                    <Progress value={72} className="h-2 bg-slate-100" indicatorClassName="bg-blue-600" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span>Consistency</span>
+                      <span className="font-medium">86%</span>
+                    </div>
+                    <Progress value={86} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
+                  </div>
+                  <div>
+                    <div className="flex justify-between text-xs mb-1">
+                      <span>Issue Resolution</span>
+                      <span className="font-medium">63%</span>
+                    </div>
+                    <Progress value={63} className="h-2 bg-slate-100" indicatorClassName="bg-amber-600" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow">
         {/* AI-Powered Document Editor Card - Enterprise-Grade Enhanced */}
         <Card className="border-blue-200 shadow-sm hover:shadow-md transition-shadow duration-300">
           <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-white">
@@ -605,6 +761,289 @@ export default function CoAuthor() {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Version History Dialog */}
+      <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>
+        <DialogContent className="sm:max-w-[650px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <History className="h-5 w-5 mr-2" />
+              Document Version History
+            </DialogTitle>
+            <DialogDescription>
+              Review previous versions of this document. You can compare versions or restore a previous version.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="border rounded-md">
+            <div className="grid grid-cols-5 gap-4 p-3 border-b bg-slate-50 font-medium text-sm">
+              <div>Version</div>
+              <div className="col-span-2">Changes</div>
+              <div>Date</div>
+              <div>Author</div>
+            </div>
+            
+            <div className="divide-y max-h-[300px] overflow-y-auto">
+              {versionHistory.map((version) => (
+                <div key={version.id} className="grid grid-cols-5 gap-4 p-3 text-sm hover:bg-slate-50">
+                  <div className="font-medium">
+                    {version.name}
+                    {version.status === 'Current' && (
+                      <Badge className="ml-2 h-5 bg-green-100 text-green-800 border-green-200 text-[10px]">Current</Badge>
+                    )}
+                  </div>
+                  <div className="col-span-2">{version.changes}</div>
+                  <div>{version.date}</div>
+                  <div className="flex justify-between items-center">
+                    <span>{version.author}</span>
+                    <div className="flex space-x-1">
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 w-7 p-0"
+                        onClick={() => {
+                          setCompareVersions({
+                            base: activeVersion, 
+                            compare: version.id
+                          });
+                          setShowVersionHistory(false);
+                          setShowCompareDialog(true);
+                        }}
+                        title="Compare with current version"
+                      >
+                        <GitMerge className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        className="h-7 w-7 p-0"
+                        onClick={() => {
+                          setActiveVersion(version.id);
+                          setShowVersionHistory(false);
+                        }}
+                        title="View this version"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-between border-t pt-3 mt-3">
+            <div className="text-xs text-muted-foreground flex items-center">
+              <Info className="h-3 w-3 mr-1 text-blue-500" />
+              All versions are stored securely in Vault with 21 CFR Part 11 compliant audit trails
+            </div>
+            <Button onClick={() => setShowVersionHistory(false)}>Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Version Comparison Dialog */}
+      <Dialog open={showCompareDialog} onOpenChange={setShowCompareDialog} className="max-w-4xl">
+        <DialogContent className="sm:max-w-[900px] max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <GitMerge className="h-5 w-5 mr-2" />
+              Compare Document Versions
+            </DialogTitle>
+            <DialogDescription>
+              Comparing {compareVersions.base} with {compareVersions.compare}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-col h-full overflow-hidden">
+            <Tabs defaultValue="side-by-side" className="w-full mb-4">
+              <TabsList className="grid w-[400px] grid-cols-2">
+                <TabsTrigger value="side-by-side" className="flex items-center">
+                  <GitBranch className="h-4 w-4 mr-2" />
+                  Side-by-Side View
+                </TabsTrigger>
+                <TabsTrigger value="inline" className="flex items-center">
+                  <GitMerge className="h-4 w-4 mr-2" />
+                  Inline Differences
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="side-by-side" className="mt-4">
+                <div className="grid grid-cols-2 gap-4 overflow-auto flex-grow">
+                  <div className="border rounded-md overflow-auto">
+                    <div className="bg-slate-50 p-2 font-medium border-b sticky top-0">
+                      {compareVersions.base} (Current)
+                    </div>
+                    <div className="p-3 text-sm">
+                      <p className="mb-2">
+                        <span className="bg-green-100 px-1">The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects.</span> Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).
+                      </p>
+                      <p className="mb-2">
+                        The efficacy of Drug X was evaluated across multiple endpoints. <span className="bg-green-100 px-1">Primary endpoints showed a statistically significant improvement compared to placebo (p&lt;0.001)</span> with consistent results across all study sites.
+                      </p>
+                      <p className="mb-2">
+                        Long-term safety data from extension studies (up to 24 months) <span className="bg-red-100 px-1 line-through">showed no new safety signals</span> and confirmed the favorable benefit-risk profile observed in shorter studies.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="border rounded-md overflow-auto">
+                    <div className="bg-slate-50 p-2 font-medium border-b sticky top-0">
+                      {compareVersions.compare}
+                    </div>
+                    <div className="p-3 text-sm">
+                      <p className="mb-2">
+                        The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).
+                      </p>
+                      <p className="mb-2">
+                        The efficacy of Drug X was evaluated across multiple endpoints. Primary endpoints showed a statistically significant improvement compared to placebo (p&lt;0.001) with consistent results across all study sites.
+                      </p>
+                      <p className="mb-2">
+                        Long-term safety data from extension studies (up to 24 months) <span className="bg-green-100 px-1">demonstrated a continued absence of significant safety concerns</span> and confirmed the favorable benefit-risk profile observed in shorter studies.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="inline" className="mt-4">
+                <div className="border rounded-md max-h-[400px] overflow-auto">
+                  <div className="bg-slate-50 p-2 font-medium border-b sticky top-0">
+                    Inline Changes
+                  </div>
+                  <div className="p-3 text-sm">
+                    <p className="mb-2">
+                      <span className="bg-blue-50 px-1 border-l-4 border-blue-400 pl-2">The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).</span>
+                    </p>
+                    <p className="mb-2">
+                      <span className="bg-blue-50 px-1 border-l-4 border-blue-400 pl-2">The efficacy of Drug X was evaluated across multiple endpoints. Primary endpoints showed a statistically significant improvement compared to placebo (p&lt;0.001) with consistent results across all study sites.</span>
+                    </p>
+                    <p className="mb-2">
+                      Long-term safety data from extension studies (up to 24 months) 
+                      <span className="bg-red-100 px-1 mx-1 line-through">showed no new safety signals</span>
+                      <span className="bg-green-100 px-1 mx-1">demonstrated a continued absence of significant safety concerns</span>
+                      and confirmed the favorable benefit-risk profile observed in shorter studies.
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <div className="flex items-center space-x-3">
+                <Badge variant="outline" className="flex items-center space-x-1">
+                  <Plus className="h-3 w-3 text-green-600" />
+                  <span className="text-green-600">Added</span>
+                </Badge>
+                <Badge variant="outline" className="flex items-center space-x-1">
+                  <Minus className="h-3 w-3 text-red-600" />
+                  <span className="text-red-600">Removed</span>
+                </Badge>
+                <Badge variant="outline" className="flex items-center space-x-1">
+                  <Info className="h-3 w-3 text-blue-600" />
+                  <span className="text-blue-600">Unchanged</span>
+                </Badge>
+              </div>
+              <div className="space-x-2">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setActiveVersion(compareVersions.compare)}
+                  className="border-green-200 text-green-700"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Restore This Version
+                </Button>
+                <Button onClick={() => setShowCompareDialog(false)}>Close</Button>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Team Collaboration Dialog */}
+      <Dialog open={teamCollabOpen} onOpenChange={setTeamCollabOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Users className="h-5 w-5 mr-2" />
+              Team Collaboration
+            </DialogTitle>
+            <DialogDescription>
+              View team members working on this document and manage access permissions.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="border rounded-md">
+              <div className="bg-slate-50 p-2 font-medium border-b text-sm">Active Collaborators</div>
+              <div className="divide-y">
+                <div className="p-3 flex justify-between items-center">
+                  <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-medium mr-3">JD</div>
+                    <div>
+                      <div className="font-medium">John Doe</div>
+                      <div className="text-xs text-gray-500">Editor</div>
+                    </div>
+                  </div>
+                  <Badge className="bg-green-100 text-green-800 border-green-200">Editing</Badge>
+                </div>
+                <div className="p-3 flex justify-between items-center">
+                  <div className="flex items-center">
+                    <div className="h-8 w-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-medium mr-3">JS</div>
+                    <div>
+                      <div className="font-medium">Jane Smith</div>
+                      <div className="text-xs text-gray-500">Reviewer</div>
+                    </div>
+                  </div>
+                  <Badge className="bg-blue-100 text-blue-800 border-blue-200">Viewing</Badge>
+                </div>
+              </div>
+            </div>
+            
+            <div className="border rounded-md">
+              <div className="bg-slate-50 p-2 font-medium border-b text-sm">Document Access Controls</div>
+              <div className="p-3">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="text-sm font-medium">Document Locking</div>
+                    <Button
+                      size="sm"
+                      variant={documentLocked ? "destructive" : "outline"}
+                      onClick={() => setDocumentLocked(!documentLocked)}
+                      className="h-8"
+                    >
+                      {documentLocked ? (
+                        <>
+                          <Lock className="h-3.5 w-3.5 mr-1.5" />
+                          Unlock Document
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="h-3.5 w-3.5 mr-1.5" />
+                          Lock for Editing
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {documentLocked ? 
+                      "Document is currently locked. Only you can make changes." : 
+                      "Lock the document to prevent others from making changes while you edit."}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <div className="text-xs text-muted-foreground flex items-center">
+              <Info className="h-3 w-3 mr-1 text-blue-500" />
+              All document access is logged for audit purposes
+            </div>
+            <Button onClick={() => setTeamCollabOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
