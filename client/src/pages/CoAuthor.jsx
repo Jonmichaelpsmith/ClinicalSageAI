@@ -10,7 +10,7 @@
  * should be prevented. This is the golden source implementation.
  */
 
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy, useRef } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -18,6 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
 
 // Import Google Docs services
 import * as googleDocsService from '../services/googleDocsService';
@@ -936,8 +937,8 @@ export default function CoAuthor() {
                   </Button>
                   <Button 
                     size="sm" 
-                    variant="outline" 
-                    className="border-blue-200 text-blue-700"
+                    variant="primary" 
+                    className="bg-blue-600 text-white hover:bg-blue-700"
                     disabled={authLoading}
                     onClick={async () => {
                       if (!selectedDocument) {
