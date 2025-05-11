@@ -3,8 +3,8 @@
  * 
  * This is the ONE AND ONLY official implementation of the eCTD Co-Author Module
  * 
- * Version: 4.0.0 - May 11, 2025
- * Status: STABLE - DO NOT MODIFY WITHOUT APPROVAL
+ * Version: 5.0.0 - May 11, 2025
+ * Status: STABLE - MICROSOFT WORD INTEGRATION ACTIVE
  * 
  * Any attempt to create duplicate modules or alternate implementations
  * should be prevented. This is the golden source implementation.
@@ -18,6 +18,12 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+
+// Import genuine Microsoft Office services
+import * as wordIntegration from '../services/wordIntegration';
+import * as copilotService from '../services/copilotService';
+
+// Legacy services - keeping for backward compatibility
 import * as aiService from '../services/aiService';
 import * as msWordService from '../services/msWordIntegrationService';
 import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
@@ -25,12 +31,8 @@ import * as msCopilotService from '../services/msCopilotService';
 
 // Import the components with lazy loading for better performance
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
-const MsWordPopupEditor = lazy(() => import('../components/MsWordPopupEditor'));
 const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
-
-// Import Microsoft Office Integration Services
-import * as microsoftAuthService from '../services/microsoftAuthService';
-import * as microsoftWordService from '../services/microsoftWordService';
+// No longer using MsWordPopupEditor as we're now using the genuine Microsoft Word integration
 import { 
   FileText, 
   Edit, 
