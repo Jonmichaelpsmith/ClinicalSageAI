@@ -30,7 +30,12 @@ import {
   Link,
   User,
   FileLock,
-  GitMerge
+  GitMerge,
+  SlidersHorizontal,
+  Info,
+  Plus,
+  MoreHorizontal,
+  PanelLeft
 } from 'lucide-react';
 
 export default function CoAuthor() {
@@ -365,7 +370,7 @@ export default function CoAuthor() {
                     variant="outline" 
                     className="h-7 text-xs border-gray-200 text-gray-700"
                   >
-                    <Filter className="h-3 w-3 mr-1" />
+                    <SlidersHorizontal className="h-3 w-3 mr-1" />
                     <span>Filter</span>
                   </Button>
                   <Button 
