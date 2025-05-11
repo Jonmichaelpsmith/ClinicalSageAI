@@ -71,7 +71,17 @@ export default function CoAuthor() {
   const [documentLocked, setDocumentLocked] = useState(false);
   const [lockedBy, setLockedBy] = useState(null);
   const [showValidationDialog, setShowValidationDialog] = useState(false);
-  const [validationResults, setValidationResults] = useState({
+  // AI Assistant state
+  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
+  const [aiAssistantMode, setAiAssistantMode] = useState('suggestions'); // 'suggestions', 'compliance', 'formatting'
+  const [aiUserQuery, setAiUserQuery] = useState('');
+  const [aiResponse, setAiResponse] = useState(null);
+  const [aiIsLoading, setAiIsLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  
+  const { toast } = useToast();
+  
+  const [validationResults] = useState({
     completeness: 78,
     consistency: 92,
     references: 65,
@@ -117,8 +127,71 @@ export default function CoAuthor() {
     includeAppendices: true
   });
   
-  // AI Assistant state
-  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
+  // AI query submission handler
+  const handleAiQuerySubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!aiUserQuery.trim()) return;
+    
+    setAiIsLoading(true);
+    setAiError(null);
+    
+    try {
+      // Determine which AI service to call based on active mode
+      let response;
+      if (aiAssistantMode === 'compliance') {
+        response = await aiService.checkComplianceAI(
+          selectedDocument?.id || 'current-doc',
+          "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).",
+          ['ICH', 'FDA']
+        );
+      } else if (aiAssistantMode === 'formatting') {
+        response = await aiService.analyzeFormattingAI(
+          selectedDocument?.id || 'current-doc',
+          "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).",
+          'clinicalOverview'
+        );
+      } else {
+        // Default mode: suggestions
+        if (selectedDocument) {
+          response = await aiService.generateContentSuggestions(
+            selectedDocument.id || 'current-doc', 
+            '2.5.5', 
+            "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).",
+            aiUserQuery
+          );
+        } else {
+          // If no document is selected, use the general AI ask endpoint
+          response = await aiService.askDocumentAI(aiUserQuery);
+        }
+      }
+      
+      setAiResponse(response);
+      setAiUserQuery('');
+      
+      // Show success toast
+      toast({
+        title: "AI Response Generated",
+        description: "The AI has generated a response based on your query.",
+        variant: "default",
+      });
+      
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      setAiError(error.message || 'Failed to get AI response. Please try again.');
+      
+      // Show error toast
+      toast({
+        title: "AI Request Failed",
+        description: error.message || "Could not generate AI response. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setAiIsLoading(false);
+    }
+  };
+  
+  // Mock AI suggestions (will be replaced by actual AI responses)
   const [aiSuggestions, setAiSuggestions] = useState([
     {
       id: 1,
