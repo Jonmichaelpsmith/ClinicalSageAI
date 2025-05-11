@@ -205,17 +205,7 @@ const Office365WordEmbed = ({
     loadDocument();
   }, [documentId, isOfficeJSReady, initialContent]);
   
-  // Handle Microsoft login
-  const handleLogin = async () => {
-    try {
-      setIsAuthenticating(true);
-      await login();
-    } catch (err) {
-      console.error('Error during Microsoft login:', err);
-      setError('Failed to authenticate with Microsoft');
-      setIsAuthenticating(false);
-    }
-  };
+  // No duplicate function here, removed in previous edit
   
   // Load version history
   const loadVersionHistory = async () => {
