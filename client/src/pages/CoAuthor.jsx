@@ -130,6 +130,13 @@ export default function CoAuthor() {
   const [googleUserInfo, setGoogleUserInfo] = useState(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [editorType, setEditorType] = useState('google'); // Changed default to 'google'
+  
+  // Enhanced Google Docs iframe state
+  const [isIframeLoaded, setIframeLoaded] = useState(false);
+  const [isDocLoadError, setIsDocLoadError] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [iframeKey, setIframeKey] = useState(1); // Used to force refresh iframe
+  const [currentZoom, setCurrentZoom] = useState(1); // Document zoom level
   const [createNewDocDialogOpen, setCreateNewDocDialogOpen] = useState(false);
   const [newDocumentTitle, setNewDocumentTitle] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('');
@@ -249,6 +256,32 @@ export default function CoAuthor() {
     
     checkGoogleAuth();
   }, [toast]);
+  
+  // Simulate progress loading for document iframe
+  useEffect(() => {
+    let interval;
+    
+    if (!isIframeLoaded && !isDocLoadError && isGoogleAuthenticated) {
+      // Start with a quick initial progress to show something is happening
+      setLoadingProgress(10);
+      
+      // Then simulate gradual loading progress
+      interval = setInterval(() => {
+        setLoadingProgress(prev => {
+          // Progress slows down as it approaches 90%
+          // We reserve the last 10% for the actual document load completion
+          if (prev < 30) return prev + 15;
+          if (prev < 60) return prev + 10;
+          if (prev < 90) return prev + 5;
+          return prev;
+        });
+      }, 700);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isIframeLoaded, isDocLoadError, isGoogleAuthenticated]);
   
   const [validationResults] = useState({
     completeness: 78,
@@ -2171,7 +2204,7 @@ export default function CoAuthor() {
                   </div>
                 </div>
 
-                {/* Dynamic Google Docs Iframe Integration - NEW VERSION */}
+                {/* Dynamic Google Docs Iframe Integration - ENHANCED VERSION */}
                 <div className="relative w-full h-full">
                   {/* Background pattern to make changes visible */}
                   <div className="absolute inset-0 bg-white opacity-5" 
@@ -2184,13 +2217,69 @@ export default function CoAuthor() {
                   <div className="absolute inset-0 flex items-center justify-center">
                     {isGoogleAuthenticated ? (
                       <div className="w-full h-full relative">
-                        {/* Status indicator */}
+                        {/* Enhanced status indicator with document info */}
                         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between bg-green-50 px-4 py-2 text-sm text-green-700 border-b border-green-200">
                           <div className="flex items-center">
                             <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                             <span>Connected as <strong>{googleUserInfo?.name || 'Demo User'}</strong></span>
+                            {selectedDocument && (
+                              <Badge variant="outline" className="ml-3 text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                {selectedDocument.title || "Untitled Document"}
+                              </Badge>
+                            )}
                           </div>
                           <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-xs border-green-200 text-green-700 hover:bg-green-50"
+                              onClick={() => {
+                                // Get current document ID
+                                const docId = selectedDocument?.googleDocsId || 
+                                  (selectedDocument?.id === 1 
+                                    ? googleDocsService.getDocumentId('module_2_5') 
+                                    : selectedDocument?.id === 2
+                                      ? googleDocsService.getDocumentId('module_2_7')
+                                      : googleDocsService.getDocumentId('default'));
+                                
+                                // Save to VAULT with enhanced metadata
+                                if (docId) {
+                                  toast({
+                                    title: "Saving to VAULT",
+                                    description: "Preparing document for VAULT storage...",
+                                  });
+                                  
+                                  // Determine document module type
+                                  let moduleType = 'module_2';
+                                  if (selectedDocument?.title?.includes("Module 1")) moduleType = 'module_1';
+                                  if (selectedDocument?.title?.includes("Module 3")) moduleType = 'module_3';
+                                  if (selectedDocument?.title?.includes("Module 4")) moduleType = 'module_4';
+                                  if (selectedDocument?.title?.includes("Module 5")) moduleType = 'module_5';
+                                  
+                                  // Call save to vault with regulatory metadata
+                                  googleDocsService.saveToVault(docId, {
+                                    title: selectedDocument?.title || "Untitled Document",
+                                    documentId: selectedDocument?.id,
+                                    moduleType: moduleType,
+                                    documentType: selectedDocument?.type || "scientific",
+                                    versionControl: {
+                                      majorVersion: selectedDocument?.version?.major || 1,
+                                      minorVersion: selectedDocument?.version?.minor || 0,
+                                      docStatus: selectedDocument?.status || "Draft"
+                                    }
+                                  }).catch(err => console.error("Error saving to VAULT:", err));
+                                } else {
+                                  toast({
+                                    title: "Unable to Save",
+                                    description: "No document is currently selected.",
+                                    variant: "destructive"
+                                  });
+                                }
+                              }}
+                            >
+                              <Save className="h-3 w-3 mr-1" />
+                              Save to VAULT
+                            </Button>
                             <Button
                               variant="ghost"
                               size="sm"
@@ -2239,19 +2328,65 @@ export default function CoAuthor() {
                           </div>
                         </div>
                         
-                        {/* Enhanced Google Docs iframe with improved error handling */}
+                        {/* Enhanced Google Docs iframe with improved error handling and zoom controls */}
                         <div className="w-full h-full relative" style={{marginTop: "38px"}}>
                           {/* Loading overlay */}
-                          <div className="absolute inset-0 flex items-center justify-center bg-gray-50 z-0">
+                          <div className={`absolute inset-0 flex items-center justify-center bg-gray-50 z-0 transition-opacity duration-500 ${isIframeLoaded ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
                             <div className="text-center max-w-md p-8">
                               <Loader2 className="h-10 w-10 text-blue-500 mb-4 mx-auto animate-spin" />
                               <h3 className="text-lg font-semibold mb-2">Loading Document...</h3>
                               <p className="text-gray-500 text-sm mb-4">
                                 Please wait while we connect to Google Docs. This may take a few moments.
                               </p>
+                              <div className="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden">
+                                <div 
+                                  className="bg-blue-500 h-full transition-all duration-300 rounded-full"
+                                  style={{ width: `${loadingProgress}%` }}
+                                ></div>
+                              </div>
                             </div>
                           </div>
                           
+                          {/* Error overlay - shows when document fails to load */}
+                          {isDocLoadError && (
+                            <div className="absolute inset-0 flex items-center justify-center z-20 bg-white">
+                              <div className="text-center max-w-md px-8 py-10 bg-white shadow-lg rounded-lg border border-red-100">
+                                <div className="rounded-full bg-red-50 w-16 h-16 mb-4 flex items-center justify-center mx-auto">
+                                  <AlertCircle className="h-8 w-8 text-red-500" />
+                                </div>
+                                <h3 className="text-xl font-semibold mb-2 text-red-700">Document Failed to Load</h3>
+                                <p className="text-gray-600 mb-6">
+                                  We were unable to load the requested document. This could be due to network issues or insufficient permissions.
+                                </p>
+                                <div className="flex space-x-3 justify-center">
+                                  <Button 
+                                    onClick={() => {
+                                      setIsDocLoadError(false);
+                                      setLoadingProgress(0);
+                                      setIframeLoaded(false);
+                                      // Force iframe refresh by changing key
+                                      setIframeKey(prev => prev + 1);
+                                    }}
+                                    className="bg-blue-600 hover:bg-blue-700"
+                                  >
+                                    <RefreshCw className="h-4 w-4 mr-2" />
+                                    Try Again
+                                  </Button>
+                                  <Button 
+                                    variant="outline"
+                                    onClick={() => {
+                                      setSelectedDocument(null);
+                                      setIsDocLoadError(false);
+                                    }}
+                                  >
+                                    Select Different Document
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Authentication overlay */}
                           {!isGoogleAuthenticated && (
                             <div className="absolute inset-0 flex items-center justify-center z-20 bg-gray-50/90">
                               <div className="text-center max-w-md px-8 py-10 bg-white shadow-lg rounded-lg border border-gray-200">
@@ -2273,7 +2408,58 @@ export default function CoAuthor() {
                             </div>
                           )}
                           
+                          {/* Zoom controls overlay */}
+                          <div className="absolute bottom-4 right-4 z-20 bg-white rounded-lg shadow-md border border-gray-200 flex items-center p-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 rounded-md"
+                              onClick={() => {
+                                const iframe = document.querySelector('iframe[title="Google Docs Editor"]');
+                                if (iframe) {
+                                  // This is a simple zoom implementation - in production you would use the Google Docs SDK
+                                  iframe.style.transform = `scale(${Math.max(0.5, currentZoom - 0.1)})`;
+                                  setCurrentZoom(prev => Math.max(0.5, prev - 0.1));
+                                }
+                              }}
+                            >
+                              <Minus className="h-4 w-4" />
+                            </Button>
+                            <span className="text-xs px-2">{Math.round(currentZoom * 100)}%</span>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 rounded-md"
+                              onClick={() => {
+                                const iframe = document.querySelector('iframe[title="Google Docs Editor"]');
+                                if (iframe) {
+                                  iframe.style.transform = `scale(${Math.min(1.5, currentZoom + 0.1)})`;
+                                  setCurrentZoom(prev => Math.min(1.5, prev + 0.1));
+                                }
+                              }}
+                            >
+                              <Plus className="h-4 w-4" />
+                            </Button>
+                            <Separator orientation="vertical" className="h-6 mx-1" />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 rounded-md"
+                              onClick={() => {
+                                const iframe = document.querySelector('iframe[title="Google Docs Editor"]');
+                                if (iframe) {
+                                  iframe.style.transform = 'scale(1)';
+                                  setCurrentZoom(1);
+                                }
+                              }}
+                            >
+                              <Undo className="h-4 w-4" />
+                            </Button>
+                          </div>
+                          
+                          {/* The actual iframe - with improved loading and error handling */}
                           <iframe
+                            key={iframeKey}
                             title="Google Docs Editor"
                             src={`https://docs.google.com/document/d/${
                               // First check if we have a docId directly from Google integration
@@ -2295,30 +2481,52 @@ export default function CoAuthor() {
                             height="100%" 
                             frameBorder="0"
                             allow="clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                            className="z-10 relative bg-white opacity-0 transition-opacity duration-300"
+                            className="z-10 relative bg-white opacity-0 transition-opacity duration-500"
                             style={{
                               position: 'absolute',
                               top: 0,
                               left: 0,
                               right: 0,
-                              bottom: 0
+                              bottom: 0,
+                              transformOrigin: 'center',
+                              transform: `scale(${currentZoom})`
                             }}
                             onLoad={(e) => {
                               console.log("Google Docs document loaded successfully");
                               // Make iframe visible once loaded
                               e.target.classList.add('opacity-100');
+                              setIframeLoaded(true);
+                              setIsDocLoadError(false);
+                              setLoadingProgress(100);
                               
                               // Notify user
                               toast({
                                 title: "Document Loaded",
                                 description: "Google Docs document loaded successfully.",
                               });
+                              
+                              // Add message listener for postMessage communication with the iframe
+                              window.addEventListener('message', (event) => {
+                                // Verify origin for security
+                                if (event.origin === 'https://docs.google.com') {
+                                  // Handle messages from Google Docs
+                                  console.log('Message from Google Docs:', event.data);
+                                  
+                                  // Example: track document changes
+                                  if (event.data.type === 'documentChanged') {
+                                    console.log('Document was modified');
+                                  }
+                                }
+                              });
                             }}
                             onError={(e) => {
                               console.error("Error loading Google Docs:", e);
+                              setIsDocLoadError(true);
+                              setIframeLoaded(false);
+                              
                               toast({
                                 title: "Document Loading Error",
-                                description: "Failed to load Google Docs. Please try refreshing the page.",
+                                description: "Failed to load Google Docs. Please check your connection and permissions.",
                                 variant: "destructive",
                               });
                             }}
