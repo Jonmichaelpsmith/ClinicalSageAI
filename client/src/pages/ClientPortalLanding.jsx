@@ -88,10 +88,7 @@ const ClientPortalLanding = () => {
   ];
 
   const handleModuleSelect = (moduleId) => {
-    // Set the current module in the tenant context
-    setCurrentModule(moduleId);
-    
-    // Find the module path
+    // Find the module path without trying to set the current module
     const selectedModule = moduleCards.find(m => m.id === moduleId);
     if (selectedModule) {
       const fullUrl = window.location.origin + selectedModule.path;
