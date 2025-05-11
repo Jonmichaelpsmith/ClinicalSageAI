@@ -336,34 +336,7 @@ export default function CoAuthor() {
     // Just call our main save function with the active document ID
     await handleSaveToVault(activeDocumentId);
   };
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ vaultMetadata })
-      });
-      
-      if (!response.ok) {
-        throw new Error('Failed to save document to VAULT');
-      }
-      
-      const result = await response.json();
-      
-      toast({
-        title: "Document Saved",
-        description: `Successfully saved to VAULT with ID: ${result.vaultId}`,
-      });
-    } catch (error) {
-      console.error('Error saving to VAULT:', error);
-      toast({
-        title: "Error Saving Document",
-        description: error.message || "Failed to save document to VAULT.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
+  
   // Component state
   const [isTreeOpen, setIsTreeOpen] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
