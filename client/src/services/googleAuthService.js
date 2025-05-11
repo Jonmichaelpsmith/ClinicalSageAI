@@ -46,7 +46,46 @@ class GoogleAuthService {
    */
   initiateAuth() {
     try {
-      // Redirect to our server's Google auth endpoint which will handle OAuth flow
+      // Check if Replit Auth is available and use it for Google authentication
+      if (typeof window !== 'undefined' && window.replit && window.replit.auth) {
+        console.log('Using Replit Auth for Google authentication');
+        
+        // Use Replit Auth with Google provider
+        window.replit.auth.signIn({ provider: 'google' })
+          .then(user => {
+            console.log('Replit Auth success with Google provider:', user);
+            
+            // Store user info in our format for compatibility
+            const userData = {
+              name: user.name || 'Replit User',
+              email: user.email,
+              id: user.id,
+              picture: user.profileImage
+            };
+            
+            // Create token in our expected format
+            const tokenData = {
+              accessToken: 'replit-auth-token', // Placeholder, not used for API calls when using Replit Auth
+              expirationTime: Date.now() + (7 * 24 * 60 * 60 * 1000) // 7 days from now
+            };
+            
+            // Store in our local storage for our app to detect
+            this.storeToken(tokenData);
+            this.storeUser(userData);
+            
+            // Refresh the page to show authenticated state
+            window.location.reload();
+          })
+          .catch(error => {
+            console.error('Replit Auth error:', error);
+            throw error;
+          });
+        
+        return;
+      }
+      
+      // Fall back to our custom OAuth flow
+      console.log('Using custom OAuth flow for Google authentication');
       window.location.href = '/api/google-docs/auth/google';
     } catch (error) {
       console.error('Error initiating Google authentication:', error);
