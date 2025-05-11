@@ -1347,24 +1347,41 @@ export default function CoAuthor() {
         )}
       </div>
       
-      {/* Microsoft Word Popup Editor */}
-      <Suspense fallback={<div>Loading Microsoft Word...</div>}>
-        <MsWordPopupEditor 
-          isOpen={msWordPopupOpen}
-          onClose={() => setMsWordPopupOpen(false)}
-          documentId={selectedDocument?.id?.toString() || 'current-doc'}
-          documentTitle={selectedDocument?.title || "Module 2.5 Clinical Overview"}
-          initialContent="The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects)."
-          onSave={(content) => {
-            console.log("Saving document content from MS Word:", content);
-            toast({
-              title: "Document Updated",
-              description: "Your changes from Microsoft Word have been saved to the document vault.",
-              variant: "default",
-            });
-          }}
-        />
-      </Suspense>
+      {/* Microsoft Word 365 Integration */}
+      <Dialog open={msWordPopupOpen} onOpenChange={setMsWordPopupOpen} className="max-w-[90%] w-[1200px]">
+        <DialogContent className="max-w-[90%] w-[1200px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <FileText className="h-5 w-5 mr-2" />
+              Microsoft Word 365 - {selectedDocument?.title || "Module 2.5 Clinical Overview"}
+            </DialogTitle>
+            <DialogDescription>
+              The genuine Microsoft Word 365 experience, embedded directly in TrialSage.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Suspense fallback={<div className="py-20 text-center">Loading Microsoft Word 365...</div>}>
+            <Office365WordEmbed 
+              documentId={selectedDocument?.id?.toString() || 'current-doc'}
+              initialContent="The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects)."
+              onSave={(content) => {
+                console.log("Saving document content from Microsoft Word 365:", content);
+                toast({
+                  title: "Document Updated",
+                  description: "Your changes from Microsoft Word 365 have been saved to the document vault.",
+                  variant: "default",
+                });
+                setMsWordPopupOpen(false);
+              }}
+              vaultIntegration={msOfficeVaultBridge}
+            />
+          </Suspense>
+          
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setMsWordPopupOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       
       {/* Version History Dialog */}
       <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>
