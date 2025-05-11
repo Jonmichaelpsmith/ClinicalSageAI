@@ -80,6 +80,11 @@ declare module './routes/ai-routes.js' {
   export default router;
 }
 
+declare module './routes/auth.js' {
+  const router: express.Router;
+  export default router;
+}
+
 // Import routes after declaring the modules
 import indWizardRouter from './routes/indWizardAPI.js';
 import cerRouter from './routes/cer-final.js';
@@ -97,6 +102,7 @@ import equivalenceRouter from './routes/equivalence-api.mjs';
 import internalClinicalDataRouter from './routes/internal-clinical-data.js';
 import qmpRouter from './routes/qmp-api.js';
 import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
+import authRouter from './routes/auth.js';
 // Import existing router or create empty one
 import express from 'express';
 import * as fs from 'fs';
@@ -235,6 +241,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register Google Docs Integration routes
   app.use('/api/google-docs', googleDocsRoutes);
+  
+  // Register Authentication routes
+  app.use('/auth', authRouter);
   
   // Create a temporary CER Validation router
   const cerValidationRouter = express.Router();
