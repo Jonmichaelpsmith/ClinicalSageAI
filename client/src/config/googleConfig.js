@@ -29,7 +29,7 @@ export const GOOGLE_CONFIG = {
     'https://regulatory-pilot.com'
   ],
   // OAuth redirect URI - must match server-side config
-  REDIRECT_URI: `${window.location.origin}/google/auth/callback`
+  REDIRECT_URI: `${window.location.origin}/api/google-docs/auth/google/callback`
 };
 
 // Sample document IDs for testing

@@ -18,6 +18,7 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { SAMPLE_DOCUMENTS } from '../config/googleConfig';
 import { Separator } from '@/components/ui/separator';
 
 // Import Google Docs services
@@ -2084,16 +2085,32 @@ export default function CoAuthor() {
             
             {/* Google Docs iframe */}
             <iframe 
+              key={iframeKey} 
               ref={googleDocsIframeRef}
-              src={`https://docs.google.com/document/d/${selectedDocument.googleDocId || 'd/e/2PACX-sample-doc-id'}/edit?embedded=true`}
+              src={`https://docs.google.com/document/d/${selectedDocument?.googleDocId || SAMPLE_DOCUMENTS.default}/edit?embedded=true`}
               className="w-full h-full border-none"
+              style={{ 
+                zoom: currentZoom, 
+                transform: `scale(${currentZoom})`,
+                transformOrigin: 'top left'
+              }}
               onLoad={(e) => {
+                console.log("Google Docs iframe loaded successfully");
                 setGoogleDocsLoading(false);
                 setIframeLoaded(true);
+                setIsDocLoadError(false);
               }}
-              onError={() => {
+              onError={(e) => {
+                console.error("Error loading Google Docs iframe:", e);
                 setGoogleDocsLoading(false);
                 setIsDocLoadError(true);
+                
+                // Show error toast
+                toast({
+                  title: "Document Load Error",
+                  description: "Failed to load the document. Please check your internet connection and try again.",
+                  variant: "destructive"
+                });
               }}
             ></iframe>
           </div>
