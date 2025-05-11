@@ -6,7 +6,6 @@
  */
 
 import axios from 'axios';
-import { getAccessToken } from './microsoftAuthService';
 
 /**
  * Get a document from the vault and prepare it for Microsoft Office editing
@@ -30,6 +29,153 @@ export async function getDocumentForOfficeEditing(documentId) {
     return response.data;
   } catch (error) {
     console.error('Error getting document for Office editing:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get document from the vault
+ * 
+ * @param {string} documentId - The vault document ID
+ * @returns {Promise<Object>} - Document data
+ */
+export async function getDocument(documentId) {
+  try {
+    const token = localStorage.getItem('ms_access_token');
+    if (!token) {
+      throw new Error('Microsoft authentication required');
+    }
+    
+    const response = await axios.get(`/api/vault/documents/${documentId}`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error getting document from vault:', error);
+    throw error;
+  }
+}
+
+/**
+ * Save document to the vault
+ * 
+ * @param {string} documentId - The vault document ID
+ * @param {string} content - Document content
+ * @returns {Promise<Object>} - Updated document
+ */
+export async function saveDocument(documentId, content) {
+  try {
+    const token = localStorage.getItem('ms_access_token');
+    if (!token) {
+      throw new Error('Microsoft authentication required');
+    }
+    
+    const response = await axios.put(
+      `/api/vault/documents/${documentId}`,
+      { content },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error saving document to vault:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create a new document version in the vault
+ * 
+ * @param {string} documentId - The vault document ID
+ * @param {string} content - Document content
+ * @param {string} versionNote - Note for this version
+ * @returns {Promise<Object>} - New version information
+ */
+export async function createDocumentVersion(documentId, content, versionNote) {
+  try {
+    const token = localStorage.getItem('ms_access_token');
+    if (!token) {
+      throw new Error('Microsoft authentication required');
+    }
+    
+    const response = await axios.post(
+      `/api/vault/documents/${documentId}/versions`,
+      { content, note: versionNote },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error creating document version:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get document version history
+ * 
+ * @param {string} documentId - The vault document ID
+ * @returns {Promise<Array>} - Version history
+ */
+export async function getDocumentVersionHistory(documentId) {
+  try {
+    const token = localStorage.getItem('ms_access_token');
+    if (!token) {
+      throw new Error('Microsoft authentication required');
+    }
+    
+    const response = await axios.get(`/api/vault/documents/${documentId}/versions`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error getting document version history:', error);
+    throw error;
+  }
+}
+
+/**
+ * Register collaboration status for a document
+ * 
+ * @param {string} documentId - The vault document ID
+ * @param {string} status - Collaboration status (editing, viewing, closed)
+ * @param {string} userId - User ID
+ * @returns {Promise<Object>} - Status information
+ */
+export async function registerCollaborationStatus(documentId, status, userId) {
+  try {
+    const token = localStorage.getItem('ms_access_token');
+    if (!token) {
+      throw new Error('Microsoft authentication required');
+    }
+    
+    const response = await axios.post(
+      `/api/vault/documents/${documentId}/collaboration`,
+      { status, userId },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error registering collaboration status:', error);
     throw error;
   }
 }
@@ -129,131 +275,5 @@ export async function createNewOfficeDocument(documentInfo) {
   } catch (error) {
     console.error('Error creating new Office document:', error);
     throw error;
-  }
-}
-
-/**
- * Get document from the vault
- * @param {string} documentId - The document ID
- * @returns {Promise<Object>} The document data
- */
-export async function getDocument(documentId) {
-  try {
-    const token = await getAccessToken();
-    const response = await axios.get(`/api/vault/documents/${documentId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error getting document from vault:', error);
-    throw error;
-  }
-}
-
-/**
- * Save document to the vault
- * @param {string} documentId - The document ID
- * @param {string} content - The document content
- * @returns {Promise<Object>} The updated document
- */
-export async function saveDocument(documentId, content) {
-  try {
-    const token = await getAccessToken();
-    const response = await axios.put(
-      `/api/vault/documents/${documentId}`,
-      { content },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Error saving document to vault:', error);
-    throw error;
-  }
-}
-
-/**
- * Create a new version of a document
- * @param {string} documentId - The document ID
- * @param {string} content - The document content
- * @param {string} versionNotes - Notes about this version
- * @returns {Promise<Object>} The created version
- */
-export async function createDocumentVersion(documentId, content, versionNotes = '') {
-  try {
-    const token = await getAccessToken();
-    const response = await axios.post(
-      `/api/vault/documents/${documentId}/versions`,
-      { content, versionNotes },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Error creating document version:', error);
-    throw error;
-  }
-}
-
-/**
- * Get document version history
- * @param {string} documentId - The document ID
- * @returns {Promise<Array>} Array of versions
- */
-export async function getDocumentVersionHistory(documentId) {
-  try {
-    const token = await getAccessToken();
-    const response = await axios.get(`/api/vault/documents/${documentId}/versions`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error getting document version history:', error);
-    return []; // Return empty array on error to prevent UI issues
-  }
-}
-
-/**
- * Register collaboration status for a document
- * @param {string} documentId - The document ID
- * @param {string} status - The collaboration status (editing, viewing, etc)
- * @param {string} userId - The user ID (optional)
- * @returns {Promise<Object>} The status registration
- */
-export async function registerCollaborationStatus(documentId, status, userId = null) {
-  try {
-    const token = await getAccessToken();
-    const response = await axios.post(
-      `/api/vault/documents/${documentId}/collaboration`,
-      { status, userId },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Error registering collaboration status:', error);
-    // Return a minimal object on error
-    return { 
-      documentId, 
-      status: 'unknown',
-      registered: false,
-      timestamp: new Date().toISOString()
-    };
   }
 }
