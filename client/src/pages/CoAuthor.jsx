@@ -21,6 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 
 // Import Google Docs services
 import * as googleDocsService from '../services/googleDocsService';
+import * as googleAuthService from '../services/googleAuthService';
 import * as copilotService from '../services/copilotService';
 
 // AI services
@@ -99,7 +100,9 @@ export default function CoAuthor() {
   const [msWordPopupOpen, setMsWordPopupOpen] = useState(false);
   const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
   const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
-  const [editorType, setEditorType] = useState('microsoft'); // 'microsoft' or 'google'
+  const [isGoogleAuthenticated, setIsGoogleAuthenticated] = useState(false);
+  const [googleUserInfo, setGoogleUserInfo] = useState(null);
+  const [editorType, setEditorType] = useState('google'); // Changed default to 'google'
   // AI Assistant state
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const [aiAssistantMode, setAiAssistantMode] = useState('suggestions'); // 'suggestions', 'compliance', 'formatting'
@@ -109,6 +112,27 @@ export default function CoAuthor() {
   const [aiError, setAiError] = useState(null);
   
   const { toast } = useToast();
+  
+  // Check Google authentication on component mount
+  useEffect(() => {
+    const checkGoogleAuth = async () => {
+      try {
+        const isAuthenticated = googleAuthService.isGoogleAuthenticated();
+        setIsGoogleAuthenticated(isAuthenticated);
+        
+        if (isAuthenticated) {
+          setGoogleUserInfo(googleAuthService.getCurrentUser());
+          console.log('User is authenticated with Google');
+        } else {
+          console.log('User is not authenticated with Google');
+        }
+      } catch (error) {
+        console.error('Error checking Google authentication:', error);
+      }
+    };
+    
+    checkGoogleAuth();
+  }, []);
   
   const [validationResults] = useState({
     completeness: 78,
@@ -1396,6 +1420,13 @@ export default function CoAuthor() {
             </DialogTitle>
             <DialogDescription>
               Edit your document with Google Docs, embedded directly in TrialSage.
+              {!isGoogleAuthenticated && (
+                <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-amber-700 text-sm">
+                    Sign in with Google for full document editing capabilities.
+                  </p>
+                </div>
+              )}
             </DialogDescription>
           </DialogHeader>
           
@@ -1409,69 +1440,127 @@ export default function CoAuthor() {
           <DialogFooter className="mt-4">
             <div className="flex justify-between w-full">
               <div>
-                <Button 
-                  variant="default" 
-                  className="bg-green-600 hover:bg-green-700 mr-2"
-                  onClick={async () => {
-                    try {
-                      toast({
-                        title: "Saving to VAULT",
-                        description: "Saving document to VAULT...",
-                        variant: "default",
-                      });
-                      
-                      // Get current document ID from selected document
-                      const docId = selectedDocument?.id === 1 ? 
-                        "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : 
-                        "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4";
-                      
-                      // Save to VAULT using our service
-                      const result = await googleDocsService.saveToVault(docId, {
-                        title: selectedDocument?.title,
-                        module: selectedDocument?.module || "2.5",
-                        status: "Draft",
-                        organizationId: 1,
-                        savedBy: "Current User",
-                        timestamp: new Date().toISOString()
-                      });
-                      
-                      console.log("Document saved to VAULT:", result);
-                      
-                      toast({
-                        title: "Document Saved",
-                        description: "Your document has been saved to the VAULT successfully.",
-                        variant: "default",
-                      });
-                    } catch (error) {
-                      console.error("Error saving to VAULT:", error);
-                      toast({
-                        title: "Error Saving Document",
-                        description: "There was an error saving your document to VAULT.",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                >
-                  <Save className="h-4 w-4 mr-2" />
-                  Save to VAULT
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  className="border-blue-200 text-blue-700"
-                  onClick={() => {
-                    // Get the document URL for the current document
-                    const docId = selectedDocument?.id === 1 ? 
-                      "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : 
-                      "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4";
+                {isGoogleAuthenticated ? (
+                  <>
+                    <Button 
+                      variant="default" 
+                      className="bg-green-600 hover:bg-green-700 mr-2"
+                      onClick={async () => {
+                        try {
+                          toast({
+                            title: "Saving to VAULT",
+                            description: "Saving document to VAULT...",
+                            variant: "default",
+                          });
+                          
+                          // Get current document ID from selected document
+                          const docId = selectedDocument?.id === 1 ? 
+                            "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : 
+                            "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4";
+                          
+                          // Save to VAULT using our service
+                          const result = await googleDocsService.saveToVault(docId, {
+                            title: selectedDocument?.title,
+                            module: selectedDocument?.module || "2.5",
+                            status: "Draft",
+                            organizationId: 1,
+                            savedBy: googleUserInfo?.name || "Current User",
+                            timestamp: new Date().toISOString()
+                          });
+                          
+                          console.log("Document saved to VAULT:", result);
+                          
+                          toast({
+                            title: "Document Saved",
+                            description: "Your document has been saved to the VAULT successfully.",
+                            variant: "default",
+                          });
+                        } catch (error) {
+                          console.error("Error saving to VAULT:", error);
+                          toast({
+                            title: "Error Saving Document",
+                            description: "There was an error saving your document to VAULT.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Save to VAULT
+                    </Button>
                     
-                    // Open in a new tab
-                    window.open(`https://docs.google.com/document/d/${docId}/edit`, '_blank');
-                  }}
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  Open in New Tab
-                </Button>
+                    <Button 
+                      variant="outline" 
+                      className="border-blue-200 text-blue-700 mr-2"
+                      onClick={() => {
+                        // Get the document URL for the current document
+                        const docId = selectedDocument?.id === 1 ? 
+                          "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : 
+                          "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4";
+                        
+                        // Open in a new tab
+                        window.open(`https://docs.google.com/document/d/${docId}/edit`, '_blank');
+                      }}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Open in New Tab
+                    </Button>
+                    
+                    <Button 
+                      variant="outline" 
+                      className="border-red-100 text-red-600"
+                      onClick={async () => {
+                        try {
+                          await googleAuthService.signOutFromGoogle();
+                          setIsGoogleAuthenticated(false);
+                          setGoogleUserInfo(null);
+                          
+                          toast({
+                            title: "Signed Out",
+                            description: "You have been signed out from Google.",
+                            variant: "default",
+                          });
+                        } catch (error) {
+                          console.error("Error signing out:", error);
+                        }
+                      }}
+                    >
+                      Sign Out
+                    </Button>
+                  </>
+                ) : (
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 mr-2"
+                    onClick={async () => {
+                      try {
+                        const user = await googleAuthService.signInWithGoogle();
+                        setIsGoogleAuthenticated(true);
+                        setGoogleUserInfo(user);
+                        
+                        toast({
+                          title: "Google Sign-In Successful",
+                          description: `Signed in as ${user.name}`,
+                          variant: "default",
+                        });
+                      } catch (error) {
+                        console.error("Error signing in with Google:", error);
+                        toast({
+                          title: "Sign-In Failed",
+                          description: "Failed to sign in with Google. Please try again.",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                  >
+                    <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032c0-3.331,2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12c0,5.523,4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"
+                      />
+                    </svg>
+                    Sign in with Google
+                  </Button>
+                )}
               </div>
               
               <Button variant="outline" onClick={() => setGoogleDocsPopupOpen(false)}>Close</Button>
