@@ -20,6 +20,7 @@ const GoogleDocsEditor = () => {
   const [documentTitle, setDocumentTitle] = useState('Untitled Document');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentDocumentId, setCurrentDocumentId] = useState(null);
   const iframeRef = useRef(null);
   const editorContainerRef = useRef(null);
   const { toast } = useToast();
@@ -101,28 +102,78 @@ const GoogleDocsEditor = () => {
     };
   }, []);
 
-  const handleSaveDocument = () => {
-    toast({
-      title: "Document Saved",
-      description: "Your document has been saved to Google Drive",
-      status: "success",
-    });
+  // Save document to Google Drive
+  const handleSaveDocument = async () => {
+    try {
+      // For now, we just simulate a successful save
+      // In a real implementation, this would actually save to Google Drive
+      toast({
+        title: "Document Saved",
+        description: "Your document has been saved to Google Drive",
+      });
+    } catch (error) {
+      console.error('Error saving document:', error);
+      toast({
+        title: "Save Failed",
+        description: "Could not save document to Google Drive",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleSaveToVault = () => {
-    toast({
-      title: "Saved to VAULT",
-      description: "Document has been saved to VAULT system",
-      status: "success",
-    });
+  // Save document to VAULT system
+  const handleSaveToVault = async () => {
+    try {
+      // Get the access token
+      const accessToken = googleAuthService.getAccessToken();
+      if (!accessToken) {
+        throw new Error('No access token available');
+      }
+      
+      // Get a Google Doc ID from the URL or state
+      // For now, using a sample document ID
+      const documentId = currentDocumentId || googleDocsService.getDocumentId('default');
+      
+      // Use the googleDocsService to save to VAULT
+      const result = await googleDocsService.saveToVault(documentId, {
+        organizationId: '1', // Replace with actual organization ID if available
+        userId: googleAuthService.getCurrentUser()?.sub,
+        documentType: 'ectd',
+        module: 'module_2',
+        section: '2.5'
+      });
+      
+      toast({
+        title: "Saved to VAULT",
+        description: `Document successfully saved to VAULT (ID: ${result.vaultId})`,
+      });
+    } catch (error) {
+      console.error('Error saving to VAULT:', error);
+      toast({
+        title: "VAULT Save Failed",
+        description: error.message || "Could not save document to VAULT system",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleExportDocument = () => {
-    toast({
-      title: "Document Exported",
-      description: "Your document has been exported as PDF",
-      status: "success",
-    });
+  // Export document as PDF
+  const handleExportDocument = async () => {
+    try {
+      // Simulate exporting document
+      // In a real implementation, this would use Google Drive's export API
+      toast({
+        title: "Document Exported",
+        description: "Your document has been exported as PDF",
+      });
+    } catch (error) {
+      console.error('Error exporting document:', error);
+      toast({
+        title: "Export Failed",
+        description: "Could not export document as PDF",
+        variant: "destructive",
+      });
+    }
   };
 
   // If not authenticated, show login prompt

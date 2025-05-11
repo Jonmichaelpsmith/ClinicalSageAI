@@ -28,7 +28,7 @@ export const GOOGLE_CONFIG = {
     'https://app.trialsage.com',
     'https://regulatory-pilot.com'
   ],
-  // OAuth redirect URI
+  // OAuth redirect URI - must match server-side config
   REDIRECT_URI: `${window.location.origin}/google/auth/callback`
 };
 
