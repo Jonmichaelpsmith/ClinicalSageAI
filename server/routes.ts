@@ -67,6 +67,11 @@ declare module './routes/cer-qmp-integration.js' {
   export default router;
 }
 
+declare module './routes/ai-routes.js' {
+  const router: express.Router;
+  export default router;
+}
+
 // Import routes after declaring the modules
 import indWizardRouter from './routes/indWizardAPI.js';
 import cerRouter from './routes/cer-final.js';
@@ -78,6 +83,7 @@ import vaultRouter from './routes/vault-routes';
 import organizationsRouter from './routes/organizations-routes';  // Add organizations router
 // Regulatory submissions functionality removed as per client request
 import emergencyFixRouter from './routes/emergency-fix.js';
+import aiRouter from './routes/ai-routes.js';
 import sotaRouter from './routes/sota-api.mjs';
 import equivalenceRouter from './routes/equivalence-api.mjs';
 import internalClinicalDataRouter from './routes/internal-clinical-data.js';
@@ -215,6 +221,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register CER QMP Integration routes
   app.use('/api/cer-qmp-integration', cerQmpIntegrationRouter);
+  
+  // Register AI Document Intelligence routes
+  app.use('/api/ai', aiRouter);
   
   // Create a temporary CER Validation router
   const cerValidationRouter = express.Router();

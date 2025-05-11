@@ -1,9 +1,9 @@
 /**
- * AI Service for TrialSage eCTD Co-Author Module
- * Provides integration with OpenAI services for document intelligence features
+ * AI Document Intelligence Service
+ * Provides client-side interface to AI-powered document processing features
  */
 
-// Base API request function with error handling
+// Helper function for API requests
 async function apiRequest(endpoint, data) {
   try {
     const response = await fetch(`/api/ai/${endpoint}`, {
@@ -15,13 +15,21 @@ async function apiRequest(endpoint, data) {
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'API request failed');
+      // Try to get detailed error message from response
+      let errorDetail = '';
+      try {
+        const errorJson = await response.json();
+        errorDetail = errorJson.message || '';
+      } catch (e) {
+        // Ignore JSON parsing errors
+      }
+
+      throw new Error(`API error (${response.status}): ${errorDetail}`);
     }
 
     return await response.json();
   } catch (error) {
-    console.error(`AI Service error (${endpoint}):`, error);
+    console.error(`AI Service Error (${endpoint}):`, error);
     throw error;
   }
 }
@@ -37,7 +45,7 @@ async function apiRequest(endpoint, data) {
 export async function generateContentSuggestions(documentId, sectionId, currentContent, prompt = '') {
   return apiRequest('content-suggestions', {
     documentId,
-    sectionId, 
+    sectionId,
     currentContent,
     prompt
   });
@@ -82,11 +90,12 @@ export async function analyzeFormattingAI(documentId, content, documentType) {
  * @returns {Promise<Object>} - Generated summary
  */
 export async function generateDocumentSummary(documentId, content, audience = 'regulatory', maxLength = 500) {
-  return apiRequest('document-summary', {
+  // This could be implemented as a custom variation of content-suggestions or a separate endpoint
+  return apiRequest('content-suggestions', {
     documentId,
-    content,
-    audience,
-    maxLength
+    sectionId: 'summary',
+    currentContent: content,
+    prompt: `Generate a concise ${audience}-focused summary of this document in approximately ${maxLength} words.`
   });
 }
 
@@ -97,9 +106,11 @@ export async function generateDocumentSummary(documentId, content, audience = 'r
  * @returns {Promise<Object>} - Citation analysis results
  */
 export async function analyzeCitationsAI(documentId, content) {
-  return apiRequest('citation-analysis', {
+  // This could be implemented as a custom variation of document-review or a separate endpoint
+  return apiRequest('document-review', {
     documentId,
-    content
+    content,
+    reviewFocus: 'citations'
   });
 }
 
@@ -125,9 +136,9 @@ export async function askDocumentAI(query, documentId = null, sectionId = null) 
  * @returns {Promise<Object>} - Related references
  */
 export async function findRelevantReferences(content, sources = ['pubmed', 'regulatory', 'guidelines']) {
-  return apiRequest('find-references', {
-    content,
-    sources
+  // This would be a custom endpoint, but for now we can simulate it with a general query
+  return apiRequest('ask', {
+    query: `Find relevant regulatory references, guidelines, and scientific literature related to the following content from sources including ${sources.join(', ')}:\n\n${content.substring(0, 1500)}...`
   });
 }
 
@@ -143,3 +154,14 @@ export async function reviewDocumentQuality(documentId, content) {
     content
   });
 }
+
+export default {
+  generateContentSuggestions,
+  checkComplianceAI,
+  analyzeFormattingAI,
+  generateDocumentSummary,
+  analyzeCitationsAI,
+  askDocumentAI,
+  findRelevantReferences,
+  reviewDocumentQuality
+};
