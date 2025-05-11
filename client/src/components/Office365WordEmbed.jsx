@@ -162,19 +162,52 @@ const Office365WordEmbed = ({
         
         // Open document in Word using Microsoft Office JS API with improved error handling
         console.log('Opening document in Microsoft Word using Office JS API...');
-        const wordDocument = await openDocument(documentId, documentContent);
         
-        if (!wordDocument) {
-          throw new Error('Failed to initialize Microsoft Word document');
+        // Register that we're starting to edit this document
+        try {
+          await registerCollaborationStatus(documentId, 'opening', 'current-user');
+        } catch (collabError) {
+          console.warn('Failed to register initial collaboration status', collabError);
+          // Non-critical, can continue
         }
         
-        console.log('Microsoft Word document opened successfully');
+        // Add more detailed logging for debugging
+        console.log(`Document ID: ${documentId}`);
+        console.log(`Document content length: ${documentContent ? documentContent.length : 0} characters`);
         
-        // If the containerRef is available, we'll handle mounting the Word container 
-        // in the render function using a ref callback to ensure proper display
-        if (!wordDocument.container) {
-          console.warn('Word document container not available from Office JS API');
-          throw new Error('Microsoft Word container not available');
+        // Try to open the document with advanced error handling
+        let wordDocument;
+        try {
+          wordDocument = await openDocument(documentId, documentContent);
+          
+          if (!wordDocument) {
+            throw new Error('Failed to initialize Microsoft Word document - returned null');
+          }
+          
+          console.log('Microsoft Word document opened successfully');
+          
+          // Verify the container exists
+          if (!wordDocument.container) {
+            console.warn('Word document container not available from Office JS API');
+            throw new Error('Microsoft Word container not available - container property missing');
+          }
+          
+          // Log successful container acquisition
+          console.log('Word document container acquired successfully');
+        } catch (openError) {
+          console.error('Detailed error opening document:', openError);
+          
+          // Check for specific error types to provide better user feedback
+          if (openError.message && openError.message.includes('authentication')) {
+            throw new Error('Authentication error: Please sign in to Microsoft Office again');
+          } else if (openError.message && openError.message.includes('permission')) {
+            throw new Error('Permission error: You do not have permission to edit this document');
+          } else if (openError.message && openError.message.includes('network')) {
+            throw new Error('Network error: Please check your internet connection');
+          }
+          
+          // Re-throw the original error with more context
+          throw new Error(`Failed to open Microsoft Word document: ${openError.message}`);
         }
         
         // Set the document in state to make it available for rendering
