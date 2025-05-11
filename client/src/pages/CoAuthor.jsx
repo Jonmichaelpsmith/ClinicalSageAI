@@ -123,13 +123,18 @@ export default function CoAuthor() {
   const [teamCollabOpen, setTeamCollabOpen] = useState(false);
   const [documentLocked, setDocumentLocked] = useState(false);
   const [lockedBy, setLockedBy] = useState(null);
-  const [showValidationDialog, setShowValidationDialog] = useState(false);
-  // Document editor integration state - Google Docs only
-  const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
+  
+  // Google Docs integration state
   const [isGoogleAuthenticated, setIsGoogleAuthenticated] = useState(false);
   const [googleUserInfo, setGoogleUserInfo] = useState(null);
   const [authLoading, setAuthLoading] = useState(false);
-  const [editorType, setEditorType] = useState('google'); // Changed default to 'google'
+  const [googleDocsLoading, setGoogleDocsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [createNewDocDialogOpen, setCreateNewDocDialogOpen] = useState(false);
+  const [showValidationDialog, setShowValidationDialog] = useState(false);
+  // Document editor integration state
+  const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
+  const [editorType, setEditorType] = useState('google'); // Using Google Docs as the editor
   
   // Enhanced Google Docs iframe state
   const [isIframeLoaded, setIframeLoaded] = useState(false);
@@ -1925,7 +1930,63 @@ export default function CoAuthor() {
         )}
       </div>
       
-      {/* Google Docs Integration */}
+      {/* Google Docs Embedded Editor Integration */}
+      {isGoogleAuthenticated && selectedDocument && (
+        <div className="mt-4 border rounded-md overflow-hidden bg-white shadow-md">
+          <div className="bg-gray-50 border-b p-3 flex justify-between items-center">
+            <div className="flex items-center">
+              <FileText className="h-4 w-4 mr-2 text-blue-600" />
+              <h3 className="font-medium text-sm">{selectedDocument.title || "Untitled Document"}</h3>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                Module {selectedDocument.module?.replace('module_', '') || '2.5'}
+              </Badge>
+              {selectedDocument.region && (
+                <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                  {selectedDocument.region}
+                </Badge>
+              )}
+            </div>
+          </div>
+          
+          <div className="relative" style={{ height: "600px" }}>
+            {/* Loading state */}
+            {googleDocsLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-10">
+                <div className="flex flex-col items-center">
+                  <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-2" />
+                  <p className="text-sm font-medium">Loading document...</p>
+                </div>
+              </div>
+            )}
+            
+            {/* Google Docs iframe */}
+            <iframe 
+              src={`https://docs.google.com/document/d/${selectedDocument.googleDocId || 'd/e/2PACX-sample-doc-id'}/edit?embedded=true`}
+              className="w-full h-full border-none"
+              onLoad={() => setGoogleDocsLoading(false)}
+            ></iframe>
+          </div>
+          
+          <div className="bg-gray-50 border-t p-3 flex justify-between items-center">
+            <div className="flex items-center space-x-2">
+              <Button size="sm" variant="outline" className="text-xs h-7">
+                <Save className="h-3 w-3 mr-1" />
+                Save
+              </Button>
+              <Button size="sm" variant="outline" className="text-xs h-7">
+                <FileDown className="h-3 w-3 mr-1" />
+                Export PDF
+              </Button>
+            </div>
+            <Button size="sm" variant="default" className="text-xs h-7" onClick={() => handleSaveToVault(selectedDocument.googleDocId)}>
+              <Database className="h-3 w-3 mr-1" />
+              Save to VAULT
+            </Button>
+          </div>
+        </div>
+      )}
       {/* New Document Dialog */}
       <Dialog open={createNewDocDialogOpen} onOpenChange={setCreateNewDocDialogOpen}>
         <DialogContent className="max-w-lg">
