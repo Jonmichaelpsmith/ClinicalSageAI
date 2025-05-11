@@ -2,6 +2,7 @@ import React from 'react';
 import { AlertTriangle, RotateCw } from 'lucide-react';
 import { Button } from './button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './card';
+import { Alert, AlertTitle, AlertDescription } from './alert';
 
 /**
  * Error Boundary Component
@@ -121,12 +122,6 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-export default ErrorBoundary;
-import React from 'react';
-import { AlertTriangle } from 'lucide-react';
-import { Alert, AlertTitle, AlertDescription } from './alert';
-import { Button } from './button';
-
 /**
  * Error boundary component for handling application errors
  * Specifically designed to catch Vite module loading errors
@@ -218,3 +213,5 @@ export class ModuleErrorBoundary extends React.Component {
     );
   }
 }
+
+export default ErrorBoundary;
