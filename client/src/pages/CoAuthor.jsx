@@ -22,7 +22,7 @@ import { Separator } from '@/components/ui/separator';
 
 // Import Google Docs services
 import * as googleDocsService from '../services/googleDocsService';
-import * as googleAuthService from '../services/googleAuthService';
+import googleAuthService from '../services/googleAuthService';
 import * as copilotService from '../services/copilotService';
 
 // AI services
