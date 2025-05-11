@@ -4,7 +4,11 @@
  * This service provides functionality for bridging between Microsoft Office applications
  * (Word, Excel, PowerPoint) and the TrialSage VAULT document management system.
  * It handles document synchronization, versioning, and content transformation.
+ * 
+ * It also includes integration with Microsoft Copilot for intelligent writing assistance.
  */
+
+import * as msCopilotService from './msCopilotService';
 
 /**
  * Connect a Microsoft Office document to the VAULT system
@@ -155,5 +159,80 @@ export async function getVaultDocumentHistory(documentId) {
   } catch (error) {
     console.error("Failed to get VAULT document history:", error);
     throw new Error("Could not retrieve VAULT document history");
+  }
+}
+
+/**
+ * Initialize a Microsoft Office integration session
+ * @param {string} documentId - VAULT document ID
+ * @returns {Promise<object>} Session details
+ */
+export async function initializeSession(documentId) {
+  try {
+    // Initialize a session with Microsoft Copilot
+    const copilotSession = await msCopilotService.initializeCopilot(documentId);
+    
+    // Return the combined session details
+    return {
+      id: `office-session-${documentId}-${Date.now()}`,
+      copilotSessionId: copilotSession.sessionId,
+      active: true,
+      capabilities: [
+        'edit',
+        'format',
+        'comments',
+        'revision-tracking',
+        'ai-assistance'
+      ],
+      timestamp: new Date().toISOString()
+    };
+  } catch (error) {
+    console.error("Failed to initialize Microsoft Office session:", error);
+    throw new Error("Could not initialize Microsoft Office session");
+  }
+}
+
+/**
+ * Get writing suggestions from Microsoft Copilot via the Office bridge
+ * @param {string} content - Document content to analyze
+ * @param {string} sessionId - Office session ID
+ * @returns {Promise<Array>} Writing suggestions
+ */
+export async function getWritingSuggestions(content, sessionId) {
+  try {
+    // Use Microsoft Copilot service to get writing suggestions
+    const suggestions = await msCopilotService.getWritingSuggestions(content, sessionId);
+    return suggestions;
+  } catch (error) {
+    console.error("Failed to get writing suggestions:", error);
+    throw new Error("Could not retrieve writing suggestions from Microsoft Copilot");
+  }
+}
+
+/**
+ * Apply a writing suggestion to document content
+ * @param {string} content - Original document content
+ * @param {object} suggestion - Suggestion to apply
+ * @returns {Promise<string>} Updated content
+ */
+export async function applySuggestion(content, suggestion) {
+  try {
+    // In a real implementation, this would use precise text replacement
+    // based on suggestion position metadata
+    
+    // For our demo, use simple string replacement if the original text exists
+    let updatedContent = content;
+    
+    if (content.includes(suggestion.original)) {
+      updatedContent = content.replace(suggestion.original, suggestion.suggestion);
+    } else {
+      // If original text not found, append the suggestion
+      updatedContent = content + "\n\n" + suggestion.suggestion;
+    }
+    
+    return updatedContent;
+  } catch (error) {
+    console.error("Failed to apply writing suggestion:", error);
+    throw new Error("Could not apply writing suggestion to document");
   }
 }
