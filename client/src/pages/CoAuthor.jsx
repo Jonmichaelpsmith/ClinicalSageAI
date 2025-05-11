@@ -42,12 +42,26 @@ import {
   UserCheck,
   AlertTriangle,
   CheckSquare,
-  Users
+  Users,
+  Minus
 } from 'lucide-react';
 
 export default function CoAuthor() {
   const [isTreeOpen, setIsTreeOpen] = useState(false);
   const [isCollaborationOpen, setIsCollaborationOpen] = useState(false);
+  const [isVersionHistoryOpen, setIsVersionHistoryOpen] = useState(false);
+  const [isCompareVersionsOpen, setIsCompareVersionsOpen] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState(null);
+  const [compareVersions, setCompareVersions] = useState({ source: null, target: null });
+  
+  // Sample versions data - in production, this would come from the database
+  const [documentVersions] = useState([
+    { id: 'v4.2', name: 'Version 4.2', date: 'May 10, 2025', author: 'Jane Smith', changes: 'Updated clinical data references in Module 2.5' },
+    { id: 'v4.1', name: 'Version 4.1', date: 'May 8, 2025', author: 'John Doe', changes: 'Added safety summary to Module 2.7' },
+    { id: 'v4.0', name: 'Version 4.0', date: 'May 5, 2025', author: 'Robert Johnson', changes: 'Major revision of Module 2 content structure' },
+    { id: 'v3.2', name: 'Version 3.2', date: 'April 28, 2025', author: 'Jane Smith', changes: 'Fixed formatting issues in Module 3' },
+    { id: 'v3.1', name: 'Version 3.1', date: 'April 25, 2025', author: 'Sarah Williams', changes: 'Updated regulatory citations in Module 1.3' }
+  ]);
 
   return (
     <div className="flex h-full">
@@ -95,8 +109,67 @@ export default function CoAuthor() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="p-4 text-center">
-                Working on implementation...
+              <div className="mb-4 flex items-center justify-between border-b pb-4">
+                <div className="flex items-center">
+                  <FileText className="h-5 w-5 text-blue-500 mr-2" />
+                  <div>
+                    <div className="font-medium">Module 2.5 - Clinical Overview</div>
+                    <div className="text-sm text-gray-500">Last edited: May 10, 2025 by Jane Smith</div>
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setIsVersionHistoryOpen(true)}
+                  >
+                    <History className="h-4 w-4 mr-1" />
+                    Version History
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setCompareVersions({
+                        source: documentVersions[1], // Second version
+                        target: documentVersions[0]  // First version
+                      });
+                      setIsCompareVersionsOpen(true);
+                    }}
+                  >
+                    <GitMerge className="h-4 w-4 mr-1" />
+                    Compare Versions
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="bg-blue-50 p-3 rounded-md border border-blue-100 mb-4">
+                <div className="flex items-start">
+                  <ShieldCheck className="h-5 w-5 text-blue-500 mr-2 mt-0.5" />
+                  <div>
+                    <div className="font-medium text-blue-700">Document Version Control System</div>
+                    <p className="text-sm text-blue-600">
+                      Every change to your document is automatically tracked and versioned for regulatory compliance.
+                      Use the version history to track changes, compare versions, or rollback to previous states.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border rounded mb-4">
+                <div className="bg-gray-50 px-3 py-2 border-b flex justify-between items-center">
+                  <div className="font-medium">Current Version Features</div>
+                  <Badge className="bg-green-100 text-green-800 hover:bg-green-100">v4.2</Badge>
+                </div>
+                <div className="p-3 text-sm">
+                  <ul className="list-disc pl-5 space-y-1">
+                    <li>Enhanced regulatory compliance validation</li>
+                    <li>Side-by-side version comparison with diff highlighting</li>
+                    <li>Automatic version control for all document edits</li>
+                    <li>Integrated approval workflow tracking</li>
+                    <li>Enhanced document audit trail capabilities</li>
+                  </ul>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -200,6 +273,232 @@ export default function CoAuthor() {
         </div>
       )}
       
+      {/* Version History Dialog */}
+      <Dialog open={isVersionHistoryOpen} onOpenChange={setIsVersionHistoryOpen}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <History className="h-5 w-5 text-blue-500 mr-2" />
+              Document Version History
+            </DialogTitle>
+            <DialogDescription>
+              Review previous versions of this document and their changes
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-1 my-2">
+            <div className="bg-blue-50 p-2 rounded border border-blue-100 text-sm mb-3">
+              <div className="flex items-center text-blue-800">
+                <Info className="h-4 w-4 mr-2" />
+                <span className="font-medium">Current working document: Module 2.5 - Clinical Overview</span>
+              </div>
+            </div>
+            
+            <div className="rounded-md border">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Version</th>
+                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Author</th>
+                    <th scope="col" className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Changes</th>
+                    <th scope="col" className="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {documentVersions.map((version, index) => (
+                    <tr key={version.id} className={index === 0 ? "bg-blue-50" : ""}>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {version.name} {index === 0 && <Badge className="ml-1 bg-blue-100 text-blue-800 hover:bg-blue-100">Current</Badge>}
+                      </td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">{version.date}</td>
+                      <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-500">{version.author}</td>
+                      <td className="px-3 py-2 text-sm text-gray-500 max-w-xs truncate">{version.changes}</td>
+                      <td className="px-3 py-2 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex justify-end space-x-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-7 text-xs"
+                            onClick={() => {
+                              setSelectedVersion(version);
+                              setIsVersionHistoryOpen(false);
+                              // In a real app, we would load the version content here
+                            }}
+                          >
+                            <Eye className="h-3 w-3 mr-1" />
+                            View
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-7 text-xs"
+                            onClick={() => {
+                              setCompareVersions(prev => ({ 
+                                ...prev, 
+                                target: version 
+                              }));
+                              // Open compare dialog if we have both versions selected
+                              if (compareVersions.source) {
+                                setIsVersionHistoryOpen(false);
+                                setIsCompareVersionsOpen(true);
+                              }
+                            }}
+                          >
+                            <GitMerge className="h-3 w-3 mr-1" />
+                            Compare
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <DialogFooter className="flex justify-between items-center">
+            <div className="text-xs text-gray-500">
+              TrialSage Enterprise Version Control System (VCS) tracks all changes automatically
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setIsVersionHistoryOpen(false)}>
+                Close
+              </Button>
+              <Button onClick={() => {
+                // In a real app, this would create a new version 
+                setIsVersionHistoryOpen(false);
+              }}>
+                <FilePlus2 className="h-4 w-4 mr-1" />
+                Create New Version
+              </Button>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Version Comparison Dialog */}
+      <Dialog open={isCompareVersionsOpen} onOpenChange={setIsCompareVersionsOpen}>
+        <DialogContent className="sm:max-w-[800px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <GitMerge className="h-5 w-5 text-indigo-500 mr-2" />
+              Compare Document Versions
+            </DialogTitle>
+            <DialogDescription>
+              {compareVersions.source && compareVersions.target ? 
+                `Comparing ${compareVersions.source.name} with ${compareVersions.target.name}` : 
+                'Select versions to compare'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {compareVersions.source && compareVersions.target ? (
+            <div className="space-y-4 my-2">
+              <div className="flex justify-between items-center bg-gray-50 p-2 rounded border">
+                <div className="flex items-center space-x-4">
+                  <div className="text-sm">
+                    <span className="text-gray-500">Source:</span> 
+                    <Badge className="ml-2 bg-indigo-100 text-indigo-800">{compareVersions.source.name}</Badge>
+                  </div>
+                  <div className="text-sm">
+                    <span className="text-gray-500">Target:</span> 
+                    <Badge className="ml-2 bg-green-100 text-green-800">{compareVersions.target.name}</Badge>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setCompareVersions({ source: compareVersions.target, target: compareVersions.source })}
+                >
+                  <GitMerge className="h-4 w-4 mr-1" />
+                  Swap Versions
+                </Button>
+              </div>
+              
+              <div className="border rounded">
+                <div className="bg-gray-50 px-3 py-2 border-b border-gray-200 text-sm font-medium">
+                  Difference Summary
+                </div>
+                <div className="p-3 space-y-2">
+                  <div className="flex items-start">
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 mr-3 flex-shrink-0">
+                      <Plus className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">Additions</div>
+                      <div className="text-sm text-gray-500">2 new references added to clinical data section</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-600 mr-3 flex-shrink-0">
+                      <Edit className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">Modifications</div>
+                      <div className="text-sm text-gray-500">Updated study outcome summary in section 2.5.3</div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-start">
+                    <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center text-red-600 mr-3 flex-shrink-0">
+                      <Minus className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-sm font-medium">Deletions</div>
+                      <div className="text-sm text-gray-500">Removed redundant study description paragraph</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="border rounded">
+                <div className="bg-gray-50 px-3 py-2 border-b border-gray-200 flex justify-between items-center">
+                  <span className="text-sm font-medium">Side-by-Side Comparison</span>
+                  <Button variant="outline" size="sm" className="h-7">
+                    <Download className="h-3 w-3 mr-1" />
+                    Export Diff
+                  </Button>
+                </div>
+                <div className="flex border-t">
+                  <div className="w-1/2 p-3 border-r">
+                    <div className="text-xs text-gray-500 mb-2">Source: {compareVersions.source.name}</div>
+                    <div className="bg-indigo-50 p-2 text-sm rounded border border-indigo-100">
+                      The clinical study XYZ-123 demonstrated efficacy in the primary endpoint with a p-value of 0.023.
+                      <span className="bg-red-100 line-through px-1">Secondary endpoints were not met in this trial.</span>
+                    </div>
+                  </div>
+                  <div className="w-1/2 p-3">
+                    <div className="text-xs text-gray-500 mb-2">Target: {compareVersions.target.name}</div>
+                    <div className="bg-green-50 p-2 text-sm rounded border border-green-100">
+                      The clinical study XYZ-123 demonstrated efficacy in the primary endpoint with a p-value of 0.023.
+                      <span className="bg-green-100 px-1">Additional analysis showed promising trends in key secondary endpoints.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              <GitBranch className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+              <p>Select two versions to compare from the version history</p>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setIsCompareVersionsOpen(false);
+                setCompareVersions({ source: null, target: null });
+              }}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Document Validation Dialog - Enterprise Edition */}
       <Dialog>
         <DialogTrigger asChild>
