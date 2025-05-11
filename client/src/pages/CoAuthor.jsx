@@ -1592,10 +1592,8 @@ export default function CoAuthor() {
                     onClick={async () => {
                       try {
                         setAuthLoading(true);
-                        const user = await googleAuthService.signInWithGoogle();
-                        setIsGoogleAuthenticated(true);
-                        setGoogleUserInfo(user);
-                        setAuthLoading(false);
+                        googleAuthService.initiateAuth();
+                        return; // This will redirect to Google auth
                       } catch (error) {
                         console.error("Error signing in with Google:", error);
                         setAuthLoading(false);
@@ -2119,9 +2117,8 @@ export default function CoAuthor() {
                     className="bg-blue-600 hover:bg-blue-700 mr-2"
                     onClick={async () => {
                       try {
-                        const user = await googleAuthService.signInWithGoogle();
-                        setIsGoogleAuthenticated(true);
-                        setGoogleUserInfo(user);
+                        googleAuthService.initiateAuth();
+                        return; // This will redirect to Google auth
                         
                         toast({
                           title: "Google Sign-In Successful",

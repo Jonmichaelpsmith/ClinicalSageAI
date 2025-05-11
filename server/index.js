@@ -35,6 +35,7 @@ import prewarmRoutes from './routes/prewarm.js';
 import vaultRoutes from './routes/vault.js';
 import actionsRoutes from './routes/actions.js';
 import testApiRoutes from './routes/test-api.js';
+import googleDocsRoutes from './routes/googleDocs.js';
 
 // Import middleware
 import { verifyJwt } from './middleware/auth.js';
