@@ -22,12 +22,13 @@ import { useToast } from '@/hooks/use-toast';
 // Import genuine Microsoft Office services
 import * as wordIntegration from '../services/wordIntegration';
 import * as copilotService from '../services/copilotService';
+import * as microsoftWordService from '../services/microsoftWordService';
+import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
+import * as msCopilotService from '../services/msCopilotService';
 
 // Legacy services - keeping for backward compatibility
 import * as aiService from '../services/aiService';
 import * as msWordService from '../services/msWordIntegrationService';
-import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
-import * as msCopilotService from '../services/msCopilotService';
 
 // Import the components with lazy loading for better performance
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
@@ -1373,7 +1374,7 @@ export default function CoAuthor() {
                 });
                 setMsWordPopupOpen(false);
               }}
-              vaultIntegration={msOfficeVaultBridge}
+              onClose={() => setMsWordPopupOpen(false)}
             />
           </Suspense>
           
