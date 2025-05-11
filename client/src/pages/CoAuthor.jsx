@@ -381,41 +381,38 @@ export default function CoAuthor() {
       return;
     }
     
-    // Determine module type from the template selection
-    let moduleType = 'module_2_5';
-    let section = '2.5';
-    
-    if (selectedTemplate === DOCUMENT_TEMPLATES.module_1.cover_letter) {
-      moduleType = 'module_1';
-      section = '1.0';
-    } else if (selectedTemplate === DOCUMENT_TEMPLATES.module_2.clinical_overview) {
-      moduleType = 'module_2_5';
-      section = '2.5';
-    } else if (selectedTemplate === DOCUMENT_TEMPLATES.module_2.clinical_summary) {
-      moduleType = 'module_2_7';
-      section = '2.7';
-    } else if (selectedTemplate.includes('module_3') || selectedTemplate.includes('quality')) {
-      moduleType = 'module_3';
-      section = '3.2';
-    } else if (selectedTemplate.includes('module_4') || selectedTemplate.includes('nonclinical')) {
-      moduleType = 'module_4';
-      section = '4.2';
-    } else if (selectedTemplate.includes('module_5') || selectedTemplate.includes('clinical')) {
-      moduleType = 'module_5';
-      section = '5.3';
+    try {
+      setCreatingDocument(true);
+      
+      // Use our optimized template creation function
+      const result = await createDocFromTemplate(
+        selectedTemplate,
+        newDocumentTitle,
+        selectedRegion
+      );
+      
+      if (result && result.documentId) {
+        // Close the dialog
+        setCreateNewDocDialogOpen(false);
+        
+        // Open the newly created document in the iframe
+        openDocumentInIframe(result.documentId);
+        
+        toast({
+          title: "Document Created",
+          description: `"${newDocumentTitle}" has been created successfully.`,
+        });
+      }
+    } catch (error) {
+      console.error("Error in document creation:", error);
+      toast({
+        title: "Document Creation Failed",
+        description: error.message || "Failed to create the document. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setCreatingDocument(false);
     }
-    
-    // Create metadata object for the document
-    const metadata = {
-      moduleType,
-      section,
-      region: selectedRegion,
-      submissionType: 'IND',  // Default to IND, could be made configurable
-      author: googleUserInfo?.name || 'eCTD Author'
-    };
-    
-    // Call the method to create the document
-    await createNewDocument(newDocumentTitle, selectedTemplate, metadata);
   };
   
   // Check Google authentication on component mount
@@ -665,6 +662,15 @@ export default function CoAuthor() {
   // Function to create a new document using the template
   const createDocFromTemplate = async (templateId, title, region) => {
     try {
+      if (!isGoogleAuthenticated) {
+        toast({
+          title: "Authentication Required",
+          description: "Please sign in with Google to create documents.",
+          variant: "destructive",
+        });
+        return null;
+      }
+      
       setCreatingDocument(true);
       
       // Get template info
@@ -672,25 +678,31 @@ export default function CoAuthor() {
       
       // Notification
       toast({
-        title: "Creating Document",
-        description: "Preparing your eCTD document template...",
+        title: "Creating eCTD Document",
+        description: `Preparing ${moduleType} document with ${region} requirements...`,
       });
       
-      // Call Google Docs service
+      // Enhanced metadata with eCTD information
+      const ectdMetadata = {
+        organizationId: '1', // Placeholder - would come from auth context
+        moduleType: moduleType,
+        section: sectionCode,
+        sectionCode: sectionCode, // Include both for compatibility
+        region: region,
+        documentType: 'scientific', // Default document type
+        submissionType: 'IND', // Default submission type
+        initialContent: `# ${title}\n\neCTD Section: ${sectionCode}\nRegion: ${region}\n\n`,
+        approvalWorkflow: 'standard',
+        documentStatus: 'Draft',
+        author: googleUserInfo?.name || 'eCTD Author',
+        regulatoryFormat: 'eCTD'
+      };
+      
+      // Call Google Docs service with enhanced metadata
       const result = await googleDocsService.createNewDoc(
         templateId,
         title,
-        {
-          organizationId: '1', // Placeholder - would come from auth context
-          moduleType: moduleType,
-          sectionCode: sectionCode,
-          region: region,
-          documentType: 'scientific', // Default document type
-          submissionType: 'IND', // Default submission type
-          initialContent: `# ${title}\n\neCTD Section: ${sectionCode}\nRegion: ${region}\n\n`,
-          approvalWorkflow: 'standard',
-          documentStatus: 'Draft'
-        }
+        ectdMetadata
       );
       
       // Update the local state with the new document
