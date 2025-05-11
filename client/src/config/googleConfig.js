@@ -28,8 +28,8 @@ export const GOOGLE_CONFIG = {
     'https://app.trialsage.com',
     'https://regulatory-pilot.com'
   ],
-  // OAuth redirect URI - must match server-side config
-  REDIRECT_URI: `${window.location.origin}/api/google-docs/auth/google/callback`
+  // OAuth redirect URI - fixed to match Google OAuth Console registration and Replit environment
+  REDIRECT_URI: `https://abb15664-61d9-4852-884c-d59384023199-00-1rbx8h3zks8bw.picard.replit.dev/api/google-docs/auth/google/callback`
 };
 
 // Sample document IDs for testing
