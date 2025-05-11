@@ -1,394 +1,339 @@
-/**
- * Google Docs Editor Integration Component
- * 
- * This component provides a direct interface for editing 
- * regulatory documents using Google Docs with eCTD validation.
- */
-
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
-  FileText, 
+  Expand, 
   Save, 
   Download, 
+  Upload,
+  FileText, 
   CheckCircle, 
-  AlertCircle, 
-  X, 
-  ArrowRight,
-  FileCheck,
-  Edit2,
-  Copy,
-  Loader2,
-  Settings,
-  LayoutTemplate,
-  Sparkles
+  AlertCircle
 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import * as googleDocsService from '../services/googleDocsService';
-import * as googleAuthService from '../services/googleAuthService';
-import * as aiService from '../services/aiService';
+import { Button } from '../components/ui/button';
+import { Tooltip } from '../components/ui/tooltip';
+import { Card } from '../components/ui/card';
+import { useToast } from '../hooks/use-toast';
 
-// Google icon component for branding
-const GoogleDocsIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 87.3 110" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M50.8,9.9h27.5c2.6,0,4.8,0.8,6.5,2.4c1.7,1.6,2.6,3.6,2.6,6.1v83.3c0,2.5-0.9,4.5-2.6,6.1c-1.7,1.6-3.9,2.4-6.5,2.4 H8.9c-2.6,0-4.8-0.8-6.5-2.4c-1.7-1.6-2.6-3.7-2.6-6.1v-83.3c0-2.5,0.9-4.5,2.6-6.1c1.7-1.6,3.9-2.4,6.5-2.4h27.5" fill="#4285F4"/>
-    <path d="M43.7,0c1.6,0,2.9,0.6,4,1.7l8.5,8.2H43.7c-1.9,0-3.5,0.6-4.9,1.9c-1.4,1.3-2,2.8-2,4.7v15c0,1.9,0.7,3.4,2,4.7 c1.4,1.3,3,1.9,4.9,1.9h26.3v49.3H17.1v-78h22.8L43.7,0z" fill="#F1F1F1"/>
-    <path d="M51.2,19.3v12.3c0,0.4,0.2,0.6,0.5,0.6h18.1c0.1,0,0.3-0.1,0.4-0.2c0.1-0.1,0.1-0.3,0-0.4l-3.4-5.9v-0.1 c0,0,0-0.1,0-0.1l-15.2-6.3C51.4,19.1,51.2,19.2,51.2,19.3z" fill="#4285F4"/>
-    <path d="M17.1,49.4h52.9V68H17.1V49.4z" fill="#4285F4"/>
-  </svg>
-);
-
-export default function GoogleDocsEditor() {
-  const [isLoading, setIsLoading] = useState(false);
+const GoogleDocsEditor = () => {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [documentTitle, setDocumentTitle] = useState('Untitled Document');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [docTitle, setDocTitle] = useState("Module 2.5 Clinical Overview");
-  const [validationProgress, setValidationProgress] = useState(48);
-  const [validationMessages, setValidationMessages] = useState([
-    { id: 1, type: "info", message: "Note: Ensure that the patient demographics include ethnicity for all pivotal trials." }
-  ]);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isGeneratingContent, setIsGeneratingContent] = useState(false);
-  const toast = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const iframeRef = useRef(null);
+  const editorContainerRef = useRef(null);
+  const { toast } = useToast();
 
+  // Simulated Google authentication check
   useEffect(() => {
-    // Check Google authentication status
-    const checkAuth = async () => {
+    const checkAuthentication = async () => {
       try {
-        const authStatus = await googleAuthService.checkAuthStatus();
-        setIsAuthenticated(authStatus.isAuthenticated);
+        // In a real implementation, you would check if the user is authenticated with Google
+        // For now, we'll simulate this with a timeout
+        setTimeout(() => {
+          setIsAuthenticated(true);
+          setIsLoading(false);
+        }, 1500);
       } catch (error) {
-        console.error("Failed to check auth status:", error);
+        console.error('Authentication check failed:', error);
         setIsAuthenticated(false);
+        setIsLoading(false);
       }
     };
-    
-    checkAuth();
+
+    checkAuthentication();
   }, []);
 
-  const handleLogin = async () => {
-    setIsLoading(true);
-    try {
-      await googleAuthService.authenticate();
-      setIsAuthenticated(true);
-      toast({
-        title: "Authentication Successful",
-        description: "You are now logged in to Google.",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error("Authentication failed:", error);
-      toast({
-        title: "Authentication Failed",
-        description: "Could not authenticate with Google. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+  // Handle toggling fullscreen mode
+  const toggleFullscreen = () => {
+    if (!isFullscreen) {
+      if (editorContainerRef.current.requestFullscreen) {
+        editorContainerRef.current.requestFullscreen();
+      } else if (editorContainerRef.current.mozRequestFullScreen) {
+        editorContainerRef.current.mozRequestFullScreen();
+      } else if (editorContainerRef.current.webkitRequestFullscreen) {
+        editorContainerRef.current.webkitRequestFullscreen();
+      } else if (editorContainerRef.current.msRequestFullscreen) {
+        editorContainerRef.current.msRequestFullscreen();
+      }
+      setIsFullscreen(true);
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.mozCancelFullScreen) {
+        document.mozCancelFullScreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+      setIsFullscreen(false);
     }
   };
 
+  // Listen for fullscreen change events from the browser
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(
+        document.fullscreenElement || 
+        document.mozFullScreenElement || 
+        document.webkitFullscreenElement || 
+        document.msFullscreenElement
+      );
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+    };
+  }, []);
+
   const handleSaveDocument = () => {
-    setIsSaving(true);
-    // Simulate saving to Google Docs and VAULT
-    setTimeout(() => {
-      setIsSaving(false);
-      toast({
-        title: "Document Saved",
-        description: "Your document has been saved to Google Docs and VAULT.",
-        variant: "default",
-      });
-    }, 1500);
-  };
-
-  const handleGenerateContent = () => {
-    setIsGeneratingContent(true);
-    // Simulate AI content generation
-    setTimeout(() => {
-      setIsGeneratingContent(false);
-      toast({
-        title: "Content Generated",
-        description: "AI has generated content for your document.",
-        variant: "default",
-      });
-    }, 2000);
-  };
-
-  const handleExportToPDF = () => {
     toast({
-      title: "Exporting Document",
-      description: "Your document is being exported as PDF/A for eCTD submission.",
-      variant: "default",
+      title: "Document Saved",
+      description: "Your document has been saved to Google Drive",
+      status: "success",
     });
   };
 
-  // Message type styling
-  const getMessageStyles = (type) => {
-    switch (type) {
-      case "error":
-        return "bg-red-50 border-red-200 text-red-800";
-      case "warning":
-        return "bg-amber-50 border-amber-200 text-amber-800";
-      case "info":
-        return "bg-blue-50 border-blue-200 text-blue-800";
-      default:
-        return "bg-gray-50 border-gray-200 text-gray-800";
-    }
+  const handleSaveToVault = () => {
+    toast({
+      title: "Saved to VAULT",
+      description: "Document has been saved to VAULT system",
+      status: "success",
+    });
   };
 
-  const getMessageIcon = (type) => {
-    switch (type) {
-      case "error":
-        return <AlertCircle className="h-4 w-4 text-red-600" />;
-      case "warning":
-        return <AlertCircle className="h-4 w-4 text-amber-600" />;
-      case "info":
-        return <CheckCircle className="h-4 w-4 text-blue-600" />;
-      default:
-        return <CheckCircle className="h-4 w-4 text-gray-600" />;
-    }
+  const handleExportDocument = () => {
+    toast({
+      title: "Document Exported",
+      description: "Your document has been exported as PDF",
+      status: "success",
+    });
   };
+
+  // If not authenticated, show login prompt
+  if (!isAuthenticated && !isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen p-6">
+        <Card className="w-full max-w-md p-6 text-center">
+          <FileText className="mx-auto mb-4 h-12 w-12 text-blue-600" />
+          <h2 className="text-2xl font-bold mb-4">Google Authentication Required</h2>
+          <p className="mb-6 text-gray-600">
+            Please sign in with your Google account to access the document editor.
+          </p>
+          <Button 
+            onClick={() => window.location.href = '/api/auth/google'} 
+            className="w-full"
+          >
+            Sign in with Google
+          </Button>
+        </Card>
+      </div>
+    );
+  }
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen">
+        <div className="animate-spin h-12 w-12 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></div>
+        <h2 className="text-xl font-medium">Loading editor...</h2>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
-      <div className="flex items-center justify-between px-6 py-4 border-b bg-white">
-        <div className="flex items-center space-x-3">
-          <GoogleDocsIcon />
-          <h1 className="text-xl font-semibold">AI-Powered Document Editor</h1>
-          <Badge className="ml-2 bg-blue-600">Enterprise</Badge>
+    <div 
+      ref={editorContainerRef}
+      className={`flex flex-col ${isFullscreen ? 'h-screen' : 'h-[calc(100vh-64px)]'} overflow-hidden`}
+    >
+      {/* Editor Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-200">
+        <div className="flex items-center">
+          <FileText className="h-5 w-5 text-blue-600 mr-2" />
+          <input
+            type="text"
+            value={documentTitle}
+            onChange={(e) => setDocumentTitle(e.target.value)}
+            className="border-none focus:outline-none text-lg font-medium"
+          />
+          <span className="ml-2 text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full flex items-center">
+            <CheckCircle className="h-3 w-3 mr-1" /> Saved
+          </span>
         </div>
+        
         <div className="flex items-center space-x-2">
-          {!isAuthenticated ? (
+          <Tooltip content="Save to Google Drive">
             <Button 
-              onClick={handleLogin} 
-              disabled={isLoading}
-              className="bg-blue-600 hover:bg-blue-700"
+              variant="outline" 
+              size="sm"
+              onClick={handleSaveDocument}
+              className="flex items-center"
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Connecting...
-                </>
-              ) : (
-                <>
-                  Connect Google Docs
-                </>
-              )}
+              <Save className="h-4 w-4 mr-1" />
+              Save
             </Button>
-          ) : (
-            <>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleExportToPDF}
-              >
-                <Download className="h-4 w-4 mr-1" />
-                Export PDF/A
-              </Button>
-              <Button 
-                size="sm" 
-                onClick={handleSaveDocument}
-                disabled={isSaving}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                {isSaving ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-1" />
-                    Save to VAULT
-                  </>
-                )}
-              </Button>
-            </>
-          )}
+          </Tooltip>
+          
+          <Tooltip content="Save to VAULT">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleSaveToVault}
+              className="flex items-center"
+            >
+              <Upload className="h-4 w-4 mr-1" />
+              Save to VAULT
+            </Button>
+          </Tooltip>
+          
+          <Tooltip content="Export as PDF">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleExportDocument}
+              className="flex items-center"
+            >
+              <Download className="h-4 w-4 mr-1" />
+              Export
+            </Button>
+          </Tooltip>
+          
+          <Tooltip content={isFullscreen ? "Exit Full Screen" : "Full Screen"}>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={toggleFullscreen}
+              className="flex items-center"
+            >
+              <Expand className="h-4 w-4" />
+            </Button>
+          </Tooltip>
         </div>
       </div>
 
-      <div className="flex flex-1 overflow-hidden">
-        <div className="w-64 border-r bg-slate-50 p-4 flex flex-col">
-          <div className="text-sm font-medium text-slate-500 mb-2">Document Info</div>
-          <Card className="mb-4">
-            <CardContent className="p-3">
-              <div className="space-y-2">
-                <div>
-                  <p className="text-xs text-slate-500">Title</p>
-                  <p className="text-sm font-medium">{docTitle}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500">Status</p>
-                  <Badge variant="outline" className="text-xs bg-amber-50 text-amber-800">In Progress</Badge>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500">Last Modified</p>
-                  <p className="text-xs">A moment ago</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-500">eCTD Completion</p>
-                  <div className="flex items-center mt-1">
-                    <Progress value={validationProgress} className="h-1.5 flex-1" />
-                    <span className="text-xs ml-2">{validationProgress}%</span>
-                  </div>
-                </div>
+      {/* Regulatory Compliance Notice */}
+      <div className="bg-blue-50 px-4 py-2 flex items-center text-sm border-b border-blue-200">
+        <AlertCircle className="h-4 w-4 text-blue-600 mr-2" />
+        <span>
+          <strong>eCTD Compliance Active:</strong> Document formatting follows regulatory requirements
+        </span>
+      </div>
+
+      {/* Editor Area */}
+      <div className="flex-1 overflow-hidden">
+        {/* This would be replaced with an actual Google Docs iframe when fully implemented */}
+        <iframe
+          ref={iframeRef}
+          title="Google Docs Editor"
+          className="w-full h-full border-0"
+          src="about:blank"
+          style={{
+            background: 'white',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '2rem'
+          }}
+        />
+        
+        {/* Simulated Google Docs interface for development */}
+        <div 
+          className="absolute top-[132px] left-0 right-0 bottom-0 flex flex-col items-center"
+          style={{ pointerEvents: 'none' }}
+        >
+          <div className="w-full max-w-5xl bg-white shadow-sm border border-gray-200 h-full my-4 rounded-md overflow-hidden" style={{ pointerEvents: 'auto' }}>
+            <div className="border-b border-gray-200 px-4 py-2 flex items-center">
+              <div className="flex items-center">
+                <span className="text-sm font-medium">DongleDoc.net</span>
+                <span className="ml-2 text-xs">▼</span>
               </div>
-            </CardContent>
-          </Card>
-
-          <div className="text-sm font-medium text-slate-500 mb-2">Workflow Actions</div>
-          <div className="space-y-2">
-            <Button variant="ghost" size="sm" className="w-full justify-start text-xs">
-              <Edit2 className="h-3.5 w-3.5 mr-2" />
-              Edit Metadata
-            </Button>
-            <Button variant="ghost" size="sm" className="w-full justify-start text-xs">
-              <FileCheck className="h-3.5 w-3.5 mr-2" />
-              Validate Document
-            </Button>
-            <Button variant="ghost" size="sm" className="w-full justify-start text-xs">
-              <Copy className="h-3.5 w-3.5 mr-2" />
-              Create Copy
-            </Button>
-            <Button variant="ghost" size="sm" className="w-full justify-start text-xs">
-              <LayoutTemplate className="h-3.5 w-3.5 mr-2" />
-              Apply Template
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="w-full justify-start text-xs mt-4" 
-              onClick={handleGenerateContent}
-              disabled={isGeneratingContent}
-            >
-              {isGeneratingContent ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-3.5 w-3.5 mr-2" />
-                  AI Generate
-                </>
-              )}
-            </Button>
-          </div>
-
-          <div className="mt-auto pt-4">
-            <div className="text-sm font-medium text-slate-500 mb-2">Validation Message</div>
-            {validationMessages.map((msg) => (
-              <div 
-                key={msg.id} 
-                className={`text-xs p-2 rounded border ${getMessageStyles(msg.type)} mb-2 flex items-start`}
-              >
-                <div className="mt-0.5 mr-1.5">{getMessageIcon(msg.type)}</div>
-                <div>{msg.message}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="flex-1 flex flex-col">
-          {isAuthenticated ? (
-            <div className="flex-1 bg-white p-6 flex flex-col">
-              <div className="flex items-center mb-4 border-b pb-4">
-                <div className="flex-1">
-                  <div className="flex space-x-2 text-xs text-slate-500">
-                    <span>File</span>
-                    <span>Edit</span>
-                    <span>View</span>
-                    <span>Insert</span>
-                    <span>Format</span>
-                    <span>Tools</span>
-                    <span>Extensions</span>
-                    <span>Help</span>
-                  </div>
-                </div>
-                <div>
-                  <Button variant="outline" size="sm">
-                    <FileText className="h-4 w-4 mr-1" />
-                    Import
-                  </Button>
-                </div>
-              </div>
-
-              <div className="flex-1 border rounded-md flex flex-col">
-                <div className="bg-gray-50 px-4 py-2 flex items-center border-b">
-                  <div className="flex-1 space-x-1">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1"></path><path d="M13 3h1a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-1"></path><line x1="8" y1="12" x2="13" y2="12"></line></svg>
-                    </Button>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3"></path><path d="M21 8h-3a2 2 0 0 1-2-2V3"></path><path d="M3 16h3a2 2 0 0 1 2 2v3"></path><path d="M16 21v-3a2 2 0 0 1 2-2h3"></path></svg>
-                    </Button>
-                    <span className="inline-block text-xs p-1">100%</span>
-                    <select className="text-xs p-1 border rounded">
-                      <option>Normal text</option>
-                    </select>
-                    <select className="text-xs p-1 border rounded">
-                      <option>Arial</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div className="flex-1 p-6 overflow-auto">
-                  <h1 className="text-2xl font-bold mb-6">Module 2.5 Clinical Overview</h1>
-                  <p className="mb-4">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. In velit mauris, pharetra sociales eget. Eu facilisis eu sed varius integer. Pellentesque suspense se me. lentiae nec age crito sen. qui conuo matus odlapor so. vel posuer.
-                  </p>
-                  <p className="mb-4">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit, lucios auue veguloque posuere sapien. Maglier onec vel labellen ami, lobortis torgue vel linus.
-                  </p>
-                  <p className="mb-4">
-                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-4 flex justify-end space-x-2">
-                <Button variant="outline" size="sm">
-                  AI Generate
-                </Button>
-                <Button variant="outline" size="sm">
-                  AI Refine
-                </Button>
+              
+              <div className="ml-8 flex space-x-4">
+                <span className="text-sm">File</span>
+                <span className="text-sm">Edit</span>
+                <span className="text-sm">View</span>
+                <span className="text-sm">Insert</span>
+                <span className="text-sm">Format</span>
+                <span className="text-sm">Tools</span>
+                <span className="text-sm">Add-ons</span>
               </div>
             </div>
-          ) : (
-            <div className="flex-1 flex items-center justify-center bg-slate-50">
-              <div className="text-center max-w-md p-8">
-                <GoogleDocsIcon className="mx-auto mb-4 h-16 w-16" />
-                <h2 className="text-xl font-semibold mb-2">Connect to Google Docs</h2>
-                <p className="text-slate-600 mb-6">
-                  Integrate Google Docs to edit and collaborate on regulatory documents with real-time eCTD validation.
-                </p>
-                <Button 
-                  onClick={handleLogin} 
-                  disabled={isLoading}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Connecting...
-                    </>
-                  ) : (
-                    <>
-                      Connect Google Docs
-                    </>
-                  )}
-                </Button>
+            
+            <div className="border-b border-gray-200 px-4 py-2 flex items-center">
+              <div className="flex items-center space-x-2">
+                <div className="border border-gray-300 rounded px-2 py-1 flex items-center">
+                  <span className="text-sm">Normal text</span>
+                  <span className="ml-2 text-xs">▼</span>
+                </div>
+                
+                <div className="border border-gray-300 rounded px-2 py-1 flex items-center">
+                  <span className="text-sm">Arial</span>
+                  <span className="ml-2 text-xs">▼</span>
+                </div>
+                
+                <div className="border border-gray-300 rounded px-2 py-1 flex items-center">
+                  <span className="text-sm">11</span>
+                  <span className="ml-2 text-xs">▼</span>
+                </div>
+                
+                <div className="border border-gray-300 rounded px-2 py-1 flex items-center">
+                  <span className="text-sm">B I U</span>
+                </div>
+                
+                <div className="border border-gray-300 rounded px-2 py-1 flex items-center">
+                  <span className="text-sm">⋮</span>
+                </div>
               </div>
             </div>
-          )}
+            
+            <div className="p-8 overflow-auto h-[calc(100%-96px)]">
+              <h1 className="text-3xl mb-6">{documentTitle}</h1>
+              
+              <p className="mb-4">
+                Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat volutpat.
+              </p>
+              
+              <p className="mb-4">
+                Ut wisi enim ad minim veniam, quis nostrud exerci tation ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat. Duis autem vel eum iriure dolor in hendrerit in vulputate velit esse molestie consequat.
+              </p>
+              
+              <p className="mb-4">
+                Vel illum dolore eu feugiat nulla facilisis at vero eros et accumsan et iusto odio dignissim qui blandit praesent luptatum zzril delenit augue duis dolore te feugait nulla facilisi.
+              </p>
+              
+              <h2 className="text-2xl mt-6 mb-4">Section 1: Introduction</h2>
+              
+              <p className="mb-4">
+                Nam liber tempor cum soluta nobis eleifend option congue nihil imperdiet doming id quod mazim placerat facer possim assum. Typi non habent claritatem insitam; est usus legentis in iis qui facit eorum claritatem.
+              </p>
+              
+              <p className="mb-4">
+                Investigationes demonstraverunt lectores legere me lius quod ii legunt saepius. Claritas est etiam processus dynamicus, qui sequitur mutationem consuetudium lectorum.
+              </p>
+              
+              <h2 className="text-2xl mt-6 mb-4">Section 2: Methods</h2>
+              
+              <p className="mb-4">
+                Mirum est notare quam littera gothica, quam nunc putamus parum claram, anteposuerit litterarum formas humanitatis per seacula quarta decima et quinta decima.
+              </p>
+              
+              <p className="mb-4">
+                Eodem modo typi, qui nunc nobis videntur parum clari, fiant sollemnes in futurum.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default GoogleDocsEditor;

@@ -60,6 +60,11 @@ const TimelinePage = lazy(() => import('./pages/TimelinePage'));
 const ModuleSectionEditor = lazy(() => import('./components/ModuleSectionEditor'));
 const GoogleAuthCallback = lazy(() => import('./pages/GoogleAuthCallback'));
 
+// eCTD Co-Author Module subpages
+const ValidationDashboard = lazy(() => import('./pages/ValidationDashboard'));
+const GoogleDocsEditor = lazy(() => import('./pages/GoogleDocsEditor'));
+const DocumentTemplates = lazy(() => import('./pages/DocumentTemplates'));
+
 // Regulatory-related pages (excluding Regulatory Submissions Hub)
 const RegulatoryRiskDashboard = lazy(() => import('./pages/RegulatoryRiskDashboard'));
 const EnhancedRegulatoryDashboard = lazy(() => import('./pages/EnhancedRegulatoryDashboard'));
@@ -216,6 +221,11 @@ function App() {
               <Route path="/coauthor/timeline" component={CoAuthor} /> {/* CoAuthor timeline tab */}
               <Route path="/coauthor/ask-lumen" component={CoAuthor} /> {/* CoAuthor Ask Lumen tab */}
               <Route path="/coauthor/canvas" component={CoAuthor} /> {/* CoAuthor Canvas Workbench tab */}
+              
+              {/* eCTD Co-Author Module Subpages */}
+              <Route path="/coauthor/editor" component={GoogleDocsEditor} /> {/* Google Docs Editor integration */}
+              <Route path="/coauthor/validation" component={ValidationDashboard} /> {/* eCTD Validation Dashboard */}
+              <Route path="/coauthor/templates" component={DocumentTemplates} /> {/* Document Templates Library */}
               <Route path="/google/auth/callback" component={GoogleAuthCallback} /> {/* Google Auth Callback page */}
               <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
               <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}

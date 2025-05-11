@@ -1,278 +1,254 @@
 /**
- * Google Authentication Service
+ * Google Auth Service
  * 
- * This service handles authentication with Google APIs for document operations.
- * It manages OAuth 2.0 authentication flow and token management.
+ * Handles authentication with Google, stores tokens, and provides
+ * helper methods for the Google Docs integration.
  */
 
-import { GOOGLE_CONFIG } from '../config/googleConfig';
+import { useToast } from '../hooks/use-toast';
 
-// Track authentication state
-let isAuthenticated = false;
-let currentUser = null;
+// Google OAuth configuration
+const GOOGLE_CLIENT_ID = '1045075234440-sve60m8va1d4djdistod8g4lbo8vp791.apps.googleusercontent.com';
+const REDIRECT_URI = `${window.location.origin}/google/auth/callback`;
 
-/**
- * Initialize the Google Auth API
- * @returns {Promise<void>}
- */
-export const initGoogleAuth = async () => {
-  console.log('Initializing Google Auth Service');
-  
-  // Check if we already have cached credentials in localStorage
-  const cachedToken = localStorage.getItem('google_access_token');
-  if (cachedToken) {
-    // Verify the token is still valid
-    try {
-      const response = await fetch('https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=' + cachedToken);
-      const data = await response.json();
-      
-      if (data.error) {
-        console.log('Cached token is invalid, clearing');
-        localStorage.removeItem('google_access_token');
-        localStorage.removeItem('google_user_info');
-        isAuthenticated = false;
-        currentUser = null;
-        return;
-      }
-      
-      // Token is valid
-      isAuthenticated = true;
-      currentUser = JSON.parse(localStorage.getItem('google_user_info') || '{}');
-      console.log('Using cached authentication');
-      return;
-    } catch (error) {
-      console.error('Error verifying token:', error);
-      localStorage.removeItem('google_access_token');
-      localStorage.removeItem('google_user_info');
-      isAuthenticated = false;
-      currentUser = null;
-      return;
+// Scopes required for Google Docs integration
+const SCOPES = [
+  'https://www.googleapis.com/auth/documents',
+  'https://www.googleapis.com/auth/drive.file',
+  'https://www.googleapis.com/auth/drive.metadata.readonly'
+].join(' ');
+
+// Storage keys
+const TOKEN_STORAGE_KEY = 'trialsage_google_auth_token';
+const USER_STORAGE_KEY = 'trialsage_google_user';
+
+class GoogleAuthService {
+  constructor() {
+    console.log('Initializing Google Auth Service');
+    
+    // Check if the user is already authenticated
+    this.token = this.getToken();
+    this.user = this.getUser();
+    
+    // Log the authentication status (without exposing the token)
+    if (this.token) {
+      console.log('User is authenticated with Google');
+    } else {
+      console.log('User is not authenticated with Google');
     }
   }
-  
-  // No cached credentials, we'd need to authenticate
-  isAuthenticated = false;
-  currentUser = null;
-};
 
-/**
- * Check if user is authenticated with Google
- * @returns {boolean}
- */
-export const isGoogleAuthenticated = () => {
-  return isAuthenticated;
-};
-
-/**
- * Get the currently authenticated user information
- * @returns {Object|null}
- */
-export const getCurrentUser = () => {
-  return currentUser;
-};
-
-/**
- * Sign in with Google
- * @returns {Promise<Object>} User information
- */
-export const signInWithGoogle = async () => {
-  console.log('Initiating Google Sign-In with Client ID:', GOOGLE_CONFIG.CLIENT_ID);
-  
-  return new Promise((resolve, reject) => {
+  /**
+   * Initiates the OAuth flow by redirecting to Google's authorization page
+   */
+  initiateAuth() {
     try {
-      // Create popup window for OAuth flow
-      const width = 600;
-      const height = 700;
-      const left = window.screen.width / 2 - width / 2;
-      const top = window.screen.height / 2 - height / 2;
+      const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+      authUrl.searchParams.append('client_id', GOOGLE_CLIENT_ID);
+      authUrl.searchParams.append('redirect_uri', REDIRECT_URI);
+      authUrl.searchParams.append('response_type', 'token');
+      authUrl.searchParams.append('scope', SCOPES);
+      authUrl.searchParams.append('include_granted_scopes', 'true');
+      authUrl.searchParams.append('prompt', 'consent');
       
-      // Build OAuth URL
-      const scopes = encodeURIComponent(GOOGLE_CONFIG.SCOPES.join(' '));
-      const redirectUri = encodeURIComponent(GOOGLE_CONFIG.REDIRECT_URI);
-      const state = Math.random().toString(36).substring(2, 15); // Random state for security
+      // Redirect to Google's authorization page
+      window.location.href = authUrl.toString();
+    } catch (error) {
+      console.error('Error initiating Google authentication:', error);
+      throw new Error('Failed to initiate Google authentication');
+    }
+  }
+
+  /**
+   * Handles the authentication callback and extracts the token
+   * @param {string} callbackUrl - The full URL with hash parameters from Google
+   * @returns {Promise<object>} The authentication result
+   */
+  async handleAuthCallback(callbackUrl) {
+    try {
+      // Extract the token from the URL hash
+      const hashParams = new URLSearchParams(callbackUrl.split('#')[1]);
+      const accessToken = hashParams.get('access_token');
+      const expiresIn = hashParams.get('expires_in');
       
-      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?`+
-        `client_id=${GOOGLE_CONFIG.CLIENT_ID}`+
-        `&redirect_uri=${redirectUri}`+
-        `&response_type=token`+
-        `&scope=${scopes}`+
-        `&prompt=select_account`+
-        `&state=${state}`+
-        `&include_granted_scopes=true`;
-      
-      console.log('Opening Google Auth window with URL containing client ID:', GOOGLE_CONFIG.CLIENT_ID);
-      
-      const popupWindow = window.open(
-        authUrl,
-        'Google Sign In',
-        `width=${width},height=${height},left=${left},top=${top}`
-      );
-      
-      // Check if popup was blocked
-      if (!popupWindow) {
-        console.error('Popup was blocked');
-        reject(new Error('Popup was blocked. Please allow popups for this site.'));
-        return;
+      if (!accessToken) {
+        throw new Error('No access token received from Google');
       }
       
-      // Handle authentication response
-      window.handleGoogleAuthCallback = (result) => {
-        if (result.error) {
-          console.error('Auth callback error:', result.error);
-          reject(new Error(result.error));
-          return;
-        }
-        
-        console.log('Received auth callback data');
-        
-        // Set authentication data
-        isAuthenticated = true;
-        currentUser = result.user;
-        
-        // Cache authentication in localStorage
-        localStorage.setItem('google_access_token', result.access_token);
-        localStorage.setItem('google_user_info', JSON.stringify(result.user));
-        
-        // Return user info
-        resolve(result.user);
+      // Calculate expiration time
+      const expirationTime = Date.now() + (parseInt(expiresIn, 10) * 1000);
+      
+      const tokenData = {
+        accessToken,
+        expirationTime
       };
       
-      // Poll for changes in the popup URL
-      const pollPopup = setInterval(() => {
-        try {
-          // Check if popup closed
-          if (popupWindow.closed) {
-            clearInterval(pollPopup);
-            console.log('Auth popup closed by user');
-            reject(new Error('Authentication cancelled by user'));
-            return;
-          }
-          
-          // Check for redirection to our callback URL
-          try {
-            const currentUrl = popupWindow.location.href;
-            console.log('Checking popup URL:', currentUrl.substring(0, 50) + '...');
-            
-            if (currentUrl.includes('access_token=')) {
-              clearInterval(pollPopup);
-              console.log('Access token found in URL');
-              
-              // Parse token and user info from URL
-              const params = new URLSearchParams(popupWindow.location.hash.substring(1));
-              const access_token = params.get('access_token');
-              
-              // Close popup
-              popupWindow.close();
-              
-              // Get user info with access token
-              fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { 'Authorization': `Bearer ${access_token}` }
-              })
-                .then(response => {
-                  if (!response.ok) {
-                    throw new Error('Failed to fetch user info: ' + response.status);
-                  }
-                  return response.json();
-                })
-                .then(userInfo => {
-                  const user = {
-                    id: userInfo.sub,
-                    name: userInfo.name,
-                    email: userInfo.email,
-                    picture: userInfo.picture
-                  };
-                  
-                  console.log('User info retrieved:', user.email);
-                  
-                  window.handleGoogleAuthCallback({
-                    user,
-                    access_token
-                  });
-                })
-                .catch(error => {
-                  console.error('Error fetching user info:', error);
-                  reject(error);
-                });
-            }
-          } catch (crossOriginError) {
-            // Ignore cross-origin errors when polling
-            // This happens when Google is authenticating
-          }
-        } catch (e) {
-          // Ignore other errors during polling
-          console.log('Auth poll error (normal during redirect):', e.message);
-        }
-      }, 700);
+      // Store the token
+      this.storeToken(tokenData);
+      this.token = tokenData;
       
-      // Set timeout (2 minutes)
-      setTimeout(() => {
-        clearInterval(pollPopup);
-        if (!popupWindow.closed) {
-          popupWindow.close();
-        }
-        console.error('Authentication timed out after 2 minutes');
-        reject(new Error('Authentication timed out'));
-      }, 120000);
+      // Fetch and store the user info
+      await this.fetchAndStoreUserInfo(accessToken);
+      
+      return {
+        success: true,
+        message: 'Successfully authenticated with Google'
+      };
     } catch (error) {
-      console.error('Sign-in error:', error);
-      reject(error);
+      console.error('Error handling Google authentication callback:', error);
+      return {
+        success: false,
+        message: error.message || 'Authentication failed'
+      };
     }
-  });
-};
-
-/**
- * Sign out from Google
- * @returns {Promise<void>}
- */
-export const signOutFromGoogle = async () => {
-  // In a real implementation, this would sign out from the Google API
-  // For now, we just clear our state
-  
-  console.log('Signing out from Google');
-  
-  // Clear state
-  isAuthenticated = false;
-  currentUser = null;
-  
-  // Clear cached credentials
-  localStorage.removeItem('google_access_token');
-  localStorage.removeItem('google_user_info');
-};
-
-/**
- * Get a Google access token for API calls
- * @returns {Promise<string>} Access token
- */
-export const getGoogleAccessToken = async () => {
-  // In a real implementation, this would retrieve (and refresh if needed) the access token
-  // For now, we return a simulated token
-  
-  if (!isAuthenticated) {
-    throw new Error('Not authenticated with Google');
   }
-  
-  return localStorage.getItem('google_access_token') || 'simulated-access-token';
-};
 
-/**
- * Check if the user has sufficient permissions for the given scopes
- * @param {string[]} requiredScopes - Array of required OAuth scopes
- * @returns {Promise<boolean>} Whether the user has all required permissions
- */
-export const hasRequiredScopes = async (requiredScopes = []) => {
-  // In a real implementation, this would check if the current auth token has the required scopes
-  // For now, we always return true for simplicity
-  
-  if (!isAuthenticated) {
-    return false;
+  /**
+   * Fetches the user's information from Google and stores it
+   * @param {string} accessToken - The Google access token
+   */
+  async fetchAndStoreUserInfo(accessToken) {
+    try {
+      const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch user info from Google');
+      }
+      
+      const userData = await response.json();
+      this.storeUser(userData);
+      this.user = userData;
+      
+      return userData;
+    } catch (error) {
+      console.error('Error fetching user info:', error);
+      throw error;
+    }
   }
-  
-  // In a real implementation, you would check if all requiredScopes are included
-  // in the granted scopes for the current token
-  return true;
-};
 
-// Initialize auth on module load
-initGoogleAuth().catch(err => {
-  console.error('Failed to initialize Google Auth:', err);
-});
+  /**
+   * Stores the authentication token in localStorage
+   * @param {object} tokenData - The token data to store
+   */
+  storeToken(tokenData) {
+    try {
+      localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(tokenData));
+    } catch (error) {
+      console.error('Error storing Google authentication token:', error);
+    }
+  }
+
+  /**
+   * Retrieves the authentication token from localStorage
+   * @returns {object|null} The token data or null if not found/expired
+   */
+  getToken() {
+    try {
+      const tokenData = JSON.parse(localStorage.getItem(TOKEN_STORAGE_KEY));
+      
+      // Check if the token exists and is still valid
+      if (tokenData && tokenData.expirationTime > Date.now()) {
+        return tokenData;
+      }
+      
+      // Token is expired or doesn't exist
+      this.clearToken();
+      return null;
+    } catch (error) {
+      console.error('Error retrieving Google authentication token:', error);
+      this.clearToken();
+      return null;
+    }
+  }
+
+  /**
+   * Clears the authentication token from localStorage
+   */
+  clearToken() {
+    try {
+      localStorage.removeItem(TOKEN_STORAGE_KEY);
+      this.token = null;
+    } catch (error) {
+      console.error('Error clearing Google authentication token:', error);
+    }
+  }
+
+  /**
+   * Stores the user information in localStorage
+   * @param {object} userData - The user data to store
+   */
+  storeUser(userData) {
+    try {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(userData));
+    } catch (error) {
+      console.error('Error storing Google user information:', error);
+    }
+  }
+
+  /**
+   * Retrieves the user information from localStorage
+   * @returns {object|null} The user data or null if not found
+   */
+  getUser() {
+    try {
+      return JSON.parse(localStorage.getItem(USER_STORAGE_KEY));
+    } catch (error) {
+      console.error('Error retrieving Google user information:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Clears the user information from localStorage
+   */
+  clearUser() {
+    try {
+      localStorage.removeItem(USER_STORAGE_KEY);
+      this.user = null;
+    } catch (error) {
+      console.error('Error clearing Google user information:', error);
+    }
+  }
+
+  /**
+   * Logs the user out by clearing all stored data
+   */
+  logout() {
+    this.clearToken();
+    this.clearUser();
+  }
+
+  /**
+   * Checks if the user is authenticated with Google
+   * @returns {boolean} True if authenticated, false otherwise
+   */
+  isAuthenticated() {
+    return !!this.getToken();
+  }
+
+  /**
+   * Gets the authenticated user's information
+   * @returns {object|null} The user information or null if not authenticated
+   */
+  getCurrentUser() {
+    return this.getUser();
+  }
+
+  /**
+   * Gets the active access token for API calls
+   * @returns {string|null} The access token or null if not authenticated
+   */
+  getAccessToken() {
+    const tokenData = this.getToken();
+    return tokenData ? tokenData.accessToken : null;
+  }
+}
+
+// Create a singleton instance
+const googleAuthService = new GoogleAuthService();
+
+export default googleAuthService;
