@@ -213,13 +213,19 @@ const EnhancedDocumentEditor = ({
     // In a real implementation, this would update the local content with the saved Word content
     console.log('Document saved from Microsoft Word:', result);
     
-    // Simulate content update
-    setContent((prevContent) => {
-      const updatedContent = prevContent + '\n\n[Content edited with Microsoft Word]';
-      setSavedContent(updatedContent);
-      setLastSaved(new Date());
-      return updatedContent;
-    });
+    // Use the content from the Word editor or append a note for demonstration
+    if (typeof result === 'string') {
+      setContent(result);
+      setSavedContent(result);
+    } else {
+      // Simulate content update
+      setContent((prevContent) => {
+        const updatedContent = prevContent + '\n\n[Content edited with Microsoft Word]';
+        setSavedContent(updatedContent);
+        setLastSaved(new Date());
+        return updatedContent;
+      });
+    }
   };
   
   // Open Microsoft Word popup
@@ -256,6 +262,18 @@ const EnhancedDocumentEditor = ({
   
   return (
     <>
+      {/* Microsoft Word Popup Editor */}
+      {msWordPopupOpen && (
+        <MsWordPopupEditor
+          isOpen={msWordPopupOpen}
+          onClose={() => setMsWordPopupOpen(false)}
+          documentId={documentId}
+          documentTitle={documentName}
+          initialContent={content}
+          onSave={handleMsWordSave}
+        />
+      )}
+      
       <Card className="w-full">
         <CardHeader className="pb-3">
           <div className="flex justify-between items-center">
@@ -405,6 +423,91 @@ const EnhancedDocumentEditor = ({
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Back to Editor
+              </Button>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="msword" className="p-6 pt-4">
+            <div className="border rounded-md h-[400px] relative">
+              <div className="flex flex-col h-full">
+                <div className="bg-[#2b579a] text-white p-2 flex items-center space-x-2">
+                  <span className="font-semibold">Microsoft Word</span>
+                  <Separator orientation="vertical" className="h-4 bg-white/30" />
+                  <span className="text-sm">Home</span>
+                  <span className="text-sm">Insert</span>
+                  <span className="text-sm">Design</span>
+                  <span className="text-sm">Layout</span>
+                  <span className="text-sm">References</span>
+                  <span className="text-sm">Review</span>
+                  <span className="text-sm">View</span>
+                  <span className="text-sm">Help</span>
+                </div>
+                <div className="bg-[#f3f2f1] p-2 flex items-center space-x-2 text-xs">
+                  <span>File</span>
+                  <span>Save</span>
+                  <span>Print</span>
+                  <span>|</span>
+                  <span>Cut</span>
+                  <span>Copy</span>
+                  <span>Paste</span>
+                  <span>|</span>
+                  <span>Format</span>
+                  <span>Styles</span>
+                </div>
+                <div className="flex-grow p-4 bg-white border">
+                  <textarea
+                    className="w-full h-full p-2 border-none focus:outline-none resize-none font-serif"
+                    value={content}
+                    onChange={handleContentChange}
+                    placeholder="Document content..."
+                    disabled={readOnly}
+                  />
+                </div>
+                <div className="bg-[#f3f2f1] p-2 flex items-center justify-between">
+                  <div className="text-xs text-gray-600">
+                    Editing as {lastEditor || "Current User"} | Word Online
+                  </div>
+                  <div className="text-xs text-blue-600">
+                    Connected to VAULT
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-between mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  toast({
+                    title: "Microsoft Word",
+                    description: "Opening document in Word Online popup for enhanced editing...",
+                    variant: "default",
+                  });
+                  setMsWordPopupOpen(true);
+                }}
+                className="flex items-center"
+              >
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open in Word Popup
+              </Button>
+
+              <Button
+                disabled={!hasUnsavedChanges || isSaving || readOnly}
+                onClick={handleSave}
+                className="flex items-center"
+              >
+                {isSaving ? (
+                  <>
+                    <RotateCw className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save
+                  </>
+                )}
               </Button>
             </div>
           </TabsContent>
