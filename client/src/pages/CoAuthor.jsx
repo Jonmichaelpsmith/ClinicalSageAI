@@ -140,45 +140,95 @@ export default function CoAuthor() {
 
       {/* Main Content Grid */}
       <div className="px-6 pb-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Document Editor Card - Enhanced */}
-        <Card className="border-blue-200">
+        {/* AI-Powered Document Editor Card - Enterprise-Grade Enhanced */}
+        <Card className="border-blue-200 shadow-sm hover:shadow-md transition-shadow duration-300">
           <CardHeader className="pb-2 bg-gradient-to-r from-blue-50 to-white">
-            <CardTitle className="flex items-center text-lg">
-              <Edit className="h-5 w-5 mr-2 text-blue-600" />
-              AI-Powered Document Editor
-            </CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center text-lg">
+                <Edit className="h-5 w-5 mr-2 text-blue-600" />
+                AI-Powered Document Editor
+              </CardTitle>
+              <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200 font-medium">Enterprise</Badge>
+            </div>
             <CardDescription>
               Create and edit regulatory documents with intelligent assistance
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 mb-3">
-              <div className="flex items-center space-x-2">
-                <FileText className="h-4 w-4 text-blue-500" />
-                <span className="text-sm font-medium">Start from templates for each eCTD module</span>
+            <div className="mb-4 border rounded-lg border-blue-200 overflow-hidden">
+              <div className="bg-blue-50 p-2">
+                <div className="text-sm font-medium text-blue-800">Recent Documents</div>
               </div>
-              <div className="flex items-center space-x-2">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-                <span className="text-sm font-medium">Real-time compliance checks</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-purple-500">
-                  <path d="M21 8v13H3V8"></path>
-                  <path d="M1 3h22v5H1z"></path>
-                  <path d="M10 12h4"></path>
-                  <circle cx="12" cy="15" r="1"></circle>
-                </svg>
-                <span className="text-sm font-medium">OpenAI-powered suggestions</span>
+              <div className="p-3 space-y-2">
+                <div className="flex items-center justify-between py-1 hover:bg-blue-50 px-2 rounded">
+                  <div className="flex items-center">
+                    <FileText className="h-4 w-4 text-blue-500 mr-2" />
+                    <span className="text-sm">Module 2.5 Clinical Overview.docx</span>
+                  </div>
+                  <div className="text-xs text-blue-600">2h ago</div>
+                </div>
+                <div className="flex items-center justify-between py-1 hover:bg-blue-50 px-2 rounded">
+                  <div className="flex items-center">
+                    <FileText className="h-4 w-4 text-blue-500 mr-2" />
+                    <span className="text-sm">Module 1.3.4 Labeling.docx</span>
+                  </div>
+                  <div className="text-xs text-blue-600">Yesterday</div>
+                </div>
               </div>
             </div>
+            
+            <div className="space-y-4 mb-4">
+              <div className="bg-gradient-to-r from-blue-50 to-transparent p-3 rounded-lg border border-blue-100">
+                <div className="flex items-center mb-2">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5 text-blue-600 mr-2">
+                    <path d="M21 8v13H3V8"></path>
+                    <path d="M1 3h22v5H1z"></path>
+                    <path d="M10 12h4"></path>
+                    <circle cx="12" cy="15" r="1"></circle>
+                  </svg>
+                  <div className="font-medium text-blue-800">AI Assistant Features</div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-start space-x-2">
+                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                    <span className="text-sm">Real-time compliance checks</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                    <span className="text-sm">Reference integration</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                    <span className="text-sm">Template-based formatting</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+                    <span className="text-sm">Cross-module consistency</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
             <div className="space-y-2">
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">
+              <Button className="w-full bg-blue-600 hover:bg-blue-700 h-10 text-base">
                 <Edit className="h-4 w-4 mr-2" />
                 Launch Editor
               </Button>
-              <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
-                <span>AI-powered with GPT-4o</span>
-                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">New</Badge>
+              <div className="flex flex-wrap justify-between items-center mt-2 text-xs">
+                <div className="flex items-center text-blue-700">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5 mr-1">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="M12 8v4l3 3"></path>
+                  </svg>
+                  <span>Auto-saves every 30 seconds</span>
+                </div>
+                <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
+                  <div className="flex items-center">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Online
+                  </div>
+                </Badge>
               </div>
             </div>
           </CardContent>
