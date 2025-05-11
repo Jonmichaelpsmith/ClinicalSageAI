@@ -1,769 +1,606 @@
 /**
  * Microsoft Word Service
  * 
- * This service provides integration with Microsoft Word for document authoring,
- * editing, and collaboration. It leverages Microsoft's Office JS API to interact
- * with Word documents embedded in the application.
- * 
- * The service supports:
- * - Document creation, loading, and saving
- * - Template management and application
- * - Regulatory-specific formatting and validation
- * - Integration with OneDrive and SharePoint for document storage
+ * This service provides integration with Microsoft Word via the Office JS API,
+ * enabling document editing, formatting, and content insertion capabilities
+ * specifically tuned for regulatory document authoring.
  */
 
-import microsoftAuthService from './microsoftAuthService';
+// Office JS API for Word
+const OFFICE_JS_API_URL = 'https://appsforoffice.microsoft.com/lib/1/hosted/office.js';
 
 /**
- * Initialize Office JS API
- * @returns {Promise<boolean>} - True if initialization successful
+ * Initialize the Office JS API
+ * 
+ * @returns {Promise<boolean>} - True if initialization was successful
  */
-export const initializeOfficeJS = async () => {
+export async function initializeWord(containerElement) {
   try {
-    console.log('Initializing Office JS API...');
+    // Load Office JS API dynamically
+    if (!window.Office) {
+      await loadOfficeJS();
+    }
     
-    // In production with actual Office JS:
-    // await Office.onReady();
+    // Initialize Word in the provided container
+    const wordInstance = await window.Office.initialize({
+      container: containerElement
+    });
     
-    // Simulate initialization for development
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    console.log('Office JS API initialized');
-    return true;
-  } catch (err) {
-    console.error('Error initializing Office JS API:', err);
-    return false;
+    return wordInstance;
+  } catch (error) {
+    console.error('Failed to initialize Microsoft Word:', error);
+    return null;
   }
-};
+}
+
+/**
+ * Load Office JS API dynamically
+ * 
+ * @returns {Promise<void>}
+ */
+function loadOfficeJS() {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = OFFICE_JS_API_URL;
+    script.async = true;
+    script.onload = () => resolve();
+    script.onerror = (error) => reject(new Error('Failed to load Office JS API'));
+    document.head.appendChild(script);
+  });
+}
 
 /**
  * Open an existing document
- * @param {string} documentId - The document ID to open
- * @returns {Promise<Object>} - The opened document
- */
-export const openDocument = async (documentId) => {
-  try {
-    console.log(`Opening document with ID: ${documentId}`);
-    
-    // Simulate document opening for development
-    await new Promise(resolve => setTimeout(resolve, 600));
-    
-    return {
-      id: documentId,
-      name: `Document-${documentId}.docx`,
-      content: 'This is the content of the opened document.',
-      createdAt: new Date(Date.now() - 86400000 * 5),
-      updatedAt: new Date()
-    };
-  } catch (err) {
-    console.error('Error opening document:', err);
-    throw err;
-  }
-};
-
-/**
- * Create a new Word document with optional content
- * @param {string} name - Document name
- * @param {string} initialContent - Optional initial content
- * @param {boolean} isTemplate - Whether this is a template document
- * @returns {Promise<Object>} - The created document object
- */
-export const createDocument = async (name, initialContent = '', isTemplate = false) => {
-  try {
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch('/api/office/documents', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        name: name || 'New Document.docx',
-        content: initialContent,
-        isTemplate
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to create document: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error creating Word document:', err);
-    throw err;
-  }
-};
-
-/**
- * Get a Word document by ID
- * @param {string} documentId - The document ID
- * @returns {Promise<Object>} - The document object
- */
-export const getDocument = async (documentId) => {
-  try {
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to get document: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error getting Word document:', err);
-    throw err;
-  }
-};
-
-/**
- * Save Word document content
- * @param {string} documentId - The document ID
- * @param {string} content - Document content
- * @returns {Promise<Object>} - Updated document information
- */
-export const saveDocumentContent = async (documentId, content) => {
-  try {
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/content`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ content })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to save document content: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error saving Word document content:', err);
-    throw err;
-  }
-};
-
-/**
- * Get document versions
- * @param {string} documentId - The document ID
- * @returns {Promise<Array>} - Array of document versions
- */
-export const getDocumentVersions = async (documentId) => {
-  try {
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/versions`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to get document versions: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error getting Word document versions:', err);
-    throw err;
-  }
-};
-
-/**
- * Create a document version
- * @param {string} documentId - The document ID
- * @param {string} content - Document content
- * @param {string} comment - Optional version comment
- * @returns {Promise<Object>} - New version information
- */
-export const createDocumentVersion = async (documentId, content, comment = '') => {
-  try {
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/versions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ content, comment })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to create document version: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error creating Word document version:', err);
-    throw err;
-  }
-};
-
-/**
- * Get available document templates
- * @returns {Promise<Array>} - Array of templates
- */
-export const getTemplates = async () => {
-  try {
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch('/api/office/templates', {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to get templates: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error getting Word templates:', err);
-    throw err;
-  }
-};
-
-/**
- * Apply a template to a document
- * @param {string} documentId - The document ID
- * @param {string} templateId - The template ID
- * @returns {Promise<Object>} - Updated document information
- */
-export const applyTemplate = async (documentId, templateId) => {
-  try {
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/apply-template`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ templateId })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to apply template: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error applying template to Word document:', err);
-    throw err;
-  }
-};
-
-/**
- * Insert regulatory text section
- * @param {string} documentId - The document ID
- * @param {string} sectionType - The regulatory section type (e.g., 'gcp-statement', 'adverse-events', etc.)
- * @param {string} position - Position to insert ('start', 'end', or bookmark name)
- * @returns {Promise<Object>} - Updated document information
- */
-export const insertRegulatorySection = async (documentId, sectionType, position = 'end') => {
-  try {
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/insert-section`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ sectionType, position })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to insert regulatory section: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error inserting regulatory section into Word document:', err);
-    throw err;
-  }
-};
-
-/**
- * Perform regulatory compliance check on document
- * @param {string} documentId - The document ID
- * @param {string} regulationType - The regulation type (e.g., 'fda', 'ich', 'ema')
- * @returns {Promise<Object>} - Compliance check results
- */
-export const checkRegulatoryCompliance = async (documentId, regulationType = 'fda') => {
-  try {
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/compliance-check`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ regulationType })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to check regulatory compliance: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error checking regulatory compliance of Word document:', err);
-    throw err;
-  }
-};
-
-/**
- * Apply eCTD formatting to document
- * @param {string} documentId - The document ID
- * @param {string} moduleType - The eCTD module type (e.g., 'm1', 'm2', 'm3', 'm4', 'm5')
- * @returns {Promise<Object>} - Updated document information
- */
-export const applyEctdFormatting = async (documentId, moduleType) => {
-  try {
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/apply-ectd-formatting`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ moduleType })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to apply eCTD formatting: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error applying eCTD formatting to Word document:', err);
-    throw err;
-  }
-};
-
-/**
- * Insert reference from regulatory database
- * @param {string} documentId - The document ID
- * @param {string} referenceId - The reference ID
- * @param {string} position - Position to insert ('cursor', 'end', or bookmark name)
- * @returns {Promise<Object>} - Updated document information
- */
-export const insertRegulatoryReference = async (documentId, referenceId, position = 'cursor') => {
-  try {
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/insert-reference`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ referenceId, position })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to insert regulatory reference: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error inserting regulatory reference into Word document:', err);
-    throw err;
-  }
-};
-
-/**
- * Share document with collaborators
- * @param {string} documentId - The document ID
- * @param {Array} userEmails - Array of user email addresses
- * @param {string} permission - Permission level ('read', 'comment', 'edit')
- * @returns {Promise<Object>} - Sharing results
- */
-export const shareDocument = async (documentId, userEmails, permission = 'edit') => {
-  try {
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/share`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ userEmails, permission })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to share document: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error sharing Word document:', err);
-    throw err;
-  }
-};
-
-/**
- * Simulate interactions for development environment
  * 
- * These functions simulate Word document interactions when running in development
- * or when Microsoft credentials are not available.
+ * @param {Object} wordInstance - Word instance
+ * @param {string} documentId - ID of the document to open
+ * @returns {Promise<boolean>} - Success status
  */
+export async function openDocument(wordInstance, documentId) {
+  try {
+    await wordInstance.documents.open({
+      id: documentId,
+      openMode: 'readWrite'
+    });
+    return true;
+  } catch (error) {
+    console.error('Failed to open document:', error);
+    throw error;
+  }
+}
 
 /**
- * Simulate document creation for development
- * @param {string} name - Document name
- * @param {string} initialContent - Optional initial content
- * @returns {Promise<Object>} - Simulated document object
+ * Create a new document with content
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @param {string} content - Initial content
+ * @returns {Promise<boolean>} - Success status
  */
-export const simulateCreateDocument = async (name, initialContent = '') => {
-  console.warn('Using simulated Word document creation for development');
-  
-  // Simulate delay
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  return {
-    id: `doc-${Date.now()}`,
-    name: name || 'New Document.docx',
-    webUrl: '#',
-    embedUrl: 'about:blank',
-    createdDateTime: new Date().toISOString(),
-    lastModifiedDateTime: new Date().toISOString(),
-    size: initialContent.length || 0
-  };
-};
-
-/**
- * Simulate getting document for development
- * @param {string} documentId - The document ID
- * @returns {Promise<Object>} - Simulated document object
- */
-export const simulateGetDocument = async (documentId) => {
-  console.warn('Using simulated Word document retrieval for development');
-  
-  // Simulate delay
-  await new Promise(resolve => setTimeout(resolve, 600));
-  
-  return {
-    id: documentId,
-    name: `Document-${documentId}.docx`,
-    webUrl: '#',
-    embedUrl: 'about:blank',
-    createdDateTime: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-    lastModifiedDateTime: new Date().toISOString(),
-    size: 1024 * 1024 * 2, // 2MB
-    content: 'This is a simulated document content for development purposes.'
-  };
-};
-
-/**
- * Simulate document version history for development
- * @returns {Promise<Array>} - Simulated version history
- */
-export const simulateVersionHistory = async () => {
-  console.warn('Using simulated Word document version history for development');
-  
-  // Simulate delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  return [
-    {
-      id: 'v1',
-      versionNumber: '1.0',
-      lastModifiedBy: {
-        user: {
-          displayName: 'John Doe',
-          email: 'john.doe@example.com'
-        }
-      },
-      lastModifiedDateTime: new Date(Date.now() - 86400000 * 3).toISOString(), // 3 days ago
-      size: 1024 * 512
-    },
-    {
-      id: 'v2',
-      versionNumber: '2.0',
-      lastModifiedBy: {
-        user: {
-          displayName: 'Jane Smith',
-          email: 'jane.smith@example.com'
-        }
-      },
-      lastModifiedDateTime: new Date(Date.now() - 86400000).toISOString(), // Yesterday
-      size: 1024 * 768
-    },
-    {
-      id: 'v3',
-      versionNumber: '3.0',
-      lastModifiedBy: {
-        user: {
-          displayName: 'John Doe',
-          email: 'john.doe@example.com'
-        }
-      },
-      lastModifiedDateTime: new Date().toISOString(), // Now
-      size: 1024 * 1024
+export async function createDocument(wordInstance, content) {
+  try {
+    const document = await wordInstance.documents.create();
+    
+    if (content) {
+      await document.body.insertText(content, 'replace');
     }
-  ];
-};
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to create document:', error);
+    throw error;
+  }
+}
 
 /**
- * Insert template into document
- * @param {string} documentId - Document ID
+ * Set up change tracking
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @param {Function} onChange - Callback when document changes
+ * @returns {Promise<void>}
+ */
+export async function setupChangeTracking(wordInstance, onChange) {
+  try {
+    wordInstance.documents.onContentChanged.add((event) => {
+      if (onChange) {
+        onChange(event);
+      }
+    });
+  } catch (error) {
+    console.error('Failed to set up change tracking:', error);
+  }
+}
+
+/**
+ * Get document content
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @returns {Promise<string>} - Document content
+ */
+export async function getDocumentContent(wordInstance) {
+  try {
+    const document = wordInstance.documents.active;
+    const content = await document.body.getText();
+    return content;
+  } catch (error) {
+    console.error('Failed to get document content:', error);
+    throw error;
+  }
+}
+
+/**
+ * Insert content at current cursor position
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @param {string} content - Content to insert
+ * @returns {Promise<boolean>} - Success status
+ */
+export async function insertContent(wordInstance, content) {
+  try {
+    const document = wordInstance.documents.active;
+    const selection = await document.getSelection();
+    await selection.insertText(content, 'replace');
+    return true;
+  } catch (error) {
+    console.error('Failed to insert content:', error);
+    throw error;
+  }
+}
+
+/**
+ * Save document
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @param {string} documentId - Document ID to save
+ * @returns {Promise<string>} - Saved document ID
+ */
+export async function saveDocument(wordInstance, documentId) {
+  try {
+    const document = wordInstance.documents.active;
+    await document.save();
+    return documentId;
+  } catch (error) {
+    console.error('Failed to save document:', error);
+    throw error;
+  }
+}
+
+/**
+ * Save as new document
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @returns {Promise<string>} - New document ID
+ */
+export async function saveAsNewDocument(wordInstance) {
+  try {
+    const document = wordInstance.documents.active;
+    const result = await document.saveAs({
+      saveAs: 'newDocument'
+    });
+    return result.id;
+  } catch (error) {
+    console.error('Failed to save document as new:', error);
+    throw error;
+  }
+}
+
+/**
+ * Apply a document template
+ * 
+ * @param {Object} wordInstance - Word instance
  * @param {string} templateId - Template ID
  * @returns {Promise<boolean>} - Success status
  */
-export const insertTemplate = async (documentId, templateId) => {
+export async function applyTemplate(wordInstance, templateId) {
   try {
-    console.log(`Inserting template ${templateId} into document ${documentId}`);
+    // Implementation depends on how templates are stored
+    // This is a simplified version
+    const document = wordInstance.documents.active;
+    const templateContent = await getTemplateContent(templateId);
     
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/insert-template`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ templateId })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to insert template: ${response.statusText}`);
+    if (!templateContent) {
+      throw new Error('Template not found');
     }
     
+    await document.body.insertText(templateContent, 'replace');
     return true;
-  } catch (err) {
-    console.error('Error inserting template:', err);
-    return false;
+  } catch (error) {
+    console.error('Failed to apply template:', error);
+    throw error;
   }
-};
+}
 
 /**
- * Insert AI-generated content into document
- * @param {string} documentId - Document ID
- * @param {string} contentType - Type of content to generate
- * @param {string} position - Position to insert content
- * @returns {Promise<boolean>} - Success status
+ * Get template content
+ * 
+ * @param {string} templateId - Template ID
+ * @returns {Promise<string>} - Template content
  */
-export const insertAIContent = async (documentId, contentType, position = 'cursor') => {
-  try {
-    console.log(`Inserting AI content of type ${contentType} into document ${documentId}`);
-    
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/insert-ai-content`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ contentType, position })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to insert AI content: ${response.statusText}`);
-    }
-    
-    return true;
-  } catch (err) {
-    console.error('Error inserting AI content:', err);
-    return false;
-  }
-};
-
-/**
- * Format document headings according to regulatory standards
- * @param {string} documentId - Document ID
- * @param {string} regulationType - Regulation type (e.g., 'fda', 'ema')
- * @returns {Promise<boolean>} - Success status
- */
-export const formatDocumentHeadings = async (documentId, regulationType = 'fda') => {
-  try {
-    console.log(`Formatting document ${documentId} headings according to ${regulationType} standards`);
-    
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/format-headings`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ regulationType })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to format document headings: ${response.statusText}`);
-    }
-    
-    return true;
-  } catch (err) {
-    console.error('Error formatting document headings:', err);
-    return false;
-  }
-};
-
-/**
- * Export document to PDF format
- * @param {string} documentId - Document ID
- * @returns {Promise<Object>} - PDF document information
- */
-export const exportToPDF = async (documentId) => {
-  try {
-    console.log(`Exporting document ${documentId} to PDF`);
-    
-    // Get Microsoft Graph token
-    const token = await microsoftAuthService.getGraphToken();
-    
-    const response = await fetch(`/api/office/documents/${documentId}/export-pdf`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to export document to PDF: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (err) {
-    console.error('Error exporting document to PDF:', err);
-    throw err;
-  }
-};
-
-/**
- * Simulate available templates for development
- * @returns {Promise<Array>} - Simulated templates
- */
-export const simulateGetTemplates = async () => {
-  console.warn('Using simulated Word templates for development');
-  
-  // Simulate delay
-  await new Promise(resolve => setTimeout(resolve, 700));
-  
-  return [
-    {
-      id: 'ind-template',
-      name: 'IND Application Template',
-      description: 'FDA IND application structure',
-      createdDateTime: '2025-04-01T12:00:00Z',
-      lastModifiedDateTime: '2025-05-01T15:30:00Z',
-      documentId: 'template-ind-123'
-    },
-    {
-      id: 'cmc-template',
-      name: 'CMC Module Template',
-      description: 'Chemistry, Manufacturing and Controls',
-      createdDateTime: '2025-04-15T09:45:00Z',
-      lastModifiedDateTime: '2025-05-05T14:20:00Z',
-      documentId: 'template-cmc-456'
-    },
-    {
-      id: 'protocol-template',
-      name: 'Clinical Protocol Template',
-      description: 'Standard clinical trial protocol',
-      createdDateTime: '2025-03-20T11:15:00Z',
-      lastModifiedDateTime: '2025-05-03T16:40:00Z',
-      documentId: 'template-protocol-789'
-    }
-  ];
-};
-
-/**
- * Simulate regulatory compliance check for development
- * @returns {Promise<Object>} - Simulated compliance check results
- */
-export const simulateComplianceCheck = async () => {
-  console.warn('Using simulated regulatory compliance check for development');
-  
-  // Simulate delay
-  await new Promise(resolve => setTimeout(resolve, 1500));
-  
-  return {
-    compliant: false,
-    issues: [
-      {
-        id: 'issue-1',
-        severity: 'high',
-        section: 'Introduction',
-        description: 'Missing required regulatory statement on GCP compliance',
-        recommendation: 'Add standard GCP compliance statement as per ICH E6(R2) guidelines'
-      },
-      {
-        id: 'issue-2',
-        severity: 'medium',
-        section: 'Study Design',
-        description: 'Inadequate description of randomization procedures',
-        recommendation: 'Expand on randomization methodology according to ICH E9 Statistical Principles'
-      },
-      {
-        id: 'issue-3',
-        severity: 'low',
-        section: 'Safety Reporting',
-        description: 'Outdated reference to AE reporting timeline',
-        recommendation: 'Update to reflect current FDA requirements for expedited reporting of serious adverse events'
-      }
-    ]
+async function getTemplateContent(templateId) {
+  // Placeholder - would normally fetch from an API
+  const templates = {
+    'ind-template': '# Investigational New Drug Application\n\n## Introduction\n\n## Clinical Protocol\n\n## Investigator Information\n\n',
+    'cmc-template': '# Chemistry, Manufacturing, and Controls\n\n## Drug Substance\n\n## Drug Product\n\n## Manufacturing Process\n\n',
+    'protocol-template': '# Clinical Study Protocol\n\n## Study Objectives\n\n## Study Design\n\n## Study Population\n\n## Statistical Methods\n\n'
   };
-};
+  
+  return templates[templateId] || '';
+}
 
-// Default export as a service object
-const microsoftWordService = {
-  initializeOfficeJS,
-  openDocument,
-  createDocument,
-  getDocument,
-  saveDocumentContent,
-  getDocumentVersions,
-  createDocumentVersion,
-  getTemplates,
-  applyTemplate,
-  insertTemplate,
-  insertAIContent,
-  formatDocumentHeadings,
-  exportToPDF,
-  insertRegulatorySection,
-  checkRegulatoryCompliance,
-  applyEctdFormatting,
-  insertRegulatoryReference,
-  shareDocument,
-  // Simulation methods
-  simulateCreateDocument,
-  simulateGetDocument,
-  simulateVersionHistory,
-  simulateGetTemplates,
-  simulateComplianceCheck
-};
+/**
+ * Format document as IND application
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @returns {Promise<boolean>} - Success status
+ */
+export async function formatDocumentAsIND(wordInstance) {
+  try {
+    const document = wordInstance.documents.active;
+    
+    // Apply heading styles
+    const headings = await document.querySelectorAll('h1, h2, h3, h4, h5, h6');
+    for (let i = 0; i < headings.length; i++) {
+      const heading = headings[i];
+      const level = parseInt(heading.tagName.substring(1), 10);
+      await heading.styleAs(`Heading${level}`);
+    }
+    
+    // Set up page numbers and headers/footers
+    await document.sections.getFirst().footer.setHtml(`
+      <div style="text-align: center; font-size: 10pt; font-family: Arial;">
+        Page <span class="page-number"></span> of <span class="total-pages"></span>
+      </div>
+    `);
+    
+    // Add table of contents
+    await document.cursor.setPosition('start');
+    await document.insertTableOfContents({
+      headingStyles: ['Heading1', 'Heading2', 'Heading3']
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to format document as IND:', error);
+    throw error;
+  }
+}
 
-export default microsoftWordService;
+/**
+ * Add regulatory metadata
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @param {Object} metadata - Regulatory metadata
+ * @returns {Promise<boolean>} - Success status
+ */
+export async function addRegulatoryMetadata(wordInstance, metadata) {
+  try {
+    const document = wordInstance.documents.active;
+    
+    // Set document properties
+    const properties = document.properties;
+    await properties.set('Title', metadata.title || '');
+    await properties.set('Subject', metadata.subject || '');
+    await properties.set('Category', 'IND Application');
+    await properties.set('Keywords', metadata.keywords?.join(', ') || '');
+    
+    // Add custom properties for regulatory metadata
+    await properties.custom.set('DocumentType', metadata.documentType || '');
+    await properties.custom.set('ModuleSection', metadata.moduleSection || '');
+    await properties.custom.set('RegulatoryAuthority', metadata.regulatoryAuthority || 'FDA');
+    await properties.custom.set('SubmissionNumber', metadata.submissionNumber || '');
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to add regulatory metadata:', error);
+    throw error;
+  }
+}
+
+/**
+ * Export document to PDF
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @returns {Promise<Blob>} - PDF blob
+ */
+export async function exportToPDF(wordInstance) {
+  try {
+    const document = wordInstance.documents.active;
+    const result = await document.export('PDF');
+    return result.data;
+  } catch (error) {
+    console.error('Failed to export document to PDF:', error);
+    throw error;
+  }
+}
+
+/**
+ * Add cross-references between documents
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @param {Object} referenceInfo - Reference information
+ * @returns {Promise<boolean>} - Success status
+ */
+export async function addCrossReference(wordInstance, referenceInfo) {
+  try {
+    const document = wordInstance.documents.active;
+    const selection = await document.getSelection();
+    
+    await selection.insertCrossReference({
+      referenceType: 'bookmark',
+      referenceTarget: referenceInfo.target,
+      includeLabel: true,
+      text: referenceInfo.text || 'reference'
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to add cross-reference:', error);
+    throw error;
+  }
+}
+
+/**
+ * Add standard regulatory disclaimer
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @param {string} type - Disclaimer type
+ * @returns {Promise<boolean>} - Success status
+ */
+export async function addRegulatoryDisclaimer(wordInstance, type = 'confidentiality') {
+  try {
+    const document = wordInstance.documents.active;
+    const disclaimers = {
+      confidentiality: 'CONFIDENTIAL: This document contains confidential information of [Company Name]. Do not distribute without authorization.',
+      proprietary: 'PROPRIETARY: This document contains proprietary information that is intended solely for regulatory review.',
+      draft: 'DRAFT: This document is in draft form and subject to change. It should not be considered final.'
+    };
+    
+    const disclaimer = disclaimers[type] || disclaimers.confidentiality;
+    
+    // Add to header of first page
+    await document.sections.getFirst().header.setHtml(`
+      <div style="color: red; font-weight: bold; text-align: center; font-size: 10pt; font-family: Arial;">
+        ${disclaimer}
+      </div>
+    `);
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to add regulatory disclaimer:', error);
+    throw error;
+  }
+}
+
+/**
+ * Validate document structure for eCTD compatibility
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @param {string} moduleType - eCTD module type
+ * @returns {Promise<Object>} - Validation results
+ */
+export async function validateForECTD(wordInstance, moduleType) {
+  try {
+    const document = wordInstance.documents.active;
+    const content = await document.body.getText();
+    const structure = await document.getStructure();
+    
+    // Basic validation rules for eCTD
+    const validationRules = {
+      headings: {
+        required: true,
+        message: 'Document must use proper heading structure (Heading 1, Heading 2, etc.)'
+      },
+      sectionNumbers: {
+        required: true,
+        message: 'Sections must be properly numbered according to eCTD guidelines'
+      },
+      tables: {
+        message: 'Tables should have captions and be properly formatted'
+      },
+      figures: {
+        message: 'Figures should have captions and be properly formatted'
+      },
+      references: {
+        message: 'References should be properly formatted and cited'
+      }
+    };
+    
+    // Simplified validation for demo purposes
+    const results = {
+      valid: true,
+      issues: []
+    };
+    
+    // Check headings
+    const headings = structure.filter(item => item.type === 'heading');
+    if (headings.length === 0) {
+      results.valid = false;
+      results.issues.push({
+        type: 'error',
+        message: validationRules.headings.message,
+        location: 'document'
+      });
+    }
+    
+    // Check section numbering
+    const sectionPattern = /^\d+(\.\d+)*\s+/;
+    let hasSectionNumbers = false;
+    
+    for (const heading of headings) {
+      if (sectionPattern.test(heading.text)) {
+        hasSectionNumbers = true;
+        break;
+      }
+    }
+    
+    if (!hasSectionNumbers && validationRules.sectionNumbers.required) {
+      results.valid = false;
+      results.issues.push({
+        type: 'error',
+        message: validationRules.sectionNumbers.message,
+        location: 'document'
+      });
+    }
+    
+    return results;
+  } catch (error) {
+    console.error('Failed to validate document for eCTD:', error);
+    throw error;
+  }
+}
+
+/**
+ * Generate Table of Contents for eCTD document
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @returns {Promise<boolean>} - Success status
+ */
+export async function generateTableOfContents(wordInstance) {
+  try {
+    const document = wordInstance.documents.active;
+    
+    // Position cursor at the beginning of the document
+    await document.cursor.setPosition('start');
+    
+    // Insert a title for the TOC
+    await document.insertText('Table of Contents', 'insertAfter');
+    await document.insertParagraph('', 'insertAfter');
+    
+    // Insert the table of contents
+    await document.insertTableOfContents({
+      headingStyles: ['Heading1', 'Heading2', 'Heading3'],
+      includePageNumbers: true,
+      rightAlignPageNumbers: true,
+      useHyperlinks: true,
+      hidePageNumbersInWeb: false
+    });
+    
+    // Add some spacing after the TOC
+    await document.insertParagraph('', 'insertAfter');
+    await document.insertParagraph('', 'insertAfter');
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to generate table of contents:', error);
+    throw error;
+  }
+}
+
+/**
+ * Apply FDA/ICH compliant formatting
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @returns {Promise<boolean>} - Success status
+ */
+export async function applyRegulatoryFormatting(wordInstance) {
+  try {
+    const document = wordInstance.documents.active;
+    
+    // Set document formatting according to FDA guidelines
+    await document.font.set({
+      name: 'Arial',
+      size: 12
+    });
+    
+    // Set margins
+    await document.margins.set({
+      top: 1,
+      bottom: 1,
+      left: 1,
+      right: 1
+    });
+    
+    // Format headings
+    const headingLevels = [
+      { level: 1, fontSize: 16, bold: true },
+      { level: 2, fontSize: 14, bold: true },
+      { level: 3, fontSize: 12, bold: true },
+      { level: 4, fontSize: 12, bold: true, italic: true }
+    ];
+    
+    for (const heading of headingLevels) {
+      const headings = await document.querySelectorAll(`h${heading.level}`);
+      
+      for (let i = 0; i < headings.length; i++) {
+        const headingElement = headings[i];
+        
+        await headingElement.font.set({
+          size: heading.fontSize,
+          bold: heading.bold,
+          italic: heading.italic || false
+        });
+      }
+    }
+    
+    // Add page numbers
+    await document.sections.getFirst().footer.setHtml(`
+      <div style="text-align: center; font-size: 10pt; font-family: Arial;">
+        Page <span class="page-number"></span> of <span class="total-pages"></span>
+      </div>
+    `);
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to apply regulatory formatting:', error);
+    throw error;
+  }
+}
+
+/**
+ * Generate document fingerprint/hash for eCTD submission
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @returns {Promise<string>} - Document hash
+ */
+export async function generateDocumentHash(wordInstance) {
+  try {
+    const document = wordInstance.documents.active;
+    const content = await document.body.getText();
+    
+    // Simple hash function for demo
+    // In a real application, you would use a proper hash function like SHA-256
+    let hash = 0;
+    for (let i = 0; i < content.length; i++) {
+      const char = content.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convert to 32bit integer
+    }
+    
+    return hash.toString(16);
+  } catch (error) {
+    console.error('Failed to generate document hash:', error);
+    throw error;
+  }
+}
+
+/**
+ * Compile multiple sections into a single document
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @param {Array} sectionDocuments - Array of section documents
+ * @returns {Promise<boolean>} - Success status
+ */
+export async function compileSections(wordInstance, sectionDocuments) {
+  try {
+    const document = wordInstance.documents.active;
+    
+    for (const section of sectionDocuments) {
+      // Insert section break
+      await document.body.insertBreak('sectionBreak');
+      
+      // Insert section content
+      await document.body.insertText(section.content, 'insertAfter');
+      
+      // Insert section metadata if available
+      if (section.metadata) {
+        await document.properties.custom.set(`Section_${section.id}_Type`, section.metadata.type || '');
+        await document.properties.custom.set(`Section_${section.id}_Author`, section.metadata.author || '');
+        await document.properties.custom.set(`Section_${section.id}_Version`, section.metadata.version || '');
+      }
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Failed to compile sections:', error);
+    throw error;
+  }
+}

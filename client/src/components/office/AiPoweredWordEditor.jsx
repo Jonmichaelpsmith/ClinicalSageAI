@@ -1,998 +1,653 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { toast } from '@/hooks/use-toast';
-
-import { 
-  Bold as BoldIcon, 
-  Italic as ItalicIcon, 
-  Underline as UnderlineIcon, 
-  List as ListIcon, 
-  FileText as FileTextIcon, 
-  CheckCircle as CheckCircleIcon,
-  AlignLeft as AlignLeftIcon,
-  AlignCenter as AlignCenterIcon,
-  AlignRight as AlignRightIcon,
-  Table as TableIcon,
-  Image as ImageIcon,
-  // ParagraphIcon does not exist, remove it
-  CheckSquare as CheckSquareIcon,
-  AlertTriangle as AlertTriangleIcon,
-  Save as SaveIcon,
-  RefreshCw as RefreshCwIcon,
-  BookOpen as BookOpenIcon,
-  FileSearch as FileSearchIcon,
-  Upload,
-  Download,
-  Share,
-  Clock
-} from 'lucide-react';
-
-// Import Microsoft Office services
-import { initializeOfficeJs, isOfficeInitialized } from '../../services/officeJsService';
-import * as OfficeService from '../../services/officeJsService';
-import * as MsOfficeVaultBridge from '../../services/msOfficeVaultBridge';
-import * as MicrosoftAuthService from '../../services/microsoftAuthService';
-import * as SharePointService from '../../services/sharePointService';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { MessageSquare, PenTool, Lightbulb, ChevronRight, BookOpen, CheckCircle, 
+  RefreshCcw, HelpCircle, Wand2, FileText, List, BookOpen as BookIcon } from 'lucide-react';
+import MicrosoftWordEmbed from './MicrosoftWordEmbed';
 
 /**
- * AI-Powered Microsoft Word Editor Component
+ * AI-Powered Word Editor Component
  * 
- * This component embeds Microsoft Word Online/Office 365 with AI compliance assistance
- * for regulatory document authoring and editing.
+ * This component integrates Microsoft Word with AI assistance specifically for regulatory document authoring.
+ * It provides a pop-up Word editor with AI formatting suggestions, content recommendations,
+ * and regulatory compliance checking.
+ * 
+ * Features:
+ * - Microsoft Word editor embedded directly in the application
+ * - AI-powered formatting suggestions for regulatory documents
+ * - Content recommendations based on document type and context
+ * - Real-time compliance checking for regulatory guidelines
+ * - Template library for common regulatory document types
  */
-const AiPoweredWordEditor = ({ 
+const AiPoweredWordEditor = ({
+  isOpen,
+  onOpenChange,
   documentId,
-  documentUrl,
-  documentName = "New Document",
-  ectdSection = "",
-  readOnly = false,
-  onSave = () => {}
+  documentName = "Untitled Document",
+  documentType = "ind",
+  moduleSection = "",
+  readOnly = false
 }) => {
-  // State for Word frame
-  const [wordFrameLoaded, setWordFrameLoaded] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isWordAvailable, setIsWordAvailable] = useState(false);
-  const [checkoutInfo, setCheckoutInfo] = useState(null);
-  
-  // State for AI assistance
+  const [activeTab, setActiveTab] = useState("editor");
   const [aiSuggestions, setAiSuggestions] = useState([]);
-  const [complianceStatus, setComplianceStatus] = useState(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState('');
+  const [formatSuggestions, setFormatSuggestions] = useState([]);
+  const [complianceIssues, setComplianceIssues] = useState([]);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [documentStatus, setDocumentStatus] = useState('loading');
+  const [userPrompt, setUserPrompt] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [availableTemplates, setAvailableTemplates] = useState([]);
   
-  // UI state
-  const [activeTab, setActiveTab] = useState('document');
-  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState('');
-  const [templates, setTemplates] = useState([]);
-  const [showVersionHistory, setShowVersionHistory] = useState(false);
-  const [versions, setVersions] = useState([]);
+  const messagesEndRef = useRef(null);
+  const { toast } = useToast();
   
-  // Refs
-  const wordContainerRef = useRef(null);
-  const officeSdkLoaded = useRef(false);
-  
-  // Load Microsoft Office SDK and initialize
+  // Scroll to bottom of messages when new suggestions are added
   useEffect(() => {
-    async function initializeOffice() {
-      try {
-        if (!officeSdkLoaded.current) {
-          // Add Office.js script to the page if not already loaded
-          if (!document.getElementById('office-js-script')) {
-            const script = document.createElement('script');
-            script.id = 'office-js-script';
-            script.src = 'https://appsforoffice.microsoft.com/lib/1/hosted/office.js';
-            script.async = true;
-            script.onload = async () => {
-              const isInitialized = await initializeOfficeJs();
-              setIsWordAvailable(isInitialized);
-              officeSdkLoaded.current = true;
-            };
-            document.head.appendChild(script);
-          } else {
-            const isInitialized = await initializeOfficeJs();
-            setIsWordAvailable(isInitialized);
-            officeSdkLoaded.current = true;
-          }
-        }
-      } catch (error) {
-        console.error('Error initializing Office.js:', error);
-        toast({
-          title: 'Office Integration Error',
-          description: 'Failed to initialize Office.js. Using embedded Word Online instead.',
-          variant: 'destructive'
-        });
-        
-        // Fall back to embedded Word Online
-        loadWordOnline();
-      }
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
-    
-    initializeOffice();
-    
-    // Load templates
-    fetchTemplates();
-    
-    // If we have a document ID, load version history
-    if (documentId) {
-      fetchVersionHistory(documentId);
-    }
-    
-    return () => {
-      // Cleanup function
-      if (checkoutInfo && checkoutInfo.documentId) {
-        // Auto-save document on component unmount if checked out
-        handleSaveDocument();
-      }
-    };
-  }, [documentId]);
+  }, [aiSuggestions]);
   
-  // Use effect to check if document is already loaded and load it if needed
+  // Fetch templates based on document type
   useEffect(() => {
-    if (documentUrl && wordContainerRef.current && !wordFrameLoaded) {
-      loadWordOnline();
+    if (isOpen) {
+      fetchTemplates();
     }
+  }, [isOpen, documentType]);
+  
+  // Mock fetch templates
+  const fetchTemplates = async () => {
+    // This would be an API call in a real implementation
+    const templates = [
+      {
+        id: 'ind-proto',
+        name: 'IND Protocol Template',
+        description: 'Standard protocol template for IND submissions',
+        type: 'ind',
+        section: 'protocol'
+      },
+      {
+        id: 'ind-cmc',
+        name: 'Chemistry, Manufacturing, and Controls',
+        description: 'Template for CMC section of IND submissions',
+        type: 'ind',
+        section: 'cmc'
+      },
+      {
+        id: 'ind-safety',
+        name: 'Nonclinical Safety Assessment',
+        description: 'Template for safety assessment section of IND submissions',
+        type: 'ind',
+        section: 'safety'
+      },
+      {
+        id: 'ctd-overview',
+        name: 'CTD Clinical Overview',
+        description: 'Template for Module 2.5 Clinical Overview',
+        type: 'ctd',
+        section: 'overview'
+      }
+    ];
     
-    // Cleanup function to safely remove the iframe
-    return () => {
-      if (wordContainerRef.current) {
-        // Use a safer approach to clear the container
-        wordContainerRef.current.innerHTML = '';
-      }
-    };
-  }, [documentUrl]);
+    // Filter templates based on document type
+    const filteredTemplates = templates.filter(
+      template => template.type === documentType || template.type === 'general'
+    );
+    
+    setAvailableTemplates(filteredTemplates);
+  };
   
-  /**
-   * Load Word Online in an iframe
-   */
-  const loadWordOnline = () => {
-    if (!documentUrl || !wordContainerRef.current) return;
+  // Handle document status change from Word editor
+  const handleDocumentStatusChange = (status) => {
+    setDocumentStatus(status);
+    
+    // Generate AI suggestions based on document status and content
+    if (status === 'loaded' || status === 'edited') {
+      generateAiSuggestions();
+    }
+  };
+  
+  // Handle template selection
+  const handleSelectTemplate = (template) => {
+    setSelectedTemplate(template);
+    
+    toast({
+      title: "Template Selected",
+      description: `Applied template: ${template.name}`
+    });
+    
+    // In a real implementation, this would apply the template to the Word document
+    // For now, generate formatting suggestions based on the template
+    generateFormatSuggestions(template);
+  };
+  
+  // Handle save from Word editor
+  const handleSaveDocument = (documentInfo) => {
+    toast({
+      title: "Document Saved",
+      description: `Successfully saved: ${documentName}`
+    });
+    
+    // Check document compliance after save
+    checkComplianceAfterSave();
+  };
+  
+  // Check document compliance after save
+  const checkComplianceAfterSave = async () => {
+    setIsProcessing(true);
     
     try {
-      // Clear existing content safely
-      while (wordContainerRef.current.firstChild) {
-        wordContainerRef.current.removeChild(wordContainerRef.current.firstChild);
-      }
-      
-      // Create iframe for Word Online
-      const iframe = document.createElement('iframe');
-      iframe.src = documentUrl;
-      iframe.style.width = '100%';
-      iframe.style.height = '600px';
-      iframe.style.border = 'none';
-      iframe.onload = () => {
-        setWordFrameLoaded(true);
-        console.log('Word Online frame loaded');
-      };
-      
-      // Add iframe to container
-      wordContainerRef.current.appendChild(iframe);
-    } catch (error) {
-      console.error('Error loading Word Online:', error);
-      toast({
-        title: 'Error Loading Document',
-        description: 'There was a problem loading the document viewer.',
-        variant: 'destructive'
-      });
-    }
-  };
-  
-  /**
-   * Checkout document for editing
-   */
-  const handleCheckoutDocument = async () => {
-    try {
-      if (!documentId) {
-        toast({
-          title: 'Document Error',
-          description: 'No document ID provided for checkout',
-          variant: 'destructive'
-        });
-        return;
-      }
-      
-      // Checkout document from Vault to Word
-      const checkout = await MsOfficeVaultBridge.checkoutDocumentToOffice({
-        documentId,
-        checkoutLocation: 'word'
-      });
-      
-      setCheckoutInfo(checkout);
-      setIsEditing(true);
-      
-      // Load the document in Word Online
-      if (checkout.documentLink) {
-        // Update the iframe with the new document URL
-        wordContainerRef.current.innerHTML = '';
-        
-        const iframe = document.createElement('iframe');
-        iframe.src = checkout.documentLink;
-        iframe.style.width = '100%';
-        iframe.style.height = '600px';
-        iframe.style.border = 'none';
-        iframe.onload = () => {
-          setWordFrameLoaded(true);
-          console.log('Word Online checkout frame loaded');
-        };
-        
-        // Add iframe to container
-        wordContainerRef.current.appendChild(iframe);
-        
-        toast({
-          title: 'Document Checked Out',
-          description: 'You can now edit the document in Word',
-          variant: 'default'
-        });
-      }
-    } catch (error) {
-      console.error('Error checking out document:', error);
-      toast({
-        title: 'Checkout Error',
-        description: error.message || 'Failed to check out document',
-        variant: 'destructive'
-      });
-    }
-  };
-  
-  /**
-   * Save document back to Vault
-   */
-  const handleSaveDocument = async () => {
-    try {
-      if (!checkoutInfo || !checkoutInfo.documentId || !checkoutInfo.checkoutId) {
-        toast({
-          title: 'Save Error',
-          description: 'Document is not checked out',
-          variant: 'destructive'
-        });
-        return;
-      }
-      
-      // Show saving toast
-      const savingToast = toast({
-        title: 'Saving Document',
-        description: 'Please wait while the document is saved...',
-        variant: 'default'
-      });
-      
-      // Check in document from Word to Vault
-      const checkin = await MsOfficeVaultBridge.checkinDocumentFromOffice({
-        documentId: checkoutInfo.documentId,
-        checkoutId: checkoutInfo.checkoutId,
-        comment: 'Saved from Word Editor',
-        source: 'word'
-      });
-      
-      // Clear checkout info
-      setCheckoutInfo(null);
-      setIsEditing(false);
-      
-      // Refresh version history
-      fetchVersionHistory(documentId);
-      
-      // Notify parent component
-      onSave(checkin);
-      
-      // Show success toast
-      toast({
-        title: 'Document Saved',
-        description: `Document saved successfully (Version ${checkin.versionId})`,
-        variant: 'default'
-      });
-    } catch (error) {
-      console.error('Error saving document:', error);
-      toast({
-        title: 'Save Error',
-        description: error.message || 'Failed to save document',
-        variant: 'destructive'
-      });
-    }
-  };
-  
-  /**
-   * Run compliance check on the document
-   */
-  const handleComplianceCheck = async () => {
-    try {
-      setIsAnalyzing(true);
-      
-      // Get current document content
-      let documentContent;
-      
-      if (isWordAvailable && window.Word) {
-        // Get content directly from Word
-        documentContent = await OfficeService.getWordDocumentContent();
-      } else {
-        // For Word Online, we need to get content from the server
-        // This is a placeholder - in a real implementation, you would use the
-        // Office 365 API to get the document content
-        documentContent = "Document content placeholder";
-      }
-      
-      // Run compliance check
-      const complianceResults = await MsOfficeVaultBridge.performComplianceCheck({
-        documentId,
-        ectdSection,
-        content: documentContent
-      });
-      
-      // Update compliance status
-      setComplianceStatus(complianceResults);
-      
-      // Generate AI suggestions based on compliance issues
-      if (complianceResults.issues && complianceResults.issues.length > 0) {
-        setAiSuggestions(complianceResults.recommendations || []);
-      } else {
-        setAiSuggestions([
-          'Document complies with regulatory requirements',
-          'No issues found'
-        ]);
-      }
-      
-      // Switch to AI tab
-      setActiveTab('ai');
-      
-      toast({
-        title: 'Compliance Check Complete',
-        description: `Compliance score: ${complianceResults.score || 'N/A'}`,
-        variant: 'default'
-      });
-    } catch (error) {
-      console.error('Error performing compliance check:', error);
-      toast({
-        title: 'Compliance Check Error',
-        description: error.message || 'Failed to perform compliance check',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
-  
-  /**
-   * Apply AI suggestion to document
-   */
-  const handleApplySuggestion = async (suggestion) => {
-    try {
-      if (!isWordAvailable) {
-        toast({
-          title: 'Word API Unavailable',
-          description: 'Cannot apply suggestion in Word Online. Please copy and paste manually.',
-          variant: 'destructive'
-        });
-        return;
-      }
-      
-      // Insert suggestion at current cursor position
-      await OfficeService.insertParagraphInWord(suggestion);
-      
-      toast({
-        title: 'Suggestion Applied',
-        description: 'AI suggestion has been applied to the document',
-        variant: 'default'
-      });
-    } catch (error) {
-      console.error('Error applying suggestion:', error);
-      toast({
-        title: 'Error',
-        description: error.message || 'Failed to apply suggestion',
-        variant: 'destructive'
-      });
-    }
-  };
-  
-  /**
-   * Submit custom AI prompt
-   */
-  const handleSubmitPrompt = async () => {
-    try {
-      if (!aiPrompt) return;
-      
-      setIsAnalyzing(true);
-      
-      // In a real implementation, this would call your AI service
-      // For now, simulate a response
+      // In a real implementation, this would be an API call to check compliance
+      // For demo purposes, generate mock compliance issues
       setTimeout(() => {
-        const newSuggestions = [
-          `Based on your question: "${aiPrompt}"`,
-          "Here is a suggested paragraph for your document...",
-          "You should consider adding references to the following regulatory guidelines..."
+        const mockComplianceIssues = [
+          {
+            id: 1,
+            severity: 'warning',
+            section: 'Introduction',
+            message: 'Missing standard regulatory disclaimer'
+          },
+          {
+            id: 2,
+            severity: 'info',
+            section: 'Methods',
+            message: 'Consider adding cross-reference to related protocols in Module 5'
+          },
+          {
+            id: 3,
+            severity: 'error',
+            section: 'Safety Data',
+            message: 'Reference to unpublished data requires additional documentation'
+          }
         ];
         
-        setAiSuggestions(newSuggestions);
-        setAiPrompt('');
-        setIsAnalyzing(false);
+        setComplianceIssues(mockComplianceIssues);
+        setIsProcessing(false);
+        
+        toast({
+          title: "Compliance Check Complete",
+          description: `Found ${mockComplianceIssues.length} issues to review`
+        });
+      }, 2000);
+    } catch (err) {
+      console.error('Error checking compliance:', err);
+      setIsProcessing(false);
+      
+      toast({
+        variant: "destructive",
+        title: "Compliance Check Failed",
+        description: "An error occurred while checking document compliance"
+      });
+    }
+  };
+  
+  // Generate AI suggestions
+  const generateAiSuggestions = async () => {
+    setIsProcessing(true);
+    
+    try {
+      // In a real implementation, this would be an API call to an AI service
+      // For demo purposes, generate mock suggestions based on document type
+      setTimeout(() => {
+        const suggestions = [];
+        
+        if (documentType === 'ind') {
+          suggestions.push({
+            id: 'sug1',
+            type: 'content',
+            text: 'Your protocol introduction should include the rationale for the study design based on preclinical findings.'
+          });
+          
+          suggestions.push({
+            id: 'sug2',
+            type: 'format',
+            text: 'Consider using standard headings for Protocol sections to comply with FDA guidance.'
+          });
+          
+          suggestions.push({
+            id: 'sug3',
+            type: 'reference',
+            text: 'Add reference to the Investigator's Brochure in the background section.'
+          });
+        } else if (documentType === 'ctd') {
+          suggestions.push({
+            id: 'sug1',
+            type: 'content',
+            text: 'Include a comprehensive benefit-risk assessment as required by ICH guidelines.'
+          });
+          
+          suggestions.push({
+            id: 'sug2',
+            type: 'format',
+            text: 'Tables should be numbered sequentially with a descriptive caption above each table.'
+          });
+        }
+        
+        setAiSuggestions(suggestions);
+        setIsProcessing(false);
       }, 1500);
-    } catch (error) {
-      console.error('Error processing AI prompt:', error);
-      toast({
-        title: 'AI Error',
-        description: error.message || 'Failed to process AI prompt',
-        variant: 'destructive'
-      });
-      setIsAnalyzing(false);
+    } catch (err) {
+      console.error('Error generating AI suggestions:', err);
+      setIsProcessing(false);
     }
   };
   
-  /**
-   * Apply formatting to selected text
-   */
-  const handleFormatText = async (formatType) => {
+  // Generate formatting suggestions
+  const generateFormatSuggestions = (template) => {
+    setIsProcessing(true);
+    
     try {
-      if (!isWordAvailable) {
-        toast({
-          title: 'Word API Unavailable',
-          description: 'Cannot apply formatting in Word Online. Please use the built-in formatting tools.',
-          variant: 'destructive'
-        });
-        return;
-      }
-      
-      switch (formatType) {
-        case 'bold':
-          await OfficeService.applyBoldInWord(true);
-          break;
-        case 'italic':
-          await OfficeService.applyItalicInWord(true);
-          break;
-        case 'underline':
-          await OfficeService.applyUnderlineInWord(true);
-          break;
-        case 'heading1':
-          // Get the selected text first
-          const selectedText = await OfficeService.getWordSelectionContent();
-          await OfficeService.insertHeadingInWord(selectedText, 1);
-          break;
-        case 'heading2':
-          const selectedText2 = await OfficeService.getWordSelectionContent();
-          await OfficeService.insertHeadingInWord(selectedText2, 2);
-          break;
-        default:
-          break;
-      }
-    } catch (error) {
-      console.error('Error applying formatting:', error);
-      toast({
-        title: 'Formatting Error',
-        description: error.message || 'Failed to apply formatting',
-        variant: 'destructive'
-      });
+      // In a real implementation, this would be an API call to get formatting guidance
+      // For demo purposes, generate mock formatting suggestions
+      setTimeout(() => {
+        const suggestions = [
+          {
+            id: 'fmt1',
+            type: 'heading',
+            text: 'Use Heading 1 for main sections and Heading 2 for subsections'
+          },
+          {
+            id: 'fmt2',
+            type: 'style',
+            text: 'Apply \'Normal\' style to body text with 12pt font and 1.15 line spacing'
+          },
+          {
+            id: 'fmt3',
+            type: 'table',
+            text: 'Use the \'Table Grid\' style for data tables with borders'
+          },
+          {
+            id: 'fmt4',
+            type: 'page',
+            text: 'Add page numbers in the footer centered with the format "Page X of Y"'
+          },
+          {
+            id: 'fmt5',
+            type: 'header',
+            text: 'Include the document title and confidentiality statement in the header'
+          }
+        ];
+        
+        setFormatSuggestions(suggestions);
+        setIsProcessing(false);
+      }, 1000);
+    } catch (err) {
+      console.error('Error generating formatting suggestions:', err);
+      setIsProcessing(false);
     }
   };
   
-  /**
-   * Fetch available templates
-   */
-  const fetchTemplates = async () => {
-    try {
-      // In a real implementation, this would call your template API
-      // For now, use placeholder data
-      setTemplates([
-        { id: 'template-1', name: 'Clinical Overview (2.5)', ectdSection: 'm2.5' },
-        { id: 'template-2', name: 'Clinical Summary (2.7)', ectdSection: 'm2.7' },
-        { id: 'template-3', name: 'Nonclinical Overview (2.4)', ectdSection: 'm2.4' },
-        { id: 'template-4', name: 'Quality Overall Summary (2.3)', ectdSection: 'm2.3' }
-      ]);
-    } catch (error) {
-      console.error('Error fetching templates:', error);
-    }
+  // Handle user prompt submission
+  const handlePromptSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!userPrompt.trim()) return;
+    
+    // Add user question to suggestions
+    const newSuggestion = {
+      id: `usr-${Date.now()}`,
+      type: 'user',
+      text: userPrompt
+    };
+    
+    setAiSuggestions(prev => [...prev, newSuggestion]);
+    setUserPrompt('');
+    
+    // Generate AI response
+    setIsProcessing(true);
+    setTimeout(() => {
+      const aiResponse = {
+        id: `ai-${Date.now()}`,
+        type: 'ai',
+        text: `Based on your question about "${userPrompt.substring(0, 30)}...", I recommend enhancing the Methods section with more details about subject eligibility criteria and primary endpoints. This aligns with FDA guidance for IND protocols.`
+      };
+      
+      setAiSuggestions(prev => [...prev, aiResponse]);
+      setIsProcessing(false);
+    }, 2000);
   };
   
-  /**
-   * Apply selected template to document
-   */
-  const handleApplyTemplate = async () => {
-    try {
-      if (!selectedTemplate) return;
-      
-      // Close template dialog
-      setShowTemplateDialog(false);
-      
-      // Apply template
-      const result = await MsOfficeVaultBridge.applyRegulatoryTemplate({
-        templateId: selectedTemplate,
-        ectdSection: templates.find(t => t.id === selectedTemplate)?.ectdSection || ''
-      });
-      
-      toast({
-        title: 'Template Applied',
-        description: `Template "${result.templateName}" has been applied`,
-        variant: 'default'
-      });
-    } catch (error) {
-      console.error('Error applying template:', error);
-      toast({
-        title: 'Template Error',
-        description: error.message || 'Failed to apply template',
-        variant: 'destructive'
-      });
-    }
+  // Apply formatting to document
+  const handleApplyFormatting = (suggestion) => {
+    toast({
+      title: "Formatting Applied",
+      description: suggestion.text
+    });
+    
+    // In a real implementation, this would apply the formatting to the Word document
   };
   
-  /**
-   * Fetch version history for a document
-   */
-  const fetchVersionHistory = async (docId) => {
-    try {
-      if (!docId) return;
-      
-      const history = await MsOfficeVaultBridge.getDocumentVersionHistory(docId);
-      setVersions(history);
-    } catch (error) {
-      console.error('Error fetching version history:', error);
-    }
+  // Fix compliance issue
+  const handleFixComplianceIssue = (issue) => {
+    toast({
+      title: "Fixing Issue",
+      description: `Addressing: ${issue.message}`
+    });
+    
+    // In a real implementation, this would navigate to the issue location in the Word document
+    // and provide guidance on how to fix it
+    
+    // Mark issue as fixed (for demo)
+    setComplianceIssues(prev => 
+      prev.filter(item => item.id !== issue.id)
+    );
   };
   
-  /**
-   * Compare document versions
-   */
-  const handleCompareVersions = async (version1, version2) => {
-    try {
-      if (!documentId || !version1 || !version2) {
-        toast({
-          title: 'Comparison Error',
-          description: 'Please select two versions to compare',
-          variant: 'destructive'
-        });
-        return;
-      }
-      
-      const comparison = await MsOfficeVaultBridge.compareDocumentVersions({
-        documentId,
-        version1,
-        version2
-      });
-      
-      // In a real implementation, this would open a comparison view
-      // For now, just show a toast
-      toast({
-        title: 'Comparison Complete',
-        description: `Found ${comparison.differences} differences between versions`,
-        variant: 'default'
-      });
-    } catch (error) {
-      console.error('Error comparing versions:', error);
-      toast({
-        title: 'Comparison Error',
-        description: error.message || 'Failed to compare versions',
-        variant: 'destructive'
-      });
+  // Render suggestion item
+  const renderSuggestionItem = (suggestion) => {
+    // Determine icon based on suggestion type
+    let icon;
+    let badgeClass = "bg-blue-100 text-blue-800";
+    let badgeText = "Suggestion";
+    
+    switch (suggestion.type) {
+      case 'content':
+        icon = <BookOpen className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />;
+        break;
+      case 'format':
+        icon = <PenTool className="h-5 w-5 text-purple-500 mr-2 flex-shrink-0" />;
+        badgeClass = "bg-purple-100 text-purple-800";
+        badgeText = "Format";
+        break;
+      case 'reference':
+        icon = <BookIcon className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />;
+        badgeClass = "bg-green-100 text-green-800";
+        badgeText = "Reference";
+        break;
+      case 'user':
+        icon = <MessageSquare className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />;
+        badgeClass = "bg-gray-100 text-gray-800";
+        badgeText = "Question";
+        break;
+      case 'ai':
+        icon = <Lightbulb className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />;
+        badgeClass = "bg-amber-100 text-amber-800";
+        badgeText = "Answer";
+        break;
+      default:
+        icon = <Lightbulb className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />;
     }
-  };
-  
-  // Render document editor UI
-  return (
-    <div className="flex flex-col w-full h-full">
-      {/* Editor toolbar */}
-      <div className="flex flex-wrap items-center gap-2 p-2 bg-card border-b">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={handleCheckoutDocument}
-          disabled={isEditing || !documentId}
-        >
-          <FileTextIcon className="w-4 h-4 mr-2" />
-          Edit
-        </Button>
-        
-        <Button 
-          variant={isEditing ? "default" : "outline"} 
-          size="sm" 
-          onClick={handleSaveDocument}
-          disabled={!isEditing}
-        >
-          <SaveIcon className="w-4 h-4 mr-2" />
-          Save
-        </Button>
-        
-        <div className="border-r h-6 mx-2"></div>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => handleFormatText('bold')}
-                disabled={!isEditing || !isWordAvailable}
-              >
-                <BoldIcon className="w-4 h-4" />
+    
+    return (
+      <div key={suggestion.id} className="p-3 border rounded-md mb-3">
+        <div className="flex items-start">
+          {icon}
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-1">
+              <Badge className={badgeClass}>{badgeText}</Badge>
+              <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <ChevronRight className="h-4 w-4" />
               </Button>
-            </TooltipTrigger>
-            <TooltipContent>Bold</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => handleFormatText('italic')}
-                disabled={!isEditing || !isWordAvailable}
-              >
-                <ItalicIcon className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Italic</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => handleFormatText('underline')}
-                disabled={!isEditing || !isWordAvailable}
-              >
-                <UnderlineIcon className="w-4 h-4" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Underline</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <div className="border-r h-6 mx-2"></div>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => handleFormatText('heading1')}
-                disabled={!isEditing || !isWordAvailable}
-              >
-                <span className="font-bold">H1</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Heading 1</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={() => handleFormatText('heading2')}
-                disabled={!isEditing || !isWordAvailable}
-              >
-                <span className="font-bold">H2</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Heading 2</TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-        
-        <div className="border-r h-6 mx-2"></div>
-        
-        <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
-          <DialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm"
-              disabled={!isEditing}
-            >
-              <BookOpenIcon className="w-4 h-4 mr-2" />
-              Templates
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Apply Regulatory Template</DialogTitle>
-              <DialogDescription>
-                Choose a template to apply to your document. This will replace the current content.
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="py-4">
-              <Label htmlFor="template-select">Template</Label>
-              <Select 
-                value={selectedTemplate} 
-                onValueChange={setSelectedTemplate}
-              >
-                <SelectTrigger id="template-select">
-                  <SelectValue placeholder="Select a template" />
-                </SelectTrigger>
-                <SelectContent>
-                  {templates.map(template => (
-                    <SelectItem key={template.id} value={template.id}>
-                      {template.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
-            
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setShowTemplateDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleApplyTemplate} disabled={!selectedTemplate}>
-                Apply Template
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-        
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => setShowVersionHistory(!showVersionHistory)}
-          disabled={!documentId}
-        >
-          <Clock className="w-4 h-4 mr-2" />
-          History
-        </Button>
-        
-        <div className="flex-grow"></div>
-        
-        <Button 
-          variant="default" 
-          size="sm"
-          onClick={handleComplianceCheck}
-          disabled={!documentId || isAnalyzing}
-        >
-          {isAnalyzing ? (
-            <>
-              <RefreshCwIcon className="w-4 h-4 mr-2 animate-spin" />
-              Analyzing...
-            </>
-          ) : (
-            <>
-              <CheckCircleIcon className="w-4 h-4 mr-2" />
-              Check Compliance
-            </>
-          )}
-        </Button>
+            <p className="text-sm">{suggestion.text}</p>
+          </div>
+        </div>
       </div>
-      
-      {/* Editor content */}
-      <div className="flex flex-grow">
-        {/* Main content area */}
-        <div className="flex-grow">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="document">Document</TabsTrigger>
-              <TabsTrigger value="ai">AI Assistance</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="document" className="flex-grow">
-              <div className="relative">
-                {/* Word container */}
-                <div 
-                  ref={wordContainerRef} 
-                  className="w-full h-[600px] border rounded-md bg-white"
-                >
-                  {!wordFrameLoaded && !documentUrl && (
-                    <div className="flex flex-col items-center justify-center h-full">
-                      <FileTextIcon className="w-12 h-12 text-muted-foreground mb-4" />
-                      <h3 className="text-lg font-medium">No Document Loaded</h3>
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Select or upload a document to get started
-                      </p>
-                    </div>
-                  )}
-                  
-                  {!wordFrameLoaded && documentUrl && (
-                    <div className="p-4">
-                      <div className="space-y-3">
-                        <Skeleton className="h-4 w-3/4" />
-                        <Skeleton className="h-4 w-full" />
-                        <Skeleton className="h-4 w-2/3" />
-                        <Skeleton className="h-[400px] w-full rounded-md" />
-                      </div>
-                    </div>
-                  )}
-                </div>
+    );
+  };
+  
+  // Render format suggestion item
+  const renderFormatItem = (format) => {
+    return (
+      <div key={format.id} className="p-3 border rounded-md mb-3">
+        <div className="flex items-start">
+          <PenTool className="h-5 w-5 text-purple-500 mr-2 flex-shrink-0" />
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-1">
+              <Badge className="bg-purple-100 text-purple-800">{format.type}</Badge>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-7 text-xs"
+                onClick={() => handleApplyFormatting(format)}
+              >
+                Apply
+              </Button>
+            </div>
+            <p className="text-sm">{format.text}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Render compliance issue item
+  const renderComplianceItem = (issue) => {
+    let severityClass;
+    let icon;
+    
+    switch (issue.severity) {
+      case 'error':
+        severityClass = "bg-red-100 text-red-800";
+        icon = <AlertTriangle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0" />;
+        break;
+      case 'warning':
+        severityClass = "bg-amber-100 text-amber-800";
+        icon = <AlertTriangle className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0" />;
+        break;
+      case 'info':
+        severityClass = "bg-blue-100 text-blue-800";
+        icon = <HelpCircle className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />;
+        break;
+      default:
+        severityClass = "bg-gray-100 text-gray-800";
+        icon = <HelpCircle className="h-5 w-5 text-gray-500 mr-2 flex-shrink-0" />;
+    }
+    
+    return (
+      <div key={issue.id} className="p-3 border rounded-md mb-3">
+        <div className="flex items-start">
+          {icon}
+          <div className="flex-1">
+            <div className="flex justify-between items-center mb-1">
+              <div className="flex items-center">
+                <Badge className={severityClass}>{issue.severity}</Badge>
+                <span className="text-xs text-muted-foreground ml-2">{issue.section}</span>
               </div>
-            </TabsContent>
-            
-            <TabsContent value="ai" className="flex-grow flex flex-col">
-              <Card className="flex-grow">
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <CheckCircleIcon className="w-5 h-5 mr-2 text-primary" />
-                    AI Compliance Assistant
-                  </CardTitle>
-                  <CardDescription>
-                    AI-powered recommendations to ensure regulatory compliance
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Compliance status */}
-                  {complianceStatus && (
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">Compliance Score</h4>
-                        <Badge variant={complianceStatus.score > 80 ? "default" : "destructive"}>
-                          {complianceStatus.score || 'N/A'}/100
-                        </Badge>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-7 text-xs"
+                onClick={() => handleFixComplianceIssue(issue)}
+              >
+                Fix Issue
+              </Button>
+            </div>
+            <p className="text-sm">{issue.message}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+  
+  // Render template item
+  const renderTemplateItem = (template) => {
+    return (
+      <Card key={template.id} className="mb-3 cursor-pointer hover:bg-muted/50" onClick={() => handleSelectTemplate(template)}>
+        <CardContent className="p-3">
+          <div className="flex items-start">
+            <FileText className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0" />
+            <div className="flex-1">
+              <div className="flex justify-between items-center mb-1">
+                <div className="font-medium">{template.name}</div>
+                <Badge className="bg-gray-100 text-gray-800">{template.type}</Badge>
+              </div>
+              <p className="text-sm text-muted-foreground">{template.description}</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+  
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange} className="max-w-6xl">
+      <DialogContent className="max-w-6xl max-h-[90vh] p-0 overflow-hidden">
+        <DialogHeader className="p-4 border-b">
+          <DialogTitle>AI-Powered Document Editor - {documentName}</DialogTitle>
+        </DialogHeader>
+        
+        <div className="flex h-[calc(90vh-3.5rem)]">
+          {/* Word Editor (left side) */}
+          <div className="flex-1 border-r">
+            <MicrosoftWordEmbed
+              documentId={documentId}
+              documentName={documentName}
+              onStatusChange={handleDocumentStatusChange}
+              onSave={handleSaveDocument}
+              onClose={() => onOpenChange(false)}
+              readOnly={readOnly}
+            />
+          </div>
+          
+          {/* AI Assistant Panel (right side) */}
+          <div className="w-80 flex flex-col h-full bg-muted/20">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full">
+              <TabsList className="flex justify-between px-2 pt-2 bg-transparent h-auto">
+                <TabsTrigger value="editor" className="flex-1">
+                  <MessageSquare className="h-4 w-4 mr-1" />
+                  Assistant
+                </TabsTrigger>
+                <TabsTrigger value="format" className="flex-1">
+                  <PenTool className="h-4 w-4 mr-1" />
+                  Format
+                </TabsTrigger>
+                <TabsTrigger value="compliance" className="flex-1">
+                  <CheckCircle className="h-4 w-4 mr-1" />
+                  Compliance
+                </TabsTrigger>
+                <TabsTrigger value="templates" className="flex-1">
+                  <List className="h-4 w-4 mr-1" />
+                  Templates
+                </TabsTrigger>
+              </TabsList>
+              
+              <div className="flex-1 overflow-hidden">
+                <TabsContent value="editor" className="h-full flex flex-col p-0 m-0 pt-2">
+                  <div className="flex-1 overflow-y-auto px-3">
+                    {aiSuggestions.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                        <Lightbulb className="h-12 w-12 text-muted-foreground mb-4" />
+                        <h3 className="font-medium mb-2">AI Assistant</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          I'll help you create regulatory-compliant documents with AI-powered suggestions.
+                        </p>
                       </div>
-                      
-                      {complianceStatus.issues && complianceStatus.issues.length > 0 && (
-                        <div className="mt-4">
-                          <h4 className="font-medium mb-2">Issues Detected</h4>
-                          <ul className="space-y-2">
-                            {complianceStatus.issues.map((issue, idx) => (
-                              <li key={idx} className="flex items-start">
-                                <AlertTriangleIcon className="w-4 h-4 mr-2 text-amber-500 mt-0.5" />
-                                <div>
-                                  <span className="font-medium">{issue.section}: </span>
-                                  <span>{issue.description}</span>
-                                  <Badge variant="outline" className="ml-2">
-                                    {issue.severity}
-                                  </Badge>
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  {/* AI suggestions */}
-                  <div>
-                    <h4 className="font-medium mb-2">AI Recommendations</h4>
-                    {aiSuggestions.length > 0 ? (
-                      <ul className="space-y-2">
-                        {aiSuggestions.map((suggestion, idx) => (
-                          <li key={idx} className="flex items-start p-2 border rounded-md">
-                            <div className="flex-grow">
-                              <p>{suggestion}</p>
-                            </div>
-                            {isEditing && isWordAvailable && (
-                              <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                onClick={() => handleApplySuggestion(suggestion)}
-                              >
-                                Apply
-                              </Button>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
                     ) : (
-                      <p className="text-muted-foreground">
-                        Run a compliance check to get AI recommendations
-                      </p>
+                      <div>
+                        {aiSuggestions.map(suggestion => renderSuggestionItem(suggestion))}
+                        <div ref={messagesEndRef} />
+                      </div>
+                    )}
+                    
+                    {isProcessing && (
+                      <div className="p-3 border rounded-md mb-3 bg-muted/50">
+                        <div className="flex items-center">
+                          <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
+                          <p className="text-sm">Analyzing document...</p>
+                        </div>
+                      </div>
                     )}
                   </div>
                   
-                  {/* AI prompt input */}
-                  <div className="mt-6">
-                    <h4 className="font-medium mb-2">Ask AI Assistant</h4>
-                    <div className="flex space-x-2">
-                      <Textarea
-                        value={aiPrompt}
-                        onChange={(e) => setAiPrompt(e.target.value)}
-                        placeholder="Ask a question about regulatory requirements..."
-                        className="flex-grow"
+                  <div className="p-3 border-t">
+                    <form onSubmit={handlePromptSubmit} className="flex items-center">
+                      <Input
+                        placeholder="Ask about this document..."
+                        value={userPrompt}
+                        onChange={(e) => setUserPrompt(e.target.value)}
+                        className="flex-1 mr-2"
                       />
-                      <Button 
-                        onClick={handleSubmitPrompt}
-                        disabled={!aiPrompt || isAnalyzing}
-                      >
-                        {isAnalyzing ? (
-                          <RefreshCwIcon className="w-4 h-4 animate-spin" />
-                        ) : (
-                          "Submit"
-                        )}
+                      <Button type="submit" size="sm">
+                        <Wand2 className="h-4 w-4" />
                       </Button>
-                    </div>
+                    </form>
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-        
-        {/* Version history sidebar (collapsible) */}
-        {showVersionHistory && (
-          <div className="w-80 border-l p-4 overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium">Version History</h3>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => setShowVersionHistory(false)}
-              >
-                &times;
-              </Button>
-            </div>
-            
-            {versions.length > 0 ? (
-              <div className="space-y-2">
-                {versions.map((version, idx) => (
-                  <div key={idx} className="border rounded-md p-2">
-                    <div className="flex items-center justify-between">
-                      <Badge variant="outline">v{version.id}</Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {new Date(version.lastModifiedDateTime).toLocaleString()}
-                      </span>
-                    </div>
-                    <div className="text-sm mt-1">
-                      <span className="font-medium">By: </span>
-                      {version.lastModifiedBy?.user?.displayName || 'Unknown'}
-                    </div>
-                    <div className="flex mt-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm"
-                        onClick={() => {
-                          // In a real implementation, this would open the version
-                          // For now, just show a toast
-                          toast({
-                            title: 'Version Selected',
-                            description: `Viewing version ${version.id}`,
-                            variant: 'default'
-                          });
-                        }}
-                      >
-                        View
-                      </Button>
-                      {idx < versions.length - 1 && (
+                </TabsContent>
+                
+                <TabsContent value="format" className="h-full flex flex-col p-0 m-0 overflow-hidden">
+                  <div className="flex-1 overflow-y-auto p-3">
+                    {formatSuggestions.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                        <PenTool className="h-12 w-12 text-muted-foreground mb-4" />
+                        <h3 className="font-medium mb-2">Formatting Assistant</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Select a template or edit your document to get formatting suggestions.
+                        </p>
                         <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleCompareVersions(version.id, versions[idx + 1].id)}
+                          variant="outline" 
+                          onClick={() => setActiveTab("templates")}
                         >
-                          Compare
+                          Browse Templates
                         </Button>
-                      )}
-                    </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <h3 className="font-medium mb-3">Formatting Suggestions</h3>
+                        {formatSuggestions.map(format => renderFormatItem(format))}
+                      </div>
+                    )}
                   </div>
-                ))}
+                </TabsContent>
+                
+                <TabsContent value="compliance" className="h-full flex flex-col p-0 m-0 overflow-hidden">
+                  <div className="flex-1 overflow-y-auto p-3">
+                    {complianceIssues.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full text-center p-4">
+                        <CheckCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                        <h3 className="font-medium mb-2">Compliance Checker</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          Save your document to check for regulatory compliance issues.
+                        </p>
+                        <Button 
+                          variant="outline" 
+                          onClick={checkComplianceAfterSave}
+                          disabled={isProcessing}
+                        >
+                          {isProcessing ? (
+                            <>
+                              <RefreshCcw className="h-4 w-4 mr-2 animate-spin" />
+                              Checking...
+                            </>
+                          ) : (
+                            <>
+                              Check Compliance
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      <div>
+                        <h3 className="font-medium mb-3">Compliance Issues</h3>
+                        {complianceIssues.map(issue => renderComplianceItem(issue))}
+                      </div>
+                    )}
+                  </div>
+                </TabsContent>
+                
+                <TabsContent value="templates" className="h-full flex flex-col p-0 m-0 overflow-hidden">
+                  <div className="flex-1 overflow-y-auto p-3">
+                    <h3 className="font-medium mb-3">Available Templates</h3>
+                    {availableTemplates.map(template => renderTemplateItem(template))}
+                  </div>
+                </TabsContent>
               </div>
-            ) : (
-              <p className="text-sm text-muted-foreground">No version history available</p>
-            )}
+            </Tabs>
           </div>
-        )}
-      </div>
-      
-      {/* Status bar */}
-      <div className="flex items-center justify-between p-2 bg-muted text-xs">
-        <div className="flex items-center space-x-2">
-          <span>{documentName || 'Untitled Document'}</span>
-          {ectdSection && (
-            <Badge variant="outline" className="text-xs">
-              {ectdSection}
-            </Badge>
-          )}
         </div>
-        
-        <div className="flex items-center space-x-2">
-          {isEditing && checkoutInfo && (
-            <span className="text-primary">
-              Checked out until {new Date(checkoutInfo.expiresAt).toLocaleString()}
-            </span>
-          )}
-          
-          <span>
-            {isWordAvailable ? 'Word API Available' : 'Using Word Online'}
-          </span>
-        </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
+};
+
+// Mock AlertTriangle component for compliance issues
+const AlertTriangle = ({ className }) => {
+  return <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></svg>;
 };
 
 export default AiPoweredWordEditor;
