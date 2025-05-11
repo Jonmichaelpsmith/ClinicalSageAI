@@ -43,7 +43,17 @@ import {
   Filter,
   CheckSquare,
   FileWarning,
-  HelpCircle
+  HelpCircle,
+  MessageSquare,
+  Sparkles,
+  Lightbulb,
+  Check,
+  X,
+  Settings,
+  ListChecks,
+  Bot,
+  Clipboard,
+  Zap
 } from 'lucide-react';
 
 export default function CoAuthor() {
@@ -103,6 +113,33 @@ export default function CoAuthor() {
     includeTableOfContents: true,
     includeAppendices: true
   });
+  
+  // AI Assistant state
+  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState([
+    {
+      id: 1,
+      type: 'completion',
+      text: 'The safety profile is consistent with other drugs in this class...',
+      section: '2.5.5',
+      accepted: false
+    },
+    {
+      id: 2,
+      type: 'formatting',
+      text: 'Table formatting for efficacy data does not meet ICH guidelines. Suggested template available.',
+      section: '2.5.4.2',
+      accepted: false
+    },
+    {
+      id: 3,
+      type: 'compliance',
+      text: 'Missing Integrated Summary of Benefits and Risks required by FDA guidance.',
+      section: '2.5.6',
+      accepted: false
+    }
+  ]);
+  const [aiAssistantMode, setAiAssistantMode] = useState('suggestions'); // suggestions, compliance, formatting
   
   // Version history mock data - in real implementation this would come from the Vault API
   const [versionHistory] = useState([
