@@ -2311,12 +2311,31 @@ export default function CoAuthor() {
                             <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                             <span>Connected as <strong>{googleUserInfo?.name || 'Demo User'}</strong></span>
                             {selectedDocument && (
-                              <Badge variant="outline" className="ml-3 text-xs bg-blue-50 text-blue-700 border-blue-200">
-                                {selectedDocument.title || "Untitled Document"}
-                              </Badge>
+                              <>
+                                <Badge variant="outline" className="ml-3 text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                  {selectedDocument.title || "Untitled Document"}
+                                </Badge>
+                                <Badge variant="outline" className="ml-2 text-xs bg-amber-50 text-amber-700 border-amber-200">
+                                  eCTD {selectedDocument.sectionCode || selectedDocument.module.replace('Module ', '')}
+                                </Badge>
+                                {selectedDocument.region && (
+                                  <Badge variant="outline" className="ml-2 text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                    {selectedDocument.region}
+                                  </Badge>
+                                )}
+                              </>
                             )}
                           </div>
                           <div className="flex items-center space-x-2">
+                            <Button
+                              variant="default" 
+                              size="sm"
+                              className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                              onClick={() => setCreateNewDocDialogOpen(true)}
+                            >
+                              <FilePlus2 className="h-3.5 w-3.5 mr-1" />
+                              Create Document
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
@@ -2337,17 +2356,33 @@ export default function CoAuthor() {
                                     description: "Preparing document for VAULT storage...",
                                   });
                                   
-                                  // Determine document module type
-                                  let moduleType = 'module_2';
-                                  if (selectedDocument?.title?.includes("Module 1")) moduleType = 'module_1';
-                                  if (selectedDocument?.title?.includes("Module 3")) moduleType = 'module_3';
-                                  if (selectedDocument?.title?.includes("Module 4")) moduleType = 'module_4';
-                                  if (selectedDocument?.title?.includes("Module 5")) moduleType = 'module_5';
+                                  // Use the document's regulatory metadata
+                                  const moduleType = selectedDocument?.moduleType || 
+                                                    (selectedDocument?.module ? selectedDocument.module.toLowerCase().replace(' ', '_') : 'module_2');
                                   
-                                  // Call save to vault with regulatory metadata
+                                  const sectionCode = selectedDocument?.sectionCode || 
+                                                     (moduleType === 'module_2' ? '2.5' : 
+                                                      moduleType === 'module_1' ? '1.0' : 
+                                                      moduleType === 'module_3' ? '3.2' : 
+                                                      moduleType === 'module_4' ? '4.2' : '5.3');
+                                  
+                                  const region = selectedDocument?.region || 'FDA';
+                                  
+                                  // Call save to vault with enhanced regulatory metadata
                                   googleDocsService.saveToVault(docId, {
                                     title: selectedDocument?.title || "Untitled Document",
                                     documentId: selectedDocument?.id,
+                                    sectionCode: sectionCode,
+                                    region: region,
+                                    submissionType: selectedDocument?.submissionType || 'IND',
+                                    documentStatus: selectedDocument?.status || 'Draft',
+                                    versionInfo: selectedDocument?.version || { major: 1, minor: 0, label: 'v1.0' },
+                                    regulatoryContext: {
+                                      jurisdiction: region,
+                                      reviewCycle: 'Initial', 
+                                      submissionPhase: 'Development',
+                                      ectdCompliant: true
+                                    },
                                     moduleType: moduleType,
                                     documentType: selectedDocument?.type || "scientific",
                                     versionControl: {
