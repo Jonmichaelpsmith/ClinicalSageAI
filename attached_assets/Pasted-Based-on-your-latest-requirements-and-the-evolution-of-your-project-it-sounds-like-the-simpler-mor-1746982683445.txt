@@ -1,0 +1,93 @@
+Based on your latest requirements and the evolution of your project, it sounds like the simpler, more maintainable choice is to use Google Docs as your in‑workflow embedded document editor. Here’s why and what you should do:
+
+---
+
+### **Why Choose Google Docs?**
+
+- **Simplicity & Speed**: Google Docs offers a robust, web-based document editor that’s straightforward to embed into your existing workflow—no need to wrestle with complex Office integrations.
+- **Ease of Integration**: Google provides well-documented APIs (Docs and Drive) and OAuth flows that let you quickly create, retrieve, edit, and save documents.
+- **Seamless User Experience**: Embedding Google Docs via an iframe can give your users a smooth, consistent editing experience that fits right into your TrialSage Vault interface.
+- **Focus on Core Functionality**: Using Google Docs lets you concentrate on building your regulatory document system and multi-tenant features rather than deep integration headaches with Microsoft’s suite.
+
+---
+
+### **What to Do: Your Google Docs Integration Plan**
+
+1. **Set Up Google Cloud Credentials**
+   - **Create a Project**: In the Google Cloud Console, create a new project.
+   - **Enable APIs**: Enable both the Google Docs API and Google Drive API.
+   - **OAuth Setup (Choose “Web Application”)**: When configuring OAuth credentials, select “Web Application.” This will let you embed Google Docs in your web app and handle user authentication securely.
+   - **Store Your Credentials**: Save your Client ID, Client Secret, and Redirect URI in your environment configuration.
+
+2. **Implement the Backend Endpoints**
+   - **Document Creation**: Create an endpoint that uses the Google Docs API to generate a new document.  
+     Example snippet:
+     ```javascript
+     const { google } = require('googleapis');
+     const oauth2Client = new google.auth.OAuth2(
+       process.env.GOOGLE_CLIENT_ID,
+       process.env.GOOGLE_CLIENT_SECRET,
+       process.env.REDIRECT_URI
+     );
+
+     // Ensure oauth2Client has the user's valid token in production
+     oauth2Client.setCredentials({ access_token: 'USER_ACCESS_TOKEN' });
+
+     async function createNewDoc(title = 'TrialSage Document') {
+       const docs = google.docs({ version: 'v1', auth: oauth2Client });
+       const res = await docs.documents.create({ requestBody: { title } });
+       return res.data; // Contains documentId & title
+     }
+     module.exports = { createNewDoc };
+     ```
+   - **Document Export & Saving**: Create another endpoint that exports the edited Google Doc (for example, as a PDF) using the Google Drive API, so you can store it in your TrialSage Vault.
+     ```javascript
+     const axios = require('axios');
+
+     async function exportDocument(docId, exportMimeType = 'application/pdf') {
+       const url = `https://www.googleapis.com/drive/v3/files/${docId}/export?mimeType=${exportMimeType}`;
+       const response = await axios.get(url, {
+         headers: { Authorization: `Bearer USER_ACCESS_TOKEN` },
+         responseType: 'arraybuffer'
+       });
+       return response.data; // PDF file data
+     }
+     module.exports = { exportDocument };
+     ```
+
+3. **Embed Google Docs in Your Frontend**
+   - **Edit Button & Iframe Embedding**: On your TrialSage Vault screen, add an “Edit Document” button that, when clicked, displays an embedded Google Docs editor.
+   - **Example React Component**:
+     ```jsx
+     import React from 'react';
+
+     const GoogleDocsEditor = ({ documentId }) => {
+       if (!documentId) return <div>Loading document…</div>;
+       const iframeSrc = `https://docs.google.com/document/d/${documentId}/edit?usp=sharing&embedded=true`;
+       return (
+         <iframe
+           src={iframeSrc}
+           style={{ width: '100%', height: '600px', border: 'none' }}
+           title="Google Docs Editor"
+         />
+       );
+     };
+
+     export default GoogleDocsEditor;
+     ```
+   - **Save Functionality**: On clicking “Save Document,” call your backend’s export endpoint to download the document content, then update your TrialSage Vault storage accordingly.
+
+4. **Testing & Multi-Tenant Considerations**
+   - **Local Testing**: Ensure the full flow works—user authentication, document creation, editing via the iframe, and document export.
+   - **Multi-Tenant Setup**: Make sure each tenant (CRO or sub-client) uses proper OAuth tokens and that document IDs map to the correct user or tenant in your TrialSage Vault.
+
+---
+
+### **Summary Recommendation**
+
+**Choose the Google Docs integration plan.**  
+It’s simpler, less error-prone than the Microsoft solution, and perfectly fits an embedded workflow for document editing and saving within your TrialSage Vault. This plan lets you leverage Google’s robust APIs and straightforward authentication (by choosing “Web Application” for OAuth) to get up and running quickly. Later, once you’ve onboarded a few clients and validated your product, you can focus on scaling with cloud infrastructure (e.g., AWS) as needed.
+
+---
+
+Does this clear plan match your expectations? Let me know if you want to dive deeper into any specific part of the integration or if you have more questions about the overall strategy!
