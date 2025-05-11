@@ -132,6 +132,7 @@ export default function CoAuthor() {
   const [isSaving, setIsSaving] = useState(false);
   const [createNewDocDialogOpen, setCreateNewDocDialogOpen] = useState(false);
   const [showValidationDialog, setShowValidationDialog] = useState(false);
+  
   // Document editor integration state
   const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
   const [editorType, setEditorType] = useState('google'); // Using Google Docs as the editor
@@ -143,7 +144,6 @@ export default function CoAuthor() {
   const [iframeKey, setIframeKey] = useState(1); // Used to force refresh iframe
   const [currentZoom, setCurrentZoom] = useState(1); // Document zoom level
   const [selectedRegion, setSelectedRegion] = useState('FDA'); // Default region for regulatory requirements
-  const [createNewDocDialogOpen, setCreateNewDocDialogOpen] = useState(false);
   const [newDocumentTitle, setNewDocumentTitle] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState('');
   const [creatingDocument, setCreatingDocument] = useState(false);
