@@ -384,6 +384,138 @@ export async function simulateOpenAIResponse(data, responseType = 'general') {
   }
 }
 
+/**
+ * Validate eCTD document content against regulatory requirements
+ * @param {string} documentContent - Document content to validate
+ * @param {string} moduleType - eCTD module type (e.g., 'module_2_5', 'module_3_2')
+ * @param {string} sectionCode - Specific section code (e.g., '2.5.1', '3.2.P.8')
+ * @param {string} region - Regulatory region (FDA, EMA, PMDA, etc.)
+ * @returns {Promise<Object>} Validation results with issues and suggestions
+ */
+export async function validateEctdDocument(documentContent, moduleType, sectionCode, region) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert eCTD regulatory documentation validator. Your task is to analyze 
+            a document intended for ${region} eCTD submission in module ${moduleType.replace('module_', '')} 
+            section ${sectionCode}. Identify any issues with content structure, completeness, accuracy, 
+            and regulatory compliance. Provide specific feedback on how to correct each issue.`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            task: "Validate eCTD document content",
+            moduleType,
+            sectionCode,
+            region,
+            documentContent: documentContent.substring(0, 15000) // Truncate for token limits
+          })
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
+  } catch (error) {
+    console.error("Error validating eCTD document:", error);
+    throw new Error(`Failed to validate eCTD document: ${error.message}`);
+  }
+}
+
+/**
+ * Generate content suggestions for an eCTD document section
+ * @param {string} currentContent - Current document content
+ * @param {string} moduleType - eCTD module type
+ * @param {string} sectionCode - Specific section code
+ * @param {string} region - Regulatory region
+ * @returns {Promise<Object>} Content suggestions
+ */
+export async function generateEctdSuggestions(currentContent, moduleType, sectionCode, region) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert eCTD regulatory content writer. Your task is to provide 
+            high-quality content suggestions for a ${region} eCTD submission in module 
+            ${moduleType.replace('module_', '')} section ${sectionCode}. Based on the current content,
+            suggest improvements, additional points, and refinements to enhance 
+            regulatory compliance and clarity.`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            task: "Generate eCTD content suggestions",
+            moduleType,
+            sectionCode,
+            region,
+            currentContent: currentContent.substring(0, 15000) // Truncate for token limits
+          })
+        }
+      ],
+      temperature: 0.2,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
+  } catch (error) {
+    console.error("Error generating eCTD suggestions:", error);
+    throw new Error(`Failed to generate eCTD suggestions: ${error.message}`);
+  }
+}
+
+/**
+ * Generate a complete eCTD document draft based on template and requirements
+ * @param {string} moduleType - eCTD module type
+ * @param {string} sectionCode - Specific section code
+ * @param {string} region - Regulatory region
+ * @param {Object} productInfo - Basic product information
+ * @returns {Promise<Object>} Complete document draft
+ */
+export async function generateEctdDraft(moduleType, sectionCode, region, productInfo) {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are an expert eCTD regulatory document writer. Your task is to generate 
+            a complete draft document for a ${region} eCTD submission in module 
+            ${moduleType.replace('module_', '')} section ${sectionCode}. Create a comprehensive, 
+            well-structured document that fully complies with regulatory expectations for 
+            this section. Include all required sections, appropriate headings, and placeholder 
+            content where specific data would need to be inserted.`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            task: "Generate complete eCTD document draft",
+            moduleType,
+            sectionCode,
+            region,
+            productInfo
+          })
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 4000,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
+  } catch (error) {
+    console.error("Error generating eCTD draft:", error);
+    throw new Error(`Failed to generate eCTD draft: ${error.message}`);
+  }
+}
+
 export default {
   generateCER,
   analyzeClinicalData,
@@ -393,5 +525,8 @@ export default {
   generateExecutiveSummary,
   generateMethodValidationProtocol,
   assessRegulatoryCompliance,
+  validateEctdDocument,
+  generateEctdSuggestions,
+  generateEctdDraft,
   simulateOpenAIResponse
 };
