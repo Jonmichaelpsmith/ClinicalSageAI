@@ -100,7 +100,8 @@ const GoogleDocsEmbed = ({
         style={{ height: `${height}px` }}
         onLoad={handleIframeLoad}
         onError={handleIframeError}
-        allow="clipboard-read; clipboard-write"
+        allow="clipboard-read; clipboard-write; camera; microphone"
+        referrerPolicy="origin"
       />
     </div>
   );
