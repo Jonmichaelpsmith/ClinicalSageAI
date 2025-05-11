@@ -48,6 +48,26 @@ import {
   X,
   Lock,
   Save,
+  AlertCircle,
+  FileCheck,
+  ArrowRight,
+  Check,
+  FileEdit,
+  Copy,
+  Archive,
+  BookOpen,
+  CheckSquare, 
+  Edit2,
+  Clipboard,
+  BookOpenCheck,
+  AlertTriangle,
+  Link,
+  Table,
+  RefreshCw,
+  Loader2,
+  List,
+  Plus,
+  Send,
   Sparkles,
   Plus,
   List,
@@ -1841,48 +1861,135 @@ export default function CoAuthor() {
                       <TabsContent value="compliance" className="mt-4">
                         <div className="space-y-4">
                           <div className="text-sm">
-                            Real-time compliance checks for eCTD requirements and regulatory guidelines.
+                            Real-time compliance checks for eCTD requirements.
+                          </div>
+                          
+                          <div className="border rounded-md p-3 bg-red-50">
+                            <p className="text-sm font-medium text-red-600">Missing required section:</p>
+                            <p className="text-sm mt-1">Section 2.5.6 Benefits and Risks Conclusions is required for FDA submissions.</p>
+                            <Button variant="ghost" size="sm" className="mt-2 h-6 text-xs text-red-600">Add This Section</Button>
                           </div>
                           
                           <div className="border rounded-md p-3 bg-amber-50">
-                            <p className="text-sm font-medium text-amber-700">Compliance warning:</p>
-                            <p className="text-sm mt-1">Section 2.5.4 (Benefit-Risk Assessment) appears to be missing required content.</p>
+                            <p className="text-sm font-medium text-amber-600">Warning:</p>
+                            <p className="text-sm mt-1">Section 2.5.4 appears to be less detailed than typically expected. Consider expanding this section.</p>
+                            <Button variant="ghost" size="sm" className="mt-2 h-6 text-xs text-amber-600">Generate Content</Button>
                           </div>
                           
                           <div className="border rounded-md p-3 bg-green-50">
-                            <p className="text-sm font-medium text-green-700">Passed checks:</p>
-                            <ul className="text-sm mt-1 list-disc list-inside">
-                              <li>Document structure follows ICH guidelines</li>
-                              <li>All required headings are present</li>
-                              <li>Font and formatting meet eCTD requirements</li>
+                            <p className="text-sm font-medium text-green-600">Passed checks:</p>
+                            <ul className="text-sm mt-1 space-y-1">
+                              <li className="flex items-center">
+                                <CheckCircle className="h-3 w-3 mr-2 text-green-600" />
+                                Document structure follows ICH M4 guidelines
+                              </li>
+                              <li className="flex items-center">
+                                <CheckCircle className="h-3 w-3 mr-2 text-green-600" />
+                                Headings use proper eCTD format
+                              </li>
+                              <li className="flex items-center">
+                                <CheckCircle className="h-3 w-3 mr-2 text-green-600" />
+                                Document is properly linked to Module 5 references
+                              </li>
                             </ul>
                           </div>
+                          
+                          <Button 
+                            className="w-full text-xs mt-4" 
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setAiIsLoading(true);
+                              // Simulate compliance check
+                              setTimeout(() => {
+                                setAiIsLoading(false);
+                                toast({
+                                  title: "Compliance Check Complete",
+                                  description: "Document has been checked against eCTD requirements.",
+                                });
+                              }, 1500);
+                            }}
+                          >
+                            {aiIsLoading ? (
+                              <>
+                                <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                                Checking...
+                              </>
+                            ) : (
+                              <>
+                                <CheckCircle className="h-3 w-3 mr-2" />
+                                Run Full Compliance Check
+                              </>
+                            )}
+                          </Button>
                         </div>
                       </TabsContent>
                       
                       <TabsContent value="formatting" className="mt-4">
                         <div className="space-y-4">
                           <div className="text-sm">
-                            Formatting tools and templates for eCTD compliance.
+                            Formatting assistance to maintain eCTD compliance.
                           </div>
                           
-                          <div className="grid grid-cols-2 gap-2">
-                            <Button size="sm" variant="outline" className="text-xs justify-start">
-                              <Plus className="h-3 w-3 mr-1" />
-                              Add Module 2.5 Template
-                            </Button>
-                            <Button size="sm" variant="outline" className="text-xs justify-start">
-                              <List className="h-3 w-3 mr-1" />
-                              Add Table of Contents
-                            </Button>
-                            <Button size="sm" variant="outline" className="text-xs justify-start">
-                              <Table className="h-3 w-3 mr-1" />
-                              Insert Standard Table
-                            </Button>
-                            <Button size="sm" variant="outline" className="text-xs justify-start">
-                              <Link className="h-3 w-3 mr-1" />
-                              Add Cross-Reference
-                            </Button>
+                          <div className="border rounded-md p-3 bg-green-50">
+                            <p className="text-sm font-medium text-green-600">PDF Export Format:</p>
+                            <p className="text-sm mt-1">The document will be exported as PDF/A-1b format for archival compliance.</p>
+                          </div>
+                          
+                          <div className="border rounded-md p-3 bg-blue-50">
+                            <p className="text-sm font-medium">Recommendation:</p>
+                            <p className="text-sm mt-1">Apply the built-in "Heading 3" style to section titles for proper TOC generation.</p>
+                            <Button variant="ghost" size="sm" className="mt-2 h-6 text-xs">Apply Formatting</Button>
+                          </div>
+                          
+                          <div className="border rounded-md p-3 bg-blue-50">
+                            <p className="text-sm font-medium">Table Formatting:</p>
+                            <p className="text-sm mt-1">Tables should use the approved regulatory format for consistency across documents.</p>
+                            <Button variant="ghost" size="sm" className="mt-2 h-6 text-xs">Fix Table Formatting</Button>
+                          </div>
+                          
+                          <div className="border-t pt-3">
+                            <h4 className="text-xs font-medium mb-2">eCTD Templates</h4>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Button size="sm" variant="outline" className="text-xs justify-start">
+                                <FileText className="h-3 w-3 mr-1" />
+                                Module 2.5 Clinical Overview
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs justify-start">
+                                <FileText className="h-3 w-3 mr-1" />
+                                Module 2.7 Clinical Summary
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs justify-start">
+                                <FileText className="h-3 w-3 mr-1" />
+                                Module 3.2 Quality
+                              </Button>
+                              <Button size="sm" variant="outline" className="text-xs justify-start">
+                                <FileText className="h-3 w-3 mr-1" />
+                                Module 4 Nonclinical
+                              </Button>
+                            </div>
+                          </div>
+                          
+                          <div className="border-t pt-3">
+                            <h4 className="text-xs font-medium mb-2">Export Settings</h4>
+                            <div className="space-y-2">
+                              <div className="flex items-center">
+                                <Checkbox id="pdf" defaultChecked className="mr-2 h-4 w-4" />
+                                <label htmlFor="pdf" className="text-xs">Export as PDF/A (required for eCTD)</label>
+                              </div>
+                              <div className="flex items-center">
+                                <Checkbox id="bookmarks" defaultChecked className="mr-2 h-4 w-4" />
+                                <label htmlFor="bookmarks" className="text-xs">Include PDF bookmarks for navigation</label>
+                              </div>
+                              <div className="flex items-center">
+                                <Checkbox id="hyperlinks" defaultChecked className="mr-2 h-4 w-4" />
+                                <label htmlFor="hyperlinks" className="text-xs">Generate hyperlinks to referenced sections</label>
+                              </div>
+                              <div className="flex items-center">
+                                <Checkbox id="validation" defaultChecked className="mr-2 h-4 w-4" />
+                                <label htmlFor="validation" className="text-xs">Run eCTD validation on export</label>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </TabsContent>
