@@ -415,6 +415,26 @@ export default function CoAuthor() {
       );
       
       if (result && result.documentId) {
+        // Create a new document object for the UI
+        const newDocument = {
+          id: Date.now(), // Temporary ID until DB sync
+          title: newDocumentTitle,
+          moduleType: getTemplateInfo(selectedTemplate).moduleType || 'module_2_5',
+          section: getTemplateInfo(selectedTemplate).sectionCode || '2.5',
+          googleDocId: result.documentId,
+          status: 'Draft',
+          lastEdited: new Date().toLocaleDateString(),
+          createdBy: googleUserInfo?.name || 'Current User',
+          regulatoryFormat: 'eCTD',
+          region: selectedRegion || 'FDA'
+        };
+        
+        // Update documents array with the new document
+        setDocuments(prevDocs => [newDocument, ...prevDocs]);
+        
+        // Set as selected document
+        setSelectedDocument(newDocument);
+        
         // Close the dialog
         setCreateNewDocDialogOpen(false);
         
@@ -1634,15 +1654,24 @@ export default function CoAuthor() {
                           }
                         );
                         
-                        // Set as the selected document
-                        setSelectedDocument({
-                          id: result.documentId,
+                        // Create a new document object
+                        const newDocument = {
+                          id: documents.length + 1, // Generate a unique local ID
                           title: result.title,
+                          googleDocId: result.documentId,
                           url: result.url,
-                          date: new Date().toLocaleDateString(),
+                          lastEdited: new Date().toLocaleDateString(),
                           status: "Draft",
-                          module: "2.5"
-                        });
+                          module: "2.5",
+                          createdBy: googleUserInfo?.name || 'Current User',
+                          regulatoryFormat: 'eCTD'
+                        };
+                        
+                        // Update documents array with the new document
+                        setDocuments(prevDocs => [newDocument, ...prevDocs]);
+                        
+                        // Set as the selected document
+                        setSelectedDocument(newDocument);
                         
                         // Open the document editor after creation
                         setTimeout(() => {
