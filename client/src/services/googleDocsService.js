@@ -83,7 +83,7 @@ export const createNewDoc = async (templateId, title, metadata = {}) => {
 };
 
 /**
- * Save a document from Google Docs to the VAULT
+ * Save a document from Google Docs to the VAULT with enhanced regulatory metadata
  * @param {string} docId - Google Docs document ID
  * @param {Object} vaultMetadata - Metadata for VAULT storage
  * @returns {Promise<Object>} Result of save operation
@@ -117,13 +117,45 @@ export const saveToVault = async (docId, vaultMetadata = {}) => {
       throw new Error("No authentication available. Please sign in again.");
     }
     
-    // Call the backend API to save the document to VAULT
+    // Enhance vaultMetadata with eCTD-specific regulatory information if not provided
+    const enhancedMetadata = {
+      ...vaultMetadata,
+      // Add default regulatory classifications if not specified
+      regulatoryClassification: vaultMetadata.regulatoryClassification || {
+        ectdSection: vaultMetadata.moduleType || (vaultMetadata.title?.includes('Overview') ? 'module_2_5' : 'module_2_7'),
+        region: vaultMetadata.region || 'FDA',
+        submissionType: vaultMetadata.submissionType || 'IND',
+        documentType: vaultMetadata.documentType || 'scientific',
+        lifecycle: vaultMetadata.lifecycle || 'active'
+      },
+      // Add version control information
+      versionControl: vaultMetadata.versionControl || {
+        majorVersion: vaultMetadata.majorVersion || 1,
+        minorVersion: vaultMetadata.minorVersion || 0,
+        docStatus: vaultMetadata.status || 'Draft',
+        previousVersionId: vaultMetadata.previousVersionId || null
+      },
+      // Add audit information for regulatory compliance
+      auditInfo: vaultMetadata.auditInfo || {
+        createdBy: googleAuthService.getCurrentUser()?.email || 'system',
+        createdDate: new Date().toISOString(),
+        reviewedBy: vaultMetadata.reviewedBy || null,
+        approvedBy: vaultMetadata.approvedBy || null,
+        lastModifiedBy: googleAuthService.getCurrentUser()?.email || 'system',
+        lastModifiedDate: new Date().toISOString()
+      }
+    };
+    
+    // Call the backend API to save the document to VAULT with enhanced metadata
     const response = await fetch(`${API_ENDPOINTS.SAVE_TO_VAULT}/${docId}`, {
       method: 'POST',
       headers: authHeaders,
       body: JSON.stringify({
-        vaultMetadata,
-        userInfo: googleAuthService.getCurrentUser() // Include user info in the request
+        vaultMetadata: enhancedMetadata,
+        userInfo: googleAuthService.getCurrentUser(), // Include user info in the request
+        format: vaultMetadata.format || 'pdf', // Default to PDF format for regulatory compliance
+        preserveReviewComments: vaultMetadata.preserveReviewComments !== undefined ? vaultMetadata.preserveReviewComments : true,
+        applyMetadataToDocument: vaultMetadata.applyMetadataToDocument !== undefined ? vaultMetadata.applyMetadataToDocument : true
       }),
     });
     
@@ -134,9 +166,10 @@ export const saveToVault = async (docId, vaultMetadata = {}) => {
     
     const result = await response.json();
     
+    // Show more detailed success message
     toast({
       title: "Document Saved to VAULT",
-      description: "Your Google Doc has been successfully saved to the document VAULT.",
+      description: result.message || `Your document has been successfully saved to VAULT with version ${enhancedMetadata.versionControl.majorVersion}.${enhancedMetadata.versionControl.minorVersion}.`,
     });
     
     return result;
@@ -144,7 +177,7 @@ export const saveToVault = async (docId, vaultMetadata = {}) => {
     console.error("Error saving to VAULT:", error);
     toast({
       title: "Error Saving to VAULT",
-      description: "Failed to save document to VAULT. Please try again.",
+      description: error.message || "Failed to save document to VAULT. Please try again.",
       variant: "destructive",
     });
     throw error;
