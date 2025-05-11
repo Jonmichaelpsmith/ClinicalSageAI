@@ -2095,7 +2095,7 @@ export default function CoAuthor() {
                       className="border-red-100 text-red-600"
                       onClick={async () => {
                         try {
-                          await googleAuthService.signOutFromGoogle();
+                          googleAuthService.logout();
                           setIsGoogleAuthenticated(false);
                           setGoogleUserInfo(null);
                           

@@ -12,6 +12,8 @@ import { Button } from '../components/ui/button';
 import { Tooltip } from '../components/ui/tooltip';
 import { Card } from '../components/ui/card';
 import { useToast } from '../hooks/use-toast';
+import googleAuthService from '../services/googleAuthService';
+import * as googleDocsService from '../services/googleDocsService';
 
 const GoogleDocsEditor = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -22,19 +24,25 @@ const GoogleDocsEditor = () => {
   const editorContainerRef = useRef(null);
   const { toast } = useToast();
 
-  // Simulated Google authentication check
+  // Real Google authentication check
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
-        // In a real implementation, you would check if the user is authenticated with Google
-        // For now, we'll simulate this with a timeout
-        setTimeout(() => {
-          setIsAuthenticated(true);
-          setIsLoading(false);
-        }, 1500);
+        // Check if the user is authenticated with Google
+        const isAuth = googleAuthService.isAuthenticated();
+        setIsAuthenticated(isAuth);
+        
+        if (isAuth) {
+          // If authenticated, we can fetch user's documents or other data
+          // This could be implemented later when needed
+          console.log('User is authenticated, can access Google Docs');
+        } else {
+          console.log('User not authenticated with Google');
+        }
       } catch (error) {
         console.error('Authentication check failed:', error);
         setIsAuthenticated(false);
+      } finally {
         setIsLoading(false);
       }
     };
@@ -128,7 +136,7 @@ const GoogleDocsEditor = () => {
             Please sign in with your Google account to access the document editor.
           </p>
           <Button 
-            onClick={() => window.location.href = '/api/auth/google'} 
+            onClick={() => googleAuthService.initiateAuth()} 
             className="w-full"
           >
             Sign in with Google
