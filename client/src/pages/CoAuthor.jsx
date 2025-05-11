@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   FileText, 
   Edit, 
@@ -28,7 +29,11 @@ import {
   GitBranch,
   Plus,
   Minus,
-  Info
+  Info,
+  UserCheck,
+  RefreshCw,
+  Lock,
+  Users
 } from 'lucide-react';
 
 export default function CoAuthor() {
@@ -36,14 +41,60 @@ export default function CoAuthor() {
   const [isTreeOpen, setIsTreeOpen] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showCompareDialog, setShowCompareDialog] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
   const [activeVersion, setActiveVersion] = useState('v4.0');
   const [compareVersions, setCompareVersions] = useState({ base: 'v4.0', compare: 'v3.2' });
+  const [teamCollabOpen, setTeamCollabOpen] = useState(false);
+  const [documentLocked, setDocumentLocked] = useState(false);
+  const [lockedBy, setLockedBy] = useState(null);
   
-  // Version history data
+  // Version history mock data - in real implementation this would come from the Vault API
   const [versionHistory] = useState([
-    { id: 'v4.0', name: 'Version 4.0', date: 'May 11, 2025', author: 'John Doe', changes: 'Updated clinical endpoints in Module 2.5' },
-    { id: 'v3.2', name: 'Version 3.2', date: 'April 28, 2025', author: 'Jane Smith', changes: 'Fixed formatting issues in Module 3' },
-    { id: 'v3.1', name: 'Version 3.1', date: 'April 25, 2025', author: 'Sarah Williams', changes: 'Updated regulatory citations in Module 1.3' }
+    { 
+      id: 'v4.0', 
+      name: 'Version 4.0', 
+      date: 'May 11, 2025', 
+      author: 'John Doe', 
+      changes: 'Updated clinical endpoints in Module 2.5',
+      commitHash: '8f7e6d5c4b3a2',
+      status: 'Current'
+    },
+    { 
+      id: 'v3.2', 
+      name: 'Version 3.2', 
+      date: 'April 28, 2025', 
+      author: 'Jane Smith', 
+      changes: 'Fixed formatting issues in Module 3',
+      commitHash: '7a6b5c4d3e2f1',
+      status: 'Previous'
+    },
+    { 
+      id: 'v3.1', 
+      name: 'Version 3.1', 
+      date: 'April 25, 2025', 
+      author: 'Sarah Williams', 
+      changes: 'Updated regulatory citations in Module 1.3',
+      commitHash: '6f5e4d3c2b1a9',
+      status: 'Previous'
+    },
+    { 
+      id: 'v3.0', 
+      name: 'Version 3.0', 
+      date: 'April 20, 2025', 
+      author: 'Mark Johnson', 
+      changes: 'Major revision of safety data in Module 2.5',
+      commitHash: '5e4d3c2b1a987',
+      status: 'Previous'
+    },
+    { 
+      id: 'v2.5', 
+      name: 'Version 2.5', 
+      date: 'April 15, 2025', 
+      author: 'Emily Chen', 
+      changes: 'Enhanced quality data in Module 3',
+      commitHash: '4d3c2b1a9876',
+      status: 'Previous'
+    }
   ]);
   
   // Mock data for modules and documents with enhanced details
