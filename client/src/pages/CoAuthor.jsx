@@ -58,6 +58,7 @@ import {
   Info,
   UserCheck,
   RefreshCw,
+  Save,
   Lock,
   Users,
   ClipboardCheck,
@@ -1406,7 +1407,75 @@ export default function CoAuthor() {
           </Suspense>
           
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setGoogleDocsPopupOpen(false)}>Close</Button>
+            <div className="flex justify-between w-full">
+              <div>
+                <Button 
+                  variant="default" 
+                  className="bg-green-600 hover:bg-green-700 mr-2"
+                  onClick={async () => {
+                    try {
+                      toast({
+                        title: "Saving to VAULT",
+                        description: "Saving document to VAULT...",
+                        variant: "default",
+                      });
+                      
+                      // Get current document ID from selected document
+                      const docId = selectedDocument?.id === 1 ? 
+                        "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : 
+                        "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4";
+                      
+                      // Save to VAULT using our service
+                      const result = await googleDocsService.saveToVault(docId, {
+                        title: selectedDocument?.title,
+                        module: selectedDocument?.module || "2.5",
+                        status: "Draft",
+                        organizationId: 1,
+                        savedBy: "Current User",
+                        timestamp: new Date().toISOString()
+                      });
+                      
+                      console.log("Document saved to VAULT:", result);
+                      
+                      toast({
+                        title: "Document Saved",
+                        description: "Your document has been saved to the VAULT successfully.",
+                        variant: "default",
+                      });
+                    } catch (error) {
+                      console.error("Error saving to VAULT:", error);
+                      toast({
+                        title: "Error Saving Document",
+                        description: "There was an error saving your document to VAULT.",
+                        variant: "destructive",
+                      });
+                    }
+                  }}
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  Save to VAULT
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="border-blue-200 text-blue-700"
+                  onClick={() => {
+                    // Get the document URL for the current document
+                    const docId = selectedDocument?.id === 1 ? 
+                      "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : 
+                      "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4";
+                    
+                    // Open in a new tab
+                    window.open(`https://docs.google.com/document/d/${docId}/edit`, '_blank');
+                  }}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Open in New Tab
+                </Button>
+              </div>
+              
+              <Button variant="outline" onClick={() => setGoogleDocsPopupOpen(false)}>Close</Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>
