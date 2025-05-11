@@ -41,7 +41,7 @@ export const SAMPLE_DOCUMENTS = {
 
 // API endpoints
 export const API_ENDPOINTS = {
-  CREATE_DOC: '/api/google-docs/create',
+  CREATE_DOC: '/api/google-docs/documents',
   EXPORT_DOC: '/api/google-docs/export',
   SAVE_TO_VAULT: '/api/google-docs/save-to-vault'
 };
