@@ -81,8 +81,25 @@ import {
   Bot,
   Clipboard,
   Zap,
-  Send
+  Send,
+  Loader2
 } from 'lucide-react';
+
+// Custom Google icon component
+const GoogleIcon = ({ className }) => (
+  <svg 
+    className={className} 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="24" 
+    height="24" 
+    viewBox="0 0 24 24"
+  >
+    <path 
+      fill="currentColor" 
+      d="M12.545 12.151c0 .269-.025.533-.074.79h-5.34v-1.572h3.054a2.615 2.615 0 0 0-1.131-1.71 3.23 3.23 0 0 0-1.923-.562 3.295 3.295 0 0 0-3.054 2.121 3.337 3.337 0 0 0 0 2.58 3.295 3.295 0 0 0 3.054 2.121 3.13 3.13 0 0 0 1.875-.562c.516-.37.908-.882 1.131-1.467h.098L12.545 15c-.369.703-.934 1.3-1.642 1.731a4.449 4.449 0 0 1-4.615-.393 4.593 4.593 0 0 1-1.679-2.95 4.64 4.64 0 0 1 .98-3.95 4.407 4.407 0 0 1 3.225-1.462c1.113 0 2.184.41 3.01 1.156a4.176 4.176 0 0 1 1.423 2.983v.036Zm7.842-2.954v1.566h-1.887v1.887h-1.566v-1.887h-1.887v-1.566h1.887V7.31h1.566v1.887h1.887Z" 
+    />
+  </svg>
+);
 
 export default function CoAuthor() {
   // Component state
@@ -118,6 +135,7 @@ export default function CoAuthor() {
   useEffect(() => {
     const checkGoogleAuth = async () => {
       try {
+        setAuthLoading(true);
         const isAuthenticated = googleAuthService.isGoogleAuthenticated();
         setIsGoogleAuthenticated(isAuthenticated);
         
@@ -129,6 +147,8 @@ export default function CoAuthor() {
         }
       } catch (error) {
         console.error('Error checking Google authentication:', error);
+      } finally {
+        setAuthLoading(false);
       }
     };
     
