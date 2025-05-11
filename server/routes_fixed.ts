@@ -26,9 +26,7 @@ import qmpApiRouter from './routes/qmp-api.js';
 // @ts-ignore
 import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
 // @ts-ignore
-import * as googleDocsModule from './routes/googleDocs.js';
-// Access the router exported by the module
-const googleDocsRoutes = googleDocsModule.router;
+import { router as googleDocsRoutes } from './routes/googleDocs.js';
 
 export default function registerRoutes(app: Express): void {
   // Create a router for basic CER routes

@@ -6,7 +6,6 @@
  */
 
 import express from 'express';
-import { google } from 'googleapis';
 import axios from 'axios';
 
 const router = express.Router();
@@ -16,12 +15,10 @@ const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '1045075234440-sve60m8va1d4djd
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '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';
 const REDIRECT_URI = process.env.REDIRECT_URI || 'http://localhost:3000/google/auth/callback';
 
-// Create OAuth2 client
-const oauth2Client = new google.auth.OAuth2(
-  CLIENT_ID,
-  CLIENT_SECRET,
-  REDIRECT_URI
-);
+// Google API endpoints
+const GOOGLE_AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth';
+const GOOGLE_TOKEN_URL = 'https://oauth2.googleapis.com/token';
+const GOOGLE_DRIVE_API = 'https://www.googleapis.com/drive/v3';
 
 // Define scopes
 const SCOPES = [
@@ -37,15 +34,20 @@ const SCOPES = [
  */
 router.get('/auth/google', (req, res) => {
   try {
-    const authUrl = oauth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: SCOPES,
-      prompt: 'consent'
-    });
+    const url = new URL(GOOGLE_AUTH_URL);
     
-    // Direct redirect to Google's auth page instead of returning the URL in JSON
-    // This simplifies the flow and matches client-side expectations
-    res.redirect(authUrl);
+    // Add query parameters
+    url.searchParams.append('client_id', CLIENT_ID);
+    url.searchParams.append('redirect_uri', REDIRECT_URI);
+    url.searchParams.append('response_type', 'code');
+    url.searchParams.append('access_type', 'offline');
+    url.searchParams.append('scope', SCOPES.join(' '));
+    url.searchParams.append('include_granted_scopes', 'true');
+    url.searchParams.append('prompt', 'consent');
+    
+    console.log('Redirecting to Google OAuth:', url.toString());
+    // Direct redirect to Google's auth page
+    res.redirect(url.toString());
   } catch (error) {
     console.error('Error generating auth URL:', error);
     res.status(500).json({ error: 'Failed to generate authentication URL' });
@@ -64,12 +66,26 @@ router.get('/auth/google/callback', async (req, res) => {
   
   try {
     // Exchange code for tokens
-    const { tokens } = await oauth2Client.getToken(code);
-    oauth2Client.setCredentials(tokens);
+    const tokenResponse = await axios.post(GOOGLE_TOKEN_URL, null, {
+      params: {
+        code,
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        redirect_uri: REDIRECT_URI,
+        grant_type: 'authorization_code'
+      }
+    });
     
-    // Get user info
-    const userInfoClient = google.oauth2('v2').userinfo;
-    const userInfo = await userInfoClient.get({ auth: oauth2Client });
+    const tokens = tokenResponse.data;
+    
+    // Get user info using the access token
+    const userInfoResponse = await axios.get('https://www.googleapis.com/oauth2/v2/userinfo', {
+      headers: {
+        Authorization: `Bearer ${tokens.access_token}`
+      }
+    });
+    
+    const userInfo = userInfoResponse.data;
     
     // Create session or JWT here if needed
     
@@ -462,4 +478,4 @@ router.post('/validate', async (req, res) => {
   }
 });
 
-module.exports = router;
+export { router };
