@@ -1049,6 +1049,14 @@ export default function CoAuthor() {
                     <ListChecks className="h-3 w-3 mr-1" />
                     Formatting
                   </Button>
+                  <Button 
+                    variant={aiAssistantMode === 'ectd' ? 'subtle' : 'ghost'} 
+                    className="flex-1 h-8 text-xs rounded-none" 
+                    onClick={() => setAiAssistantMode('ectd')}
+                  >
+                    <FileStack className="h-3 w-3 mr-1" />
+                    eCTD
+                  </Button>
                 </div>
               </div>
               
