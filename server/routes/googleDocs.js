@@ -42,7 +42,9 @@ router.get('/auth/google', (req, res) => {
       prompt: 'consent'
     });
     
-    res.json({ authUrl });
+    // Direct redirect to Google's auth page instead of returning the URL in JSON
+    // This simplifies the flow and matches client-side expectations
+    res.redirect(authUrl);
   } catch (error) {
     console.error('Error generating auth URL:', error);
     res.status(500).json({ error: 'Failed to generate authentication URL' });
@@ -70,8 +72,8 @@ router.get('/auth/google/callback', async (req, res) => {
     
     // Create session or JWT here if needed
     
-    // Redirect to frontend with tokens
-    res.redirect(`/google-auth-callback#access_token=${tokens.access_token}&refresh_token=${tokens.refresh_token}&expires_in=${tokens.expiry_date - Date.now()}`);
+    // Redirect to frontend with tokens - fixed to use the correct callback route
+    res.redirect(`/google/auth/callback#access_token=${tokens.access_token}&refresh_token=${tokens.refresh_token}&expires_in=${tokens.expiry_date - Date.now()}`);
     
   } catch (error) {
     console.error('Error in OAuth callback:', error);

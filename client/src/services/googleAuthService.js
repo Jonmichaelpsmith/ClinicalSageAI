@@ -41,20 +41,13 @@ class GoogleAuthService {
   }
 
   /**
-   * Initiates the OAuth flow by redirecting to Google's authorization page
+   * Initiates the OAuth flow by redirecting to the server's auth endpoint
+   * The server will then redirect to Google's authorization page
    */
   initiateAuth() {
     try {
-      const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth');
-      authUrl.searchParams.append('client_id', GOOGLE_CLIENT_ID);
-      authUrl.searchParams.append('redirect_uri', REDIRECT_URI);
-      authUrl.searchParams.append('response_type', 'token');
-      authUrl.searchParams.append('scope', SCOPES);
-      authUrl.searchParams.append('include_granted_scopes', 'true');
-      authUrl.searchParams.append('prompt', 'consent');
-      
-      // Redirect to Google's authorization page
-      window.location.href = authUrl.toString();
+      // Redirect to our server's Google auth endpoint which will handle OAuth flow
+      window.location.href = '/api/google-docs/auth/google';
     } catch (error) {
       console.error('Error initiating Google authentication:', error);
       throw new Error('Failed to initiate Google authentication');
