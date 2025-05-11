@@ -356,61 +356,124 @@ export default function CoAuthor() {
           </CardContent>
         </Card>
 
-        {/* Regulatory Search Card - Enhanced */}
-        <Card className="border-green-200">
+        {/* Regulatory Search Card - Enhanced with Enterprise UI */}
+        <Card className="border-green-200 shadow-sm">
           <CardHeader className="pb-2 bg-gradient-to-r from-green-50 to-white">
             <CardTitle className="flex items-center text-lg">
               <Search className="h-5 w-5 mr-2 text-green-600" />
               Intelligent Regulatory Search
             </CardTitle>
             <CardDescription>
-              Find relevant guidance and precedents for regulatory documents
+              Find relevant guidance and precedents for regulatory submissions
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3 mb-3">
+            <div className="space-y-3 mb-4">
               <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-green-600" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-green-600" />
                 <input 
                   type="text" 
-                  placeholder="Search regulatory guidelines..." 
-                  className="pl-8 h-9 w-full rounded-md border border-green-200 bg-white px-3 py-1 text-sm shadow-sm transition-colors focus:border-green-400 focus:ring-1 focus:ring-green-400"
+                  placeholder="Search regulatory guidelines and precedents..." 
+                  className="pl-10 h-10 w-full rounded-md border border-green-200 bg-white px-3 py-2 text-sm shadow-sm transition-colors focus:border-green-400 focus:ring-1 focus:ring-green-400"
                 />
+                <Button size="sm" className="absolute right-1.5 top-1.5 h-7 bg-green-600 hover:bg-green-700 text-white rounded-md">
+                  Search
+                </Button>
               </div>
               
-              <div className="flex items-center text-xs text-green-700 bg-green-50 p-1.5 rounded-md">
-                <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-600" />
-                <span>AI-powered search using natural language</span>
+              <div className="bg-gradient-to-r from-green-50 to-green-25 border border-green-100 p-2.5 rounded-md">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center text-sm font-medium text-green-800">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 mr-1.5 text-green-600">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M12 16v-4"></path>
+                      <path d="M12 8h.01"></path>
+                    </svg>
+                    Regulatory Intelligence
+                  </div>
+                  <Badge variant="outline" className="text-xs bg-white border-green-200 text-green-700">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    GPT-powered
+                  </Badge>
+                </div>
+                <div className="text-xs text-green-700 leading-relaxed">
+                  Ask regulatory questions in natural language. The system searches FDA, EMA, PMDA, and ICH guidance to find the most relevant information for your submission.
+                </div>
               </div>
               
-              <div className="flex flex-wrap gap-2 mt-2">
-                <Badge variant="outline" className="text-xs cursor-pointer bg-green-50 text-green-700 border-green-200 hover:bg-green-100">FDA Guidelines</Badge>
-                <Badge variant="outline" className="text-xs cursor-pointer bg-green-50 text-green-700 border-green-200 hover:bg-green-100">ICH Standards</Badge>
-                <Badge variant="outline" className="text-xs cursor-pointer bg-green-50 text-green-700 border-green-200 hover:bg-green-100">eCTD Requirements</Badge>
-                <Badge variant="outline" className="text-xs cursor-pointer bg-green-50 text-green-700 border-green-200 hover:bg-green-100">EMA</Badge>
+              <div className="flex flex-col space-y-1.5">
+                <div className="text-sm font-medium text-green-800 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 mr-1.5 text-green-600">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                  </svg>
+                  Quick Access
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="border border-green-200 rounded-md p-2 bg-white hover:bg-green-50 transition-colors cursor-pointer group">
+                    <div className="flex items-center">
+                      <div className="bg-green-100 h-7 w-7 rounded-md flex items-center justify-center mr-2 group-hover:bg-green-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-green-700">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                          <line x1="3" y1="9" x2="21" y2="9"></line>
+                          <line x1="9" y1="21" x2="9" y2="9"></line>
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-xs font-medium text-green-800">FDA Guidelines</div>
+                        <div className="text-xs text-green-600">435 documents</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="border border-green-200 rounded-md p-2 bg-white hover:bg-green-50 transition-colors cursor-pointer group">
+                    <div className="flex items-center">
+                      <div className="bg-green-100 h-7 w-7 rounded-md flex items-center justify-center mr-2 group-hover:bg-green-200 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-green-700">
+                          <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                          <path d="M7 15h0M2 9.5h20"></path>
+                        </svg>
+                      </div>
+                      <div>
+                        <div className="text-xs font-medium text-green-800">ICH Standards</div>
+                        <div className="text-xs text-green-600">128 documents</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               
               <div className="border-t border-green-100 pt-2 mt-2">
-                <div className="text-xs font-medium text-green-700 mb-1 flex items-center">
-                  <History className="h-3.5 w-3.5 mr-1" />
+                <div className="text-xs font-medium text-green-800 mb-1.5 flex items-center">
+                  <History className="h-3.5 w-3.5 mr-1.5 text-green-600" />
                   Recent searches:
                 </div>
-                <div className="space-y-1">
-                  <div className="text-xs text-green-600 cursor-pointer hover:underline">Module 2.5 clinical overview requirements</div>
-                  <div className="text-xs text-green-600 cursor-pointer hover:underline">FDA guidance investigational drugs</div>
+                <div className="space-y-1.5">
+                  <div className="text-xs p-1.5 bg-green-50 rounded-md border border-green-100 text-green-700 cursor-pointer hover:bg-green-100 transition-colors flex justify-between items-center group">
+                    <span>Module 2.5 clinical overview requirements</span>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Search className="h-3 w-3 text-green-600" />
+                    </div>
+                  </div>
+                  <div className="text-xs p-1.5 bg-green-50 rounded-md border border-green-100 text-green-700 cursor-pointer hover:bg-green-100 transition-colors flex justify-between items-center group">
+                    <span>FDA guidance investigational drugs</span>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Search className="h-3 w-3 text-green-600" />
+                    </div>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="border rounded-md p-2 bg-green-50 mt-2">
-                <div className="text-xs font-medium mb-1">Suggested search topics:</div>
-                <div className="text-xs text-gray-600">Common Module 1-5 guidelines, ICH M4 structure, FDA/EMA submission requirements</div>
               </div>
             </div>
             
-            <Button className="w-full bg-green-600 hover:bg-green-700">
+            <Button className="w-full bg-green-600 hover:bg-green-700 text-white h-10">
               <Search className="h-4 w-4 mr-2" />
               Advanced Regulatory Search
             </Button>
+            <div className="flex items-center justify-center mt-2 text-xs text-gray-500">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 mr-1 text-green-500">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+              </svg>
+              Last updated: May 11, 2025
+            </div>
           </CardContent>
         </Card>
 
