@@ -256,12 +256,14 @@ export default function CoAuthor() {
   const handleGoogleSignIn = () => {
     setAuthLoading(true);
     try {
-      googleAuthService.initiateAuth();
+      console.log("Starting Google OAuth flow directly...");
+      // Direct redirection to Google OAuth endpoint with console logs for debugging
+      window.location.href = '/api/google-docs/auth/google';
     } catch (error) {
       console.error('Error initiating Google auth:', error);
       toast({
         title: "Authentication Error",
-        description: "Failed to start Google authentication process.",
+        description: "Failed to start Google authentication process. Please try again.",
         variant: "destructive"
       });
       setAuthLoading(false);
