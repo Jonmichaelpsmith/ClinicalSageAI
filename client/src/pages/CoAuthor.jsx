@@ -1546,20 +1546,64 @@ export default function CoAuthor() {
                   variant="outline" 
                   size="sm" 
                   className="h-8 px-2 text-xs border-green-200 text-green-700 hover:bg-green-50"
-                  onClick={() => {
-                    toast({
-                      title: "Saving to VAULT",
-                      description: "Saving document to DocuShare VAULT...",
-                    });
-                    
-                    // Simulate saving to VAULT
-                    setTimeout(() => {
+                  onClick={async () => {
+                    try {
+                      // Check if user is authenticated
+                      if (!isGoogleAuthenticated) {
+                        toast({
+                          title: "Authentication Required",
+                          description: "Please sign in with Google to save documents to VAULT.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
+                      toast({
+                        title: "Saving to VAULT",
+                        description: "Saving document to VAULT...",
+                      });
+                      
+                      // Get the document ID
+                      const docId = selectedDocument?.id === 1 ? 
+                        "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : 
+                        "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4";
+                        
+                      // Get access token for API calls  
+                      const accessToken = googleAuthService.getAccessToken();
+                      if (!accessToken) {
+                        throw new Error("No Google access token available. Please sign in again.");
+                      }
+                        
+                      // Call the save to VAULT API
+                      const result = await googleDocsService.saveToVault(docId, {
+                        // Document metadata
+                        title: selectedDocument?.title || "Untitled Document",
+                        moduleType: selectedDocument?.module || "module2",
+                        section: "2.5", // Default to clinical overview section
+                        status: selectedDocument?.status || "Draft",
+                        
+                        // Organizational context
+                        organizationId: "1", // Use string for consistency with API
+                        userId: googleUserInfo?.id || "anonymous",
+                        userName: googleUserInfo?.name || "Current User",
+                        
+                        // Vault specific details
+                        folderId: "regulatory-submissions"
+                      });
+                      
                       toast({
                         title: "Saved to VAULT",
-                        description: "Document successfully saved to DocuShare VAULT.",
+                        description: `Document successfully saved to VAULT with ID: ${result.vaultId}`,
                         variant: "success",
                       });
-                    }, 1500);
+                    } catch (error) {
+                      console.error("Error saving to VAULT:", error);
+                      toast({
+                        title: "Error Saving Document",
+                        description: error.message || "Failed to save document to VAULT.",
+                        variant: "destructive",
+                      });
+                    }
                   }}
                 >
                   <Database className="h-3 w-3 mr-1" />
@@ -1763,16 +1807,83 @@ export default function CoAuthor() {
                   </div>
                 </div>
 
-                {/* Direct Google Docs Iframe Integration */}
-                <iframe
-                  title="Google Docs Editor"
-                  src={`https://docs.google.com/document/d/${selectedDocument?.id === 1 ? "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4"}/edit?usp=sharing&rm=minimal`}
-                  width="100%"
-                  height="100%"
-                  frameBorder="0"
-                  allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                  className="flex-grow"
-                />
+                {/* Dynamic Google Docs Iframe Integration */}
+                {isGoogleAuthenticated ? (
+                  <iframe
+                    title="Google Docs Editor"
+                    src={`https://docs.google.com/document/d/${
+                      // First check if we have a docId directly from Google integration
+                      selectedDocument?.googleDocsId || 
+                      // Then check for predefined mapping based on document id
+                      (selectedDocument?.id === 1 
+                        ? "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" 
+                        : selectedDocument?.id === 2
+                          ? "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4"
+                          : "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" // Default document
+                      )
+                    }/edit?usp=sharing&rm=minimal&embedded=true`}
+                    width="100%"
+                    height="100%"
+                    frameBorder="0"
+                    allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    className="flex-grow"
+                    onLoad={() => {
+                      console.log("Google Docs document loaded successfully");
+                      // Track loading success for analytics or error handling
+                    }}
+                    onError={(e) => {
+                      console.error("Error loading Google Docs:", e);
+                      toast({
+                        title: "Document Loading Error",
+                        description: "Failed to load Google Docs. Please try refreshing the page.",
+                        variant: "destructive",
+                      });
+                    }}
+                  />
+                ) : (
+                  <div className="flex-grow flex flex-col items-center justify-center bg-gray-50 p-8">
+                    <GoogleIcon className="h-16 w-16 text-gray-400 mb-4" />
+                    <h3 className="text-xl font-medium text-gray-700 mb-2">Sign in to Google Docs</h3>
+                    <p className="text-gray-500 mb-6 text-center max-w-md">
+                      You need to authenticate with Google to access document editing functionality. 
+                      Your authentication enables seamless integration with the eCTD Co-Author system.
+                    </p>
+                    <Button 
+                      size="lg"
+                      onClick={() => {
+                        console.log("Initiating Google authentication");
+                        setAuthLoading(true);
+                        
+                        // Call Google auth service to begin the OAuth flow
+                        try {
+                          googleAuthService.initiateAuth();
+                        } catch (error) {
+                          console.error("Google auth initiation error:", error);
+                          setAuthLoading(false);
+                          toast({
+                            title: "Authentication Error",
+                            description: "Failed to start Google authentication. Please try again.",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      disabled={authLoading}
+                      className="flex items-center bg-blue-600 hover:bg-blue-700"
+                    >
+                      {authLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Authenticating...
+                        </>
+                      ) : (
+                        <>
+                          <GoogleIcon className="mr-2 h-4 w-4" />
+                          Sign in with Google
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
                 
                 {/* Regulatory AI Assistant Sidebar - Only shown when AI assistant is toggled on */}
                 {aiAssistantOpen && (
@@ -2042,14 +2153,35 @@ export default function CoAuthor() {
                             "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : 
                             "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4";
                           
-                          // Save to VAULT using our service
+                          // Save to VAULT using our enhanced service
+                          const accessToken = googleAuthService.getAccessToken();
+                          if (!accessToken) {
+                            throw new Error("No Google access token available. Please sign in again.");
+                          }
+
+                          // Use our improved VAULT integration endpoint with proper metadata
                           const result = await googleDocsService.saveToVault(docId, {
-                            title: selectedDocument?.title,
-                            module: selectedDocument?.module || "2.5",
-                            status: "Draft",
-                            organizationId: 1,
-                            savedBy: googleUserInfo?.name || "Current User",
-                            timestamp: new Date().toISOString()
+                            // Document metadata
+                            title: selectedDocument?.title || "Untitled Document",
+                            moduleType: selectedDocument?.module || "module2",
+                            section: "2.5", // Default to clinical overview section
+                            status: selectedDocument?.status || "Draft",
+                            
+                            // Organizational context
+                            organizationId: "1", // Use string for consistency with API
+                            userId: googleUserInfo?.id || "anonymous",
+                            userName: googleUserInfo?.name || "Current User",
+                            userEmail: googleUserInfo?.email,
+                            
+                            // Vault specific details
+                            folderId: "regulatory-submissions",
+                            lifecycle: "review",
+                            version: selectedDocument?.version || "1.0",
+                            
+                            // Regulatory classification data
+                            regulatoryAuthority: "FDA", // FDA, EMA, etc.
+                            submissionType: "NDA", // NDA, BLA, etc.
+                            submissionClass: "Original" // Original, Supplement, etc.
                           });
                           
                           console.log("Document saved to VAULT:", result);

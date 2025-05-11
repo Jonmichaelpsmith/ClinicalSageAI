@@ -7,6 +7,7 @@
 
 import { toast } from '@/hooks/use-toast';
 import { SAMPLE_DOCUMENTS, API_ENDPOINTS, DOCUMENT_TEMPLATES } from '../config/googleConfig';
+import googleAuthService from './googleAuthService';
 
 /**
  * Get a document ID based on module type or ID
@@ -91,11 +92,18 @@ export const saveToVault = async (docId, vaultMetadata = {}) => {
   try {
     console.log(`Saving Google Doc ${docId} to VAULT with metadata:`, vaultMetadata);
     
+    // Get Google access token for authorization
+    const accessToken = googleAuthService.getAccessToken();
+    if (!accessToken) {
+      throw new Error("No Google access token available. Please sign in again.");
+    }
+    
     // Call the backend API to save the document to VAULT
-    const response = await fetch(`${API_ENDPOINTS.SAVE_TO_VAULT}/${docId}`, {
+    const response = await fetch(`${API_ENDPOINTS.SAVE_TO_VAULT}/${docId}?access_token=${accessToken}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`
       },
       body: JSON.stringify({
         vaultMetadata
