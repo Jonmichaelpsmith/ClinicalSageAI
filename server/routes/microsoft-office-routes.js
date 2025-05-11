@@ -1,367 +1,163 @@
 /**
  * Microsoft Office Integration Routes
  * 
- * This module provides API endpoints for integrating with Microsoft Office 365,
- * specifically focusing on Word integration for the eCTD Co-Author Module.
+ * This module provides API routes for integrating Microsoft Office applications
+ * with the TrialSage platform, specifically for the eCTD Co-Author module.
+ * 
+ * It handles authentication with Microsoft services, document editing sessions,
+ * and collaboration tracking.
  */
 
 const express = require('express');
 const router = express.Router();
-const axios = require('axios');
-const { Client } = require('@microsoft/microsoft-graph-client');
-require('isomorphic-fetch'); // Required for Microsoft Graph client
 
-// Microsoft API configuration
-const MS_CONFIG = {
-  clientId: process.env.MICROSOFT_CLIENT_ID,
-  clientSecret: process.env.MICROSOFT_CLIENT_SECRET,
-  tenantId: process.env.MICROSOFT_TENANT_ID || 'common',
-  redirectUri: `${process.env.APP_URL || 'http://localhost:3000'}/api/microsoft/callback`,
-  authority: 'https://login.microsoftonline.com/',
-  scopes: [
-    'https://graph.microsoft.com/Files.ReadWrite',
-    'https://graph.microsoft.com/Sites.ReadWrite.All',
-    'offline_access',
-    'openid',
-    'profile'
-  ]
-};
-
-// Create Microsoft Graph client
-function getAuthenticatedClient(accessToken) {
-  return Client.init({
-    authProvider: (done) => {
-      done(null, accessToken);
-    }
-  });
-}
+// In-memory store for document editing sessions (in production, use Redis or a database)
+const editingSessions = new Map();
 
 /**
- * Generate authorization URL for Microsoft OAuth flow
+ * Register a document editing session
+ * POST /api/microsoft-office/register-editing
  */
-router.get('/authorize', (req, res) => {
+router.post('/register-editing', async (req, res) => {
   try {
-    const state = encodeURIComponent(JSON.stringify({
-      returnUrl: req.query.returnUrl || '/'
-    }));
+    const { documentId, action, timestamp } = req.body;
     
-    const authUrl = `${MS_CONFIG.authority}${MS_CONFIG.tenantId}/oauth2/v2.0/authorize?client_id=${MS_CONFIG.clientId}&response_type=code&redirect_uri=${encodeURIComponent(MS_CONFIG.redirectUri)}&scope=${encodeURIComponent(MS_CONFIG.scopes.join(' '))}&response_mode=query&state=${state}`;
+    if (!documentId) {
+      return res.status(400).json({ error: 'Document ID is required' });
+    }
+    
+    // Get current session or create a new one
+    const sessionKey = `doc:${documentId}`;
+    const session = editingSessions.get(sessionKey) || {
+      documentId,
+      actions: [],
+      lastUpdated: null,
+    };
+    
+    // Add action to session history
+    session.actions.push({
+      action: action || 'view',
+      timestamp: timestamp || new Date().toISOString(),
+      userId: req.user?.id || 'anonymous',
+    });
+    
+    session.lastUpdated = new Date().toISOString();
+    
+    // Update session in store
+    editingSessions.set(sessionKey, session);
+    
+    // Return updated session
+    res.json(session);
+  } catch (error) {
+    console.error('Error registering editing session:', error);
+    res.status(500).json({ error: 'Failed to register editing session' });
+  }
+});
+
+/**
+ * Get document editing session
+ * GET /api/microsoft-office/editing-session/:documentId
+ */
+router.get('/editing-session/:documentId', async (req, res) => {
+  try {
+    const { documentId } = req.params;
+    
+    if (!documentId) {
+      return res.status(400).json({ error: 'Document ID is required' });
+    }
+    
+    // Get session
+    const sessionKey = `doc:${documentId}`;
+    const session = editingSessions.get(sessionKey);
+    
+    if (!session) {
+      return res.status(404).json({ error: 'No editing session found for this document' });
+    }
+    
+    // Return session
+    res.json(session);
+  } catch (error) {
+    console.error('Error retrieving editing session:', error);
+    res.status(500).json({ error: 'Failed to retrieve editing session' });
+  }
+});
+
+/**
+ * Get Microsoft authentication URL
+ * GET /api/microsoft-office/auth-url
+ */
+router.get('/auth-url', async (req, res) => {
+  try {
+    // In a real implementation, this would generate a proper Microsoft auth URL
+    // For now, we'll just return a mocked URL for demonstration
+    
+    const authUrl = 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize' +
+      '?client_id=YOUR_CLIENT_ID' +
+      '&response_type=code' +
+      '&redirect_uri=YOUR_REDIRECT_URI' +
+      '&response_mode=query' +
+      '&scope=openid profile email offline_access Files.ReadWrite.All';
     
     res.json({ authUrl });
   } catch (error) {
-    console.error('Error generating Microsoft authorization URL:', error);
-    res.status(500).json({ error: 'Failed to generate authorization URL' });
+    console.error('Error generating Microsoft auth URL:', error);
+    res.status(500).json({ error: 'Failed to generate Microsoft auth URL' });
   }
 });
 
 /**
- * Handle OAuth callback from Microsoft
+ * Exchange auth code for access token
+ * POST /api/microsoft-office/token
  */
-router.get('/callback', async (req, res) => {
+router.post('/token', async (req, res) => {
   try {
-    const { code, state } = req.query;
+    const { code } = req.body;
     
     if (!code) {
-      return res.status(400).json({ error: 'Authorization code not found' });
+      return res.status(400).json({ error: 'Authorization code is required' });
     }
     
-    // Exchange code for tokens
-    const tokenResponse = await axios.post(
-      `${MS_CONFIG.authority}${MS_CONFIG.tenantId}/oauth2/v2.0/token`,
-      new URLSearchParams({
-        client_id: MS_CONFIG.clientId,
-        client_secret: MS_CONFIG.clientSecret,
-        code,
-        redirect_uri: MS_CONFIG.redirectUri,
-        grant_type: 'authorization_code'
-      }),
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      }
-    );
-    
-    const { access_token, refresh_token, expires_in } = tokenResponse.data;
-    
-    // In a production implementation, store tokens securely in database
-    // associated with the user's session
-    req.session.msAuth = {
-      accessToken: access_token,
-      refreshToken: refresh_token,
-      expiresAt: Date.now() + (expires_in * 1000)
-    };
-    
-    // Get user info from Microsoft Graph
-    const graphClient = getAuthenticatedClient(access_token);
-    const userInfo = await graphClient.api('/me').get();
-    
-    req.session.msUserInfo = {
-      id: userInfo.id,
-      displayName: userInfo.displayName,
-      email: userInfo.userPrincipalName
-    };
-    
-    // Redirect back to application
-    const parsedState = JSON.parse(decodeURIComponent(state));
-    res.redirect(parsedState.returnUrl || '/');
-  } catch (error) {
-    console.error('Error handling Microsoft callback:', error);
-    res.status(500).json({ error: 'Authentication failed' });
-  }
-});
-
-/**
- * Check Microsoft authentication status
- */
-router.get('/auth-status', (req, res) => {
-  try {
-    const msAuth = req.session?.msAuth;
-    const msUserInfo = req.session?.msUserInfo;
-    
-    if (!msAuth || !msAuth.accessToken) {
-      return res.json({ isAuthenticated: false });
-    }
-    
-    const isTokenExpired = msAuth.expiresAt < Date.now();
+    // In a real implementation, this would exchange the code for a token
+    // For now, we'll just return a dummy token for demonstration
     
     res.json({
-      isAuthenticated: !isTokenExpired,
-      userInfo: isTokenExpired ? null : msUserInfo,
-      needsRefresh: isTokenExpired
+      access_token: 'SIMULATED_ACCESS_TOKEN',
+      token_type: 'Bearer',
+      expires_in: 3600,
+      scope: 'openid profile email offline_access Files.ReadWrite.All',
+      refresh_token: 'SIMULATED_REFRESH_TOKEN',
     });
   } catch (error) {
-    console.error('Error checking authentication status:', error);
-    res.status(500).json({ error: 'Failed to check authentication status' });
+    console.error('Error exchanging code for token:', error);
+    res.status(500).json({ error: 'Failed to exchange code for token' });
   }
 });
 
 /**
- * Refresh Microsoft access token
+ * Get user info from Microsoft
+ * GET /api/microsoft-office/me
  */
-router.post('/refresh-token', async (req, res) => {
+router.get('/me', async (req, res) => {
   try {
-    const refreshToken = req.session?.msAuth?.refreshToken;
+    // Get authorization header
+    const authHeader = req.headers.authorization;
     
-    if (!refreshToken) {
-      return res.status(401).json({ error: 'No refresh token available' });
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Valid Bearer token is required' });
     }
     
-    // Exchange refresh token for new access token
-    const tokenResponse = await axios.post(
-      `${MS_CONFIG.authority}${MS_CONFIG.tenantId}/oauth2/v2.0/token`,
-      new URLSearchParams({
-        client_id: MS_CONFIG.clientId,
-        client_secret: MS_CONFIG.clientSecret,
-        refresh_token: refreshToken,
-        grant_type: 'refresh_token'
-      }),
-      {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        }
-      }
-    );
+    // In a real implementation, this would validate the token and get user info
+    // For now, we'll just return dummy user info for demonstration
     
-    const { access_token, refresh_token, expires_in } = tokenResponse.data;
-    
-    // Update tokens in session
-    req.session.msAuth = {
-      accessToken: access_token,
-      refreshToken: refresh_token || refreshToken, // Use new refresh token if provided
-      expiresAt: Date.now() + (expires_in * 1000)
-    };
-    
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error refreshing Microsoft token:', error);
-    res.status(500).json({ error: 'Failed to refresh token' });
-  }
-});
-
-/**
- * Sign out from Microsoft
- */
-router.post('/sign-out', (req, res) => {
-  try {
-    // Clear Microsoft authentication data from session
-    if (req.session) {
-      delete req.session.msAuth;
-      delete req.session.msUserInfo;
-    }
-    
-    res.json({ success: true });
-  } catch (error) {
-    console.error('Error signing out from Microsoft:', error);
-    res.status(500).json({ error: 'Failed to sign out' });
-  }
-});
-
-/**
- * Get Microsoft OneDrive documents
- */
-router.get('/documents', async (req, res) => {
-  try {
-    const accessToken = req.session?.msAuth?.accessToken;
-    
-    if (!accessToken) {
-      return res.status(401).json({ error: 'Not authenticated with Microsoft' });
-    }
-    
-    const graphClient = getAuthenticatedClient(accessToken);
-    
-    // Get documents from OneDrive root
-    const response = await graphClient
-      .api('/me/drive/root/children')
-      .select('id,name,webUrl,createdDateTime,lastModifiedDateTime,file')
-      .filter("file ne null")
-      .get();
-    
-    res.json(response.value);
-  } catch (error) {
-    console.error('Error getting OneDrive documents:', error);
-    res.status(500).json({ error: 'Failed to get documents' });
-  }
-});
-
-/**
- * Get Microsoft Word document embed URL
- */
-router.get('/word-embed-url/:documentId', async (req, res) => {
-  try {
-    const { documentId } = req.params;
-    const accessToken = req.session?.msAuth?.accessToken;
-    
-    if (!accessToken) {
-      return res.status(401).json({ error: 'Not authenticated with Microsoft' });
-    }
-    
-    const graphClient = getAuthenticatedClient(accessToken);
-    
-    // Get document details
-    const document = await graphClient
-      .api(`/me/drive/items/${documentId}`)
-      .get();
-    
-    if (!document) {
-      return res.status(404).json({ error: 'Document not found' });
-    }
-    
-    // Generate Word Online edit URL
-    // Note: In a production implementation, this would use the WOPI protocol
-    // which requires proper integration with Microsoft Office Online Server
-    
-    // This is a simplified approach using direct Word Online URLs
-    const webUrl = document.webUrl;
-    const embedUrl = webUrl.replace('view.aspx', 'edit.aspx');
-    
-    res.json({ embedUrl });
-  } catch (error) {
-    console.error('Error getting Word embed URL:', error);
-    res.status(500).json({ error: 'Failed to get Word embed URL' });
-  }
-});
-
-/**
- * Create a new Word document
- */
-router.post('/create-document', async (req, res) => {
-  try {
-    const { name, folderId } = req.body;
-    const accessToken = req.session?.msAuth?.accessToken;
-    
-    if (!accessToken) {
-      return res.status(401).json({ error: 'Not authenticated with Microsoft' });
-    }
-    
-    const graphClient = getAuthenticatedClient(accessToken);
-    
-    // Create empty Word document
-    const driveItem = {
-      name: `${name}.docx`,
-      file: {},
-      '@microsoft.graph.conflictBehavior': 'rename'
-    };
-    
-    // Create document in OneDrive root or specified folder
-    const endpoint = folderId 
-      ? `/me/drive/items/${folderId}/children` 
-      : '/me/drive/root/children';
-    
-    const response = await graphClient
-      .api(endpoint)
-      .post(driveItem);
-    
-    res.json(response);
-  } catch (error) {
-    console.error('Error creating Word document:', error);
-    res.status(500).json({ error: 'Failed to create document' });
-  }
-});
-
-/**
- * Sync VAULT document with Microsoft Word
- */
-router.post('/sync-vault-document', async (req, res) => {
-  try {
-    const { vaultDocumentId, content, name } = req.body;
-    const accessToken = req.session?.msAuth?.accessToken;
-    
-    if (!accessToken) {
-      return res.status(401).json({ error: 'Not authenticated with Microsoft' });
-    }
-    
-    // In a production implementation, this would:
-    // 1. Retrieve document from VAULT
-    // 2. Convert to .docx if needed
-    // 3. Upload to OneDrive
-    
-    // Mock implementation for demo
     res.json({
-      microsoftDocumentId: 'ms_' + Date.now(),
-      microsoftDocumentUrl: `https://example.sharepoint.com/sites/example/Shared%20Documents/${name}.docx`,
-      vaultDocumentId,
-      syncedAt: new Date().toISOString()
+      id: 'user123',
+      displayName: 'Demo User',
+      userPrincipalName: 'demo@example.com',
+      mail: 'demo@example.com',
     });
   } catch (error) {
-    console.error('Error syncing VAULT document:', error);
-    res.status(500).json({ error: 'Failed to sync document' });
-  }
-});
-
-/**
- * Check Microsoft Office licenses
- */
-router.get('/check-licenses', async (req, res) => {
-  try {
-    const accessToken = req.session?.msAuth?.accessToken;
-    
-    if (!accessToken) {
-      return res.status(401).json({ error: 'Not authenticated with Microsoft' });
-    }
-    
-    const graphClient = getAuthenticatedClient(accessToken);
-    
-    // Get assigned licenses
-    const response = await graphClient
-      .api('/me/licenseDetails')
-      .get();
-    
-    // Check for Microsoft 365 licenses that include Word
-    const licenses = response.value || [];
-    const hasWordLicense = licenses.some(license => {
-      // These are common SKU IDs for Microsoft 365 that include Word
-      return [
-        '5dbe027f-2339-4123-9542-606e4d348a72', // Office 365 E3
-        '06ebc4ee-1bb5-47dd-8120-11324bc54e06', // Microsoft 365 E5
-        '73d2bdc7-5997-4e00-8b30-b19c304ed493'  // Microsoft 365 Business Standard
-      ].includes(license.skuId);
-    });
-    
-    res.json({ hasWordLicense, licenses });
-  } catch (error) {
-    console.error('Error checking Microsoft licenses:', error);
-    res.status(500).json({ error: 'Failed to check licenses' });
+    console.error('Error retrieving user info:', error);
+    res.status(500).json({ error: 'Failed to retrieve user info' });
   }
 });
 

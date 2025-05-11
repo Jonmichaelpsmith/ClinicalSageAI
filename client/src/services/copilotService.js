@@ -6,7 +6,9 @@
  * to enhance the document creation process.
  */
 
-import axios from "axios";
+// Microsoft Graph API endpoints - to be used with proper authentication
+const MICROSOFT_GRAPH_ENDPOINT = 'https://graph.microsoft.com/v1.0';
+const COPILOT_API_ENDPOINT = 'https://api.cognitive.microsoft.com/copilot/v1.0';
 
 /**
  * Ask Microsoft Copilot for assistance
@@ -16,32 +18,40 @@ import axios from "axios";
  */
 export async function askCopilot(prompt, options = {}) {
   try {
-    // In a production environment, this would call the actual Microsoft Copilot API
-    // with proper authentication using the Microsoft Graph API
+    console.log('Asking Microsoft Copilot:', prompt);
     
-    // For demo purposes, we're simulating a request to a placeholder URL
-    // Replace with the actual Microsoft Copilot API endpoint when available
-    const apiUrl = options.endpoint || "https://api.microsoft.com/v1.0/copilot/generate";
+    // In production, this would make an authenticated call to Microsoft's Copilot API
+    // For now, we'll simulate a response for demonstration purposes
     
-    const response = await axios.post(apiUrl, {
-      query: prompt,
-      options: {
-        temperature: options.temperature || 0.7,
-        maxTokens: options.maxTokens || 2048,
-        format: options.format || "text"
-      }
-    }, {
+    // Check if we're in a development/demo environment
+    if (import.meta.env.MODE === 'development' || !import.meta.env.VITE_MICROSOFT_CLIENT_ID) {
+      return simulateCopilotResponse(prompt);
+    }
+    
+    // Production implementation would use the Microsoft Graph API with proper auth
+    const response = await fetch(`${COPILOT_API_ENDPOINT}/generate`, {
+      method: 'POST',
       headers: {
-        "Authorization": `Bearer ${options.token || "ACCESS_TOKEN"}`,
-        "Content-Type": "application/json"
-      }
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${options.accessToken || localStorage.getItem('msft_access_token')}`,
+      },
+      body: JSON.stringify({
+        prompt,
+        temperature: options.temperature || 0.7,
+        max_tokens: options.maxTokens || 1000,
+        context: options.context || {},
+      }),
     });
     
-    return response.data;
-  } catch (error) {
-    console.error("Error querying Microsoft Copilot:", error);
+    if (!response.ok) {
+      throw new Error(`Copilot API request failed with status ${response.status}`);
+    }
     
-    // For demo purposes, return simulated responses based on prompt types
+    return await response.json();
+  } catch (error) {
+    console.error('Error asking Copilot:', error);
+    
+    // Fallback to simulated response if API call fails
     return simulateCopilotResponse(prompt);
   }
 }
@@ -52,45 +62,45 @@ export async function askCopilot(prompt, options = {}) {
  * @returns {object} Simulated response
  */
 function simulateCopilotResponse(prompt) {
-  const promptLower = prompt.toLowerCase();
+  console.log('Generating simulated Copilot response for:', prompt);
   
-  // Different response types based on prompt content
-  if (promptLower.includes("summarize") || promptLower.includes("summary")) {
-    return {
-      content: "## Executive Summary\n\nThe regulatory document outlines the safety and efficacy profile of the investigational product based on Phase II clinical trials. Key findings include:\n\n- 82% efficacy rate in the primary endpoint\n- Favorable safety profile with minimal Grade 3-4 adverse events\n- Statistically significant improvement vs. standard of care (p<0.001)\n- Recommended dosage of 50mg BID for Phase III trials\n\nThe data supports proceeding to Phase III with the proposed protocol amendments.",
-      model: "copilot-gpt4",
-      timestamp: new Date().toISOString()
-    };
-  } 
-  else if (promptLower.includes("adverse") || promptLower.includes("safety")) {
-    return {
-      content: "# Safety Profile Analysis\n\nThe safety evaluation revealed the following key points:\n\n1. **Common Adverse Events** (>5% incidence):\n   - Headache (23.5%)\n   - Nausea (17.2%)\n   - Fatigue (12.8%)\n\n2. **Serious Adverse Events**:\n   - Treatment-emergent SAEs occurred in 4.2% of treated subjects\n   - No treatment-related deaths were reported\n\n3. **Laboratory Abnormalities**:\n   - Transient ALT elevations (11.3%, all <3x ULN)\n   - Mild decreased neutrophil count (8.7%)\n\n4. **Discontinuations**:\n   - 3.5% of subjects discontinued due to adverse events\n\nThe overall safety profile appears manageable with appropriate monitoring.",
-      model: "copilot-gpt4",
-      timestamp: new Date().toISOString()
-    };
+  // Determine response based on prompt content
+  let response = '';
+  
+  if (prompt.toLowerCase().includes('background')) {
+    response = "The study background should include relevant epidemiological data, current treatment options, and unmet medical needs. Consider adding statistics from recent meta-analyses to strengthen your rationale.";
+  } else if (prompt.toLowerCase().includes('protocol')) {
+    response = "When drafting a clinical trial protocol, ensure you've clearly defined primary and secondary endpoints with precise measurement methods. The statistical analysis plan should account for potential dropouts with appropriate imputation methods.";
+  } else if (prompt.toLowerCase().includes('safety') || prompt.toLowerCase().includes('adverse')) {
+    response = "Your safety section should categorize adverse events by severity and relatedness. Consider adding a table summarizing serious adverse events with incidence rates. Make sure to include standard assessment criteria for common toxicities.";
+  } else if (prompt.toLowerCase().includes('regulatory') || prompt.toLowerCase().includes('submission')) {
+    response = "For regulatory submissions, ensure all sections follow ICH guidelines. Cross-reference related documents and maintain consistent terminology throughout. Recent FDA guidance emphasizes patient-reported outcomes, so consider strengthening this aspect.";
+  } else if (prompt.toLowerCase().includes('format') || prompt.toLowerCase().includes('style')) {
+    response = "I recommend using heading styles consistently throughout the document. For tables containing numerical data, align decimals and use consistent significant figures. Consider adding a table of contents and list of abbreviations.";
+  } else {
+    response = "I can help with various aspects of your clinical or regulatory document. I can suggest improvements for background sections, methodology descriptions, safety reporting, or formatting. What specific aspect would you like assistance with?";
   }
-  else if (promptLower.includes("methods") || promptLower.includes("methodology")) {
-    return {
-      content: "# Study Methodology\n\n## Study Design\nMulticenter, randomized, double-blind, placebo-controlled Phase II trial.\n\n## Patient Population\n- Adults aged 18-75 years\n- Confirmed diagnosis via central laboratory\n- ECOG performance status 0-1\n- Adequate organ function\n\n## Randomization & Blinding\nSubjects were randomized 2:1 (active:placebo) using a centralized IWRS, stratified by disease severity (mild/moderate/severe) and prior therapy (yes/no).\n\n## Statistical Analysis\n- Primary analysis: Intent-to-treat population\n- Sample size determination: 80% power to detect 20% improvement in primary endpoint\n- Multiple imputation for missing data\n- Pre-specified interim analysis at 50% enrollment",
-      model: "copilot-gpt4",
-      timestamp: new Date().toISOString()
-    };
-  }
-  else if (promptLower.includes("regulatory") || promptLower.includes("fda") || promptLower.includes("ema")) {
-    return {
-      content: "# Regulatory Considerations\n\n## FDA Pathway\nThe product qualifies for Fast Track designation based on unmet medical need criteria. A rolling submission approach is recommended.\n\n## Required Documentation\n1. Complete CMC documentation, with emphasis on:\n   - Process validation for commercial scale\n   - Stability data supporting proposed shelf-life\n\n2. Nonclinical package:\n   - 6-month rodent and 9-month non-rodent toxicity studies\n   - Reproductive toxicology battery\n\n3. Clinical data:\n   - Phase I/II results with integrated safety analysis\n   - Phase III protocol with statistical analysis plan\n\n## Advisory Committee\nBased on novel mechanism of action, prepare for Advisory Committee meeting with clinical experts in therapeutic area.\n\n## Timeline\nEstimated 10-12 months from submission to action date.",
-      model: "copilot-gpt4",
-      timestamp: new Date().toISOString()
-    };
-  }
-  else {
-    // Default response for other prompt types
-    return {
-      content: "I've analyzed the document and can offer the following insights: The clinical data appears to support the primary efficacy endpoint with statistical significance (p<0.05). The safety profile shows acceptable tolerability with primarily Grade 1-2 adverse events consistent with the known mechanism of action. Consider strengthening the statistical methods section with more details on the handling of missing data and sensitivity analyses. The regulatory strategy section should address potential FDA questions about the surrogate endpoint validation.",
-      model: "copilot-gpt4",
-      timestamp: new Date().toISOString()
-    };
-  }
+  
+  // Add slight delay to simulate API call
+  return new Promise(resolve => {
+    setTimeout(() => {
+      resolve({
+        id: `simulated-${Date.now()}`,
+        created: new Date().toISOString(),
+        choices: [
+          {
+            text: response,
+            finish_reason: 'stop'
+          }
+        ],
+        usage: {
+          prompt_tokens: prompt.length,
+          completion_tokens: response.length,
+          total_tokens: prompt.length + response.length
+        }
+      });
+    }, 1500);
+  });
 }
 
 /**
@@ -100,36 +110,52 @@ function simulateCopilotResponse(prompt) {
  */
 export async function getWritingSuggestions(documentContent) {
   try {
-    // This would call the Microsoft Copilot API in production
+    console.log('Getting writing suggestions for document');
     
-    // For demo purposes, generate some writing suggestions
+    // In production, this would analyze the document using Microsoft Copilot
+    // For now, we'll provide simulated suggestions
+    
     const suggestions = [
       {
-        id: 'sug_1',
-        type: 'Clarity',
-        original: 'The drug demonstrated efficacy.',
-        suggestion: 'The drug demonstrated statistically significant efficacy (p<0.001) in the primary endpoint.',
-        confidence: 0.92
+        type: 'clarity',
+        section: 'Introduction',
+        text: 'Consider clarifying the study objectives with measurable outcomes.',
+        severity: 'medium',
       },
       {
-        id: 'sug_2',
-        type: 'Completeness',
-        original: 'Adverse events were observed.',
-        suggestion: 'Adverse events were observed in 23% of treated patients, primarily Grade 1-2 (21.5%), with Grade 3 events in 1.5% of patients and no Grade 4 events.',
-        confidence: 0.88
+        type: 'completeness',
+        section: 'Methods',
+        text: 'The statistical analysis plan lacks details on handling missing data.',
+        severity: 'high',
       },
       {
-        id: 'sug_3',
-        type: 'Regulatory Compliance',
-        original: 'The study followed protocols.',
-        suggestion: 'The study was conducted in accordance with ICH-GCP guidelines, Declaration of Helsinki (2013), and applicable local regulatory requirements. All protocol amendments were approved by the relevant IRBs/IECs.',
-        confidence: 0.95
+        type: 'consistency',
+        section: 'Results',
+        text: 'Units of measurement vary throughout the document (mg/kg vs. mg/m²).',
+        severity: 'medium',
+      },
+      {
+        type: 'regulatory',
+        section: 'Safety',
+        text: 'Consider adding a standardized MedDRA table for adverse events.',
+        severity: 'low',
+      },
+      {
+        type: 'formatting',
+        section: 'Tables',
+        text: 'Table formatting is inconsistent; consider applying a consistent style.',
+        severity: 'low',
       }
     ];
     
-    return suggestions;
+    // Add slight delay to simulate processing time
+    return new Promise(resolve => {
+      setTimeout(() => {
+        resolve(suggestions);
+      }, 2000);
+    });
   } catch (error) {
-    console.error("Error getting writing suggestions:", error);
+    console.error('Error getting writing suggestions:', error);
     return [];
   }
 }
@@ -142,12 +168,36 @@ export async function getWritingSuggestions(documentContent) {
  */
 export async function generateRegulatorySection(sectionType, prompt = "") {
   try {
-    const combinedPrompt = `Generate a ${sectionType} section for a regulatory document. ${prompt}`;
-    const response = await askCopilot(combinedPrompt);
-    return response.content;
+    console.log(`Generating ${sectionType} section with prompt:`, prompt);
+    
+    let generationPrompt = '';
+    
+    // Create specific prompts based on section type
+    switch (sectionType) {
+      case 'introduction':
+        generationPrompt = `Generate a clinical study introduction section for: ${prompt}. Include background, rationale, and objectives. Follow ICH guidelines format.`;
+        break;
+      case 'methods':
+        generationPrompt = `Generate a methods section for: ${prompt}. Include study design, population, interventions, and assessments. Follow ICH guidelines format.`;
+        break;
+      case 'statistics':
+        generationPrompt = `Generate a statistical analysis plan section for: ${prompt}. Include sample size justification, analysis populations, and methods. Follow ICH guidelines format.`;
+        break;
+      case 'safety':
+        generationPrompt = `Generate a safety monitoring section for: ${prompt}. Include adverse event definitions, reporting procedures, and assessment methods. Follow ICH guidelines format.`;
+        break;
+      default:
+        generationPrompt = `Generate a ${sectionType} section for: ${prompt}. Follow ICH guidelines format.`;
+    }
+    
+    // Use the Copilot API to generate content
+    const response = await askCopilot(generationPrompt);
+    
+    // Extract the generated text from the response
+    return response.choices[0].text;
   } catch (error) {
-    console.error("Error generating regulatory section:", error);
-    return "Error generating content. Please try again.";
+    console.error(`Error generating ${sectionType} section:`, error);
+    return `[Error generating ${sectionType} section. Please try again later.]`;
   }
 }
 
@@ -158,29 +208,24 @@ export async function generateRegulatorySection(sectionType, prompt = "") {
  */
 export async function initializeCopilot(documentId) {
   try {
-    // This would initialize a session with the Microsoft Copilot API in production
+    console.log('Initializing Copilot session for document:', documentId);
     
-    // For demo purposes, return session details
+    // In production, this would establish a session with Microsoft Copilot
+    // For now, we'll simulate a session initialization
+    
     return {
       sessionId: `copilot-session-${Date.now()}`,
       documentId,
-      initiated: new Date().toISOString(),
       capabilities: [
-        'text-completion',
-        'document-analysis',
-        'regulatory-compliance',
-        'writing-suggestions'
-      ]
+        'writing_suggestions',
+        'regulatory_compliance',
+        'content_generation',
+        'formatting_assistance'
+      ],
+      status: 'active'
     };
   } catch (error) {
-    console.error("Error initializing Copilot:", error);
+    console.error('Error initializing Copilot session:', error);
     throw error;
   }
 }
-
-export default {
-  askCopilot,
-  getWritingSuggestions,
-  generateRegulatorySection,
-  initializeCopilot
-};
