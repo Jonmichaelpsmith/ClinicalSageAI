@@ -141,6 +141,105 @@ export default function CoAuthor() {
     }
   ]);
   const [aiAssistantMode, setAiAssistantMode] = useState('suggestions'); // suggestions, compliance, formatting
+  const [aiUserQuery, setAiUserQuery] = useState('');
+  const [aiIsLoading, setAiIsLoading] = useState(false);
+  const [aiResponse, setAiResponse] = useState(null);
+  const [aiError, setAiError] = useState(null);
+  
+  // Handle AI Assistant query submission
+  const handleAiQuerySubmit = async (e) => {
+    e.preventDefault();
+    if (!aiUserQuery.trim()) return;
+    
+    setAiIsLoading(true);
+    setAiError(null);
+    
+    try {
+      // Determine which API endpoint to use based on assistant mode
+      let response;
+      const documentId = selectedDocument?.id || 'current-document';
+      const selectedSection = '2.5'; // This would be dynamically set based on user's current section
+      
+      switch (aiAssistantMode) {
+        case 'suggestions':
+          response = await fetch('/api/ai/content-suggestions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              documentId,
+              sectionId: selectedSection,
+              currentContent: "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature.",
+              prompt: aiUserQuery
+            })
+          });
+          break;
+          
+        case 'compliance':
+          response = await fetch('/api/ai/compliance-check', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              documentId,
+              content: "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature.",
+              standards: ['ICH', 'FDA', 'EMA']
+            })
+          });
+          break;
+          
+        case 'formatting':
+          response = await fetch('/api/ai/format-analysis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              documentId,
+              content: "The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature.",
+              documentType: 'clinical-overview'
+            })
+          });
+          break;
+          
+        default:
+          // Default to general AI question
+          response = await fetch('/api/ai/ask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: aiUserQuery,
+              documentId,
+              sectionId: selectedSection
+            })
+          });
+      }
+      
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      setAiResponse(data);
+      
+      // Add to suggestions if it's a content suggestion
+      if (aiAssistantMode === 'suggestions' && data.suggestion) {
+        const newSuggestion = {
+          id: Date.now(),
+          type: 'completion',
+          text: data.suggestion,
+          section: data.sectionId || selectedSection,
+          accepted: false,
+          timestamp: data.timestamp
+        };
+        
+        setAiSuggestions(prev => [newSuggestion, ...prev]);
+      }
+      
+    } catch (error) {
+      console.error('AI Assistant error:', error);
+      setAiError(error.message || 'An error occurred while processing your request');
+    } finally {
+      setAiIsLoading(false);
+      setAiUserQuery(''); // Clear the input field
+    }
+  };
   
   // Version history mock data - in real implementation this would come from the Vault API
   const [versionHistory] = useState([
@@ -662,16 +761,63 @@ export default function CoAuthor() {
                     Settings
                   </Button>
                 </div>
-                <div className="relative">
+                
+                {aiError && (
+                  <div className="mb-2 p-2 text-xs bg-red-50 border border-red-200 rounded-md text-red-600">
+                    <div className="flex items-center mb-1">
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      <span className="font-medium">Error</span>
+                    </div>
+                    <p>{aiError}</p>
+                  </div>
+                )}
+                
+                {aiResponse && aiAssistantMode === 'suggestions' && (
+                  <div className="mb-2 p-2 text-xs bg-blue-50 border border-blue-200 rounded-md">
+                    <div className="flex items-start">
+                      <Sparkles className="h-3 w-3 mr-1 mt-0.5 text-blue-600" />
+                      <div>
+                        <span className="font-medium text-blue-800">Suggestion</span>
+                        <p className="text-slate-700">{aiResponse.suggestion}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {aiResponse && aiAssistantMode === 'ask' && (
+                  <div className="mb-2 p-2 text-xs bg-slate-50 border rounded-md">
+                    <div className="flex items-start">
+                      <Bot className="h-3 w-3 mr-1 mt-0.5 text-indigo-600" />
+                      <div>
+                        <span className="font-medium text-indigo-800">Response</span>
+                        <p className="text-slate-700">{aiResponse.answer}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <form onSubmit={handleAiQuerySubmit} className="relative">
                   <input 
                     type="text" 
                     className="w-full h-8 text-xs pl-3 pr-8 rounded-md border" 
                     placeholder="Ask the AI Assistant..." 
+                    value={aiUserQuery}
+                    onChange={(e) => setAiUserQuery(e.target.value)}
+                    disabled={aiIsLoading}
                   />
-                  <Button className="absolute right-1 top-1 h-6 w-6 p-0" size="icon">
-                    <Send className="h-3 w-3" />
+                  <Button 
+                    type="submit" 
+                    className="absolute right-1 top-1 h-6 w-6 p-0" 
+                    size="icon"
+                    disabled={aiIsLoading || !aiUserQuery.trim()}
+                  >
+                    {aiIsLoading ? (
+                      <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-300 border-t-blue-600" />
+                    ) : (
+                      <Send className="h-3 w-3" />
+                    )}
                   </Button>
-                </div>
+                </form>
               </div>
             </div>
           </div>
