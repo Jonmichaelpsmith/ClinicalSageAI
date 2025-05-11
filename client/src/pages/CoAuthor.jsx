@@ -695,7 +695,7 @@ export default function CoAuthor() {
                   </div>
                   <div className="flex items-center p-2 border-b border-gray-100 hover:bg-red-50">
                     <div className="w-6 flex-shrink-0">
-                      <CheckSquare className="h-3 w-3 text-green-500" />
+                      <Check className="h-3 w-3 text-green-500" />
                     </div>
                     <div className="flex-grow">
                       <span className="text-gray-700">John Doe approved v3.1</span>
