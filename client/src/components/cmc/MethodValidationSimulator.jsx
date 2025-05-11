@@ -239,7 +239,7 @@ const MethodValidationSimulator = () => {
                   value={precision.intermediate} 
                   onChange={(e) => setPrecision({...precision, intermediate: parseFloat(e.target.value)})} 
                 />
-                <p className="text-sm text-muted-foreground mt-1">Target: < 3.0%</p>
+                <p className="text-sm text-muted-foreground mt-1">Target: less than 3.0%</p>
               </div>
               <div>
                 <Label htmlFor="reproducibility">Reproducibility RSD (%)</Label>
@@ -250,7 +250,7 @@ const MethodValidationSimulator = () => {
                   value={precision.reproducibility} 
                   onChange={(e) => setPrecision({...precision, reproducibility: parseFloat(e.target.value)})}
                 />
-                <p className="text-sm text-muted-foreground mt-1">Target: < 5.0%</p>
+                <p className="text-sm text-muted-foreground mt-1">Target: less than 5.0%</p>
               </div>
             </div>
           </TabsContent>
@@ -276,13 +276,13 @@ const MethodValidationSimulator = () => {
                   <Badge variant={simulationResult.details.peakResolutionStatus === 'pass' ? 'outline' : 'destructive'}>
                     Peak Resolution
                   </Badge>
-                  <span>{specificity.peakResolution} (Target: > 1.5)</span>
+                  <span>{specificity.peakResolution} (Target: more than 1.5)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={simulationResult.details.signalToNoiseStatus === 'pass' ? 'outline' : 'destructive'}>
                     Signal-to-Noise
                   </Badge>
-                  <span>{specificity.signalToNoise} (Target: > 10)</span>
+                  <span>{specificity.signalToNoise} (Target: more than 10)</span>
                 </div>
               </div>
             )}
@@ -293,7 +293,7 @@ const MethodValidationSimulator = () => {
                   <Badge variant={simulationResult.details.status === 'pass' ? 'outline' : 'destructive'}>
                     R²
                   </Badge>
-                  <span>{simulationResult.details.rSquared} (Target: > 0.995)</span>
+                  <span>{simulationResult.details.rSquared} (Target: more than 0.995)</span>
                 </div>
                 <div>
                   <p className="text-sm">Equation: {simulationResult.details.linearityEquation}</p>
