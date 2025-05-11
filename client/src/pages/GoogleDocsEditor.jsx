@@ -287,27 +287,44 @@ const GoogleDocsEditor = () => {
 
       {/* Editor Area */}
       <div className="flex-1 overflow-hidden">
-        {/* This would be replaced with an actual Google Docs iframe when fully implemented */}
-        <iframe
-          ref={iframeRef}
-          title="Google Docs Editor"
-          className="w-full h-full border-0"
-          src="about:blank"
-          style={{
-            background: 'white',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '2rem'
-          }}
-        />
+        {/* Google Docs iframe - loads an actual document when authenticated */}
+        {isAuthenticated ? (
+          <iframe
+            ref={iframeRef}
+            title="Google Docs Editor"
+            className="w-full h-full border-0"
+            src={currentDocumentId 
+              ? `https://docs.google.com/document/d/${currentDocumentId}/edit?usp=sharing&embedded=true`
+              : `https://docs.google.com/document/d/1eSbKsL3XOm2wnIb7NST27e1Jt98L-VNpCHO8pLo1c54/edit?usp=sharing&embedded=true`
+            }
+            style={{
+              background: '#fff',
+            }}
+            allow="clipboard-write"
+          />
+        ) : (
+          <iframe
+            ref={iframeRef}
+            title="Google Docs Editor"
+            className="w-full h-full border-0"
+            src="about:blank"
+            style={{
+              background: 'white',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '2rem'
+            }}
+          />
+        )}
         
-        {/* Simulated Google Docs interface for development */}
-        <div 
-          className="absolute top-[132px] left-0 right-0 bottom-0 flex flex-col items-center"
-          style={{ pointerEvents: 'none' }}
-        >
+        {/* Simulated Google Docs interface for development - only show when not authenticated */}
+        {!isAuthenticated && (
+          <div 
+            className="absolute top-[132px] left-0 right-0 bottom-0 flex flex-col items-center"
+            style={{ pointerEvents: 'none' }}
+          >
           <div className="w-full max-w-5xl bg-white shadow-sm border border-gray-200 h-full my-4 rounded-md overflow-hidden" style={{ pointerEvents: 'auto' }}>
             <div className="border-b border-gray-200 px-4 py-2 flex items-center">
               <div className="flex items-center">
