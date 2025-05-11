@@ -321,7 +321,7 @@ export default function CoAuthor() {
           </CardContent>
         </Card>
 
-        {/* eCTD Document Tree Card - Enhanced Enterprise Version */}
+        {/* eCTD Document Tree Card - Advanced Enterprise Version */}
         <Card className="border-green-200 shadow-md">
           <CardHeader className="pb-2 bg-gradient-to-r from-green-50 to-white">
             <div className="flex justify-between items-center">
@@ -329,131 +329,299 @@ export default function CoAuthor() {
                 <FolderOpen className="h-5 w-5 mr-2 text-green-600" />
                 eCTD Structure Navigator
               </CardTitle>
-              <Badge className="bg-green-100 text-green-800 border-green-200">
-                ICH eCTD v4.0
-              </Badge>
+              <div className="flex space-x-2">
+                <Badge className="bg-green-100 text-green-800 border-green-200">
+                  ICH eCTD v4.0
+                </Badge>
+                <Badge className="bg-purple-100 text-purple-800 border-purple-200">
+                  Enterprise
+                </Badge>
+              </div>
             </div>
             <CardDescription>
-              Interactive Common Technical Document (CTD) structure with regulatory compliance
+              Interactive Common Technical Document (CTD) structure with regulatory compliance and real-time validation
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center mb-4 justify-between">
-              <div className="flex items-center">
-                <Badge variant="outline" className="mr-2 bg-green-50 border-green-200 text-green-700 flex items-center">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  <span>Regional Compliant</span>
-                </Badge>
-                <Badge variant="outline" className="bg-green-50 border-green-200 text-green-700 flex items-center">
-                  <CheckCircle className="h-3 w-3 mr-1" />
-                  <span>XML Backbone</span>
-                </Badge>
+            {/* Enhanced toolbar with more enterprise controls */}
+            <div className="bg-gray-50 rounded-lg p-2 border border-gray-100 mb-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center">
+                  <Badge variant="outline" className="bg-green-50 border-green-200 text-green-700 flex items-center h-6">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    <span>FDA Compliant</span>
+                  </Badge>
+                </div>
+                <div className="flex items-center">
+                  <Badge variant="outline" className="bg-green-50 border-green-200 text-green-700 flex items-center h-6">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    <span>XML Backbone</span>
+                  </Badge>
+                </div>
+                
+                <div className="ml-auto flex space-x-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-7 text-xs border-gray-200 text-gray-700"
+                  >
+                    <Filter className="h-3 w-3 mr-1" />
+                    <span>Filter</span>
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-7 text-xs border-green-200 text-green-700"
+                    onClick={() => setIsTreeOpen(!isTreeOpen)}
+                  >
+                    <span>{isTreeOpen ? "Collapse All" : "Expand All"}</span>
+                  </Button>
+                </div>
               </div>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="h-7 border-green-200 text-green-700"
-                onClick={() => setIsTreeOpen(!isTreeOpen)}
-              >
-                <span>{isTreeOpen ? "Collapse" : "Expand Tree"}</span>
+            </div>
+            
+            {/* Search and drag & drop area */}
+            <div className="mb-4 flex items-center">
+              <div className="relative flex-grow">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                <input 
+                  type="text" 
+                  placeholder="Search across all modules..." 
+                  className="w-full rounded-md border border-gray-200 py-2 pl-9 pr-3 text-sm focus:border-green-500 focus:outline-none" 
+                />
+              </div>
+              <Button size="sm" className="ml-2 bg-green-600 hover:bg-green-700 h-9">
+                <Plus className="h-4 w-4 mr-1" />
+                <span>Add Document</span>
               </Button>
             </div>
             
-            <div className="mt-2 space-y-1">
+            <div className="bg-green-50 p-2 rounded-md border border-green-100 text-xs text-green-800 mb-4 flex items-center">
+              <Info className="h-3.5 w-3.5 mr-1.5 text-green-600" />
+              <span>Drag documents to reposition within regulatory structure or drop files to import</span>
+            </div>
+            
+            <div className="mt-2 space-y-1 max-h-[300px] overflow-y-auto pr-1">
               {/* Module 1 - always visible with regional specifics */}
-              <div className="border-l-2 border-green-200 pl-3 py-1">
-                <div className="flex items-center text-sm font-medium">
-                  <ChevronRight className="h-4 w-4 text-green-600 mr-1" />
-                  <span>Module 1: Administrative Information</span>
-                  <Badge className="ml-2 text-xs bg-blue-100 text-blue-800 border-blue-200">Region-specific</Badge>
+              <div className="border-l-2 border-green-200 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                <div className="flex items-center text-sm font-medium justify-between">
+                  <div className="flex items-center">
+                    <ChevronRight className="h-4 w-4 text-green-600 mr-1 cursor-pointer" />
+                    <span>Module 1: Administrative Information</span>
+                    <Badge className="ml-2 text-xs bg-blue-100 text-blue-800 border-blue-200">Region-specific</Badge>
+                  </div>
+                  <div className="flex items-center">
+                    <Badge className="text-xs bg-green-100 text-green-700">25 Files</Badge>
+                  </div>
                 </div>
               </div>
               
               {isTreeOpen && (
                 <div className="space-y-1 ml-5 mb-2">
-                  <div className="border-l-2 border-green-100 pl-3 py-1">
-                    <div className="flex items-center text-xs text-gray-700">
-                      <FileText className="h-3.5 w-3.5 text-green-500 mr-1.5" />
-                      <span>1.1 Forms</span>
+                  <div className="border-l-2 border-green-100 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-xs text-gray-700">
+                        <FileText className="h-3.5 w-3.5 text-green-500 mr-1.5" />
+                        <span>1.1 Forms</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Badge className="text-[10px] px-1 h-4 bg-green-100 text-green-700">Signed</Badge>
+                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                          <MoreHorizontal className="h-3 w-3 text-gray-500" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  <div className="border-l-2 border-green-100 pl-3 py-1">
-                    <div className="flex items-center text-xs text-gray-700">
-                      <FileText className="h-3.5 w-3.5 text-green-500 mr-1.5" />
-                      <span>1.2 Cover Letters</span>
+                  
+                  <div className="border-l-2 border-green-100 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-xs text-gray-700">
+                        <FileText className="h-3.5 w-3.5 text-amber-500 mr-1.5" />
+                        <span>1.2 Cover Letters</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Badge className="text-[10px] px-1 h-4 bg-amber-100 text-amber-700">Draft</Badge>
+                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                          <MoreHorizontal className="h-3 w-3 text-gray-500" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  <div className="border-l-2 border-green-100 pl-3 py-1">
-                    <div className="flex items-center text-xs text-gray-700">
-                      <FileText className="h-3.5 w-3.5 text-green-500 mr-1.5" />
-                      <span>1.3 Product Information</span>
+                  
+                  <div className="border-l-2 border-green-100 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-xs text-gray-700">
+                        <FileText className="h-3.5 w-3.5 text-green-500 mr-1.5" />
+                        <span>1.3 Administrative Information</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Badge className="text-[10px] px-1 h-4 bg-green-100 text-green-700">Complete</Badge>
+                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                          <MoreHorizontal className="h-3 w-3 text-gray-500" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-l-2 border-green-100 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-xs text-gray-700">
+                        <FileText className="h-3.5 w-3.5 text-red-500 mr-1.5" />
+                        <span>1.4 References</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Badge className="text-[10px] px-1 h-4 bg-red-100 text-red-700">Missing</Badge>
+                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                          <MoreHorizontal className="h-3 w-3 text-gray-500" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
               
               {/* Module 2 */}
-              <div className="border-l-2 border-green-200 pl-3 py-1">
-                <div className="flex items-center text-sm font-medium">
-                  <ChevronRight className="h-4 w-4 text-green-600 mr-1" />
-                  <span>Module 2: CTD Summaries</span>
+              <div className="border-l-2 border-green-200 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                <div className="flex items-center text-sm font-medium justify-between">
+                  <div className="flex items-center">
+                    <ChevronRight className="h-4 w-4 text-green-600 mr-1 cursor-pointer" />
+                    <span>Module 2: CTD Summaries</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Badge className="text-xs bg-amber-100 text-amber-700">In Progress</Badge>
+                  </div>
                 </div>
               </div>
               
               {isTreeOpen && (
                 <div className="space-y-1 ml-5 mb-2">
-                  <div className="border-l-2 border-green-100 pl-3 py-1">
-                    <div className="flex items-center text-xs text-gray-700">
-                      <FileText className="h-3.5 w-3.5 text-green-500 mr-1.5" />
-                      <span>2.3 Quality Overall Summary</span>
+                  <div className="border-l-2 border-green-100 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-xs text-gray-700">
+                        <FileText className="h-3.5 w-3.5 text-green-500 mr-1.5" />
+                        <span>2.2 Introduction</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Badge className="text-[10px] px-1 h-4 bg-green-100 text-green-700">Approved</Badge>
+                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                          <MoreHorizontal className="h-3 w-3 text-gray-500" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  <div className="border-l-2 border-green-100 pl-3 py-1">
-                    <div className="flex items-center text-xs text-gray-700">
-                      <FileText className="h-3.5 w-3.5 text-green-500 mr-1.5" />
-                      <span>2.4 Nonclinical Overview</span>
+                  
+                  <div className="border-l-2 border-green-100 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-xs text-gray-700">
+                        <FileText className="h-3.5 w-3.5 text-amber-500 mr-1.5" />
+                        <span>2.3 Quality Overall Summary</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Badge className="text-[10px] px-1 h-4 bg-amber-100 text-amber-700">In Review</Badge>
+                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                          <MoreHorizontal className="h-3 w-3 text-gray-500" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                  <div className="border-l-2 border-green-100 pl-3 py-1">
-                    <div className="flex items-center text-xs text-gray-700">
-                      <FileText className="h-3.5 w-3.5 text-green-500 mr-1.5" />
-                      <span>2.5 Clinical Overview</span>
+                  
+                  <div className="border-l-2 border-green-100 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-xs text-gray-700">
+                        <FileText className="h-3.5 w-3.5 text-blue-500 mr-1.5" />
+                        <span>2.4 Nonclinical Overview</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Badge className="text-[10px] px-1 h-4 bg-blue-100 text-blue-700">In Progress</Badge>
+                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                          <MoreHorizontal className="h-3 w-3 text-gray-500" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border-l-2 border-green-100 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center text-xs text-gray-700">
+                        <FileText className="h-3.5 w-3.5 text-amber-500 mr-1.5" />
+                        <span>2.5 Clinical Overview</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Badge className="text-[10px] px-1 h-4 bg-amber-100 text-amber-700">In Progress</Badge>
+                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                          <MoreHorizontal className="h-3 w-3 text-gray-500" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
               
               {/* Module 3-5 collapsed headers */}
-              <div className="border-l-2 border-green-200 pl-3 py-1">
-                <div className="flex items-center text-sm font-medium">
-                  <ChevronRight className="h-4 w-4 text-green-600 mr-1" />
-                  <span>Module 3: Quality</span>
+              <div className="border-l-2 border-green-200 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                <div className="flex items-center text-sm font-medium justify-between">
+                  <div className="flex items-center">
+                    <ChevronRight className="h-4 w-4 text-green-600 mr-1 cursor-pointer" />
+                    <span>Module 3: Quality</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Badge className="text-xs bg-amber-100 text-amber-700">35% Complete</Badge>
+                  </div>
                 </div>
               </div>
               
-              <div className="border-l-2 border-green-200 pl-3 py-1">
-                <div className="flex items-center text-sm font-medium">
-                  <ChevronRight className="h-4 w-4 text-green-600 mr-1" />
-                  <span>Module 4: Nonclinical Study Reports</span>
+              <div className="border-l-2 border-green-200 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                <div className="flex items-center text-sm font-medium justify-between">
+                  <div className="flex items-center">
+                    <ChevronRight className="h-4 w-4 text-green-600 mr-1 cursor-pointer" />
+                    <span>Module 4: Nonclinical Study Reports</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Badge className="text-xs bg-red-100 text-red-700">15% Complete</Badge>
+                  </div>
                 </div>
               </div>
               
-              <div className="border-l-2 border-green-200 pl-3 py-1">
-                <div className="flex items-center text-sm font-medium">
-                  <ChevronRight className="h-4 w-4 text-green-600 mr-1" />
-                  <span>Module 5: Clinical Study Reports</span>
+              <div className="border-l-2 border-green-200 pl-3 py-1 hover:bg-green-50 rounded-r-md transition-colors">
+                <div className="flex items-center text-sm font-medium justify-between">
+                  <div className="flex items-center">
+                    <ChevronRight className="h-4 w-4 text-green-600 mr-1 cursor-pointer" />
+                    <span>Module 5: Clinical Study Reports</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Badge className="text-xs bg-amber-100 text-amber-700">42% Complete</Badge>
+                  </div>
                 </div>
               </div>
+            </div>
+            
+            {/* Enterprise actions bar */}
+            <div className="flex space-x-2 mt-4 mb-3">
+              <Button size="sm" variant="outline" className="h-8 text-xs border-green-200 text-green-700 flex-grow">
+                <FileCheck className="h-3.5 w-3.5 mr-1.5" />
+                <span>Validate Structure</span>
+              </Button>
+              <Button size="sm" variant="outline" className="h-8 text-xs border-green-200 text-green-700 flex-grow">
+                <Download className="h-3.5 w-3.5 mr-1.5" />
+                <span>Export eCTD</span>
+              </Button>
+              <Button size="sm" className="h-8 text-xs bg-green-600 hover:bg-green-700 flex-grow">
+                <PanelLeft className="h-3.5 w-3.5 mr-1.5" />
+                <span>Full Navigator</span>
+              </Button>
             </div>
             
             {/* Regulatory compliance footer */}
             <div className="mt-4 pt-3 border-t border-green-100 text-xs text-gray-600">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <AlertCircle className="h-3 w-3 text-green-600 mr-1" />
-                  <span>eCTD Validation Status: Passed</span>
+                  <Shield className="h-3.5 w-3.5 text-green-600 mr-1.5" />
+                  <span>FDA eCTD Validation: Passed</span>
                 </div>
-                <span className="text-green-600">100% ICH Compliant</span>
+                <div className="flex items-center">
+                  <Check className="h-3 w-3 text-green-600 mr-1" />
+                  <span className="text-green-700">ICH M4 Compliant</span>
+                </div>
               </div>
             </div>
           </CardContent>
