@@ -134,19 +134,17 @@ router.get('/documents', async (req, res) => {
   }
   
   try {
-    // Set up temporary OAuth client with the provided token
-    const tempOAuth2Client = new google.auth.OAuth2();
-    tempOAuth2Client.setCredentials({ access_token });
-    
-    // Create Drive API client
-    const drive = google.drive({ version: 'v3', auth: tempOAuth2Client });
-    
-    // List files that are Google Docs
-    const response = await drive.files.list({
-      q: "mimeType='application/vnd.google-apps.document'",
-      fields: 'files(id, name, createdTime, modifiedTime, webViewLink)',
-      orderBy: 'modifiedTime desc',
-      pageSize: 20
+    // Use axios to call the Google Drive API directly
+    const response = await axios.get('https://www.googleapis.com/drive/v3/files', {
+      params: {
+        q: "mimeType='application/vnd.google-apps.document'",
+        fields: 'files(id, name, createdTime, modifiedTime, webViewLink)',
+        orderBy: 'modifiedTime desc',
+        pageSize: 20
+      },
+      headers: {
+        'Authorization': `Bearer ${access_token}`
+      }
     });
     
     res.json(response.data.files);
