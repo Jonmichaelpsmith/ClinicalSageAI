@@ -1874,7 +1874,7 @@ export default function CoAuthor() {
                   {/* Content overlay */}
                   <div className="absolute inset-0 flex items-center justify-center">
                     {isGoogleAuthenticated ? (
-                      <>
+                      <div className="w-full h-full relative">
                         {/* Status indicator */}
                         <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between bg-green-50 px-4 py-2 text-sm text-green-700 border-b border-green-200">
                           <div className="flex items-center">
@@ -1979,16 +1979,17 @@ export default function CoAuthor() {
                                 description: "Google Docs document loaded successfully.",
                               });
                             }}
-                          onError={(e) => {
-                            console.error("Error loading Google Docs:", e);
-                            toast({
-                              title: "Document Loading Error",
-                              description: "Failed to load Google Docs. Please try refreshing the page.",
-                              variant: "destructive",
-                            });
-                          }}
-                        />
-                      </>
+                            onError={(e) => {
+                              console.error("Error loading Google Docs:", e);
+                              toast({
+                                title: "Document Loading Error",
+                                description: "Failed to load Google Docs. Please try refreshing the page.",
+                                variant: "destructive",
+                              });
+                            }}
+                          />
+                        </div>
+                      </div>
                     ) : (
                       <div className="flex-grow flex flex-col items-center justify-center bg-gradient-to-b from-blue-50 to-white p-8 border rounded-lg shadow-sm max-w-xl">
                         <Badge variant="outline" className="mb-4 bg-blue-100 text-blue-700 border-blue-200">
