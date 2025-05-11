@@ -212,7 +212,7 @@ const MethodValidationSimulator = () => {
                 </ResponsiveContainer>
               </div>
               <div className="mt-4">
-                <p className="text-sm text-muted-foreground">R² Target: > 0.995</p>
+                <p className="text-sm text-muted-foreground">R² Target: more than 0.995</p>
               </div>
             </div>
           </TabsContent>
@@ -307,19 +307,19 @@ const MethodValidationSimulator = () => {
                   <Badge variant={simulationResult.details.repeatabilityStatus === 'pass' ? 'outline' : 'destructive'}>
                     Repeatability
                   </Badge>
-                  <span>{precision.repeatability}% (Target: < 2.0%)</span>
+                  <span>{precision.repeatability}% (Target: less than 2.0%)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={simulationResult.details.intermediateStatus === 'pass' ? 'outline' : 'destructive'}>
                     Intermediate Precision
                   </Badge>
-                  <span>{precision.intermediate}% (Target: < 3.0%)</span>
+                  <span>{precision.intermediate}% (Target: less than 3.0%)</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant={simulationResult.details.reproducibilityStatus === 'pass' ? 'outline' : 'destructive'}>
                     Reproducibility
                   </Badge>
-                  <span>{precision.reproducibility}% (Target: < 5.0%)</span>
+                  <span>{precision.reproducibility}% (Target: less than 5.0%)</span>
                 </div>
               </div>
             )}
