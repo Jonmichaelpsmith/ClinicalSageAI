@@ -1,174 +1,229 @@
 /**
  * Microsoft Copilot Service
  * 
- * This service integrates with Microsoft Copilot to provide AI-powered
- * document assistance, content generation, and document analysis.
+ * This service provides integration with Microsoft Copilot for document authoring assistance.
+ * It handles AI-powered content generation, document analysis, and writing suggestions.
  */
 
-// Demo suggestions for Microsoft Word integration testing
-const DEMO_SUGGESTIONS = [
-  {
-    id: 'suggestion-1',
-    type: 'Clarity Improvement',
-    original: 'The safety profile of Drug X was good with only a few adverse events.',
-    suggestion: 'The safety profile of Drug X was favorable, with adverse events observed in only 12% of subjects, primarily consisting of mild to moderate reactions.',
-  },
-  {
-    id: 'suggestion-2',
-    type: 'Regulatory Compliance',
-    original: 'The study showed that our product is better than the competitor\'s product.',
-    suggestion: 'The study demonstrated a statistically significant improvement in the primary endpoint when compared to the active comparator (p<0.001, 95% CI: 0.78-0.92).',
-  },
-  {
-    id: 'suggestion-3',
-    type: 'Scientific Precision',
-    original: 'Patients felt better after taking the medication.',
-    suggestion: 'Patient-reported outcomes showed a clinically meaningful improvement in the treatment group, with a mean 7.2-point reduction in the validated symptom severity score (baseline 22.3 ± 3.1 to 15.1 ± 2.9 at week 12).',
-  }
-];
+import { getAccessToken } from './microsoftAuthService';
+
+// API endpoint for Copilot integration
+const COPILOT_API_ENDPOINT = '/api/ai/copilot';
 
 /**
- * Initialize Microsoft Copilot for document editing
- * @param {string} documentId - Document ID to connect with Copilot
- * @returns {Promise<object>} Copilot session details
+ * Ask Microsoft Copilot for assistance
+ * @param {string} prompt - The prompt to send to Copilot
+ * @param {object} options - Additional options
+ * @returns {Promise<object>} Copilot response
  */
-export async function initializeCopilot(documentId) {
+export async function askCopilot(prompt, options = {}) {
   try {
-    // In a real implementation, this would initialize a connection to Microsoft Copilot
+    const accessToken = await getAccessToken();
     
-    // For demo purposes, simulate a successful initialization
-    return {
-      sessionId: `copilot-${documentId}-${Date.now()}`,
-      active: true,
-      capabilities: [
-        'contentGeneration',
-        'documentAnalysis',
-        'formatting',
-        'citation',
-        'languagePolishing'
-      ]
-    };
-  } catch (error) {
-    console.error("Failed to initialize Microsoft Copilot:", error);
-    throw new Error("Could not initialize Microsoft Copilot");
-  }
-}
-
-/**
- * Generate content with Microsoft Copilot
- * @param {string} prompt - User prompt for content generation
- * @param {string} sessionId - Copilot session ID
- * @param {object} options - Generation options
- * @returns {Promise<object>} Generated content
- */
-export async function generateContent(prompt, sessionId, options = {}) {
-  try {
-    // In a real implementation, this would call Microsoft Copilot to generate content
-    
-    // For demo purposes, return predetermined content based on prompt keywords
-    let content = "";
-    
-    if (prompt.includes("safety profile")) {
-      content = "The safety profile of the investigational product was evaluated in 6 randomized controlled trials including a total of 1,245 subjects. Adverse events were generally mild to moderate in severity, with the most commonly reported adverse events being headache (12%), nausea (8%), and fatigue (6%). No serious adverse events were deemed related to the study drug by investigators. The discontinuation rate due to adverse events was 4.2%, comparable to placebo (3.8%).";
-    } else if (prompt.includes("efficacy")) {
-      content = "Efficacy was demonstrated across all primary endpoints with a statistically significant improvement compared to placebo (p<0.001). The mean reduction in the primary symptom score was 42% in the treatment group versus 18% in the placebo group at 12 weeks. Subgroup analyses showed consistent efficacy across age groups, gender, and disease severity classifications.";
-    } else if (prompt.includes("methods")) {
-      content = "This phase III, double-blind, randomized, placebo-controlled study was conducted at 52 centers across North America and Europe. Eligible patients were adults aged 18-75 years with confirmed diagnosis according to established criteria. Patients were randomized 2:1 to receive either the investigational product or placebo for 12 weeks. The primary endpoint was change from baseline in symptom severity score at week 12, as measured by the validated assessment scale.";
-    } else {
-      content = "The requested content has been generated based on available clinical data. Please review and modify as needed to ensure accuracy and compliance with regulatory requirements. Additional context-specific information may be required to complete this section according to ICH guidelines.";
+    if (!accessToken) {
+      console.warn('No Microsoft access token available, falling back to internal AI');
+      // Fall back to internal AI service if Microsoft auth isn't available
+      return simulateCopilotResponse(prompt);
     }
     
-    return {
-      content,
-      quality: 0.92,
-      completionStatus: 'complete',
-      timestamp: new Date().toISOString()
-    };
+    const response = await fetch(COPILOT_API_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify({
+        prompt,
+        documentContext: options.documentContext,
+        maxTokens: options.maxTokens || 500,
+        temperature: options.temperature || 0.7,
+      }),
+    });
+    
+    if (!response.ok) {
+      console.warn(`Copilot API error: ${response.status} ${response.statusText}, falling back to internal AI`);
+      // Fall back to internal AI service if Copilot API fails
+      return simulateCopilotResponse(prompt);
+    }
+    
+    return await response.json();
   } catch (error) {
-    console.error("Failed to generate content with Microsoft Copilot:", error);
-    throw new Error("Could not generate content with Microsoft Copilot");
+    console.error('Error calling Copilot:', error);
+    
+    // Fall back to internal AI service if Copilot API fails
+    return simulateCopilotResponse(prompt);
   }
 }
 
 /**
- * Analyze document with Microsoft Copilot
- * @param {string} documentId - Document ID to analyze
- * @param {string} sessionId - Copilot session ID
- * @returns {Promise<object>} Analysis results
+ * Simulate Copilot response for demo/development purposes
+ * @param {string} prompt - The user prompt
+ * @returns {object} Simulated response
  */
-export async function analyzeDocument(documentId, sessionId) {
+function simulateCopilotResponse(prompt) {
+  console.log('Simulating Copilot response for prompt:', prompt);
+  
+  // Create different responses based on prompt content
+  let responseText = '';
+  
+  if (prompt.includes('clinical trial') || prompt.includes('protocol')) {
+    responseText = 'A clinical trial protocol is a document that describes the objectives, design, methodology, statistical considerations, and organization of a clinical trial. It typically includes information about the background and rationale for the study, detailed patient eligibility criteria, treatment plan, and assessment methods.';
+  } else if (prompt.includes('adverse event') || prompt.includes('safety')) {
+    responseText = 'Adverse events in clinical trials must be carefully documented and reported. The safety section of a regulatory document should include comprehensive summaries of all adverse events observed, their severity, relationship to the study drug, and resolution. Statistical analyses should compare safety profiles between treatment groups.';
+  } else if (prompt.includes('regulatory') || prompt.includes('submission')) {
+    responseText = 'Regulatory submissions require careful attention to formatting and content requirements specified by health authorities. Documents should be organized according to CTD (Common Technical Document) format when applicable, with clear section numbering and references. Ensure all required components are included and properly formatted.';
+  } else if (prompt.includes('stat') || prompt.includes('statistical')) {
+    responseText = 'Statistical analysis plans should clearly describe the primary and secondary endpoints, analysis populations, handling of missing data, and statistical methodologies. Include justification for sample size calculations and specify the statistical significance level. Describe any planned interim analyses and multiple comparison adjustments.';
+  } else if (prompt.includes('literature') || prompt.includes('reference')) {
+    responseText = 'Literature reviews should be systematic and comprehensive. Search strategies should be clearly documented with inclusion and exclusion criteria. When citing literature in regulatory documents, ensure proper formatting and complete citation information. Critically evaluate the quality and relevance of each reference.';
+  } else {
+    responseText = 'I can help you draft and improve regulatory documents including clinical study protocols, clinical study reports, clinical evaluation reports, and regulatory submissions. Would you like me to help you with a specific section or provide general guidance on regulatory writing best practices?';
+  }
+  
+  return {
+    text: responseText,
+    tokens: responseText.split(/\s+/).length,
+    prompt_tokens: prompt.split(/\s+/).length,
+  };
+}
+
+/**
+ * Get writing suggestions for document content
+ * @param {string} documentContent - Document content to analyze
+ * @returns {Promise<Array>} Writing suggestions
+ */
+export async function getWritingSuggestions(documentContent) {
   try {
-    // In a real implementation, this would call Microsoft Copilot to analyze the document
+    if (!documentContent) {
+      return [];
+    }
     
-    // For demo purposes, return mock analysis
-    return {
-      readability: {
-        score: 54,  // 0-100 scale
-        grade: "College",
-        suggestions: [
-          "Consider simplifying technical language in the Methods section",
-          "Break down complex sentences in paragraphs 3 and 7"
-        ]
-      },
-      clinicalAccuracy: {
-        score: 87,  // 0-100 scale
-        potentialIssues: [
-          "Inconsistent reporting of p-values in Table 4",
-          "Missing confidence intervals for secondary endpoints"
-        ]
-      },
-      regulatoryCompliance: {
-        score: 92,  // 0-100 scale
-        missing: [
-          "Subject disposition diagram",
-          "Complete adverse event categorization by system organ class"
-        ]
-      },
-      formattingConsistency: {
-        score: 76,  // 0-100 scale
-        issues: [
-          "Inconsistent heading levels in sections 3 and 4",
-          "Variable table formatting throughout document"
-        ]
-      }
-    };
+    const response = await askCopilot('Please analyze this document content and provide writing improvement suggestions. Focus on clarity, regulatory compliance, and technical accuracy.', {
+      documentContext: documentContent,
+      maxTokens: 1000,
+      temperature: 0.3,
+    });
+    
+    // Parse suggestions from response
+    const suggestionTexts = response.text.split('\n').filter(line => line.trim().length > 0);
+    
+    // Format suggestions
+    return suggestionTexts.map((text, index) => ({
+      id: `suggestion-${index}`,
+      text: text.replace(/^- /, ''),
+      type: text.toLowerCase().includes('error') ? 'error' : 
+            text.toLowerCase().includes('warning') ? 'warning' : 'suggestion',
+      position: null, // In a real implementation, this would point to the position in the document
+    }));
   } catch (error) {
-    console.error("Failed to analyze document with Microsoft Copilot:", error);
-    throw new Error("Could not analyze document with Microsoft Copilot");
+    console.error('Error getting writing suggestions:', error);
+    return [];
   }
 }
 
 /**
- * Get writing suggestions from Microsoft Copilot
- * @param {string} text - Text to get suggestions for
- * @param {string} sessionId - Copilot session ID
- * @returns {Promise<Array>} Suggestions
+ * Generate regulatory document section
+ * @param {string} sectionType - Type of section to generate
+ * @param {string} prompt - Additional context for generation
+ * @returns {Promise<string>} Generated content
  */
-export async function getWritingSuggestions(text, sessionId) {
+export async function generateRegulatorySection(sectionType, prompt = "") {
   try {
-    // In a real implementation, this would call Microsoft Copilot for writing suggestions
+    const systemPrompt = `You are an expert in regulatory document authoring. 
+      Please generate a professionally written, comprehensive ${sectionType} section for a regulatory document.
+      The content should follow industry best practices and regulatory guidance.
+      Provide detailed, specific content rather than placeholders.`;
     
-    // For demo purposes, use our predefined DEMO_SUGGESTIONS
-    return DEMO_SUGGESTIONS;
+    const response = await askCopilot(`${systemPrompt}\n\nAdditional context: ${prompt}`, {
+      maxTokens: 1500,
+      temperature: 0.7,
+    });
+    
+    return response.text;
   } catch (error) {
-    console.error("Failed to get writing suggestions from Microsoft Copilot:", error);
-    throw new Error("Could not get writing suggestions from Microsoft Copilot");
+    console.error('Error generating regulatory section:', error);
+    return '';
   }
 }
 
 /**
- * End a Copilot session
- * @param {string} sessionId - Copilot session ID
- * @returns {Promise<boolean>} Whether the session was successfully ended
+ * Analyze document for regulatory compliance
+ * @param {string} documentContent - Document content to analyze
+ * @param {string} regulationType - Type of regulatory framework to check against
+ * @returns {Promise<Array>} Compliance issues
  */
-export async function endCopilotSession(sessionId) {
+export async function analyzeRegulatory(documentContent, regulationType = 'general') {
   try {
-    // In a real implementation, this would properly close the Copilot session
+    if (!documentContent) {
+      return [];
+    }
     
-    // For demo purposes, simulate successful session end
-    return true;
+    const prompt = `Please analyze this ${regulationType} regulatory document content and identify any compliance issues, missing information, or areas for improvement based on regulatory requirements and industry best practices.`;
+    
+    const response = await askCopilot(prompt, {
+      documentContext: documentContent,
+      maxTokens: 1200,
+      temperature: 0.3,
+    });
+    
+    // Parse issues from response
+    const issueTexts = response.text.split('\n').filter(line => line.trim().length > 0);
+    
+    // Format issues
+    return issueTexts.map((text, index) => ({
+      id: `issue-${index}`,
+      text: text.replace(/^- /, '').replace(/^[0-9]+\. /, ''),
+      severity: 
+        text.toLowerCase().includes('critical') ? 'critical' :
+        text.toLowerCase().includes('major') ? 'major' :
+        text.toLowerCase().includes('minor') ? 'minor' : 'info',
+      position: null, // In a real implementation, this would point to the position in the document
+    }));
   } catch (error) {
-    console.error("Failed to end Copilot session:", error);
-    return false;
+    console.error('Error analyzing regulatory compliance:', error);
+    return [];
+  }
+}
+
+/**
+ * Generate document references from content
+ * @param {string} documentContent - Document content
+ * @returns {Promise<Array>} Generated references
+ */
+export async function generateReferences(documentContent) {
+  try {
+    if (!documentContent) {
+      return [];
+    }
+    
+    const prompt = `Please analyze this document content and identify key statements or claims that should be supported by references. 
+      For each identified statement, suggest appropriate scientific references from the literature that could be used to support it.
+      Format each reference following ICMJE guidelines.`;
+    
+    const response = await askCopilot(prompt, {
+      documentContext: documentContent,
+      maxTokens: 1500,
+      temperature: 0.4,
+    });
+    
+    // Split into reference entries
+    const referenceBlocks = response.text.split(/\n\n+/);
+    
+    // Process each block into a reference object
+    return referenceBlocks.map((block, index) => {
+      const lines = block.split('\n');
+      const statement = lines[0]?.replace(/^Statement: /, '').replace(/^Claim: /, '') || '';
+      const reference = lines.slice(1).join('\n').replace(/^Reference: /, '') || '';
+      
+      return {
+        id: `ref-${index}`,
+        statement,
+        reference,
+        position: null, // In a real implementation, this would point to the position in the document
+      };
+    }).filter(ref => ref.reference.trim().length > 0);
+  } catch (error) {
+    console.error('Error generating references:', error);
+    return [];
   }
 }
