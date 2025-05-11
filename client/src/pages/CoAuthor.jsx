@@ -24,6 +24,7 @@ import { Separator } from '@/components/ui/separator';
 import * as googleDocsService from '../services/googleDocsService';
 import googleAuthService from '../services/googleAuthService';
 import * as copilotService from '../services/copilotService';
+import { DOCUMENT_TEMPLATES } from '../config/googleConfig';
 
 // AI services
 import * as aiService from '../services/aiService';
@@ -127,6 +128,10 @@ export default function CoAuthor() {
   const [googleUserInfo, setGoogleUserInfo] = useState(null);
   const [authLoading, setAuthLoading] = useState(false);
   const [editorType, setEditorType] = useState('google'); // Changed default to 'google'
+  const [createNewDocDialogOpen, setCreateNewDocDialogOpen] = useState(false);
+  const [newDocumentTitle, setNewDocumentTitle] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [creatingDocument, setCreatingDocument] = useState(false);
   // AI Assistant state
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const [aiAssistantMode, setAiAssistantMode] = useState('suggestions'); // 'suggestions', 'compliance', 'formatting'
@@ -288,6 +293,95 @@ export default function CoAuthor() {
     includeTableOfContents: true,
     includeAppendices: true
   });
+  
+  // Handle creating a new Google Doc
+  const handleCreateNewDocument = async () => {
+    if (!isGoogleAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in with Google to create documents.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!newDocumentTitle.trim()) {
+      toast({
+        title: "Title Required",
+        description: "Please enter a title for your new document.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!selectedTemplate) {
+      toast({
+        title: "Template Required",
+        description: "Please select a template for your new document.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setCreatingDocument(true);
+      
+      // Call Google Docs service to create a new document
+      const result = await googleDocsService.createNewDoc(
+        selectedTemplate,
+        newDocumentTitle,
+        {
+          organizationId: 'current-org', // This would come from your auth context
+          moduleType: selectedTemplate.includes('clinical_overview') ? 'module_2_5' : 
+                      selectedTemplate.includes('clinical_summary') ? 'module_2_7' : 'default'
+        }
+      );
+      
+      // Update the local state with the new document
+      if (result && result.documentId) {
+        // Create a new document object that matches our expected structure
+        const newDoc = {
+          id: documents.length + 1, // Generate a unique local ID
+          title: newDocumentTitle,
+          module: selectedTemplate.includes('module_2') ? 'Module 2' : 
+                 selectedTemplate.includes('module_1') ? 'Module 1' : 
+                 selectedTemplate.includes('module_3') ? 'Module 3' : 
+                 selectedTemplate.includes('module_4') ? 'Module 4' : 'Module 5',
+          lastEdited: 'Just now',
+          editedBy: googleUserInfo?.name || 'Current User',
+          status: 'Draft',
+          version: 'v1.0',
+          reviewers: [],
+          googleDocsId: result.documentId, // Store the actual Google Doc ID
+        };
+        
+        // Add to our documents array (in real app, would update the database)
+        setSelectedDocument(newDoc);
+        
+        toast({
+          title: "Document Created",
+          description: `"${newDocumentTitle}" has been created successfully.`,
+          variant: "success",
+        });
+        
+        // Close the dialog
+        setCreateNewDocDialogOpen(false);
+        
+        // Reset the form
+        setNewDocumentTitle('');
+        setSelectedTemplate('');
+      }
+    } catch (error) {
+      console.error("Error creating document:", error);
+      toast({
+        title: "Document Creation Failed",
+        description: error.message || "Failed to create document. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setCreatingDocument(false);
+    }
+  };
   
   // AI query submission handler
   const handleAiQuerySubmit = async (e) => {
@@ -1628,6 +1722,89 @@ export default function CoAuthor() {
       </div>
       
       {/* Google Docs Integration */}
+      {/* New Document Dialog */}
+      <Dialog open={createNewDocDialogOpen} onOpenChange={setCreateNewDocDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <FilePlus2 className="h-5 w-5 mr-2" />
+              Create New Document
+            </DialogTitle>
+            <DialogDescription>
+              Create a new document using Google Docs from one of our regulatory templates.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div>
+              <label htmlFor="document-title" className="block text-sm font-medium mb-1">
+                Document Title
+              </label>
+              <input
+                id="document-title"
+                type="text"
+                value={newDocumentTitle}
+                onChange={(e) => setNewDocumentTitle(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., Drug X Clinical Overview v1.0"
+              />
+            </div>
+            
+            <div>
+              <label htmlFor="template-select" className="block text-sm font-medium mb-1">
+                Select Template
+              </label>
+              <select
+                id="template-select"
+                value={selectedTemplate}
+                onChange={(e) => setSelectedTemplate(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">Select a template...</option>
+                <optgroup label="Module 2 Templates">
+                  <option value={DOCUMENT_TEMPLATES.module_2.clinical_overview}>Clinical Overview (2.5)</option>
+                  <option value={DOCUMENT_TEMPLATES.module_2.clinical_summary}>Clinical Summary (2.7)</option>
+                  <option value={DOCUMENT_TEMPLATES.module_2.quality_overall_summary}>Quality Overall Summary (2.3)</option>
+                </optgroup>
+                <optgroup label="Module 1 Templates">
+                  <option value={DOCUMENT_TEMPLATES.module_1.cover_letter}>Cover Letter</option>
+                </optgroup>
+                <optgroup label="Module 3 Templates">
+                  <option value={DOCUMENT_TEMPLATES.module_3.quality_manufacturing}>Quality Manufacturing</option>
+                </optgroup>
+                <optgroup label="Module 5 Templates">
+                  <option value={DOCUMENT_TEMPLATES.module_5.clinical_study_report}>Clinical Study Report</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateNewDocDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleCreateNewDocument} 
+              disabled={creatingDocument || !newDocumentTitle.trim() || !selectedTemplate}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              {creatingDocument ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                <>
+                  <FilePlus2 className="h-4 w-4 mr-2" />
+                  Create Document
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Google Docs Editor Dialog */}
       <Dialog open={googleDocsPopupOpen} onOpenChange={setGoogleDocsPopupOpen} className="max-w-[90%] w-[1200px]">
         <DialogContent className="max-w-[90%] w-[1200px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -1636,7 +1813,31 @@ export default function CoAuthor() {
                 <FileText className="h-5 w-5 mr-2" />
                 {selectedDocument?.title || "Module 2.5 Clinical Overview"}
               </DialogTitle>
+              <DialogDescription className="mt-2 text-xs">
+                {isGoogleAuthenticated ? (
+                  <span className="flex items-center text-green-600">
+                    <Check className="h-3 w-3 mr-1" /> 
+                    Connected to Google Docs as {googleUserInfo?.name || "Authenticated User"}
+                  </span>
+                ) : (
+                  <span className="flex items-center text-amber-600">
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    Sign in with Google to edit and save documents
+                  </span>
+                )}
+              </DialogDescription>
               <div className="flex items-center space-x-2">
+                {isGoogleAuthenticated && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="h-8 px-2 text-xs border-blue-200 text-blue-700 hover:bg-blue-50 flex items-center"
+                    onClick={() => setCreateNewDocDialogOpen(true)}
+                  >
+                    <FilePlus2 className="h-3 w-3 mr-1" />
+                    Create New Document
+                  </Button>
+                )}
                 <Badge variant="outline" className="bg-blue-50 text-blue-700 px-2 py-1 text-xs">
                   {selectedDocument?.status || "Draft"}
                 </Badge>
@@ -1687,9 +1888,20 @@ export default function CoAuthor() {
                         organizationId: "1", // Use string for consistency with API
                         userId: googleUserInfo?.id || "anonymous",
                         userName: googleUserInfo?.name || "Current User",
+                        userEmail: googleUserInfo?.email,
                         
                         // Vault specific details
-                        folderId: "regulatory-submissions"
+                        folderId: "regulatory-submissions",
+                        lifecycle: "authoring",
+                        version: selectedDocument?.version || "1.0",
+                        
+                        // Regulatory classification data
+                        regulatoryAuthority: "FDA", // FDA, EMA, etc.
+                        submissionType: "NDA", // NDA, BLA, etc.
+                        ctdSection: selectedDocument?.module?.includes("2") ? "m2" :
+                                  selectedDocument?.module?.includes("3") ? "m3" :
+                                  selectedDocument?.module?.includes("4") ? "m4" :
+                                  selectedDocument?.module?.includes("5") ? "m5" : "m1"
                       });
                       
                       toast({
