@@ -222,6 +222,10 @@ export default function CoAuthor() {
           region: selectedRegion || 'FDA'
         };
         
+        // Update documents array with the new document
+        setDocuments(prevDocs => [newDocument, ...prevDocs]);
+        
+        // Set as selected document
         setSelectedDocument(newDocument);
         
         // Open the new document in the iframe
