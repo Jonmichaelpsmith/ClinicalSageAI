@@ -34,7 +34,18 @@ import {
   UserCheck,
   RefreshCw,
   Lock,
-  Users
+  Users,
+  ClipboardCheck,
+  FileCheck,
+  Link,
+  BookOpen,
+  FileText2,
+  ArrowUpRight,
+  FileOutput,
+  Filter,
+  CheckSquare,
+  FileWarning,
+  HelpCircle
 } from 'lucide-react';
 
 export default function CoAuthor() {
@@ -48,6 +59,52 @@ export default function CoAuthor() {
   const [teamCollabOpen, setTeamCollabOpen] = useState(false);
   const [documentLocked, setDocumentLocked] = useState(false);
   const [lockedBy, setLockedBy] = useState(null);
+  const [showValidationDialog, setShowValidationDialog] = useState(false);
+  const [validationResults, setValidationResults] = useState({
+    completeness: 78,
+    consistency: 92,
+    references: 65,
+    regulatory: 87,
+    issues: [
+      {
+        id: 1,
+        severity: 'critical',
+        section: '2.5.4',
+        description: 'Missing source citations for efficacy claims',
+        suggestion: 'Add references to support the primary endpoint efficacy claims'
+      },
+      {
+        id: 2,
+        severity: 'major',
+        section: '2.5.6',
+        description: 'Incomplete benefit-risk assessment',
+        suggestion: 'Expand the benefit-risk section to include analysis of secondary endpoints'
+      },
+      {
+        id: 3,
+        severity: 'minor',
+        section: '2.5.2',
+        description: 'Inconsistent product name usage',
+        suggestion: 'Standardize product name as "Drug X" throughout the document'
+      },
+      {
+        id: 4,
+        severity: 'info',
+        section: '2.5.1',
+        description: 'FDA guidance updated since last edit',
+        suggestion: 'Review latest FDA guidance on clinical overview format'
+      }
+    ]
+  });
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportFormat, setExportFormat] = useState('pdf');
+  const [exportOptions, setExportOptions] = useState({
+    includeComments: true,
+    includeTrackChanges: false,
+    includeCoverPage: true,
+    includeTableOfContents: true,
+    includeAppendices: true
+  });
   
   // Version history mock data - in real implementation this would come from the Vault API
   const [versionHistory] = useState([
@@ -551,8 +608,9 @@ export default function CoAuthor() {
                     <Button 
                       size="sm" 
                       className="w-full bg-purple-600 hover:bg-purple-700"
+                      onClick={() => setShowValidationDialog(true)}
                     >
-                      <ExternalLink className="h-4 w-4 mr-2" />
+                      <FileCheck className="h-4 w-4 mr-2" />
                       Open Validation Report
                     </Button>
                   </div>
@@ -566,9 +624,10 @@ export default function CoAuthor() {
                     size="sm" 
                     variant="outline" 
                     className="border-blue-200 text-blue-700 h-8"
+                    onClick={() => setShowExportDialog(true)}
                   >
-                    <Download className="h-4 w-4 mr-2" />
-                    Generate Progress Report
+                    <FileOutput className="h-4 w-4 mr-2" />
+                    Export Document
                   </Button>
                 </div>
               </div>
@@ -856,6 +915,547 @@ export default function CoAuthor() {
               All document access is logged for audit purposes
             </div>
             <Button onClick={() => setTeamCollabOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Document Validation Dialog */}
+      <Dialog open={showValidationDialog} onOpenChange={setShowValidationDialog}>
+        <DialogContent className="sm:max-w-[800px] max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <FileCheck className="h-5 w-5 mr-2" />
+              Document Validation Report
+            </DialogTitle>
+            <DialogDescription>
+              Detailed validation results for Module 2.5 Clinical Overview
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-grow overflow-auto">
+            <Tabs defaultValue="issues" className="w-full">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="issues" className="flex items-center">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  Issues ({validationResults.issues.length})
+                </TabsTrigger>
+                <TabsTrigger value="compliance" className="flex items-center">
+                  <ClipboardCheck className="h-4 w-4 mr-2" />
+                  Compliance
+                </TabsTrigger>
+                <TabsTrigger value="references" className="flex items-center">
+                  <Link className="h-4 w-4 mr-2" />
+                  References
+                </TabsTrigger>
+                <TabsTrigger value="guidance" className="flex items-center">
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Guidance
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="issues" className="mt-4 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-medium">Validation Issues</h3>
+                  <div className="flex items-center space-x-3">
+                    <Badge variant="outline" className="flex items-center space-x-1 bg-red-50 text-red-700 border-red-200">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>Critical: 1</span>
+                    </Badge>
+                    <Badge variant="outline" className="flex items-center space-x-1 bg-amber-50 text-amber-700 border-amber-200">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>Major: 1</span>
+                    </Badge>
+                    <Badge variant="outline" className="flex items-center space-x-1 bg-blue-50 text-blue-700 border-blue-200">
+                      <Info className="h-3 w-3" />
+                      <span>Minor: 2</span>
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="border rounded-md">
+                  <div className="grid grid-cols-5 gap-4 p-3 border-b bg-slate-50 font-medium text-sm">
+                    <div>Severity</div>
+                    <div>Location</div>
+                    <div className="col-span-2">Issue</div>
+                    <div>Action</div>
+                  </div>
+                  
+                  <div className="divide-y max-h-[300px] overflow-y-auto">
+                    {validationResults.issues.map((issue) => (
+                      <div key={issue.id} className="grid grid-cols-5 gap-4 p-3 text-sm hover:bg-slate-50">
+                        <div>
+                          {issue.severity === 'critical' && (
+                            <Badge className="bg-red-100 text-red-800 border-red-200">Critical</Badge>
+                          )}
+                          {issue.severity === 'major' && (
+                            <Badge className="bg-amber-100 text-amber-800 border-amber-200">Major</Badge>
+                          )}
+                          {issue.severity === 'minor' && (
+                            <Badge className="bg-blue-100 text-blue-800 border-blue-200">Minor</Badge>
+                          )}
+                          {issue.severity === 'info' && (
+                            <Badge className="bg-slate-100 text-slate-800 border-slate-200">Info</Badge>
+                          )}
+                        </div>
+                        <div className="font-medium">Section {issue.section}</div>
+                        <div className="col-span-2">
+                          <div>{issue.description}</div>
+                          <div className="text-xs text-slate-500 mt-1">Suggestion: {issue.suggestion}</div>
+                        </div>
+                        <div>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="h-7 border-blue-200 text-blue-700"
+                          >
+                            <ArrowUpRight className="h-3 w-3 mr-1" />
+                            Fix Issue
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 border rounded-md p-3">
+                  <h4 className="font-medium text-sm mb-2 flex items-center">
+                    <FileWarning className="h-4 w-4 mr-2 text-amber-600" />
+                    AI-Powered Recommendation
+                  </h4>
+                  <p className="text-sm text-slate-600">
+                    Based on analysis of your document and regulatory requirements, we recommend addressing the critical citation issue in Section 2.5.4 first. Consider using the Citation Assistant to automatically search for relevant references from your literature database.
+                  </p>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="compliance" className="mt-4 space-y-4">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Regulatory Compliance</h3>
+                    <div className="border rounded-md p-4 space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>FDA Guidelines Compliance</span>
+                          <span className="font-medium">{validationResults.regulatory}%</span>
+                        </div>
+                        <Progress value={validationResults.regulatory} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>ICH M4 Compliance</span>
+                          <span className="font-medium">94%</span>
+                        </div>
+                        <Progress value={94} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>EMA Guidelines Compliance</span>
+                          <span className="font-medium">81%</span>
+                        </div>
+                        <Progress value={81} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
+                      </div>
+                    </div>
+                    
+                    <div className="border rounded-md p-4">
+                      <h4 className="font-medium text-sm mb-3">Missing Required Elements</h4>
+                      <ul className="space-y-2 text-sm">
+                        <li className="flex items-start">
+                          <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
+                            <span className="text-xs">!</span>
+                          </div>
+                          <div>Comprehensive risk-benefit analysis in section 2.5.6</div>
+                        </li>
+                        <li className="flex items-start">
+                          <div className="w-5 h-5 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center flex-shrink-0 mr-2 mt-0.5">
+                            <span className="text-xs">!</span>
+                          </div>
+                          <div>Discussion of results in specific populations (elderly, pediatric)</div>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-medium">Content Assessment</h3>
+                    <div className="border rounded-md p-4 space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Content Completeness</span>
+                          <span className="font-medium">{validationResults.completeness}%</span>
+                        </div>
+                        <Progress value={validationResults.completeness} className="h-2 bg-slate-100" indicatorClassName="bg-blue-600" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Internal Consistency</span>
+                          <span className="font-medium">{validationResults.consistency}%</span>
+                        </div>
+                        <Progress value={validationResults.consistency} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Scientific Accuracy</span>
+                          <span className="font-medium">89%</span>
+                        </div>
+                        <Progress value={89} className="h-2 bg-slate-100" indicatorClassName="bg-green-600" />
+                      </div>
+                    </div>
+                    
+                    <div className="border rounded-md p-4">
+                      <h4 className="font-medium text-sm mb-3">Documentation Consistency</h4>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                            Consistent with Investigator's Brochure
+                          </div>
+                          <Badge className="bg-green-100 text-green-700">Verified</Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+                            Consistent with Non-Clinical Overview
+                          </div>
+                          <Badge className="bg-green-100 text-green-700">Verified</Badge>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center">
+                            <AlertCircle className="h-4 w-4 mr-2 text-amber-600" />
+                            Consistent with Clinical Study Reports
+                          </div>
+                          <Badge className="bg-amber-100 text-amber-700">Needs Review</Badge>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="references" className="mt-4 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-medium">Reference Analysis</h3>
+                  <div className="flex items-center space-x-3">
+                    <Badge variant="outline" className="flex items-center space-x-1 bg-blue-50 text-blue-700 border-blue-200">
+                      <Link className="h-3 w-3" />
+                      <span>Total: 47</span>
+                    </Badge>
+                    <Badge variant="outline" className="flex items-center space-x-1 bg-red-50 text-red-700 border-red-200">
+                      <AlertCircle className="h-3 w-3" />
+                      <span>Missing: 8</span>
+                    </Badge>
+                  </div>
+                </div>
+                
+                <div className="border rounded-md">
+                  <div className="flex justify-between items-center p-3 bg-slate-50 border-b">
+                    <h4 className="font-medium text-sm">Reference Validation Status</h4>
+                    <div className="flex items-center space-x-2">
+                      <div className="text-xs bg-slate-100 px-2 py-1 rounded flex items-center">
+                        <Filter className="h-3 w-3 mr-1" />
+                        Filter
+                      </div>
+                      <div className="text-xs bg-slate-100 px-2 py-1 rounded flex items-center">
+                        <CheckSquare className="h-3 w-3 mr-1" />
+                        Select All
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="divide-y max-h-[300px] overflow-y-auto">
+                    <div className="p-3 hover:bg-slate-50">
+                      <div className="flex justify-between">
+                        <div className="flex items-start space-x-2">
+                          <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <div className="font-medium text-sm">Missing citation in Section 2.5.4</div>
+                            <div className="text-xs text-slate-500 mt-1">Claim about efficacy requires statistical significance reference</div>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-7 border-blue-200 text-blue-700"
+                        >
+                          <Link className="h-3 w-3 mr-1" />
+                          Add Reference
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="p-3 hover:bg-slate-50">
+                      <div className="flex justify-between">
+                        <div className="flex items-start space-x-2">
+                          <Info className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <div className="font-medium text-sm">Reference format inconsistency</div>
+                            <div className="text-xs text-slate-500 mt-1">Multiple citation styles detected (Vancouver and APA)</div>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-7 border-blue-200 text-blue-700"
+                        >
+                          <CheckSquare className="h-3 w-3 mr-1" />
+                          Standardize
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="p-3 hover:bg-slate-50">
+                      <div className="flex justify-between">
+                        <div className="flex items-start space-x-2">
+                          <Info className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <div className="font-medium text-sm">Outdated reference in Section 2.5.3</div>
+                            <div className="text-xs text-slate-500 mt-1">Reference #18 has been superseded by newer publication</div>
+                          </div>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-7 border-blue-200 text-blue-700"
+                        >
+                          <RefreshCw className="h-3 w-3 mr-1" />
+                          Update
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-2 text-sm bg-slate-50 p-3 rounded-md border">
+                  <HelpCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="font-medium">Reference Management Tips</p>
+                    <p className="mt-1 text-slate-600">
+                      You can use the AI Reference Assistant to automatically scan your document for claims requiring citations and match them with appropriate references from your literature database.
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="guidance" className="mt-4 space-y-4">
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="border rounded-md">
+                    <div className="bg-slate-50 p-3 border-b font-medium">
+                      Applicable Regulatory Guidance
+                    </div>
+                    <div className="divide-y">
+                      <div className="p-3 hover:bg-slate-50">
+                        <div className="flex items-start space-x-2">
+                          <FileText2 className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <div className="font-medium text-sm">ICH M4E(R2) - Guideline on Clinical Overview and Clinical Summary</div>
+                            <div className="text-xs text-slate-500 mt-1">Last updated: January 2023</div>
+                            <Button 
+                              variant="link" 
+                              size="sm" 
+                              className="h-6 px-0 text-blue-600"
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              View Guidance Document
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 hover:bg-slate-50">
+                        <div className="flex items-start space-x-2">
+                          <FileText2 className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <div className="font-medium text-sm">FDA Guidance - Format and Content of the Clinical and Statistical Sections</div>
+                            <div className="text-xs text-slate-500 mt-1">Last updated: March 2022</div>
+                            <Button 
+                              variant="link" 
+                              size="sm" 
+                              className="h-6 px-0 text-blue-600"
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              View Guidance Document
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="p-3 hover:bg-slate-50">
+                        <div className="flex items-start space-x-2">
+                          <FileText2 className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                          <div>
+                            <div className="font-medium text-sm">EMA Clinical Documentation Requirements</div>
+                            <div className="text-xs text-slate-500 mt-1 flex items-center">
+                              <AlertCircle className="h-3 w-3 mr-1 text-amber-600" />
+                              Updated April 2025 (newer version available)
+                            </div>
+                            <Button 
+                              variant="link" 
+                              size="sm" 
+                              className="h-6 px-0 text-blue-600"
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              View Guidance Document
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border rounded-md">
+                    <div className="bg-slate-50 p-3 border-b font-medium">
+                      Technical Guidance & Best Practices
+                    </div>
+                    <div className="p-4 space-y-3">
+                      <h4 className="font-medium text-sm">Section 2.5.4 - Analysis of Clinical Information</h4>
+                      <div className="text-sm text-slate-600">
+                        <p className="mb-2">This section should include a detailed and critical analysis of all clinical data submitted in the clinical study reports. Key components include:</p>
+                        <ul className="list-disc pl-5 space-y-1">
+                          <li>Study designs and key study endpoints</li>
+                          <li>Statistical approaches and analyses</li>
+                          <li>Comparative efficacy and safety across all studies</li>
+                          <li>Patient exposure with identification of safety database</li>
+                          <li>Analysis of intrinsic and extrinsic factors on efficacy and safety</li>
+                        </ul>
+                      </div>
+                      <div className="flex items-center space-x-2 mt-2">
+                        <Button variant="outline" size="sm" className="border-blue-200 text-blue-700">
+                          <FileCheck className="h-4 w-4 mr-2" />
+                          View Template
+                        </Button>
+                        <Button variant="outline" size="sm" className="border-green-200 text-green-700">
+                          <BookOpen className="h-4 w-4 mr-2" />
+                          Best Practices
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+          
+          <div className="flex items-center justify-between border-t pt-4 mt-4">
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-blue-200 text-blue-700"
+              >
+                <FileOutput className="h-4 w-4 mr-2" />
+                Export Report
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-purple-200 text-purple-700"
+              >
+                <Info className="h-4 w-4 mr-2" />
+                AI Analysis
+              </Button>
+            </div>
+            <Button onClick={() => setShowValidationDialog(false)}>Close</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Document Export Dialog */}
+      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <FileOutput className="h-5 w-5 mr-2" />
+              Export Document
+            </DialogTitle>
+            <DialogDescription>
+              Customize export options for Module 2.5 Clinical Overview
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Export Format</label>
+                <div className="flex flex-col space-y-2">
+                  <div 
+                    className={`border rounded-md p-3 cursor-pointer hover:bg-slate-50 flex items-center space-x-2 ${exportFormat === 'pdf' ? 'border-blue-500 bg-blue-50' : ''}`}
+                    onClick={() => setExportFormat('pdf')}
+                  >
+                    <div className={`w-4 h-4 rounded-full border ${exportFormat === 'pdf' ? 'border-blue-500 bg-blue-500' : 'border-slate-300'}`} />
+                    <span>PDF Format</span>
+                  </div>
+                  <div 
+                    className={`border rounded-md p-3 cursor-pointer hover:bg-slate-50 flex items-center space-x-2 ${exportFormat === 'word' ? 'border-blue-500 bg-blue-50' : ''}`}
+                    onClick={() => setExportFormat('word')}
+                  >
+                    <div className={`w-4 h-4 rounded-full border ${exportFormat === 'word' ? 'border-blue-500 bg-blue-500' : 'border-slate-300'}`} />
+                    <span>Word Document</span>
+                  </div>
+                  <div 
+                    className={`border rounded-md p-3 cursor-pointer hover:bg-slate-50 flex items-center space-x-2 ${exportFormat === 'html' ? 'border-blue-500 bg-blue-50' : ''}`}
+                    onClick={() => setExportFormat('html')}
+                  >
+                    <div className={`w-4 h-4 rounded-full border ${exportFormat === 'html' ? 'border-blue-500 bg-blue-500' : 'border-slate-300'}`} />
+                    <span>HTML Format</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Export Options</label>
+                <div className="space-y-2">
+                  <label className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-slate-50">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-slate-300 text-blue-600"
+                      checked={exportOptions.includeComments} 
+                      onChange={() => setExportOptions({...exportOptions, includeComments: !exportOptions.includeComments})}
+                    />
+                    <span className="text-sm">Include Comments</span>
+                  </label>
+                  <label className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-slate-50">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-slate-300 text-blue-600"
+                      checked={exportOptions.includeTrackChanges} 
+                      onChange={() => setExportOptions({...exportOptions, includeTrackChanges: !exportOptions.includeTrackChanges})}
+                    />
+                    <span className="text-sm">Include Track Changes</span>
+                  </label>
+                  <label className="flex items-center space-x-2 border rounded-md p-3 cursor-pointer hover:bg-slate-50">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-slate-300 text-blue-600"
+                      checked={exportOptions.includeCoverPage} 
+                      onChange={() => setExportOptions({...exportOptions, includeCoverPage: !exportOptions.includeCoverPage})}
+                    />
+                    <span className="text-sm">Include Cover Page</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div className="border rounded-md p-3 bg-blue-50 text-blue-800 text-sm flex items-start space-x-2">
+              <Info className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <div>
+                <p>Documents will be exported with 21 CFR Part 11 compliance information and audit trail details attached as metadata.</p>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button 
+              variant="outline"
+              onClick={() => setShowExportDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              className="bg-blue-600 hover:bg-blue-700"
+              onClick={() => setShowExportDialog(false)}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export Document
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
