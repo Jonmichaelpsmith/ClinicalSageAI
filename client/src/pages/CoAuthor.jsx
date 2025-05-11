@@ -75,17 +75,14 @@ import {
   FileWarning,
   HelpCircle,
   MessageSquare,
-  Sparkles,
   Lightbulb,
   Check,
-  X,
   Settings,
   ListChecks,
   Bot,
   Clipboard,
   Zap,
-  Send,
-  Loader2
+  Send
 } from 'lucide-react';
 
 // Custom Google icon component (updated with support for className)
