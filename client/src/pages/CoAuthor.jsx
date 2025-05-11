@@ -156,23 +156,51 @@ export default function CoAuthor() {
           });
           
           try {
-            // Simulate processing the OAuth callback
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            // For demonstration, we'll simulate successful authentication
-            setIsGoogleAuthenticated(true);
-            setGoogleUserInfo({
-              name: "Demo User",
-              email: "demo@example.com", 
-              id: "user123",
-              picture: "https://ui-avatars.com/api/?name=Demo+User&background=0D8ABC&color=fff"
+            // Process the actual OAuth callback using our service
+            const result = await fetch('/api/google-docs/auth/callback', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ code })
             });
             
-            toast({
-              title: "Authentication Successful",
-              description: "You are now signed in with Google.",
-              variant: "success"
-            });
+            if (!result.ok) {
+              throw new Error('Failed to complete authentication with server');
+            }
+            
+            const authData = await result.json();
+            
+            if (authData.success) {
+              // Save the token to localStorage
+              localStorage.setItem(
+                'trialsage_google_auth_token', 
+                JSON.stringify({
+                  accessToken: authData.token,
+                  expirationTime: Date.now() + (authData.expiresIn * 1000)
+                })
+              );
+              
+              // Save user info
+              if (authData.user) {
+                localStorage.setItem('trialsage_google_user', JSON.stringify(authData.user));
+                setGoogleUserInfo(authData.user);
+              } else {
+                // If user info wasn't returned, fetch it
+                const userInfo = await googleAuthService.fetchAndStoreUserInfo(authData.token);
+                setGoogleUserInfo(userInfo);
+              }
+              
+              setIsGoogleAuthenticated(true);
+              
+              toast({
+                title: "Authentication Successful",
+                description: "You are now signed in with Google.",
+                variant: "success"
+              });
+            } else {
+              throw new Error(authData.message || 'Authentication failed');
+            }
             
             // Clean up the URL
             const url = new URL(window.location.href);
@@ -1967,13 +1995,18 @@ export default function CoAuthor() {
                               // First check if we have a docId directly from Google integration
                               selectedDocument?.googleDocsId || 
                               // Then check for predefined mapping based on document id
-                              (selectedDocument?.id === 1 
-                                ? "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" 
-                                : selectedDocument?.id === 2
-                                  ? "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4"
-                                  : "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" // Default document
+                              (isGoogleAuthenticated 
+                                ? // Use document IDs from the configuration based on the selected document
+                                  (selectedDocument?.id === 1 
+                                    ? googleDocsService.getDocumentId('module_2_5') 
+                                    : selectedDocument?.id === 2
+                                      ? googleDocsService.getDocumentId('module_2_7')
+                                      : googleDocsService.getDocumentId('default')
+                                  )
+                                : // Use fallback public document when not authenticated
+                                  "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" 
                               )
-                            }/edit?usp=sharing&rm=minimal&embedded=true`}
+                            }/edit?${isGoogleAuthenticated ? "usp=drivesdk" : "usp=sharing"}&rm=minimal&embedded=true`}
                             width="100%"
                             height="100%" 
                             frameBorder="0"
