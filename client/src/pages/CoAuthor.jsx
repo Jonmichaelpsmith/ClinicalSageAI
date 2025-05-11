@@ -859,18 +859,18 @@ export default function CoAuthor() {
                     onClick={() => {
                       if (selectedDocument) {
                         toast({
-                          title: "Opening Microsoft Word",
-                          description: "Preparing document for editing in Microsoft Word...",
+                          title: "Opening Google Docs",
+                          description: "Preparing document for editing in Google Docs...",
                           variant: "default",
                         });
-                        console.log("Creating Microsoft Office editing session for VAULT document " + selectedDocument.id + "...");
+                        console.log("Creating Google Docs editing session for VAULT document " + selectedDocument.id + "...");
                         
                         // Simulate a brief loading period
                         setTimeout(() => {
-                          setMsWordPopupOpen(true);
+                          setGoogleDocsPopupOpen(true);
                           toast({
-                            title: "Microsoft Word Ready",
-                            description: "Document is now ready for editing in Microsoft Word.",
+                            title: "Google Docs Ready",
+                            description: "Document is now ready for editing in Google Docs.",
                             variant: "default",
                           });
                         }, 700);
@@ -884,7 +884,7 @@ export default function CoAuthor() {
                     }}
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
-                    Edit in Word
+                    Edit in Google Docs
                   </Button>
                   <Button size="sm" variant="outline" className="border-blue-200">
                     <Upload className="h-4 w-4 mr-2" />
@@ -1349,38 +1349,28 @@ export default function CoAuthor() {
         )}
       </div>
       
-      {/* Microsoft Word 365 Integration */}
-      <Dialog open={msWordPopupOpen} onOpenChange={setMsWordPopupOpen} className="max-w-[90%] w-[1200px]">
+      {/* Google Docs Integration */}
+      <Dialog open={googleDocsPopupOpen} onOpenChange={setGoogleDocsPopupOpen} className="max-w-[90%] w-[1200px]">
         <DialogContent className="max-w-[90%] w-[1200px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center">
               <FileText className="h-5 w-5 mr-2" />
-              Microsoft Word 365 - {selectedDocument?.title || "Module 2.5 Clinical Overview"}
+              Google Docs - {selectedDocument?.title || "Module 2.5 Clinical Overview"}
             </DialogTitle>
             <DialogDescription>
-              The genuine Microsoft Word 365 experience, embedded directly in TrialSage.
+              Edit your document with Google Docs, embedded directly in TrialSage.
             </DialogDescription>
           </DialogHeader>
           
-          <Suspense fallback={<div className="py-20 text-center">Loading Microsoft Word 365...</div>}>
-            <Office365WordEmbed 
-              documentId={selectedDocument?.id?.toString() || 'current-doc'}
-              initialContent="The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects)."
-              onSave={(content) => {
-                console.log("Saving document content from Microsoft Word 365:", content);
-                toast({
-                  title: "Document Updated",
-                  description: "Your changes from Microsoft Word 365 have been saved to the document vault.",
-                  variant: "default",
-                });
-                setMsWordPopupOpen(false);
-              }}
-              vaultIntegration={msOfficeVaultBridge}
+          <Suspense fallback={<div className="py-20 text-center">Loading Google Docs...</div>}>
+            <GoogleDocsEmbed 
+              documentId={selectedDocument?.id === 1 ? "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4"}
+              documentName={selectedDocument?.title || "Module 2.5 Clinical Overview"}
             />
           </Suspense>
           
           <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setMsWordPopupOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => setGoogleDocsPopupOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
