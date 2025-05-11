@@ -537,6 +537,24 @@ export default function CoAuthor() {
               <Sparkles className="h-4 w-4 mr-2" />
               AI Assistant
             </Button>
+            <Button 
+              variant={isGoogleAuthenticated ? "default" : "outline"}
+              size="sm"
+              onClick={() => isGoogleAuthenticated ? googleAuthService.logout() : googleAuthService.initiateAuth()}
+              className={`flex items-center ${isGoogleAuthenticated ? "bg-green-600 text-white" : "border-blue-200 text-blue-700"}`}
+            >
+              {isGoogleAuthenticated ? (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Google Connected
+                </>
+              ) : (
+                <>
+                  <FileEdit className="h-4 w-4 mr-2" />
+                  Connect Google Docs
+                </>
+              )}
+            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
