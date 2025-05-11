@@ -793,3 +793,490 @@ Sample Preparation: Dissolve in DMSO, seal in headspace vial`,
 };
 
 export default MethodValidationGenerator;
+    methodName: '',
+    methodType: 'HPLC',
+    methodPurpose: '',
+    parameters: {
+      specificity: true,
+      accuracy: true,
+      precision: true,
+      linearity: true,
+      range: true,
+      robustness: false,
+      solutionStability: false,
+      detectionLimit: false,
+      quantitationLimit: false
+    },
+    specificDetails: {
+      analyteConcentration: '',
+      matrix: '',
+      equipmentDetails: '',
+      columnSpecifications: '',
+      mobilePhase: '',
+      flowRate: '',
+      injectionVolume: '',
+      runTime: '',
+      detectionWavelength: ''
+    }
+  });
+  
+  const { toast } = useToast();
+  
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setMethodData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const handleParameterChange = (parameter) => {
+    setMethodData(prev => ({
+      ...prev,
+      parameters: {
+        ...prev.parameters,
+        [parameter]: !prev.parameters[parameter]
+      }
+    }));
+  };
+  
+  const handleDetailsChange = (e) => {
+    const { name, value } = e.target;
+    setMethodData(prev => ({
+      ...prev,
+      specificDetails: {
+        ...prev.specificDetails,
+        [name]: value
+      }
+    }));
+  };
+  
+  const handleSelectChange = (name, value) => {
+    setMethodData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const handleGenerateProtocol = () => {
+    if (!methodData.methodName) {
+      toast({
+        title: "Method name required",
+        description: "Please enter a name for your analytical method",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setLoading(true);
+    
+    // Simulate API call for method protocol generation
+    setTimeout(() => {
+      setLoading(false);
+      setActiveTab('preview');
+      
+      toast({
+        title: "Method validation protocol generated",
+        description: `Protocol for ${methodData.methodName} has been created successfully`
+      });
+    }, 2000);
+  };
+  
+  const methodTypes = [
+    { value: 'HPLC', label: 'HPLC (High Performance Liquid Chromatography)' },
+    { value: 'GC', label: 'GC (Gas Chromatography)' },
+    { value: 'UV', label: 'UV Spectroscopy' },
+    { value: 'FTIR', label: 'FTIR (Fourier Transform Infrared Spectroscopy)' },
+    { value: 'NMR', label: 'NMR (Nuclear Magnetic Resonance)' },
+    { value: 'MS', label: 'MS (Mass Spectrometry)' },
+    { value: 'ICP', label: 'ICP (Inductively Coupled Plasma)' },
+    { value: 'Dissolution', label: 'Dissolution Testing' },
+    { value: 'KF', label: 'Karl Fischer Titration' },
+    { value: 'DSC', label: 'DSC (Differential Scanning Calorimetry)' }
+  ];
+  
+  const validationParameters = [
+    { id: 'specificity', name: 'Specificity', description: 'Ability to assess unequivocally the analyte in the presence of components' },
+    { id: 'accuracy', name: 'Accuracy', description: 'Closeness of test results to the true value' },
+    { id: 'precision', name: 'Precision', description: 'Closeness of agreement between repeated measurements' },
+    { id: 'linearity', name: 'Linearity', description: 'Ability to obtain results directly proportional to analyte concentration' },
+    { id: 'range', name: 'Range', description: 'Interval between upper and lower concentration with suitable precision, accuracy and linearity' },
+    { id: 'robustness', name: 'Robustness', description: 'Capacity to remain unaffected by small variations in method parameters' },
+    { id: 'solutionStability', name: 'Solution Stability', description: 'Stability of the analyte in solution over time' },
+    { id: 'detectionLimit', name: 'Detection Limit (LOD)', description: 'Lowest amount of analyte that can be detected' },
+    { id: 'quantitationLimit', name: 'Quantitation Limit (LOQ)', description: 'Lowest amount of analyte that can be quantitatively determined' }
+  ];
+  
+  // Sample protocol preview content
+  const protocolContent = `
+ANALYTICAL METHOD VALIDATION PROTOCOL
+
+1. PURPOSE
+   This protocol establishes the validation procedure for ${methodData.methodName} by ${methodData.methodType} according to ICH Q2(R1) guidelines.
+
+2. SCOPE
+   This validation includes ${Object.entries(methodData.parameters)
+     .filter(([_, included]) => included)
+     .map(([param]) => param)
+     .join(', ')}.
+
+3. RESPONSIBILITIES
+   - Quality Control: Execution of validation experiments
+   - Quality Assurance: Review of validation results
+   - Regulatory Affairs: Compliance assessment
+
+4. METHOD DESCRIPTION
+   ${methodData.methodPurpose || 'Quantitative determination of active pharmaceutical ingredient.'}
+
+5. MATERIALS AND EQUIPMENT
+   5.1 Equipment
+   - ${methodData.methodType} system
+   ${methodData.specificDetails.equipmentDetails ? `- ${methodData.specificDetails.equipmentDetails}` : ''}
+
+   5.2 Materials
+   - Reference Standard
+   - Sample matrix
+   ${methodData.specificDetails.matrix ? `- ${methodData.specificDetails.matrix}` : ''}
+
+6. PROCEDURE
+   ${methodData.methodType === 'HPLC' ? `
+   6.1 Chromatographic Conditions
+   - Column: ${methodData.specificDetails.columnSpecifications || 'As specified in the method'}
+   - Mobile Phase: ${methodData.specificDetails.mobilePhase || 'As specified in the method'}
+   - Flow Rate: ${methodData.specificDetails.flowRate || 'As specified in the method'}
+   - Injection Volume: ${methodData.specificDetails.injectionVolume || 'As specified in the method'}
+   - Run Time: ${methodData.specificDetails.runTime || 'As specified in the method'}
+   - Detection: ${methodData.specificDetails.detectionWavelength || 'As specified in the method'}
+   ` : ''}
+
+7. VALIDATION PARAMETERS
+   ${methodData.parameters.specificity ? `
+   7.1 Specificity
+   - Analyze blank, placebo, sample solution, and reference solution
+   - Criteria: No interference from blank or placebo at the retention time of the analyte
+   ` : ''}
+
+   ${methodData.parameters.accuracy ? `
+   7.2 Accuracy
+   - Prepare and analyze samples at 3 concentration levels (80%, 100%, 120%)
+   - Minimum 3 replicates per level
+   - Criteria: Recovery 98.0-102.0%
+   ` : ''}
+
+   ${methodData.parameters.precision ? `
+   7.3 Precision
+   7.3.1 Repeatability
+   - 6 determinations at 100% of test concentration
+   - Criteria: RSD ≤ 2.0%
+
+   7.3.2 Intermediate Precision
+   - Different analyst, different day
+   - 6 determinations at 100% of test concentration
+   - Criteria: RSD ≤ 3.0%
+   ` : ''}
+
+   ${methodData.parameters.linearity ? `
+   7.4 Linearity
+   - Minimum 5 concentration levels (50%, 75%, 100%, 125%, 150%)
+   - Criteria: Correlation coefficient (r) ≥ 0.999
+   ` : ''}
+
+   ${methodData.parameters.range ? `
+   7.5 Range
+   - Defined as the interval from 80% to 120% of the test concentration
+   - Criteria: Acceptable accuracy, precision, and linearity within this range
+   ` : ''}
+
+8. DOCUMENTATION
+   - Raw data from all experiments
+   - Calculation spreadsheets
+   - Chromatograms/spectra
+   - Validation report
+
+9. ACCEPTANCE CRITERIA
+   All validation parameters must meet their respective acceptance criteria as defined in ICH Q2(R1) guidelines.
+
+10. DEVIATIONS
+    Any deviations from this protocol must be documented, justified, and approved.
+
+11. APPROVALS
+    Prepared by: [Name, Date]
+    Reviewed by: [Name, Date]
+    Approved by: [Name, Date]
+  `;
+  
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>Analytical Method Validation Generator</CardTitle>
+        <CardDescription>
+          Create ICH-compliant validation protocols for analytical methods
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="parameters">Method Parameters</TabsTrigger>
+            <TabsTrigger value="validation">Validation Settings</TabsTrigger>
+            <TabsTrigger value="preview">Protocol Preview</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="parameters" className="space-y-4 pt-4">
+            <div className="space-y-2">
+              <Label htmlFor="methodName">Method Name</Label>
+              <Input 
+                id="methodName"
+                name="methodName"
+                placeholder="Enter method name"
+                value={methodData.methodName}
+                onChange={handleChange}
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="methodType">Method Type</Label>
+              <Select 
+                value={methodData.methodType} 
+                onValueChange={(value) => handleSelectChange('methodType', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select method type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {methodTypes.map(type => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="methodPurpose">Method Purpose</Label>
+              <Textarea 
+                id="methodPurpose"
+                name="methodPurpose"
+                placeholder="Describe the purpose of this analytical method"
+                value={methodData.methodPurpose}
+                onChange={handleChange}
+                rows={3}
+              />
+            </div>
+            
+            <Separator className="my-4" />
+            
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium mb-2">Method-Specific Parameters</h3>
+              
+              {methodData.methodType === 'HPLC' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="analyteConcentration">Analyte Concentration</Label>
+                      <Input 
+                        id="analyteConcentration"
+                        name="analyteConcentration"
+                        placeholder="e.g., 0.1 mg/mL"
+                        value={methodData.specificDetails.analyteConcentration}
+                        onChange={handleDetailsChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="matrix">Sample Matrix</Label>
+                      <Input 
+                        id="matrix"
+                        name="matrix"
+                        placeholder="e.g., Buffer solution"
+                        value={methodData.specificDetails.matrix}
+                        onChange={handleDetailsChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="columnSpecifications">Column Specifications</Label>
+                    <Input 
+                      id="columnSpecifications"
+                      name="columnSpecifications"
+                      placeholder="e.g., C18, 150 × 4.6 mm, 5 μm"
+                      value={methodData.specificDetails.columnSpecifications}
+                      onChange={handleDetailsChange}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="mobilePhase">Mobile Phase</Label>
+                    <Input 
+                      id="mobilePhase"
+                      name="mobilePhase"
+                      placeholder="e.g., Acetonitrile:Water (70:30 v/v)"
+                      value={methodData.specificDetails.mobilePhase}
+                      onChange={handleDetailsChange}
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="flowRate">Flow Rate</Label>
+                      <Input 
+                        id="flowRate"
+                        name="flowRate"
+                        placeholder="e.g., 1.0 mL/min"
+                        value={methodData.specificDetails.flowRate}
+                        onChange={handleDetailsChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="injectionVolume">Injection Volume</Label>
+                      <Input 
+                        id="injectionVolume"
+                        name="injectionVolume"
+                        placeholder="e.g., 20 μL"
+                        value={methodData.specificDetails.injectionVolume}
+                        onChange={handleDetailsChange}
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="runTime">Run Time</Label>
+                      <Input 
+                        id="runTime"
+                        name="runTime"
+                        placeholder="e.g., 15 min"
+                        value={methodData.specificDetails.runTime}
+                        onChange={handleDetailsChange}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="detectionWavelength">Detection Wavelength</Label>
+                      <Input 
+                        id="detectionWavelength"
+                        name="detectionWavelength"
+                        placeholder="e.g., 254 nm"
+                        value={methodData.specificDetails.detectionWavelength}
+                        onChange={handleDetailsChange}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Add similar sections for other method types like GC, UV, etc. with relevant fields */}
+              
+              <div className="space-y-2 mt-4">
+                <Label htmlFor="equipmentDetails">Equipment Details</Label>
+                <Input 
+                  id="equipmentDetails"
+                  name="equipmentDetails"
+                  placeholder="Enter specific equipment model/details"
+                  value={methodData.specificDetails.equipmentDetails}
+                  onChange={handleDetailsChange}
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-end mt-6">
+              <Button onClick={() => setActiveTab('validation')}>
+                Next: Validation Settings
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="validation" className="space-y-4 pt-4">
+            <h3 className="text-sm font-medium mb-4">Select Validation Parameters (ICH Q2(R1))</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {validationParameters.map(param => (
+                <div key={param.id} className="flex items-start space-x-2">
+                  <Checkbox 
+                    id={param.id}
+                    checked={methodData.parameters[param.id]}
+                    onCheckedChange={() => handleParameterChange(param.id)}
+                    className="mt-1"
+                  />
+                  <div className="space-y-1">
+                    <Label 
+                      htmlFor={param.id} 
+                      className="font-medium cursor-pointer"
+                    >
+                      {param.name}
+                    </Label>
+                    <p className="text-xs text-muted-foreground">{param.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <Separator className="my-4" />
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-md p-4 flex items-start gap-3">
+              <div className="flex-shrink-0">
+                <BarChart className="h-5 w-5 text-blue-500" />
+              </div>
+              <div>
+                <h4 className="font-medium text-blue-800">Statistical Analysis Tools</h4>
+                <p className="text-sm text-blue-700">
+                  The protocol will include statistical evaluation methods appropriate for your selected validation parameters.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex justify-between mt-6">
+              <Button variant="outline" onClick={() => setActiveTab('parameters')}>
+                Back to Method Parameters
+              </Button>
+              <Button onClick={handleGenerateProtocol} disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Beaker className="mr-2 h-4 w-4" />
+                    Generate Protocol
+                  </>
+                )}
+              </Button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="preview" className="pt-4">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-primary" />
+                <h3 className="font-medium">{methodData.methodName || 'Analytical Method'} Validation Protocol</h3>
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <PenTool className="h-4 w-4 mr-2" />
+                  Edit
+                </Button>
+                <Button variant="outline" size="sm">
+                  <FilePlus className="h-4 w-4 mr-2" />
+                  Download
+                </Button>
+              </div>
+            </div>
+            
+            <div className="bg-muted rounded-md p-4 font-mono text-sm whitespace-pre-wrap overflow-auto max-h-[500px]">
+              {protocolContent}
+            </div>
+            
+            <div className="mt-4 flex justify-between items-center">
+              <div className="text-sm text-muted-foreground flex items-center">
+                <Microscope className="h-4 w-4 mr-1" />
+                <span>Protocol ready for implementation</span>
+              </div>
+              <Button>Save and Export</Button>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </CardContent>
+    </Card>
+  );
+}
