@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { 
   FileText, 
   Edit, 
@@ -13,6 +18,7 @@ import {
   Eye,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   ExternalLink,
   FilePlus2,
   Upload,
@@ -22,13 +28,133 @@ import {
   Database,
   BarChart,
   AlertCircle,
-  Clock
+  Clock,
+  GitMerge,
+  GitBranch,
+  Plus,
+  Minus,
+  Info,
+  UserCheck,
+  RefreshCw,
+  Lock,
+  Users,
+  ClipboardCheck,
+  FileCheck,
+  Link,
+  BookOpen,
+  ArrowUpRight,
+  Filter,
+  CheckSquare,
+  FileWarning,
+  HelpCircle,
+  MessageSquare,
+  Sparkles,
+  Lightbulb,
+  Check,
+  X,
+  Settings,
+  ListChecks,
+  Bot,
+  Clipboard,
+  Zap,
+  Send
 } from 'lucide-react';
 
 export default function CoAuthor() {
-  // Component state
+  // Component state variables
   const [isTreeOpen, setIsTreeOpen] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showCompareDialog, setShowCompareDialog] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [activeVersion, setActiveVersion] = useState('v4.0');
+  const [compareVersions, setCompareVersions] = useState({ base: 'v4.0', compare: 'v3.2' });
+  const [teamCollabOpen, setTeamCollabOpen] = useState(false);
+  const [documentLocked, setDocumentLocked] = useState(false);
+  const [lockedBy, setLockedBy] = useState(null);
+  const [showValidationDialog, setShowValidationDialog] = useState(false);
+  const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
+  const [aiAssistantMode, setAiAssistantMode] = useState('suggestions');
+  const [aiUserQuery, setAiUserQuery] = useState('');
+  const [aiResponse, setAiResponse] = useState(null);
+  const [aiIsLoading, setAiIsLoading] = useState(false);
+  const [aiError, setAiError] = useState(null);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportFormat, setExportFormat] = useState('pdf');
   
+  const { toast } = useToast();
+  
+  // Mock validation results
+  const [validationResults] = useState({
+    completeness: 78,
+    consistency: 92,
+    compliance: 85,
+    formatting: 95,
+    crossRefs: 88,
+    overall: 87
+  });
+  
+  // Handle AI query submission
+  const handleAiQuerySubmit = async () => {
+    if (!aiUserQuery.trim()) return;
+    
+    setAiIsLoading(true);
+    setAiError(null);
+    
+    try {
+      // Simulate API call with timeout
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Simulate response based on mode
+      let response;
+      switch (aiAssistantMode) {
+        case 'suggestions':
+          response = {
+            type: 'suggestions',
+            content: 'Based on my analysis of similar regulatory documents, I recommend adding more details about the statistical analysis plan in Section 3.2. This is commonly flagged in FDA reviews.',
+            recommendations: [
+              'Expand statistical methods section with power calculation details',
+              'Add a paragraph about handling missing data',
+              'Consider including a sensitivity analysis section'
+            ]
+          };
+          break;
+        case 'compliance':
+          response = {
+            type: 'compliance',
+            content: 'I've analyzed your document against current FDA and EMA requirements. There are 2 potential compliance issues to address:',
+            issues: [
+              { severity: 'high', description: 'Missing adverse event reporting procedures required by ICH E6(R3)' },
+              { severity: 'medium', description: 'Protocol deviation handling doesn't meet current FDA expectations' }
+            ]
+          };
+          break;
+        case 'formatting':
+          response = {
+            type: 'formatting',
+            content: 'I've identified several formatting inconsistencies that could be improved:',
+            issues: [
+              'Inconsistent heading numbering in section 4.2',
+              'Table formats vary throughout the document',
+              'References format doesn't match FDA citation style'
+            ]
+          };
+          break;
+        default:
+          response = {
+            type: 'general',
+            content: 'I've analyzed your document and found several areas that could be improved for clarity and compliance.',
+          };
+      }
+      
+      setAiResponse(response);
+    } catch (error) {
+      setAiError('Failed to generate AI response. Please try again.');
+      console.error('AI query error:', error);
+    } finally {
+      setAiIsLoading(false);
+    }
+  };
+
   // Mock data for modules and documents with enhanced details
   const moduleProgress = [
     { 
