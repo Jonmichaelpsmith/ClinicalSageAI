@@ -81,21 +81,26 @@ export const signInWithGoogle = async () => {
   return new Promise((resolve, reject) => {
     try {
       // Create popup window for OAuth flow
-      const width = 500;
-      const height = 600;
+      const width = 600;
+      const height = 700;
       const left = window.screen.width / 2 - width / 2;
       const top = window.screen.height / 2 - height / 2;
       
       // Build OAuth URL
       const scopes = encodeURIComponent(GOOGLE_CONFIG.SCOPES.join(' '));
       const redirectUri = encodeURIComponent(GOOGLE_CONFIG.REDIRECT_URI);
+      const state = Math.random().toString(36).substring(2, 15); // Random state for security
       
       const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?`+
         `client_id=${GOOGLE_CONFIG.CLIENT_ID}`+
         `&redirect_uri=${redirectUri}`+
         `&response_type=token`+
         `&scope=${scopes}`+
-        `&prompt=select_account`;
+        `&prompt=select_account`+
+        `&state=${state}`+
+        `&include_granted_scopes=true`;
+      
+      console.log('Opening Google Auth window with URL containing client ID:', GOOGLE_CONFIG.CLIENT_ID);
       
       const popupWindow = window.open(
         authUrl,
@@ -105,6 +110,7 @@ export const signInWithGoogle = async () => {
       
       // Check if popup was blocked
       if (!popupWindow) {
+        console.error('Popup was blocked');
         reject(new Error('Popup was blocked. Please allow popups for this site.'));
         return;
       }
@@ -112,9 +118,12 @@ export const signInWithGoogle = async () => {
       // Handle authentication response
       window.handleGoogleAuthCallback = (result) => {
         if (result.error) {
+          console.error('Auth callback error:', result.error);
           reject(new Error(result.error));
           return;
         }
+        
+        console.log('Received auth callback data');
         
         // Set authentication data
         isAuthenticated = true;
@@ -134,50 +143,66 @@ export const signInWithGoogle = async () => {
           // Check if popup closed
           if (popupWindow.closed) {
             clearInterval(pollPopup);
+            console.log('Auth popup closed by user');
             reject(new Error('Authentication cancelled by user'));
             return;
           }
           
           // Check for redirection to our callback URL
-          const currentUrl = popupWindow.location.href;
-          
-          if (currentUrl.includes('access_token=')) {
-            clearInterval(pollPopup);
+          try {
+            const currentUrl = popupWindow.location.href;
+            console.log('Checking popup URL:', currentUrl.substring(0, 50) + '...');
             
-            // Parse token and user info from URL
-            const params = new URLSearchParams(popupWindow.location.hash.substring(1));
-            const access_token = params.get('access_token');
-            
-            // Close popup
-            popupWindow.close();
-            
-            // Get user info with access token
-            fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-              headers: { Authorization: `Bearer ${access_token}` }
-            })
-              .then(response => response.json())
-              .then(userInfo => {
-                const user = {
-                  id: userInfo.sub,
-                  name: userInfo.name,
-                  email: userInfo.email,
-                  picture: userInfo.picture
-                };
-                
-                window.handleGoogleAuthCallback({
-                  user,
-                  access_token
-                });
+            if (currentUrl.includes('access_token=')) {
+              clearInterval(pollPopup);
+              console.log('Access token found in URL');
+              
+              // Parse token and user info from URL
+              const params = new URLSearchParams(popupWindow.location.hash.substring(1));
+              const access_token = params.get('access_token');
+              
+              // Close popup
+              popupWindow.close();
+              
+              // Get user info with access token
+              fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${access_token}` }
               })
-              .catch(error => {
-                reject(error);
-              });
+                .then(response => {
+                  if (!response.ok) {
+                    throw new Error('Failed to fetch user info: ' + response.status);
+                  }
+                  return response.json();
+                })
+                .then(userInfo => {
+                  const user = {
+                    id: userInfo.sub,
+                    name: userInfo.name,
+                    email: userInfo.email,
+                    picture: userInfo.picture
+                  };
+                  
+                  console.log('User info retrieved:', user.email);
+                  
+                  window.handleGoogleAuthCallback({
+                    user,
+                    access_token
+                  });
+                })
+                .catch(error => {
+                  console.error('Error fetching user info:', error);
+                  reject(error);
+                });
+            }
+          } catch (crossOriginError) {
+            // Ignore cross-origin errors when polling
+            // This happens when Google is authenticating
           }
         } catch (e) {
-          // Ignore cross-origin errors when polling
-          // This happens when Google is authenticating
+          // Ignore other errors during polling
+          console.log('Auth poll error (normal during redirect):', e.message);
         }
-      }, 500);
+      }, 700);
       
       // Set timeout (2 minutes)
       setTimeout(() => {
@@ -185,9 +210,11 @@ export const signInWithGoogle = async () => {
         if (!popupWindow.closed) {
           popupWindow.close();
         }
+        console.error('Authentication timed out after 2 minutes');
         reject(new Error('Authentication timed out'));
       }, 120000);
     } catch (error) {
+      console.error('Sign-in error:', error);
       reject(error);
     }
   });

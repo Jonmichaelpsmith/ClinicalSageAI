@@ -26,11 +26,57 @@ router.get('/google/callback', (req, res) => {
         window.onload = function() {
           // Check if we have auth data in the URL (implicit flow response)
           if (window.location.hash) {
-            // Pass the token back to the opener window
-            if (window.opener && !window.opener.closed) {
-              window.opener.handleGoogleAuthCallback({ 
-                fragment: window.location.hash.substr(1)
+            // Parse the hash fragment
+            const params = new URLSearchParams(window.location.hash.substring(1));
+            const accessToken = params.get('access_token');
+            
+            if (accessToken) {
+              console.log("Access token received in callback");
+              
+              // Get user info with the token
+              fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                headers: { Authorization: `Bearer ${accessToken}` }
+              })
+              .then(response => response.json())
+              .then(userInfo => {
+                // Prepare user data
+                const userData = {
+                  id: userInfo.sub,
+                  name: userInfo.name,
+                  email: userInfo.email,
+                  picture: userInfo.picture
+                };
+                
+                // Pass the token and user info back to the opener window
+                if (window.opener && !window.opener.closed) {
+                  window.opener.handleGoogleAuthCallback({
+                    user: userData,
+                    access_token: accessToken,
+                    token_type: params.get('token_type'),
+                    expires_in: params.get('expires_in')
+                  });
+                }
+                
+                // Close this popup window
+                window.close();
+              })
+              .catch(error => {
+                console.error("Error fetching user info:", error);
+                if (window.opener && !window.opener.closed) {
+                  window.opener.handleGoogleAuthCallback({ 
+                    error: "Failed to fetch user info"
+                  });
+                }
+                window.close();
               });
+            } else {
+              // No access token in the hash, just pass the fragment
+              if (window.opener && !window.opener.closed) {
+                window.opener.handleGoogleAuthCallback({ 
+                  fragment: window.location.hash.substr(1)
+                });
+              }
+              window.close();
             }
           } 
           // Check if we have an authorization code (authorization code flow)
@@ -41,9 +87,16 @@ router.get('/google/callback', (req, res) => {
                 search: window.location.search.substr(1)
               });
             }
+            window.close();
+          } else {
+            // No auth data found
+            if (window.opener && !window.opener.closed) {
+              window.opener.handleGoogleAuthCallback({ 
+                error: "No authentication data received"
+              });
+            }
+            window.close();
           }
-          // Close this popup window
-          window.close();
         };
       </script>
     </head>
