@@ -319,6 +319,15 @@ export default function CoAuthor() {
               <Users className="h-4 w-4 mr-2" />
               Team Collaboration
             </Button>
+            <Button 
+              variant={aiAssistantOpen ? "default" : "outline"}
+              size="sm"
+              onClick={() => setAiAssistantOpen(!aiAssistantOpen)}
+              className={`flex items-center ${aiAssistantOpen ? "bg-blue-600 text-white" : ""}`}
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              AI Assistant
+            </Button>
           </div>
         </div>
         <div className="flex justify-between items-center">
