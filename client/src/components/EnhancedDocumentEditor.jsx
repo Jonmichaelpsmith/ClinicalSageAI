@@ -1,19 +1,16 @@
 /**
- * Enhanced Document Editor Component for TrialSage eCTD Co-Author Module
+ * Microsoft Word Document Editor for TrialSage eCTD Co-Author Module
  * 
- * This component provides a unified document editing experience with support for:
- * 1. Standard built-in editor
- * 2. Microsoft Word Online popup editor (via MS Office VAULT Bridge)
- * 3. AI-assisted editing capabilities
+ * This component provides a clean, integrated Microsoft Word-like editing experience
+ * with direct integration to VAULT document management system.
  * 
- * Version: 1.0.0 - May 11, 2025
+ * Version: 2.0.0 - May 11, 2025
  * Status: ENTERPRISE IMPLEMENTATION
  */
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
@@ -21,20 +18,24 @@ import { Separator } from '@/components/ui/separator';
 import MsWordPopupEditor from './MsWordPopupEditor';
 import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
 import * as documentIntelligenceHub from '../services/documentIntelligenceHub';
+import * as msCopilotService from '../services/msCopilotService';
 import { 
   FileText, 
   Edit, 
   Save, 
   Eye, 
   Sparkles, 
-  Code,
   ExternalLink,
-  Trash,
   RotateCw,
   CheckCircle,
-  Clock,
+  ArrowLeft,
+  ArrowRight,
+  Undo,
+  Redo,
+  Download,
+  Upload,
   MessageSquare,
-  History
+  PenTool
 } from 'lucide-react';
 
 const EnhancedDocumentEditor = ({
