@@ -212,7 +212,7 @@ const AiPoweredWordEditor = ({
           suggestions.push({
             id: 'sug3',
             type: 'reference',
-            text: 'Add reference to the Investigator's Brochure in the background section.'
+            text: 'Add reference to the Investigator\'s Brochure in the background section.'
           });
         } else if (documentType === 'ctd') {
           suggestions.push({

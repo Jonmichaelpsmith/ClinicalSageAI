@@ -64,7 +64,7 @@ const DocumentUploader = ({
         { id: 'doc1', name: 'Draft IND Application.docx', lastModified: '2025-05-10', size: '1.2 MB' },
         { id: 'doc2', name: 'Clinical Protocol.docx', lastModified: '2025-05-08', size: '3.7 MB' },
         { id: 'doc3', name: 'Biocompatibility Report.docx', lastModified: '2025-05-05', size: '2.1 MB' },
-        { id: 'doc4', name: 'Investigator's Brochure Draft.docx', lastModified: '2025-05-01', size: '5.3 MB' }
+        { id: 'doc4', name: 'Investigator\'s Brochure Draft.docx', lastModified: '2025-05-01', size: '5.3 MB' }
       ]);
     } catch (error) {
       console.error('Error loading user documents:', error);
