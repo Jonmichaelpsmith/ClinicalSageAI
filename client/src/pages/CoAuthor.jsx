@@ -32,7 +32,7 @@ import * as msCopilotService from '../services/msCopilotService';
 // Import the components with lazy loading for better performance
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
 const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
-// No longer using MsWordPopupEditor as we're now using the genuine Microsoft Word integration
+const GoogleDocsEmbed = lazy(() => import('../components/GoogleDocsEmbed'));
 import { 
   FileText, 
   Edit, 
@@ -97,9 +97,11 @@ export default function CoAuthor() {
   const [documentLocked, setDocumentLocked] = useState(false);
   const [lockedBy, setLockedBy] = useState(null);
   const [showValidationDialog, setShowValidationDialog] = useState(false);
-  // Microsoft Word 365 integration state
+  // Document editor integration state
   const [msWordPopupOpen, setMsWordPopupOpen] = useState(false);
   const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
+  const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
+  const [editorType, setEditorType] = useState('microsoft'); // 'microsoft' or 'google'
   // AI Assistant state
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const [aiAssistantMode, setAiAssistantMode] = useState('suggestions'); // 'suggestions', 'compliance', 'formatting'
