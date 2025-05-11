@@ -115,63 +115,134 @@ function updateMemoryUsage() {
 
 /**
  * Perform memory optimization
+ * 
+ * @param {Object} options - Options for optimization
+ * @param {boolean} options.aggressive - Whether to perform aggressive optimization
+ * @param {number} options.threshold - Memory threshold percentage
+ * @returns {Object} - Status of the optimization operation
  */
-function performMemoryOptimization() {
+function performMemoryOptimization(options = {}) {
   // Prevent concurrent optimizations or running too frequently
-  if (state.isOptimizing) return;
+  if (state.isOptimizing) {
+    return { success: false, reason: 'already_optimizing' };
+  }
+  
   const now = Date.now();
-  if (now - state.lastOptimization < 30000) {
+  if (now - state.lastOptimization < 30000 && !options.aggressive) {
     console.info('Skipping optimization - last one performed too recently');
-    return;
+    return { success: false, reason: 'too_recent' };
   }
 
   state.isOptimizing = true;
   state.lastOptimization = now;
-
+  
   try {
     console.info('Performing memory optimization');
+    
+    // Basic optimization that should always be safe
+    const optimizationResults = {
+      cacheCleared: false,
+      consoleCleared: false,
+      gcPerformed: false,
+      imagesUnloaded: false,
+      listenersDetached: false,
+      objectsCleaned: false
+    };
 
-    // Clear application-specific caches only (less invasive)
-    clearApplicationCaches();
-
-    // Clear console logs to free memory (simple, effective)
-    if (console.clear) {
-      console.clear();
+    try {
+      // Clear application-specific caches only (less invasive)
+      clearApplicationCaches();
+      optimizationResults.cacheCleared = true;
+    } catch (cacheError) {
+      console.warn('Failed to clear application caches:', cacheError);
     }
 
-    // Force garbage collection if available (unlikely in most browsers)
-    if (window.gc) {
-      try {
-        window.gc();
-      } catch (e) {
-        // Ignore errors
+    try {
+      // Clear console logs to free memory (simple, effective)
+      if (console.clear) {
+        console.clear();
+        optimizationResults.consoleCleared = true;
       }
+    } catch (consoleError) {
+      // Some browsers restrict console.clear in certain contexts
+      console.warn('Failed to clear console:', consoleError);
     }
 
-    // Only perform aggressive optimizations if enabled and we're experiencing critical issues
-    if (MEMORY_CONFIG.aggressiveOptimization && state.observedLongTasks > 5) {
-      // Clear image caches
-      clearImageCaches();
+    try {
+      // Force garbage collection if available (unlikely in most browsers)
+      if (window.gc) {
+        window.gc();
+        optimizationResults.gcPerformed = true;
+      }
+    } catch (gcError) {
+      console.warn('Failed to run garbage collection:', gcError);
+    }
 
-      // Remove non-visible image data
-      unloadNonVisibleImages();
-
-      // Clear any large objects in memory
-      cleanupLargeObjects();
-
-      // Last resort - detach event listeners from non-visible components
-      cleanupEventListeners();
+    // Determine if we should perform aggressive optimization
+    const shouldRunAggressive = 
+      (options.aggressive === true) || 
+      (MEMORY_CONFIG.aggressiveOptimization && state.observedLongTasks > 5);
+      
+    // Only perform aggressive optimizations if needed
+    if (shouldRunAggressive) {
+      try {
+        // Clear image caches
+        clearImageCaches();
+        optimizationResults.imagesCleaned = true;
+      } catch (imageError) {
+        console.warn('Failed to clear image caches:', imageError);
+      }
+      
+      try {
+        // Remove non-visible image data
+        unloadNonVisibleImages();
+        optimizationResults.imagesUnloaded = true;
+      } catch (unloadError) {
+        console.warn('Failed to unload non-visible images:', unloadError);
+      }
+      
+      try {
+        // Clear any large objects in memory
+        cleanupLargeObjects();
+        optimizationResults.objectsCleaned = true;
+      } catch (objectError) {
+        console.warn('Failed to clean up large objects:', objectError);
+      }
+      
+      try {
+        // Last resort - detach event listeners from non-visible components
+        cleanupEventListeners();
+        optimizationResults.listenersDetached = true;
+      } catch (listenerError) {
+        console.warn('Failed to clean up event listeners:', listenerError);
+      }
     }
 
     // Update memory usage after optimization
     setTimeout(() => {
-      updateMemoryUsage();
-      console.info('Memory optimization complete');
-      state.isOptimizing = false;
+      try {
+        updateMemoryUsage();
+        console.info('Memory optimization complete');
+      } catch (memoryError) {
+        console.warn('Failed to update memory usage:', memoryError);
+      } finally {
+        state.isOptimizing = false;
+      }
     }, 500);
+    
+    return { 
+      success: true, 
+      aggressive: shouldRunAggressive,
+      results: optimizationResults
+    };
   } catch (err) {
     console.error('Error during memory optimization:', err);
     state.isOptimizing = false;
+    return { 
+      success: false, 
+      reason: 'optimization_error', 
+      error: err.message || 'Unknown error'
+    };
   }
 }
 

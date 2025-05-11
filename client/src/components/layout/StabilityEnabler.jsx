@@ -149,13 +149,34 @@ export default function StabilityEnabler({ children }) {
 
         // If severe freeze, run memory optimization
         if (info.isSevere) {
-          const result = optimizeMemory({ 
-            aggressive: true,
-            threshold: 50 // Lower threshold for severe freezes
-          });
+          try {
+            const result = optimizeMemory({ 
+              aggressive: true,
+              threshold: 50 // Lower threshold for severe freezes
+            });
 
-          stabilityMetricsRef.current.memoryCleanups++;
-          console.log('Memory optimization completed:', result);
+            if (result && result.success) {
+              stabilityMetricsRef.current.memoryCleanups++;
+              console.log('Memory optimization completed:', result);
+            } else {
+              console.warn('Memory optimization during freeze recovery was not successful:', result?.reason || 'unknown reason');
+            }
+          } catch (optimizeError) {
+            console.error('Memory optimization failed during freeze recovery:', optimizeError);
+            // Fall back to simpler cleanup mechanisms
+            try {
+              // Simple cache clearing as fallback
+              if (window.caches && typeof caches.keys === 'function') {
+                caches.keys().then(keys => {
+                  keys.forEach(key => {
+                    if (key.includes('temp')) caches.delete(key);
+                  });
+                }).catch(() => {});
+              }
+            } catch (fallbackError) {
+              console.error('Even fallback cleanup failed:', fallbackError);
+            }
+          }
         }
       },
       onSevereFreeze: (info) => {
