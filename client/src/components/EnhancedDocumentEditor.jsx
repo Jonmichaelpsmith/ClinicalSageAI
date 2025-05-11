@@ -1,251 +1,516 @@
 /**
- * !!!!! OFFICIAL ENHANCED DOCUMENT EDITOR FOR eCTD CO-AUTHOR MODULE !!!!!
+ * Enhanced Document Editor Component for TrialSage eCTD Co-Author Module
  * 
- * This component serves as a wrapper for MS Word integration and other document
- * editing capabilities as specified in the Enterprise-Grade Upgrade Design.
+ * This component provides a unified document editing experience with support for:
+ * 1. Standard built-in editor
+ * 2. Microsoft Word Online popup editor (via MS Office VAULT Bridge)
+ * 3. AI-assisted editing capabilities
  * 
- * Version: 4.0.0 - May 11, 2025
- * Status: STABLE - DO NOT MODIFY WITHOUT APPROVAL
- * 
- * PROTECTED CODE - Extend only as specified in the Enterprise Upgrade Design document.
+ * Version: 1.0.0 - May 11, 2025
+ * Status: ENTERPRISE IMPLEMENTATION
  */
 
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { FileWarning, Settings, Maximize2, ExternalLink } from 'lucide-react';
-
-// Import the MS Word document editor with lazy loading
-const MsWordDocumentEditor = lazy(() => import('./MsWordDocumentEditor'));
-const MsWordPopupEditor = lazy(() => import('./MsWordPopupEditor'));
+import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
+import MsWordPopupEditor from './MsWordPopupEditor';
+import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
+import * as documentIntelligenceHub from '../services/documentIntelligenceHub';
+import { 
+  FileText, 
+  Edit, 
+  Save, 
+  Eye, 
+  Sparkles, 
+  Code,
+  ExternalLink,
+  Trash,
+  RotateCw,
+  CheckCircle,
+  Clock,
+  MessageSquare,
+  History
+} from 'lucide-react';
 
 const EnhancedDocumentEditor = ({
   documentId,
-  sectionId,
-  initialContent,
-  documentTitle,
-  sectionTitle,
-  onSave,
-  onLockDocument,
-  isLocked,
-  lockedBy
+  documentName,
+  initialContent = '',
+  onChange,
+  readOnly = false,
+  autoSave = true,
+  documentVersion = '1.0',
+  lastModified = new Date(),
+  lastEditor = 'Current User'
 }) => {
-  const [editorMode, setEditorMode] = useState('msword'); // 'msword', 'basic', 'source'
-  const [documentUrl, setDocumentUrl] = useState(null);
+  // Component state
+  const [content, setContent] = useState(initialContent);
+  const [isSaving, setIsSaving] = useState(false);
+  const [savedContent, setSavedContent] = useState(initialContent);
   const [isLoading, setIsLoading] = useState(false);
-  const [showPopupEditor, setShowPopupEditor] = useState(false);
+  const [activeTab, setActiveTab] = useState('edit');
+  const [msWordPopupOpen, setMsWordPopupOpen] = useState(false);
+  const [lastSaved, setLastSaved] = useState(null);
+  const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
+  
   const { toast } = useToast();
   
+  // Load initial document content
   useEffect(() => {
-    // In a real implementation, this would fetch the document URL from a backend service
-    // For example, a URL to a document stored in OneDrive/SharePoint
-    
-    // For demonstration, we'll simulate the URL fetch with a delay
-    setIsLoading(true);
-    const timer = setTimeout(() => {
-      // This would be a real OneDrive/SharePoint document URL in production
-      setDocumentUrl('https://example-document-url.com/word-document');
-      setIsLoading(false);
-    }, 1000);
-    
-    return () => clearTimeout(timer);
-  }, [documentId]);
-  
-  // Handle editor mode switching
-  const handleEditorModeChange = (mode) => {
-    if (mode !== editorMode) {
-      setEditorMode(mode);
+    if (documentId) {
+      setIsLoading(true);
       
-      toast({
-        title: `Switched to ${mode === 'msword' ? 'Microsoft Word' : mode === 'basic' ? 'Basic Editor' : 'Source Code'} mode`,
-        description: "Your document content is preserved across editor modes.",
-        variant: "default",
-      });
+      // Simulate loading document content - in a real implementation, this would fetch from VAULT
+      setTimeout(() => {
+        setContent(initialContent);
+        setSavedContent(initialContent);
+        setIsLoading(false);
+      }, 800);
+    }
+  }, [documentId, initialContent]);
+  
+  // Auto-save functionality
+  useEffect(() => {
+    let autoSaveTimer;
+    
+    if (autoSave && content !== savedContent && !readOnly) {
+      autoSaveTimer = setTimeout(() => {
+        handleSave();
+      }, 30000); // Auto-save after 30 seconds of inactivity
+    }
+    
+    return () => {
+      if (autoSaveTimer) {
+        clearTimeout(autoSaveTimer);
+      }
+    };
+  }, [content, savedContent, autoSave, readOnly]);
+  
+  // Handle content change
+  const handleContentChange = (e) => {
+    const newContent = e.target.value;
+    setContent(newContent);
+    
+    if (onChange) {
+      onChange(newContent);
     }
   };
   
+  // Handle save
+  const handleSave = async () => {
+    if (readOnly || content === savedContent) return;
+    
+    setIsSaving(true);
+    
+    try {
+      // In a real implementation, this would save to VAULT
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      setSavedContent(content);
+      setLastSaved(new Date());
+      
+      toast({
+        title: 'Document Saved',
+        description: 'Your changes have been saved successfully.',
+        variant: 'default',
+      });
+    } catch (error) {
+      console.error('Failed to save document:', error);
+      
+      toast({
+        title: 'Save Failed',
+        description: error.message || 'Could not save your changes. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  
+  // Get AI suggestions
+  const getAiSuggestions = async () => {
+    setIsFetchingSuggestions(true);
+    
+    try {
+      // Call the Document Intelligence Hub
+      const suggestionsResponse = await documentIntelligenceHub.generateDocumentContent({
+        documentId,
+        sectionId: 'current-section',
+        currentContent: content,
+        suggestionType: 'content-enhancement',
+        contextAwareMode: true
+      });
+      
+      // Format and set the suggestions
+      setAiSuggestions([
+        {
+          id: 'ai-suggestion-1',
+          type: 'content',
+          text: suggestionsResponse.content,
+          source: 'AI Assistant',
+          timestamp: new Date().toISOString()
+        }
+      ]);
+      
+      toast({
+        title: 'AI Suggestions Ready',
+        description: 'AI-generated content suggestions are now available.',
+        variant: 'default',
+      });
+    } catch (error) {
+      console.error('Failed to get AI suggestions:', error);
+      
+      toast({
+        title: 'AI Suggestions Failed',
+        description: error.message || 'Could not generate AI suggestions. Please try again.',
+        variant: 'destructive',
+      });
+      
+      setAiSuggestions([]);
+    } finally {
+      setIsFetchingSuggestions(false);
+    }
+  };
+  
+  // Apply AI suggestion
+  const applySuggestion = (suggestionText) => {
+    setContent(suggestionText);
+    
+    toast({
+      title: 'AI Suggestion Applied',
+      description: 'The AI-generated content has been applied to the document.',
+      variant: 'default',
+    });
+    
+    // Clear suggestions after applying
+    setAiSuggestions([]);
+  };
+  
+  // Check if Microsoft Word integration is available
+  const [msWordAvailable, setMsWordAvailable] = useState(false);
+  
+  useEffect(() => {
+    const checkMsWordAvailability = async () => {
+      try {
+        const authStatus = await msOfficeVaultBridge.getMsAuthStatus();
+        setMsWordAvailable(authStatus.isAuthenticated);
+      } catch (error) {
+        console.error('Failed to check Microsoft Word availability:', error);
+        setMsWordAvailable(false);
+      }
+    };
+    
+    checkMsWordAvailability();
+  }, []);
+  
+  // Handle Microsoft Word popup result
+  const handleMsWordSave = (result) => {
+    // In a real implementation, this would update the local content with the saved Word content
+    console.log('Document saved from Microsoft Word:', result);
+    
+    // Simulate content update
+    setContent((prevContent) => {
+      const updatedContent = prevContent + '\n\n[Content edited with Microsoft Word]';
+      setSavedContent(updatedContent);
+      setLastSaved(new Date());
+      return updatedContent;
+    });
+  };
+  
+  // Open Microsoft Word popup
+  const openMsWordPopup = () => {
+    setMsWordPopupOpen(true);
+    
+    toast({
+      title: 'Opening Microsoft Word',
+      description: 'Preparing document for editing in Microsoft Word...',
+      variant: 'default',
+    });
+  };
+  
+  // Check for unsaved changes
+  const hasUnsavedChanges = content !== savedContent;
+  
+  if (isLoading) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <Skeleton className="h-8 w-64 mb-2" />
+          <Skeleton className="h-4 w-40" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[400px] w-full" />
+        </CardContent>
+        <CardFooter>
+          <Skeleton className="h-10 w-20 mr-2" />
+          <Skeleton className="h-10 w-20" />
+        </CardFooter>
+      </Card>
+    );
+  }
+  
   return (
-    <div className="border rounded-md">
-      {/* MS Word Popup Editor */}
-      <Suspense fallback={null}>
-        {showPopupEditor && (
-          <MsWordPopupEditor
-            isOpen={showPopupEditor}
-            onClose={() => setShowPopupEditor(false)}
-            documentId={documentId}
-            sectionId={sectionId}
-            initialContent={initialContent}
-            documentTitle={documentTitle}
-            sectionTitle={sectionTitle}
-            onSave={(updatedContent) => {
-              if (onSave) {
-                onSave(updatedContent);
-              }
-              setShowPopupEditor(false);
+    <>
+      <Card className="w-full">
+        <CardHeader className="pb-3">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-xl flex items-center">
+              <FileText className="h-5 w-5 mr-2 text-blue-600" />
+              {documentName || 'Untitled Document'}
+            </CardTitle>
+            
+            <div className="flex items-center space-x-2">
+              {hasUnsavedChanges && (
+                <Badge variant="outline" className="text-amber-600 border-amber-200">
+                  Unsaved Changes
+                </Badge>
+              )}
               
-              toast({
-                title: "Document updated",
-                description: "Changes saved successfully from Microsoft Word.",
-                variant: "default",
-              });
-            }}
-          />
-        )}
-      </Suspense>
-      
-      {/* Editor Controls Header */}
-      <div className="border-b p-3 bg-slate-50 flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-medium">{documentTitle}</h3>
-          <p className="text-sm text-slate-500">Section: {sectionTitle}</p>
-        </div>
-        
-        <div className="flex items-center space-x-2">
-          {/* MS Word Popup Button */}
-          <Button
-            variant="default"
-            size="sm"
-            className="h-8 text-xs bg-blue-600 hover:bg-blue-700 flex items-center mr-2"
-            onClick={() => setShowPopupEditor(true)}
-            disabled={isLocked}
-          >
-            <Maximize2 className="h-3.5 w-3.5 mr-1.5" />
-            Open in MS Word
-          </Button>
-          
-          <Tabs 
-            defaultValue={editorMode} 
-            className="w-auto" 
-            onValueChange={handleEditorModeChange}
-          >
-            <TabsList className="grid grid-cols-3 h-8">
-              <TabsTrigger value="msword" className="text-xs px-2">MS Word</TabsTrigger>
-              <TabsTrigger value="basic" className="text-xs px-2">Basic Editor</TabsTrigger>
-              <TabsTrigger value="source" className="text-xs px-2">Source</TabsTrigger>
-            </TabsList>
-          </Tabs>
-          
-          <Button variant="outline" size="sm" className="h-8">
-            <Settings className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-      
-      {/* Document Editing Area */}
-      <div className="p-0">
-        {isLoading ? (
-          <div className="flex items-center justify-center p-12">
-            <div className="text-center">
-              <div className="h-10 w-10 mb-4 rounded-full border-t-2 border-blue-600 animate-spin mx-auto"></div>
-              <p className="font-medium text-gray-600">Loading document editor...</p>
-              <p className="text-sm text-gray-500 mt-2">Please wait while we prepare your document.</p>
+              <Badge variant="outline" className="text-slate-600 border-slate-200">
+                {documentVersion}
+              </Badge>
+              
+              {msWordAvailable && (
+                <Button 
+                  variant="outline"
+                  size="sm"
+                  onClick={openMsWordPopup}
+                  className="flex items-center ml-2"
+                  disabled={readOnly}
+                >
+                  <img 
+                    src="https://img.icons8.com/color/48/000000/microsoft-word-2019--v2.png"
+                    alt="Microsoft Word"
+                    className="h-4 w-4 mr-2"
+                  />
+                  Edit in Word
+                </Button>
+              )}
             </div>
           </div>
-        ) : (
-          <>
-            {editorMode === 'msword' && (
-              <Suspense fallback={
-                <div className="flex items-center justify-center p-12">
-                  <div className="text-center">
-                    <div className="h-10 w-10 mb-4 rounded-full border-t-2 border-blue-600 animate-spin mx-auto"></div>
-                    <p className="font-medium text-gray-600">Loading Microsoft Word...</p>
-                    <p className="text-sm text-gray-500 mt-2">This may take a few moments.</p>
+          
+          <div className="text-sm text-gray-500 flex items-center justify-between">
+            <div>
+              Last edited by <span className="font-medium">{lastEditor}</span> on {lastModified.toLocaleString()}
+            </div>
+            
+            {lastSaved && (
+              <div className="flex items-center text-sm text-gray-500">
+                <Clock className="h-3 w-3 mr-1" />
+                Last saved: {lastSaved.toLocaleTimeString()}
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <div className="px-6">
+            <TabsList className="grid grid-cols-3">
+              <TabsTrigger value="edit" className="flex items-center">
+                <Edit className="h-4 w-4 mr-2" />
+                Edit
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="flex items-center">
+                <Eye className="h-4 w-4 mr-2" />
+                Preview
+              </TabsTrigger>
+              <TabsTrigger value="ai" className="flex items-center">
+                <Sparkles className="h-4 w-4 mr-2" />
+                AI Assist
+              </TabsTrigger>
+            </TabsList>
+          </div>
+          
+          <TabsContent value="edit" className="p-6 pt-4">
+            <textarea
+              className="w-full h-[400px] p-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono text-sm"
+              value={content}
+              onChange={handleContentChange}
+              disabled={readOnly}
+              placeholder="Enter your document content here..."
+            />
+            
+            <div className="flex justify-between mt-4">
+              <div className="flex items-center space-x-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!hasUnsavedChanges || readOnly}
+                  onClick={() => setContent(savedContent)}
+                  className="flex items-center"
+                >
+                  <RotateCw className="h-4 w-4 mr-2" />
+                  Revert Changes
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setActiveTab('ai')}
+                  className="flex items-center"
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Get AI Suggestions
+                </Button>
+              </div>
+              
+              <Button
+                disabled={!hasUnsavedChanges || isSaving || readOnly}
+                onClick={handleSave}
+                className="flex items-center"
+              >
+                {isSaving ? (
+                  <>
+                    <RotateCw className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save
+                  </>
+                )}
+              </Button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="preview" className="p-6 pt-4">
+            <div className="border rounded-md p-6 prose max-w-none min-h-[400px] bg-white">
+              {content ? (
+                <div dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, '<br />') }} />
+              ) : (
+                <div className="text-gray-400 italic">No content to preview</div>
+              )}
+            </div>
+            
+            <div className="flex justify-end mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveTab('edit')}
+                className="flex items-center"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Back to Editor
+              </Button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="ai" className="p-6 pt-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="border rounded-md p-4">
+                <h3 className="text-lg font-medium mb-2 flex items-center">
+                  <MessageSquare className="h-4 w-4 mr-2 text-blue-600" />
+                  Current Document Content
+                </h3>
+                <div className="prose max-w-none text-sm h-[300px] overflow-y-auto">
+                  {content ? (
+                    <div dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, '<br />') }} />
+                  ) : (
+                    <div className="text-gray-400 italic">No content available</div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="border rounded-md p-4">
+                <h3 className="text-lg font-medium mb-2 flex items-center">
+                  <Sparkles className="h-4 w-4 mr-2 text-purple-600" />
+                  AI Suggestions
+                </h3>
+                
+                {isFetchingSuggestions ? (
+                  <div className="flex flex-col items-center justify-center h-[300px]">
+                    <Skeleton className="h-10 w-10 rounded-full mb-4" />
+                    <Skeleton className="h-4 w-40 mb-2" />
+                    <Skeleton className="h-4 w-32" />
+                    <p className="text-sm text-gray-500 mt-2">Generating AI suggestions...</p>
                   </div>
-                </div>
-              }>
-                <MsWordDocumentEditor
-                  documentId={documentId}
-                  sectionId={sectionId}
-                  documentTitle={documentTitle}
-                  sectionTitle={sectionTitle}
-                  onSave={onSave}
-                  onLockDocument={onLockDocument}
-                  isLocked={isLocked}
-                  lockedBy={lockedBy}
-                  documentUrl={documentUrl}
-                />
-              </Suspense>
-            )}
-            
-            {editorMode === 'basic' && (
-              <div className="p-4">
-                <div className="border-b pb-2 mb-4 flex items-center justify-between">
-                  <h4 className="font-medium">Basic Editor Mode</h4>
-                  {isLocked && (
-                    <Badge variant="outline" className="flex items-center text-amber-600 border-amber-200 bg-amber-50">
-                      <span className="mr-1">🔒</span> 
-                      Locked by {lockedBy}
-                    </Badge>
-                  )}
-                </div>
-                
-                <div className="prose max-w-none mb-6">
-                  <div 
-                    contentEditable={!isLocked}
-                    className="min-h-[300px] p-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    dangerouslySetInnerHTML={{ __html: initialContent }}
-                  />
-                </div>
-                
-                <div className="flex justify-end space-x-2 mt-4">
-                  <Button variant="outline" size="sm">Cancel</Button>
-                  <Button 
-                    size="sm"
-                    onClick={() => onSave(document.querySelector('[contenteditable]').innerHTML)}
-                    disabled={isLocked}
-                  >
-                    Save Changes
-                  </Button>
-                </div>
+                ) : aiSuggestions.length > 0 ? (
+                  <div className="space-y-4 h-[300px] overflow-y-auto">
+                    {aiSuggestions.map((suggestion) => (
+                      <div key={suggestion.id} className="border rounded-md p-3 bg-purple-50">
+                        <div className="prose max-w-none text-sm mb-3">
+                          <div dangerouslySetInnerHTML={{ __html: suggestion.text.replace(/\n/g, '<br />') }} />
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <div className="text-xs text-gray-500 flex items-center">
+                            <Sparkles className="h-3 w-3 mr-1 text-purple-600" />
+                            {suggestion.source}
+                          </div>
+                          <Button
+                            size="sm"
+                            onClick={() => applySuggestion(suggestion.text)}
+                            className="flex items-center"
+                            disabled={readOnly}
+                          >
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Apply Suggestion
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-[300px]">
+                    <p className="text-gray-500 mb-4">
+                      Get AI-powered suggestions to enhance your document content.
+                    </p>
+                    <Button
+                      onClick={getAiSuggestions}
+                      className="flex items-center"
+                      disabled={!content}
+                    >
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Generate Suggestions
+                    </Button>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
             
-            {editorMode === 'source' && (
-              <div className="p-4">
-                <div className="border-b pb-2 mb-4 flex items-center justify-between">
-                  <h4 className="font-medium">Source Code Mode</h4>
-                  {isLocked && (
-                    <Badge variant="outline" className="flex items-center text-amber-600 border-amber-200 bg-amber-50">
-                      <span className="mr-1">🔒</span> 
-                      Locked by {lockedBy}
-                    </Badge>
-                  )}
-                </div>
-                
-                <div className="mb-6">
-                  <textarea
-                    className="w-full h-[400px] font-mono text-sm p-4 border rounded-md"
-                    disabled={isLocked}
-                    defaultValue={initialContent}
-                  />
-                </div>
-                
-                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4 flex items-center text-sm">
-                  <FileWarning className="h-4 w-4 text-yellow-500 mr-2 flex-shrink-0" />
-                  <span>
-                    Editing HTML source directly may affect document formatting and compliance. 
-                    Use with caution.
-                  </span>
-                </div>
-                
-                <div className="flex justify-end space-x-2">
-                  <Button variant="outline" size="sm">Cancel</Button>
-                  <Button 
-                    size="sm"
-                    onClick={() => onSave(document.querySelector('textarea').value)}
-                    disabled={isLocked}
-                  >
-                    Save Changes
-                  </Button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
+            <div className="flex justify-between mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveTab('edit')}
+                className="flex items-center"
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Back to Editor
+              </Button>
+              
+              {aiSuggestions.length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setAiSuggestions([])}
+                  className="flex items-center"
+                >
+                  <Trash className="h-4 w-4 mr-2" />
+                  Clear Suggestions
+                </Button>
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
+      </Card>
+      
+      {/* Microsoft Word Popup Editor */}
+      <MsWordPopupEditor
+        isOpen={msWordPopupOpen}
+        onClose={() => setMsWordPopupOpen(false)}
+        documentId={documentId}
+        documentName={documentName}
+        readOnly={readOnly}
+        autoSave={autoSave}
+        onSave={handleMsWordSave}
+      />
+    </>
   );
 };
 

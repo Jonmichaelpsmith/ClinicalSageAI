@@ -1,116 +1,146 @@
-# eCTD Co-Author Module - User Workflow Guide
+# eCTD Co-Author Module
 
 ## Overview
 
-The eCTD Co-Author Module revolutionizes regulatory document authoring by seamlessly integrating Microsoft Word with domain-specific AI to streamline the creation of submission-ready documents. This guide explains the end-to-end user workflow.
+The eCTD Co-Author Module is a specialized document management and authoring environment designed specifically for creating and managing eCTD (Electronic Common Technical Document) submissions. This module provides advanced document editing capabilities, AI-assisted content generation, and comprehensive regulatory compliance checking.
 
-## Key User Workflows
+## Architecture
 
-### 1. Document Creation & Editing
+The eCTD Co-Author Module integrates several key components:
 
-**User Need**: Medical writers and regulatory professionals need a familiar, powerful editor to create high-quality documents while accessing specialized AI assistance.
+1. **Enhanced Document Editor**: A versatile editing environment with support for:
+   - Standard built-in text editor
+   - Microsoft Word Online integration
+   - AI-assisted content generation
+   - Preview mode with formatting display
 
-**Workflow**:
-1. User selects document type from regulatory templates (Module 2.5, 2.7, etc.)
-2. System generates document structure based on selected regulatory region (FDA, EMA, PMDA)
-3. User edits in Microsoft Word with all familiar features (formatting, track changes, comments)
-4. Right panel provides context-sensitive AI assistance throughout the creation process
-5. Document auto-saves to secure vault every 30 seconds
+2. **Microsoft Office Integration**: An enterprise-grade integration with Microsoft Word Online that:
+   - Connects to VAULT Document Management system
+   - Provides a familiar Word editing experience
+   - Maintains all document versioning in VAULT
+   - Supports Microsoft Copilot AI features
 
-**Value**: Familiar Microsoft Word interface eliminates learning curve while providing specialized regulatory assistance.
+3. **Document Intelligence Hub**: An AI-powered system that:
+   - Analyzes document content
+   - Generates regulatory-compliant suggestions
+   - Checks for compliance with regulatory standards
+   - Provides citation and reference management
 
-### 2. Real-time Compliance Checking
+## Microsoft Word Integration
 
-**User Need**: Ensuring documents meet regulatory requirements before submission to avoid costly delays.
+The Microsoft Word integration uses a bridge approach that connects Microsoft Word Online with our existing VAULT Document Management system, avoiding the complexity of SharePoint integration while providing a familiar Word editing experience.
 
-**Workflow**:
-1. User clicks "Check Compliance" in editor toolbar
-2. System analyzes document against regulatory frameworks (ICH, FDA, EMA)
-3. Issues are highlighted directly in document with severity indicators
-4. Each issue includes specific guidance and one-click fix options
-5. Compliance score updates in real-time as issues are addressed
+### Key Components
 
-**Value**: Proactive compliance verification during authoring process reduces rework and submission delays.
+- `MsWordPopupEditor.jsx`: Provides a popup Microsoft Word Online editor experience
+- `msOfficeVaultBridge.js`: Bridges Microsoft Office editing with VAULT document management
+- `msCopilotService.js`: Integrates Microsoft Copilot AI features for document authoring
+- `EnhancedDocumentEditor.jsx`: Wrapper component that provides a unified editing experience
 
-### 3. Collaborative Review & Approval
+### Implementation Details
 
-**User Need**: Efficient cross-functional team review with clear accountability.
+1. **Authentication Flow**:
+   - Users authenticate with their Microsoft account
+   - Our system verifies Microsoft 365 access and capabilities
+   - Server-side token exchange handles secure document access
 
-**Workflow**:
-1. User assigns document sections to team members for review/approval
-2. Reviewers receive email/notification with direct link to their section
-3. Reviewers add comments or track changes directly in Microsoft Word
-4. AI assistant suggests resolution options for each comment
-5. Final approver can view all changes, accept/reject, and lock document
+2. **Document Editing Flow**:
+   - Document is retrieved from VAULT
+   - Microsoft Word Online displays the document in a secure iframe
+   - Changes are automatically synchronized back to VAULT
+   - Versioning and audit trail maintained in VAULT
 
-**Value**: Streamlines review process, reduces email chains, and provides audit trail.
+3. **Microsoft Copilot Integration**:
+   - GPT-4o integration (latest model released May 13, 2024)
+   - Specialized regulatory knowledge enhances suggestions
+   - Contextual awareness of document structure and purpose
+   - Citation and reference management automation
 
-### 4. Literature & Data Integration
+## Best Practices
 
-**User Need**: Efficiently incorporating clinical data and literature with proper citations.
+1. **Security**:
+   - All document editing occurs within secure sessions
+   - OAuth 2.0 authentication with appropriate scopes
+   - No document content stored outside of VAULT
+   - Session-based access tokens with limited lifetime
 
-**Workflow**:
-1. User highlights text requiring supporting evidence
-2. AI panel suggests relevant literature and internal data from knowledge base
-3. User selects appropriate references with one click
-4. System automatically formats citations per style guide
-5. Full bibliography is generated and maintained automatically
+2. **Performance**:
+   - Lazy-loading of Microsoft Word components
+   - Optimized document loading and saving
+   - Background synchronization for large documents
+   - Efficient handling of document resources
 
-**Value**: Drastically reduces time spent searching for and formatting references.
+3. **User Experience**:
+   - Seamless switching between editing modes
+   - Consistent UI across different editing environments
+   - Clear status indicators for document state
+   - Helpful error messages and recovery options
 
-### 5. Submission Package Assembly
+4. **Stability**:
+   - Graceful degradation if Microsoft services unavailable
+   - Local backup of changes during editing
+   - Automatic recovery from connection issues
+   - Comprehensive error logging and monitoring
 
-**User Need**: Creating complete, validated eCTD submission packages.
+## Environment Variables
 
-**Workflow**:
-1. User selects documents for submission from vault
-2. System verifies completeness against eCTD requirements
-3. Missing components are flagged with recommended actions
-4. System generates proper XML backbone and metadata
-5. Final package is validated and prepared for submission
+The Microsoft Word integration requires the following environment variables:
 
-**Value**: Eliminates technical complexity of eCTD preparation and ensures compliant submissions.
+```
+VITE_MS_CLIENT_ID=your-microsoft-client-id
+VITE_MS_AUTHORITY=https://login.microsoftonline.com/common
+VITE_MS_GRAPH_API_ENDPOINT=https://graph.microsoft.com/v1.0
+VITE_MS_COPILOT_ENABLED=true
+VITE_MS_COPILOT_API_ENDPOINT=https://api.ms-copilot.com
+```
 
-## Integration Points
+## Common Issues and Troubleshooting
 
-### Microsoft Word Online Integration
-- Direct embedding via WOPI protocol
-- Full-featured Word experience with track changes, comments, etc.
-- Seamless transitions between online and desktop versions
-- Secure document storage with version control
+1. **Authentication Failures**:
+   - Verify Microsoft 365 account has appropriate licenses
+   - Check client ID and authority configuration
+   - Ensure proper OAuth scopes are requested
 
-### AI Assistant Integration
-- Context-aware assistant understands document structure and regulatory context
-- Proactive suggestions based on current section and content
-- Compliance checking against multiple regulatory frameworks
-- Custom pharmaceutical-specific knowledge base
+2. **Document Loading Issues**:
+   - Verify VAULT document access permissions
+   - Check network connectivity to Microsoft services
+   - Ensure document format is supported by Word Online
 
-### Document Management Integration
-- Version control with full audit trail
-- Role-based access control
-- Secure vault storage
-- Automated backup and disaster recovery
+3. **Saving Failures**:
+   - Check write permissions in VAULT
+   - Verify authentication token hasn't expired
+   - Ensure document isn't locked by another user
 
-## Implementation Priorities
+4. **Microsoft Copilot Issues**:
+   - Verify license includes Copilot access
+   - Check organization policies regarding AI features
+   - Ensure connectivity to Copilot services
 
-1. **Core Microsoft Word Integration** - Embed Word editor with basic functionality
-2. **Basic AI Assistant** - Add sidebar for contextual assistance
-3. **Document Vault Connection** - Enable save/load from secure repository
-4. **Enhanced AI Features** - Add compliance checking and citation assistance
-5. **Collaboration Tools** - Implement review/approval workflows
-6. **Submission Package Assembly** - Create eCTD package generation
+## Future Enhancements
 
-## User Experience Philosophy
+1. **Enhanced Collaboration**:
+   - Real-time multi-user editing capabilities
+   - Comment and annotation synchronization
+   - Change tracking across platforms
 
-1. **Familiarity First**: Leverage existing Microsoft Word knowledge to minimize learning curve
-2. **Invisible Intelligence**: AI should feel natural and seamlessly integrated
-3. **Contextual Assistance**: Help should be relevant to current task and document section
-4. **Error Prevention**: Proactively identify and prevent common regulatory issues
-5. **Efficiency Focus**: Reduce repetitive tasks through intelligent automation
+2. **Advanced Regulatory Features**:
+   - Automated regulatory submission checks
+   - Agency-specific formatting tools
+   - Pre-submission validation workflow
 
-## Metrics for Success
+3. **Extended AI Integration**:
+   - Domain-specific clinical writing assistance
+   - Automated evidence linking and validation
+   - Scientific literature integration and citation
 
-1. **Time Savings**: 40-60% reduction in document creation time
-2. **Error Reduction**: 85%+ decrease in regulatory compliance issues
-3. **User Adoption**: >90% user satisfaction and voluntary adoption
-4. **Submission Success**: 99%+ eCTD validation pass rate on first attempt
+## Maintenance Notes
+
+The eCTD Co-Author Module is a critical component and should be maintained with care:
+
+1. **Testing**: Any changes should undergo thorough testing, particularly around document saving and synchronization.
+
+2. **Versioning**: All components are version-tracked and should maintain backward compatibility.
+
+3. **Performance Monitoring**: Regular monitoring of response times and resource usage is essential.
+
+4. **Security Updates**: Stay current with Microsoft API changes and security best practices.

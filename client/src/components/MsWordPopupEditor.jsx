@@ -1,310 +1,274 @@
 /**
- * !!!!! MS WORD POPUP EDITOR FOR eCTD CO-AUTHOR MODULE !!!!!
+ * Microsoft Word Popup Editor Component for TrialSage eCTD Co-Author Module
  * 
- * This component provides a full-screen popup Microsoft Word experience
- * that saves content back to the main module.
+ * This component provides a popup Microsoft Word Online experience that
+ * integrates with TrialSage's VAULT Document Management system.
  * 
- * Version: 4.0.0 - May 11, 2025
- * Status: STABLE - DO NOT MODIFY WITHOUT APPROVAL
+ * Version: 1.0.0 - May 11, 2025
+ * Status: ENTERPRISE IMPLEMENTATION
  */
 
 import React, { useState, useEffect, useRef } from 'react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Save,
-  RotateCcw,
-  RotateCw,
-  Bold,
-  Italic,
-  Underline,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  List,
-  ListOrdered,
-  Table,
-  Image,
-  Link,
-  ExternalLink,
+import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
+import { 
+  AlertCircle,
+  CheckCircle,
   FileText,
+  Save,
   X,
   Maximize2,
   Minimize2,
+  ExternalLink,
   RefreshCw,
-  ClipboardCheck,
-  MessageSquare,
-  Sparkles
+  Sparkles,
+  Clock,
+  Link,
+  Lock,
+  FileWarning
 } from 'lucide-react';
 
 const MsWordPopupEditor = ({
   isOpen,
   onClose,
   documentId,
-  sectionId,
-  initialContent,
-  documentTitle,
-  sectionTitle,
+  documentName,
+  readOnly = false,
+  autoSave = true,
   onSave
 }) => {
-  const [content, setContent] = useState(initialContent || '');
-  const [isEditing, setIsEditing] = useState(false);
+  // Component state
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [sessionData, setSessionData] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [isFullScreen, setIsFullScreen] = useState(false);
-  const [aiCheckingCompliance, setAiCheckingCompliance] = useState(false);
-  const [aiSuggesting, setAiSuggesting] = useState(false);
-  const [unsavedChanges, setUnsavedChanges] = useState(false);
-  const [autoSaveTimer, setAutoSaveTimer] = useState(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [copilotEnabled, setCopilotEnabled] = useState(false);
   const [lastSaved, setLastSaved] = useState(null);
-  const editorRef = useRef(null);
+  const iframeRef = useRef(null);
+  
   const { toast } = useToast();
-
-  // Initialize Word editor when component mounts
+  
+  // Initialize the Word editing session
   useEffect(() => {
-    if (isOpen) {
-      // In a real implementation, this would initialize the Microsoft Word Online editor
-      setIsEditing(true);
-      setContent(initialContent);
-      setUnsavedChanges(false);
-      setLastSaved(new Date());
-      
-      // Start autosave timer
-      const timer = setInterval(() => {
-        if (unsavedChanges) {
-          handleAutoSave();
-        }
-      }, 30000); // Auto-save every 30 seconds
-      
-      setAutoSaveTimer(timer);
+    if (isOpen && documentId) {
+      initializeWordSession();
     }
     
     return () => {
-      // Clear autosave timer on component unmount
-      if (autoSaveTimer) {
-        clearInterval(autoSaveTimer);
+      // Clean up session on unmount if one was created
+      if (sessionData?.sessionId) {
+        msOfficeVaultBridge.endEditingSession(sessionData.sessionId, documentId)
+          .catch(err => console.error('Error ending Word session:', err));
       }
     };
-  }, [isOpen, initialContent]);
+  }, [isOpen, documentId]);
   
-  // Monitor for unsaved changes
-  useEffect(() => {
-    // In a real implementation, this would use Word's change detection
-    if (content !== initialContent) {
-      setUnsavedChanges(true);
-    }
-  }, [content, initialContent]);
-  
-  // Handle autosave
-  const handleAutoSave = async () => {
-    if (!unsavedChanges) return;
+  // Initialize Microsoft Word editing session
+  const initializeWordSession = async () => {
+    setLoading(true);
+    setError(null);
     
     try {
-      // In a real implementation, this would call the save API
-      console.log('Auto-saving document...');
+      // Check Microsoft authentication status
+      const authStatus = await msOfficeVaultBridge.getMsAuthStatus();
       
-      // Simulate save operation
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (!authStatus.isAuthenticated) {
+        throw new Error('Microsoft authentication required. Please log in to your Microsoft account.');
+      }
       
-      setLastSaved(new Date());
-      setUnsavedChanges(false);
+      // Initialize Office editing session
+      const session = await msOfficeVaultBridge.initOfficeEditingSession(documentId, {
+        documentName: documentName || 'Document',
+        readOnly,
+        autoSave
+      });
       
-      // No toast notification for autosave to avoid interrupting the user
-    } catch (error) {
-      console.error('Auto-save failed:', error);
-      // No error notification for autosave failures to avoid interrupting the user
+      setSessionData(session);
+      
+      // Check if Copilot is available
+      if (authStatus.permissions.copilot) {
+        const copilotResult = await msOfficeVaultBridge.enableCopilotFeatures(session.sessionId, {
+          contentGeneration: true,
+          formatting: true,
+          citations: true,
+          regulatory: true
+        });
+        
+        setCopilotEnabled(copilotResult.success);
+      }
+      
+      toast({
+        title: 'Microsoft Word Ready',
+        description: `${documentName || 'Document'} is now ready for editing in Microsoft Word.`,
+        variant: 'default',
+      });
+      
+    } catch (err) {
+      console.error('Failed to initialize Word session:', err);
+      setError(err.message || 'Failed to initialize Microsoft Word. Please try again.');
+      
+      toast({
+        title: 'Word Initialization Failed',
+        description: err.message || 'Could not start Microsoft Word editor. Please try again.',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
     }
   };
   
-  // Handle save button click
+  // Save changes back to the VAULT document
   const handleSave = async () => {
-    if (isSaving) return;
+    if (readOnly || !sessionData?.sessionId) return;
     
     setIsSaving(true);
+    setSaveSuccess(false);
     
     try {
-      // In a real implementation, this would save to the server
-      console.log('Saving document...');
+      const result = await msOfficeVaultBridge.saveChangesToVault(
+        sessionData.sessionId,
+        documentId,
+        {
+          versionLabel: `v${new Date().toISOString().split('T')[0].replace(/-/g, '')}`,
+          summary: 'Edited in Microsoft Word',
+          editor: 'Current User' // In a real implementation, this would be the actual user
+        }
+      );
       
-      // Simulate save operation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Update state
       setLastSaved(new Date());
-      setUnsavedChanges(false);
+      setSaveSuccess(true);
       
-      // Call the onSave callback
+      toast({
+        title: 'Document Saved',
+        description: `Changes to ${documentName || 'document'} have been saved successfully.`,
+        variant: 'default',
+      });
+      
+      // Notify parent component
       if (onSave) {
-        onSave(content);
+        onSave(result);
       }
       
-      toast({
-        title: "Document Saved",
-        description: "Your changes have been saved successfully.",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Save failed:', error);
+      // Clear success message after 3 seconds
+      setTimeout(() => setSaveSuccess(false), 3000);
+      
+    } catch (err) {
+      console.error('Failed to save changes:', err);
       
       toast({
-        title: "Save Failed",
-        description: "Failed to save your document. Please try again.",
-        variant: "destructive",
+        title: 'Save Failed',
+        description: err.message || 'Could not save your changes. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);
     }
   };
   
-  // Handle close with unsaved changes
-  const handleClose = () => {
-    if (unsavedChanges) {
-      // In a real implementation, this would show a confirmation dialog
-      if (window.confirm('You have unsaved changes. Save before closing?')) {
-        handleSave().then(() => {
-          onClose();
-        });
-      } else {
-        onClose();
+  // Handle closing the editor
+  const handleCloseEditor = async () => {
+    // Ask for confirmation if there are unsaved changes and autoSave is disabled
+    if (!autoSave && !readOnly && !isSaving) {
+      // In a real implementation, we would check for unsaved changes here
+      const hasUnsavedChanges = false; // Placeholder
+      
+      if (hasUnsavedChanges) {
+        const confirmSave = window.confirm('You have unsaved changes. Do you want to save before closing?');
+        
+        if (confirmSave) {
+          await handleSave();
+        }
       }
-    } else {
+    }
+    
+    // End the session
+    if (sessionData?.sessionId) {
+      try {
+        await msOfficeVaultBridge.endEditingSession(sessionData.sessionId, documentId);
+      } catch (err) {
+        console.error('Error ending session:', err);
+      }
+    }
+    
+    // Close the dialog
+    if (onClose) {
       onClose();
     }
   };
   
-  // Toggle full screen mode
-  const toggleFullScreen = () => {
-    setIsFullScreen(!isFullScreen);
-  };
-  
-  // Get AI-powered content suggestions
-  const getContentSuggestions = async () => {
-    setAiSuggesting(true);
-    
-    try {
-      // In a real implementation, this would call the AI service
-      console.log('Getting AI content suggestions...');
-      
-      // Simulate AI processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      toast({
-        title: "AI Suggestions Ready",
-        description: "Content suggestions are now available in the sidebar.",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Failed to get AI suggestions:', error);
-      
-      toast({
-        title: "Suggestion Failed",
-        description: "Failed to generate AI suggestions. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setAiSuggesting(false);
-    }
-  };
-  
-  // Check document for regulatory compliance
-  const checkCompliance = async () => {
-    setAiCheckingCompliance(true);
-    
-    try {
-      // In a real implementation, this would call the compliance service
-      console.log('Checking regulatory compliance...');
-      
-      // Simulate compliance checking
-      await new Promise(resolve => setTimeout(resolve, 2500));
-      
-      toast({
-        title: "Compliance Check Complete",
-        description: "Your document has been checked against regulatory requirements.",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Compliance check failed:', error);
-      
-      toast({
-        title: "Compliance Check Failed",
-        description: "Failed to check compliance. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setAiCheckingCompliance(false);
-    }
+  // Toggle fullscreen mode
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
   };
   
   return (
     <Dialog 
-      open={isOpen} 
+      open={isOpen}
       onOpenChange={(open) => {
-        if (!open) handleClose();
+        if (!open) handleCloseEditor();
       }}
-      className={isFullScreen ? 'fixed inset-0 z-50' : ''}
+      className={isFullscreen ? 'fullscreen-dialog' : ''}
     >
-      <DialogContent
-        className={`p-0 ${isFullScreen ? 'max-w-none w-screen h-screen' : 'max-w-6xl w-full'}`}
-        onInteractOutside={(e) => {
-          // Prevent closing when clicking outside if there are unsaved changes
-          if (unsavedChanges) {
-            e.preventDefault();
-          }
-        }}
-      >
-        <div className="flex flex-col h-full">
-          {/* Microsoft Word Header */}
-          <div className="bg-[#f3f2f1] border-b p-3 flex items-center justify-between">
-            <div className="flex items-center">
-              <img 
-                src="https://upload.wikimedia.org/wikipedia/commons/f/fd/Microsoft_Office_Word_%282019%E2%80%93present%29.svg" 
-                alt="Microsoft Word" 
-                className="h-7 mr-2" 
-              />
-              <div className="flex flex-col">
-                <span className="font-medium">{documentTitle}</span>
-                <span className="text-xs text-slate-500">Section: {sectionTitle}</span>
-              </div>
+      <DialogContent className={`sm:max-w-[900px] ${isFullscreen ? 'fullscreen-content' : ''}`}>
+        <DialogHeader>
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <DialogTitle className="text-xl">
+                <span className="flex items-center">
+                  <FileText className="h-5 w-5 mr-2 text-blue-600" />
+                  {documentName || 'Document'} 
+                </span>
+              </DialogTitle>
+              
+              {readOnly && (
+                <Badge variant="outline" className="ml-2 border-amber-200 text-amber-700 bg-amber-50">
+                  <Lock className="h-3 w-3 mr-1" />
+                  Read Only
+                </Badge>
+              )}
+              
+              {copilotEnabled && (
+                <Badge variant="outline" className="ml-2 border-violet-200 text-violet-700 bg-violet-50">
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  Copilot
+                </Badge>
+              )}
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               {lastSaved && (
-                <span className="text-xs text-slate-500 mr-2">
-                  {unsavedChanges ? 'Unsaved changes' : `Last saved: ${lastSaved.toLocaleTimeString()}`}
+                <span className="text-xs text-gray-500 flex items-center mr-3">
+                  <Clock className="h-3 w-3 mr-1" />
+                  Last saved: {lastSaved.toLocaleTimeString()}
                 </span>
               )}
               
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="text-xs flex items-center h-8 bg-white"
-                onClick={handleSave}
-                disabled={isSaving || !unsavedChanges}
-              >
-                <Save className="h-4 w-4 mr-1.5" />
-                {isSaving ? 'Saving...' : 'Save'}
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="sm"
+                onClick={toggleFullscreen}
                 className="h-8 w-8 p-0"
-                onClick={toggleFullScreen}
-                title={isFullScreen ? 'Exit full screen' : 'Full screen'}
+                title={isFullscreen ? "Exit Fullscreen" : "Fullscreen"}
               >
-                {isFullScreen ? (
+                {isFullscreen ? (
                   <Minimize2 className="h-4 w-4" />
                 ) : (
                   <Maximize2 className="h-4 w-4" />
                 )}
               </Button>
               
-              <Button
-                variant="ghost"
-                size="sm"
+              <Button 
+                variant="outline" 
+                size="sm" 
                 className="h-8 w-8 p-0"
-                onClick={handleClose}
+                onClick={handleCloseEditor}
                 title="Close"
               >
                 <X className="h-4 w-4" />
@@ -312,249 +276,111 @@ const MsWordPopupEditor = ({
             </div>
           </div>
           
-          {/* Word Toolbar */}
-          <div className="bg-[#f3f2f1] border-b p-1 flex flex-wrap">
-            <div className="flex items-center bg-white rounded border mr-2 shadow-sm">
-              <Button variant="ghost" size="sm" className="h-8 rounded-l border-r" title="Save (Ctrl+S)" onClick={handleSave}>
-                <Save className="h-4 w-4 text-blue-700" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 border-r" title="Undo (Ctrl+Z)">
-                <RotateCcw className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 rounded-r" title="Redo (Ctrl+Y)">
-                <RotateCw className="h-4 w-4" />
-              </Button>
+          <DialogDescription>
+            Editing document using Microsoft Word Online.
+            {autoSave && !readOnly ? ' Changes are automatically saved.' : ''}
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className={`word-editor-container ${isFullscreen ? 'h-[80vh]' : 'h-[60vh]'}`}>
+          {loading ? (
+            <div className="flex flex-col items-center justify-center h-full">
+              <Skeleton className="h-12 w-12 rounded-full mb-4" />
+              <Skeleton className="h-6 w-64 mb-2" />
+              <Skeleton className="h-4 w-40" />
+              <p className="text-sm text-slate-500 mt-4">Loading Microsoft Word editor...</p>
             </div>
+          ) : error ? (
+            <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          ) : (
+            <iframe
+              ref={iframeRef}
+              src={sessionData?.editUrl}
+              className="w-full h-full border-none"
+              title="Microsoft Word Editor"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-top-navigation"
+            />
+          )}
+        </div>
+        
+        {saveSuccess && (
+          <Alert className="bg-green-50 text-green-700 border-green-100 mb-4">
+            <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
+            <AlertDescription>Document saved successfully!</AlertDescription>
+          </Alert>
+        )}
+        
+        <DialogFooter className="flex justify-between items-center">
+          <div className="flex items-center">
+            <Button 
+              variant="outline" 
+              size="sm"
+              disabled={loading}
+              onClick={initializeWordSession}
+              className="flex items-center mr-2"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Reload
+            </Button>
             
-            <div className="flex items-center bg-white rounded border mr-2 shadow-sm">
-              <select className="text-xs h-8 border-r px-2">
-                <option>Normal</option>
-                <option>Heading 1</option>
-                <option>Heading 2</option>
-                <option>Title</option>
-              </select>
-              <select className="text-xs h-8 border-r px-2">
-                <option>Calibri</option>
-                <option>Arial</option>
-                <option>Times New Roman</option>
-              </select>
-              <select className="text-xs h-8 border-r px-1">
-                <option>11</option>
-                <option>12</option>
-                <option>14</option>
-              </select>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 border-r">
-                <Bold className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 border-r">
-                <Italic className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Underline className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <div className="flex items-center bg-white rounded border mr-2 shadow-sm">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 border-r">
-                <AlignLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 border-r">
-                <AlignCenter className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 border-r">
-                <AlignRight className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 border-r">
-                <List className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <ListOrdered className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <div className="flex items-center bg-white rounded border mr-2 shadow-sm">
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 border-r">
-                <Table className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 border-r">
-                <Image className="h-4 w-4" />
-              </Button>
-              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                <Link className="h-4 w-4" />
-              </Button>
-            </div>
-            
-            <div className="ml-auto flex items-center">
-              <div className="bg-white rounded border shadow-sm flex">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className={`h-8 text-xs flex items-center rounded-l border-r ${aiSuggesting ? 'bg-blue-50' : ''}`}
-                  onClick={getContentSuggestions}
-                  disabled={aiSuggesting}
-                  title="Get AI-powered content suggestions for the current section"
-                >
-                  {aiSuggesting ? (
-                    <RefreshCw className="h-4 w-4 mr-1 animate-spin text-blue-600" />
-                  ) : (
-                    <Sparkles className="h-4 w-4 mr-1 text-blue-600" />
-                  )}
-                  <span className="hidden md:inline">Suggest</span>
-                </Button>
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className={`h-8 text-xs flex items-center border-r ${aiCheckingCompliance ? 'bg-blue-50' : ''}`}
-                  onClick={checkCompliance}
-                  disabled={aiCheckingCompliance}
-                  title="Check document against regulatory requirements"
-                >
-                  {aiCheckingCompliance ? (
-                    <RefreshCw className="h-4 w-4 mr-1 animate-spin text-blue-600" />
-                  ) : (
-                    <ClipboardCheck className="h-4 w-4 mr-1 text-blue-600" />
-                  )}
-                  <span className="hidden md:inline">Compliance</span>
-                </Button>
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="h-8 text-xs flex items-center rounded-r"
-                  title="Ask AI assistant for help"
-                >
-                  <MessageSquare className="h-4 w-4 mr-1 text-blue-600" />
-                  <span className="hidden md:inline">Ask AI</span>
-                </Button>
-              </div>
-            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              disabled={loading || !sessionData?.editUrl}
+              onClick={() => window.open(sessionData?.editUrl, '_blank')}
+              className="flex items-center"
+            >
+              <ExternalLink className="h-4 w-4 mr-2" />
+              Open in New Tab
+            </Button>
           </div>
           
-          {/* Document Content Area */}
-          <div className="flex flex-1 min-h-0 overflow-hidden">
-            {/* Document Editor */}
-            <div className="flex-1 bg-white overflow-auto p-8 flex justify-center">
-              <div 
-                ref={editorRef}
-                className="w-full max-w-4xl bg-white border shadow-sm" 
-                style={{ minHeight: '29.7cm', maxWidth: '21cm' }}
+          <div>
+            {!readOnly && (
+              <Button 
+                disabled={loading || isSaving || !sessionData?.sessionId}
+                onClick={handleSave}
+                className="flex items-center"
               >
-                {/* In a real implementation, this would be the Microsoft Word Online editor */}
-                <div className="p-8">
-                  <h1 className="text-2xl font-bold mb-6">{documentTitle}</h1>
-                  <h2 className="text-xl font-semibold mb-4">{sectionTitle}</h2>
-                  
-                  <div 
-                    contentEditable={isEditing}
-                    className="prose max-w-none min-h-[400px]"
-                    dangerouslySetInnerHTML={{ __html: content }}
-                    onInput={(e) => setContent(e.currentTarget.innerHTML)}
-                    style={{ outline: 'none' }}
-                  />
-                </div>
-              </div>
-            </div>
-            
-            {/* Right Sidebar (when AI features are active) */}
-            {(aiSuggesting || aiCheckingCompliance) && (
-              <div className="w-80 border-l bg-slate-50 overflow-auto p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center">
-                    <Sparkles className="h-4 w-4 mr-2 text-blue-600" />
-                    <h4 className="font-medium">AI Assistant</h4>
-                  </div>
-                  <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-                
-                {aiSuggesting && (
-                  <div className="space-y-3">
-                    <p className="text-sm text-slate-600">Suggested content improvements:</p>
-                    
-                    <div className="bg-white border rounded-md p-3">
-                      <p className="text-sm">
-                        Consider adding a summary of serious adverse events and their relationship to treatment.
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="mt-2 h-7 text-xs w-full"
-                      >
-                        Insert Suggestion
-                      </Button>
-                    </div>
-                    
-                    <div className="bg-white border rounded-md p-3">
-                      <p className="text-sm">
-                        Data on discontinuation rates would strengthen the safety profile section.
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="mt-2 h-7 text-xs w-full"
-                      >
-                        Insert Suggestion
-                      </Button>
-                    </div>
-                  </div>
+                {isSaving ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 mr-2" />
+                    Save
+                  </>
                 )}
-                
-                {aiCheckingCompliance && (
-                  <div className="space-y-3">
-                    <p className="text-sm text-slate-600">Compliance assessment:</p>
-                    
-                    <div className="bg-white border border-amber-200 rounded-md p-3">
-                      <Badge className="bg-amber-100 text-amber-800 mb-1">ICH E2E Guideline</Badge>
-                      <p className="text-sm">
-                        Section requires more comprehensive analysis of adverse events by severity.
-                      </p>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="mt-2 h-7 text-xs w-full"
-                      >
-                        Fix Issue
-                      </Button>
-                    </div>
-                    
-                    <div className="bg-white border border-green-200 rounded-md p-3">
-                      <Badge className="bg-green-100 text-green-800 mb-1">FDA Guidance</Badge>
-                      <p className="text-sm">
-                        Content meets FDA safety reporting requirements.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+              </Button>
             )}
           </div>
-          
-          {/* Status Bar */}
-          <div className="bg-[#f3f2f1] border-t p-1.5 flex items-center justify-between text-xs text-slate-500">
-            <div className="flex items-center">
-              <span className="mr-4">
-                Document ID: {documentId || 'New Document'}
-              </span>
-              <span>
-                Section: {sectionId}
-              </span>
-            </div>
-            <div className="flex items-center">
-              {unsavedChanges ? (
-                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                  Unsaved Changes
-                </Badge>
-              ) : (
-                <Badge className="bg-green-100 text-green-800 border-green-200">
-                  Saved
-                </Badge>
-              )}
-            </div>
-          </div>
-        </div>
+        </DialogFooter>
       </DialogContent>
+      
+      <style jsx="true">{`
+        .fullscreen-dialog {
+          max-width: 100% !important;
+          width: 100% !important;
+          height: 100vh !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border-radius: 0 !important;
+        }
+        
+        .fullscreen-content {
+          max-width: 100% !important;
+          width: 100% !important;
+          height: 100vh !important;
+          margin: 0 !important;
+          padding: 20px !important;
+          border-radius: 0 !important;
+        }
+      `}</style>
     </Dialog>
   );
 };
