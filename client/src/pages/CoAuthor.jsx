@@ -116,7 +116,6 @@ export default function CoAuthor() {
   // GOOGLE DOCS INTEGRATION - FULLY IMPLEMENTED
   const googleDocsIframeRef = useRef(null);
   const [activeDocumentId, setActiveDocumentId] = useState(null);
-  const [selectedDocument, setSelectedDocument] = useState(null);
   
   // Embedded Google Docs functions
   const openDocumentInIframe = (docId) => {
@@ -239,7 +238,6 @@ export default function CoAuthor() {
   const [isTreeOpen, setIsTreeOpen] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showCompareDialog, setShowCompareDialog] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState(null);
   const [activeVersion, setActiveVersion] = useState('v4.0');
   const [compareVersions, setCompareVersions] = useState({ base: 'v4.0', compare: 'v3.2' });
   const [teamCollabOpen, setTeamCollabOpen] = useState(false);
