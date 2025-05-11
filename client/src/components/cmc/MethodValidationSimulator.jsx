@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -24,21 +23,23 @@ const MethodValidationSimulator = () => {
     intermediate: 1.2,
     reproducibility: 1.5,
   });
-  
+
   const [simulationResult, setSimulationResult] = useState(null);
-  
+  const [isLoading, setIsLoading] = useState(false); // Add loading state
+  const [results, setResults] = useState(null); // State to hold simulation results
+
   const linearityData = linearity.concentrations.map((conc, index) => ({
     concentration: conc,
     response: linearity.responses[index],
   }));
-  
+
   const calculateRSquared = () => {
     const n = linearity.concentrations.length;
-    
+
     // Calculate means
     const xMean = linearity.concentrations.reduce((a, b) => a + b, 0) / n;
     const yMean = linearity.responses.reduce((a, b) => a + b, 0) / n;
-    
+
     // Calculate sum of squares
     let ssxy = 0, ssxx = 0, ssyy = 0;
     for (let i = 0; i < n; i++) {
@@ -48,62 +49,84 @@ const MethodValidationSimulator = () => {
       ssxx += (x - xMean) * (x - xMean);
       ssyy += (y - yMean) * (y - yMean);
     }
-    
+
     const rSquared = Math.pow(ssxy, 2) / (ssxx * ssyy);
     return rSquared.toFixed(4);
   };
 
   const runSimulation = () => {
-    let result = {
-      status: '',
-      message: '',
-      details: {}
-    };
-    
-    switch(activeParameter) {
-      case 'specificity':
-        const specificityOk = specificity.peakResolution > 1.5 && specificity.signalToNoise > 10;
-        result = {
-          status: specificityOk ? 'pass' : 'fail',
-          message: specificityOk ? 'Specificity criteria met' : 'Specificity criteria not met',
-          details: {
-            peakResolutionStatus: specificity.peakResolution > 1.5 ? 'pass' : 'fail',
-            signalToNoiseStatus: specificity.signalToNoise > 10 ? 'pass' : 'fail'
-          }
-        };
-        break;
-      case 'linearity':
-        const rSquared = calculateRSquared();
-        const linearityOk = parseFloat(rSquared) > 0.995;
-        result = {
-          status: linearityOk ? 'pass' : 'fail',
-          message: linearityOk ? 'Linearity criteria met' : 'Linearity criteria not met',
-          details: {
-            rSquared,
-            linearityEquation: 'y = 10.5x + 0.5',
-            status: linearityOk ? 'pass' : 'fail'
-          }
-        };
-        break;
-      case 'precision':
-        const precisionOk = precision.repeatability < 2.0 && precision.intermediate < 3.0 && precision.reproducibility < 5.0;
-        result = {
-          status: precisionOk ? 'pass' : 'fail',
-          message: precisionOk ? 'Precision criteria met' : 'Precision criteria not met',
-          details: {
-            repeatabilityStatus: precision.repeatability < 2.0 ? 'pass' : 'fail',
-            intermediateStatus: precision.intermediate < 3.0 ? 'pass' : 'fail',
-            reproducibilityStatus: precision.reproducibility < 5.0 ? 'pass' : 'fail'
-          }
-        };
-        break;
-      default:
-        break;
-    }
-    
-    setSimulationResult(result);
+    setIsLoading(true);
+    setSimulationResult(null); // Clear previous results
+
+    // Simulate API call delay
+    setTimeout(() => {
+      let result = {
+        status: '',
+        message: '',
+        details: {}
+      };
+
+      switch(activeParameter) {
+        case 'specificity':
+          const specificityOk = specificity.peakResolution > 1.5 && specificity.signalToNoise > 10;
+          result = {
+            status: specificityOk ? 'pass' : 'fail',
+            message: specificityOk ? 'Specificity criteria met' : 'Specificity criteria not met',
+            details: {
+              peakResolutionStatus: specificity.peakResolution > 1.5 ? 'pass' : 'fail',
+              signalToNoiseStatus: specificity.signalToNoise > 10 ? 'pass' : 'fail'
+            }
+          };
+          break;
+        case 'linearity':
+          const rSquared = calculateRSquared();
+          const linearityOk = parseFloat(rSquared) > 0.995;
+          result = {
+            status: linearityOk ? 'pass' : 'fail',
+            message: linearityOk ? 'Linearity criteria met' : 'Linearity criteria not met',
+            details: {
+              rSquared,
+              linearityEquation: 'y = 10.5x + 0.5',
+              status: linearityOk ? 'pass' : 'fail'
+            }
+          };
+          break;
+        case 'precision':
+          const precisionOk = precision.repeatability < 2.0 && precision.intermediate < 3.0 && precision.reproducibility < 5.0;
+          result = {
+            status: precisionOk ? 'pass' : 'fail',
+            message: precisionOk ? 'Precision criteria met' : 'Precision criteria not met',
+            details: {
+              repeatabilityStatus: precision.repeatability < 2.0 ? 'pass' : 'fail',
+              intermediateStatus: precision.intermediate < 3.0 ? 'pass' : 'fail',
+              reproducibilityStatus: precision.reproducibility < 5.0 ? 'pass' : 'fail'
+            }
+          };
+          break;
+        default:
+          break;
+      }
+
+      setSimulationResult(result);
+      setIsLoading(false);
+
+      // Show success notification
+      if (result && result.status === 'pass') {
+        // You can replace this with your toast system if available
+        const notification = document.createElement('div');
+        notification.className = 'fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50';
+        notification.innerHTML = `<strong>Success!</strong> Simulation completed successfully.`;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+          notification.style.opacity = '0';
+          notification.style.transition = 'opacity 0.5s';
+          setTimeout(() => document.body.removeChild(notification), 500);
+        }, 3000);
+      }
+    }, 1500);
   };
-  
+
   const handleLinearityChange = (idx, field, value) => {
     const newValues = [...linearity[field]];
     newValues[idx] = parseFloat(value);
@@ -125,7 +148,7 @@ const MethodValidationSimulator = () => {
             <TabsTrigger value="linearity">Linearity</TabsTrigger>
             <TabsTrigger value="precision">Precision</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="specificity">
             <div className="grid gap-4">
               <div>
@@ -160,7 +183,7 @@ const MethodValidationSimulator = () => {
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="linearity">
             <div className="mb-4">
               <div className="grid grid-cols-2 gap-4 mb-4">
@@ -216,7 +239,7 @@ const MethodValidationSimulator = () => {
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="precision">
             <div className="grid gap-4">
               <div>
@@ -255,11 +278,13 @@ const MethodValidationSimulator = () => {
             </div>
           </TabsContent>
         </Tabs>
-        
+
         <div className="mt-6">
-          <Button onClick={runSimulation}>Run Simulation</Button>
+          <Button onClick={runSimulation} disabled={isLoading}>
+            {isLoading ? 'Running Simulation...' : 'Run Simulation'}
+          </Button>
         </div>
-        
+
         {simulationResult && (
           <div className="mt-6 p-4 border rounded-md">
             <div className="flex items-center gap-2 mb-2">
@@ -269,7 +294,7 @@ const MethodValidationSimulator = () => {
               </Badge>
             </div>
             <p>{simulationResult.message}</p>
-            
+
             {activeParameter === 'specificity' && (
               <div className="mt-4 grid gap-2">
                 <div className="flex items-center gap-2">
@@ -286,7 +311,7 @@ const MethodValidationSimulator = () => {
                 </div>
               </div>
             )}
-            
+
             {activeParameter === 'linearity' && (
               <div className="mt-4 grid gap-2">
                 <div className="flex items-center gap-2">
@@ -300,7 +325,7 @@ const MethodValidationSimulator = () => {
                 </div>
               </div>
             )}
-            
+
             {activeParameter === 'precision' && (
               <div className="mt-4 grid gap-2">
                 <div className="flex items-center gap-2">
