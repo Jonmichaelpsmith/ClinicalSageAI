@@ -364,14 +364,40 @@ export default function CoAuthor() {
 
               {isTreeOpen ? (
                 <div className="space-y-4 max-h-96 overflow-y-auto border border-purple-200 rounded-md p-3 bg-white shadow-sm">
+                  <div className="flex justify-between mb-2">
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs font-medium">Filter:</span>
+                      <select className="text-xs rounded border border-purple-100 px-2 py-1">
+                        <option>All Documents</option>
+                        <option>Draft Only</option>
+                        <option>Final Only</option>
+                        <option>Recently Modified</option>
+                      </select>
+                    </div>
+                    <div className="text-xs text-purple-600">
+                      <span className="font-medium">43 documents</span> • 18 final
+                    </div>
+                  </div>
+                
                   {documentTree.map(module => (
                     <div key={module.id} className="space-y-2">
-                      <div className="flex items-center font-medium bg-purple-50 p-1.5 rounded-md">
-                        <FolderOpen className="h-4 w-4 mr-2 text-purple-500" />
-                        <span className="text-purple-800">{module.name}</span>
-                        <Badge variant="outline" className="ml-2 text-xs bg-purple-100 border-purple-200 text-purple-700">
-                          {module.status}
-                        </Badge>
+                      <div className="flex items-center justify-between font-medium bg-purple-50 p-1.5 rounded-md">
+                        <div className="flex items-center">
+                          <FolderOpen className="h-4 w-4 mr-2 text-purple-500" />
+                          <span className="text-purple-800">{module.name}</span>
+                          <Badge variant="outline" className="ml-2 text-xs bg-purple-100 border-purple-200 text-purple-700">
+                            {module.status}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Button size="sm" variant="ghost" className="h-6 w-6 p-0 rounded-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3 text-purple-600">
+                              <circle cx="12" cy="12" r="1" />
+                              <circle cx="12" cy="5" r="1" />
+                              <circle cx="12" cy="19" r="1" />
+                            </svg>
+                          </Button>
+                        </div>
                       </div>
                       
                       <div className="pl-6 space-y-2 border-l border-gray-200 dark:border-gray-700 ml-2">
@@ -379,25 +405,38 @@ export default function CoAuthor() {
                           if (child.type === 'folder') {
                             return (
                               <div key={child.id} className="space-y-1">
-                                <div className="flex items-center">
-                                  <FolderOpen className="h-4 w-4 mr-2 text-gray-500" />
-                                  <span className="text-sm font-medium">{child.name}</span>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <FolderOpen className="h-4 w-4 mr-2 text-purple-400" />
+                                    <span className="text-sm font-medium">{child.name}</span>
+                                  </div>
+                                  <div className="flex space-x-1">
+                                    <Badge variant="outline" className="text-xs bg-purple-50 border-purple-100 text-purple-600">
+                                      {child.children.length} docs
+                                    </Badge>
+                                  </div>
                                 </div>
                                 
-                                <div className="pl-5 space-y-1 border-l border-gray-200 dark:border-gray-700 ml-1">
+                                <div className="pl-5 space-y-1 border-l border-purple-100 ml-1">
                                   {child.children.map(subChild => (
-                                    <div key={subChild.id} className="flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 rounded p-1">
+                                    <div key={subChild.id} className="flex items-center justify-between hover:bg-purple-50 rounded p-1">
                                       <div className="flex items-center">
-                                        <FileText className="h-3 w-3 mr-2 text-gray-500" />
+                                        <FileText className="h-3 w-3 mr-2 text-purple-400" />
                                         <span className="text-xs">{subChild.name}</span>
                                       </div>
-                                      <div className="flex items-center">
-                                        <Badge variant={subChild.status === 'final' ? 'default' : 'outline'} className="mr-1 text-xs">
+                                      <div className="flex items-center space-x-1">
+                                        <Badge 
+                                          variant={subChild.status === 'final' ? 'default' : 'outline'} 
+                                          className={`text-xs ${subChild.status === 'final' ? 'bg-green-100 hover:bg-green-200 text-green-700 border-green-200' : 'bg-yellow-50 border-yellow-200 text-yellow-700'}`}
+                                        >
                                           {subChild.status}
                                         </Badge>
-                                        <Badge variant="outline" className="text-xs">
+                                        <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200">
                                           {subChild.format}
                                         </Badge>
+                                        <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                                          <Eye className="h-3 w-3 text-purple-500" />
+                                        </Button>
                                       </div>
                                     </div>
                                   ))}
@@ -406,18 +445,24 @@ export default function CoAuthor() {
                             );
                           } else {
                             return (
-                              <div key={child.id} className="flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 rounded p-1">
+                              <div key={child.id} className="flex items-center justify-between hover:bg-purple-50 rounded p-1">
                                 <div className="flex items-center">
-                                  <FileText className="h-4 w-4 mr-2 text-gray-500" />
+                                  <FileText className="h-4 w-4 mr-2 text-purple-400" />
                                   <span className="text-sm">{child.name}</span>
                                 </div>
-                                <div className="flex items-center">
-                                  <Badge variant={child.status === 'final' ? 'default' : 'outline'} className="mr-1 text-xs">
+                                <div className="flex items-center space-x-1">
+                                  <Badge 
+                                    variant={child.status === 'final' ? 'default' : 'outline'} 
+                                    className={`text-xs ${child.status === 'final' ? 'bg-green-100 hover:bg-green-200 text-green-700 border-green-200' : 'bg-yellow-50 border-yellow-200 text-yellow-700'}`}
+                                  >
                                     {child.status}
                                   </Badge>
-                                  <Badge variant="outline" className="text-xs">
+                                  <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200">
                                     {child.format}
                                   </Badge>
+                                  <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                                    <Eye className="h-3 w-3 text-purple-500" />
+                                  </Button>
                                 </div>
                               </div>
                             );
@@ -428,23 +473,42 @@ export default function CoAuthor() {
                   ))}
                 </div>
               ) : (
-                <div className="pl-8 space-y-2 border-l-2 border-gray-200 dark:border-gray-700 ml-2">
-                  {documentTree[0].children.map(doc => (
-                    <div key={doc.id} className="flex items-center justify-between hover:bg-gray-100 dark:hover:bg-gray-800 rounded p-1">
-                      <div className="flex items-center">
-                        <FileText className="h-4 w-4 mr-2 text-gray-500" />
-                        <span className="text-sm">{doc.name}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Badge variant={doc.status === 'final' ? 'default' : 'outline'} className="mr-1 text-xs">
-                          {doc.status}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {doc.format}
-                        </Badge>
-                      </div>
+                <div className="border border-purple-200 rounded-md p-3 bg-white shadow-sm">
+                  <div className="flex justify-between items-center mb-2">
+                    <div className="text-xs text-purple-600">
+                      <span className="font-medium">Recent documents</span>
                     </div>
-                  ))}
+                    <div className="text-xs text-purple-600">
+                      <span className="font-medium">43 total documents</span> • 18 final
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    {documentTree[0].children.map(doc => (
+                      <div key={doc.id} className="flex items-center justify-between hover:bg-purple-50 rounded p-1">
+                        <div className="flex items-center">
+                          <FileText className="h-4 w-4 mr-2 text-purple-400" />
+                          <span className="text-sm">{doc.name}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Badge 
+                            variant={doc.status === 'final' ? 'default' : 'outline'} 
+                            className={`text-xs ${doc.status === 'final' ? 'bg-green-100 hover:bg-green-200 text-green-700 border-green-200' : 'bg-yellow-50 border-yellow-200 text-yellow-700'}`}
+                          >
+                            {doc.status}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs bg-gray-50 border-gray-200">
+                            {doc.format}
+                          </Badge>
+                          <Button size="sm" variant="ghost" className="h-5 w-5 p-0">
+                            {doc.status === 'final' ? 
+                              <Eye className="h-3 w-3 text-purple-500" /> :
+                              <Edit className="h-3 w-3 text-purple-500" />
+                            }
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
