@@ -141,7 +141,7 @@ export default function CoAuthor() {
     const checkGoogleAuth = async () => {
       try {
         setAuthLoading(true);
-        const isAuthenticated = googleAuthService.isGoogleAuthenticated();
+        const isAuthenticated = googleAuthService.isAuthenticated();
         setIsGoogleAuthenticated(isAuthenticated);
         
         if (isAuthenticated) {
@@ -999,7 +999,8 @@ export default function CoAuthor() {
                             }
                           });
                           
-                          const user = await googleAuthService.signInWithGoogle();
+                          googleAuthService.initiateAuth();
+                          return; // This will redirect; the rest of this function won't execute
                           
                           // If we get here synchronously (without going through the message event),
                           // it means the authentication was handled by the service directly
