@@ -240,10 +240,10 @@ const FormulationDecisionTree = () => {
                         <SelectValue placeholder="Select solubility" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="high">High (>1 mg/mL)</SelectItem>
+                        <SelectItem value="high">High (more than 1 mg/mL)</SelectItem>
                         <SelectItem value="moderate">Moderate (0.1-1 mg/mL)</SelectItem>
                         <SelectItem value="low">Low (0.01-0.1 mg/mL)</SelectItem>
-                        <SelectItem value="very-low">Very Low (<0.01 mg/mL)</SelectItem>
+                        <SelectItem value="very-low">Very Low (less than 0.01 mg/mL)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -258,9 +258,9 @@ const FormulationDecisionTree = () => {
                         <SelectValue placeholder="Select permeability" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="high">High (>90% absorbed)</SelectItem>
+                        <SelectItem value="high">High (more than 90% absorbed)</SelectItem>
                         <SelectItem value="moderate">Moderate (50-90% absorbed)</SelectItem>
-                        <SelectItem value="low">Low (<50% absorbed)</SelectItem>
+                        <SelectItem value="low">Low (less than 50% absorbed)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
