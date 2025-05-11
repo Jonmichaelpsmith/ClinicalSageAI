@@ -13,7 +13,7 @@ import * as documentIntelligenceHub from './documentIntelligenceHub';
 
 // Configuration for MS Word integration
 const MS_WORD_CONFIG = {
-  apiEndpoint: process.env.MS_WORD_API_ENDPOINT || 'https://api.office.com/word',
+  apiEndpoint: import.meta.env.VITE_MS_WORD_API_ENDPOINT || 'https://api.office.com/word',
   autoSaveInterval: 30000, // 30 seconds
   defaultTemplateId: 'ectd-standard-template',
   editorConfig: {
@@ -115,13 +115,15 @@ export async function getContentSuggestions(documentId, sectionId, content) {
     console.log(`Getting content suggestions for document ${documentId}, section ${sectionId}...`);
     
     // Use the Document Intelligence Hub to generate suggestions
-    const suggestions = await documentIntelligenceHub.generateDocumentContent({
+    const documentHubResponse = await documentIntelligenceHub.generateDocumentContent({
       documentId,
       sectionId,
       currentContent: content,
       suggestionType: 'content-enhancement',
       contextAwareMode: true,
     });
+    
+    const suggestions = documentHubResponse.content;
     
     return {
       success: true,
@@ -146,12 +148,14 @@ export async function checkRegulationCompliance(documentId, sectionId, content) 
     console.log(`Checking regulation compliance for document ${documentId}, section ${sectionId}...`);
     
     // Use the Document Intelligence Hub to check compliance
-    const complianceResults = await documentIntelligenceHub.validateAgainstRegulations(
+    const complianceResponse = await documentIntelligenceHub.validateAgainstRegulations(
       content,
       ['FDA', 'EMA', 'ICH'],
       'eCTD',
       'clinical-narrative'
     );
+    
+    const complianceResults = complianceResponse.results;
     
     return {
       success: true,
