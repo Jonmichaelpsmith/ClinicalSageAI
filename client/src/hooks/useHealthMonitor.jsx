@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
  * This hook manages the connection to the health monitoring worker and handles
  * responding to application health events.
  */
-export default function useHealthMonitor() {
+export function useHealthMonitor() {
   const [alarmActive, setAlarmActive] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const workerRef = useRef(null);

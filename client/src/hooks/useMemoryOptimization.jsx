@@ -21,7 +21,7 @@ import memoryManagement from '@/utils/memoryManagement';
  * @param {Function} options.customCleanupFunction Additional cleanup function
  * @returns {Object} Cache functions and memory optimization utilities
  */
-export default function useMemoryOptimization({
+export function useMemoryOptimization({
   componentName = 'UnnamedComponent',
   maxCacheItems = MEMORY_CONFIG.maxCacheItems,
   cleanupDependencies = [],
