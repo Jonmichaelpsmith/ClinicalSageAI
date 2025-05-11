@@ -23,12 +23,33 @@ const networkState = {
  * Initialize network resilience features
  */
 export function initNetworkResilience(options = {}) {
-  // Listen for online/offline events
-  window.addEventListener('online', handleOnline);
-  window.addEventListener('offline', handleOffline);
+  // Store references to callbacks to ensure proper cleanup
+  const onlineHandler = () => handleOnline();
+  const offlineHandler = () => handleOffline();
   
-  // Start retry queue processor
-  processRetryQueue();
+  // Listen for online/offline events
+  window.addEventListener('online', onlineHandler);
+  window.addEventListener('offline', offlineHandler);
+  
+  // Apply network config from options with defaults
+  const config = {
+    maxRetries: options.maxRetries || NETWORK_CONFIG.maxRetries || 3,
+    baseRetryDelay: options.baseRetryDelay || NETWORK_CONFIG.baseRetryDelay || 1000,
+    maxRetryDelay: options.maxRetryDelay || NETWORK_CONFIG.maxRetryDelay || 10000,
+    requestTimeout: options.requestTimeout || NETWORK_CONFIG.requestTimeout || 30000,
+    onStatusChange: options.onStatusChange || null,
+    criticalEndpoints: options.criticalEndpoints || []
+  };
+  
+  // Update network state with configuration
+  networkState.config = config;
+  
+  // Safely start retry queue processor
+  try {
+    processRetryQueue();
+  } catch (error) {
+    console.error('Failed to start retry queue processor:', error);
+  }
   
   return {
     isOnline: () => networkState.isOnline,
@@ -40,9 +61,14 @@ export function initNetworkResilience(options = {}) {
     }),
     getConnectionQuality: () => 'good', // Placeholder for actual implementation
     cleanup: () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      // Use the same handler references to ensure proper cleanup
+      window.removeEventListener('online', onlineHandler);
+      window.removeEventListener('offline', offlineHandler);
+      
+      // Clear any queued retries to prevent memory leaks
       networkState.retryQueue = [];
+      networkState.failedRequests.clear();
+      networkState.isRetrying = false;
     }
   };
 }
@@ -194,20 +220,37 @@ function calculateBackoff(attemptsMade) {
  */
 export async function fetchWithExponentialBackoff(url, options = {}, 
                                                  attemptsMade = 0, 
-                                                 maxRetries = NETWORK_CONFIG.maxRetryAttempts) {
-  // Setup timeout
+                                                 maxRetries = null) {
+  // Use safe configuration values with fallbacks
+  const config = networkState.config || {};
+  const retryLimit = maxRetries ?? config.maxRetries ?? NETWORK_CONFIG.maxRetries ?? 3;
+  const timeoutMs = options.timeout || config.requestTimeout || NETWORK_CONFIG.requestTimeout || 30000;
+  
+  // Create a fresh abort controller for this attempt
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => {
-    controller.abort();
-  }, options.timeout || NETWORK_CONFIG.defaultTimeoutMs);
+  let timeoutId;
   
   try {
-    // Merge abort signal with existing options
+    // Set up timeout - wrapped in try/catch for safety
+    timeoutId = setTimeout(() => {
+      try {
+        controller.abort();
+      } catch (abortError) {
+        console.warn('Error aborting fetch:', abortError);
+      }
+    }, timeoutMs);
+    
+    // Merge abort signal with existing options and preserve any existing signal handlers
+    const existingSignal = options.signal;
     const fetchOptions = {
       ...options,
-      signal: controller.signal
+      // If options already had a signal, we need to respect both
+      signal: existingSignal 
+        ? composeSignals(existingSignal, controller.signal) 
+        : controller.signal
     };
     
+    // Actual fetch with error handling
     const response = await fetch(url, fetchOptions);
     
     // Handle non-success responses
@@ -217,49 +260,111 @@ export async function fetchWithExponentialBackoff(url, options = {},
       
       const error = new Error(`Request failed with status ${response.status}`);
       error.status = response.status;
+      error.response = response; // Attach response for potential processing
       
-      if (shouldRetry && attemptsMade < maxRetries) {
+      if (shouldRetry && attemptsMade < retryLimit) {
         const backoffTime = calculateBackoff(attemptsMade);
-        console.log(`Retrying request to ${url} in ${backoffTime}ms (attempt ${attemptsMade + 1}/${maxRetries})`);
+        console.log(`Retrying request to ${url} in ${backoffTime}ms (attempt ${attemptsMade + 1}/${retryLimit})`);
         
+        // Clean up this attempt before retrying
+        clearTimeout(timeoutId);
+        
+        // Wait for backoff period
         await new Promise(resolve => setTimeout(resolve, backoffTime));
         
-        return fetchWithExponentialBackoff(url, options, attemptsMade + 1, maxRetries);
+        // Recursive retry with incremented attempt counter
+        return fetchWithExponentialBackoff(url, options, attemptsMade + 1, retryLimit);
       }
       
       // Track failed request but don't auto-retry
-      trackFailedRequest(url, options, error, false);
+      try {
+        trackFailedRequest(url, options, error, false);
+      } catch (trackError) {
+        console.warn('Error tracking failed request:', trackError);
+      }
+      
       throw error;
     }
     
+    // Success path
     return response;
   } catch (error) {
     // Handle network errors and timeouts
     if (error.name === 'AbortError') {
-      const timeoutError = new Error(`Request to ${url} timed out after ${options.timeout || NETWORK_CONFIG.defaultTimeoutMs}ms`);
+      const timeoutError = new Error(`Request to ${url} timed out after ${timeoutMs}ms`);
       timeoutError.name = 'TimeoutError';
+      timeoutError.originalError = error;
       
-      // Track failed request
-      trackFailedRequest(url, options, timeoutError, true);
+      // Track failed request - safely
+      try {
+        trackFailedRequest(url, options, timeoutError, true);
+      } catch (trackError) {
+        console.warn('Error tracking timeout:', trackError);
+      }
+      
       throw timeoutError;
     }
     
     // Handle real network errors
-    if (attemptsMade < maxRetries && networkState.isOnline) {
+    if (attemptsMade < retryLimit && networkState.isOnline) {
       const backoffTime = calculateBackoff(attemptsMade);
-      console.log(`Retrying request to ${url} in ${backoffTime}ms (attempt ${attemptsMade + 1}/${maxRetries})`);
+      console.log(`Retrying request to ${url} after error in ${backoffTime}ms (attempt ${attemptsMade + 1}/${retryLimit})`);
       
+      // Clean up this attempt before retrying
+      clearTimeout(timeoutId);
+      
+      // Wait for backoff period
       await new Promise(resolve => setTimeout(resolve, backoffTime));
       
-      return fetchWithExponentialBackoff(url, options, attemptsMade + 1, maxRetries);
+      // Recursive retry with incremented attempt counter
+      return fetchWithExponentialBackoff(url, options, attemptsMade + 1, retryLimit);
     }
     
-    // Track failed request
-    trackFailedRequest(url, options, error, true);
+    // Track failed request - safely
+    try {
+      trackFailedRequest(url, options, error, true);
+    } catch (trackError) {
+      console.warn('Error tracking network failure:', trackError);
+    }
+    
     throw error;
   } finally {
-    clearTimeout(timeoutId);
+    // Always clear the timeout to prevent memory leaks
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
   }
+}
+
+/**
+ * Helper to compose multiple AbortSignals into one
+ * This allows us to respect both our timeout signal and any user-provided signal
+ */
+function composeSignals(...signals) {
+  // If AbortSignal.any is available (modern browsers), use it
+  if (typeof AbortSignal.any === 'function') {
+    return AbortSignal.any(signals);
+  }
+  
+  // Otherwise, create a simple implementation
+  const controller = new AbortController();
+  
+  const onAbort = () => {
+    controller.abort();
+    signals.forEach(signal => {
+      signal.removeEventListener('abort', onAbort);
+    });
+  };
+  
+  signals.forEach(signal => {
+    if (signal.aborted) {
+      onAbort();
+    } else {
+      signal.addEventListener('abort', onAbort);
+    }
+  });
+  
+  return controller.signal;
 }
 
 /**
