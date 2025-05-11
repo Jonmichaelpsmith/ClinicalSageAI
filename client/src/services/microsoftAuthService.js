@@ -57,6 +57,11 @@ export const initializeMicrosoftAuth = async () => {
 };
 
 /**
+ * Alias for initializeMicrosoftAuth to match imports
+ */
+export const initializeAuth = initializeMicrosoftAuth;
+
+/**
  * Sign in with Microsoft
  * @returns {Promise<Object>} Authentication result
  */
@@ -156,6 +161,11 @@ export const isSignedInToMicrosoft = () => {
 };
 
 /**
+ * Alias for isSignedInToMicrosoft to match imports 
+ */
+export const isAuthenticated = isSignedInToMicrosoft;
+
+/**
  * Get current Microsoft user information
  * @returns {Object|null} User information or null if not signed in
  */
@@ -191,6 +201,17 @@ export const simulateMicrosoftAuth = async () => {
     expiresOn: new Date(Date.now() + 3600 * 1000)
   };
 };
+
+/**
+ * Alias for signInWithMicrosoft to match imports
+ */
+export const login = signInWithMicrosoft;
+
+/**
+ * Get access token for external services
+ * @returns {Promise<string>} Access token
+ */
+export const getAccessToken = getMicrosoftGraphToken;
 
 // Default export as a service object
 const microsoftAuthService = {

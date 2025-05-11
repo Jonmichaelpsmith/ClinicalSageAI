@@ -15,6 +15,53 @@
 import microsoftAuthService from './microsoftAuthService';
 
 /**
+ * Initialize Office JS API
+ * @returns {Promise<boolean>} - True if initialization successful
+ */
+export const initializeOfficeJS = async () => {
+  try {
+    console.log('Initializing Office JS API...');
+    
+    // In production with actual Office JS:
+    // await Office.onReady();
+    
+    // Simulate initialization for development
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    console.log('Office JS API initialized');
+    return true;
+  } catch (err) {
+    console.error('Error initializing Office JS API:', err);
+    return false;
+  }
+};
+
+/**
+ * Open an existing document
+ * @param {string} documentId - The document ID to open
+ * @returns {Promise<Object>} - The opened document
+ */
+export const openDocument = async (documentId) => {
+  try {
+    console.log(`Opening document with ID: ${documentId}`);
+    
+    // Simulate document opening for development
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    return {
+      id: documentId,
+      name: `Document-${documentId}.docx`,
+      content: 'This is the content of the opened document.',
+      createdAt: new Date(Date.now() - 86400000 * 5),
+      updatedAt: new Date()
+    };
+  } catch (err) {
+    console.error('Error opening document:', err);
+    throw err;
+  }
+};
+
+/**
  * Create a new Word document with optional content
  * @param {string} name - Document name
  * @param {string} initialContent - Optional initial content
