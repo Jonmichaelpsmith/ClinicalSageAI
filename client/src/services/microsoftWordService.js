@@ -143,6 +143,26 @@ export async function getDocumentContent(wordInstance) {
 }
 
 /**
+ * Save document content
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @returns {Promise<string>} - Document content
+ */
+export async function saveDocumentContent(wordInstance) {
+  try {
+    if (!wordInstance) throw new Error('Word instance is not initialized');
+    
+    // Get document content from the Word instance
+    const content = await getDocumentContent(wordInstance);
+    
+    return content;
+  } catch (err) {
+    console.error('Error saving document content:', err);
+    throw err;
+  }
+}
+
+/**
  * Insert content at current cursor position
  * 
  * @param {Object} wordInstance - Word instance
@@ -158,6 +178,30 @@ export async function insertContent(wordInstance, content) {
   } catch (error) {
     console.error('Failed to insert content:', error);
     throw error;
+  }
+}
+
+/**
+ * Insert AI-generated content into document
+ * 
+ * @param {Object} wordInstance - Word instance
+ * @param {string} content - AI-generated content
+ * @returns {Promise<boolean>} - Success status
+ */
+export async function insertAIContent(wordInstance, content) {
+  try {
+    if (!wordInstance) throw new Error('Word instance is not initialized');
+    
+    // Insert content and apply special formatting for AI-generated content
+    await insertContent(wordInstance, content);
+    
+    // Optionally apply specific formatting to AI content
+    // This could include highlighting or special styles
+    
+    return true;
+  } catch (err) {
+    console.error('Error inserting AI content:', err);
+    throw err;
   }
 }
 
@@ -199,13 +243,13 @@ export async function saveAsNewDocument(wordInstance) {
 }
 
 /**
- * Apply a document template
+ * Insert template into document
  * 
  * @param {Object} wordInstance - Word instance
  * @param {string} templateId - Template ID
  * @returns {Promise<boolean>} - Success status
  */
-export async function applyTemplate(wordInstance, templateId) {
+export async function insertTemplate(wordInstance, templateId) {
   try {
     // Implementation depends on how templates are stored
     // This is a simplified version
@@ -242,12 +286,12 @@ async function getTemplateContent(templateId) {
 }
 
 /**
- * Format document as IND application
+ * Format document headings according to regulatory standards
  * 
  * @param {Object} wordInstance - Word instance
  * @returns {Promise<boolean>} - Success status
  */
-export async function formatDocumentAsIND(wordInstance) {
+export async function formatDocumentHeadings(wordInstance) {
   try {
     const document = wordInstance.documents.active;
     
