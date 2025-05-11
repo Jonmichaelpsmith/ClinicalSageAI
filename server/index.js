@@ -288,6 +288,7 @@ app.use('/api/mashable-bi', mashableBiRoutes);
 // Our new API routes 
 app.use('/api/vault', vaultRoutes);
 app.use('/api/next-actions', actionsRoutes);
+app.use('/api/google-docs', googleDocsRoutes); // Google Docs API routes
 app.use('/api/test', testApiRoutes); // Test API routes for development
 
 // Vault and Analytics routes
