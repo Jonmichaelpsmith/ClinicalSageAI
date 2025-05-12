@@ -269,6 +269,10 @@ export default function CoAuthor() {
   const [selectedContentBlocks, setSelectedContentBlocks] = useState([]);
   const [documentTitle, setDocumentTitle] = useState('');
   const [documentModule, setDocumentModule] = useState('');
+  const [moduleFilter, setModuleFilter] = useState('all');
+  const [regulatoryFilter, setRegulatoryFilter] = useState('all');
+  const [similarityFilter, setSimilarityFilter] = useState('all');
+  const [showFilters, setShowFilters] = useState(false);
   
   // Phase 4: AI-Enhanced Atom Generation & Validation state
   const [showDraftAtomDialog, setShowDraftAtomDialog] = useState(false);
@@ -5970,14 +5974,39 @@ export default function CoAuthor() {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="flex-1 overflow-y-auto border rounded-md p-4 my-4 bg-slate-50">
+          <div className="flex-1 overflow-y-auto border rounded-md p-4 my-4 bg-gradient-to-b from-slate-50 to-white">
             {chatMessages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
-                <Search className="h-12 w-12 mb-4 text-slate-300" />
-                <h3 className="text-lg font-medium">No conversations yet</h3>
-                <p className="text-sm max-w-md mt-2">
-                  Start by asking a question about your documents. For example, "What safety signals emerged in Module 2.7?" or "Summarize the efficacy endpoints from our clinical trials."
-                </p>
+                <div className="p-4 bg-blue-50 border border-blue-100 rounded-lg mb-6 max-w-md">
+                  <h3 className="text-lg font-medium text-blue-700 mb-2 flex items-center">
+                    <MessageSquare className="h-5 w-5 mr-2" />
+                    Chat with Your Dossier
+                  </h3>
+                  <p className="text-sm text-blue-700 mb-3">
+                    Ask questions about your regulatory documents and get AI-powered answers based on your vectorized content.
+                  </p>
+                  <div className="text-sm text-slate-700 space-y-2">
+                    <p className="font-medium">Try asking questions like:</p>
+                    <div className="bg-white p-2 rounded border border-blue-100 cursor-pointer hover:bg-blue-50 transition-colors"
+                         onClick={() => {
+                           setChatQuery("What safety signals emerged in Module 2.7?");
+                         }}>
+                      "What safety signals emerged in Module 2.7?"
+                    </div>
+                    <div className="bg-white p-2 rounded border border-blue-100 cursor-pointer hover:bg-blue-50 transition-colors"
+                         onClick={() => {
+                           setChatQuery("Summarize the efficacy endpoints from our Phase 3 trials");
+                         }}>
+                      "Summarize the efficacy endpoints from our Phase 3 trials"
+                    </div>
+                    <div className="bg-white p-2 rounded border border-blue-100 cursor-pointer hover:bg-blue-50 transition-colors"
+                         onClick={() => {
+                           setChatQuery("What are the main CMC considerations for our drug substance?");
+                         }}>
+                      "What are the main CMC considerations for our drug substance?"
+                    </div>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="space-y-4">
@@ -5987,27 +6016,112 @@ export default function CoAuthor() {
                     className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                   >
                     <div 
-                      className={`rounded-lg p-3 max-w-[80%] ${
+                      className={`rounded-lg p-3 ${
                         message.role === 'user' 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-white border border-slate-200'
+                          ? 'bg-blue-600 text-white max-w-[70%]' 
+                          : 'bg-white border border-slate-200 shadow-sm max-w-[85%]'
                       }`}
                     >
+                      {message.role !== 'user' && (
+                        <div className="flex items-center mb-2 pb-1 border-b border-slate-100">
+                          <Bot className="h-4 w-4 mr-1 text-blue-600" />
+                          <span className="text-xs font-medium text-blue-600">TrialSage Assistant</span>
+                        </div>
+                      )}
+                      
                       <div className="whitespace-pre-wrap">
-                        {message.content}
+                        {/* Format assistant messages with rich formatting */}
+                        {message.role === 'user' ? message.content : (
+                          <div className="space-y-2">
+                            {message.content.split('\n\n').map((paragraph, pIndex) => {
+                              // Handle bullet points
+                              if (paragraph.startsWith('- ') || paragraph.includes('\n- ')) {
+                                const bulletPoints = paragraph.startsWith('- ') 
+                                  ? paragraph.split('\n- ') 
+                                  : ['', ...paragraph.split('\n- ').slice(1)];
+                                
+                                return (
+                                  <div key={`p-${pIndex}`} className="space-y-1">
+                                    <ul className="list-disc pl-4 space-y-1">
+                                      {bulletPoints.filter(Boolean).map((point, bIndex) => (
+                                        <li key={`bullet-${pIndex}-${bIndex}`}>
+                                          {point.replace(/^- /, '')}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                );
+                              } 
+                              // Handle section headers
+                              else if (paragraph.startsWith('#')) {
+                                return (
+                                  <div key={`p-${pIndex}`} className="font-medium text-blue-800">
+                                    {paragraph.replace(/^# /, '')}
+                                  </div>
+                                );
+                              }
+                              // Regular paragraph
+                              else {
+                                return <p key={`p-${pIndex}`}>{paragraph}</p>;
+                              }
+                            })}
+                          </div>
+                        )}
                       </div>
                       
                       {message.sources && message.sources.length > 0 && (
-                        <div className="mt-3 pt-2 border-t border-slate-200 text-xs text-slate-500">
-                          <div className="font-medium mb-1">Sources:</div>
-                          <div className="space-y-1">
+                        <div className="mt-4 pt-3 border-t border-slate-200 text-xs">
+                          <div className="font-medium mb-2 text-blue-700 flex items-center">
+                            <File className="h-3 w-3 mr-1" /> 
+                            Sources:
+                          </div>
+                          <div className="space-y-2 bg-slate-50 p-2 rounded">
                             {message.sources.map((source, sourceIndex) => (
-                              <div key={sourceIndex} className="flex items-start">
-                                <div className="w-4">{sourceIndex + 1}.</div>
-                                <div>
-                                  <span className="font-medium">{source.title || 'Document'}</span>
-                                  <span className="text-slate-400"> ({source.section || 'Section'}, {new Date(source.date).toLocaleDateString()})</span>
+                              <div key={sourceIndex} className="flex items-start rounded p-1 hover:bg-slate-100">
+                                <div className="w-4 text-slate-400">{sourceIndex + 1}.</div>
+                                <div className="flex-1">
+                                  <div className="font-medium text-blue-700">{source.title || 'Document'}</div>
+                                  <div className="flex items-center text-slate-500 text-xs mt-0.5">
+                                    <FileText className="h-3 w-3 mr-1" />
+                                    <span>{source.section || 'Section'}</span>
+                                    <span className="mx-1">•</span>
+                                    <span>{new Date(source.date).toLocaleDateString()}</span>
+                                    
+                                    {source.relevance && (
+                                      <>
+                                        <span className="mx-1">•</span>
+                                        <Badge variant="outline" className="text-xs h-4 px-1">
+                                          {Math.round(source.relevance * 100)}% match
+                                        </Badge>
+                                      </>
+                                    )}
+                                  </div>
+                                  {source.excerpt && (
+                                    <div className="text-xs text-slate-600 mt-1 italic">
+                                      "{source.excerpt}"
+                                    </div>
+                                  )}
                                 </div>
+                                
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      size="icon" 
+                                      variant="ghost" 
+                                      className="h-5 w-5"
+                                      onClick={() => {
+                                        navigator.clipboard.writeText(source.excerpt || '');
+                                        toast({
+                                          title: "Copied to clipboard",
+                                          description: "Source excerpt copied to clipboard",
+                                        });
+                                      }}
+                                    >
+                                      <Copy className="h-3 w-3" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Copy excerpt</TooltipContent>
+                                </Tooltip>
                               </div>
                             ))}
                           </div>
@@ -6304,14 +6418,44 @@ export default function CoAuthor() {
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-medium flex items-center">
                   <Search className="h-4 w-4 mr-1 text-blue-600" />
-                  Results ({similarContentResults.length})
+                  Results ({
+                    similarContentResults.filter(result => 
+                      (moduleFilter === 'all' || result.module === moduleFilter) &&
+                      (regulatoryFilter === 'all' || result.regulatory === regulatoryFilter) &&
+                      (similarityFilter === 'all' || (similarityFilter === 'high' && result.similarity >= 0.8))
+                    ).length
+                  })
                 </h4>
                 {vectorizedDocuments.length > 0 && (
-                  <span className="text-xs text-slate-500">Searched across {vectorizedDocuments.length} documents</span>
+                  <div className="flex flex-col items-end">
+                    <span className="text-xs text-slate-500">Searched across {vectorizedDocuments.length} documents</span>
+                    {similarContentResults.length > 
+                      similarContentResults.filter(result => 
+                        (moduleFilter === 'all' || result.module === moduleFilter) &&
+                        (regulatoryFilter === 'all' || result.regulatory === regulatoryFilter) &&
+                        (similarityFilter === 'all' || (similarityFilter === 'high' && result.similarity >= 0.8))
+                      ).length && (
+                      <span className="text-xs text-amber-600 mt-0.5">
+                        {similarContentResults.length - 
+                          similarContentResults.filter(result => 
+                            (moduleFilter === 'all' || result.module === moduleFilter) &&
+                            (regulatoryFilter === 'all' || result.regulatory === regulatoryFilter) &&
+                            (similarityFilter === 'all' || (similarityFilter === 'high' && result.similarity >= 0.8))
+                          ).length
+                        } results filtered out
+                      </span>
+                    )}
+                  </div>
                 )}
               </div>
               
-              {similarContentResults.map((result, index) => (
+              {similarContentResults
+                .filter(result => 
+                  (moduleFilter === 'all' || result.module === moduleFilter) &&
+                  (regulatoryFilter === 'all' || result.regulatory === regulatoryFilter) &&
+                  (similarityFilter === 'all' || (similarityFilter === 'high' && result.similarity >= 0.8))
+                )
+                .map((result, index) => (
                 <div 
                   key={index} 
                   className="border rounded-md p-3 bg-white hover:border-amber-300 hover:bg-amber-50 transition-colors duration-200"
