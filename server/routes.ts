@@ -103,6 +103,7 @@ import internalClinicalDataRouter from './routes/internal-clinical-data.js';
 import qmpRouter from './routes/qmp-api.js';
 import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
 import authRouter from './routes/auth.js';
+import maudRouter from './routes/maud-routes';
 // Import existing router or create empty one
 import express from 'express';
 import * as fs from 'fs';
@@ -241,6 +242,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register Google Docs Integration routes
   app.use('/api/google-docs', googleDocsRoutes);
+  
+  // Register MAUD validation API routes
+  app.use('/api/maud', maudRouter);
   
   // Register Authentication routes
   app.use('/auth', authRouter);
