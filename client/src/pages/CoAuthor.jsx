@@ -1068,41 +1068,13 @@ export default function CoAuthor() {
                   <Button 
                     size="sm" 
                     className="bg-blue-600 hover:bg-blue-700"
-                    onClick={async () => {
-                      try {
-                        toast({
-                          title: "Creating New Document",
-                          description: "Setting up a new Google Doc...",
-                          variant: "default",
-                        });
-                        
-                        // Create a new document using our service
-                        const result = await googleDocsService.createNewDoc(
-                          googleDocsService.getDocumentId('module_2_5'), // Use clinical overview template
-                          "New Clinical Overview Document",
-                          { 
-                            initialContent: "This document was created from the TrialSage eCTD Co-Author Module.",
-                            organizationId: 1 // Use default organization ID
-                          }
-                        );
-                        
-                        // Set as the selected document
-                        setSelectedDocument({
-                          id: result.documentId,
-                          title: result.title,
-                          url: result.url,
-                          date: new Date().toLocaleDateString(),
-                          status: "Draft",
-                          module: "2.5"
-                        });
-                        
-                        // Open the document editor after creation
-                        setTimeout(() => {
-                          setGoogleDocsPopupOpen(true);
-                        }, 500);
-                      } catch (error) {
-                        console.error("Error creating document:", error);
-                      }
+                    onClick={() => {
+                      // Open the new document dialog instead of immediately creating
+                      setSelectedTemplate(null);
+                      setSelectedContentBlocks([]);
+                      setDocumentTitle('');
+                      setDocumentModule('');
+                      setNewDocumentDialogOpen(true);
                     }}
                   >
                     <FilePlus2 className="h-4 w-4 mr-2" />
@@ -2777,6 +2749,298 @@ export default function CoAuthor() {
             >
               <Download className="h-4 w-4 mr-2" />
               Export Document
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* New Document Dialog with Structured Content Blocks */}
+      <Dialog open={newDocumentDialogOpen} onOpenChange={setNewDocumentDialogOpen}>
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Create New Document with Structured Content</DialogTitle>
+            <DialogDescription>
+              Select a template and structured content blocks to include in your new document.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-6 py-4">
+            {/* Document Basic Information */}
+            <div className="grid gap-3">
+              <div className="text-sm font-medium">Document Information</div>
+              <div className="grid grid-cols-1 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="documentTitle" className="text-sm font-medium">
+                    Document Title
+                  </label>
+                  <input
+                    id="documentTitle"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={documentTitle}
+                    onChange={(e) => setDocumentTitle(e.target.value)}
+                    placeholder="Enter document title"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="moduleSelect" className="text-sm font-medium">
+                    eCTD Module
+                  </label>
+                  <select
+                    id="moduleSelect"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    value={documentModule}
+                    onChange={(e) => setDocumentModule(e.target.value)}
+                  >
+                    <option value="">Select an eCTD module...</option>
+                    <option value="2.2">Module 2.2 - Introduction</option>
+                    <option value="2.3">Module 2.3 - Quality Overall Summary</option>
+                    <option value="2.4">Module 2.4 - Nonclinical Overview</option>
+                    <option value="2.5">Module 2.5 - Clinical Overview</option>
+                    <option value="2.7.3">Module 2.7.3 - Summary of Clinical Efficacy</option>
+                    <option value="2.7.4">Module 2.7.4 - Summary of Clinical Safety</option>
+                    <option value="3.2">Module 3.2 - Body of Data (Quality)</option>
+                    <option value="5.3.5.1">Module 5.3.5.1 - Study Reports of Controlled Clinical Studies</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            {/* Template Selection */}
+            <div className="grid gap-3">
+              <div className="text-sm font-medium">Document Template</div>
+              <div className="border rounded-md max-h-[200px] overflow-y-auto">
+                <div className="divide-y">
+                  {templates.map((template) => (
+                    <div 
+                      key={template.id} 
+                      className={`p-3 hover:bg-slate-50 cursor-pointer ${selectedTemplate?.id === template.id ? 'bg-blue-50 border-l-4 border-blue-500' : ''}`}
+                      onClick={() => {
+                        setSelectedTemplate(template);
+                        
+                        // Pre-select all content blocks that match the selected module
+                        if (documentModule) {
+                          const modulePrefix = documentModule.split('.')[0];
+                          const matchingBlocks = [];
+                          
+                          // Only preselect blocks if they match the selected module
+                          if (template.contentBlocks) {
+                            template.contentBlocks.forEach(blockId => {
+                              let block;
+                              
+                              if (blockId.startsWith('table-')) {
+                                block = contentBlockRegistry.tables.find(t => t.id === blockId);
+                              } else if (blockId.startsWith('narrative-')) {
+                                block = contentBlockRegistry.narratives.find(n => n.id === blockId);
+                              } else if (blockId.startsWith('figure-')) {
+                                block = contentBlockRegistry.figures.find(f => f.id === blockId);
+                              }
+                              
+                              if (block && block.section.startsWith(modulePrefix)) {
+                                matchingBlocks.push(blockId);
+                              }
+                            });
+                          }
+                          
+                          setSelectedContentBlocks(matchingBlocks);
+                        }
+                      }}
+                    >
+                      <div className="flex items-start space-x-2">
+                        <LayoutTemplate className="h-5 w-5 text-green-600 mt-0.5" />
+                        <div>
+                          <div className="font-medium">{template.name}</div>
+                          <div className="text-xs text-gray-500 mt-1">{template.category} • Updated {template.lastUpdated}</div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Structured Content Blocks Selection */}
+            {selectedTemplate && (
+              <div className="grid gap-3">
+                <div className="text-sm font-medium">Structured Content Blocks</div>
+                <div className="text-xs text-gray-500 mb-2">
+                  Select the content blocks you want to include in your document. These blocks will be inserted with proper ICH-compliant formatting.
+                </div>
+                
+                {/* Display available content blocks for this template */}
+                <div className="border rounded-md p-3 space-y-3 max-h-[300px] overflow-y-auto">
+                  {selectedTemplate.contentBlocks && selectedTemplate.contentBlocks.map(blockId => {
+                    // Find the block in the registry
+                    let block = null;
+                    let blockType = '';
+                    
+                    if (blockId.startsWith('table-')) {
+                      block = contentBlockRegistry.tables.find(t => t.id === blockId);
+                      blockType = 'table';
+                    } else if (blockId.startsWith('narrative-')) {
+                      block = contentBlockRegistry.narratives.find(n => n.id === blockId);
+                      blockType = 'narrative';
+                    } else if (blockId.startsWith('figure-')) {
+                      block = contentBlockRegistry.figures.find(f => f.id === blockId);
+                      blockType = 'figure';
+                    }
+                    
+                    if (!block) return null;
+                    
+                    // Color based on block type
+                    const typeColors = {
+                      table: 'bg-blue-50 border-blue-200',
+                      narrative: 'bg-green-50 border-green-200',
+                      figure: 'bg-purple-50 border-purple-200'
+                    };
+                    
+                    const typeIcons = {
+                      table: (
+                        <svg className="w-5 h-5 mr-2 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                      ),
+                      narrative: (
+                        <svg className="w-5 h-5 mr-2 text-green-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                      ),
+                      figure: (
+                        <svg className="w-5 h-5 mr-2 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      )
+                    };
+                    
+                    return (
+                      <div 
+                        key={blockId} 
+                        className={`flex items-center p-3 border rounded-md ${typeColors[blockType]} relative`}
+                      >
+                        <input
+                          type="checkbox"
+                          id={`block-${blockId}`}
+                          className="mr-3"
+                          checked={selectedContentBlocks.includes(blockId)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedContentBlocks([...selectedContentBlocks, blockId]);
+                            } else {
+                              setSelectedContentBlocks(selectedContentBlocks.filter(id => id !== blockId));
+                            }
+                          }}
+                        />
+                        <label htmlFor={`block-${blockId}`} className="flex items-center flex-1 cursor-pointer">
+                          {typeIcons[blockType]}
+                          <div>
+                            <div className="font-medium text-sm">{block.name}</div>
+                            <div className="text-xs text-gray-600">Section {block.section}</div>
+                            <div className="text-xs text-gray-500 mt-1">
+                              {block.regions.join(', ')} • ICH Compliant: {block.metadata.ichCompliant ? 'Yes' : 'No'}
+                            </div>
+                          </div>
+                        </label>
+                        
+                        {/* Preview button */}
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="absolute right-2 top-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toast({
+                              title: "Content Block Preview",
+                              description: `Preview for ${block.name} (Section ${block.section})`,
+                              variant: "default",
+                            });
+                            // Show preview in a dialog (this would be implemented in a full version)
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="secondary" onClick={() => setNewDocumentDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button 
+              type="button" 
+              disabled={!selectedTemplate || !documentTitle || selectedContentBlocks.length === 0 || !documentModule}
+              onClick={async () => {
+                try {
+                  toast({
+                    title: "Creating New Document",
+                    description: "Setting up a new Google Doc with structured content blocks...",
+                    variant: "default",
+                  });
+                  
+                  // Build the structured content from selected blocks
+                  let structuredContent = `# ${documentTitle}\n\n`;
+                  structuredContent += `This document was created from the TrialSage eCTD Co-Author Module using structured content blocks.\n\n`;
+                  
+                  // Add each selected content block's HTML template
+                  selectedContentBlocks.forEach(blockId => {
+                    let block = null;
+                    
+                    if (blockId.startsWith('table-')) {
+                      block = contentBlockRegistry.tables.find(t => t.id === blockId);
+                    } else if (blockId.startsWith('narrative-')) {
+                      block = contentBlockRegistry.narratives.find(n => n.id === blockId);
+                    } else if (blockId.startsWith('figure-')) {
+                      block = contentBlockRegistry.figures.find(f => f.id === blockId);
+                    }
+                    
+                    if (block) {
+                      structuredContent += `## Section ${block.section}: ${block.name}\n\n`;
+                      structuredContent += block.template;
+                      structuredContent += '\n\n';
+                    }
+                  });
+                  
+                  // Create a new document using our service
+                  const result = await googleDocsService.createNewDoc(
+                    googleDocsService.getDocumentId('module_2_5'), // Base template
+                    documentTitle,
+                    { 
+                      initialContent: structuredContent,
+                      organizationId: 1 // Use default organization ID
+                    }
+                  );
+                  
+                  // Set as the selected document
+                  setSelectedDocument({
+                    id: result.documentId,
+                    title: result.title,
+                    url: result.url,
+                    date: new Date().toLocaleDateString(),
+                    status: "Draft",
+                    module: documentModule
+                  });
+                  
+                  // Close the dialog
+                  setNewDocumentDialogOpen(false);
+                  
+                  // Open the document editor after creation
+                  setTimeout(() => {
+                    setGoogleDocsPopupOpen(true);
+                  }, 500);
+                } catch (error) {
+                  console.error("Error creating document:", error);
+                  toast({
+                    title: "Error Creating Document",
+                    description: "There was an error creating your document. Please try again.",
+                    variant: "destructive",
+                  });
+                }
+              }}
+            >
+              Create Document
             </Button>
           </DialogFooter>
         </DialogContent>
