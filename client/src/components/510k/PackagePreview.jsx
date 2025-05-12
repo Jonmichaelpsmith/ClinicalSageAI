@@ -1,34 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Text, 
-  Button, 
-  VStack, 
-  HStack, 
-  Card, 
-  CardBody, 
-  CardHeader, 
-  Badge, 
-  Divider, 
-  Spinner, 
-  Alert, 
-  AlertIcon, 
-  Heading,
-  useToast
-} from '@chakra-ui/react';
-import { useParams } from 'react-router-dom';
-import { FileIcon, CheckCircle, AlertTriangle, FileText, Download, Upload, FileCheck } from 'lucide-react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardFooter,
+} from '@/components/ui/card';
+import {
+  Alert,
+  AlertTitle,
+  AlertDescription,
+} from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, FileText, CheckCircle, AlertTriangle, Download, Upload, FileCheck } from 'lucide-react';
 import { isFeatureEnabled } from '../../flags/featureFlags';
-import { FDA510kService } from '../../services/FDA510kService';
+import FDA510kService from '../../services/FDA510kService';
 
 /**
  * eSTAR Plus Package Assembly and Preview component
  * Displays file information, AI validation results, and provides options
  * to build and download the full package or submit to FDA ESG.
  */
-const PackagePreview = () => {
-  const { projectId } = useParams();
-  const toast = useToast();
+const PackagePreview = ({ projectId = "demo-project-id" }) => {
+  const { toast } = useToast();
   
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(null);
@@ -70,9 +68,7 @@ const PackagePreview = () => {
         toast({
           title: 'Package built successfully',
           description: 'Your eSTAR package is ready for download',
-          status: 'success',
-          duration: 5000,
-          isClosable: true,
+          variant: 'success',
         });
         
         // Trigger download automatically
@@ -85,9 +81,7 @@ const PackagePreview = () => {
       toast({
         title: 'Error building package',
         description: err.message || 'Failed to build eSTAR package',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
+        variant: 'destructive',
       });
       setBuilding(false);
     }
@@ -104,9 +98,7 @@ const PackagePreview = () => {
         toast({
           title: result.verification.valid ? 'Signature valid' : 'Signature invalid',
           description: result.verification.message,
-          status: result.verification.valid ? 'success' : 'warning',
-          duration: 5000,
-          isClosable: true,
+          variant: result.verification.valid ? 'success' : 'warning',
         });
       }
       
@@ -116,9 +108,7 @@ const PackagePreview = () => {
       toast({
         title: 'Error verifying signature',
         description: err.message || 'Failed to verify digital signature',
-        status: 'error',
-        duration: 5000,
-        isClosable: true,
+        variant: 'destructive',
       });
       setVerifying(false);
     }
@@ -129,164 +119,186 @@ const PackagePreview = () => {
     toast({
       title: 'Feature coming soon',
       description: 'Direct FDA ESG submission will be available in a future update',
-      status: 'info',
-      duration: 5000,
-      isClosable: true,
+      variant: 'default',
     });
   };
   
   if (!isFeatureEnabled('ENABLE_PACKAGE_ASSEMBLY')) {
     return (
-      <Alert status="info">
-        <AlertIcon />
-        eSTAR Package Assembly feature is currently disabled
+      <Alert>
+        <AlertTitle>Feature Disabled</AlertTitle>
+        <AlertDescription>
+          eSTAR Package Assembly feature is currently disabled
+        </AlertDescription>
       </Alert>
     );
   }
   
   if (loading) {
     return (
-      <Box textAlign="center" p={6}>
-        <Spinner size="xl" mb={4} />
-        <Text>Loading eSTAR package preview...</Text>
-      </Box>
+      <div className="flex flex-col items-center justify-center p-6">
+        <Loader2 className="h-12 w-12 animate-spin mb-4" />
+        <p className="text-muted-foreground">Loading eSTAR package preview...</p>
+      </div>
     );
   }
   
   if (error) {
     return (
-      <Alert status="error">
-        <AlertIcon />
-        {error}
+      <Alert variant="destructive">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
       </Alert>
     );
   }
   
   return (
-    <Box p={4}>
-      <Heading as="h2" size="lg" mb={4}>
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4">
         eSTAR Package Assembly
-      </Heading>
+      </h2>
       
-      <Text mb={4}>
+      <p className="mb-4">
         This tool helps you assemble, validate, and submit your FDA eSTAR package 
         for 510(k) clearance.
-      </Text>
+      </p>
       
-      <VStack spacing={6} align="stretch">
+      <div className="flex flex-col space-y-6">
         {/* AI Compliance Report Section */}
         <Card>
-          <CardHeader>
-            <HStack justifyContent="space-between">
-              <Heading size="md">AI Compliance Check</Heading>
-              <Badge colorScheme="green" p={2}>
-                <HStack>
-                  <CheckCircle size={16} />
-                  <Text>Validated</Text>
-                </HStack>
-              </Badge>
-            </HStack>
+          <CardHeader className="flex justify-between items-center">
+            <CardTitle>AI Compliance Check</CardTitle>
+            <Badge className="px-2 py-1 bg-green-100 text-green-800 flex items-center gap-1">
+              <CheckCircle className="h-4 w-4" />
+              <span>Validated</span>
+            </Badge>
           </CardHeader>
-          <CardBody>
+          <CardContent>
             {preview?.aiComplianceReport ? (
-              <Text>{preview.aiComplianceReport}</Text>
+              <p>{preview.aiComplianceReport}</p>
             ) : (
-              <Text fontStyle="italic">Compliance report not available</Text>
+              <p className="text-muted-foreground italic">Compliance report not available</p>
             )}
-          </CardBody>
+          </CardContent>
         </Card>
         
         {/* Files List Section */}
         <Card>
           <CardHeader>
-            <Heading size="md">Package Contents</Heading>
+            <CardTitle>Package Contents</CardTitle>
           </CardHeader>
-          <CardBody>
-            <VStack spacing={2} align="stretch">
+          <CardContent>
+            <div className="flex flex-col space-y-2">
               {preview?.files?.map((file, index) => (
-                <HStack key={index} justifyContent="space-between" p={2} 
-                  bg={index % 2 === 0 ? 'gray.50' : 'white'}>
-                  <HStack>
-                    <FileIcon size={18} />
-                    <Text fontWeight="medium">{file.name}</Text>
-                  </HStack>
-                  <HStack>
-                    <Text fontSize="sm" color="gray.500">
+                <div 
+                  key={index} 
+                  className={`flex justify-between items-center p-2 ${
+                    index % 2 === 0 ? 'bg-muted/50' : 'bg-background'
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    <FileIcon className="h-4 w-4" />
+                    <span className="font-medium">{file.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
                       {(file.size / 1024).toFixed(1)} KB
-                    </Text>
-                    <Badge colorScheme="blue" variant="outline">
+                    </span>
+                    <Badge variant="outline">
                       {file.type.split('/')[1]}
                     </Badge>
-                  </HStack>
-                </HStack>
+                  </div>
+                </div>
               ))}
               
               {(!preview?.files || preview.files.length === 0) && (
-                <Text fontStyle="italic">No files available for preview</Text>
+                <p className="text-muted-foreground italic">No files available for preview</p>
               )}
-            </VStack>
-          </CardBody>
+            </div>
+          </CardContent>
         </Card>
         
         {/* Signature Verification Section */}
         {verification && (
           <Card>
-            <CardHeader>
-              <HStack justifyContent="space-between">
-                <Heading size="md">Digital Signature Verification</Heading>
-                <Badge colorScheme={verification.valid ? 'green' : 'red'} p={2}>
-                  <HStack>
-                    {verification.valid ? <CheckCircle size={16} /> : <AlertTriangle size={16} />}
-                    <Text>{verification.valid ? 'Valid' : 'Invalid'}</Text>
-                  </HStack>
-                </Badge>
-              </HStack>
+            <CardHeader className="flex justify-between items-center">
+              <CardTitle>Digital Signature Verification</CardTitle>
+              <Badge 
+                className={`px-2 py-1 flex items-center gap-1 ${
+                  verification.valid 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}
+              >
+                {verification.valid ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+                <span>{verification.valid ? 'Valid' : 'Invalid'}</span>
+              </Badge>
             </CardHeader>
-            <CardBody>
-              <Text>{verification.message}</Text>
-            </CardBody>
+            <CardContent>
+              <p>{verification.message}</p>
+            </CardContent>
           </Card>
         )}
         
-        <Divider />
+        <Separator />
         
         {/* Actions Section */}
-        <Box>
-          <Heading size="md" mb={4}>
+        <div>
+          <h3 className="text-lg font-semibold mb-4">
             Actions
-          </Heading>
-          <HStack spacing={4}>
+          </h3>
+          <div className="flex gap-4">
             <Button 
-              leftIcon={<Download />} 
-              colorScheme="blue" 
+              className="flex items-center gap-2" 
+              variant="default" 
               onClick={handleBuildPackage} 
-              isLoading={building}
-              loadingText="Building package..."
+              disabled={building}
             >
-              Build & Download Package
+              {building ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Building package...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" />
+                  <span>Build & Download Package</span>
+                </>
+              )}
             </Button>
             
             <Button 
-              leftIcon={<FileCheck />} 
+              className="flex items-center gap-2"
+              variant="outline" 
               onClick={handleVerifySignature}
-              isLoading={verifying}
-              loadingText="Verifying..."
+              disabled={verifying}
             >
-              Verify Digital Signature
+              {verifying ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Verifying...</span>
+                </>
+              ) : (
+                <>
+                  <FileCheck className="h-4 w-4" />
+                  <span>Verify Digital Signature</span>
+                </>
+              )}
             </Button>
             
             <Button 
-              leftIcon={<Upload />} 
-              colorScheme="green" 
+              className="flex items-center gap-2"
+              variant="secondary" 
               onClick={handleSubmitToFDA}
-              isDisabled
+              disabled={true}
             >
-              Submit to FDA ESG
+              <Upload className="h-4 w-4" />
+              <span>Submit to FDA ESG</span>
             </Button>
-          </HStack>
-        </Box>
-      </VStack>
-    </Box>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 
