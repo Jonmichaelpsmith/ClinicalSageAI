@@ -4433,8 +4433,15 @@ export default function CoAuthor() {
               Export Document
             </DialogTitle>
             <DialogDescription>
-              Export your document to various formats and optionally generate an eCTD package.
+              Export your document to various formats and optionally generate an eCTD package with ICH-compliant structure and metadata.
             </DialogDescription>
+            <div className="mt-2 p-2 bg-blue-50 border rounded-md border-blue-200 text-xs text-blue-700 flex items-start space-x-2">
+              <Info className="h-4 w-4 mt-0.5 text-blue-600 flex-shrink-0" />
+              <div>
+                <p className="font-medium">Phase 5: Document Lifecycle & eCTD Export</p>
+                <p className="mt-1">Document will be exported with full eCTD backbone and lifecycle metadata tracking. All document versions will be preserved in the document history.</p>
+              </div>
+            </div>
           </DialogHeader>
           
           <div className="grid gap-6 py-4">
@@ -4601,52 +4608,106 @@ export default function CoAuthor() {
                 </div>
                 {exportFormat === 'ectd' && (
                   <>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="generateEctdXml"
-                        checked={exportOptions.generateEctdXml}
-                        onChange={(e) => setExportOptions({
-                          ...exportOptions,
-                          generateEctdXml: e.target.checked
-                        })}
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
-                      />
-                      <label htmlFor="generateEctdXml" className="text-sm">
-                        Generate eCTD XML Backbone
-                      </label>
+                    <div className="mb-2 p-2 bg-blue-50 border rounded-md border-blue-200 text-xs text-blue-700">
+                      <h4 className="font-medium mb-1">eCTD Configuration Options</h4>
+                      <p>Configure your eCTD package to meet ICH standards and regulatory requirements.</p>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        id="includeChecksums"
-                        checked={exportOptions.includeChecksums}
-                        onChange={(e) => setExportOptions({
-                          ...exportOptions,
-                          includeChecksums: e.target.checked
-                        })}
-                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
-                      />
-                      <label htmlFor="includeChecksums" className="text-sm">
-                        Include MD5 Checksums
+                    
+                    <div className="flex items-center justify-between space-x-2 mb-2">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="generateEctdXml"
+                          checked={exportOptions.generateEctdXml}
+                          onChange={(e) => setExportOptions({
+                            ...exportOptions,
+                            generateEctdXml: e.target.checked
+                          })}
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                        />
+                        <div>
+                          <label htmlFor="generateEctdXml" className="text-sm font-medium">
+                            Generate eCTD XML Backbone
+                          </label>
+                          <p className="text-xs text-gray-500">Creates compliant XML backbone for regulatory submission</p>
+                        </div>
+                      </div>
+                      <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center">
+                        <Check className="h-3 w-3 text-green-600" />
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-between space-x-2 mb-2">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="includeChecksums"
+                          checked={exportOptions.includeChecksums}
+                          onChange={(e) => setExportOptions({
+                            ...exportOptions,
+                            includeChecksums: e.target.checked
+                          })}
+                          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                        />
+                        <div>
+                          <label htmlFor="includeChecksums" className="text-sm font-medium">
+                            Include MD5/SHA-256 Checksums
+                          </label>
+                          <p className="text-xs text-gray-500">Required by most regulatory agencies for submission validation</p>
+                        </div>
+                      </div>
+                      <div className="h-5 w-5 rounded-full bg-green-100 flex items-center justify-center">
+                        <Check className="h-3 w-3 text-green-600" />
+                      </div>
+                    </div>
+                    
+                    <div className="mb-3">
+                      <label htmlFor="exportRegion" className="block text-sm font-medium mb-1">
+                        Regional Settings
                       </label>
+                      <select
+                        id="exportRegion"
+                        value={exportRegion}
+                        onChange={(e) => setExportRegion(e.target.value)}
+                        className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      >
+                        <option value="US">FDA (United States)</option>
+                        <option value="EU">EMA (European Union)</option>
+                        <option value="JP">PMDA (Japan)</option>
+                        <option value="CA">Health Canada</option>
+                        <option value="AU">TGA (Australia)</option>
+                        <option value="CH">Swissmedic (Switzerland)</option>
+                        <option value="UK">MHRA (United Kingdom)</option>
+                      </select>
+                      <p className="mt-1 text-xs text-gray-500">
+                        Configures region-specific eCTD validation rules and folder structure
+                      </p>
                     </div>
                   </>
                 )}
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="vaultStorage"
-                    checked={exportOptions.vaultStorage}
-                    onChange={(e) => setExportOptions({
-                      ...exportOptions,
-                      vaultStorage: e.target.checked
-                    })}
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
-                  />
-                  <label htmlFor="vaultStorage" className="text-sm">
-                    Store in Document Vault
-                  </label>
+                <div className="flex items-center justify-between space-x-2 border-t border-gray-200 pt-3 mt-2">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="vaultStorage"
+                      checked={exportOptions.vaultStorage}
+                      onChange={(e) => setExportOptions({
+                        ...exportOptions,
+                        vaultStorage: e.target.checked
+                      })}
+                      className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                    />
+                    <div>
+                      <label htmlFor="vaultStorage" className="text-sm font-medium">
+                        Store in Document Vault
+                      </label>
+                      <p className="text-xs text-gray-500">Securely store exported document with full version history</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-1 text-xs bg-blue-100 px-2 py-1 rounded-full text-blue-700">
+                    <LockClosed className="h-3 w-3" />
+                    <span>21 CFR Part 11</span>
+                  </div>
                 </div>
               </div>
             </div>
