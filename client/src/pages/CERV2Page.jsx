@@ -251,6 +251,11 @@ export default function CERV2Page() {
     );
   };
 
+  // Direct action for 510(k) Automation
+  const show510kPanel = () => {
+    setActiveTab('510k');
+  };
+  
   // Render content based on active tab
   const renderContent = () => {
     if (activeTab === 'builder') {
