@@ -3,7 +3,8 @@
  * 
  * This service handles interactions with the 510(k) API,
  * providing functionality for predicate device searches,
- * equivalence analysis, and regulatory pathway determination.
+ * equivalence analysis, regulatory pathway determination,
+ * and compliance checks.
  */
 
 import { apiRequest } from '../lib/queryClient';
@@ -394,6 +395,99 @@ class FDA510kService {
       return response.references;
     } catch (error) {
       console.error('Error finding relevant literature:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get the latest compliance check results for a project
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @returns {Promise<Object>} Compliance check results
+   */
+  async getComplianceCheckResults(projectId) {
+    try {
+      const response = await apiRequest({
+        url: `/api/fda510k/compliance-results/${projectId}`,
+        method: 'GET'
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error fetching compliance check results:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Run a new compliance check for a project
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @returns {Promise<Object>} Compliance check results
+   */
+  async runComplianceCheck(projectId) {
+    try {
+      const response = await apiRequest({
+        url: '/api/fda510k/run-compliance-check',
+        method: 'POST',
+        data: { projectId }
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error running compliance check:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Apply an automatic fix for a compliance issue
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {string} sectionId - The ID of the section
+   * @param {string} checkId - The ID of the check to fix
+   * @returns {Promise<Object>} Result of applying the fix
+   */
+  async applyAutoFix(projectId, sectionId, checkId) {
+    try {
+      const response = await apiRequest({
+        url: '/api/fda510k/apply-auto-fix',
+        method: 'POST',
+        data: { 
+          projectId,
+          sectionId,
+          checkId
+        }
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error applying auto-fix:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Export compliance check report
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {string} format - Export format ('pdf', 'excel', etc.)
+   * @returns {Promise<Object>} Export result with download URL
+   */
+  async exportComplianceReport(projectId, format = 'pdf') {
+    try {
+      const response = await apiRequest({
+        url: '/api/fda510k/export-compliance-report',
+        method: 'POST',
+        data: { 
+          projectId,
+          format 
+        }
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error exporting compliance report:', error);
       throw error;
     }
   }
