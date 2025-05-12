@@ -98,6 +98,9 @@ import {
   ListChecks,
   Bot,
   Clipboard,
+  Wand2,
+  ShieldCheck,
+  PlusCircle,
   Zap,
   Send
 } from 'lucide-react';
@@ -161,6 +164,29 @@ export default function CoAuthor() {
   const [selectedContentBlocks, setSelectedContentBlocks] = useState([]);
   const [documentTitle, setDocumentTitle] = useState('');
   const [documentModule, setDocumentModule] = useState('');
+  
+  // Phase 4: AI-Enhanced Atom Generation & Validation state
+  const [showDraftAtomDialog, setShowDraftAtomDialog] = useState(false);
+  const [atomDraftingInProgress, setAtomDraftingInProgress] = useState(false);
+  const [draftAtomParams, setDraftAtomParams] = useState({
+    atomType: 'narrative',
+    region: 'US',
+    module: 'm2',
+    sectionCode: '2.5',
+    prompt: ''
+  });
+  const [draftedAtom, setDraftedAtom] = useState(null);
+  
+  // State for atom validation
+  const [atomValidationInProgress, setAtomValidationInProgress] = useState(false);
+  const [atomValidationResults, setAtomValidationResults] = useState(null);
+  const [showValidationResults, setShowValidationResults] = useState(false);
+  
+  // State for atom improvement suggestions
+  const [atomImprovementInProgress, setAtomImprovementInProgress] = useState(false);
+  const [atomImprovementResults, setAtomImprovementResults] = useState(null);
+  const [atomImprovementFeedback, setAtomImprovementFeedback] = useState('');
+  const [showImprovementDialog, setShowImprovementDialog] = useState(false);
   
   const { toast } = useToast();
   
@@ -645,6 +671,128 @@ export default function CoAuthor() {
     } catch (error) {
       console.error("Error creating content atom:", error);
       throw error;
+    }
+  };
+  
+  // Phase 4: AI-Enhanced Atom Generation & Validation functions
+  
+  // Draft a new content atom using AI
+  const handleDraftAtom = async () => {
+    try {
+      setAtomDraftingInProgress(true);
+      
+      // Call the AI service to generate the atom
+      const generatedAtom = await aiService.draftAtom(draftAtomParams);
+      
+      // Set the drafted atom
+      setDraftedAtom(generatedAtom);
+      
+      toast({
+        title: "Atom Drafted",
+        description: `AI successfully generated a new ${draftAtomParams.atomType} atom for section ${draftAtomParams.sectionCode}`,
+        variant: "success",
+      });
+      
+      return generatedAtom;
+    } catch (error) {
+      console.error("Error drafting atom with AI:", error);
+      toast({
+        title: "Error",
+        description: `Failed to draft atom: ${error.message}`,
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setAtomDraftingInProgress(false);
+    }
+  };
+  
+  // Save drafted atom to the database
+  const saveDraftedAtom = async () => {
+    if (!draftedAtom) return;
+    
+    try {
+      const savedAtom = await createContentAtom({
+        ...draftedAtom,
+        created_at: new Date()
+      });
+      
+      toast({
+        title: "Atom Saved",
+        description: `The drafted atom has been saved to your content library`,
+        variant: "success",
+      });
+      
+      // Reset the drafted atom state
+      setDraftedAtom(null);
+      setShowDraftAtomDialog(false);
+      
+      return savedAtom;
+    } catch (error) {
+      console.error("Error saving drafted atom:", error);
+      toast({
+        title: "Error",
+        description: `Failed to save atom: ${error.message}`,
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+  
+  // Validate a content atom
+  const validateContentAtom = async (atom, standards = ['ICH']) => {
+    try {
+      setAtomValidationInProgress(true);
+      
+      // Call the AI service to validate the atom
+      const validationResults = await aiService.validateAtom(atom, standards);
+      
+      // Set the validation results
+      setAtomValidationResults(validationResults);
+      setShowValidationResults(true);
+      
+      return validationResults;
+    } catch (error) {
+      console.error("Error validating atom:", error);
+      toast({
+        title: "Validation Error",
+        description: `Failed to validate atom: ${error.message}`,
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setAtomValidationInProgress(false);
+    }
+  };
+  
+  // Get AI suggestions to improve an atom
+  const getAtomImprovements = async (atom, feedback = '') => {
+    try {
+      setAtomImprovementInProgress(true);
+      
+      // Call the AI service to get improvement suggestions
+      const improvements = await aiService.suggestAtomImprovements(atom, feedback);
+      
+      // Set the improvement results
+      setAtomImprovementResults(improvements);
+      
+      toast({
+        title: "Improvements Generated",
+        description: "AI has generated suggestions to enhance your content atom",
+        variant: "success",
+      });
+      
+      return improvements;
+    } catch (error) {
+      console.error("Error getting atom improvements:", error);
+      toast({
+        title: "Error",
+        description: `Failed to generate improvements: ${error.message}`,
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setAtomImprovementInProgress(false);
     }
   };
 
