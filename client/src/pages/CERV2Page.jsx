@@ -34,13 +34,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 export default function CERV2Page() {
   const [title, setTitle] = useState('Clinical Evaluation Report');
   const [deviceType, setDeviceType] = useState('Class II Medical Device');
+  const [documentType, setDocumentType] = useState('cer'); // Options: 'cer' or '510k'
   const [deviceName, setDeviceName] = useState('');
   const [manufacturer, setManufacturer] = useState('');
   const [intendedUse, setIntendedUse] = useState('');
   const [faers, setFaers] = useState([]);
-  const [cerDocumentId, setCerDocumentId] = useState(() => 
-    "CER-" + Math.floor(100000 + Math.random() * 900000)
-  );
+  const [cerDocumentId, setCerDocumentId] = useState(() => {
+    const prefix = "CER-";
+    return prefix + Math.floor(100000 + Math.random() * 900000);
+  });
+  const [k510DocumentId, setK510DocumentId] = useState(() => {
+    const prefix = "510K-";
+    return prefix + Math.floor(100000 + Math.random() * 900000);
+  });
   const [comparators, setComparators] = useState([]);
   const [sections, setSections] = useState([]);
   const [equivalenceData, setEquivalenceData] = useState(null);
@@ -1043,10 +1049,28 @@ export default function CERV2Page() {
               Device Information
             </DialogTitle>
             <DialogDescription className="text-gray-600">
-              Please provide information about your medical device to generate a personalized CER.
+              Please provide information about your medical device to generate personalized documentation.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 mt-4">
+            <div>
+              <Label htmlFor="documentType">Document Type</Label>
+              <Select value={documentType} onValueChange={setDocumentType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select document type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="cer">Clinical Evaluation Report (CER)</SelectItem>
+                  <SelectItem value="510k">510(K) Submission</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                {documentType === 'cer' 
+                  ? 'CER documents are required for EU MDR compliance.' 
+                  : '510(K) submissions are required for FDA market clearance.'}
+              </p>
+            </div>
+            
             <div>
               <Label htmlFor="deviceName">Device Name</Label>
               <Input
