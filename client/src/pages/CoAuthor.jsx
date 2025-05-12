@@ -259,6 +259,13 @@ export default function CoAuthor() {
   const [embeddingInProgress, setEmbeddingInProgress] = useState(false);
   const [embeddingStatus, setEmbeddingStatus] = useState(null);
   
+  // Search result editing state
+  const [showEditFromSearchDialog, setShowEditFromSearchDialog] = useState(false);
+  const [selectedSearchResult, setSelectedSearchResult] = useState(null);
+  const [propagateChanges, setPropagateChanges] = useState(true);
+  const [editedContent, setEditedContent] = useState('');
+  const [isEditingSaving, setIsEditingSaving] = useState(false);
+  
   // Chat with Your Dossier state
   const [showChatDossier, setShowChatDossier] = useState(false);
   const [chatMessages, setChatMessages] = useState([]);
