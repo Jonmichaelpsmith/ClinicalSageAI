@@ -246,6 +246,7 @@ export default function CoAuthor() {
   const [vectorSearchEnabled, setVectorSearchEnabled] = useState(true);
   const [semanticSearchQuery, setSemanticSearchQuery] = useState('');
   const [semanticSearchResults, setSemanticSearchResults] = useState([]);
+  const [searchSuggestions, setSearchSuggestions] = useState([]);
   const [isSearchingVectors, setIsSearchingVectors] = useState(false);
   const [showVectorSearchDialog, setShowVectorSearchDialog] = useState(false);
   const [vectorizedDocuments, setVectorizedDocuments] = useState([]);
@@ -2204,31 +2205,150 @@ export default function CoAuthor() {
             <h1 className="text-2xl font-bold">eCTD Co-Author Module</h1>
           </div>
           
-          {/* Phase 6: Vector Search in header */}
+          {/* Phase 6: Enhanced Vector Search in header */}
           <div className="flex-1 mx-6 max-w-2xl">
             <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+              {isSearchingVectors ? (
+                <Loader2 className="absolute left-2.5 top-2.5 h-4 w-4 animate-spin text-blue-600" />
+              ) : (
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+              )}
+              
               <Input
                 type="search"
-                placeholder="Semantic search across all vectorized documents..."
-                className="pl-9 bg-slate-50"
+                placeholder={`Search ${vectorizedDocuments.length > 0 ? vectorizedDocuments.length : ''} vectorized documents...`}
+                className="pl-9 bg-gradient-to-r from-slate-50 to-blue-50 border-slate-200 focus:border-blue-300"
                 value={semanticSearchQuery}
-                onChange={(e) => setSemanticSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSemanticSearchQuery(e.target.value);
+                  
+                  // Generate search suggestions if query is at least 3 characters
+                  if (e.target.value.trim().length >= 3) {
+                    // This would call the actual suggestion algorithm in production
+                    // Here we'll just use the existing vector documents to create simulated suggestions
+                    const suggestedTerms = vectorizedDocuments
+                      .flatMap(doc => doc.chunks.slice(0, 3))
+                      .filter(chunk => 
+                        chunk.chunk.text.toLowerCase().includes(e.target.value.toLowerCase())
+                      )
+                      .slice(0, 5)
+                      .map(chunk => {
+                        // Extract a relevant phrase containing the query text
+                        const text = chunk.chunk.text;
+                        const queryIndex = text.toLowerCase().indexOf(e.target.value.toLowerCase());
+                        const start = Math.max(0, queryIndex - 20);
+                        const end = Math.min(text.length, queryIndex + e.target.value.length + 20);
+                        const context = text.substring(start, end);
+                        
+                        return {
+                          text: context,
+                          documentTitle: chunk.metadata.documentTitle,
+                          section: chunk.metadata.section
+                        };
+                      });
+                    
+                    setSearchSuggestions(suggestedTerms);
+                  } else {
+                    setSearchSuggestions([]);
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && semanticSearchQuery.trim()) {
                     setIsSearchingVectors(true);
+                    setSearchSuggestions([]);
+                    
                     performSemanticSearch(semanticSearchQuery).then((results) => {
                       setSemanticSearchResults(results);
                       setShowVectorSearchDialog(true);
                       setIsSearchingVectors(false);
                     });
+                  } else if (e.key === 'Escape') {
+                    setSearchSuggestions([]);
                   }
                 }}
+                onFocus={() => {
+                  // Show search tips on focus if query is empty
+                  if (!semanticSearchQuery.trim() && vectorizedDocuments.length > 0) {
+                    setSearchSuggestions([
+                      { text: "Try searching for specific medical terms", isHint: true },
+                      { text: "Search for safety signals or efficacy data", isHint: true },
+                      { text: "Find content from a specific CTD module section", isHint: true }
+                    ]);
+                  }
+                }}
+                onBlur={() => {
+                  // Hide suggestions but with delay to allow clicking on them
+                  setTimeout(() => setSearchSuggestions([]), 150);
+                }}
               />
+              
+              {/* Vector Database Status Badge */}
               {vectorizedDocuments.length > 0 && (
-                <Badge className="absolute right-2.5 top-2 bg-blue-100 text-blue-800 hover:bg-blue-200">
-                  {vectorizedDocuments.length} docs
+                <Badge 
+                  className="absolute right-2.5 top-2 bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer"
+                  onClick={() => toast({
+                    title: "Vector Database",
+                    description: `${vectorizedDocuments.length} documents indexed with ${
+                      vectorizedDocuments.reduce((sum, doc) => sum + doc.embeddingCount, 0)
+                    } semantic vectors.`,
+                    variant: "default",
+                  })}
+                >
+                  <Database className="h-3 w-3 mr-1" />
+                  {vectorizedDocuments.length}
                 </Badge>
+              )}
+              
+              {/* Search Suggestions Dropdown */}
+              {searchSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-md shadow-lg border border-slate-200 z-50">
+                  <ul className="py-1 max-h-80 overflow-y-auto">
+                    {searchSuggestions.map((suggestion, idx) => (
+                      <li 
+                        key={`suggestion-${idx}`}
+                        className={`px-3 py-2 hover:bg-blue-50 cursor-pointer ${suggestion.isHint ? 'text-slate-500 text-sm italic' : ''}`}
+                        onClick={() => {
+                          if (suggestion.isHint) {
+                            // For hints, just use them as the search query
+                            setSemanticSearchQuery(suggestion.text);
+                          } else {
+                            // For real suggestions, perform search
+                            setSemanticSearchQuery(suggestion.text);
+                            setSearchSuggestions([]);
+                            setIsSearchingVectors(true);
+                            
+                            performSemanticSearch(suggestion.text).then((results) => {
+                              setSemanticSearchResults(results);
+                              setShowVectorSearchDialog(true);
+                              setIsSearchingVectors(false);
+                            });
+                          }
+                        }}
+                      >
+                        <div className="flex items-center">
+                          {suggestion.isHint ? (
+                            <HelpCircle className="h-3 w-3 mr-2 text-blue-500" />
+                          ) : (
+                            <Search className="h-3 w-3 mr-2 text-blue-500" />
+                          )}
+                          
+                          <div className="flex-1">
+                            <div className="text-sm">{suggestion.text}</div>
+                            {!suggestion.isHint && suggestion.documentTitle && (
+                              <div className="text-xs text-slate-500 flex items-center mt-0.5">
+                                <FileText className="h-2.5 w-2.5 mr-1" />
+                                {suggestion.documentTitle} 
+                                {suggestion.section && (
+                                  <span className="ml-1">• {suggestion.section}</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
           </div>
