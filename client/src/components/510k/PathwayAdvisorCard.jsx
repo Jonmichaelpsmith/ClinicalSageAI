@@ -2,9 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { Loader2, CheckCircle, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Loader2, CheckCircle, AlertTriangle, ArrowRight, ChevronDown, ChevronUp, Clock, FileBarChart, Clock3 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { useTenant } from '@/contexts/TenantContext';
 import { useToast } from '@/hooks/use-toast';
 import FDA510kService from '../../services/FDA510kService';
@@ -25,6 +28,11 @@ const PathwayAdvisorCard = ({ projectId, onConfirm }) => {
   const [recommendation, setRecommendation] = useState(null);
   const [error, setError] = useState(null);
   const [selectedPathway, setSelectedPathway] = useState(null);
+  const [comparisonData, setComparisonData] = useState(null);
+  const [successMetrics, setSuccessMetrics] = useState(null);
+  const [timelineData, setTimelineData] = useState(null);
+  const [showComparison, setShowComparison] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false);
   const { toast } = useToast();
   const { tenantId } = useTenant();
 
@@ -33,6 +41,12 @@ const PathwayAdvisorCard = ({ projectId, onConfirm }) => {
       fetchRecommendation();
     }
   }, [projectId]);
+  
+  useEffect(() => {
+    if (recommendation && recommendation.recommendedPathway) {
+      fetchComparisonData();
+    }
+  }, [recommendation]);
 
   const fetchRecommendation = async () => {
     try {
@@ -46,6 +60,40 @@ const PathwayAdvisorCard = ({ projectId, onConfirm }) => {
       setError('Unable to generate pathway recommendation. Please try again later.');
     } finally {
       setLoading(false);
+    }
+  };
+  
+  const fetchComparisonData = async () => {
+    try {
+      // Get comparison data for different regulatory pathways
+      const comparison = await FDA510kService.getPathwayComparisonData();
+      setComparisonData(comparison);
+      
+      // If we have a recommendation, get detailed timeline for it
+      if (recommendation && recommendation.recommendedPathway) {
+        const deviceType = "Generic Medical Device"; // This would come from your device profile
+        const timeline = await FDA510kService.getPathwayTimeline(
+          recommendation.recommendedPathway, 
+          deviceType
+        );
+        setTimelineData(timeline);
+        
+        // Get success metrics for this device type and class
+        const deviceClass = "II"; // This would come from your device profile
+        const metrics = await FDA510kService.getPathwaySuccessMetrics(
+          deviceType,
+          deviceClass
+        );
+        setSuccessMetrics(metrics);
+      }
+    } catch (err) {
+      console.error('Error fetching comparison data:', err);
+      // We don't set the main error state here since this is supplementary data
+      toast({
+        title: "Warning",
+        description: "Additional pathway comparison data could not be loaded.",
+        variant: "warning"
+      });
     }
   };
 
@@ -211,6 +259,196 @@ const PathwayAdvisorCard = ({ projectId, onConfirm }) => {
             ))}
           </ul>
         </div>
+        
+        {/* Pathway Comparison Section */}
+        {comparisonData && (
+          <>
+            <Separator className="my-4" />
+            <div>
+              <Button 
+                variant="outline" 
+                className="flex w-full items-center justify-between py-2" 
+                onClick={() => setShowComparison(!showComparison)}
+              >
+                <span className="flex items-center">
+                  <FileBarChart className="mr-2 h-4 w-4" />
+                  <span>Pathway Comparison Data</span>
+                </span>
+                {showComparison ? <ChevronUp /> : <ChevronDown />}
+              </Button>
+              
+              {showComparison && (
+                <div className="mt-4 rounded-md border p-4">
+                  <Tabs defaultValue="features">
+                    <TabsList className="grid w-full grid-cols-3 mb-4">
+                      <TabsTrigger value="features">Features</TabsTrigger>
+                      <TabsTrigger value="timeline">Timeline</TabsTrigger>
+                      <TabsTrigger value="success">Success Rates</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="features">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Feature</TableHead>
+                            <TableHead>Traditional 510(k)</TableHead>
+                            <TableHead>Abbreviated 510(k)</TableHead>
+                            <TableHead>Special 510(k)</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {comparisonData?.features?.map((feature, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="font-medium">{feature.name}</TableCell>
+                              <TableCell>{feature.traditional}</TableCell>
+                              <TableCell>{feature.abbreviated}</TableCell>
+                              <TableCell>{feature.special}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TabsContent>
+                    
+                    <TabsContent value="timeline">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Pathway</TableHead>
+                            <TableHead>Avg. Review Time</TableHead>
+                            <TableHead>Prep. Time</TableHead>
+                            <TableHead>Total</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {comparisonData?.timelines?.map((item, index) => (
+                            <TableRow key={index}>
+                              <TableCell className="font-medium">{item.pathway}</TableCell>
+                              <TableCell>{item.reviewDays} days</TableCell>
+                              <TableCell>{item.prepDays} days</TableCell>
+                              <TableCell className="font-semibold">
+                                {item.reviewDays + item.prepDays} days
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </TabsContent>
+                    
+                    <TabsContent value="success">
+                      {successMetrics && (
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="text-sm font-medium mb-2">First-Time Success Rates</h4>
+                            <div className="grid grid-cols-3 gap-4">
+                              {successMetrics.successRates.map((rate, index) => (
+                                <div key={index} className="rounded-md border p-3">
+                                  <div className="text-sm text-muted-foreground">{rate.pathway}</div>
+                                  <div className="mt-1 flex items-center gap-2">
+                                    <Progress value={rate.percentage} className="h-2" />
+                                    <span className="text-sm font-medium">{rate.percentage}%</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h4 className="text-sm font-medium mb-2">Average Cycles to Decision</h4>
+                            <Table>
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Pathway</TableHead>
+                                  <TableHead>Avg. Cycles</TableHead>
+                                  <TableHead>Range</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {successMetrics.cycleStats.map((stat, index) => (
+                                  <TableRow key={index}>
+                                    <TableCell>{stat.pathway}</TableCell>
+                                    <TableCell>{stat.avgCycles}</TableCell>
+                                    <TableCell>{stat.range}</TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+        
+        {/* Timeline Visualization */}
+        {timelineData && (
+          <>
+            <Separator className="my-4" />
+            <div>
+              <Button 
+                variant="outline" 
+                className="flex w-full items-center justify-between py-2" 
+                onClick={() => setShowTimeline(!showTimeline)}
+              >
+                <span className="flex items-center">
+                  <Clock className="mr-2 h-4 w-4" />
+                  <span>Detailed Timeline & Milestones</span>
+                </span>
+                {showTimeline ? <ChevronUp /> : <ChevronDown />}
+              </Button>
+              
+              {showTimeline && (
+                <div className="mt-4 rounded-md border p-4">
+                  <div className="mb-3">
+                    <h4 className="text-sm font-medium">Estimated Timeline for {timelineData.pathway}</h4>
+                    <p className="text-sm text-muted-foreground">Based on historical data for similar devices</p>
+                  </div>
+                  
+                  <div className="relative mt-6 mb-6">
+                    <div className="absolute left-0 top-1/2 w-full h-1 bg-primary/20 -translate-y-1/2"></div>
+                    
+                    {timelineData.milestones.map((milestone, index) => {
+                      const position = (milestone.dayFromStart / timelineData.totalDays) * 100;
+                      return (
+                        <div 
+                          key={index} 
+                          className="absolute flex flex-col items-center" 
+                          style={{ left: `${position}%` }}
+                        >
+                          <div className="w-3 h-3 bg-primary rounded-full z-10"></div>
+                          <div className={`absolute top-5 w-40 ${index % 2 === 0 ? '-translate-x-1/4' : '-translate-x-3/4'}`}>
+                            <p className="text-xs font-medium">Day {milestone.dayFromStart}</p>
+                            <p className="text-xs text-muted-foreground">{milestone.name}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  
+                  <div className="mt-16">
+                    <h4 className="text-sm font-medium mb-2">Key Milestones</h4>
+                    <div className="grid gap-2">
+                      {timelineData.milestones.map((milestone, index) => (
+                        <div key={index} className="flex items-start gap-3 text-sm">
+                          <div className="flex-shrink-0 mt-0.5">
+                            <Clock3 className="h-4 w-4 text-primary" />
+                          </div>
+                          <div>
+                            <div className="font-medium">{milestone.name} <span className="text-muted-foreground font-normal">(Day {milestone.dayFromStart})</span></div>
+                            <p className="text-muted-foreground">{milestone.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </>
+        )}
       </CardContent>
       <CardFooter className="flex justify-between">
         <Button variant="outline" onClick={fetchRecommendation}>
