@@ -593,6 +593,7 @@ export default function CERV2Page() {
               {/* Use modified version of ComplianceChecker for 510(k) submissions */}
               <ComplianceScorePanel
                 title="FDA 510(k) Compliance Assessment"
+                template="fda-510k"
                 description="Verify your submission against FDA 510(k) requirements"
                 sections={sections}
                 template="fda-510k"
