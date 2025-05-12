@@ -111,6 +111,7 @@ export default function CoAuthor() {
   const [showValidationDialog, setShowValidationDialog] = useState(false);
   // Document editor integration state
   const [editorType, setEditorType] = useState('native'); // Changed to native editor
+  const [authLoading, setAuthLoading] = useState(false); // Added back for compatibility
   // AI Assistant state
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const [aiAssistantMode, setAiAssistantMode] = useState('suggestions'); // 'suggestions', 'compliance', 'formatting'
@@ -909,7 +910,7 @@ export default function CoAuthor() {
                     size="sm" 
                     variant="outline" 
                     className="border-blue-200 text-blue-700"
-                    disabled={authLoading}
+                    disabled={false}
                     onClick={async () => {
                       if (!selectedDocument) {
                         toast({
