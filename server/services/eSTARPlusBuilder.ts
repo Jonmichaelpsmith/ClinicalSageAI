@@ -14,6 +14,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 import { db } from '../db';
+import { fda510kSections, fda510kProjects } from '../../shared/schema';
 
 // Initialize Ajv schema validator
 const ajv = new Ajv();
@@ -419,58 +420,119 @@ export class eSTARPlusBuilder {
   }
   
   /**
-   * Get a mock XML manifest for testing signature verification
+   * Generate a test XML manifest for signature verification
    * 
    * @param projectId Project ID to include in the manifest
    * @returns Signed XML manifest string
    */
-  static async getMockManifest(projectId: string): Promise<string> {
-    // Create a basic manifest
-    const meta = await this.getProjectMeta(projectId).catch(() => ({
-      manufacturer: 'ACME Medical Devices',
-      deviceName: 'Test Device',
-      sequence: '001',
-      submissionDate: new Date().toISOString()
-    }));
-    
-    // Build manifest XML
-    const manifest = await this.buildManifest(meta, this.getMockSections(), true);
-    
-    // Sign manifest
-    return DigitalSigner.signPackage(manifest);
+  static async generateTestManifest(projectId: string): Promise<string> {
+    try {
+      // Get real project metadata
+      const meta = await this.getProjectMeta(projectId);
+      
+      // Get sections from the database
+      const sections = await this.listFinalSections(projectId);
+      
+      // If no sections found, return empty manifest with basic structure
+      if (sections.length === 0) {
+        const emptyManifest = xmlbuilder2.create()
+          .ele('estarSubmission')
+            .ele('device', { name: meta.deviceName })
+            .ele('manufacturer', { name: meta.manufacturer })
+            .ele('sections')
+            .ele('submissionDate', meta.submissionDate)
+          .end({ prettyPrint: true });
+            
+        return DigitalSigner.signPackage(emptyManifest);
+      }
+      
+      // Build manifest XML
+      const manifest = await this.buildManifest(meta, sections, true);
+      
+      // Sign manifest
+      return DigitalSigner.signPackage(manifest);
+    } catch (error) {
+      console.error('Error generating test manifest:', error);
+      throw new Error('Failed to generate test manifest');
+    }
   }
 
   /**
-   * Generate mock sections for development and testing
+   * Create default section templates for a new 510(k) project
    * 
-   * @returns Array of mock section objects
+   * @param projectId Project ID to create sections for
+   * @param organizationId Organization ID for the project
+   * @returns Array of created section objects
    */
-  private static getMockSections(): Array<{
+  static async createDefaultSections(projectId: string, organizationId: number): Promise<Array<{
     id: string;
     name: string;
     title: string;
-    filePathDOCX: string;
-  }> {
-    return [
+    sectionKey: string;
+  }>> {
+    const defaultSections = [
       {
-        id: '1',
-        name: 'DeviceDescription',
-        title: 'Device Description',
-        filePathDOCX: '/tmp/mock/device_description.docx'
+        name: 'Device Description',
+        title: 'Device Description and Classification',
+        sectionKey: 'DeviceDescription',
+        order: 10
       },
       {
-        id: '2',
-        name: 'SubstantialEquivalence',
-        title: 'Substantial Equivalence',
-        filePathDOCX: '/tmp/mock/substantial_equivalence.docx'
+        name: 'Substantial Equivalence',
+        title: 'Substantial Equivalence Discussion',
+        sectionKey: 'SubstantialEquivalence',
+        order: 20
       },
       {
-        id: '3',
-        name: 'PerformanceData',
-        title: 'Performance Data',
-        filePathDOCX: '/tmp/mock/performance_data.docx'
+        name: 'Performance Data',
+        title: 'Performance Testing and Standards',
+        sectionKey: 'PerformanceData',
+        order: 30
+      },
+      {
+        name: 'Labeling',
+        title: 'Proposed Labeling',
+        sectionKey: 'Labeling',
+        order: 40
+      },
+      {
+        name: 'Sterilization',
+        title: 'Sterilization Information',
+        sectionKey: 'Sterilization',
+        order: 50
       }
     ];
+    
+    try {
+      const createdSections = [];
+      
+      for (const section of defaultSections) {
+        const newSection = await db.insert(fda510kSections).values({
+          organizationId,
+          projectId,
+          name: section.name,
+          title: section.title,
+          sectionKey: section.sectionKey,
+          status: 'notStarted',
+          order: section.order,
+          description: `Default template for ${section.name} section`,
+        }).returning();
+        
+        if (newSection && newSection.length > 0) {
+          createdSections.push({
+            id: newSection[0].id,
+            name: newSection[0].name,
+            title: newSection[0].title,
+            sectionKey: newSection[0].sectionKey
+          });
+        }
+      }
+      
+      return createdSections;
+    } catch (error) {
+      console.error('Error creating default sections:', error);
+      throw new Error('Failed to create default sections');
+    }
   }
   
   /**
@@ -540,8 +602,20 @@ ${meta.manufacturer}
    * @returns XML manifest string
    */
   private static async buildManifest(
-    meta: any,
-    sections: Array<any>,
+    meta: {
+      manufacturer: string;
+      deviceName: string;
+      sequence: string;
+      submissionDate: string;
+    },
+    sections: Array<{
+      id: string;
+      name: string;
+      title: string;
+      filePathDOCX?: string;
+      xhtml?: string;
+      pdf?: string;
+    }>,
     includeCoverLetter: boolean = false
   ): Promise<string> {
     try {

@@ -89,9 +89,8 @@ router.get('/verify-signature/:projectId', async (req, res) => {
   const { projectId } = req.params;
   
   try {
-    // Retrieve latest manifest for the project
-    // This is a mock implementation - in production, you would fetch the actual manifest
-    const manifest = await eSTARPlusBuilder.getMockManifest(projectId);
+    // Generate a test manifest for the project with real data
+    const manifest = await eSTARPlusBuilder.generateTestManifest(projectId);
     
     // Verify the signature
     const verification = await DigitalSigner.verifySignature(manifest);
@@ -105,6 +104,82 @@ router.get('/verify-signature/:projectId', async (req, res) => {
     res.status(500).json({ 
       success: false, 
       message: error.message || 'Failed to verify digital signature' 
+    });
+  }
+});
+
+/**
+ * Create default sections for a 510(k) project
+ * POST /api/fda510k/create-default-sections/:projectId
+ */
+router.post('/create-default-sections/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  const { organizationId } = req.body;
+  
+  try {
+    // Validate required params
+    if (!projectId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Project ID is required' 
+      });
+    }
+    
+    if (!organizationId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Organization ID is required' 
+      });
+    }
+    
+    // Create default sections
+    const sections = await eSTARPlusBuilder.createDefaultSections(projectId, organizationId);
+    
+    res.json({
+      success: true,
+      message: `Created ${sections.length} default sections`,
+      sections
+    });
+  } catch (error) {
+    console.error('Error creating default sections:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Failed to create default sections' 
+    });
+  }
+});
+
+/**
+ * Download an eSTAR package file
+ * GET /api/fda510k/download/:filename
+ */
+router.get('/download/:filename', async (req, res) => {
+  const { filename } = req.params;
+  
+  try {
+    // Get file path
+    const filePath = path.join('/tmp', filename);
+    
+    // Check if file exists
+    if (!require('fs').existsSync(filePath)) {
+      return res.status(404).json({
+        success: false,
+        message: 'File not found'
+      });
+    }
+    
+    // Set headers for download
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+    res.setHeader('Content-Type', 'application/zip');
+    
+    // Stream the file
+    const fileStream = require('fs').createReadStream(filePath);
+    fileStream.pipe(res);
+  } catch (error) {
+    console.error('Error downloading file:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Failed to download file' 
     });
   }
 });
