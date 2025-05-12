@@ -1063,34 +1063,95 @@ export default function CoAuthor() {
       // In a real implementation, we would:
       // 1. Format the search results as context
       // 2. Call OpenAI's API with the context and query
-      // 3. Return the structured response
+      // 3. Return the structured response with source attribution
       
-      // For now, simulate the RAG process
+      // For now, simulate the RAG process with improved context awareness
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Simulate different responses based on query content for demo purposes
+      // Extract contextual information from search results
+      const contextSections = searchResults.map(result => ({
+        source: result.documentTitle,
+        module: result.module,
+        section: result.section,
+        content: result.content
+      }));
+      
+      // Use the contextual information to generate a more informed response
       let responseText = '';
+      const hasRelevantContext = searchResults.length > 0;
+      
+      // Simulate different responses based on query content and retrieved context
       if (query.toLowerCase().includes('safety') || query.toLowerCase().includes('signal')) {
-        responseText = "Based on the documents I've analyzed, several safety signals emerged in Module 2.7:\n\n" +
+        const safetyDocCount = searchResults.filter(r => 
+          r.content.toLowerCase().includes('safety') || 
+          r.content.toLowerCase().includes('adverse') ||
+          r.section.toLowerCase().includes('safety')
+        ).length;
+        
+        responseText = `Based on the analysis of ${safetyDocCount || 'available'} safety-related documents, I found the following safety signals:\n\n` +
           "• Elevated liver enzymes (ALT/AST) in 4.2% of treated subjects vs 1.1% in placebo\n" +
           "• Mild to moderate headache in 12.7% of treated subjects\n" +
           "• Insomnia reported in 8.3% of treated subjects vs 2.9% in placebo\n\n" +
           "No serious adverse events were attributed to the study drug based on investigator assessment.";
+          
+        // Add specific context if available
+        if (hasRelevantContext) {
+          const safetyContext = searchResults.find(r => 
+            r.content.toLowerCase().includes('safety') || 
+            r.content.toLowerCase().includes('adverse')
+          );
+          
+          if (safetyContext) {
+            responseText += `\n\nFrom ${safetyContext.documentTitle} (${safetyContext.section}): "${safetyContext.content.substring(0, 150)}..."`;
+          }
+        }
       } else if (query.toLowerCase().includes('efficacy') || query.toLowerCase().includes('endpoint')) {
-        responseText = "The primary efficacy endpoints in the clinical studies showed:\n\n" +
+        const efficacyDocCount = contextSections.filter(c => 
+          c.content.toLowerCase().includes('efficacy') || 
+          c.content.toLowerCase().includes('endpoint') ||
+          c.section.toLowerCase().includes('efficacy')
+        ).length;
+        
+        responseText = `Based on ${efficacyDocCount || 'multiple'} efficacy-related documents, the clinical studies showed:\n\n` +
           "• Statistically significant improvement in the primary endpoint (p<0.001)\n" +
           "• 37% reduction in symptom severity compared to baseline\n" +
           "• Clinically meaningful response in 72% of treated subjects vs 45% in placebo\n\n" +
           "Secondary endpoints generally supported the primary findings with consistent effect sizes.";
+          
+        // Add specific context if available
+        if (hasRelevantContext) {
+          const efficacyContext = searchResults.find(r => 
+            r.content.toLowerCase().includes('efficacy') || 
+            r.content.toLowerCase().includes('endpoint')
+          );
+          
+          if (efficacyContext) {
+            responseText += `\n\nFrom ${efficacyContext.documentTitle} (${efficacyContext.section}): "${efficacyContext.content.substring(0, 150)}..."`;
+          }
+        }
       } else {
-        responseText = "Based on the documents I've analyzed, I found the following information related to your query:\n\n" +
-          "• The submission includes comprehensive data from 3 Phase III clinical trials\n" +
-          "• Study population included " + Math.floor(Math.random() * 1000 + 1000) + " subjects across 12 countries\n" +
-          "• Treatment duration ranged from 26-52 weeks with standard dosing protocols\n\n" +
-          "Please let me know if you need more specific information from the indexed documents.";
+        // For general queries, use more of the retrieved context
+        const sourcesText = hasRelevantContext 
+          ? `${searchResults.length} documents including ${searchResults.slice(0, 2).map(r => r.documentTitle).join(', ')}` 
+          : "the available indexed documents";
+          
+        responseText = `Based on my analysis of ${sourcesText}, I found the following information related to your query:\n\n`;
+        
+        if (hasRelevantContext && searchResults.length > 0) {
+          // Extract key points from the retrieved context
+          responseText += searchResults.slice(0, 3).map((result, index) => 
+            `• ${result.documentTitle} (${result.section}): ${result.content.substring(0, 100)}...`
+          ).join('\n\n');
+        } else {
+          responseText += "• The submission includes comprehensive data from 3 Phase III clinical trials\n" +
+            "• Study population included subjects across multiple countries\n" +
+            "• Treatment duration ranged from 26-52 weeks with standard dosing protocols";
+        }
+        
+        responseText += "\n\nPlease let me know if you need more specific information from the indexed documents.";
       }
       
-      // Return the simulated response with sources
+      // Return the improved contextual response with sources
       return {
         text: responseText,
         sources: searchResults.slice(0, 3) // Include top 3 sources
