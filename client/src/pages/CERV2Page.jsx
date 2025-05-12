@@ -578,52 +578,115 @@ export default function CERV2Page() {
     }
     
     if (activeTab === 'compliance') {
-      return (
-        <ComplianceScorePanel
-          title="Regulatory Compliance Assessment"
-          description="Verify your CER against regulatory requirements and standards"
-          sections={sections}
-          template="eu-mdr"
-          deviceType={deviceType}
-          onComplianceDataChange={(complianceData) => {
-            const existingIndex = sections.findIndex(
-              section => section.type === 'compliance' || 
-              (section.title && section.title.toLowerCase().includes('compliance'))
-            );
-            
-            if (existingIndex >= 0) {
-              const updatedSections = [...sections];
-              updatedSections[existingIndex] = {
-                ...updatedSections[existingIndex],
-                content: JSON.stringify(complianceData),
-                type: 'compliance',
-                title: 'Regulatory Compliance Assessment',
-                lastUpdated: new Date().toISOString()
-              };
-              setSections(updatedSections);
+      // Different compliance checking based on document type
+      if (documentType === '510k') {
+        // 510(k) specialized compliance checker
+        return (
+          <div className="bg-white border border-blue-100 rounded-lg shadow-sm">
+            <div className="border-b border-blue-100 p-4">
+              <h2 className="text-lg font-semibold text-blue-700">FDA 510(k) Pre-Submission Compliance Check</h2>
+              <p className="text-sm text-gray-600 mt-1">
+                Validate that your 510(k) submission meets all FDA requirements and standards
+              </p>
+            </div>
+            <div className="p-4">
+              {/* Use modified version of ComplianceChecker for 510(k) submissions */}
+              <ComplianceScorePanel
+                title="FDA 510(k) Compliance Assessment"
+                description="Verify your submission against FDA 510(k) requirements"
+                sections={sections}
+                template="fda-510k"
+                deviceType={deviceType}
+                onComplianceDataChange={(complianceData) => {
+                  const existingIndex = sections.findIndex(
+                    section => section.type === 'compliance' || 
+                    (section.title && section.title.toLowerCase().includes('compliance'))
+                  );
+                  
+                  if (existingIndex >= 0) {
+                    const updatedSections = [...sections];
+                    updatedSections[existingIndex] = {
+                      ...updatedSections[existingIndex],
+                      content: JSON.stringify(complianceData),
+                      type: 'compliance',
+                      title: 'FDA 510(k) Compliance Assessment',
+                      lastUpdated: new Date().toISOString()
+                    };
+                    setSections(updatedSections);
+                    
+                    toast({
+                      title: "510(k) Compliance Check Updated",
+                      description: "Your submission now includes the latest FDA compliance assessment.",
+                      variant: "success"
+                    });
+                  } else {
+                    setSections([...sections, {
+                      type: 'compliance',
+                      title: 'FDA 510(k) Compliance Assessment',
+                      content: JSON.stringify(complianceData),
+                      lastUpdated: new Date().toISOString()
+                    }]);
+                    
+                    toast({
+                      title: "510(k) Compliance Check Added",
+                      description: "FDA regulatory compliance assessment has been added to your submission.",
+                      variant: "success"
+                    });
+                  }
+                }}
+              />
+            </div>
+          </div>
+        );
+      } else {
+        // Original CER compliance checker
+        return (
+          <ComplianceScorePanel
+            title="Regulatory Compliance Assessment"
+            description="Verify your CER against regulatory requirements and standards"
+            sections={sections}
+            template="eu-mdr"
+            deviceType={deviceType}
+            onComplianceDataChange={(complianceData) => {
+              const existingIndex = sections.findIndex(
+                section => section.type === 'compliance' || 
+                (section.title && section.title.toLowerCase().includes('compliance'))
+              );
               
-              toast({
-                title: "Compliance Check Updated",
-                description: "Your CER now includes the latest compliance assessment.",
-                variant: "success"
-              });
-            } else {
-              setSections([...sections, {
-                type: 'compliance',
-                title: 'Regulatory Compliance Assessment',
-                content: JSON.stringify(complianceData),
-                lastUpdated: new Date().toISOString()
-              }]);
-              
-              toast({
-                title: "Compliance Check Added",
-                description: "Regulatory compliance assessment has been added to your CER.",
-                variant: "success"
-              });
-            }
-          }}
-        />
-      );
+              if (existingIndex >= 0) {
+                const updatedSections = [...sections];
+                updatedSections[existingIndex] = {
+                  ...updatedSections[existingIndex],
+                  content: JSON.stringify(complianceData),
+                  type: 'compliance',
+                  title: 'Regulatory Compliance Assessment',
+                  lastUpdated: new Date().toISOString()
+                };
+                setSections(updatedSections);
+                
+                toast({
+                  title: "Compliance Check Updated",
+                  description: "Your CER now includes the latest compliance assessment.",
+                  variant: "success"
+                });
+              } else {
+                setSections([...sections, {
+                  type: 'compliance',
+                  title: 'Regulatory Compliance Assessment',
+                  content: JSON.stringify(complianceData),
+                  lastUpdated: new Date().toISOString()
+                }]);
+                
+                toast({
+                  title: "Compliance Check Added",
+                  description: "Regulatory compliance assessment has been added to your CER.",
+                  variant: "success"
+                });
+              }
+            }}
+          />
+        );
+      }
     }
     
     if (activeTab === '510k') {
