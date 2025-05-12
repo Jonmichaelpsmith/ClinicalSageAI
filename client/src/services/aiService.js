@@ -4,11 +4,15 @@
  * This service file supports the ONE AND ONLY official implementation 
  * of the eCTD Co-Author Module.
  * 
- * Version: 4.0.0 - May 11, 2025
+ * Version: 4.1.0 - May 12, 2025
  * Status: STABLE - DO NOT MODIFY WITHOUT APPROVAL
  * 
  * PROTECTED CODE - This is where previous modifications broke the module.
  * Do not modify without thorough testing. Do not create duplicate implementations.
+ * 
+ * UPDATES:
+ * - Added Content Atom AI Generation & Validation endpoints (Phase 4)
+ * - Support for /ai/draft-atom, /ai/suggest, and /ai/validate-atom
  */
 
 // Helper function for API requests
@@ -163,6 +167,46 @@ export async function reviewDocumentQuality(documentId, content) {
   });
 }
 
+/**
+ * Draft a new content atom using AI
+ * @param {Object} params - Parameters for atom generation
+ * @param {string} params.atomType - Type of atom to generate (narrative, table, figure, etc.)
+ * @param {string} params.region - Regulatory region (e.g., 'US', 'EU', 'JP')
+ * @param {string} params.module - Document module (e.g., 'm1', 'm2', 'm3')
+ * @param {string} params.sectionCode - ICH CTD section code
+ * @param {string} params.prompt - User instructions for generation
+ * @returns {Promise<Object>} - Generated atom in JSON format
+ */
+export async function draftAtom(params) {
+  return apiRequest('draft-atom', params);
+}
+
+/**
+ * Get AI suggestions to improve a content atom
+ * @param {Object} atom - The current atom JSON
+ * @param {string} feedback - Optional user feedback or instructions
+ * @returns {Promise<Object>} - Improved atom JSON or HTML
+ */
+export async function suggestAtomImprovements(atom, feedback = '') {
+  return apiRequest('suggest', {
+    atom,
+    feedback
+  });
+}
+
+/**
+ * Validate a content atom against schema and regulatory guidelines
+ * @param {Object} atom - The atom JSON to validate
+ * @param {Array<string>} standards - Standards to validate against (e.g., 'ICH', 'FDA')
+ * @returns {Promise<Object>} - Validation results with issues and recommendations
+ */
+export async function validateAtom(atom, standards = ['ICH']) {
+  return apiRequest('validate-atom', {
+    atom,
+    standards
+  });
+}
+
 export default {
   generateContentSuggestions,
   checkComplianceAI,
@@ -171,5 +215,9 @@ export default {
   analyzeCitationsAI,
   askDocumentAI,
   findRelevantReferences,
-  reviewDocumentQuality
+  reviewDocumentQuality,
+  // Phase 4: AI-Enhanced Atom Generation & Validation
+  draftAtom,
+  suggestAtomImprovements,
+  validateAtom
 };
