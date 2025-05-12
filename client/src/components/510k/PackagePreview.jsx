@@ -1,325 +1,360 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
-  Alert, 
-  AlertTitle, 
   Card, 
   CardContent, 
-  Typography, 
-  Box, 
-  Button,
-  Divider,
-  Chip,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  CircularProgress,
-  Switch,
-  FormControlLabel
-} from '@mui/material';
-import { 
-  CheckCircle, 
-  Warning, 
-  Description, 
-  PictureAsPdf, 
-  Download, 
-  Send,
-  InsertDriveFile, 
-  VerifiedUser,
-  GppBad
-} from '@mui/icons-material';
-import fda510kService from '../../services/FDA510kService';
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { FileText, Download, AlertCircle, CheckCircle2, Package, Send } from 'lucide-react';
+import FDA510kService from '../../services/FDA510kService';
 
 /**
- * File Tree Component
- * Displays hierarchical structure of files in the eSTAR package
+ * PackagePreview component for visualizing and building eSTAR packages
+ * 
+ * This component allows users to:
+ * 1. Preview the contents of their eSTAR package
+ * 2. Build and download the complete package
+ * 3. View AI-powered compliance report
+ * 4. Verify digital signature
  */
-const FileTree = ({ files }) => {
-  if (!files || files.length === 0) {
-    return <Typography variant="body2">No files available</Typography>;
-  }
-
-  // Get file icon based on type
-  const getFileIcon = (fileType) => {
-    switch (fileType) {
-      case 'application/pdf':
-        return <PictureAsPdf color="error" />;
-      case 'application/xml':
-        return <Description color="primary" />;
-      case 'text/plain':
-        return <InsertDriveFile color="action" />;
-      default:
-        return <InsertDriveFile />;
-    }
-  };
-
-  return (
-    <List dense component="div">
-      {files.map((file, index) => (
-        <ListItem key={index}>
-          <ListItemIcon>
-            {getFileIcon(file.type)}
-          </ListItemIcon>
-          <ListItemText 
-            primary={file.name}
-            secondary={`${(file.size / 1024).toFixed(1)} KB`} 
-          />
-        </ListItem>
-      ))}
-    </List>
-  );
-};
-
-/**
- * Signature Status Component
- * Displays digital signature verification status
- */
-const SignatureStatus = ({ signatureStatus = { valid: true, message: "Signature valid" } }) => {
-  return (
-    <Box 
-      sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        p: 2, 
-        backgroundColor: signatureStatus.valid ? 'rgba(46, 125, 50, 0.08)' : 'rgba(211, 47, 47, 0.08)',
-        borderRadius: 1
-      }}
-    >
-      {signatureStatus.valid ? (
-        <VerifiedUser sx={{ color: 'success.main', mr: 2 }} />
-      ) : (
-        <GppBad sx={{ color: 'error.main', mr: 2 }} />
-      )}
-      <Box>
-        <Typography variant="subtitle2">
-          {signatureStatus.valid ? 'Digital Signature Valid' : 'Signature Verification Failed'}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {signatureStatus.message}
-        </Typography>
-      </Box>
-    </Box>
-  );
-};
-
-/**
- * Package Preview Component
- * Main component for previewing and generating eSTAR packages
- */
-export default function PackagePreview({ projectId }) {
-  const [preview, setPreview] = useState(null);
-  const [loading, setLoading] = useState(false);
+const PackagePreview = ({ projectId }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [packageData, setPackageData] = useState(null);
+  const [verificationStatus, setVerificationStatus] = useState(null);
   const [error, setError] = useState(null);
-  const [includesCoverLetter, setIncludesCoverLetter] = useState(true);
-  const [autoUpload, setAutoUpload] = useState(false);
-  const [generatingPackage, setGeneratingPackage] = useState(false);
-  const [signatureStatus, setSignatureStatus] = useState({ valid: true, message: "Ready for signing" });
-  const [uploadStatus, setUploadStatus] = useState(null);
+  const [buildInProgress, setBuildInProgress] = useState(false);
+  const { toast } = useToast();
 
-  // Fetch preview data
-  const handlePreview = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const data = await fda510kService.buildAndPreview(projectId, { 
-        includeCoverLetter: includesCoverLetter 
-      });
-      setPreview(data);
-      
-      // Fetch signature verification status
-      try {
-        const sigStatus = await fda510kService.verifyDigitalSignature(projectId);
-        setSignatureStatus(sigStatus.verification);
-      } catch (sigError) {
-        console.error('Error fetching signature status:', sigError);
-      }
-    } catch (err) {
-      console.error('Error previewing package:', err);
-      setError(err.message || 'Failed to generate package preview');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Generate and download/upload package
-  const handleGeneratePackage = async () => {
-    setGeneratingPackage(true);
-    setError(null);
-    
-    try {
-      const result = await fda510kService.buildAndDownload(projectId, {
-        includeCoverLetter: includesCoverLetter,
-        autoUpload: autoUpload
-      });
-      
-      if (autoUpload && result.esgStatus) {
-        setUploadStatus(result.esgStatus);
-      } else if (!autoUpload && result.downloadUrl) {
-        window.open(result.downloadUrl, '_blank');
-      }
-    } catch (err) {
-      console.error('Error generating package:', err);
-      setError(err.message || 'Failed to generate eSTAR package');
-    } finally {
-      setGeneratingPackage(false);
-    }
-  };
-
-  // Load preview on initial render and when options change
   useEffect(() => {
     if (projectId) {
-      handlePreview();
+      loadPackagePreview();
     }
-  }, [projectId, includesCoverLetter]);
+  }, [projectId]);
 
-  if (loading && !preview) {
+  const loadPackagePreview = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const data = await FDA510kService.buildAndPreview(projectId);
+      setPackageData(data);
+    } catch (err) {
+      console.error('Error loading package preview:', err);
+      setError('Failed to load package preview. Please ensure your submission is complete.');
+      toast({
+        variant: 'destructive',
+        title: 'Error loading package preview',
+        description: 'There was a problem loading the eSTAR package preview.'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const buildAndDownload = async (autoUpload = false) => {
+    try {
+      setBuildInProgress(true);
+      
+      toast({
+        title: 'Building eSTAR package',
+        description: 'Please wait while we assemble your submission package.'
+      });
+      
+      const result = await FDA510kService.buildAndDownload(projectId, {
+        includeCoverLetter: true,
+        autoUpload
+      });
+      
+      if (result.downloadUrl) {
+        // Trigger download
+        const link = document.createElement('a');
+        link.href = result.downloadUrl;
+        link.download = `eSTAR-${projectId}.zip`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+          title: 'eSTAR package ready',
+          description: 'Your package has been built and downloaded successfully.'
+        });
+      } else if (result.esgStatus) {
+        toast({
+          title: 'eSTAR package submitted',
+          description: `Your package has been uploaded to FDA ESG. Status: ${result.esgStatus.status}`
+        });
+      }
+    } catch (err) {
+      console.error('Error building package:', err);
+      toast({
+        variant: 'destructive',
+        title: 'Error building package',
+        description: 'There was a problem building the eSTAR package.'
+      });
+    } finally {
+      setBuildInProgress(false);
+    }
+  };
+
+  const verifySignature = async () => {
+    try {
+      setIsLoading(true);
+      const result = await FDA510kService.verifyDigitalSignature(projectId);
+      setVerificationStatus(result);
+      
+      toast({
+        title: result.valid ? 'Signature valid' : 'Signature invalid',
+        description: result.message,
+        variant: result.valid ? 'default' : 'destructive'
+      });
+    } catch (err) {
+      console.error('Error verifying signature:', err);
+      toast({
+        variant: 'destructive',
+        title: 'Verification error',
+        description: 'Failed to verify digital signature'
+      });
+      setVerificationStatus({
+        valid: false,
+        message: 'Failed to verify digital signature'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const refreshPreview = () => {
+    loadPackagePreview();
+  };
+
+  // Render loading state
+  if (isLoading && !packageData) {
     return (
-      <Box sx={{ p: 4, textAlign: 'center' }}>
-        <CircularProgress />
-        <Typography sx={{ mt: 2 }}>Preparing eSTAR package preview...</Typography>
-      </Box>
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>eSTAR Package Preview</CardTitle>
+          <CardDescription>Preparing your eSTAR package preview...</CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center py-8">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p className="text-sm text-muted-foreground">This may take a moment</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Render error state
+  if (error) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>eSTAR Package Preview</CardTitle>
+          <CardDescription>There was a problem preparing your eSTAR package</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        </CardContent>
+        <CardFooter>
+          <Button onClick={refreshPreview}>Try Again</Button>
+        </CardFooter>
+      </Card>
     );
   }
 
   return (
-    <Box className="space-y-4">
-      <Card variant="outlined">
+    <div className="space-y-6">
+      <Card className="w-full">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle>eSTAR Package Assembly</CardTitle>
+              <CardDescription>
+                Preview and build your 510(k) submission eSTAR package
+              </CardDescription>
+            </div>
+            <div className="flex space-x-2">
+              <Button 
+                variant="outline" 
+                onClick={refreshPreview}
+                disabled={isLoading}
+              >
+                Refresh
+              </Button>
+              <Button
+                onClick={verifySignature}
+                variant="outline"
+                disabled={isLoading || !packageData}
+              >
+                Verify Signature
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
         <CardContent>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            eSTAR Package Assembly & Validation
-          </Typography>
-          
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              <AlertTitle>Error</AlertTitle>
-              {error}
-            </Alert>
-          )}
-          
-          <Box sx={{ mb: 3 }}>
-            <FormControlLabel
-              control={
-                <Switch 
-                  checked={includesCoverLetter}
-                  onChange={(e) => setIncludesCoverLetter(e.target.checked)}
-                  color="primary"
-                />
-              }
-              label="Include AI-generated Cover Letter"
-            />
-            
-            <FormControlLabel
-              control={
-                <Switch 
-                  checked={autoUpload}
-                  onChange={(e) => setAutoUpload(e.target.checked)}
-                  color="primary"
-                />
-              }
-              label="Auto-upload to FDA ESG"
-            />
-          </Box>
-          
-          {preview && (
-            <>
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Package Contents
-              </Typography>
-              
-              <Card variant="outlined" sx={{ mb: 3 }}>
-                <CardContent sx={{ py: 1 }}>
-                  <FileTree files={preview.files} />
-                </CardContent>
-              </Card>
-              
-              <Divider sx={{ mb: 3 }} />
-              
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                AI Compliance Analysis
-              </Typography>
-              
-              <Card variant="outlined" sx={{ mb: 3 }}>
-                <CardContent>
-                  <Box component="pre" sx={{ 
-                    p: 2, 
-                    backgroundColor: '#f5f5f5', 
-                    borderRadius: 1,
-                    fontSize: '0.85rem',
-                    maxHeight: '300px',
-                    overflow: 'auto',
-                    whiteSpace: 'pre-wrap'
-                  }}>
-                    {preview.aiComplianceReport}
-                  </Box>
-                </CardContent>
-              </Card>
-              
-              <Divider sx={{ mb: 3 }} />
-              
-              <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                Digital Signature Verification
-              </Typography>
-              
-              <SignatureStatus signatureStatus={signatureStatus} />
-              
-              {uploadStatus && (
-                <>
-                  <Divider sx={{ my: 3 }} />
-                  
-                  <Typography variant="subtitle1" sx={{ mb: 1 }}>
-                    FDA ESG Submission Status
-                  </Typography>
-                  
-                  <Alert severity={uploadStatus.success ? "success" : "error"}>
+          {packageData ? (
+            <div className="space-y-6">
+              {/* Package overview */}
+              <div className="flex flex-col space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Package className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-medium">Package Overview</h3>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="rounded-lg border p-3">
+                    <p className="text-sm font-medium text-muted-foreground">Total Files</p>
+                    <p className="text-2xl font-bold">{packageData.fileCount || packageData.files?.length || 0}</p>
+                  </div>
+                  <div className="rounded-lg border p-3">
+                    <p className="text-sm font-medium text-muted-foreground">Submission Date</p>
+                    <p className="text-2xl font-bold">{new Date().toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Compliance status */}
+              {packageData.complianceReport && (
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle2 className="h-5 w-5 text-green-500" />
+                    <h3 className="text-lg font-medium">Compliance Status</h3>
+                  </div>
+                  <Alert variant={packageData.complianceReport.status === 'PASS' ? 'default' : 'destructive'}>
                     <AlertTitle>
-                      {uploadStatus.success ? "Submission Successful" : "Submission Failed"}
+                      {packageData.complianceReport.status === 'PASS' 
+                        ? 'Package Ready for Submission' 
+                        : 'Package Requires Attention'}
                     </AlertTitle>
-                    {uploadStatus.success ? (
-                      <Typography variant="body2">
-                        Tracking ID: {uploadStatus.trackingId}<br />
-                        Submission Date: {new Date(uploadStatus.submissionDate).toLocaleString()}
-                      </Typography>
-                    ) : (
-                      <Typography variant="body2">
-                        Error: {uploadStatus.error}
-                      </Typography>
-                    )}
+                    <AlertDescription>
+                      {packageData.complianceReport.message}
+                    </AlertDescription>
                   </Alert>
-                </>
+                </div>
               )}
-              
-              <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<Send />}
-                  onClick={() => handlePreview()}
-                  disabled={loading || generatingPackage}
-                >
-                  Refresh Preview
-                </Button>
-                
-                <Button
-                  variant="contained"
-                  color="primary"
-                  startIcon={autoUpload ? <Send /> : <Download />}
-                  onClick={handleGeneratePackage}
-                  disabled={loading || generatingPackage}
-                >
-                  {generatingPackage ? (
-                    <>
-                      <CircularProgress size={20} sx={{ mr: 1 }} />
-                      {autoUpload ? 'Submitting...' : 'Generating...'}
-                    </>
-                  ) : (
-                    autoUpload ? 'Submit to FDA ESG' : 'Download eSTAR Package'
-                  )}
-                </Button>
-              </Box>
-            </>
+
+              {/* Verification status */}
+              {verificationStatus && (
+                <Alert variant={verificationStatus.valid ? 'default' : 'destructive'}>
+                  <AlertTitle>
+                    {verificationStatus.valid 
+                      ? 'Digital Signature Verified' 
+                      : 'Digital Signature Invalid'}
+                  </AlertTitle>
+                  <AlertDescription>
+                    {verificationStatus.message}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <Separator />
+
+              {/* Package contents */}
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <FileText className="h-5 w-5 text-primary" />
+                  <h3 className="text-lg font-medium">Package Contents</h3>
+                </div>
+                <Accordion type="single" collapsible className="w-full">
+                  {packageData.files?.map((file, index) => (
+                    <AccordionItem value={`file-${index}`} key={`file-${index}`}>
+                      <AccordionTrigger className="hover:bg-muted/50 px-3 rounded-md">
+                        <div className="flex items-center space-x-2">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                          <span>{file.name || file.path.split('/').pop()}</span>
+                          {file.section && (
+                            <Badge variant="outline" className="ml-2">
+                              {file.section}
+                            </Badge>
+                          )}
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent className="px-3">
+                        <div className="space-y-2 py-2">
+                          <p className="text-sm text-muted-foreground">
+                            <span className="font-medium">Path:</span> {file.path}
+                          </p>
+                          {file.size && (
+                            <p className="text-sm text-muted-foreground">
+                              <span className="font-medium">Size:</span> {file.size}
+                            </p>
+                          )}
+                          {file.description && (
+                            <p className="text-sm mt-2">{file.description}</p>
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  ))}
+                </Accordion>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-6">
+              <p className="text-muted-foreground">No package preview available</p>
+            </div>
           )}
         </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button 
+            variant="outline" 
+            onClick={() => buildAndDownload(false)}
+            disabled={buildInProgress || isLoading || !packageData}
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download Package
+          </Button>
+          <Button 
+            onClick={() => buildAndDownload(true)}
+            disabled={buildInProgress || isLoading || !packageData}
+          >
+            <Send className="h-4 w-4 mr-2" />
+            Build & Submit to FDA
+          </Button>
+        </CardFooter>
       </Card>
-    </Box>
+
+      {packageData?.complianceReport && (
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>AI Compliance Report</CardTitle>
+            <CardDescription>
+              Automated validation of your submission package
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <Alert>
+                <AlertTitle>AI-Generated Report</AlertTitle>
+                <AlertDescription>
+                  This report was generated using AI to analyze your submission package.
+                  It is provided as guidance and does not guarantee FDA acceptance.
+                </AlertDescription>
+              </Alert>
+              
+              <div className="rounded-lg border p-4 whitespace-pre-wrap text-sm">
+                {packageData.complianceReport.details}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
-}
+};
+
+export default PackagePreview;

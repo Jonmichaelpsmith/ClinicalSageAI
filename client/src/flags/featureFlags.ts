@@ -67,6 +67,13 @@ export const featureFlags: Record<string, FeatureFlag> = {
     defaultValue: true,
     enabled: true
   },
+  ENABLE_PACKAGE_ASSEMBLY: {
+    id: 'ENABLE_PACKAGE_ASSEMBLY',
+    name: 'eSTAR Package Assembly',
+    description: 'Enables AI-powered eSTAR package assembly, validation, and submission capabilities',
+    defaultValue: true,
+    enabled: true
+  },
   ENABLE_SECTION_RECOMMENDER: {
     id: 'ENABLE_SECTION_RECOMMENDER',
     name: 'Document Section Recommender',
