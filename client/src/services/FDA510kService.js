@@ -1,371 +1,213 @@
 /**
- * FDA510kService - Service for interacting with FDA 510(k) API endpoints
+ * FDA510kService
  * 
- * This service handles all interactions with the FDA 510(k) related endpoints,
- * including device profile management, predicate device search, literature search,
- * and regulatory pathway analysis.
+ * This service provides functionality for working with FDA 510(k) Premarket Notifications,
+ * including predicate device search, substantial equivalence analysis, and recommendations
+ * for regulatory submissions.
  */
+ 
+import { apiRequest } from '@/lib/queryClient';
 
-import { apiRequest } from "../lib/queryClient";
-import { API_BASE_URL } from "../config/constants";
-
-/**
- * Convert errors to a standardized format
- * @param {Error} error - The error object
- * @returns {Object} Formatted error response
- */
-const handleError = (error) => {
-  console.error("FDA510k Service Error:", error);
-  return {
-    success: false,
-    error: error.message || "An error occurred while processing your request",
-    status: error.status || 500
-  };
-};
-
-export class FDA510kService {
+class FDA510kService {
   /**
-   * Save a device profile to the server
+   * Search for predicate devices based on search term and optional filters
    * 
-   * @param {Object} deviceProfile - The device profile to save
-   * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response containing saved profile or error
+   * @param {string} searchTerm - Term to search for (device name, product code, etc.)
+   * @param {string} productCode - Optional product code filter
+   * @returns {Promise<Array>} - List of matching predicate devices
    */
-  static async saveDeviceProfile(deviceProfile, organizationId) {
+  async searchPredicateDevices(searchTerm, productCode = null) {
     try {
-      const url = `${API_BASE_URL}/510k/device-profiles`;
-      const response = await apiRequest(url, {
-        method: "POST",
-        body: JSON.stringify({
-          deviceProfile,
-          organizationId
-        })
-      });
-
-      return {
-        success: true,
-        profile: response.profile
-      };
+      const queryParams = new URLSearchParams();
+      queryParams.append('term', searchTerm);
+      
+      if (productCode) {
+        queryParams.append('product_code', productCode);
+      }
+      
+      const response = await apiRequest(`/api/510k/predicate-search?${queryParams.toString()}`);
+      
+      if (!response.ok) {
+        throw new Error(`Search failed: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.results || [];
     } catch (error) {
-      return handleError(error);
+      console.error('Error in searchPredicateDevices:', error);
+      throw error;
     }
   }
-
-  /**
-   * Get a device profile by ID
-   * 
-   * @param {string} profileId - The profile ID to retrieve
-   * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response containing the profile or error
-   */
-  static async getDeviceProfile(profileId, organizationId) {
-    try {
-      const url = `${API_BASE_URL}/510k/device-profiles/${profileId}`;
-      const response = await apiRequest(url, {
-        method: "GET",
-        params: { organizationId }
-      });
-
-      return {
-        success: true,
-        profile: response.profile
-      };
-    } catch (error) {
-      return handleError(error);
-    }
-  }
-
-  /**
-   * List all device profiles for an organization
-   * 
-   * @param {string} organizationId - The organization ID
-   * @param {Object} filters - Optional filters for the profiles list
-   * @returns {Promise<Object>} Response containing profiles or error
-   */
-  static async listDeviceProfiles(organizationId, filters = {}) {
-    try {
-      const url = `${API_BASE_URL}/510k/device-profiles`;
-      const response = await apiRequest(url, {
-        method: "GET",
-        params: {
-          organizationId,
-          ...filters
-        }
-      });
-
-      return {
-        success: true,
-        profiles: response.profiles || [],
-        total: response.total || 0
-      };
-    } catch (error) {
-      return handleError(error);
-    }
-  }
-
-  /**
-   * Delete a device profile
-   * 
-   * @param {string} profileId - The profile ID to delete
-   * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response indicating success or error
-   */
-  static async deleteDeviceProfile(profileId, organizationId) {
-    try {
-      const url = `${API_BASE_URL}/510k/device-profiles/${profileId}`;
-      await apiRequest(url, {
-        method: "DELETE",
-        params: { organizationId }
-      });
-
-      return {
-        success: true
-      };
-    } catch (error) {
-      return handleError(error);
-    }
-  }
-
-  /**
-   * Update an existing device profile
-   * 
-   * @param {string} profileId - The profile ID to update
-   * @param {Object} deviceProfile - The updated device profile
-   * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response containing updated profile or error
-   */
-  static async updateDeviceProfile(profileId, deviceProfile, organizationId) {
-    try {
-      const url = `${API_BASE_URL}/510k/device-profiles/${profileId}`;
-      const response = await apiRequest(url, {
-        method: "PUT",
-        body: JSON.stringify({
-          deviceProfile,
-          organizationId
-        })
-      });
-
-      return {
-        success: true,
-        profile: response.profile
-      };
-    } catch (error) {
-      return handleError(error);
-    }
-  }
-
-  /**
-   * Validate a device profile against the schema
-   * 
-   * @param {Object} deviceProfile - The device profile to validate
-   * @returns {Promise<Object>} Response containing validation results
-   */
-  static async validateDeviceProfile(deviceProfile) {
-    try {
-      const url = `${API_BASE_URL}/510k/validate-profile`;
-      const response = await apiRequest(url, {
-        method: "POST",
-        body: JSON.stringify({ deviceProfile })
-      });
-
-      return {
-        success: true,
-        isValid: response.isValid,
-        errors: response.errors || []
-      };
-    } catch (error) {
-      return handleError(error);
-    }
-  }
-
-  /**
-   * Find potential predicate devices based on device profile
-   * 
-   * @param {Object} searchData - Search criteria for predicate devices
-   * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response containing predicate devices or error
-   */
-  static async findPredicateDevices(searchData, organizationId) {
-    try {
-      const url = `${API_BASE_URL}/510k/predicate-devices`;
-      const response = await apiRequest(url, {
-        method: "POST",
-        body: JSON.stringify({
-          searchData,
-          organizationId
-        })
-      });
-
-      return {
-        success: true,
-        predicates: response.predicates || []
-      };
-    } catch (error) {
-      return handleError(error);
-    }
-  }
-
+  
   /**
    * Get detailed information about a specific predicate device
    * 
-   * @param {string} predicateId - The ID of the predicate device
-   * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response containing detailed predicate information or error
+   * @param {string} kNumber - K-number of the predicate device
+   * @returns {Promise<Object>} - Detailed predicate device information
    */
-  static async getPredicateDetails(predicateId, organizationId) {
+  async getPredicateDetails(kNumber) {
     try {
-      const url = `${API_BASE_URL}/510k/predicate-devices/${predicateId}`;
-      const response = await apiRequest(url, {
-        method: "GET",
-        params: { organizationId }
-      });
-
-      return {
-        success: true,
-        predicateDetails: response.predicateDetails
-      };
+      const response = await apiRequest(`/api/510k/predicate/${kNumber}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get predicate details: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.predicateDevice || {};
     } catch (error) {
-      return handleError(error);
+      console.error('Error in getPredicateDetails:', error);
+      throw error;
     }
   }
   
   /**
-   * Generate a substantial equivalence draft based on device and predicate data
+   * Draft a substantial equivalence analysis between subject and predicate devices
    * 
-   * @param {Object} payload - Contains deviceProfile, predicateProfile, and equivalenceData
-   * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response containing generated draft text or error
+   * @param {Object} subjectDevice - The subject device information
+   * @param {Object} predicateDevice - The predicate device information
+   * @returns {Promise<Object>} - Substantial equivalence analysis
    */
-  static async draftEquivalence(payload, organizationId) {
+  async draftEquivalence(subjectDevice, predicateDevice) {
     try {
-      const url = `${API_BASE_URL}/510k/draft-equivalence`;
-      const response = await apiRequest(url, {
-        method: "POST",
+      const response = await apiRequest('/api/510k/equivalence-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          ...payload,
-          organizationId
-        })
+          subjectDevice,
+          predicateDevice,
+        }),
       });
-
-      return {
-        success: true,
-        draftText: response.draftText
-      };
+      
+      if (!response.ok) {
+        throw new Error(`Failed to draft equivalence: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.analysis || null;
     } catch (error) {
-      return handleError(error);
+      console.error('Error in draftEquivalence:', error);
+      throw error;
     }
   }
-
+  
   /**
-   * Search for relevant scientific literature
+   * Get recommendations based on equivalence analysis
    * 
-   * @param {Object} searchData - Search criteria for literature
-   * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response containing articles or error
+   * @param {Object} subjectDevice - The subject device information
+   * @param {Object} predicateDevice - The predicate device information
+   * @param {Object} analysis - The equivalence analysis
+   * @returns {Promise<Object>} - Recommendations
    */
-  static async searchLiterature(searchData, organizationId) {
+  async getRecommendations(subjectDevice, predicateDevice, analysis) {
     try {
-      const url = `${API_BASE_URL}/510k/literature`;
-      const response = await apiRequest(url, {
-        method: "POST",
+      const response = await apiRequest('/api/510k/recommendations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          searchData,
-          organizationId
-        })
+          subjectDevice,
+          predicateDevice,
+          analysis,
+        }),
       });
-
-      return {
-        success: true,
-        articles: response.articles || []
-      };
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get recommendations: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.recommendations || { text: '' };
     } catch (error) {
-      return handleError(error);
+      console.error('Error in getRecommendations:', error);
+      throw error;
     }
   }
-
+  
   /**
-   * Analyze the regulatory pathway for a device
+   * Save a device profile
    * 
-   * @param {Object} deviceProfile - The device profile to analyze
-   * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response containing pathway analysis or error
+   * @param {Object} organizationId - The organization ID
+   * @param {Object} deviceProfile - The device profile to save
+   * @returns {Promise<Object>} - The saved device profile
    */
-  static async analyzeRegulatoryPathway(deviceProfile, organizationId) {
+  async saveDeviceProfile(organizationId, deviceProfile) {
     try {
-      const url = `${API_BASE_URL}/510k/pathway-analysis`;
-      const response = await apiRequest(url, {
-        method: "POST",
+      const response = await apiRequest('/api/510k/device-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
+          organizationId,
           deviceProfile,
-          organizationId
-        })
+        }),
       });
-
-      return {
-        success: true,
-        pathwayAnalysis: response.pathwayAnalysis
-      };
+      
+      if (!response.ok) {
+        throw new Error(`Failed to save device profile: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.profile || null;
     } catch (error) {
-      return handleError(error);
-    }
-  }
-
-  /**
-   * Get 510(k) submission requirements by device class
-   * 
-   * @param {string} deviceClass - The device class (I, II, III)
-   * @returns {Promise<Object>} Response containing requirements or error
-   */
-  static async getRequirements(deviceClass) {
-    try {
-      const url = `${API_BASE_URL}/510k/requirements`;
-      const response = await apiRequest(url, {
-        method: "GET",
-        params: { deviceClass }
-      });
-
-      return {
-        success: true,
-        requirements: response.requirements || []
-      };
-    } catch (error) {
-      return handleError(error);
+      console.error('Error in saveDeviceProfile:', error);
+      throw error;
     }
   }
   
   /**
-   * Generate a section draft for a 510(k) submission
+   * Get device profile for an organization
    * 
-   * @param {string} sectionKey - The section key to generate
-   * @param {Object} deviceProfile - The device profile 
-   * @param {Array} predicateDevices - Selected predicate devices
-   * @param {Array} literature - Selected literature
    * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response with generated content or error
+   * @returns {Promise<Object>} - The device profile
    */
-  static async generateSectionDraft(sectionKey, deviceProfile, predicateDevices, literature, organizationId) {
+  async getDeviceProfile(organizationId) {
     try {
-      const url = `${API_BASE_URL}/510k/generate-section`;
-      const response = await apiRequest(url, {
-        method: "POST",
-        body: JSON.stringify({
-          sectionKey,
-          deviceProfile, 
-          predicateDevices,
-          literature,
-          organizationId
-        })
-      });
-
-      return {
-        success: true,
-        content: response.content,
-        metadata: response.metadata || {}
-      };
+      const response = await apiRequest(`/api/510k/device-profile/${organizationId}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get device profile: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.profile || null;
     } catch (error) {
-      return handleError(error);
+      console.error('Error in getDeviceProfile:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Generate recommended 510(k) pathway for a device
+   * 
+   * @param {Object} deviceProfile - The device profile
+   * @returns {Promise<Object>} - Recommended pathway information
+   */
+  async getRecommendedPathway(deviceProfile) {
+    try {
+      const response = await apiRequest('/api/510k/pathway-recommendation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ deviceProfile }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get pathway recommendation: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.recommendation || null;
+    } catch (error) {
+      console.error('Error in getRecommendedPathway:', error);
+      throw error;
     }
   }
 }
 
-export default FDA510kService;
+export default new FDA510kService();

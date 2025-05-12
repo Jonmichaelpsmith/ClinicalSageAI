@@ -1,158 +1,173 @@
 /**
- * DocumentSectionRecommenderService - Service for intelligent document section recommendations
+ * DocumentSectionRecommenderService
  * 
- * This service leverages AI to analyze a device profile and document content to provide 
- * intelligent recommendations for prioritizing document sections, suggesting content,
- * and highlighting regulatory gaps in documentation.
+ * This service provides functionality for recommending document sections for regulatory submissions,
+ * analyzing content gaps, and generating section content suggestions based on device profiles.
  */
 
-import { apiRequest } from "../lib/queryClient";
-import { API_BASE_URL } from "../config/constants";
+import { apiRequest } from '@/lib/queryClient';
 
-/**
- * Convert errors to a standardized format
- * @param {Error} error - The error object
- * @returns {Object} Formatted error response
- */
-const handleError = (error) => {
-  console.error("Document Section Recommender Service Error:", error);
-  return {
-    success: false,
-    error: error.message || "An error occurred while processing your request",
-    status: error.status || 500
-  };
-};
-
-export class DocumentSectionRecommenderService {
+class DocumentSectionRecommenderService {
   /**
-   * Get section recommendations based on device profile and document type
+   * Get recommended sections for a document type
    * 
-   * @param {Object} deviceProfile - The device profile data
-   * @param {string} documentType - The document type (e.g., '510k', 'cer')
-   * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response containing section recommendations or error
+   * @param {string} documentType - The type of document (e.g., '510k', 'cer')
+   * @param {Object} deviceProfile - The device profile information
+   * @returns {Promise<Array>} - List of recommended sections with priorities
    */
-  static async getSectionRecommendations(deviceProfile, documentType, organizationId) {
+  async getRecommendedSections(documentType, deviceProfile) {
     try {
-      const url = `${API_BASE_URL}/section-recommender/recommendations`;
-      const response = await apiRequest(url, {
-        method: "POST",
+      const response = await apiRequest('/api/document-recommender/sections', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          deviceProfile,
           documentType,
-          organizationId
-        })
+          deviceProfile,
+        }),
       });
-
-      return {
-        success: true,
-        recommendations: response.recommendations || [],
-        priorityOrder: response.priorityOrder || [],
-        insightSummary: response.insightSummary || ""
-      };
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get recommended sections: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.sections || [];
     } catch (error) {
-      return handleError(error);
+      console.error('Error in getRecommendedSections:', error);
+      throw error;
     }
   }
-
+  
   /**
-   * Get content suggestions for a specific document section
+   * Analyze content gaps in a document
    * 
-   * @param {Object} deviceProfile - The device profile data
-   * @param {string} documentType - The document type (e.g., '510k', 'cer')
-   * @param {string} sectionKey - The section key
-   * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response containing content suggestions or error
+   * @param {string} documentType - The type of document (e.g., '510k', 'cer')
+   * @param {Object} deviceProfile - The device profile information
+   * @param {Object} existingContent - Content that already exists in the document
+   * @returns {Promise<Object>} - Analysis of content gaps
    */
-  static async getSectionContentSuggestions(deviceProfile, documentType, sectionKey, organizationId) {
+  async analyzeContentGaps(documentType, deviceProfile, existingContent) {
     try {
-      const url = `${API_BASE_URL}/section-recommender/content-suggestions`;
-      const response = await apiRequest(url, {
-        method: "POST",
+      const response = await apiRequest('/api/document-recommender/gap-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({
-          deviceProfile,
           documentType,
-          sectionKey,
-          organizationId
-        })
+          deviceProfile,
+          existingContent,
+        }),
       });
-
-      return {
-        success: true,
-        suggestions: response.suggestions || [],
-        keyPoints: response.keyPoints || [],
-        regulatoryRequirements: response.regulatoryRequirements || []
-      };
+      
+      if (!response.ok) {
+        throw new Error(`Failed to analyze content gaps: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.analysis || {};
     } catch (error) {
-      return handleError(error);
+      console.error('Error in analyzeContentGaps:', error);
+      throw error;
     }
   }
-
+  
   /**
-   * Get gap analysis for current document
+   * Get content suggestions for a specific section
    * 
-   * @param {Object} deviceProfile - The device profile data
-   * @param {string} documentType - The document type (e.g., '510k', 'cer')
-   * @param {Object} currentContent - The current document content
-   * @param {string} organizationId - The organization ID
-   * @returns {Promise<Object>} Response containing gap analysis or error
+   * @param {string} documentType - The type of document (e.g., '510k', 'cer')
+   * @param {string} sectionKey - The key of the section to get suggestions for
+   * @param {Object} deviceProfile - The device profile information
+   * @param {Object} predicateDevice - Optional predicate device information (for 510k)
+   * @returns {Promise<Object>} - Content suggestions for the section
    */
-  static async getDocumentGapAnalysis(deviceProfile, documentType, currentContent, organizationId) {
+  async getSectionSuggestions(documentType, sectionKey, deviceProfile, predicateDevice = null) {
     try {
-      const url = `${API_BASE_URL}/section-recommender/gap-analysis`;
-      const response = await apiRequest(url, {
-        method: "POST",
-        body: JSON.stringify({
-          deviceProfile,
-          documentType,
-          currentContent,
-          organizationId
-        })
-      });
-
-      return {
-        success: true,
-        gaps: response.gaps || [],
-        completeness: response.completeness || 0,
-        recommendations: response.recommendations || []
+      const payload = {
+        documentType,
+        sectionKey,
+        deviceProfile,
       };
+      
+      if (predicateDevice) {
+        payload.predicateDevice = predicateDevice;
+      }
+      
+      const response = await apiRequest('/api/document-recommender/section-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get section suggestions: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.suggestions || {};
     } catch (error) {
-      return handleError(error);
+      console.error('Error in getSectionSuggestions:', error);
+      throw error;
     }
   }
-
+  
   /**
-   * Get section prioritization for a document with current state
+   * Get section templates for a document type
    * 
-   * @param {Object} deviceProfile - The device profile data
-   * @param {string} documentType - The document type (e.g., '510k', 'cer')
-   * @param {Object} currentState - The current document state
-   * @param {string} organizationId - The organization ID 
-   * @returns {Promise<Object>} Response containing priority order or error
+   * @param {string} documentType - The type of document (e.g., '510k', 'cer')
+   * @returns {Promise<Object>} - Section templates
    */
-  static async getSectionPrioritization(deviceProfile, documentType, currentState, organizationId) {
+  async getSectionTemplates(documentType) {
     try {
-      const url = `${API_BASE_URL}/section-recommender/section-priorities`;
-      const response = await apiRequest(url, {
-        method: "POST",
-        body: JSON.stringify({
-          deviceProfile,
-          documentType,
-          currentState,
-          organizationId
-        })
-      });
-
-      return {
-        success: true,
-        priorityOrder: response.priorityOrder || [],
-        rationale: response.rationale || {},
-        nextSteps: response.nextSteps || []
-      };
+      const response = await apiRequest(`/api/document-recommender/templates?type=${documentType}`);
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get section templates: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.templates || {};
     } catch (error) {
-      return handleError(error);
+      console.error('Error in getSectionTemplates:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Generate regulatory overview based on device profile
+   * 
+   * @param {string} documentType - The type of document (e.g., '510k', 'cer')
+   * @param {Object} deviceProfile - The device profile information
+   * @returns {Promise<Object>} - Regulatory overview
+   */
+  async generateRegulatoryOverview(documentType, deviceProfile) {
+    try {
+      const response = await apiRequest('/api/document-recommender/regulatory-overview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          documentType,
+          deviceProfile,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to generate regulatory overview: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      return data.overview || {};
+    } catch (error) {
+      console.error('Error in generateRegulatoryOverview:', error);
+      throw error;
     }
   }
 }
 
-export default DocumentSectionRecommenderService;
+export default new DocumentSectionRecommenderService();

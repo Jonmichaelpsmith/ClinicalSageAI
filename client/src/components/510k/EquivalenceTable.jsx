@@ -1,423 +1,331 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CircleCheck, Pencil, Save, X, FileText, ArrowRightLeft, AlertTriangle } from 'lucide-react';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import FDA510kService from '../../services/FDA510kService';
-import { useTenant } from '@/contexts/TenantContext';
+import { Separator } from '@/components/ui/separator';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Loader2, RefreshCw, Check, X, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 /**
  * EquivalenceTable Component
  * 
- * This component displays a side-by-side comparison table between the user's device
- * and the selected predicate device, highlighting key attributes for substantial 
- * equivalence analysis.
+ * This component displays a substantial equivalence comparison between
+ * the subject device and a predicate device.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.subjectDevice - The subject device information
+ * @param {Object} props.predicateDevice - The predicate device information
+ * @param {Object} props.equivalenceData - The equivalence analysis data
+ * @param {boolean} props.isLoading - Whether the analysis is loading
+ * @param {Function} props.onRefresh - Callback to refresh the analysis
  */
-const EquivalenceTable = ({ deviceProfile, predicateDevice, onDraftGenerate }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [equivalenceData, setEquivalenceData] = useState([]);
-  const [editingField, setEditingField] = useState(null);
-  const [editValue, setEditValue] = useState('');
-  const [deviations, setDeviations] = useState([]);
+export const EquivalenceTable = ({ 
+  subjectDevice,
+  predicateDevice,
+  equivalenceData,
+  isLoading = false,
+  onRefresh
+}) => {
   
-  const { currentOrganization } = useTenant();
-
-  // Initialize table data when deviceProfile or predicateDevice changes
-  useEffect(() => {
-    if (deviceProfile && predicateDevice) {
-      generateEquivalenceData();
+  // Format the comparison outcome with appropriate badge
+  const renderComparisonOutcome = (comparison) => {
+    switch (comparison.outcome) {
+      case 'Substantially Equivalent':
+        return <Badge variant="success" className="bg-green-600"><Check className="h-3 w-3 mr-1" /> Equivalent</Badge>;
+      case 'Potentially Equivalent':
+        return <Badge variant="warning" className="bg-yellow-500"><AlertCircle className="h-3 w-3 mr-1" /> Potential</Badge>;
+      case 'Not Equivalent':
+        return <Badge variant="destructive"><X className="h-3 w-3 mr-1" /> Not Equivalent</Badge>;
+      case 'Additional Testing Required':
+        return <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300"><RefreshCw className="h-3 w-3 mr-1" /> Testing Required</Badge>;
+      default:
+        return <Badge variant="outline">{comparison.outcome}</Badge>;
     }
-  }, [deviceProfile, predicateDevice]);
-
-  // Generate the equivalence data for comparison
-  const generateEquivalenceData = () => {
-    // Define comparison categories and fields
-    const categories = [
-      {
-        name: "Intended Use",
-        fields: [
-          { key: "indications", label: "Indications for Use" },
-          { key: "targetPopulation", label: "Target Population" },
-          { key: "anatomicalSites", label: "Anatomical Sites" }
-        ]
-      },
-      {
-        name: "Technology",
-        fields: [
-          { key: "operatingPrinciple", label: "Operating Principle" },
-          { key: "mechanism", label: "Mechanism of Action" },
-          { key: "energyType", label: "Energy Type/Source" }
-        ]
-      },
-      {
-        name: "Materials",
-        fields: [
-          { key: "patientContactMaterials", label: "Patient-Contact Materials" },
-          { key: "coatings", label: "Coatings/Surface Treatments" },
-          { key: "sterilization", label: "Sterilization Method" }
-        ]
-      },
-      {
-        name: "Performance",
-        fields: [
-          { key: "accuracy", label: "Accuracy/Precision" },
-          { key: "sensitivity", label: "Sensitivity/Specificity" },
-          { key: "performanceSpecs", label: "Key Performance Specifications" }
-        ]
-      },
-      {
-        name: "Safety",
-        fields: [
-          { key: "safetyFeatures", label: "Safety Features" },
-          { key: "riskControls", label: "Risk Control Measures" },
-          { key: "warnings", label: "Warnings/Contraindications" }
-        ]
-      }
-    ];
-
-    // Extract data for comparison
-    const data = [];
-    const newDeviations = [];
+  };
+  
+  // Calculate overall equivalence status
+  const getOverallStatus = (data) => {
+    if (!data || !data.comparisons || data.comparisons.length === 0) {
+      return null;
+    }
     
-    categories.forEach(category => {
-      const categoryData = {
-        category: category.name,
-        fields: []
+    const notEquivalentCount = data.comparisons.filter(c => c.outcome === 'Not Equivalent').length;
+    const testingRequiredCount = data.comparisons.filter(c => c.outcome === 'Additional Testing Required').length;
+    const potentialCount = data.comparisons.filter(c => c.outcome === 'Potentially Equivalent').length;
+    const equivalentCount = data.comparisons.filter(c => c.outcome === 'Substantially Equivalent').length;
+    
+    if (notEquivalentCount > 0) {
+      return {
+        status: 'Not Equivalent',
+        color: 'destructive',
+        icon: <X className="h-4 w-4 mr-2" />,
+        description: 'One or more characteristics are not substantially equivalent'
       };
-      
-      category.fields.forEach(field => {
-        // Get subject device value (from device profile)
-        const subjectValue = getNestedValue(deviceProfile, field.key) || 'Not specified';
-        
-        // Get predicate device value
-        const predicateValue = getNestedValue(predicateDevice, field.key) || 'Not specified';
-        
-        // Determine if there's a significant deviation
-        const hasMajorDeviation = detectMajorDeviation(subjectValue, predicateValue);
-        
-        if (hasMajorDeviation) {
-          newDeviations.push({
-            category: category.name,
-            field: field.label,
-            key: field.key
-          });
-        }
-        
-        categoryData.fields.push({
-          key: field.key,
-          label: field.label,
-          subjectValue,
-          predicateValue,
-          hasMajorDeviation
-        });
-      });
-      
-      data.push(categoryData);
-    });
-    
-    setEquivalenceData(data);
-    setDeviations(newDeviations);
-  };
-
-  // Safely get nested value from an object using key path
-  const getNestedValue = (obj, keyPath) => {
-    if (!obj) return null;
-    
-    const keys = keyPath.split('.');
-    let value = obj;
-    
-    for (const key of keys) {
-      if (value === null || value === undefined || !value.hasOwnProperty(key)) {
-        return null;
-      }
-      value = value[key];
-    }
-    
-    return value;
-  };
-
-  // Detect if there's a major deviation between subject and predicate values
-  const detectMajorDeviation = (subjectValue, predicateValue) => {
-    if (!subjectValue || !predicateValue) return false;
-    
-    // Simple string comparison for now
-    // In a real implementation, this would use more sophisticated comparison logic
-    if (typeof subjectValue === 'string' && typeof predicateValue === 'string') {
-      // Remove whitespace and convert to lowercase for comparison
-      const normalizedSubject = subjectValue.toLowerCase().replace(/\s+/g, ' ').trim();
-      const normalizedPredicate = predicateValue.toLowerCase().replace(/\s+/g, ' ').trim();
-      
-      // Check for significant word differences
-      const subjectWords = new Set(normalizedSubject.split(/\W+/).filter(w => w.length > 3));
-      const predicateWords = new Set(normalizedPredicate.split(/\W+/).filter(w => w.length > 3));
-      
-      // Calculate similarity score
-      let commonCount = 0;
-      for (const word of subjectWords) {
-        if (predicateWords.has(word)) commonCount++;
-      }
-      
-      const similarity = commonCount / Math.max(subjectWords.size, predicateWords.size, 1);
-      
-      return similarity < 0.5; // Threshold for major deviation
-    }
-    
-    return false;
-  };
-
-  // Start editing a field
-  const handleEdit = (field) => {
-    setEditingField(field);
-    setEditValue(field.subjectValue);
-  };
-
-  // Save edited field
-  const handleSave = (categoryIndex, fieldIndex) => {
-    const newData = [...equivalenceData];
-    const field = newData[categoryIndex].fields[fieldIndex];
-    
-    field.subjectValue = editValue;
-    field.hasMajorDeviation = detectMajorDeviation(editValue, field.predicateValue);
-    
-    setEquivalenceData(newData);
-    setEditingField(null);
-    
-    // Update deviations list
-    updateDeviations();
-  };
-
-  // Cancel editing
-  const handleCancel = () => {
-    setEditingField(null);
-  };
-
-  // Update deviations list after edits
-  const updateDeviations = () => {
-    const newDeviations = [];
-    
-    equivalenceData.forEach(category => {
-      category.fields.forEach(field => {
-        if (field.hasMajorDeviation) {
-          newDeviations.push({
-            category: category.category,
-            field: field.label,
-            key: field.key
-          });
-        }
-      });
-    });
-    
-    setDeviations(newDeviations);
-  };
-
-  // Generate substantial equivalence draft
-  const handleGenerateDraft = async () => {
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const payload = {
-        deviceProfile,
-        predicateProfile: predicateDevice,
-        equivalenceData
+    } else if (testingRequiredCount > 0) {
+      return {
+        status: 'Testing Required',
+        color: 'blue',
+        icon: <RefreshCw className="h-4 w-4 mr-2" />,
+        description: 'Additional testing required to determine equivalence'
       };
-      
-      const response = await FDA510kService.draftEquivalence(
-        payload,
-        currentOrganization?.id
-      );
-      
-      if (response.success && response.draftText) {
-        if (onDraftGenerate) {
-          onDraftGenerate(response.draftText);
-        }
-      } else {
-        setError(response.error || 'Failed to generate equivalence draft.');
-      }
-    } catch (err) {
-      console.error('Draft equivalence error:', err);
-      setError('An error occurred while generating the draft. Please try again.');
-    } finally {
-      setIsLoading(false);
+    } else if (potentialCount > 0) {
+      return {
+        status: 'Potentially Equivalent',
+        color: 'yellow',
+        icon: <AlertCircle className="h-4 w-4 mr-2" />,
+        description: 'Potentially equivalent with some considerations'
+      };
+    } else {
+      return {
+        status: 'Substantially Equivalent',
+        color: 'green',
+        icon: <Check className="h-4 w-4 mr-2" />,
+        description: 'All characteristics are substantially equivalent'
+      };
     }
   };
-
-  if (!deviceProfile || !predicateDevice) {
+  
+  const overallStatus = getOverallStatus(equivalenceData);
+  
+  // Loading state or missing information
+  if (isLoading) {
     return (
-      <Card className="w-full">
+      <Card className="flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-muted-foreground">Generating equivalence analysis...</p>
+        </div>
+      </Card>
+    );
+  }
+  
+  if (!predicateDevice) {
+    return (
+      <Card>
         <CardHeader>
-          <CardTitle>Substantial Equivalence Analysis</CardTitle>
+          <CardTitle>No Predicate Device Selected</CardTitle>
           <CardDescription>
-            Select a predicate device to begin the equivalence analysis
+            Return to the search tab to select a predicate device for comparison.
           </CardDescription>
         </CardHeader>
       </Card>
     );
   }
+  
+  if (!equivalenceData || !equivalenceData.comparisons) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Equivalence Analysis</CardTitle>
+          <CardDescription>
+            No analysis data available. Generate an analysis to compare the devices.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <Button onClick={onRefresh} disabled={isLoading}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Generate Analysis
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center">
-          <ArrowRightLeft className="h-5 w-5 mr-2 text-primary" />
-          Substantial Equivalence Analysis
-        </CardTitle>
-        <CardDescription>
-          Compare your device with the selected predicate device
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent>
-        {error && (
-          <div className="mb-4 p-3 bg-destructive/10 text-destructive rounded-md flex items-center">
-            <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
-            <span>{error}</span>
-          </div>
-        )}
-        
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-3">
-            <div>
-              <h4 className="font-medium">Your Device vs. Predicate Device</h4>
-              <p className="text-sm text-muted-foreground">
-                Edit your device's attributes to refine the comparison
-              </p>
-            </div>
-            
-            {deviations.length > 0 && (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Badge variant="destructive" className="flex items-center">
-                      <AlertTriangle className="h-3 w-3 mr-1" />
-                      {deviations.length} Major Deviation{deviations.length !== 1 ? 's' : ''}
-                    </Badge>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Major deviations may require additional testing or justification</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            )}
-          </div>
-          
-          <ScrollArea className="h-[400px] rounded-md border">
-            <div className="p-1">
-              {equivalenceData.map((category, categoryIndex) => (
-                <div key={category.category} className="mb-4">
-                  <h5 className="font-medium text-sm bg-muted px-3 py-2 rounded-md">
-                    {category.category}
-                  </h5>
-                  
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[200px]">Attribute</TableHead>
-                        <TableHead>Your Device</TableHead>
-                        <TableHead>Predicate Device</TableHead>
-                        <TableHead className="w-[50px]">Edit</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {category.fields.map((field, fieldIndex) => (
-                        <TableRow key={field.key} className={field.hasMajorDeviation ? "bg-destructive/10" : ""}>
-                          <TableCell className="font-medium">{field.label}</TableCell>
-                          <TableCell>
-                            {editingField === field ? (
-                              <div className="flex flex-col space-y-2">
-                                <Textarea
-                                  value={editValue}
-                                  onChange={(e) => setEditValue(e.target.value)}
-                                  className="min-h-[80px]"
-                                />
-                                <div className="flex space-x-2">
-                                  <Button 
-                                    size="sm" 
-                                    variant="default"
-                                    onClick={() => handleSave(categoryIndex, fieldIndex)}
-                                  >
-                                    <Save className="h-4 w-4 mr-1" />
-                                    Save
-                                  </Button>
-                                  <Button 
-                                    size="sm" 
-                                    variant="outline"
-                                    onClick={handleCancel}
-                                  >
-                                    <X className="h-4 w-4 mr-1" />
-                                    Cancel
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="flex items-center justify-between">
-                                <div className="overflow-hidden">
-                                  {field.subjectValue}
-                                </div>
-                                {field.hasMajorDeviation && (
-                                  <TooltipProvider>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <AlertTriangle className="h-4 w-4 text-destructive ml-2 flex-shrink-0" />
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p>Major deviation detected</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                )}
-                              </div>
-                            )}
-                          </TableCell>
-                          <TableCell>{field.predicateValue}</TableCell>
-                          <TableCell>
-                            {editingField !== field && (
-                              <Button 
-                                size="sm" 
-                                variant="ghost"
-                                onClick={() => handleEdit(field)}
-                              >
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                            )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+    <div className="space-y-6">
+      {/* Device Overview Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader className="bg-primary bg-opacity-10">
+            <CardTitle className="text-lg">Subject Device</CardTitle>
+            <CardDescription>Your device under review</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="space-y-2">
+              <div>
+                <span className="font-medium">Device Name:</span> {subjectDevice.deviceName}
+              </div>
+              <div>
+                <span className="font-medium">Device Type:</span> {subjectDevice.deviceType}
+              </div>
+              <div>
+                <span className="font-medium">Class:</span> {subjectDevice.deviceClass}
+              </div>
+              {subjectDevice.productCode && (
+                <div>
+                  <span className="font-medium">Product Code:</span> 
+                  <Badge variant="outline" className="ml-2">{subjectDevice.productCode}</Badge>
                 </div>
-              ))}
+              )}
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="bg-secondary bg-opacity-10">
+            <CardTitle className="text-lg">Predicate Device</CardTitle>
+            <CardDescription>Selected comparison device</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <div className="space-y-2">
+              <div>
+                <span className="font-medium">Device Name:</span> {predicateDevice.deviceName}
+              </div>
+              <div>
+                <span className="font-medium">Manufacturer:</span> {predicateDevice.manufacturer}
+              </div>
+              <div>
+                <span className="font-medium">K Number:</span> 
+                <Badge variant="outline" className="ml-2">{predicateDevice.kNumber}</Badge>
+              </div>
+              {predicateDevice.productCode && (
+                <div>
+                  <span className="font-medium">Product Code:</span> 
+                  <Badge variant="outline" className="ml-2">{predicateDevice.productCode}</Badge>
+                </div>
+              )}
+              {predicateDevice.decisionDate && (
+                <div>
+                  <span className="font-medium">Decision Date:</span> {predicateDevice.decisionDate}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Overall Equivalence Status */}
+      {overallStatus && (
+        <Card className={`border-${overallStatus.color}-600 bg-${overallStatus.color}-50`}>
+          <CardHeader>
+            <div className="flex items-center">
+              {overallStatus.icon}
+              <CardTitle>Overall Status: {overallStatus.status}</CardTitle>
+            </div>
+            <CardDescription>
+              {overallStatus.description}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-2">
+              <div className="text-sm">
+                <span className="font-medium">Equivalence Confidence:</span> {equivalenceData.confidenceScore}%
+              </div>
+              <Separator orientation="vertical" className="h-5" />
+              <div className="text-sm">
+                <span className="font-medium">Analysis Date:</span> {new Date().toLocaleDateString()}
+              </div>
+              {equivalenceData.regulatoryPath && (
+                <>
+                  <Separator orientation="vertical" className="h-5" />
+                  <div className="text-sm">
+                    <span className="font-medium">Suggested Path:</span> {equivalenceData.regulatoryPath}
+                  </div>
+                </>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Equivalence Comparisons Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Substantial Equivalence Analysis</CardTitle>
+          <CardDescription>
+            Comparison of key characteristics between subject and predicate devices
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ScrollArea className="h-[500px] rounded-md border">
+            <div className="p-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[200px]">Characteristic</TableHead>
+                    <TableHead>Subject Device</TableHead>
+                    <TableHead>Predicate Device</TableHead>
+                    <TableHead className="w-[120px] text-center">Equivalence</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {equivalenceData.comparisons.map((comparison, index) => (
+                    <TableRow key={index}>
+                      <TableCell className="font-medium">{comparison.characteristic}</TableCell>
+                      <TableCell>{comparison.subjectValue}</TableCell>
+                      <TableCell>{comparison.predicateValue}</TableCell>
+                      <TableCell className="text-center">
+                        {renderComparisonOutcome(comparison)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </ScrollArea>
-        </div>
-      </CardContent>
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <div className="text-sm text-muted-foreground">
+            {equivalenceData.comparisons.length} characteristics compared
+          </div>
+          <Button onClick={onRefresh} disabled={isLoading}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh Analysis
+          </Button>
+        </CardFooter>
+      </Card>
       
-      <CardFooter className="flex justify-between">
-        <div>
-          {deviations.length > 0 && (
-            <p className="text-sm text-destructive flex items-center">
-              <AlertTriangle className="h-4 w-4 mr-1" />
-              {deviations.length} major deviation{deviations.length !== 1 ? 's' : ''} detected. 
-              Consider addressing these before submitting.
-            </p>
-          )}
-        </div>
-        
-        <Button 
-          onClick={handleGenerateDraft}
-          disabled={isLoading}
-          className="ml-auto"
-        >
-          <FileText className="h-4 w-4 mr-2" />
-          Draft SE Section
-        </Button>
-      </CardFooter>
-    </Card>
+      {/* Detailed Analysis and Rationale */}
+      {equivalenceData.detailedRationale && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Detailed Analysis</CardTitle>
+            <CardDescription>
+              Rationale and considerations for the equivalence determination
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Accordion type="single" collapsible className="w-full">
+              {equivalenceData.detailedRationale.map((detail, index) => (
+                <AccordionItem key={index} value={`item-${index}`}>
+                  <AccordionTrigger>
+                    <div className="flex items-center">
+                      <span className="mr-2">{detail.category}</span>
+                      {detail.status === 'Substantially Equivalent' && <Badge variant="success" className="bg-green-600">Equivalent</Badge>}
+                      {detail.status === 'Not Equivalent' && <Badge variant="destructive">Not Equivalent</Badge>}
+                      {detail.status === 'Potentially Equivalent' && <Badge variant="warning" className="bg-yellow-500">Potential</Badge>}
+                      {detail.status === 'Additional Testing Required' && <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300">Testing Required</Badge>}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-4 pl-4">
+                      <p>{detail.rationale}</p>
+                      {detail.considerations && (
+                        <>
+                          <div className="font-medium mt-2">Key Considerations:</div>
+                          <ul className="list-disc pl-5 space-y-1">
+                            {detail.considerations.map((consideration, i) => (
+                              <li key={i}>{consideration}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
 

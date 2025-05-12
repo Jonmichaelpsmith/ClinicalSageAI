@@ -1,141 +1,128 @@
 import React, { useState, useEffect } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, Save, Clipboard, CalendarClock, FileCheck2 } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ArrowLeft, RefreshCw, Save, FileText, Clipboard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import FDA510kService from '../../services/FDA510kService';
+
+import { PredicateSearch } from './PredicateSearch';
+import { EquivalenceTable } from './EquivalenceTable';
 import { Editor } from '@/components/ui/editor';
-import PredicateSearch from './PredicateSearch';
-import EquivalenceTable from './EquivalenceTable';
-import { useTenant } from '@/contexts/TenantContext';
 
 /**
  * PredicateAnalysis Component
  * 
- * This component provides a complete workflow for finding predicate devices,
- * analyzing substantial equivalence, and drafting the SE section for the 510(k).
+ * This component combines predicate device search with
+ * substantial equivalence analysis and recommendations.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.deviceProfile - The user's device profile
+ * @param {Function} props.onNavigateBack - Callback to navigate back
+ * @param {Object} props.initialPredicate - Initial predicate device, if any
  */
-const PredicateAnalysis = ({ 
+export const PredicateAnalysis = ({ 
   deviceProfile, 
-  onDraftFinalize, 
   onNavigateBack,
-  onSaveDraft,
-  initialDraft = null 
+  initialPredicate = null
 }) => {
   const [activeTab, setActiveTab] = useState('search');
-  const [selectedPredicate, setSelectedPredicate] = useState(null);
-  const [draftText, setDraftText] = useState('');
-  const [editorValue, setEditorValue] = useState('');
+  const [selectedPredicate, setSelectedPredicate] = useState(initialPredicate);
+  const [equivalenceData, setEquivalenceData] = useState(null);
+  const [recommendations, setRecommendations] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { currentOrganization } = useTenant();
 
-  // Initialize editor with initial draft if available
+  // Set initial predicate if provided
   useEffect(() => {
-    if (initialDraft) {
-      setDraftText(initialDraft);
-      setEditorValue(initialDraft);
-      setActiveTab('editor');
+    if (initialPredicate) {
+      setSelectedPredicate(initialPredicate);
+      setActiveTab('equivalence');
+      generateEquivalenceAnalysis(initialPredicate);
     }
-  }, [initialDraft]);
+  }, [initialPredicate]);
 
   // Handle predicate device selection
   const handlePredicateSelect = (predicate) => {
     setSelectedPredicate(predicate);
-    setActiveTab('analysis');
+    setActiveTab('equivalence');
+    generateEquivalenceAnalysis(predicate);
+  };
+
+  // Generate equivalence analysis when a predicate is selected
+  const generateEquivalenceAnalysis = async (predicate) => {
+    if (!deviceProfile || !predicate) {
+      return;
+    }
+
+    setIsLoading(true);
     
-    toast({
-      title: "Predicate Device Selected",
-      description: `${predicate.deviceName} (${predicate.kNumber}) has been selected as your predicate device.`,
-      duration: 3000,
-    });
-  };
-
-  // Handle substantial equivalence draft generation
-  const handleDraftGenerate = (generatedText) => {
-    setDraftText(generatedText);
-    setEditorValue(generatedText);
-    setActiveTab('editor');
-    
-    toast({
-      title: "Draft Generated",
-      description: "Substantial Equivalence section has been drafted. You can now edit and finalize it.",
-      duration: 3000,
-    });
-  };
-
-  // Handle editor content change
-  const handleEditorChange = (value) => {
-    setEditorValue(value);
-  };
-
-  // Save draft to parent component
-  const handleSaveDraft = () => {
-    if (onSaveDraft) {
-      onSaveDraft(editorValue, selectedPredicate);
+    try {
+      const analysis = await FDA510kService.draftEquivalence(
+        deviceProfile,
+        predicate
+      );
       
+      setEquivalenceData(analysis);
+      
+      // Generate recommendations based on equivalence analysis
+      if (analysis) {
+        const recommendations = await FDA510kService.getRecommendations(
+          deviceProfile,
+          predicate,
+          analysis
+        );
+        
+        setRecommendations(recommendations.text || '');
+      }
+    } catch (error) {
+      console.error('Error generating equivalence analysis:', error);
       toast({
-        title: "Draft Saved",
-        description: "Your Substantial Equivalence draft has been saved.",
-        duration: 3000,
+        title: "Analysis Failed",
+        description: "Failed to generate equivalence analysis. Please try again.",
+        variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Finalize draft and add to 510(k) report
-  const handleFinalize = () => {
-    if (onDraftFinalize) {
-      onDraftFinalize({
-        content: editorValue,
-        predicateDevice: selectedPredicate,
-        sectionKey: 'substantialEquivalence',
-        timestamp: new Date().toISOString()
-      });
-      
-      toast({
-        title: "Section Added to Report",
-        description: "The Substantial Equivalence section has been added to your 510(k) report.",
-        duration: 3000,
-      });
-    }
+  // Refresh the analysis
+  const handleRefreshAnalysis = () => {
+    generateEquivalenceAnalysis(selectedPredicate);
+  };
+
+  // Save the analysis and recommendations
+  const handleSaveAnalysis = () => {
+    toast({
+      title: "Analysis Saved",
+      description: "Your equivalence analysis has been saved successfully.",
+    });
   };
 
   return (
-    <div className="flex flex-col w-full h-full space-y-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center">
-          {onNavigateBack && (
-            <Button variant="ghost" size="sm" onClick={onNavigateBack} className="mr-2">
-              <ArrowLeft className="h-4 w-4 mr-1" />
-              Back
-            </Button>
-          )}
-          <h2 className="text-xl font-semibold">Predicate Device Analysis</h2>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="space-y-1">
+          <h2 className="text-2xl font-bold">Predicate Device Analysis</h2>
+          <p className="text-muted-foreground">
+            Search for and analyze substantial equivalence to predicate devices.
+          </p>
         </div>
-        
-        <div className="flex items-center space-x-2">
-          {activeTab === 'editor' && (
-            <>
-              <Button variant="outline" size="sm" onClick={handleSaveDraft}>
-                <Save className="h-4 w-4 mr-1" />
-                Save Draft
-              </Button>
-              <Button size="sm" onClick={handleFinalize}>
-                <FileCheck2 className="h-4 w-4 mr-1" />
-                Add to Report
-              </Button>
-            </>
-          )}
-        </div>
+        <Button variant="outline" onClick={onNavigateBack}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Device Profile
+        </Button>
       </div>
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <TabsList className="grid grid-cols-3 mb-4">
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-3 mb-6">
           <TabsTrigger value="search" className="flex items-center">
             <FileText className="h-4 w-4 mr-2" />
             Find Predicate
           </TabsTrigger>
           <TabsTrigger 
-            value="analysis" 
+            value="equivalence" 
             className="flex items-center"
             disabled={!selectedPredicate}
           >
@@ -143,81 +130,59 @@ const PredicateAnalysis = ({
             Equivalence Analysis
           </TabsTrigger>
           <TabsTrigger 
-            value="editor" 
+            value="recommendations" 
             className="flex items-center"
-            disabled={!draftText}
+            disabled={!equivalenceData}
           >
-            <CalendarClock className="h-4 w-4 mr-2" />
-            Draft SE Section
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Recommendations
           </TabsTrigger>
         </TabsList>
-        
-        <div className="flex-1 relative">
-          <TabsContent value="search" className="absolute inset-0 overflow-auto">
-            <PredicateSearch 
-              onPredicateSelect={handlePredicateSelect}
-              deviceProfile={deviceProfile}
-            />
-          </TabsContent>
-          
-          <TabsContent value="analysis" className="absolute inset-0 overflow-auto">
-            {selectedPredicate ? (
-              <EquivalenceTable 
-                deviceProfile={deviceProfile}
-                predicateDevice={selectedPredicate}
-                onDraftGenerate={handleDraftGenerate}
-              />
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Equivalence Analysis</CardTitle>
-                  <CardDescription>
-                    Please select a predicate device first
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button onClick={() => setActiveTab('search')}>
-                    Find Predicate Device
+
+        <TabsContent value="search">
+          <PredicateSearch 
+            deviceProfile={deviceProfile}
+            onSelect={handlePredicateSelect}
+          />
+        </TabsContent>
+
+        <TabsContent value="equivalence">
+          <EquivalenceTable 
+            subjectDevice={deviceProfile}
+            predicateDevice={selectedPredicate}
+            equivalenceData={equivalenceData}
+            isLoading={isLoading}
+            onRefresh={handleRefreshAnalysis}
+          />
+        </TabsContent>
+
+        <TabsContent value="recommendations">
+          <Card>
+            <CardHeader>
+              <CardTitle>Regulatory Recommendations</CardTitle>
+              <CardDescription>
+                Based on the substantial equivalence analysis, here are recommended steps and considerations.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Editor 
+                  value={recommendations}
+                  onChange={setRecommendations}
+                  placeholder="Loading recommendations..."
+                  className="min-h-[300px] border rounded-md"
+                />
+                
+                <div className="flex justify-end">
+                  <Button onClick={handleSaveAnalysis} className="ml-2">
+                    <Save className="h-4 w-4 mr-2" />
+                    Save Recommendations
                   </Button>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="editor" className="absolute inset-0 overflow-hidden flex flex-col">
-            <Card className="flex-1 flex flex-col">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-lg">
-                  Substantial Equivalence Draft
-                </CardTitle>
-                <CardDescription>
-                  Edit the draft below to finalize your substantial equivalence statement
-                </CardDescription>
-              </CardHeader>
-              
-              <CardContent className="flex-1 p-0 pb-0">
-                <div className="border rounded-md h-full mx-6">
-                  <Editor 
-                    value={editorValue}
-                    onChange={handleEditorChange}
-                    placeholder="Substantial equivalence content will appear here..."
-                  />
                 </div>
-              </CardContent>
-              
-              <CardFooter className="pt-4 flex justify-end space-x-2">
-                <Button variant="outline" onClick={handleSaveDraft}>
-                  <Save className="h-4 w-4 mr-1" />
-                  Save Draft
-                </Button>
-                <Button onClick={handleFinalize}>
-                  <FileCheck2 className="h-4 w-4 mr-1" />
-                  Add to Report
-                </Button>
-              </CardFooter>
-            </Card>
-          </TabsContent>
-        </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
     </div>
   );
