@@ -140,6 +140,10 @@ export default function CoAuthor() {
   // Structured Content Blocks state
   const [newDocumentDialogOpen, setNewDocumentDialogOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [contentAtoms, setContentAtoms] = useState([]);
+  const [isLoadingAtoms, setIsLoadingAtoms] = useState(false);
+  const [selectedContentAtom, setSelectedContentAtom] = useState(null);
+  const [atomRegionFilter, setAtomRegionFilter] = useState('US');
   const [selectedContentBlocks, setSelectedContentBlocks] = useState([]);
   const [documentTitle, setDocumentTitle] = useState('');
   const [documentModule, setDocumentModule] = useState('');
@@ -419,6 +423,134 @@ export default function CoAuthor() {
   ]);
 
   // Enhanced Structured Content Blocks - Content Atoms Registry with ICH-compliant validation rules
+  // Content Atom Interface - matches database schema
+  /*
+   * ContentAtom {
+   *   atom_id: number,
+   *   region: string,         // 'US','EU','CA','JP','CN','AU','GLOBAL'
+   *   module: number,         // 1–5
+   *   section_code: string,   // '2.5','3.2.P'…
+   *   type: string,           // 'narrative','table','figure'
+   *   schema_json: Object,    // JSON Schema for this atom
+   *   ui_config: Object,      // How to render/edit (labels, placeholders)
+   *   created_by: number,     // References Users(user_id)
+   *   created_at: Date        // Timestamp
+   * }
+   */
+
+  // ContentAtom API functions - integrates with backend/routes/atoms.js
+  
+  // Function to fetch content atoms from API
+  const fetchContentAtoms = async (filters = {}) => {
+    try {
+      setIsLoadingAtoms(true);
+      
+      // In a production implementation, we call the actual backend API
+      // with proper query params for filtering
+      const queryParams = new URLSearchParams();
+      if (filters.region) queryParams.append('region', filters.region);
+      if (filters.module) queryParams.append('module', filters.module);
+      if (filters.section) queryParams.append('section', filters.section);
+      
+      try {
+        const response = await fetch(`/api/atoms?${queryParams.toString()}`);
+        if (response.ok) {
+          const data = await response.json();
+          setContentAtoms(data);
+          return;
+        }
+      } catch (error) {
+        console.log("Backend API not available, using mock data:", error);
+      }
+      
+      // For development, we'll use the registry in the component
+      let atomsFromRegistry = [
+        ...contentBlockRegistry.tables.map(table => ({
+          atom_id: parseInt(table.id.split('-')[1]),
+          region: table.regions[0] || 'GLOBAL',
+          module: parseInt(table.moduleId.replace('module', '')),
+          section_code: table.section,
+          type: 'table',
+          schema_json: table.schema,
+          ui_config: { template: table.template },
+          created_by: 1,
+          created_at: new Date()
+        })),
+        ...contentBlockRegistry.narratives.map(narrative => ({
+          atom_id: parseInt(narrative.id.split('-')[1]),
+          region: narrative.regions[0] || 'GLOBAL',
+          module: parseInt(narrative.moduleId.replace('module', '')),
+          section_code: narrative.section,
+          type: 'narrative',
+          schema_json: narrative.schema,
+          ui_config: { template: narrative.template },
+          created_by: 1,
+          created_at: new Date()
+        })),
+        ...contentBlockRegistry.figures.map(figure => ({
+          atom_id: parseInt(figure.id.split('-')[1]),
+          region: figure.regions[0] || 'GLOBAL',
+          module: parseInt(figure.moduleId.replace('module', '')),
+          section_code: figure.section,
+          type: 'figure',
+          schema_json: figure.schema,
+          ui_config: { template: figure.template },
+          created_by: 1,
+          created_at: new Date()
+        }))
+      ];
+      
+      setContentAtoms(atomsFromRegistry);
+    } catch (error) {
+      console.error("Error fetching content atoms:", error);
+    } finally {
+      setIsLoadingAtoms(false);
+    }
+  };
+
+  // Load content atoms on component mount
+  useEffect(() => {
+    fetchContentAtoms();
+  }, []);
+
+  // Create a new content atom (Admin only)
+  const createContentAtom = async (atomData) => {
+    try {
+      const response = await fetch('/api/atoms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(atomData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error creating content atom: ${response.statusText}`);
+      }
+      
+      const newAtom = await response.json();
+      // Add the new atom to the state
+      setContentAtoms(prevAtoms => [...prevAtoms, newAtom]);
+      return newAtom;
+    } catch (error) {
+      console.error("Error creating content atom:", error);
+      throw error;
+    }
+  };
+
+  // Filter content atoms by criteria
+  const filterContentAtoms = (criteria) => {
+    if (!contentAtoms.length) return [];
+    
+    return contentAtoms.filter(atom => {
+      if (criteria.region && atom.region !== criteria.region) return false;
+      if (criteria.module && atom.module !== criteria.module) return false;
+      if (criteria.section && !atom.section_code.startsWith(criteria.section)) return false;
+      if (criteria.type && atom.type !== criteria.type) return false;
+      return true;
+    });
+  };
+
   const contentBlockRegistry = {
     // Table blocks - discrete, reusable content atoms with metadata
     tables: [
