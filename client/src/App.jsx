@@ -28,8 +28,9 @@ const LoadingPage = () => (
   </div>
 );
 
-// Eagerly load the landing page for faster initial render
+// Eagerly load the landing pages for faster initial render
 import ClientPortalLanding from './pages/ClientPortalLanding';
+import HomeLanding from './pages/HomeLanding';
 
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
@@ -180,8 +181,10 @@ function App() {
                 "p-4 mt-24"
               }>
               <Switch>
-              {/* Main Portal Landing Pages - both root and /client-portal go to same component */}
-              <Route path="/" component={ClientPortalLanding} />
+              {/* Main Landing Page is the default entry point */}
+              <Route path="/" component={HomeLanding} />
+              
+              {/* Client Portal becomes a secondary entry point */}
               <Route path="/client-portal" component={ClientPortalLanding} />
 
               {/* Client Portal Sub-Pages */}
