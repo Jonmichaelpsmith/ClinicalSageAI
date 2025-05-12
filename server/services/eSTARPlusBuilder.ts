@@ -349,22 +349,19 @@ export class eSTARPlusBuilder {
     submissionDate: string;
   }> {
     try {
-      // Query the database for project metadata
-      // Use Drizzle ORM instead of raw query
-      const project = await db?.fda510kProjects.findFirst({
+      // Query the database for project metadata using the FDA510kProject type
+      const project = await db.query.fda510kProjects.findFirst({
         where: (projects, { eq }) => eq(projects.id, projectId)
       });
       
       if (!project) {
         throw new Error(`Project not found: ${projectId}`);
       }
-      
-      const projectData = project;
-      
+                  
       return {
-        manufacturer: projectData.manufacturer_name || 'Unknown Manufacturer',
-        deviceName: projectData.device_name || 'Unknown Device',
-        sequence: projectData.sequence_number || '001',
+        manufacturer: project.metadata?.manufacturerName || 'Unknown Manufacturer',
+        deviceName: project.deviceName || 'Unknown Device',
+        sequence: project.metadata?.sequenceNumber || '001',
         submissionDate: new Date().toISOString()
       };
     } catch (error) {
@@ -395,32 +392,29 @@ export class eSTARPlusBuilder {
     pdf?: string;
   }>> {
     try {
-      // Query the database for final sections
-      // Use Drizzle ORM for sections query
-      const sections = await db?.fda510kSections.findMany({
+      // Query the database for completed sections using the FDA510kSection type
+      const sections = await db.query.fda510kSections.findMany({
         where: (sections, { eq, and }) => and(
           eq(sections.projectId, projectId),
-          eq(sections.status, 'final')
+          eq(sections.status, 'completed')
         ),
-        orderBy: (sections, { asc }) => [asc(sections.sectionOrder)]
+        orderBy: (sections, { asc }) => [asc(sections.order)]
       });
       
       if (!sections || sections.length === 0) {
-        console.warn(`No final sections found for project: ${projectId}`);
-        // Return mock sections for development
-        return eSTARPlusBuilder.getMockSections();
+        console.warn(`No completed sections found for project: ${projectId}`);
+        return [];
       }
       
       return sections.map(section => ({
         id: section.id,
         name: section.sectionKey,
         title: section.title,
-        filePathDOCX: section.filePath
+        filePathDOCX: section.filePathDOCX || undefined
       }));
     } catch (error) {
       console.error('Error fetching project sections:', error);
-      // Return mock sections for development
-      return eSTARPlusBuilder.getMockSections();
+      return [];
     }
   }
   
