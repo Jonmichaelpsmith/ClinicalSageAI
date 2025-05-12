@@ -6,7 +6,7 @@
  */
 
 import { Pool } from 'pg';
-import { setupLiteratureSystem } from './setupLiterature';
+import setupLiterature from './setupLiterature';
 
 // Initialize database connection pool
 const pool = new Pool({
