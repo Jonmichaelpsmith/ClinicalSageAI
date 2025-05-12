@@ -3478,10 +3478,56 @@ export default function CoAuthor() {
                 </div>
               </div>
             ) : (
-              <GoogleDocsEmbed 
-                documentId={selectedDocument?.id === 1 ? "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4"}
-                documentName={selectedDocument?.title || "Module 2.5 Clinical Overview"}
-              />
+              <div className="flex flex-col h-full">
+                <div className="flex justify-between items-center mb-2 px-2 py-1 bg-amber-50 border border-amber-200 rounded-md">
+                  <div className="flex items-center">
+                    <Sparkles className="h-4 w-4 mr-1 text-amber-500" />
+                    <span className="text-sm font-medium text-amber-700">Smart Reuse Tools</span>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-2 text-amber-600 border-amber-200 bg-white"
+                      onClick={() => {
+                        // Prompt the user to select text
+                        const selection = prompt("Please copy and paste the text you want to find similar content for:");
+                        if (selection && selection.length > 10) {
+                          setSelectedText(selection);
+                          findSimilarContent(selection);
+                          setShowSmartReusePanel(true);
+                        } else if (selection) {
+                          toast({
+                            title: "Text Selection Too Short",
+                            description: "Please select at least 10 characters of text to find similar content.",
+                            variant: "default",
+                          });
+                        }
+                      }}
+                    >
+                      <Search className="h-3 w-3 mr-1" />
+                      Find Similar Content
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-2 text-blue-600 border-blue-200 bg-white"
+                      onClick={() => setShowChatDossier(true)}
+                    >
+                      <MessageSquare className="h-3 w-3 mr-1" />
+                      Chat with Dossier
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="flex-1 border rounded-md">
+                  <GoogleDocsEmbed 
+                    documentId={selectedDocument?.id === 1 ? "1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8" : "1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4"}
+                    documentName={selectedDocument?.title || "Module 2.5 Clinical Overview"}
+                  />
+                </div>
+              </div>
             )}
           </Suspense>
           
