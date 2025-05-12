@@ -13,7 +13,8 @@ import { isFeatureEnabled } from '../flags/featureFlags';
 import { 
   DeviceProfileForm, 
   PredicateAnalysis, 
-  EnhancedLiteratureDiscovery 
+  EnhancedLiteratureDiscovery,
+  PathwayAdvisorCard
 } from '../components/510k';
 import { DocumentSectionRecommender } from '../components/documentrecommender';
 
@@ -119,10 +120,18 @@ const FDA510kPage = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
+        <TabsList className="grid grid-cols-5 mb-8">
           <TabsTrigger value="deviceProfile" className="flex items-center">
             <Database className="h-4 w-4 mr-2" />
             Device Profile
+          </TabsTrigger>
+          <TabsTrigger 
+            value="pathwayAdvisor" 
+            className="flex items-center"
+            disabled={!deviceProfile || !isPathwayAdvisorEnabled}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            Pathway Advisor
           </TabsTrigger>
           <TabsTrigger 
             value="predicateAnalysis" 
@@ -131,6 +140,14 @@ const FDA510kPage = () => {
           >
             <Clipboard className="h-4 w-4 mr-2" />
             Predicate Analysis
+          </TabsTrigger>
+          <TabsTrigger 
+            value="literatureDiscovery" 
+            className="flex items-center"
+            disabled={!deviceProfile || !isLiteratureDiscoveryEnabled}
+          >
+            <Search className="h-4 w-4 mr-2" />
+            Literature Discovery
           </TabsTrigger>
           <TabsTrigger 
             value="documentRecommender" 

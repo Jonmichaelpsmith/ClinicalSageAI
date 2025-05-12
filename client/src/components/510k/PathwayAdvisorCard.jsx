@@ -1,245 +1,212 @@
+/**
+ * Pathway Advisor Card Component
+ * 
+ * This component displays a recommended regulatory pathway for a 510(k) submission
+ * based on the device profile. It allows the user to confirm the pathway and proceed
+ * with the submission.
+ */
+
 import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  FileText,
+  Clock,
+  CheckCircle,
+  AlertTriangle,
+  ArrowRight
+} from "lucide-react";
 import FDA510kService from '../../services/FDA510kService';
 
-/**
- * PathwayAdvisorCard Component
- * 
- * This component provides a UI for displaying regulatory pathway
- * recommendations based on device characteristics and predicates.
- */
-const PathwayAdvisorCard = ({
-  deviceProfile,
-  predicateDevices = [],
-  onPathwaySelect,
-  selectedPathway = null,
-  organizationId = null
-}) => {
-  const [isLoading, setIsLoading] = useState(false);
+const PathwayAdvisorCard = ({ projectId, onConfirm }) => {
   const [recommendation, setRecommendation] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [showDetails, setShowDetails] = useState(false);
-  
-  // Get pathway recommendation when device profile or predicates change
+  const { toast } = useToast();
+
   useEffect(() => {
-    if (deviceProfile && deviceProfile.name) {
-      analyzePathway();
+    if (projectId) {
+      fetchPathwayRecommendation();
     }
-  }, [deviceProfile, predicateDevices]);
-  
-  // Analyze regulatory pathway based on device profile and predicates
-  const analyzePathway = async () => {
-    if (!deviceProfile) return;
-    
+  }, [projectId]);
+
+  const fetchPathwayRecommendation = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // Call the FDA510kService to analyze regulatory pathway
-      const result = await FDA510kService.analyzeRegulatoryPathway({
-        ...deviceProfile,
-        predicates: predicateDevices
-      }, organizationId);
-      
-      if (result && result.recommendation) {
-        setRecommendation(result.recommendation);
-      } else {
-        setRecommendation(null);
-        if (result && result.error) {
-          setError(result.error);
-        }
-      }
-    } catch (error) {
-      console.error('Error analyzing regulatory pathway:', error);
-      setError('Failed to analyze regulatory pathway. Please try again.');
+      const result = await FDA510kService.getPathwayRecommendation(projectId);
+      setRecommendation(result);
+    } catch (err) {
+      console.error('Error fetching pathway recommendation:', err);
+      setError('Failed to retrieve pathway recommendation. Please try again.');
+      toast({
+        title: "Error",
+        description: "Could not retrieve pathway recommendation",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
   };
-  
-  // Handle pathway selection
-  const handlePathwaySelect = (pathway) => {
-    if (onPathwaySelect) {
-      onPathwaySelect(pathway);
+
+  const handleConfirm = () => {
+    if (recommendation) {
+      onConfirm(recommendation.pathway);
+      toast({
+        title: "Pathway Selected",
+        description: `${recommendation.pathway} confirmed as submission pathway`,
+      });
     }
   };
-  
-  // Get confidence level color based on confidence score
-  const getConfidenceColor = (confidence) => {
-    if (confidence >= 0.8) return 'text-green-700 bg-green-100';
-    if (confidence >= 0.6) return 'text-yellow-700 bg-yellow-100';
-    return 'text-red-700 bg-red-100';
+
+  const getPathwayBadgeColor = (pathway) => {
+    const pathwayMap = {
+      'Traditional 510(k)': 'bg-blue-100 text-blue-800',
+      'Special 510(k)': 'bg-green-100 text-green-800',
+      'Abbreviated 510(k)': 'bg-purple-100 text-purple-800',
+      'De Novo': 'bg-amber-100 text-amber-800',
+      'PMA': 'bg-red-100 text-red-800'
+    };
+    
+    return pathwayMap[pathway] || 'bg-gray-100 text-gray-800';
   };
-  
-  // Get severity color for risk severity
-  const getSeverityColor = (severity) => {
-    switch (severity) {
-      case 'high': return 'text-red-700 bg-red-100';
-      case 'medium': return 'text-yellow-700 bg-yellow-100';
-      case 'low': return 'text-green-700 bg-green-100';
-      default: return 'text-gray-700 bg-gray-100';
-    }
-  };
-  
+
+  if (isLoading) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Analyzing Your Device...</CardTitle>
+          <CardDescription>
+            We're determining the optimal regulatory pathway based on your device profile
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center items-center py-8">
+          <div className="animate-pulse flex flex-col items-center">
+            <FileText className="h-16 w-16 text-muted-foreground mb-4" />
+            <p className="text-muted-foreground">Analyzing device classification and predicates...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Pathway Analysis Failed</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+          <Button 
+            className="mt-4" 
+            onClick={fetchPathwayRecommendation}
+          >
+            Try Again
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!recommendation) {
+    return (
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Regulatory Pathway Advisor</CardTitle>
+          <CardDescription>
+            Waiting for device profile to analyze the optimal regulatory pathway
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="py-6">
+          <div className="flex justify-center">
+            <FileText className="h-12 w-12 text-muted-foreground" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-5">
-      <h3 className="text-lg font-medium mb-4">Regulatory Pathway Advisor</h3>
-      
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4">
-          {error}
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>Recommended Submission Pathway</CardTitle>
+        <CardDescription>
+          Based on your device profile and predicate analysis
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="flex flex-col items-center sm:flex-row sm:justify-between sm:items-start border rounded-lg p-4 bg-muted/30">
+          <div className="flex flex-col items-center sm:items-start mb-4 sm:mb-0">
+            <span className="text-sm text-muted-foreground mb-1">Recommended Pathway</span>
+            <Badge className={`text-lg px-3 py-1 ${getPathwayBadgeColor(recommendation.pathway)}`}>
+              {recommendation.pathway}
+            </Badge>
+          </div>
+          <div className="flex items-center">
+            <Clock className="h-4 w-4 mr-1 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">
+              Estimated Timeline: {recommendation.estimatedTimelineInDays} days
+            </span>
+          </div>
         </div>
-      )}
-      
-      {!recommendation && !isLoading && !error && (
-        <div className="bg-yellow-50 border border-yellow-100 text-yellow-800 px-4 py-3 rounded mb-4">
-          No pathway recommendation available. Please ensure your device profile is complete and try again.
+
+        <div>
+          <h3 className="font-medium mb-2">Rationale</h3>
+          <p className="text-sm text-muted-foreground">{recommendation.rationale}</p>
         </div>
-      )}
-      
-      {isLoading && (
-        <div className="flex justify-center items-center h-20">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-        </div>
-      )}
-      
-      {recommendation && !isLoading && (
-        <>
-          <div className="border border-gray-200 rounded-md p-4 mb-4">
-            <div className="flex justify-between items-start">
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="text-lg font-semibold">{recommendation.recommendedPathway}</h4>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${getConfidenceColor(recommendation.confidenceLevel)}`}>
-                    {Math.round(recommendation.confidenceLevel * 100)}% confidence
-                  </span>
-                </div>
-                <p className="text-gray-700 mt-1">{recommendation.rationale}</p>
-              </div>
-              <button
-                onClick={() => handlePathwaySelect(recommendation.recommendedPathway)}
-                className={`px-3 py-1.5 rounded-md text-white ${
-                  selectedPathway === recommendation.recommendedPathway
-                    ? 'bg-green-600 hover:bg-green-700'
-                    : 'bg-indigo-600 hover:bg-indigo-700'
-                }`}
-              >
-                {selectedPathway === recommendation.recommendedPathway
-                  ? 'Pathway Selected'
-                  : 'Confirm Pathway'
-                }
-              </button>
-            </div>
-            
-            <div className="mt-3">
-              <button
-                onClick={() => setShowDetails(!showDetails)}
-                className="text-sm text-indigo-600 hover:text-indigo-800"
-              >
-                {showDetails ? 'Hide Details' : 'Show Details'}
-              </button>
+
+        {recommendation.alternativePathways && recommendation.alternativePathways.length > 0 && (
+          <div>
+            <h3 className="font-medium mb-2">Alternative Pathways</h3>
+            <div className="flex flex-wrap gap-2">
+              {recommendation.alternativePathways.map((path, index) => (
+                <Badge key={index} variant="outline" className="text-muted-foreground">
+                  {path}
+                </Badge>
+              ))}
             </div>
           </div>
-          
-          {showDetails && (
-            <div className="space-y-4">
-              {/* Alternative Pathways */}
-              {recommendation.alternativePathways && recommendation.alternativePathways.length > 0 && (
-                <div>
-                  <h5 className="font-medium mb-2">Alternative Pathways</h5>
-                  <div className="space-y-2">
-                    {recommendation.alternativePathways.map((alternative, index) => (
-                      <div key={index} className="border border-gray-200 rounded p-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h6 className="font-medium">{alternative.pathway}</h6>
-                            <p className="text-sm text-gray-600">{alternative.rationale}</p>
-                          </div>
-                          <button
-                            onClick={() => handlePathwaySelect(alternative.pathway)}
-                            className="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded hover:bg-gray-200"
-                          >
-                            Select
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Documentation Requirements */}
-              {recommendation.additionalDocumentationNeeded && recommendation.additionalDocumentationNeeded.length > 0 && (
-                <div>
-                  <h5 className="font-medium mb-2">Required Documentation</h5>
-                  <ul className="list-disc list-inside space-y-1">
-                    {recommendation.additionalDocumentationNeeded.map((doc, index) => (
-                      <li key={index} className="text-sm text-gray-700">{doc}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
-              {/* Regulatory Risks */}
-              {recommendation.regulatoryRisks && recommendation.regulatoryRisks.length > 0 && (
-                <div>
-                  <h5 className="font-medium mb-2">Regulatory Risks</h5>
-                  <div className="space-y-2">
-                    {recommendation.regulatoryRisks.map((risk, index) => (
-                      <div key={index} className="border border-gray-100 rounded p-2">
-                        <div className="flex items-start gap-2">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${getSeverityColor(risk.severity)}`}>
-                            {risk.severity}
-                          </span>
-                          <div>
-                            <p className="text-sm font-medium">{risk.risk}</p>
-                            <p className="text-xs text-gray-600">{risk.mitigationStrategy}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Estimated Timeline */}
-              {recommendation.estimatedTimeline && (
-                <div>
-                  <h5 className="font-medium mb-2">Estimated Timeline</h5>
-                  <div className="grid grid-cols-3 gap-2 text-center">
-                    <div className="bg-gray-50 p-2 rounded">
-                      <p className="text-xs text-gray-500">Preparation</p>
-                      <p className="font-medium">{recommendation.estimatedTimeline.preparation}</p>
-                    </div>
-                    <div className="bg-gray-50 p-2 rounded">
-                      <p className="text-xs text-gray-500">FDA Review</p>
-                      <p className="font-medium">{recommendation.estimatedTimeline.review}</p>
-                    </div>
-                    <div className="bg-gray-50 p-2 rounded">
-                      <p className="text-xs text-gray-500">Total</p>
-                      <p className="font-medium">{recommendation.estimatedTimeline.total}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </>
-      )}
-      
-      <div className="mt-4 pt-3 border-t border-gray-200">
-        <button
-          onClick={analyzePathway}
-          disabled={isLoading || !deviceProfile}
-          className={`w-full py-2 text-center rounded-md ${
-            isLoading || !deviceProfile
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-indigo-100 text-indigo-700 hover:bg-indigo-200'
-          }`}
+        )}
+
+        {recommendation.requirements && recommendation.requirements.length > 0 && (
+          <div>
+            <h3 className="font-medium mb-2">Key Requirements</h3>
+            <ul className="list-disc pl-5 text-sm text-muted-foreground space-y-1">
+              {recommendation.requirements.map((req, index) => (
+                <li key={index}>{req}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {recommendation.confidenceScore && (
+          <div className="flex items-center text-sm text-muted-foreground">
+            <CheckCircle className="h-4 w-4 mr-1 text-green-500" />
+            <span>
+              Confidence Score: {Math.round(recommendation.confidenceScore * 100)}%
+            </span>
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="flex justify-end">
+        <Button 
+          onClick={handleConfirm}
+          className="space-x-1"
         >
-          Refresh Analysis
-        </button>
-      </div>
-    </div>
+          <span>Confirm & Proceed</span>
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+      </CardFooter>
+    </Card>
   );
 };
 

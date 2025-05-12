@@ -251,6 +251,33 @@ class FDA510kService {
       throw error;
     }
   }
+  
+  /**
+   * Get recommended regulatory pathway for a specific project
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @returns {Promise<Object>} - Pathway recommendation details
+   */
+  async getPathwayRecommendation(projectId) {
+    try {
+      const response = await apiRequest({
+        url: `/api/510k/pathway-recommendation/${projectId}`,
+        method: 'GET'
+      });
+      
+      return {
+        pathway: response.recommendedPathway,
+        alternativePathways: response.alternativePathways,
+        rationale: response.rationale,
+        estimatedTimelineInDays: response.estimatedTimelineInDays,
+        requirements: response.requirements,
+        confidenceScore: response.confidenceScore
+      };
+    } catch (error) {
+      console.error('Error fetching pathway recommendation:', error);
+      throw error;
+    }
+  }
 }
 
 // Singleton instance
