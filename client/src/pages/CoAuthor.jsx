@@ -1617,7 +1617,7 @@ export default function CoAuthor() {
                                     if (blockId.startsWith('table-')) {
                                       block = contentBlockRegistry.tables.find(t => t.id === blockId);
                                       blockType = 'table';
-                                      icon = <TableIcon className="h-3 w-3 mr-1" />;
+                                      icon = <Table className="h-3 w-3 mr-1" />;
                                     } else if (blockId.startsWith('narrative-')) {
                                       block = contentBlockRegistry.narratives.find(n => n.id === blockId);
                                       blockType = 'narrative';
@@ -1794,7 +1794,7 @@ export default function CoAuthor() {
             <div className="p-6 space-y-6">
               {/* Editor Tabs */}
               <Tabs defaultValue="edit" className="w-full">
-                <TabsList className="grid w-[400px] grid-cols-3">
+                <TabsList className="grid w-[600px] grid-cols-4">
                   <TabsTrigger value="edit" className="flex items-center">
                     <Edit className="h-4 w-4 mr-2" />
                     Edit
@@ -1802,6 +1802,10 @@ export default function CoAuthor() {
                   <TabsTrigger value="view" className="flex items-center">
                     <Eye className="h-4 w-4 mr-2" />
                     Preview
+                  </TabsTrigger>
+                  <TabsTrigger value="content-atoms" className="flex items-center">
+                    <LayoutTemplate className="h-4 w-4 mr-2" />
+                    Content Atoms
                   </TabsTrigger>
                   <TabsTrigger value="history" className="flex items-center">
                     <History className="h-4 w-4 mr-2" />
