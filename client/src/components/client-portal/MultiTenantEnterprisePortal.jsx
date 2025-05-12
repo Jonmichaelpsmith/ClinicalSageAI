@@ -745,7 +745,7 @@ const MultiTenantEnterprisePortal = () => {
             >
               <div className="flex items-center whitespace-nowrap">
                 <FileCheck size={16} className="mr-2" />
-                <span className="font-semibold">CER2V</span>
+                <span className="font-semibold">Medical Device and Diagnostics</span>
               </div>
             </button>
             
@@ -942,12 +942,12 @@ const MultiTenantEnterprisePortal = () => {
           </div>
         )}
         
-        {/* CER2V Module Tab */}
+        {/* Medical Device and Diagnostics Module Tab */}
         {activeTab === 'cer2v' && !loading && !error && (
           <>
             <div className="flex items-center mb-6">
               <FileCheck className="h-6 w-6 text-green-600 mr-2" />
-              <h1 className="text-2xl font-bold text-gray-800">CER2V Module</h1>
+              <h1 className="text-2xl font-bold text-gray-800">Medical Device and Diagnostics</h1>
               <div className="ml-4 px-2 py-1 bg-green-100 text-green-800 text-xs font-medium rounded-full">
                 Enterprise Feature
               </div>
@@ -955,18 +955,18 @@ const MultiTenantEnterprisePortal = () => {
             
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               <div className="lg:col-span-2">
-                {/* Main CER2V Content - Load the actual CERV2Page component in an iframe */}
+                {/* Main Medical Device and Diagnostics Content - Load the actual CERV2Page component in an iframe */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden" style={{ height: "calc(100vh - 230px)" }}>
                   <iframe 
                     src="/cerv2" 
                     className="w-full h-full border-0"
-                    title="CER2V Module"
+                    title="Medical Device and Diagnostics"
                   ></iframe>
                 </div>
               </div>
               
               <div className="space-y-6">
-                {/* CER2V Quick Actions */}
+                {/* Medical Device and Diagnostics Quick Actions */}
                 <Card>
                   <CardHeader className="pb-3">
                     <CardTitle className="text-lg font-medium">Quick Actions</CardTitle>
