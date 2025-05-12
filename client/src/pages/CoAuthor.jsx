@@ -403,28 +403,195 @@ export default function CoAuthor() {
     }
   ]);
 
-  // Mock templates data
+  // Structured Content Blocks - Content Atoms Registry
+  const contentBlockRegistry = {
+    // Table blocks
+    tables: [
+      {
+        id: 'table-2-5-1',
+        name: 'Clinical Study Overview Table',
+        type: 'table',
+        moduleId: 'module2',
+        section: '2.5',
+        schema: {
+          columns: ['Study ID', 'Study Design', 'Population', 'Treatment', 'Endpoints', 'Results'],
+          rules: {
+            required: ['Study ID', 'Study Design', 'Endpoints'],
+            validation: {
+              'Study ID': {pattern: /^[A-Z0-9\-]+$/, message: 'Must follow standard study ID format'}
+            }
+          }
+        },
+        regions: ['FDA', 'EMA', 'PMDA'],
+        metadata: {
+          ichCompliant: true,
+          lastUpdated: '2025-04-15',
+          version: '2.3'
+        },
+        template: `<table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Study ID</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Study Design</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Population</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Treatment</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Endpoints</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Results</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">[Study ID]</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">[Study Design]</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">[Population]</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">[Treatment]</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">[Endpoints]</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">[Results]</td>
+            </tr>
+          </tbody>
+        </table>`
+      },
+      {
+        id: 'table-3-2-1',
+        name: 'Drug Substance Specification Table',
+        type: 'table',
+        moduleId: 'module3',
+        section: '3.2.S.4.1',
+        schema: {
+          columns: ['Test', 'Method', 'Acceptance Criteria', 'Reference'],
+          rules: {
+            required: ['Test', 'Method', 'Acceptance Criteria'],
+            validation: {
+              'Acceptance Criteria': {minLength: 5, message: 'Must provide detailed acceptance criteria'}
+            }
+          }
+        },
+        regions: ['FDA', 'EMA', 'Health Canada'],
+        metadata: {
+          ichCompliant: true,
+          lastUpdated: '2025-03-21',
+          version: '1.4'
+        },
+        template: `<table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Test</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acceptance Criteria</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">[Test Name]</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">[Method Description]</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">[Acceptance Criteria]</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">[Reference Method]</td>
+            </tr>
+          </tbody>
+        </table>`
+      }
+    ],
+    
+    // Narrative blocks
+    narratives: [
+      {
+        id: 'narrative-2-5-benefit-risk',
+        name: 'Benefit-Risk Assessment Framework',
+        type: 'narrative',
+        moduleId: 'module2',
+        section: '2.5.6',
+        schema: {
+          sections: ['Evidence of Benefits', 'Evidence of Risks', 'Benefit-Risk Summary'],
+          rules: {
+            required: ['Benefit-Risk Summary'],
+            wordCount: {min: 500, max: 2500}
+          }
+        },
+        regions: ['FDA', 'EMA', 'Health Canada', 'PMDA'],
+        metadata: {
+          ichCompliant: true,
+          lastUpdated: '2025-05-01',
+          version: '3.1'
+        },
+        template: `<div class="border p-4 rounded">
+          <h3 class="text-lg font-bold mb-4">Benefit-Risk Assessment Framework</h3>
+          <h4 class="font-medium mb-2">Evidence of Benefits</h4>
+          <p class="mb-4">[Insert description of benefits, including magnitude and clinical significance]</p>
+          
+          <h4 class="font-medium mb-2">Evidence of Risks</h4>
+          <p class="mb-4">[Insert description of risks, including severity, frequency, and mitigation strategies]</p>
+          
+          <h4 class="font-medium mb-2">Benefit-Risk Summary</h4>
+          <p>[Insert integrated assessment of benefits and risks, concluding with overall benefit-risk determination]</p>
+        </div>`
+      }
+    ],
+    
+    // Figure blocks
+    figures: [
+      {
+        id: 'figure-2-7-3-forest-plot',
+        name: 'Efficacy Forest Plot',
+        type: 'figure',
+        moduleId: 'module2',
+        section: '2.7.3',
+        schema: {
+          elements: ['Title', 'Legend', 'Source Data Reference'],
+          rules: {
+            required: ['Title', 'Source Data Reference'],
+            imageFormat: ['SVG', 'PNG', 'JPEG'],
+            resolution: {min: '300dpi'}
+          }
+        },
+        regions: ['FDA', 'EMA', 'PMDA'],
+        metadata: {
+          ichCompliant: true,
+          lastUpdated: '2025-03-10',
+          version: '1.2'
+        },
+        template: `<div class="border p-4 rounded">
+          <h4 class="text-lg font-medium mb-2">[Figure Title]</h4>
+          <div class="bg-gray-100 h-64 flex items-center justify-center text-gray-500 mb-2">
+            [Forest Plot Placeholder - Upload Image]
+          </div>
+          <p class="text-sm text-gray-500">Source: [Insert Data Source Reference]</p>
+          <p class="text-sm italic mt-2">[Insert Figure Legend]</p>
+        </div>`
+      }
+    ]
+  };
+
+  // Mock templates data with structured content blocks
   const [templates] = useState([
     {
       id: 101,
       name: 'Clinical Overview Template',
-      description: 'Standard template for Module 2.5 Clinical Overview',
+      description: 'Standard template for Module 2.5 Clinical Overview with structured content blocks',
       category: 'Module 2',
       lastUpdated: '2 months ago',
       regions: [
         { id: 201, name: 'FDA Module 2 Regional', region: 'US FDA', lastUpdated: '2 months ago' },
         { id: 202, name: 'EMA Module 2 Regional', region: 'EU EMA', lastUpdated: '2 months ago' }
+      ],
+      contentBlocks: [
+        'table-2-5-1',
+        'narrative-2-5-benefit-risk',
+        'figure-2-7-3-forest-plot'
       ]
     },
     {
       id: 102,
       name: 'CTD Module 3 Quality Template',
-      description: 'Comprehensive template for all Module 3 Quality sections',
+      description: 'Comprehensive template for all Module 3 Quality sections with structured content blocks',
       category: 'Module 3',
       lastUpdated: '1 month ago',
       regions: [
         { id: 201, name: 'FDA Module 3 Regional', region: 'US FDA', lastUpdated: '1 month ago' },
         { id: 202, name: 'EMA Module 3 Regional', region: 'EU EMA', lastUpdated: '1 month ago' }
+      ],
+      contentBlocks: [
+        'table-3-2-1'
       ]
     },
     {
@@ -1135,7 +1302,7 @@ export default function CoAuthor() {
                           <div>
                             <div className="font-medium">{template.name}</div>
                             <div className="text-xs text-gray-500 mt-1">{template.category} • Updated {template.lastUpdated}</div>
-                            <div className="grid grid-cols-3 gap-2 text-xs">
+                            <div className="flex flex-wrap gap-2 text-xs items-center">
                               {template.regions.map((region) => (
                                 <Badge 
                                   key={region.id}
@@ -1146,6 +1313,67 @@ export default function CoAuthor() {
                                 </Badge>
                               ))}
                             </div>
+                            
+                            {/* Display content blocks if available */}
+                            {template.contentBlocks && template.contentBlocks.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-1">
+                                {template.contentBlocks.map(blockId => {
+                                  // Find the block in the registry
+                                  let block = null;
+                                  let blockType = '';
+                                  
+                                  if (blockId.startsWith('table-')) {
+                                    block = contentBlockRegistry.tables.find(t => t.id === blockId);
+                                    blockType = 'table';
+                                  } else if (blockId.startsWith('narrative-')) {
+                                    block = contentBlockRegistry.narratives.find(n => n.id === blockId);
+                                    blockType = 'narrative';
+                                  } else if (blockId.startsWith('figure-')) {
+                                    block = contentBlockRegistry.figures.find(f => f.id === blockId);
+                                    blockType = 'figure';
+                                  }
+                                  
+                                  if (!block) return null;
+                                  
+                                  // Color based on block type
+                                  const typeColors = {
+                                    table: 'bg-blue-100 text-blue-800 border-blue-200',
+                                    narrative: 'bg-green-100 text-green-800 border-green-200',
+                                    figure: 'bg-purple-100 text-purple-800 border-purple-200'
+                                  };
+                                  
+                                  const typeIcons = {
+                                    table: (
+                                      <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H6a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                      </svg>
+                                    ),
+                                    narrative: (
+                                      <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                      </svg>
+                                    ),
+                                    figure: (
+                                      <svg className="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                      </svg>
+                                    )
+                                  };
+                                  
+                                  return (
+                                    <Badge 
+                                      key={blockId} 
+                                      variant="outline"
+                                      className={`text-xs border ${typeColors[blockType]} flex items-center`}
+                                      title={`${block.name} - Section ${block.section}`}
+                                    >
+                                      {typeIcons[blockType]}
+                                      {block.section}
+                                    </Badge>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
