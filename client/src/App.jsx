@@ -64,6 +64,7 @@ const GoogleAuthCallback = lazy(() => import('./pages/GoogleAuthCallback'));
 const ValidationDashboard = lazy(() => import('./pages/ValidationDashboard'));
 const GoogleDocsEditor = lazy(() => import('./pages/GoogleDocsEditor'));
 const DocumentTemplates = lazy(() => import('./pages/DocumentTemplates'));
+const DocumentViewer = lazy(() => import('./pages/DocumentViewer'));
 
 // Regulatory-related pages (excluding Regulatory Submissions Hub)
 const RegulatoryRiskDashboard = lazy(() => import('./pages/RegulatoryRiskDashboard'));
@@ -226,6 +227,7 @@ function App() {
               <Route path="/coauthor/editor" component={GoogleDocsEditor} /> {/* Google Docs Editor integration */}
               <Route path="/coauthor/validation" component={ValidationDashboard} /> {/* eCTD Validation Dashboard */}
               <Route path="/coauthor/templates" component={DocumentTemplates} /> {/* Document Templates Library */}
+              <Route path="/docs" component={DocumentViewer} /> {/* Simple Google Docs Viewer - Working Solution */}
               <Route path="/google/auth/callback" component={GoogleAuthCallback} /> {/* Google Auth Callback page */}
               <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
               <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}
