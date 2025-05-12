@@ -1855,6 +1855,36 @@ export default function CoAuthor() {
             <img src="https://www.trialsage.com/logo.svg" alt="TrialSage" className="h-8 mr-2" />
             <h1 className="text-2xl font-bold">eCTD Co-Author Module</h1>
           </div>
+          
+          {/* Phase 6: Vector Search in header */}
+          <div className="flex-1 mx-6 max-w-2xl">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+              <Input
+                type="search"
+                placeholder="Semantic search across all vectorized documents..."
+                className="pl-9 bg-slate-50"
+                value={semanticSearchQuery}
+                onChange={(e) => setSemanticSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && semanticSearchQuery.trim()) {
+                    setIsSearchingVectors(true);
+                    performSemanticSearch(semanticSearchQuery).then((results) => {
+                      setSemanticSearchResults(results);
+                      setShowVectorSearchDialog(true);
+                      setIsSearchingVectors(false);
+                    });
+                  }
+                }}
+              />
+              {vectorizedDocuments.length > 0 && (
+                <Badge className="absolute right-2.5 top-2 bg-blue-100 text-blue-800 hover:bg-blue-200">
+                  {vectorizedDocuments.length} docs
+                </Badge>
+              )}
+            </div>
+          </div>
+          
           <div className="flex items-center space-x-3">
             {/* Phase 6: Chat with Dossier Button */}
             <Button 
