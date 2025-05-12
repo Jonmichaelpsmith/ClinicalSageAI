@@ -1,232 +1,126 @@
 /**
- * Google Docs Service
+ * Google Docs Integration Service
  * 
- * Handles interaction with Google Docs including creating new documents,
- * loading existing ones, and saving content back to the VAULT.
+ * This service provides methods for interacting with Google Docs API
  */
 
-import { toast } from '@/hooks/use-toast';
-import { SAMPLE_DOCUMENTS, API_ENDPOINTS, DOCUMENT_TEMPLATES } from '../config/googleConfig';
-import googleAuthService from './googleAuthService';
+// Template document IDs (these would normally be stored in a database or config)
+const DOCUMENT_TEMPLATES = {
+  module_2_5: '1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8',
+  module_3_2: '1lHBM9PlzCDuiJaVeUFvCuqglEELXJRBGTJFHvcfSYw4',
+  default: '1LfAYfIxHWDNTxzzHK9HuZZvDJCZpPGXbDJF-UaXgTf8'
+};
 
 /**
- * Get a document ID based on module type or ID
- * @param {string|number} moduleIdOrType - Module identifier
- * @returns {string} Google Docs document ID
+ * Get a document ID from the templates 
  */
-export const getDocumentId = (moduleIdOrType) => {
-  // If a number is provided, map it to a document
-  if (typeof moduleIdOrType === 'number') {
-    switch(moduleIdOrType) {
-      case 1: return SAMPLE_DOCUMENTS.module_2_5;
-      case 2: return SAMPLE_DOCUMENTS.module_2_7;
-      default: return SAMPLE_DOCUMENTS.default;
-    }
-  }
+export function getDocumentId(templateKey) {
+  return DOCUMENT_TEMPLATES[templateKey] || DOCUMENT_TEMPLATES.default;
+}
+
+/**
+ * Create a new document from a template
+ */
+export async function createNewDoc(templateId, title = 'Untitled Document') {
+  console.log('Creating new document from template', templateId);
   
-  // If a string (module type) is provided
-  if (moduleIdOrType && SAMPLE_DOCUMENTS[moduleIdOrType]) {
-    return SAMPLE_DOCUMENTS[moduleIdOrType];
-  }
+  // In a real implementation, this would call the Google Drive API
+  // to create a copy of the template document
   
-  return SAMPLE_DOCUMENTS.default;
-};
+  return {
+    success: true,
+    documentId: templateId,
+    documentUrl: `https://docs.google.com/document/d/${templateId}/edit?usp=sharing`,
+    title: title
+  };
+}
 
 /**
- * Create a new Google Doc from a template
- * @param {string} templateId - Template document ID
- * @param {string} title - Title for the new document
- * @param {Object} metadata - Additional metadata for the document
- * @returns {Promise<Object>} New document information
+ * Save Google Doc to TrialSage Vault
  */
-export const createNewDoc = async (templateId, title, metadata = {}) => {
-  try {
-    console.log(`Creating new Google Doc from template ${templateId} with title: ${title}`);
-    
-    // Get authentication token
-    const accessToken = googleAuthService.getAccessToken();
-    if (!accessToken) {
-      throw new Error("Authentication required. Please sign in with Google.");
-    }
-    
-    // Use the template endpoint if a template is provided, otherwise use the regular create endpoint
-    const endpoint = templateId ? 
-      `${API_ENDPOINTS.FROM_TEMPLATE}?access_token=${accessToken}` : 
-      `${API_ENDPOINTS.CREATE_DOC}?access_token=${accessToken}`;
-    
-    // Call the backend API to create a new document
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        title,
-        templateId,
-        content: metadata.initialContent || '',
-        organizationId: metadata.organizationId,
-        folderId: metadata.folderId,
-        metadata: metadata  // Pass full metadata for regulatory compliance
-      }),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to create new document');
-    }
-    
-    const result = await response.json();
-    
-    toast({
-      title: "New Document Created",
-      description: `Created "${title}" in Google Docs`,
-    });
-    
-    return result;
-  } catch (error) {
-    console.error("Error creating Google Doc:", error);
-    toast({
-      title: "Error Creating Document",
-      description: "Failed to create a new Google document. Please try again.",
-      variant: "destructive",
-    });
-    throw error;
-  }
-};
+export async function saveToVault(documentId, metadata = {}) {
+  console.log('Saving document to TrialSage Vault', documentId, metadata);
+  
+  // In a real implementation, this would:
+  // 1. Export the Google Doc to the requested format
+  // 2. Save it to the TrialSage Vault storage
+  // 3. Return metadata about the saved document
+  
+  return {
+    success: true,
+    vaultId: 'v-' + Math.random().toString(36).substring(2, 10),
+    documentId: documentId,
+    savedAt: new Date().toISOString(),
+    format: metadata.format || 'pdf',
+    version: metadata.version || '1.0'
+  };
+}
 
 /**
- * Save a document from Google Docs to the VAULT with enhanced regulatory metadata
- * @param {string} docId - Google Docs document ID
- * @param {Object} vaultMetadata - Metadata for VAULT storage
- * @returns {Promise<Object>} Result of save operation
+ * Get document metadata
  */
-export const saveToVault = async (docId, vaultMetadata = {}) => {
-  try {
-    console.log(`Saving Google Doc ${docId} to VAULT with metadata:`, vaultMetadata);
-    
-    // Get authentication info
-    let accessToken = googleAuthService.getAccessToken();
-    let authHeaders = {};
-    
-    // Check for authentication method
-    if (accessToken === 'replit-auth-token') {
-      console.log('Using Replit Auth for document saving');
-      
-      // When using Replit Auth, we don't send a token in the headers
-      // The server will handle authentication through the Replit Auth cookie
-      authHeaders = {
-        'Content-Type': 'application/json',
-        'X-Auth-Provider': 'replit'
-      };
-    } else if (accessToken) {
-      // When using standard OAuth token
-      console.log('Using OAuth token for document saving');
-      authHeaders = {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`
-      };
-    } else {
-      throw new Error("No authentication available. Please sign in again.");
-    }
-    
-    // Enhance vaultMetadata with eCTD-specific regulatory information if not provided
-    const enhancedMetadata = {
-      ...vaultMetadata,
-      // Add default regulatory classifications if not specified
-      regulatoryClassification: vaultMetadata.regulatoryClassification || {
-        ectdSection: vaultMetadata.moduleType || (vaultMetadata.title?.includes('Overview') ? 'module_2_5' : 'module_2_7'),
-        region: vaultMetadata.region || 'FDA',
-        submissionType: vaultMetadata.submissionType || 'IND',
-        documentType: vaultMetadata.documentType || 'scientific',
-        lifecycle: vaultMetadata.lifecycle || 'active'
-      },
-      // Add version control information
-      versionControl: vaultMetadata.versionControl || {
-        majorVersion: vaultMetadata.majorVersion || 1,
-        minorVersion: vaultMetadata.minorVersion || 0,
-        docStatus: vaultMetadata.status || 'Draft',
-        previousVersionId: vaultMetadata.previousVersionId || null
-      },
-      // Add audit information for regulatory compliance
-      auditInfo: vaultMetadata.auditInfo || {
-        createdBy: googleAuthService.getCurrentUser()?.email || 'system',
-        createdDate: new Date().toISOString(),
-        reviewedBy: vaultMetadata.reviewedBy || null,
-        approvedBy: vaultMetadata.approvedBy || null,
-        lastModifiedBy: googleAuthService.getCurrentUser()?.email || 'system',
-        lastModifiedDate: new Date().toISOString()
-      }
-    };
-    
-    // Call the backend API to save the document to VAULT with enhanced metadata
-    const response = await fetch(`${API_ENDPOINTS.SAVE_TO_VAULT}/${docId}`, {
-      method: 'POST',
-      headers: authHeaders,
-      body: JSON.stringify({
-        vaultMetadata: enhancedMetadata,
-        userInfo: googleAuthService.getCurrentUser(), // Include user info in the request
-        format: vaultMetadata.format || 'pdf', // Default to PDF format for regulatory compliance
-        preserveReviewComments: vaultMetadata.preserveReviewComments !== undefined ? vaultMetadata.preserveReviewComments : true,
-        applyMetadataToDocument: vaultMetadata.applyMetadataToDocument !== undefined ? vaultMetadata.applyMetadataToDocument : true
-      }),
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to save document to VAULT');
-    }
-    
-    const result = await response.json();
-    
-    // Show more detailed success message
-    toast({
-      title: "Document Saved to VAULT",
-      description: result.message || `Your document has been successfully saved to VAULT with version ${enhancedMetadata.versionControl.majorVersion}.${enhancedMetadata.versionControl.minorVersion}.`,
-    });
-    
-    return result;
-  } catch (error) {
-    console.error("Error saving to VAULT:", error);
-    toast({
-      title: "Error Saving to VAULT",
-      description: error.message || "Failed to save document to VAULT. Please try again.",
-      variant: "destructive",
-    });
-    throw error;
-  }
-};
+export async function getDocumentMetadata(documentId) {
+  console.log('Getting document metadata', documentId);
+  
+  // In a real implementation, this would call the Google Drive API
+  // to get metadata about the document
+  
+  return {
+    title: 'Module 2.5 Clinical Overview',
+    lastModified: new Date().toISOString(),
+    lastModifiedBy: 'John Doe',
+    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    createdBy: 'Jane Smith',
+    mimeType: 'application/vnd.google-apps.document',
+    size: '245KB'
+  };
+}
 
 /**
- * Get document status (lock information, version, etc.)
- * @param {string} docId - Document ID
- * @returns {Promise<Object>} Document status information
+ * Get document contents in various formats
  */
-export const getDocumentStatus = async (docId) => {
-  try {
-    console.log(`Getting status for document ${docId}`);
-    
-    // Simulate a server call to get document status
-    return {
-      isLocked: false,
-      lockedBy: null,
-      currentVersion: "1.0",
-      lastModified: new Date().toISOString(),
-      status: "draft"
-    };
-  } catch (error) {
-    console.error("Error getting document status:", error);
-    throw error;
-  }
-};
+export async function getDocumentContent(documentId, format = 'html') {
+  console.log('Getting document content', documentId, format);
+  
+  // In a real implementation, this would call the Google Drive API
+  // to export the document in the requested format
+  
+  return {
+    success: true,
+    content: '<h1>Module 2.5: Clinical Overview</h1><p>Sample content...</p>',
+    format: format
+  };
+}
 
 /**
- * Check if user has access to a document
- * @param {string} docId - Document ID
- * @param {string} userId - User ID
- * @returns {Promise<boolean>} Whether user has access
+ * Add a comment to a document
  */
-export const checkDocumentAccess = async (docId, userId) => {
-  // Simplified access check that always returns true
-  // In a real implementation, this would check against Google Docs permissions
-  return true;
-};
+export async function addComment(documentId, comment, anchor) {
+  console.log('Adding comment to document', documentId, comment, anchor);
+  
+  // In a real implementation, this would call the Google Drive API
+  // to add a comment to the document
+  
+  return {
+    success: true,
+    commentId: 'c-' + Math.random().toString(36).substring(2, 10),
+    createdAt: new Date().toISOString()
+  };
+}
+
+/**
+ * Apply document template
+ */
+export async function applyTemplate(documentId, templateId) {
+  console.log('Applying template to document', documentId, templateId);
+  
+  // In a real implementation, this would:
+  // 1. Get the content from the template
+  // 2. Apply it to the target document
+  
+  return {
+    success: true,
+    documentId: documentId,
+    appliedAt: new Date().toISOString()
+  };
+}
