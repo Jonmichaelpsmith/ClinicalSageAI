@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "eSTAR Submission Manifest",
+  "description": "Schema for FDA eSTAR submission manifest XML document",
+  "type": "object",
+  "required": ["estarSubmission"],
+  "properties": {
+    "estarSubmission": {
+      "type": "object",
+      "required": ["company", "deviceName", "sequence", "submissionDate", "documents"],
+      "properties": {
+        "company": {
+          "type": "string",
+          "description": "The company/manufacturer name"
+        },
+        "deviceName": {
+          "type": "string",
+          "description": "The name of the device being submitted"
+        },
+        "sequence": {
+          "type": "string",
+          "description": "The submission sequence number"
+        },
+        "submissionDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Date of submission in ISO format"
+        },
+        "documents": {
+          "type": "array",
+          "description": "List of documents included in the submission",
+          "items": {
+            "type": "object",
+            "required": ["sectionName", "filePath"],
+            "properties": {
+              "sectionName": {
+                "type": "string",
+                "description": "Name of the section (e.g., 'DeviceDescription', 'SubstantialEquivalence')"
+              },
+              "filePath": {
+                "type": "string",
+                "description": "Relative path to the section file within the package"
+              },
+              "pdfPath": {
+                "type": "string",
+                "description": "Optional relative path to the PDF version of the file"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
