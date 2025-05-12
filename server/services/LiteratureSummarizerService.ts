@@ -1,526 +1,399 @@
 /**
  * Literature Summarizer Service
  * 
- * This service handles summarizing literature articles and extracting key insights
- * using OpenAI's GPT models.
+ * This service is responsible for generating AI-powered summaries of literature entries
+ * for enhanced comprehension and analysis in 510(k) submissions.
  */
 
 import { Pool } from 'pg';
-import OpenAI from 'openai';
+import { OpenAI } from 'openai';
+import { LiteratureAggregator } from './LiteratureAggregatorService';
 
 // Initialize OpenAI client
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-// Set up database connection
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
 });
 
-export interface SummarizationResult {
-  id: string;
-  summary: string;
-  insights: {
-    studyDesign?: string;
-    sampleSize?: string;
-    primaryEfficacy?: string;
-    safetyConcerns?: string;
-  };
+// Initialize database connection
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL
+});
+
+// Create literature aggregator instance for fetching literature
+const literatureAggregator = new LiteratureAggregator();
+
+// Summary types
+enum SummaryType {
+  ABSTRACT = 'abstract',
+  CONCLUSION = 'conclusion',
+  METHODS = 'methods',
+  RESULTS = 'results',
+  FULL = 'full',
+  REGULATORY = 'regulatory'
 }
 
-class LiteratureSummarizerService {
-  /**
-   * Summarize a single abstract using OpenAI
-   * 
-   * @param abstract Abstract text to summarize
-   * @returns Summary text
-   */
-  async summarizeAbstract(abstract: string): Promise<string> {
-    try {
-      if (!abstract || abstract.trim().length === 0) {
-        return "No abstract available for summarization.";
-      }
-      
-      const prompt = `
-        Summarize the following abstract in two sentences focused on:
-        • Safety findings
-        • Key performance results
-        • Any notable device-related adverse events
+// Summary options
+interface SummaryOptions {
+  type: SummaryType;
+  maxLength?: number;
+  focusOn?: string[];
+  regulatoryContext?: boolean;
+  device510k?: boolean;
+  comparativeFocus?: boolean;
+}
 
-        Abstract: ${abstract}
-      `;
-      
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        messages: [
-          { role: "system", content: "You are a medical literature expert specializing in regulatory documentation for medical devices. Provide concise, accurate summaries highlighting safety and performance relevant to 510(k) submissions." },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.3,
-        max_tokens: 200,
-      });
-      
-      return response.choices[0].message.content.trim();
-    } catch (error) {
-      console.error('Error summarizing abstract:', error);
-      throw new Error(`Failed to summarize abstract: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
+/**
+ * Main class for AI-powered literature summarization
+ */
+export class LiteratureSummarizer {
   
   /**
-   * Extract insights from an abstract using OpenAI
-   * 
-   * @param abstract Abstract text to analyze
-   * @returns Structured insights
+   * Generate a summary for a literature entry
    */
-  async extractInsights(abstract: string): Promise<{
-    studyDesign?: string;
-    sampleSize?: string;
-    primaryEfficacy?: string;
-    safetyConcerns?: string;
-  }> {
+  public async generateSummary(
+    literatureId: number,
+    options: SummaryOptions
+  ): Promise<string> {
     try {
-      if (!abstract || abstract.trim().length === 0) {
-        return {};
+      // Fetch the literature entry
+      const literature = await literatureAggregator.getLiteratureById(literatureId);
+      
+      if (!literature) {
+        throw new Error(`Literature with ID ${literatureId} not found`);
       }
       
-      const prompt = `
-        From this abstract, extract:
-        1. Study design (eg. RCT, cohort)
-        2. Sample size
-        3. Primary efficacy endpoint
-        4. Safety concerns
-        
-        Return as JSON with keys: studyDesign, sampleSize, primaryEfficacy, safetyConcerns.
-        If information is not available for a field, omit that field from the JSON.
-        
-        Abstract: ${abstract}
-      `;
+      // Generate the summary with OpenAI
+      const summaryText = await this.createOpenAISummary(literature, options);
       
-      const response = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        messages: [
-          { role: "system", content: "You are a medical literature analyst specializing in extracting structured information from clinical studies. Extract precise data relevant to 510(k) submissions." },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.2,
-        max_tokens: 300,
-        response_format: { type: "json_object" }
-      });
+      // Store the summary in the database
+      await this.storeSummary(literatureId, summaryText, options.type);
       
-      const content = response.choices[0].message.content.trim();
-      const insights = JSON.parse(content);
-      
-      return {
-        studyDesign: insights.studyDesign,
-        sampleSize: insights.sampleSize,
-        primaryEfficacy: insights.primaryEfficacy,
-        safetyConcerns: insights.safetyConcerns
-      };
+      return summaryText;
     } catch (error) {
-      console.error('Error extracting insights:', error);
-      // Return empty object if we fail to extract insights
-      return {};
+      console.error('Error generating summary:', error);
+      throw error;
     }
   }
   
   /**
-   * Retrieve abstract for a literature entry
-   * 
-   * @param id Literature entry ID
-   * @returns Abstract text
+   * Create a summary using OpenAI
    */
-  async getAbstractById(id: string): Promise<string | null> {
-    try {
-      const result = await pool.query(
-        'SELECT abstract FROM literature_entries WHERE id = $1',
-        [id]
-      );
-      
-      if (result.rowCount === 0) {
-        return null;
-      }
-      
-      return result.rows[0].abstract;
-    } catch (error) {
-      console.error(`Error fetching abstract for ID ${id}:`, error);
-      throw new Error(`Failed to fetch abstract: ${error instanceof Error ? error.message : String(error)}`);
+  private async createOpenAISummary(literature: any, options: SummaryOptions): Promise<string> {
+    const { title, abstract, full_text, authors, journal, publication_date, source } = literature;
+    
+    // Determine the content to summarize
+    const contentToSummarize = full_text || abstract || '';
+    
+    if (!contentToSummarize) {
+      return "Unable to generate summary: No content available";
     }
+    
+    // Construct the prompt based on the summary type
+    let prompt = `Please provide a ${options.type} summary of the following ${source} article:\n\n`;
+    prompt += `Title: ${title}\n`;
+    prompt += `Authors: ${authors || 'Unknown'}\n`;
+    prompt += `Journal: ${journal || 'Unknown'}\n`;
+    prompt += `Date: ${publication_date || 'Unknown'}\n\n`;
+    
+    // Add specific instructions based on summary type
+    if (options.type === SummaryType.ABSTRACT) {
+      prompt += `Generate a concise abstract summary in 3-5 sentences that captures the main points.`;
+    } else if (options.type === SummaryType.CONCLUSION) {
+      prompt += `Focus on the key conclusions and implications of this article in 3-4 sentences.`;
+    } else if (options.type === SummaryType.METHODS) {
+      prompt += `Summarize the methods and approach used in this study in a short paragraph.`;
+    } else if (options.type === SummaryType.RESULTS) {
+      prompt += `Provide a summary of the main results and findings in a concise format.`;
+    } else if (options.type === SummaryType.REGULATORY) {
+      prompt += `Provide a summary focused on regulatory implications and relevance to medical device submissions. Highlight any information related to safety, efficacy, and regulatory pathways. Include key points that would be relevant for a 510(k) submission.`;
+    } else {
+      prompt += `Provide a comprehensive summary of the entire article, including methods, results, and conclusions.`;
+    }
+    
+    // Add specific focus areas if provided
+    if (options.focusOn && options.focusOn.length > 0) {
+      prompt += ` Pay special attention to aspects related to: ${options.focusOn.join(', ')}.`;
+    }
+    
+    // Add regulatory context if requested
+    if (options.regulatoryContext) {
+      prompt += ` Frame the summary in a regulatory context, highlighting elements that would be important for medical device submissions.`;
+    }
+    
+    // Add 510(k) specific focus if requested
+    if (options.device510k) {
+      prompt += ` Emphasize aspects relevant to medical device substantial equivalence, safety, and effectiveness comparisons.`;
+    }
+    
+    // Add comparative focus if requested
+    if (options.comparativeFocus) {
+      prompt += ` Focus on comparative aspects of this study, especially where devices or methods are compared with predicates or alternatives.`;
+    }
+    
+    // Set max length if specified
+    if (options.maxLength) {
+      prompt += ` Limit your summary to approximately ${options.maxLength} words.`;
+    }
+    
+    // Add the content to summarize
+    prompt += `\n\nContent to summarize:\n${contentToSummarize}`;
+    
+    // Generate the summary using OpenAI
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are an expert medical device regulatory specialist with extensive experience in literature review and synthesis for regulatory submissions. Your summaries are accurate, concise, and focused on regulatory relevance."
+        },
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: options.maxLength ? Math.min(options.maxLength * 2, 1000) : 1000
+    });
+    
+    return response.choices[0].message.content || "Unable to generate summary";
   }
   
   /**
-   * Update literature entry with summary and insights
-   * 
-   * @param id Literature entry ID
-   * @param summary Summary text
-   * @param insights Extracted insights
+   * Store a summary in the database
    */
-  async updateLiteratureEntry(
-    id: string, 
-    summary: string, 
-    insights: {
-      studyDesign?: string;
-      sampleSize?: string;
-      primaryEfficacy?: string;
-      safetyConcerns?: string;
-    }
+  private async storeSummary(
+    literatureId: number,
+    summaryText: string,
+    summaryType: string
   ): Promise<void> {
     try {
-      await pool.query(
-        `UPDATE literature_entries 
-         SET summary = $1, insights = $2, updated_at = NOW()
-         WHERE id = $3`,
-        [summary, insights, id]
-      );
+      const client = await pool.connect();
+      try {
+        // Check if a summary of this type already exists
+        const checkQuery = `
+          SELECT id FROM literature_summaries
+          WHERE literature_id = $1 AND summary_type = $2
+        `;
+        
+        const checkResult = await client.query(checkQuery, [literatureId, summaryType]);
+        
+        if (checkResult.rows.length > 0) {
+          // Update the existing summary
+          const updateQuery = `
+            UPDATE literature_summaries
+            SET summary_text = $1, ai_generated = true
+            WHERE literature_id = $2 AND summary_type = $3
+          `;
+          
+          await client.query(updateQuery, [summaryText, literatureId, summaryType]);
+        } else {
+          // Insert a new summary
+          const insertQuery = `
+            INSERT INTO literature_summaries
+            (literature_id, summary_text, summary_type, ai_generated)
+            VALUES ($1, $2, $3, true)
+          `;
+          
+          await client.query(insertQuery, [literatureId, summaryText, summaryType]);
+        }
+      } finally {
+        client.release();
+      }
     } catch (error) {
-      console.error(`Error updating literature entry ${id}:`, error);
-      throw new Error(`Failed to update literature entry: ${error instanceof Error ? error.message : String(error)}`);
+      console.error('Error storing summary:', error);
+      throw error;
     }
   }
   
   /**
-   * Process a batch of literature entries for summarization
-   * 
-   * @param ids Array of literature entry IDs
-   * @returns Array of summarization results
+   * Get existing summary for a literature entry
    */
-  async processBatch(ids: string[]): Promise<SummarizationResult[]> {
+  public async getSummary(
+    literatureId: number,
+    summaryType: string = SummaryType.ABSTRACT
+  ): Promise<string | null> {
     try {
-      if (ids.length === 0) {
-        return [];
-      }
-      
-      // Limit batch size to prevent overloading the API
-      const batchSize = Math.min(ids.length, 10);
-      const batchIds = ids.slice(0, batchSize);
-      
-      const results: SummarizationResult[] = [];
-      
-      // Process each ID sequentially to avoid rate limits
-      for (const id of batchIds) {
-        // Get abstract for the literature entry
-        const abstract = await this.getAbstractById(id);
+      const client = await pool.connect();
+      try {
+        const query = `
+          SELECT summary_text FROM literature_summaries
+          WHERE literature_id = $1 AND summary_type = $2
+          ORDER BY created_at DESC
+          LIMIT 1
+        `;
         
-        if (!abstract) {
-          console.warn(`No abstract found for ID ${id}`);
-          continue;
+        const result = await client.query(query, [literatureId, summaryType]);
+        
+        if (result.rows.length === 0) {
+          return null;
         }
         
-        // Summarize abstract and extract insights
-        const [summary, insights] = await Promise.all([
-          this.summarizeAbstract(abstract),
-          this.extractInsights(abstract)
-        ]);
-        
-        // Update the literature entry in the database
-        await this.updateLiteratureEntry(id, summary, insights);
-        
-        results.push({
-          id,
-          summary,
-          insights
-        });
+        return result.rows[0].summary_text;
+      } finally {
+        client.release();
       }
-      
-      return results;
     } catch (error) {
-      console.error('Error processing batch:', error);
-      throw new Error(`Failed to process batch: ${error instanceof Error ? error.message : String(error)}`);
+      console.error('Error getting summary:', error);
+      return null;
     }
   }
   
   /**
-   * Get summaries for specific literature entries
-   * 
-   * @param ids Array of literature entry IDs
-   * @returns Array of summarization results
+   * Generate a comparative analysis of multiple literature entries
    */
-  async getSummaries(ids: string[]): Promise<SummarizationResult[]> {
+  public async generateComparativeAnalysis(
+    literatureIds: number[],
+    context: string = ''
+  ): Promise<string> {
     try {
-      if (ids.length === 0) {
-        return [];
+      if (literatureIds.length < 2) {
+        throw new Error('At least two literature entries are required for comparative analysis');
       }
       
-      const result = await pool.query(
-        `SELECT id, summary, insights 
-         FROM literature_entries 
-         WHERE id = ANY($1) AND summary IS NOT NULL`,
-        [ids]
-      );
-      
-      return result.rows.map(row => ({
-        id: row.id,
-        summary: row.summary,
-        insights: row.insights
-      }));
-    } catch (error) {
-      console.error('Error getting summaries:', error);
-      throw new Error(`Failed to get summaries: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-  
-  /**
-   * Summarize literature entries by IDs
-   * 
-   * @param ids Array of literature entry IDs
-   * @param forceRefresh Whether to force regeneration of summaries
-   * @returns Array of summarization results
-   */
-  async summarizeByIds(ids: string[], forceRefresh: boolean = false): Promise<SummarizationResult[]> {
-    try {
-      if (ids.length === 0) {
-        return [];
+      // Fetch all literature entries
+      const literatureEntries = [];
+      for (const id of literatureIds) {
+        const entry = await literatureAggregator.getLiteratureById(id);
+        if (entry) {
+          literatureEntries.push(entry);
+        }
       }
       
-      // If not forcing refresh, get existing summaries
-      if (!forceRefresh) {
-        const existingSummaries = await this.getSummaries(ids);
-        const existingIds = new Set(existingSummaries.map(s => s.id));
-        
-        // Filter out IDs that already have summaries
-        const idsToProcess = ids.filter(id => !existingIds.has(id));
-        
-        // If all IDs already have summaries, return them
-        if (idsToProcess.length === 0) {
-          return existingSummaries;
-        }
-        
-        // Process only the IDs that don't have summaries
-        const newSummaries = await this.processBatch(idsToProcess);
-        
-        // Combine existing and new summaries
-        return [...existingSummaries, ...newSummaries];
+      if (literatureEntries.length < 2) {
+        throw new Error('Could not find at least two valid literature entries');
       }
       
-      // Force refresh: process all IDs
-      return await this.processBatch(ids);
-    } catch (error) {
-      console.error('Error summarizing by IDs:', error);
-      throw new Error(`Failed to summarize by IDs: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-  
-  /**
-   * Mark literature entries as selected (added to report)
-   * 
-   * @param ids Array of literature entry IDs
-   * @param projectId Project ID
-   * @param selected Whether entries are selected
-   */
-  async markEntriesAsSelected(ids: string[], projectId: string, selected: boolean = true): Promise<void> {
-    try {
-      if (ids.length === 0) {
-        return;
-      }
+      // Prepare a prompt for the analysis
+      let prompt = 'Please provide a comparative analysis of the following literature entries related to medical devices:\n\n';
       
-      await pool.query(
-        `UPDATE literature_entries 
-         SET selected = $1, updated_at = NOW()
-         WHERE id = ANY($2) AND project_id = $3`,
-        [selected, ids, projectId]
-      );
-    } catch (error) {
-      console.error('Error marking entries as selected:', error);
-      throw new Error(`Failed to mark entries as selected: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-  
-  /**
-   * Generate BibTeX citations for literature entries
-   * 
-   * @param ids Array of literature entry IDs
-   * @param projectId Project ID
-   * @returns BibTeX formatted string
-   */
-  async generateBibTeX(ids: string[], projectId: string): Promise<string> {
-    try {
-      if (ids.length === 0) {
-        return "";
-      }
-      
-      const result = await pool.query(
-        `SELECT * FROM literature_entries 
-         WHERE id = ANY($1) AND project_id = $2`,
-        [ids, projectId]
-      );
-      
-      if (result.rowCount === 0) {
-        return "";
-      }
-      
-      const entries = result.rows;
-      let bibtex = "";
-      
-      for (const entry of entries) {
-        // Create BibTeX key from ID
-        const key = entry.id.replace(/[^a-zA-Z0-9]/g, '_');
-        
-        // Determine entry type based on source
-        let entryType = 'article';
-        if (entry.source === 'ClinicalTrials.gov') {
-          entryType = 'misc';
-        } else if (entry.source === 'bioRxiv' || entry.source === 'medRxiv') {
-          entryType = 'unpublished';
-        }
-        
-        // Build BibTeX entry
-        bibtex += `@${entryType}{${key},\n`;
-        bibtex += `  title = {${entry.title}},\n`;
-        
-        // Authors
-        if (entry.authors && entry.authors.length > 0) {
-          bibtex += `  author = {${entry.authors.join(' and ')}},\n`;
-        }
-        
-        // Journal/source
-        if (entry.journal) {
-          bibtex += `  journal = {${entry.journal}},\n`;
-        } else if (entry.source) {
-          bibtex += `  howpublished = {${entry.source}},\n`;
-        }
-        
-        // Year
-        if (entry.year) {
-          bibtex += `  year = {${entry.year}},\n`;
-        }
-        
-        // URL
-        if (entry.url) {
-          bibtex += `  url = {${entry.url}},\n`;
-        }
-        
-        // DOI
-        if (entry.doi) {
-          bibtex += `  doi = {${entry.doi}},\n`;
-        }
-        
-        // PMID
-        if (entry.pmid) {
-          bibtex += `  note = {PMID: ${entry.pmid}},\n`;
-        }
-        
-        // NCT ID
-        if (entry.nct_id) {
-          bibtex += `  note = {NCT ID: ${entry.nct_id}},\n`;
-        }
-        
-        // Close entry
-        bibtex += `}\n\n`;
-      }
-      
-      return bibtex;
-    } catch (error) {
-      console.error('Error generating BibTeX:', error);
-      throw new Error(`Failed to generate BibTeX: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-  
-  /**
-   * Get selected literature entries for a project
-   * 
-   * @param projectId Project ID
-   * @returns Array of selected literature entries
-   */
-  async getSelectedEntries(projectId: string): Promise<any[]> {
-    try {
-      const result = await pool.query(
-        `SELECT * FROM literature_entries 
-         WHERE project_id = $1 AND selected = true
-         ORDER BY updated_at DESC`,
-        [projectId]
-      );
-      
-      return result.rows.map(row => ({
-        id: row.id,
-        title: row.title,
-        authors: row.authors,
-        journal: row.journal,
-        source: row.source,
-        year: row.year,
-        abstract: row.abstract,
-        url: row.url,
-        pmid: row.pmid,
-        nctId: row.nct_id,
-        doi: row.doi,
-        publicationType: row.publication_type,
-        summary: row.summary,
-        insights: row.insights,
-        selected: row.selected,
-        projectId: row.project_id
-      }));
-    } catch (error) {
-      console.error('Error getting selected entries:', error);
-      throw new Error(`Failed to get selected entries: ${error instanceof Error ? error.message : String(error)}`);
-    }
-  }
-  
-  /**
-   * Format literature entries as citations
-   * 
-   * @param ids Array of literature entry IDs
-   * @param projectId Project ID
-   * @returns Array of formatted citations
-   */
-  async formatCitations(ids: string[], projectId: string): Promise<any[]> {
-    try {
-      if (ids.length === 0) {
-        return [];
-      }
-      
-      const result = await pool.query(
-        `SELECT * FROM literature_entries 
-         WHERE id = ANY($1) AND project_id = $2`,
-        [ids, projectId]
-      );
-      
-      return result.rows.map((row, index) => {
-        // Format authors for citation
-        const authorText = row.authors && row.authors.length > 0 
-          ? this.formatAuthorList(row.authors)
-          : 'No authors listed';
-        
-        // Create citation text in Vancouver style
-        const citation = `${authorText}. ${row.title}. ${row.journal || row.source}. ${row.year};${row.volume || ''}${row.issue ? `(${row.issue})` : ''}:${row.pages || ''}. ${row.doi ? `doi: ${row.doi}` : ''}`;
-        
-        return {
-          id: row.id,
-          number: index + 1,
-          citationText: citation,
-          title: row.title,
-          authors: row.authors,
-          journal: row.journal || row.source,
-          year: row.year,
-          url: row.url,
-          summary: row.summary
-        };
+      literatureEntries.forEach((entry, index) => {
+        prompt += `--- Entry ${index + 1} ---\n`;
+        prompt += `Title: ${entry.title}\n`;
+        prompt += `Authors: ${entry.authors || 'Unknown'}\n`;
+        prompt += `Journal: ${entry.journal || 'Unknown'}\n`;
+        prompt += `Publication Date: ${entry.publication_date || 'Unknown'}\n`;
+        prompt += `Abstract: ${entry.abstract || 'Not available'}\n\n`;
       });
+      
+      // Add context if provided
+      if (context) {
+        prompt += `Context for analysis: ${context}\n\n`;
+      }
+      
+      prompt += `Please compare these articles for a 510(k) submission, focusing on:
+1. Methodological similarities and differences
+2. Key findings and their consistency or contradictions
+3. Relevance to safety and effectiveness determinations
+4. Support for substantial equivalence claims
+5. Limitations of each study and overall evidence
+6. Regulatory implications for medical device submissions
+
+Format your analysis as a structured report with clear sections addressing each focus area.`;
+      
+      // Generate the analysis using OpenAI
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert medical device regulatory specialist with extensive experience in literature analysis for 510(k) submissions. Your comparative analyses are thorough, balanced, and focused on regulatory relevance."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.2,
+        max_tokens: 2000
+      });
+      
+      return response.choices[0].message.content || "Unable to generate comparative analysis";
     } catch (error) {
-      console.error('Error formatting citations:', error);
-      throw new Error(`Failed to format citations: ${error instanceof Error ? error.message : String(error)}`);
+      console.error('Error generating comparative analysis:', error);
+      throw error;
     }
   }
   
   /**
-   * Format author list for citation
-   * 
-   * @param authors Array of author names
-   * @returns Formatted author string
+   * Generate a 510(k) literature review section based on provided citations
    */
-  private formatAuthorList(authors: string[]): string {
-    if (!authors || authors.length === 0) {
-      return 'No authors listed';
+  public async generate510kLiteratureReviewSection(
+    documentId: string,
+    deviceType: string,
+    predicateDevice?: string
+  ): Promise<string> {
+    try {
+      // Fetch all citations for this document
+      const client = await pool.connect();
+      let citations;
+      
+      try {
+        const citationsQuery = `
+          SELECT c.*, l.title, l.abstract, l.authors, l.journal, l.publication_date
+          FROM literature_citations c
+          JOIN literature_entries l ON c.literature_id = l.id
+          WHERE c.document_id = $1
+          ORDER BY c.inserted_at ASC
+        `;
+        
+        const result = await client.query(citationsQuery, [documentId]);
+        citations = result.rows;
+      } finally {
+        client.release();
+      }
+      
+      if (!citations || citations.length === 0) {
+        return "No citations found for this document. Add literature citations before generating a review section.";
+      }
+      
+      // Prepare a prompt for the literature review section
+      let prompt = `Please write a comprehensive literature review section for a 510(k) submission for a ${deviceType} medical device`;
+      
+      if (predicateDevice) {
+        prompt += ` with ${predicateDevice} as the predicate device`;
+      }
+      
+      prompt += `. Base your review on the following literature citations:\n\n`;
+      
+      citations.forEach((citation, index) => {
+        prompt += `--- Citation ${index + 1} ---\n`;
+        prompt += `Title: ${citation.title}\n`;
+        prompt += `Authors: ${citation.authors || 'Unknown'}\n`;
+        prompt += `Journal: ${citation.journal || 'Unknown'}\n`;
+        prompt += `Date: ${citation.publication_date || 'Unknown'}\n`;
+        prompt += `Abstract: ${citation.abstract || 'Not available'}\n\n`;
+      });
+      
+      prompt += `Structure the literature review section to:
+1. Introduce the context and purpose of the literature review
+2. Summarize key findings relevant to device safety and effectiveness
+3. Discuss evidence supporting substantial equivalence claims
+4. Address any potential concerns or contradictory findings
+5. Conclude with an assessment of the literature's support for the 510(k) submission
+
+Format the section as a professional, well-structured portion of a 510(k) submission document.`;
+      
+      // Generate the literature review section using OpenAI
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert medical device regulatory specialist who writes comprehensive and persuasive literature review sections for 510(k) submissions. Your writing is clear, scientifically accurate, and focused on demonstrating safety, effectiveness, and substantial equivalence."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.3,
+        max_tokens: 3000
+      });
+      
+      return response.choices[0].message.content || "Unable to generate literature review section";
+    } catch (error) {
+      console.error('Error generating 510(k) literature review section:', error);
+      throw error;
     }
-    
-    if (authors.length === 1) {
-      return authors[0];
-    }
-    
-    if (authors.length <= 6) {
-      return authors.join(', ');
-    }
-    
-    // For more than 6 authors, show first 3 followed by "et al."
-    return `${authors.slice(0, 3).join(', ')}, et al.`;
   }
 }
-
-export default new LiteratureSummarizerService();

@@ -10,6 +10,7 @@ import { tenantContextMiddleware } from './middleware/tenantContext';
 import errorHandler from './middleware/errorHandlerMiddleware';
 import globalErrorHandler from './utils/globalErrorHandler';
 import fs from 'fs';
+import { initializeDatabase } from './db/initDatabase';
 
 // Load environment variables
 dotenv.config();
@@ -200,6 +201,11 @@ httpServer.listen(port, () => {
   // Initialize performance optimizations after server has started
   initializePerformanceOptimizations().catch(err =>
     console.error('Error initializing performance optimizations:', err)
+  );
+  
+  // Initialize database tables
+  initializeDatabase().catch(err =>
+    console.error('Error initializing database:', err)
   );
 });
 
