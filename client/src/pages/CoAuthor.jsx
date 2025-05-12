@@ -110,6 +110,8 @@ import {
   Wand2,
   ShieldCheck,
   File,
+  Sliders,
+  Globe,
   PlusCircle,
   SearchX,
   Send,
@@ -1422,36 +1424,103 @@ export default function CoAuthor() {
       
       // In a real implementation, we would:
       // 1. Generate an embedding for the selected text
-      // 2. Search the vector database for similar content
-      // 3. Return the results
+      // 2. Search the vector database with filters applied
+      // 3. Return the filtered results
       
       // For now, simulate the search
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Generate simulated results
-      const simulatedResults = vectorizedDocuments
+      // Generate simulated results from vectorized documents
+      let simulatedResults = vectorizedDocuments
         .flatMap(doc => {
           // Get a random number of chunks from each document
-          const numResults = Math.floor(Math.random() * 2) + 1;
+          const numResults = Math.floor(Math.random() * 3) + 1;
           const randomChunks = doc.chunks
             .sort(() => Math.random() - 0.5)
             .slice(0, numResults);
             
-          return randomChunks.map(chunk => ({
-            documentId: doc.id,
-            documentTitle: doc.title,
-            documentVersion: doc.version,
-            module: doc.module,
-            section: chunk.metadata?.section || 'Unknown Section',
-            content: chunk.chunk.text,
-            similarity: 0.65 + Math.random() * 0.3, // Random similarity score between 0.65 and 0.95
-            url: `#doc-${doc.id}-section-${chunk.metadata?.chunkIndex || 0}`
-          }));
-        })
-        .sort((a, b) => b.similarity - a.similarity) // Sort by similarity (highest first)
-        .slice(0, 5); // Limit to 5 results
+          return randomChunks.map(chunk => {
+            // Simulate different content types
+            const contentTypes = ['text', 'table', 'figure', 'list', 'reference', 'heading', 'chart'];
+            const randomContentType = contentTypes[Math.floor(Math.random() * contentTypes.length)];
+            
+            // Simulate different document types
+            const documentTypes = ['csr', 'protocol', 'overview', 'summary', 'analytical', 'validation'];
+            const randomDocType = documentTypes[Math.floor(Math.random() * documentTypes.length)];
+            
+            // Simulate different regulatory regions
+            const regions = ['us', 'eu', 'jp', 'ca', 'uk'];
+            const randomRegion = regions[Math.floor(Math.random() * regions.length)];
+            
+            return {
+              documentId: doc.id,
+              documentTitle: doc.title,
+              documentVersion: doc.version,
+              module: doc.module,
+              section: chunk.metadata?.section || 'Unknown Section',
+              content: chunk.chunk.text,
+              similarity: 0.65 + Math.random() * 0.3, // Random similarity score between 0.65 and 0.95
+              url: `#doc-${doc.id}-section-${chunk.metadata?.chunkIndex || 0}`,
+              contentType: randomContentType,
+              documentType: randomDocType,
+              regulatoryRegion: randomRegion,
+              dateCreated: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+              excerpt: chunk.chunk.text.substring(0, 120) + '...'
+            };
+          });
+        });
+      
+      // Apply filters based on smartReuseFilters
+      if (smartReuseFilters) {
+        // Filter by module
+        if (smartReuseFilters.module !== 'all') {
+          simulatedResults = simulatedResults.filter(
+            result => result.module.toLowerCase().includes(smartReuseFilters.module.toLowerCase())
+          );
+        }
+        
+        // Filter by content type
+        if (smartReuseFilters.contentType !== 'all') {
+          simulatedResults = simulatedResults.filter(
+            result => result.contentType === smartReuseFilters.contentType
+          );
+        }
+        
+        // Filter by document type
+        if (smartReuseFilters.documentType && smartReuseFilters.documentType !== 'all') {
+          simulatedResults = simulatedResults.filter(
+            result => result.documentType === smartReuseFilters.documentType
+          );
+        }
+        
+        // Filter by regulatory region
+        if (smartReuseFilters.regulatoryRegion && smartReuseFilters.regulatoryRegion !== 'all') {
+          simulatedResults = simulatedResults.filter(
+            result => result.regulatoryRegion === smartReuseFilters.regulatoryRegion
+          );
+        }
+        
+        // Filter by minimum relevance
+        if (smartReuseFilters.relevance > 0) {
+          simulatedResults = simulatedResults.filter(
+            result => result.similarity * 100 >= smartReuseFilters.relevance
+          );
+        }
+      }
+      
+      // Sort by similarity (highest first)
+      simulatedResults = simulatedResults
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, 8); // Limit to 8 results
       
       setSimilarContentResults(simulatedResults);
+      
+      // Update the main search bar results if the semantic search is active
+      // This consolidates search functionality across the UI
+      if (isSemanticSearchActive) {
+        setSemanticSearchResults(simulatedResults);
+      }
+      
       return simulatedResults;
     } catch (error) {
       console.error('Error finding similar content:', error);
@@ -2221,34 +2290,36 @@ export default function CoAuthor() {
             <h1 className="text-2xl font-bold">eCTD Co-Author Module</h1>
           </div>
           
-          {/* Phase 6: Enhanced Vector Search in header */}
+          {/* Phase 6: Google-like Enhanced Vector Search in header */}
           <div className="flex-1 mx-6 max-w-2xl">
             <div className="relative">
-              {isSearchingVectors ? (
-                <Loader2 className="absolute left-2.5 top-2.5 h-4 w-4 animate-spin text-blue-600" />
-              ) : (
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
-              )}
-              
-              <Input
-                type="search"
-                placeholder={`Search ${vectorizedDocuments.length > 0 ? vectorizedDocuments.length : ''} vectorized documents...`}
-                className="pl-9 bg-gradient-to-r from-slate-50 to-blue-50 border-slate-200 focus:border-blue-300"
-                value={semanticSearchQuery}
-                onChange={(e) => {
-                  setSemanticSearchQuery(e.target.value);
-                  
-                  // Generate search suggestions if query is at least 3 characters
-                  if (e.target.value.trim().length >= 3) {
-                    // This would call the actual suggestion algorithm in production
-                    // Here we'll just use the existing vector documents to create simulated suggestions
-                    const suggestedTerms = vectorizedDocuments
-                      .flatMap(doc => doc.chunks.slice(0, 3))
-                      .filter(chunk => 
-                        chunk.chunk.text.toLowerCase().includes(e.target.value.toLowerCase())
-                      )
-                      .slice(0, 5)
-                      .map(chunk => {
+              <div className="flex items-center border rounded-full shadow-sm overflow-hidden bg-white">
+                {isSearchingVectors ? (
+                  <Loader2 className="absolute left-3.5 top-3 h-5 w-5 animate-spin text-blue-600" />
+                ) : (
+                  <Search className="absolute left-3.5 top-3 h-5 w-5 text-slate-400" />
+                )}
+                
+                <CommandRoot>
+                  <CommandInput
+                    placeholder={`Search ${vectorizedDocuments.length > 0 ? `${vectorizedDocuments.length} regulatory documents...` : 'your eCTD dossier...'}`}
+                    className="pl-12 pr-12 py-2.5 h-11 w-full border-0 focus:ring-0 focus:outline-none text-sm bg-transparent"
+                    value={semanticSearchQuery}
+                    onValueChange={(value) => {
+                      setSemanticSearchQuery(value);
+                      setIsSemanticSearchActive(true);
+                      
+                      // Generate search suggestions if query is at least 2 characters
+                      if (value.trim().length >= 2) {
+                        // This would call the actual suggestion algorithm in production
+                        // Here we'll just use the existing vector documents to create simulated suggestions
+                        const suggestedTerms = vectorizedDocuments
+                          .flatMap(doc => doc.chunks.slice(0, 3))
+                          .filter(chunk => 
+                            chunk.chunk.text.toLowerCase().includes(value.toLowerCase())
+                          )
+                          .slice(0, 6)
+                          .map(chunk => {
                         // Extract a relevant phrase containing the query text
                         const text = chunk.chunk.text;
                         const queryIndex = text.toLowerCase().indexOf(e.target.value.toLowerCase());
