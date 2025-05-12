@@ -14,7 +14,8 @@ import {
   DeviceProfileForm, 
   PredicateAnalysis, 
   EnhancedLiteratureDiscovery,
-  PathwayAdvisorCard
+  PathwayAdvisorCard,
+  EquivalenceDraft
 } from '../components/510k';
 import { DocumentSectionRecommender } from '../components/documentrecommender';
 

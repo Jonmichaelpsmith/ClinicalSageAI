@@ -278,6 +278,31 @@ class FDA510kService {
       throw error;
     }
   }
+  
+  /**
+   * Generate a substantial equivalence draft for a 510(k) submission
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @returns {Promise<Object>} - The generated draft text
+   */
+  async draftEquivalence(projectId) {
+    try {
+      const response = await apiRequest({
+        url: '/api/510k/draft-equivalence',
+        method: 'POST',
+        data: { projectId }
+      });
+      
+      return {
+        draftText: response.draftText,
+        wordCount: response.wordCount || response.draftText.split(' ').length,
+        generationTime: response.generationTime || 'N/A'
+      };
+    } catch (error) {
+      console.error('Error generating substantial equivalence draft:', error);
+      throw error;
+    }
+  }
 }
 
 // Singleton instance

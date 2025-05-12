@@ -1,0 +1,206 @@
+### 4️⃣ Task 4: Regulatory Pathway Advisor & Substantial Equivalence Drafting
+
+**Goal:** Automatically recommend the optimal U.S. pathway (Traditional 510(k), Special 510(k), De Novo, PMA) and generate a first-draft “Substantial Equivalence” (SE) narrative seamlessly in your 510(k) workflow.
+
+---
+
+#### A. Pathway Advisor Service
+
+1. **Location:**
+   `server/services/PathwayAdvisor.ts`
+
+2. **Rules & Logic:**
+
+   ```ts
+   import { deviceProfiles } from '../db';
+
+   export class PathwayAdvisor {
+     static async recommend(profile: DeviceProfile) {
+       // Example logic (expand as needed):
+       if (profile.deviceClass === 'III') {
+         return { pathway: 'PMA', rationale: 'Class III devices require PMA.' };
+       }
+       if (profile.technologyType === 'software' && profile.predicateDevice?.includes('SE')) {
+         return { pathway: 'Special 510(k)', rationale: 'Software change from a SE predicate qualifies.' };
+       }
+       if (!profile.predicateDevice) {
+         return { pathway: 'De Novo', rationale: 'No suitable predicate found.' };
+       }
+       return { pathway: 'Traditional 510(k)', rationale: 'Predicate identified; substantial equivalence likely.' };
+     }
+   }
+   ```
+
+3. **API Route:**
+
+   * **Path:** `server/routes/510kRoutes.ts`
+   * **Endpoint:**
+
+     ```ts
+     router.get('/pathway/:projectId', async (req, res) => {
+       const profile = await getDeviceProfile(req.params.projectId);
+       const result  = await PathwayAdvisor.recommend(profile);
+       res.json(result);
+     });
+     ```
+
+---
+
+#### B. Pathway UI Component
+
+1. **Location:**
+   `client/src/components/510k/PathwayAdvisorCard.jsx`
+
+2. **Skeleton:**
+
+   ```jsx
+   import React, { useEffect, useState } from 'react';
+   import { getPathway } from '../../api/510k';
+
+   export default function PathwayAdvisorCard({ projectId, onConfirm }) {
+     const [recommendation, setRecommendation] = useState(null);
+
+     useEffect(() => {
+       getPathway(projectId).then(setRecommendation);
+     }, [projectId]);
+
+     if (!recommendation) return <p>Loading pathway recommendation…</p>;
+
+     return (
+       <div className="p-4 border rounded">
+         <h3 className="font-semibold">Recommended Submission Pathway</h3>
+         <p className="mt-2">
+           <strong>{recommendation.pathway}</strong><br/>
+           <em>{recommendation.rationale}</em>
+         </p>
+         <button
+           className="btn-primary mt-4"
+           onClick={() => onConfirm(recommendation.pathway)}
+         >
+           Confirm & Proceed
+         </button>
+       </div>
+     );
+   }
+   ```
+
+3. **Integration in Panel:**
+
+   ```jsx
+   // Inside KAutomationPanel.jsx
+   <Card>
+     <PathwayAdvisorCard
+       projectId={projectId}
+       onConfirm={pathway => runPipelineStep('adviseRegulatoryPathway', { pathway })}
+     />
+   </Card>
+   ```
+
+---
+
+#### C. Substantial Equivalence Drafting Service
+
+1. **Location:**
+   `server/services/EquivalenceDraftService.ts`
+
+2. **Implementation:**
+
+   ```ts
+   import { aiClient } from './AIClient';
+
+   export class EquivalenceDraftService {
+     static async draft(deviceProfile, predicateProfile) {
+       const prompt = `
+         You are an FDA regulatory expert. Draft a Substantial Equivalence section
+         comparing the test device to its predicate.
+         Device Name: ${deviceProfile.deviceName}
+         Predicate: ${predicateProfile.deviceName} (510(k) ${predicateProfile.kNumber})
+         Intended Use: ${deviceProfile.intendedUse}
+         Focus on technological characteristics, performance testing, and safety.
+       `;
+       const aiResp = await aiClient.generate({ prompt, maxTokens: 600 });
+       return aiResp.text.trim();
+     }
+   }
+   ```
+
+3. **API Route:**
+
+   ```ts
+   router.post('/draft-equivalence', async (req, res) => {
+     const { projectId } = req.body;
+     const profile   = await getDeviceProfile(projectId);
+     const predicate = await getPredicateProfile(projectId);
+     const draft     = await EquivalenceDraftService.draft(profile, predicate);
+     res.json({ draftText: draft });
+   });
+   ```
+
+---
+
+#### D. Equivalence Draft UI
+
+1. **Location:**
+   `client/src/components/510k/EquivalenceDraft.jsx`
+
+2. **Skeleton:**
+
+   ```jsx
+   import React, { useState } from 'react';
+   import { draftEquivalence } from '../../api/510k';
+   import { Editor } from '../common/RichTextEditor';
+
+   export default function EquivalenceDraft({ projectId, onAddToReport }) {
+     const [draft, setDraft] = useState('');
+     const [loading, setLoading] = useState(false);
+
+     const handleDraft = async () => {
+       setLoading(true);
+       const { draftText } = await draftEquivalence(projectId);
+       setDraft(draftText);
+       setLoading(false);
+     };
+
+     return (
+       <div className="space-y-4">
+         <button className="btn-secondary" onClick={handleDraft} disabled={loading}>
+           {loading ? 'Drafting…' : 'Generate SE Draft'}
+         </button>
+         {draft && (
+           <>
+             <Editor value={draft} onChange={setDraft} />
+             <button className="btn-primary" onClick={() => onAddToReport(draft)}>
+               Add to 510(k) Report
+             </button>
+           </>
+         )}
+       </div>
+     );
+   }
+   ```
+
+3. **Hooking into the Panel:**
+
+   ```jsx
+   // Inside KAutomationPanel.jsx
+   <Card>
+     <h3>Substantial Equivalence</h3>
+     <EquivalenceDraft
+       projectId={projectId}
+       onAddToReport={text => runPipelineStep('draftSectionsWithAI', { section: 'SubstantialEquivalence', text })}
+     />
+   </Card>
+   ```
+
+---
+
+### 🔍 Next Steps
+
+1. **Implement** `PathwayAdvisor.ts` and its route.
+2. **Build** `PathwayAdvisorCard.jsx` and wire the confirm button.
+3. **Create** `EquivalenceDraftService.ts` and `/draft-equivalence` route.
+4. **Add** `EquivalenceDraft.jsx` rich‐text draft UI.
+5. **Update** pipeline config to include `adviseRegulatoryPathway` and `draftSectionsWithAI` steps for SE.
+6. **Test** end-to-end: confirm pathway → generate SE draft → add to report.
+
+With this enhanced Task 4 complete, your 510(k) module now advises the correct regulatory path and produces a polished first-draft SE narrative—fully automated and embedded in your TrialSage CER2V interface.
