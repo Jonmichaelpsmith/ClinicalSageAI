@@ -1765,6 +1765,59 @@ export default function CoAuthor() {
           </div>
         </div>
         <div className="flex justify-between items-center">
+          {/* Phase 6: Semantic Search Input */}
+          <div className="flex items-center">
+            <div className="relative w-80">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
+              <input
+                type="text"
+                placeholder="Semantic search across all vectorized documents..."
+                className="pl-8 pr-3 py-2 w-full h-9 rounded-md border border-input text-sm shadow-sm focus:border-blue-500 focus:outline-none"
+                value={semanticSearchQuery}
+                onChange={(e) => setSemanticSearchQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    performSemanticSearch(semanticSearchQuery);
+                    e.preventDefault();
+                    setShowVectorSearchDialog(true);
+                  }
+                }}
+              />
+              {semanticSearchQuery && (
+                <button
+                  className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600"
+                  onClick={() => setSemanticSearchQuery('')}
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="ml-2 text-xs"
+              onClick={() => {
+                if (semanticSearchQuery) {
+                  performSemanticSearch(semanticSearchQuery);
+                  setShowVectorSearchDialog(true);
+                }
+              }}
+              disabled={!semanticSearchQuery || isSearchingVectors}
+            >
+              {isSearchingVectors ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <SearchIcon className="h-3.5 w-3.5 mr-1.5" />
+                  Search
+                </>
+              )}
+            </Button>
+          </div>
+          
           <div className="flex items-center text-sm text-gray-500">
             <span className="mr-2">Enterprise Edition</span>
             <span className="mx-2">|</span>
