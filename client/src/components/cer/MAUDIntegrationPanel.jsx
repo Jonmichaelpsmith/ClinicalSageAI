@@ -18,7 +18,7 @@ import {
   getMAUDValidationStatus, 
   submitForMAUDValidation, 
   getAvailableMAUDAlgorithms 
-} from '../../services/MAUDService';
+} from '@/services/MAUDService';
 
 /**
  * MAUDIntegrationPanel Component
