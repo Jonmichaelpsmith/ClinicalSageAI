@@ -98,9 +98,10 @@ import {
   BookOpen,
   ArrowUpRight,
   Filter,
+  Bell,
+  HelpCircle,
   CheckSquare,
   FileWarning,
-  HelpCircle,
   MessageSquare,
   Sparkles,
   Lightbulb,
@@ -2380,6 +2381,51 @@ export default function CoAuthor() {
     <div className="flex flex-col h-full">
       {/* Header Section */}
       <div className="mb-6 pt-4 px-6">
+        {/* Navigation and Module Access Bar */}
+        <div className="flex items-center mb-3 border-b pb-2">
+          <div className="flex items-center space-x-2 mr-6">
+            <Button variant="outline" size="icon" className="h-8 w-8">
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" className="h-8 w-8">
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <a href="/client-portal">Home</a>
+            </Button>
+            <span className="text-slate-300">/</span>
+            <Button variant="ghost" size="sm" className="text-xs font-semibold text-blue-600" asChild>
+              <a href="/coauthor">eCTD Co-Author</a>
+            </Button>
+            <span className="text-slate-300">/</span>
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <a href="/cer">CER 2V Module</a>
+            </Button>
+            <span className="text-slate-300">/</span>
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <a href="/vault">Vault Module</a>
+            </Button>
+            <span className="text-slate-300">/</span>
+            <Button variant="ghost" size="sm" className="text-xs" asChild>
+              <a href="/indwizard">IND Wizard</a>
+            </Button>
+          </div>
+          
+          <div className="ml-auto flex items-center space-x-2">
+            <Button variant="ghost" size="sm" className="text-xs">
+              <Bell className="h-3.5 w-3.5 mr-1.5" />
+              Notifications
+            </Button>
+            <Button variant="ghost" size="sm" className="text-xs">
+              <HelpCircle className="h-3.5 w-3.5 mr-1.5" />
+              Help
+            </Button>
+          </div>
+        </div>
+        
         <div className="flex items-center justify-between mb-1">
           <div className="flex items-center">
             <img src="https://www.trialsage.com/logo.svg" alt="TrialSage" className="h-8 mr-2" />
