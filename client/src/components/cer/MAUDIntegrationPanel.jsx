@@ -8,16 +8,37 @@ import {
   ArrowUpRight, 
   Loader2, 
   BadgeCheck,
-  FileCheck
+  FileCheck,
+  History,
+  Download,
+  RefreshCw,
+  FileText,
+  Calendar,
+  ChevronRight,
+  Info
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { 
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { 
   getMAUDValidationStatus, 
   submitForMAUDValidation, 
-  getAvailableMAUDAlgorithms 
+  getAvailableMAUDAlgorithms,
+  getValidationHistory,
+  exportValidationCertificate
 } from '@/services/MAUDService';
 
 /**
@@ -26,41 +47,150 @@ import {
  * This component provides an interface for integrating with the MAUD
  * (Medical Algorithm User Database) system for algorithm validation
  * of clinical evaluation reports.
+ * 
+ * GA-Ready with full production API integration, history tracking and certificate export
  */
 const MAUDIntegrationPanel = ({ documentId = '123456' }) => {
+  // Main state
   const [validationStatus, setValidationStatus] = useState(null);
   const [availableAlgorithms, setAvailableAlgorithms] = useState([]);
   const [selectedAlgorithms, setSelectedAlgorithms] = useState([]);
+  const [validationHistory, setValidationHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [activeTab, setActiveTab] = useState('status');
+  
+  // UI state
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [selectedValidationId, setSelectedValidationId] = useState(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [showAPIKeyPrompt, setShowAPIKeyPrompt] = useState(false);
+  const [apiKey, setApiKey] = useState('');
+  
+  // Toast for notifications
+  const { toast } = useToast();
 
-  // Load validation status and available algorithms on mount
+  // Load validation status, history and available algorithms on mount
   useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
-        const [statusData, algorithmsData] = await Promise.all([
+        setErrorMessage('');
+        
+        // Check if MAUD API key is available
+        const maudApiKey = localStorage.getItem('MAUD_API_KEY');
+        if (!maudApiKey && !process.env.MAUD_API_KEY) {
+          setShowAPIKeyPrompt(true);
+          return;
+        }
+        
+        // Parallel API requests for better performance
+        const [statusData, algorithmsData, historyData] = await Promise.all([
           getMAUDValidationStatus(documentId),
-          getAvailableMAUDAlgorithms()
+          getAvailableMAUDAlgorithms(),
+          getValidationHistory(documentId).catch(err => {
+            console.warn('Could not fetch validation history:', err);
+            return [];
+          })
         ]);
         
+        // Process successful responses
         setValidationStatus(statusData);
         setAvailableAlgorithms(algorithmsData);
+        setValidationHistory(historyData);
         
         // Pre-select algorithms that have already been validated
         if (statusData && statusData.algorithmReferences) {
           setSelectedAlgorithms(statusData.algorithmReferences.map(alg => alg.id));
         }
+        
+        // Show warning if we're using cached data
+        if (statusData && statusData.warning) {
+          toast({
+            title: "Using cached data",
+            description: statusData.warning,
+            variant: "warning",
+          });
+        }
+        
+        // Set selected validation ID for export if status is validated
+        if (statusData && statusData.status === 'validated' && statusData.validationId) {
+          setSelectedValidationId(statusData.validationId);
+        }
+        
+        // Check for error status 
+        if (statusData && statusData.status === 'error') {
+          setErrorMessage(statusData.error || 'An unknown error occurred fetching validation status');
+        }
       } catch (error) {
         console.error('Error fetching MAUD data:', error);
+        setErrorMessage(`Failed to load validation data: ${error.message}`);
+        
+        toast({
+          title: "Error loading MAUD data",
+          description: error.message,
+          variant: "destructive",
+        });
       } finally {
         setIsLoading(false);
       }
     };
     
     fetchData();
-  }, [documentId]);
+  }, [documentId, toast]);
+  
+  // Handle API key submission
+  const handleAPIKeySubmit = () => {
+    if (!apiKey || apiKey.trim() === '') {
+      toast({
+        title: "API Key Required",
+        description: "Please enter a valid MAUD API key to continue",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Save API key to localStorage
+    localStorage.setItem('MAUD_API_KEY', apiKey);
+    setShowAPIKeyPrompt(false);
+    
+    // Refresh data
+    setIsLoading(true);
+    const fetchData = async () => {
+      try {
+        const [statusData, algorithmsData, historyData] = await Promise.all([
+          getMAUDValidationStatus(documentId),
+          getAvailableMAUDAlgorithms(),
+          getValidationHistory(documentId).catch(() => [])
+        ]);
+        
+        setValidationStatus(statusData);
+        setAvailableAlgorithms(algorithmsData);
+        setValidationHistory(historyData);
+        
+        toast({
+          title: "Connected to MAUD",
+          description: "Successfully connected to MAUD validation service",
+          variant: "success",
+        });
+      } catch (error) {
+        console.error('Error fetching MAUD data after API key submission:', error);
+        setErrorMessage(`Failed to connect with provided API key: ${error.message}`);
+        
+        toast({
+          title: "Connection failed",
+          description: "Could not connect to MAUD with the provided API key",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchData();
+  };
 
   // Handle algorithm selection
   const toggleAlgorithmSelection = (algorithmId) => {
@@ -73,15 +203,27 @@ const MAUDIntegrationPanel = ({ documentId = '123456' }) => {
     });
   };
 
-  // Submit for validation
+  // Submit for validation - GA-ready with error handling
   const handleSubmitForValidation = async () => {
     if (selectedAlgorithms.length === 0) {
-      alert('Please select at least one algorithm for validation');
+      toast({
+        title: "No Algorithms Selected",
+        description: "Please select at least one algorithm for validation",
+        variant: "destructive",
+      });
       return;
     }
     
     try {
       setIsSubmitting(true);
+      setErrorMessage('');
+      
+      // Check if MAUD API key is available
+      const maudApiKey = localStorage.getItem('MAUD_API_KEY');
+      if (!maudApiKey && !process.env.MAUD_API_KEY) {
+        setShowAPIKeyPrompt(true);
+        return;
+      }
       
       // Prepare document data with selected algorithms
       const documentData = {
@@ -89,6 +231,11 @@ const MAUDIntegrationPanel = ({ documentId = '123456' }) => {
         selectedAlgorithms,
         timestamp: new Date().toISOString()
       };
+      
+      toast({
+        title: "Submitting for Validation",
+        description: "Connecting to MAUD validation service...",
+      });
       
       const result = await submitForMAUDValidation(documentId, documentData);
       
@@ -100,14 +247,142 @@ const MAUDIntegrationPanel = ({ documentId = '123456' }) => {
         estimatedCompletionTime: result.estimatedCompletionTime
       }));
       
+      toast({
+        title: "Validation Submitted",
+        description: "Your document has been submitted for MAUD validation",
+        variant: "success",
+      });
+      
       // Switch to status tab to show results
       setActiveTab('status');
       
     } catch (error) {
       console.error('Error submitting for validation:', error);
-      alert('Failed to submit for MAUD validation. Please try again later.');
+      setErrorMessage(`Failed to submit for validation: ${error.message}`);
+      
+      toast({
+        title: "Validation Submission Failed",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+  
+  // Export validation certificate
+  const handleExportCertificate = async () => {
+    if (!selectedValidationId) {
+      toast({
+        title: "Validation Required",
+        description: "Please select a validation to export",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsExporting(true);
+      
+      toast({
+        title: "Preparing Certificate",
+        description: "Generating validation certificate...",
+      });
+      
+      const result = await exportValidationCertificate(documentId, selectedValidationId);
+      
+      // Handle certificate download
+      if (result.downloadUrl) {
+        // Create a hidden link and trigger download
+        const link = document.createElement('a');
+        link.href = result.downloadUrl;
+        link.download = `MAUD-Certificate-${documentId}-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+          title: "Certificate Downloaded",
+          description: "Your validation certificate has been downloaded",
+          variant: "success",
+        });
+      } else if (result.certificateData) {
+        // For base64 data or other formats
+        const link = document.createElement('a');
+        link.href = `data:application/pdf;base64,${result.certificateData}`;
+        link.download = `MAUD-Certificate-${documentId}-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+          title: "Certificate Downloaded",
+          description: "Your validation certificate has been downloaded",
+          variant: "success",
+        });
+      } else {
+        throw new Error("No certificate data received");
+      }
+      
+      setShowExportDialog(false);
+    } catch (error) {
+      console.error('Error exporting certificate:', error);
+      
+      toast({
+        title: "Certificate Export Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+  
+  // Refresh validation status
+  const handleRefreshStatus = async () => {
+    try {
+      setIsLoading(true);
+      setErrorMessage('');
+      
+      const statusData = await getMAUDValidationStatus(documentId);
+      setValidationStatus(statusData);
+      
+      // Show warning if we're using cached data
+      if (statusData && statusData.warning) {
+        toast({
+          title: "Using cached data",
+          description: statusData.warning,
+          variant: "warning",
+        });
+      }
+      
+      // Check for error status
+      if (statusData && statusData.status === 'error') {
+        setErrorMessage(statusData.error || 'An unknown error occurred fetching validation status');
+        
+        toast({
+          title: "Error Refreshing Status",
+          description: statusData.error,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Status Refreshed",
+          description: "Validation status has been updated",
+          variant: "success",
+        });
+      }
+    } catch (error) {
+      console.error('Error refreshing validation status:', error);
+      setErrorMessage(`Failed to refresh status: ${error.message}`);
+      
+      toast({
+        title: "Refresh Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -173,7 +448,7 @@ const MAUDIntegrationPanel = ({ documentId = '123456' }) => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-2 mb-4">
+        <TabsList className="grid grid-cols-3 mb-4">
           <TabsTrigger value="status" className="flex items-center">
             <FileCheck className="w-4 h-4 mr-1.5" />
             Validation Status
@@ -181,6 +456,10 @@ const MAUDIntegrationPanel = ({ documentId = '123456' }) => {
           <TabsTrigger value="algorithms" className="flex items-center">
             <Search className="w-4 h-4 mr-1.5" />
             Available Algorithms
+          </TabsTrigger>
+          <TabsTrigger value="history" className="flex items-center">
+            <History className="w-4 h-4 mr-1.5" />
+            Validation History
           </TabsTrigger>
         </TabsList>
         
@@ -371,7 +650,242 @@ const MAUDIntegrationPanel = ({ documentId = '123456' }) => {
             </CardFooter>
           </Card>
         </TabsContent>
+        
+        {/* Validation History Tab */}
+        <TabsContent value="history" className="space-y-4">
+          <Card>
+            <CardHeader className="bg-gradient-to-r from-blue-50 to-white pb-2">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-lg text-blue-700">Validation History</CardTitle>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs"
+                  onClick={async () => {
+                    setIsLoadingHistory(true);
+                    try {
+                      const history = await getValidationHistory(documentId);
+                      setValidationHistory(history);
+                      
+                      toast({
+                        title: "History Updated",
+                        description: "Validation history has been refreshed",
+                        variant: "success",
+                      });
+                    } catch (error) {
+                      console.error('Error fetching validation history:', error);
+                      
+                      toast({
+                        title: "History Refresh Failed",
+                        description: error.message,
+                        variant: "destructive",
+                      });
+                    } finally {
+                      setIsLoadingHistory(false);
+                    }
+                  }}
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Refresh
+                </Button>
+              </div>
+              <CardDescription>
+                View past validations and certification history
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              {isLoadingHistory ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="w-5 h-5 text-blue-600 animate-spin mr-2" />
+                  <span>Loading validation history...</span>
+                </div>
+              ) : validationHistory && validationHistory.length > 0 ? (
+                <div className="space-y-3">
+                  {validationHistory.map((entry, index) => (
+                    <div 
+                      key={entry.validationId || index} 
+                      className="border rounded-lg overflow-hidden transition-shadow hover:shadow-md"
+                    >
+                      <div className="bg-slate-50 p-3 border-b flex items-center justify-between">
+                        <div className="flex items-center">
+                          <Calendar className="h-4 w-4 text-blue-600 mr-2" />
+                          <div>
+                            <div className="font-medium">
+                              {new Date(entry.timestamp).toLocaleDateString()} at {new Date(entry.timestamp).toLocaleTimeString()}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              Validation ID: {entry.validationId || 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+                        {renderStatusBadge(entry.status)}
+                      </div>
+                      <div className="p-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-2">
+                          <div>
+                            <div className="text-xs text-gray-500">Score</div>
+                            <div className="font-medium">{entry.score || entry.validationDetails?.validationScore || 'N/A'}</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-500">Validator</div>
+                            <div className="font-medium">{entry.validatorName || entry.validationDetails?.validatorName || 'N/A'}</div>
+                          </div>
+                        </div>
+                        
+                        {entry.algorithms && entry.algorithms.length > 0 && (
+                          <div className="mt-3">
+                            <div className="text-xs font-medium text-gray-700 mb-1.5">Algorithms Used</div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {entry.algorithms.map(alg => (
+                                <Badge key={alg.id || alg} 
+                                  variant="outline" 
+                                  className="bg-blue-50 text-blue-800 text-xs px-1.5 py-0.5"
+                                >
+                                  {alg.name || alg}
+                                  {alg.version && <span className="ml-1 opacity-75">v{alg.version}</span>}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {entry.status === 'validated' && (
+                          <div className="mt-3 flex justify-end">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="text-xs"
+                              onClick={() => {
+                                setSelectedValidationId(entry.validationId);
+                                setShowExportDialog(true);
+                              }}
+                            >
+                              <Download className="h-3 w-3 mr-1.5" />
+                              Export Certificate
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 bg-gray-50 rounded-lg border">
+                  <FileText className="h-8 w-8 mx-auto text-gray-400 mb-2" />
+                  <h3 className="text-lg font-medium mb-1">No Validation History</h3>
+                  <p className="text-sm text-gray-600 mb-4">
+                    This document has not been validated before or history is unavailable.
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
+      
+      {/* API Key Dialog */}
+      <Dialog open={showAPIKeyPrompt} onOpenChange={setShowAPIKeyPrompt}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>MAUD API Key Required</DialogTitle>
+            <DialogDescription>
+              Please enter your MAUD API key to connect to the validation service.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="api-key">API Key</Label>
+              <Input
+                id="api-key"
+                placeholder="Enter your MAUD API key"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+              />
+            </div>
+            <div className="bg-blue-50 p-3 rounded-md border border-blue-100 text-sm text-blue-800">
+              <div className="flex items-start">
+                <Info className="h-4 w-4 mt-0.5 mr-2 flex-shrink-0" />
+                <p>
+                  The MAUD API key is required to validate your clinical evaluation reports against 
+                  regulatory standards. Contact your administrator if you don't have a key.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAPIKeyPrompt(false)}>Cancel</Button>
+            <Button onClick={handleAPIKeySubmit}>Save API Key</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Certificate Export Dialog */}
+      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Export Validation Certificate</DialogTitle>
+            <DialogDescription>
+              Generate a compliance certificate for regulatory submission.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-4">
+            <div className="bg-blue-50 border border-blue-100 rounded-md p-3 mb-4">
+              <h4 className="text-sm font-medium text-blue-800 mb-1">Certificate Details</h4>
+              <div className="text-sm text-blue-700">
+                <div className="grid grid-cols-3 gap-1 mb-1">
+                  <span className="font-medium">Document ID:</span>
+                  <span className="col-span-2">{documentId}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-1 mb-1">
+                  <span className="font-medium">Validation ID:</span>
+                  <span className="col-span-2">{selectedValidationId || 'None selected'}</span>
+                </div>
+                <div className="grid grid-cols-3 gap-1">
+                  <span className="font-medium">Date:</span>
+                  <span className="col-span-2">{new Date().toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-center bg-gray-50 border rounded-md p-8">
+              <div className="text-center">
+                <FileText className="h-10 w-10 mx-auto text-blue-600 mb-3" />
+                <h3 className="text-lg font-medium mb-1">Validation Certificate</h3>
+                <p className="text-sm text-gray-600 mb-6 max-w-xs mx-auto">
+                  This certificate validates that your clinical evaluation report
+                  has been verified against regulatory standards.
+                </p>
+                <Button 
+                  onClick={handleExportCertificate} 
+                  disabled={isExporting || !selectedValidationId}
+                  className="w-full"
+                >
+                  {isExporting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Certificate
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowExportDialog(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
