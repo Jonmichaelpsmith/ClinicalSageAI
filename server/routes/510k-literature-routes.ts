@@ -131,14 +131,7 @@ const validateRequest = (req: Request, rules: Record<string, any>): ValidationEr
 
 // This function is already defined above
 
-/**
- * Middleware to extract tenant context
- */
-const extractTenantContext = (req: Request, res: Response, next: Function) => {
-  // Default organization ID for testing if not provided
-  req.body.organizationId = req.body.organizationId || 'test-org-id';
-  next();
-};
+// This middleware is already defined above
 
 /**
  * Get available literature sources
@@ -644,4 +637,5 @@ router.get(
   }
 );
 
+export default router;
 export default router;
