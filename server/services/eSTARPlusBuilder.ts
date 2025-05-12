@@ -111,9 +111,10 @@ export class DigitalSigner {
       } else {
         return { valid: false, message: 'Invalid signature, document may have been tampered with' };
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error verifying signature:', error);
-      return { valid: false, message: `Verification error: ${error.message}` };
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      return { valid: false, message: `Verification error: ${errorMessage}` };
     }
   }
 }
@@ -226,9 +227,10 @@ export class eSTARPlusBuilder {
           
           sec.xhtml = outXhtml;
           sec.pdf = outPdf;
-        } catch (error) {
+        } catch (error: unknown) {
           console.error(`Error processing section ${sec.name}:`, error);
-          throw new Error(`Failed to process section ${sec.name}: ${error.message}`);
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          throw new Error(`Failed to process section ${sec.name}: ${errorMessage}`);
         }
       }
       
