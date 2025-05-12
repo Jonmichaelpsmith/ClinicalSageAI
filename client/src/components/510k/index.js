@@ -9,3 +9,4 @@ export { default as EnhancedLiteratureDiscovery } from './EnhancedLiteratureDisc
 export { default as EnhancedLiteratureSearch } from './EnhancedLiteratureSearch';
 export { default as CitationManager } from './CitationManager';
 export { default as LiteratureSummaryGenerator } from './LiteratureSummaryGenerator';
+export { default as ComplianceChecker } from './ComplianceChecker';
