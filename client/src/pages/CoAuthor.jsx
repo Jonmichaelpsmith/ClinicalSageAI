@@ -64,8 +64,6 @@ import {
   Upload,
   Download,
   History,
-  Table as TableIcon,
-  BarChart3,
   Share2,
   Database,
   BarChart,
@@ -73,7 +71,6 @@ import {
   Clock,
   GitMerge,
   GitBranch,
-  Plus,
   Minus,
   Info,
   UserCheck,
@@ -100,8 +97,7 @@ import {
   Bot,
   Clipboard,
   Zap,
-  Send,
-  Loader2
+  Send
 } from 'lucide-react';
 
 // Custom Google icon component
