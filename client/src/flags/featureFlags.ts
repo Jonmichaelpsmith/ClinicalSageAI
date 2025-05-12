@@ -46,6 +46,13 @@ export const featureFlags: Record<string, FeatureFlag> = {
     defaultValue: true,
     enabled: true
   },
+  ENABLE_PATHWAY_ADVISOR: {
+    id: 'ENABLE_PATHWAY_ADVISOR',
+    name: 'Regulatory Pathway Advisor',
+    description: 'Enables AI-powered regulatory pathway recommendations and requirement analysis',
+    defaultValue: true,
+    enabled: true
+  },
   ENABLE_SECTION_RECOMMENDER: {
     id: 'ENABLE_SECTION_RECOMMENDER',
     name: 'Document Section Recommender',

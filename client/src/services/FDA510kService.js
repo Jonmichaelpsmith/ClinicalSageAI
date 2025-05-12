@@ -266,8 +266,8 @@ class FDA510kService {
       });
       
       return {
-        pathway: response.recommendedPathway,
-        alternativePathways: response.alternativePathways,
+        recommendedPathway: response.recommendedPathway,
+        alternativePathways: response.alternativePathways || [],
         rationale: response.rationale,
         estimatedTimelineInDays: response.estimatedTimelineInDays,
         requirements: response.requirements,
