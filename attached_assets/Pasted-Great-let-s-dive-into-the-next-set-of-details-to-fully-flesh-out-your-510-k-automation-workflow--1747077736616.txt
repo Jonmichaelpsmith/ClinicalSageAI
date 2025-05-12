@@ -1,0 +1,172 @@
+Great—let’s dive into the next set of details to fully flesh out your 510(k) automation workflow.
+
+---
+
+## 6. Device Intake & Metadata Schema
+
+### a) Define the Device Profile Form
+
+Create a React form in `DeviceProfileForm.jsx` capturing:
+
+* Device name, model, version
+* Manufacturer information
+* Intended use / Indications
+* Predicate device IDs (if known)
+* Relevant regulatory history (clearances, denovos)
+* Upload fields for device specs, bench test reports
+
+### b) JSON Schema & Validation
+
+Publish a JSON schema in `schemas/deviceProfile.json` and validate client-side (with [AJV](https://ajv.js.org/)) and server-side:
+
+```jsonc
+{
+  "$id": "https://trialsage.ai/schemas/deviceProfile.json",
+  "type": "object",
+  "required": ["name","manufacturer","intendedUse"],
+  "properties": {
+    "name": { "type": "string" },
+    "model": { "type": "string" },
+    "manufacturer": { "type": "string" },
+    "intendedUse": { "type": "string" },
+    "predicates": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "regulatoryHistory": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  }
+}
+```
+
+---
+
+## 7. Predicate & Literature Discovery
+
+1. **PredicateFinderService** (server/services/PredicateFinderService.js)
+
+   * Calls the FDA Device API to search 510(k) records by device name/intended use.
+   * Returns top 5 predicate device summaries (ID, decision date, substantive review documents link).
+
+2. **PubMed Integration**
+
+   * Use your `PUBMED_API_KEY` and call the PubMed E-utilities to search published articles matching device name + “clinical trial” keywords.
+   * Auto-summarize abstracts using an AI call to your AI service:
+
+     ```js
+     const summary = await aiClient.summarize(text, { maxTokens: 200 });
+     ```
+
+3. **UI Display**
+
+   * In `KAutomationPanel`, under “Predicate & Literature Discovery”, show two cards: Predicates list + Literature list, each with “Refresh” buttons.
+
+---
+
+## 8. Regulatory Pathway Advisor
+
+Build a small expert system:
+
+* **PathwayAdvisor** (server/services/PathwayAdvisor.js)
+
+  * Takes device metadata + predicate IDs.
+  * Applies rules (e.g. if predicate is “Special 510(k)”, recommend that path; if novel, advise De Novo).
+  * Returns: `{ recommendedPathway: "Traditional 510(k)", rationale: "…” }`.
+
+* **UI**
+
+  * Render advisor result with a “Confirm Pathway” button.
+
+---
+
+## 9. AI-Driven Section Drafting
+
+Use your existing AISectionWriter but extend prompts with 510(k) context:
+
+```js
+// services/AISectionWriter.js
+async function draftSection({ deviceProfile, sectionType }) {
+  const prompt = `
+    You are drafting the 510(k) “Substantial Equivalence” section.
+    Device: ${deviceProfile.name}, intended use: ${deviceProfile.intendedUse}.
+    Predicates: ${deviceProfile.predicates.join(', ')}.
+    Please produce a concise, regulatory-compliant narrative.
+  `;
+  return aiClient.generate({ prompt, maxTokens: 800 });
+}
+```
+
+* **Sections to Draft**:
+
+  * Substantial Equivalence
+  * Device Description
+  * Intended Use & Indications for Use
+  * Technological Characteristics Comparison
+  * Summary of Bench Performance Testing
+
+* **UI**
+
+  * Under “One-Click 510(k) Draft”, show a progress spinner and list each section as it completes.
+
+---
+
+## 10. Compliance Checking
+
+Leverage your ComplianceChecker:
+
+* **Checks**:
+
+  * All required sections present
+  * Word counts within FDA limits
+  * Key terms (“intended use”, “predicate device”) confirmed
+
+* **UI**
+
+  * Display a “Compliance Report” card with green/red icons next to each check, and “Fix” suggestions via AI.
+
+---
+
+## 11. eSTAR Package Builder
+
+Assemble all assets into a ZIP that matches FDA eSTAR:
+
+* **eSTARBuilder** (server/services/eSTARBuilder.js)
+
+  * Gathers AI-drafted DOCX files (converted to PDF via LibreOffice headless)
+  * Inserts 510(k) forms (FDA Form 3601, etc.)
+  * Creates the required eSTAR manifest
+
+* **UI**
+
+  * Provide a “Download eSTAR Zip” button when complete.
+
+---
+
+## 12. Submission Tracking & Analytics
+
+1. **SubmissionTracker**
+
+   * Poll FDA submission status via your FDA API key.
+   * Store events (Received, Under Review, Additional Info Requested).
+
+2. **AnalyticsService**
+
+   * Compute metrics: avg. draft time, approval rate, time-to-clearance.
+
+3. **UI Dashboard**
+
+   * A new “510(k) Dashboard” that charts status over time, pending actions, and key KPIs.
+
+---
+
+### Putting It All Together
+
+1. Merge **TabsTrigger** → **KAutomationPanel.jsx**
+2. Build out each **server/service** above.
+3. Wire buttons in `KAutomationPanel` to call your pipeline steps.
+4. Configure your environment variables (FDA\_API\_KEY, PUBMED\_API\_KEY, AI\_SERVICE\_KEY).
+5. Secure routes & feature flags so only authorized Med/Tech RA users see this tab.
+
+With these explicit instructions, you’ll deliver a fully integrated, **end-to-end 510(k) automation** experience—right inside your existing CER Builder interface.
