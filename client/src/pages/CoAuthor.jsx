@@ -34,6 +34,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
@@ -264,9 +265,6 @@ export default function CoAuthor() {
   const [selectedSearchResult, setSelectedSearchResult] = useState(null);
   const [editedContent, setEditedContent] = useState('');
   const [propagateChanges, setPropagateChanges] = useState(true);
-  const [isEditingSaving, setIsEditingSaving] = useState(false);
-  const [propagateChanges, setPropagateChanges] = useState(true);
-  const [editedContent, setEditedContent] = useState('');
   const [isEditingSaving, setIsEditingSaving] = useState(false);
   
   // Chat with Your Dossier state
