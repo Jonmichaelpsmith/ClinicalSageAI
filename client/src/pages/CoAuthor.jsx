@@ -4012,6 +4012,267 @@ export default function CoAuthor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Phase 5: Document Lifecycle & eCTD Export - Export Dialog */}
+      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Download className="h-5 w-5 mr-2 text-blue-600" />
+              Export Document
+            </DialogTitle>
+            <DialogDescription>
+              Export your document to various formats and optionally generate an eCTD package.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-6 py-4">
+            {/* Document Metadata */}
+            <div className="grid gap-3">
+              <div className="text-sm font-medium">Document Metadata</div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="docType" className="text-sm font-medium">
+                    Document Type
+                  </label>
+                  <select
+                    id="docType"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={documentMetadata.docType}
+                    onChange={(e) => setDocumentMetadata({
+                      ...documentMetadata,
+                      docType: e.target.value
+                    })}
+                  >
+                    <option value="Clinical Overview">Clinical Overview</option>
+                    <option value="Clinical Summary">Clinical Summary</option>
+                    <option value="Study Report">Study Report</option>
+                    <option value="Protocol">Protocol</option>
+                    <option value="Investigator Brochure">Investigator Brochure</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="sequence" className="text-sm font-medium">
+                    Sequence Number
+                  </label>
+                  <input
+                    id="sequence"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={documentMetadata.sequence}
+                    onChange={(e) => setDocumentMetadata({
+                      ...documentMetadata,
+                      sequence: e.target.value
+                    })}
+                    placeholder="0001"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="applicationId" className="text-sm font-medium">
+                    Application ID
+                  </label>
+                  <input
+                    id="applicationId"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={documentMetadata.applicationId}
+                    onChange={(e) => setDocumentMetadata({
+                      ...documentMetadata,
+                      applicationId: e.target.value
+                    })}
+                    placeholder="IND-123456"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="moduleSection" className="text-sm font-medium">
+                    Module/Section
+                  </label>
+                  <input
+                    id="moduleSection"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={documentMetadata.moduleSection}
+                    onChange={(e) => setDocumentMetadata({
+                      ...documentMetadata,
+                      moduleSection: e.target.value
+                    })}
+                    placeholder="2.5"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Export Options */}
+            <div className="grid gap-3">
+              <div className="text-sm font-medium">Export Format & Region</div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label htmlFor="exportFormat" className="text-sm font-medium">
+                    Export Format
+                  </label>
+                  <select
+                    id="exportFormat"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={exportFormat}
+                    onChange={(e) => setExportFormat(e.target.value)}
+                  >
+                    <option value="html">HTML</option>
+                    <option value="pdf">PDF</option>
+                    <option value="docx">Word (DOCX)</option>
+                    <option value="ectd">eCTD Package (ZIP)</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="exportRegion" className="text-sm font-medium">
+                    Regulatory Region
+                  </label>
+                  <select
+                    id="exportRegion"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={exportRegion}
+                    onChange={(e) => setExportRegion(e.target.value)}
+                  >
+                    <option value="US">US (FDA)</option>
+                    <option value="EU">EU (EMA)</option>
+                    <option value="JP">Japan (PMDA)</option>
+                    <option value="CA">Canada (Health Canada)</option>
+                    <option value="ICH">ICH (Harmonized)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            {/* Additional Options */}
+            <div className="grid gap-3">
+              <div className="text-sm font-medium">Additional Options</div>
+              <div className="grid grid-cols-1 gap-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="includeToc"
+                    checked={exportOptions.includeToc}
+                    onChange={(e) => setExportOptions({
+                      ...exportOptions,
+                      includeToc: e.target.checked
+                    })}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                  />
+                  <label htmlFor="includeToc" className="text-sm">
+                    Include Table of Contents
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="includeValidationReport"
+                    checked={exportOptions.includeValidationReport}
+                    onChange={(e) => setExportOptions({
+                      ...exportOptions,
+                      includeValidationReport: e.target.checked
+                    })}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                  />
+                  <label htmlFor="includeValidationReport" className="text-sm">
+                    Include Validation Report
+                  </label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="applyIchStandards"
+                    checked={exportOptions.applyIchStandards}
+                    onChange={(e) => setExportOptions({
+                      ...exportOptions,
+                      applyIchStandards: e.target.checked
+                    })}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                  />
+                  <label htmlFor="applyIchStandards" className="text-sm">
+                    Apply ICH Standards
+                  </label>
+                </div>
+                {exportFormat === 'ectd' && (
+                  <>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="generateEctdXml"
+                        checked={exportOptions.generateEctdXml}
+                        onChange={(e) => setExportOptions({
+                          ...exportOptions,
+                          generateEctdXml: e.target.checked
+                        })}
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                      />
+                      <label htmlFor="generateEctdXml" className="text-sm">
+                        Generate eCTD XML Backbone
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="includeChecksums"
+                        checked={exportOptions.includeChecksums}
+                        onChange={(e) => setExportOptions({
+                          ...exportOptions,
+                          includeChecksums: e.target.checked
+                        })}
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                      />
+                      <label htmlFor="includeChecksums" className="text-sm">
+                        Include MD5 Checksums
+                      </label>
+                    </div>
+                  </>
+                )}
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="vaultStorage"
+                    checked={exportOptions.vaultStorage}
+                    onChange={(e) => setExportOptions({
+                      ...exportOptions,
+                      vaultStorage: e.target.checked
+                    })}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                  />
+                  <label htmlFor="vaultStorage" className="text-sm">
+                    Store in Document Vault
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowExportDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={exportDocument}
+              disabled={exportInProgress}
+              className="ml-2"
+            >
+              {exportInProgress ? (
+                <>
+                  <span className="mr-2">
+                    <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </span>
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export {exportFormat.toUpperCase()}
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
