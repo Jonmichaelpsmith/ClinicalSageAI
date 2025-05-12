@@ -515,9 +515,40 @@ export default function CoAuthor() {
     }
   };
 
-  // Load content atoms on component mount
+  // Function to fetch templates from API and break them into atoms
+  const fetchTemplatesFromApi = async () => {
+    try {
+      // In a production implementation, we call the actual backend API
+      const response = await fetch('/api/templates');
+      
+      if (response.ok) {
+        const templatesData = await response.json();
+        
+        // Process templates and extract their atoms
+        const processedTemplates = templatesData.map(template => {
+          // For each template, identify its atoms
+          return {
+            ...template,
+            atomsComposition: true,
+            contentBlocks: template.contentAtoms || template.contentBlocks || []
+          };
+        });
+        
+        setTemplates(processedTemplates);
+      } else {
+        // If API fails, we'll keep using the mock data
+        console.log("Using default template data - API returned:", response.status);
+      }
+    } catch (error) {
+      console.error("Error fetching templates:", error);
+      // Continue with mock data if API fails
+    }
+  };
+
+  // Load content atoms and templates on component mount
   useEffect(() => {
     fetchContentAtoms();
+    fetchTemplatesFromApi();
   }, []);
 
   // Create a new content atom (Admin only)
@@ -864,8 +895,8 @@ export default function CoAuthor() {
     ]
   };
 
-  // Mock templates data with structured content blocks
-  const [templates] = useState([
+  // Template Library & Atom Composition - Templates become pre-configured atom sets
+  const [templates, setTemplates] = useState([
     {
       id: 101,
       name: 'Clinical Overview Template',
@@ -880,7 +911,8 @@ export default function CoAuthor() {
         'table-2-5-1',
         'narrative-2-5-benefit-risk',
         'figure-2-7-3-forest-plot'
-      ]
+      ],
+      atomsComposition: true // Flag indicating this is a pre-configured atom set
     },
     {
       id: 102,
@@ -3321,12 +3353,34 @@ export default function CoAuthor() {
                   });
                   
                   // Create a new document using our service
+                  // First check if template should be fetched from Docs API
+                  let docTemplateId = googleDocsService.getDocumentId('module_2_5'); // Default base template
+                  
+                  // If the selected template has a Google Docs template ID, use that instead
+                  if (selectedTemplate && selectedTemplate.googleDocsTemplateId) {
+                    docTemplateId = selectedTemplate.googleDocsTemplateId;
+                  }
+                  
+                  // Insert template → behind the scenes, fetch its HTML or atom JSON using editor.chain().insertContent(...)
                   const result = await googleDocsService.createNewDoc(
-                    googleDocsService.getDocumentId('module_2_5'), // Base template
+                    docTemplateId,
                     documentTitle,
                     { 
                       initialContent: structuredContent,
-                      organizationId: 1 // Use default organization ID
+                      organizationId: 1, // Use default organization ID
+                      atomComposition: true, // Flag indicating this is using atom composition
+                      atoms: selectedContentBlocks.map(blockId => {
+                        // Find the atom in the registry by ID
+                        let atom = null;
+                        if (blockId.startsWith('table-')) {
+                          atom = contentBlockRegistry.tables.find(t => t.id === blockId);
+                        } else if (blockId.startsWith('narrative-')) {
+                          atom = contentBlockRegistry.narratives.find(n => n.id === blockId);
+                        } else if (blockId.startsWith('figure-')) {
+                          atom = contentBlockRegistry.figures.find(f => f.id === blockId);
+                        }
+                        return atom;
+                      }).filter(atom => atom !== null)
                     }
                   );
                   
