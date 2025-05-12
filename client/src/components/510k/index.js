@@ -4,6 +4,7 @@ export { default as PredicateSearch } from './PredicateSearch';
 export { default as EquivalenceTable } from './EquivalenceTable';
 export { default as PredicateAnalysis } from './PredicateAnalysis';
 export { default as PathwayAdvisorCard } from './PathwayAdvisorCard';
+export { default as EquivalenceDraft } from './EquivalenceDraft';
 export { default as EnhancedLiteratureDiscovery } from './EnhancedLiteratureDiscovery';
 export { default as EnhancedLiteratureSearch } from './EnhancedLiteratureSearch';
 export { default as CitationManager } from './CitationManager';
