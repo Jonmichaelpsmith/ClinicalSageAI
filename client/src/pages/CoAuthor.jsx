@@ -178,6 +178,18 @@ export default function CoAuthor() {
   const [vectorizedDocuments, setVectorizedDocuments] = useState([]);
   const [embeddingInProgress, setEmbeddingInProgress] = useState(false);
   const [embeddingStatus, setEmbeddingStatus] = useState(null);
+  
+  // Chat with Your Dossier state
+  const [showChatDossier, setShowChatDossier] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatQuery, setChatQuery] = useState('');
+  const [isGeneratingChatResponse, setIsGeneratingChatResponse] = useState(false);
+  
+  // Smart Reuse Panel state
+  const [showSmartReusePanel, setShowSmartReusePanel] = useState(false);
+  const [selectedText, setSelectedText] = useState('');
+  const [similarContentResults, setSimilarContentResults] = useState([]);
+  const [isFindingSimilarContent, setIsFindingSimilarContent] = useState(false);
   const [selectedContentBlocks, setSelectedContentBlocks] = useState([]);
   const [documentTitle, setDocumentTitle] = useState('');
   const [documentModule, setDocumentModule] = useState('');
@@ -958,6 +970,135 @@ export default function CoAuthor() {
     return fakeEmbedding;
   };
   
+  /**
+   * Generates a chat response using RAG (Retrieval-Augmented Generation)
+   * @param {string} query - User query
+   * @returns {Promise<Object>} - The generated response
+   */
+  const generateChatResponse = async (query) => {
+    if (!query || !vectorizedDocuments.length) {
+      return {
+        text: "I don't have enough information to answer that question. Please try again after more documents have been approved and indexed.",
+        sources: []
+      };
+    }
+    
+    try {
+      setIsGeneratingChatResponse(true);
+      
+      // First, perform semantic search to retrieve relevant context
+      const searchResults = await performSemanticSearch(query);
+      
+      // In a real implementation, we would:
+      // 1. Format the search results as context
+      // 2. Call OpenAI's API with the context and query
+      // 3. Return the structured response
+      
+      // For now, simulate the RAG process
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Simulate different responses based on query content for demo purposes
+      let responseText = '';
+      if (query.toLowerCase().includes('safety') || query.toLowerCase().includes('signal')) {
+        responseText = "Based on the documents I've analyzed, several safety signals emerged in Module 2.7:\n\n" +
+          "• Elevated liver enzymes (ALT/AST) in 4.2% of treated subjects vs 1.1% in placebo\n" +
+          "• Mild to moderate headache in 12.7% of treated subjects\n" +
+          "• Insomnia reported in 8.3% of treated subjects vs 2.9% in placebo\n\n" +
+          "No serious adverse events were attributed to the study drug based on investigator assessment.";
+      } else if (query.toLowerCase().includes('efficacy') || query.toLowerCase().includes('endpoint')) {
+        responseText = "The primary efficacy endpoints in the clinical studies showed:\n\n" +
+          "• Statistically significant improvement in the primary endpoint (p<0.001)\n" +
+          "• 37% reduction in symptom severity compared to baseline\n" +
+          "• Clinically meaningful response in 72% of treated subjects vs 45% in placebo\n\n" +
+          "Secondary endpoints generally supported the primary findings with consistent effect sizes.";
+      } else {
+        responseText = "Based on the documents I've analyzed, I found the following information related to your query:\n\n" +
+          "• The submission includes comprehensive data from 3 Phase III clinical trials\n" +
+          "• Study population included " + Math.floor(Math.random() * 1000 + 1000) + " subjects across 12 countries\n" +
+          "• Treatment duration ranged from 26-52 weeks with standard dosing protocols\n\n" +
+          "Please let me know if you need more specific information from the indexed documents.";
+      }
+      
+      // Return the simulated response with sources
+      return {
+        text: responseText,
+        sources: searchResults.slice(0, 3) // Include top 3 sources
+      };
+    } catch (error) {
+      console.error('Error generating chat response:', error);
+      toast({
+        title: "Generation Error",
+        description: "Failed to generate a response: " + error.message,
+        variant: "destructive",
+      });
+      return {
+        text: "I encountered an error while generating a response. Please try again.",
+        sources: []
+      };
+    } finally {
+      setIsGeneratingChatResponse(false);
+    }
+  };
+  
+  /**
+   * Finds similar content for the Smart Reuse panel
+   * @param {string} text - The selected text to find similar content for
+   * @returns {Promise<Array>} - Array of similar content results
+   */
+  const findSimilarContent = async (text) => {
+    if (!text || !vectorizedDocuments.length) {
+      return [];
+    }
+    
+    try {
+      setIsFindingSimilarContent(true);
+      
+      // In a real implementation, we would:
+      // 1. Generate an embedding for the selected text
+      // 2. Search the vector database for similar content
+      // 3. Return the results
+      
+      // For now, simulate the search
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Generate simulated results
+      const simulatedResults = vectorizedDocuments
+        .flatMap(doc => {
+          // Get a random number of chunks from each document
+          const numResults = Math.floor(Math.random() * 2) + 1;
+          const randomChunks = doc.chunks
+            .sort(() => Math.random() - 0.5)
+            .slice(0, numResults);
+            
+          return randomChunks.map(chunk => ({
+            documentId: doc.id,
+            documentTitle: doc.title,
+            documentVersion: doc.version,
+            module: doc.module,
+            section: chunk.metadata?.section || 'Unknown Section',
+            content: chunk.chunk.text,
+            similarity: 0.65 + Math.random() * 0.3, // Random similarity score between 0.65 and 0.95
+            url: `#doc-${doc.id}-section-${chunk.metadata?.chunkIndex || 0}`
+          }));
+        })
+        .sort((a, b) => b.similarity - a.similarity) // Sort by similarity (highest first)
+        .slice(0, 5); // Limit to 5 results
+      
+      setSimilarContentResults(simulatedResults);
+      return simulatedResults;
+    } catch (error) {
+      console.error('Error finding similar content:', error);
+      toast({
+        title: "Search Error",
+        description: "Failed to find similar content: " + error.message,
+        variant: "destructive",
+      });
+      return [];
+    } finally {
+      setIsFindingSimilarContent(false);
+    }
+  };
+
   /**
    * Performs semantic search using document embeddings
    * @param {string} query - Search query
