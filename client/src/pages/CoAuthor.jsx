@@ -348,6 +348,13 @@ export default function CoAuthor() {
   
   // Component state
   const [isTreeOpen, setIsTreeOpen] = useState(false);
+  const [ctdExpandedSections, setCTDExpandedSections] = useState({
+    module1: true,
+    module2: true,
+    module3: false,
+    module4: false,
+    module5: false
+  });
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showCompareDialog, setShowCompareDialog] = useState(false);
   const [activeVersion, setActiveVersion] = useState('v4.0');
@@ -999,6 +1006,25 @@ export default function CoAuthor() {
     }
   };
   
+  // Handle CTD section click
+  const handleCTDSectionClick = (moduleId, sectionId, sectionTitle) => {
+    // Update selected document reference with the CTD section metadata
+    const updatedDocument = {
+      ...selectedDocument,
+      section: sectionId,
+      sectionTitle: sectionTitle,
+      moduleId: moduleId
+    };
+    
+    setSelectedDocument(updatedDocument);
+    
+    // Log section navigation for regulatory tracking
+    console.log(`Navigated to ${moduleId} - Section ${sectionId}: ${sectionTitle}`);
+    
+    // Perform validation when changing sections
+    validateEctdDocument(false);
+  };
+  
   // AI query submission handler
   const handleAiQuerySubmit = async (e) => {
     e.preventDefault();
@@ -1638,16 +1664,8 @@ export default function CoAuthor() {
                   <p className="font-medium">eCTD Documentation</p>
                   <p className="text-xs mt-1">Click on a section to navigate or edit. Validation is performed against ICH standards.</p>
                 </div>
-                  </div>
-                </div>
-                
-                <div className="border-l-4 border-purple-600 pl-2 py-1 font-medium">
-                  Module 4: Nonclinical Study Reports
-                </div>
-                
-                <div className="border-l-4 border-indigo-600 pl-2 py-1 font-medium">
-                  Module 5: Clinical Study Reports
-                </div>
+              </div>
+            </div>
               </div>
               
               <div className="mt-6 pt-6 border-t">
