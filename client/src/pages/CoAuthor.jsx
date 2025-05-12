@@ -29,6 +29,8 @@ import { DOCUMENT_TEMPLATES } from '../config/googleConfig';
 
 // AI services
 import * as aiService from '../services/aiService';
+// Import eCTD validation service
+import * as ectdValidationService from '../services/ectdValidationService';
 
 // (GoogleIcon component already exists elsewhere in the file)
 
