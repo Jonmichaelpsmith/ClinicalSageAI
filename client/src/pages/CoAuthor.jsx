@@ -144,6 +144,59 @@ export default function CoAuthor() {
     }
   };
   
+  // Handle document selection
+  const handleDocumentSelect = (document) => {
+    if (!document) return;
+    
+    // Update selected document
+    setSelectedDocument(document);
+    
+    // If changing to a different document, update content and reset validation
+    if (!selectedDocument || selectedDocument.id !== document.id) {
+      // Check if we have saved versions for this document
+      const latestVersion = documentVersions.find(v => v.documentId === document.id);
+      
+      if (latestVersion) {
+        // Load the latest version
+        setDocumentContent(latestVersion.content);
+        
+        toast({
+          title: "Document Loaded",
+          description: `Loaded document with latest saved version from ${new Date(latestVersion.timestamp).toLocaleString()}`
+        });
+      } else {
+        // Create default content based on document type
+        let defaultContent = `# ${document.title}\n\n`;
+        
+        if (document.documentType === 'Clinical Overview') {
+          defaultContent += `## 1. Introduction\nThis document provides an overview of the clinical development program.\n\n## 2. Disease Background\nBackground information on the disease and current treatment options.\n\n## 3. Clinical Efficacy\nSummary of efficacy results from the pivotal clinical studies.\n\n## 4. Clinical Safety\nOverview of the safety profile based on clinical trial data.\n\n## 5. Benefit-Risk Assessment\nEvaluation of the overall benefit-risk profile of the product.`;
+        } else if (document.documentType === 'Risk Management Plan') {
+          defaultContent += `## 1. Safety Concerns\nList of important identified and potential risks.\n\n## 2. Pharmacovigilance Plan\nActivities to address safety concerns.\n\n## 3. Risk Minimization Measures\nActivities to minimize risks.`;
+        } else {
+          defaultContent += `## Document Content\nAdd your content here.`;
+        }
+        
+        setDocumentContent(defaultContent);
+        
+        toast({
+          title: "Document Selected",
+          description: `Loaded ${document.documentType} document template`
+        });
+      }
+      
+      // Reset validation
+      setValidationResults({
+        status: 'none',
+        score: 0,
+        issues: [],
+        passingChecks: [],
+        failingChecks: [],
+        regulatoryStatus: 'Not Validated',
+        complianceScore: 0
+      });
+    }
+  };
+  
   // Handle CTD section click
   const handleCTDSectionClick = (moduleId, sectionId, sectionTitle) => {
     // Update selected document reference with the CTD section metadata
@@ -161,6 +214,14 @@ export default function CoAuthor() {
     
     // Perform validation when changing sections
     validateEctdDocument(false);
+    
+    // Automatically save version when changing sections
+    saveDocumentVersion();
+    
+    toast({
+      title: "Section Updated",
+      description: `Document mapped to ${moduleId} section ${sectionId}`,
+    });
   };
   
   // Generate PDF preview for eCTD document
@@ -362,6 +423,81 @@ export default function CoAuthor() {
       description: `Document version from ${new Date(version.timestamp).toLocaleString()} loaded`
     });
   };
+  
+  // Initialize component data and setup connections between features
+  useEffect(() => {
+    // Initialize sample documents
+    const initialDocuments = [
+      { id: 1, title: "Clinical Overview", documentType: "Clinical Overview", section: "2.5", moduleId: "module2" },
+      { id: 2, title: "Risk Management Plan", documentType: "Risk Management Plan", section: "1.10", moduleId: "module1" },
+      { id: 3, title: "Clinical Study Report", documentType: "Clinical Study Report", section: "5.3.5", moduleId: "module5" }
+    ];
+    
+    setDocuments(initialDocuments);
+    
+    // Set first document as selected by default and initialize with content
+    if (initialDocuments.length > 0) {
+      setSelectedDocument(initialDocuments[0]);
+      
+      // Initialize document content with template for Clinical Overview
+      const initialContent = `# ${initialDocuments[0].title}
+
+## 1. Introduction
+This document provides an overview of the clinical development program.
+
+## 2. Disease Background
+Background information on the disease and current treatment options.
+
+## 3. Clinical Efficacy
+Summary of efficacy results from the pivotal clinical studies.
+
+## 4. Clinical Safety
+Overview of the safety profile based on clinical trial data.
+
+## 5. Benefit-Risk Assessment
+Evaluation of the overall benefit-risk profile of the product.`;
+
+      setDocumentContent(initialContent);
+      
+      // Run initial validation silently
+      setTimeout(() => {
+        validateEctdDocument(false);
+      }, 500);
+    }
+    
+    // Initialize with a sample version history record
+    const now = new Date();
+    const sampleVersions = [
+      {
+        id: `v-${now.getTime() - 86400000}`, // 1 day ago
+        documentId: 1,
+        content: "# Clinical Overview (Previous Version)\n\n## 1. Introduction\nThis is a previous version of the clinical overview document.",
+        title: "Clinical Overview",
+        section: "2.5",
+        moduleId: "module2",
+        timestamp: new Date(now.getTime() - 86400000).toISOString(),
+        validationStatus: "Compliant",
+        complianceScore: 85,
+        submissionReady: true
+      }
+    ];
+    
+    setDocumentVersions(sampleVersions);
+    
+    // Set up keyboard shortcut for validation (Ctrl+Alt+V)
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.altKey && e.key === 'v') {
+        validateEctdDocument(true);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    
+    // Cleanup function
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
   
   // Simplified component rendering
   return (
