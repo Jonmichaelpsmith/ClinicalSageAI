@@ -1,463 +1,496 @@
 /**
  * Citation Manager Component
  * 
- * This component manages literature citations for 510(k) submissions,
- * allowing users to view, organize, and remove citations in their documents.
+ * This component provides an interface for managing literature citations
+ * within 510(k) documents, including viewing, organizing, and removing citations.
  */
 
 import React, { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Separator } from '@/components/ui/separator';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import {
-  Bookmark,
-  FileText,
-  RefreshCw,
-  X,
-  ExternalLink,
-  AlertCircle,
+import axios from 'axios';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { 
+  FileText, 
+  Trash, 
+  ExternalLink, 
+  Calendar, 
+  Loader2, 
   BookOpen,
-  Check,
-  Download,
-  FileOutput
-} from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
+  Share,
+  Tag,
+  List,
+  X,
+  Copy,
+  ClipboardEdit,
+  Info
+} from "lucide-react";
 
-const CitationManager = ({ documentId, documentType = '510k', onRefresh, compact = false }) => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [selectedCitation, setSelectedCitation] = useState(null);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+import { useContext } from 'react';
+import { TenantContext } from '../../contexts/TenantContext';
+
+// Helper to format citation
+const formatCitation = (citation) => {
+  if (!citation.literature) return 'Unknown citation';
   
-  // Fetch citations for the document
-  const {
-    data: citations = [],
-    isLoading: isLoadingCitations,
-    isError: isCitationsError,
-    error: citationsError,
-    refetch: refetchCitations
-  } = useQuery({
-    queryKey: [`/api/510k/literature/citations/${documentId}`],
-    queryFn: async () => {
-      if (!documentId) return [];
-      const response = await apiRequest(`/api/510k/literature/citations/${documentId}?type=${documentType}`);
-      return response.citations || [];
-    },
-    enabled: !!documentId,
-    refetchOnWindowFocus: false
-  });
+  const lit = citation.literature;
+  const authors = lit.authors ? lit.authors.join(', ') : 'Unknown';
+  const year = lit.publication_date ? new Date(lit.publication_date).getFullYear() : 'n.d.';
+  const title = lit.title || 'Untitled';
+  const journal = lit.journal || 'Unknown source';
   
-  // Mutation for removing a citation
-  const removeCitationMutation = useMutation({
-    mutationFn: async (citationId) => {
-      const response = await apiRequest(`/api/510k/literature/citations/${citationId}`, 'DELETE');
-      return response;
-    },
-    onSuccess: () => {
-      toast({
-        title: 'Citation removed',
-        description: 'The citation has been removed from your document',
-      });
-      queryClient.invalidateQueries({ queryKey: [`/api/510k/literature/citations/${documentId}`] });
-      if (onRefresh) {
-        onRefresh();
-      }
-    },
-    onError: (error) => {
-      toast({
-        title: 'Failed to remove citation',
-        description: error.message || 'An error occurred while removing the citation',
-        variant: 'destructive',
-      });
-    }
-  });
-  
-  // Handle removing a citation
-  const handleRemoveCitation = (citationId) => {
-    if (window.confirm('Are you sure you want to remove this citation?')) {
-      removeCitationMutation.mutate(citationId);
-    }
-  };
-  
-  // Handle opening the preview dialog
-  const handlePreviewCitation = (citation) => {
-    setSelectedCitation(citation);
-    setIsPreviewOpen(true);
-  };
-  
-  // Group citations by section
-  const citationsBySection = citations.reduce((acc, citation) => {
-    const sectionKey = citation.section_id || 'other';
-    if (!acc[sectionKey]) {
-      acc[sectionKey] = [];
-    }
-    acc[sectionKey].push(citation);
-    return acc;
-  }, {});
-  
-  // Export citations as a formatted reference list
-  const exportReferences = () => {
-    // Create a formatted text of all references
-    const formattedReferences = citations.map((citation, index) => {
-      const authors = citation.literature_authors?.join(', ') || 'Unknown';
-      const year = citation.literature_publication_date 
-        ? new Date(citation.literature_publication_date).getFullYear() 
-        : '';
-      const title = citation.literature_title || 'Untitled';
-      const journal = citation.literature_journal || '';
-      
-      return `[${index + 1}] ${authors}${year ? ` (${year})` : ''}. ${title}${journal ? `. ${journal}` : ''}.`;
-    }).join('\n\n');
+  return `${authors} (${year}). ${title}. ${journal}.`;
+};
+
+// Citation Item Component - Single citation display
+const CitationItem = ({ citation, onRemove, onEdit }) => {
+  const formattedDate = citation.created_at 
+    ? new Date(citation.created_at).toLocaleDateString() 
+    : 'Unknown date';
     
-    // Create a blob and download link
-    const blob = new Blob([formattedReferences], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `references-${documentId}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    
-    toast({
-      title: 'References exported',
-      description: 'Your references have been exported as a text file',
-    });
-  };
-  
-  // Render compact view
-  if (compact) {
-    return (
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg flex items-center">
-            <Bookmark className="h-5 w-5 mr-2" />
-            Document Citations {citations.length > 0 && `(${citations.length})`}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoadingCitations ? (
-            <div className="space-y-2">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-12 w-full" />
-            </div>
-          ) : isCitationsError ? (
-            <div className="flex flex-col items-center justify-center text-center p-4">
-              <AlertCircle className="h-8 w-8 text-destructive mb-2" />
-              <p className="text-sm text-muted-foreground">
-                {citationsError?.message || 'Failed to load citations'}
-              </p>
-              <Button variant="outline" size="sm" onClick={() => refetchCitations()} className="mt-2">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Retry
-              </Button>
-            </div>
-          ) : citations.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-center p-4">
-              <BookOpen className="h-8 w-8 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">
-                No citations added yet. Use the Literature Search to find and cite references.
-              </p>
-            </div>
-          ) : (
-            <ScrollArea className="h-60">
-              <div className="space-y-2">
-                {citations.slice(0, 5).map((citation) => (
-                  <div key={citation.id} className="flex justify-between items-start p-2 border rounded-md">
-                    <div className="flex-1">
-                      <p className="text-sm font-medium line-clamp-1">{citation.literature_title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {citation.section_name || citation.section_id}
-                      </p>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm"
-                      onClick={() => handleRemoveCitation(citation.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-                {citations.length > 5 && (
-                  <p className="text-sm text-center text-muted-foreground py-2">
-                    + {citations.length - 5} more citations
-                  </p>
-                )}
-              </div>
-            </ScrollArea>
-          )}
-        </CardContent>
-        {citations.length > 0 && (
-          <CardFooter>
-            <Button variant="outline" size="sm" onClick={exportReferences} className="ml-auto">
-              <FileOutput className="h-4 w-4 mr-2" />
-              Export References
-            </Button>
-          </CardFooter>
-        )}
-      </Card>
-    );
-  }
-  
-  // Render full view
   return (
-    <Card className="citation-manager">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <Bookmark className="h-5 w-5 mr-2" />
-          Document Citations
-        </CardTitle>
-        <CardDescription>
-          Manage literature citations for your 510(k) submission document.
-        </CardDescription>
+    <Card className="mb-4 border-l-4" style={{ borderLeftColor: getSourceColor(citation.literature?.source_name) }}>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-start">
+          <div>
+            <div className="flex gap-2 mb-2">
+              <Badge variant="outline" className="bg-slate-100">
+                {citation.literature?.source_name || 'Unknown source'}
+              </Badge>
+              <Badge variant="outline" className="bg-blue-50">
+                {citation.section_name || 'General'}
+              </Badge>
+            </div>
+            <CardTitle className="text-lg">{citation.literature?.title || 'Unknown Title'}</CardTitle>
+          </div>
+        </div>
+        <div className="flex items-center text-sm text-muted-foreground">
+          <Calendar className="mr-1 h-3 w-3" /> 
+          {formattedDate}
+          
+          {citation.literature?.journal && (
+            <>
+              <span className="mx-1">•</span>
+              <BookOpen className="mr-1 h-3 w-3" /> 
+              {citation.literature.journal}
+            </>
+          )}
+        </div>
       </CardHeader>
       <CardContent>
-        {isLoadingCitations ? (
-          <div className="space-y-4">
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-            <Skeleton className="h-16 w-full" />
-          </div>
-        ) : isCitationsError ? (
-          <div className="flex flex-col items-center justify-center text-center p-8">
-            <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-            <h3 className="text-lg font-semibold mb-2">Failed to Load Citations</h3>
-            <p className="text-muted-foreground mb-4">
-              {citationsError?.message || 'An error occurred while loading citations'}
-            </p>
-            <Button onClick={() => refetchCitations()}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Retry
-            </Button>
-          </div>
-        ) : citations.length === 0 ? (
-          <div className="flex flex-col items-center justify-center text-center p-12">
-            <BookOpen className="h-16 w-16 text-muted-foreground mb-4" />
-            <h3 className="text-xl font-semibold mb-2">No Citations Found</h3>
-            <p className="text-muted-foreground mb-4">
-              You haven't added any literature citations to this document yet. 
-              Use the Literature Search feature to find and cite relevant references.
-            </p>
-          </div>
-        ) : (
-          <Tabs defaultValue="all" className="citation-tabs">
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">All Citations ({citations.length})</TabsTrigger>
-              <TabsTrigger value="by-section">By Section</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="all" className="citation-list-all">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Title</TableHead>
-                    <TableHead>Source</TableHead>
-                    <TableHead>Section</TableHead>
-                    <TableHead>Added</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {citations.map((citation) => (
-                    <TableRow key={citation.id}>
-                      <TableCell className="font-medium">
-                        {citation.literature_title}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{citation.source_name || 'Unknown'}</Badge>
-                      </TableCell>
-                      <TableCell>{citation.section_name || citation.section_id}</TableCell>
-                      <TableCell>
-                        {citation.created_at ? 
-                          formatDistanceToNow(new Date(citation.created_at), { addSuffix: true }) : 
-                          'Unknown'}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end space-x-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handlePreviewCitation(citation)}
-                          >
-                            <FileText className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleRemoveCitation(citation.id)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TabsContent>
-            
-            <TabsContent value="by-section" className="citation-list-sections">
-              {Object.keys(citationsBySection).length === 0 ? (
-                <div className="text-center p-4">
-                  <p className="text-muted-foreground">No citations organized by section</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {Object.entries(citationsBySection).map(([sectionId, sectionCitations]) => (
-                    <div key={sectionId} className="section-citations">
-                      <h3 className="text-lg font-semibold mb-2">
-                        {sectionCitations[0]?.section_name || sectionId}
-                        <Badge className="ml-2" variant="outline">{sectionCitations.length}</Badge>
-                      </h3>
-                      <Separator className="mb-3" />
-                      <div className="space-y-2">
-                        {sectionCitations.map((citation) => (
-                          <Card key={citation.id} className="citation-card">
-                            <CardContent className="p-4">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <h4 className="font-medium">{citation.literature_title}</h4>
-                                  <p className="text-sm text-muted-foreground">
-                                    {citation.literature_authors?.join(', ') || 'Unknown authors'} • 
-                                    {citation.literature_publication_date ? 
-                                      ` ${new Date(citation.literature_publication_date).getFullYear()}` : 
-                                      ' Unknown year'}
-                                    {citation.literature_journal ? ` • ${citation.literature_journal}` : ''}
-                                  </p>
-                                </div>
-                                <div className="flex space-x-2">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handlePreviewCitation(citation)}
-                                  >
-                                    <FileText className="h-4 w-4" />
-                                  </Button>
-                                  <Button
-                                    variant="destructive"
-                                    size="sm"
-                                    onClick={() => handleRemoveCitation(citation.id)}
-                                  >
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </TabsContent>
-          </Tabs>
-        )}
+        <div className="border-l-2 border-gray-200 pl-3 py-1 bg-gray-50 rounded">
+          <p className="text-sm italic">{citation.citation_text || formatCitation(citation)}</p>
+        </div>
       </CardContent>
-      {citations.length > 0 && (
-        <CardFooter className="flex justify-end">
-          <Button variant="outline" onClick={exportReferences}>
-            <FileOutput className="h-4 w-4 mr-2" />
-            Export References
+      <CardFooter className="flex justify-between pt-1">
+        <div>
+          <Button variant="ghost" size="sm" onClick={() => onEdit(citation)}>
+            <ClipboardEdit className="mr-2 h-4 w-4" /> Edit Citation
           </Button>
-        </CardFooter>
-      )}
+        </div>
+        <div>
+          <Button variant="ghost" size="sm" className="text-red-500" onClick={() => onRemove(citation.id)}>
+            <Trash className="mr-2 h-4 w-4" /> Remove
+          </Button>
+          {citation.literature?.url && (
+            <Button variant="ghost" size="sm" onClick={() => window.open(citation.literature.url, '_blank')}>
+              <ExternalLink className="mr-2 h-4 w-4" /> View Source
+            </Button>
+          )}
+        </div>
+      </CardFooter>
+    </Card>
+  );
+};
+
+// Helper to get color based on source
+const getSourceColor = (source) => {
+  const colors = {
+    'PubMed': '#6366f1',
+    'FDA': '#0ea5e9',
+    'ClinicalTrials.gov': '#10b981',
+    'Previously Imported': '#8b5cf6'
+  };
+  
+  return colors[source] || '#64748b';
+};
+
+// Citation Manager main component
+const CitationManager = ({ documentId, documentType }) => {
+  const [citations, setCitations] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedCitation, setSelectedCitation] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editCitationText, setEditCitationText] = useState('');
+  const [filter, setFilter] = useState('all');
+  const [sections, setSections] = useState([]);
+  
+  const { toast } = useToast();
+  const { organizationId } = useContext(TenantContext);
+  
+  useEffect(() => {
+    if (documentId) {
+      fetchCitations();
+    }
+  }, [documentId]);
+  
+  const fetchCitations = async () => {
+    if (!documentId) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await axios.get(`/api/510k/literature/citations`, {
+        params: {
+          documentId,
+          documentType: documentType || '510k',
+          organizationId: organizationId || 'default-org'
+        }
+      });
       
-      {/* Citation Preview Dialog */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-2xl">
+      setCitations(response.data.citations);
+      
+      // Extract unique sections for filtering
+      const uniqueSections = Array.from(
+        new Set(response.data.citations.map(c => c.section_name))
+      ).filter(Boolean);
+      setSections(uniqueSections);
+      
+    } catch (error) {
+      console.error('Error fetching citations:', error);
+      toast({
+        title: "Failed to load citations",
+        description: error.response?.data?.error || "An unexpected error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  const handleRemoveCitation = async (citationId) => {
+    try {
+      await axios.delete(`/api/510k/literature/citations/${citationId}`, {
+        params: {
+          organizationId: organizationId || 'default-org'
+        }
+      });
+      
+      // Update local state
+      setCitations(citations.filter(c => c.id !== citationId));
+      
+      toast({
+        title: "Citation removed",
+        description: "The citation has been removed from your document",
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('Error removing citation:', error);
+      toast({
+        title: "Failed to remove citation",
+        description: error.response?.data?.error || "An unexpected error occurred",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const handleEditCitation = (citation) => {
+    setSelectedCitation(citation);
+    setEditCitationText(citation.citation_text || formatCitation(citation));
+    setEditMode(true);
+  };
+  
+  const saveCitationEdit = async () => {
+    if (!selectedCitation) return;
+    
+    try {
+      // This endpoint might need to be implemented on the backend
+      await axios.patch(`/api/510k/literature/citations/${selectedCitation.id}`, {
+        citation_text: editCitationText,
+        organizationId: organizationId || 'default-org'
+      });
+      
+      // Update local state
+      setCitations(citations.map(c => 
+        c.id === selectedCitation.id 
+          ? { ...c, citation_text: editCitationText } 
+          : c
+      ));
+      
+      setEditMode(false);
+      setSelectedCitation(null);
+      
+      toast({
+        title: "Citation updated",
+        description: "The citation text has been updated",
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('Error updating citation:', error);
+      toast({
+        title: "Failed to update citation",
+        description: error.response?.data?.error || "An unexpected error occurred",
+        variant: "destructive"
+      });
+    }
+  };
+  
+  const getFilteredCitations = () => {
+    if (filter === 'all') return citations;
+    return citations.filter(c => c.section_name === filter);
+  };
+  
+  // Group citations by section for the organized view
+  const getCitationsBySection = () => {
+    const sectionMap = {};
+    
+    citations.forEach(citation => {
+      const sectionName = citation.section_name || 'Uncategorized';
+      if (!sectionMap[sectionName]) {
+        sectionMap[sectionName] = [];
+      }
+      sectionMap[sectionName].push(citation);
+    });
+    
+    return sectionMap;
+  };
+  
+  // Generate export text with all citations
+  const generateExportText = () => {
+    return citations.map(citation => {
+      return formatCitation(citation);
+    }).join('\n\n');
+  };
+  
+  // Handle copy to clipboard
+  const copyToClipboard = () => {
+    const text = generateExportText();
+    navigator.clipboard.writeText(text).then(
+      () => {
+        toast({
+          title: "Copied to clipboard",
+          description: "All citations have been copied to your clipboard",
+          variant: "default"
+        });
+      },
+      (err) => {
+        console.error('Could not copy text: ', err);
+        toast({
+          title: "Failed to copy",
+          description: "Could not copy citations to clipboard",
+          variant: "destructive"
+        });
+      }
+    );
+  };
+  
+  return (
+    <div className="citation-manager">
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <div>
+              <CardTitle className="text-xl">Citation Manager</CardTitle>
+              <CardDescription>
+                Manage and organize literature citations in your 510(k) document
+              </CardDescription>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={fetchCitations}>
+                Refresh
+              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" disabled={citations.length === 0}>
+                    <Share className="mr-2 h-4 w-4" /> Export
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Export Citations</DialogTitle>
+                    <DialogDescription>
+                      Copy all citations to use in your document or reference management software
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="my-4">
+                    <ScrollArea className="h-[300px] border rounded-md p-4">
+                      <pre className="text-sm whitespace-pre-wrap">
+                        {generateExportText()}
+                      </pre>
+                    </ScrollArea>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={copyToClipboard}>
+                      <Copy className="mr-2 h-4 w-4" /> Copy to Clipboard
+                    </Button>
+                    <DialogClose asChild>
+                      <Button>Done</Button>
+                    </DialogClose>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {!documentId ? (
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertTitle>No Document Selected</AlertTitle>
+              <AlertDescription>
+                Please select a document to view and manage its citations
+              </AlertDescription>
+            </Alert>
+          ) : isLoading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="ml-2">Loading citations...</span>
+            </div>
+          ) : (
+            <>
+              <div className="mb-4">
+                <Tabs defaultValue="list">
+                  <div className="flex justify-between items-center mb-4">
+                    <TabsList>
+                      <TabsTrigger value="list">
+                        <List className="h-4 w-4 mr-2" /> List View
+                      </TabsTrigger>
+                      <TabsTrigger value="organized">
+                        <Tag className="h-4 w-4 mr-2" /> By Section
+                      </TabsTrigger>
+                    </TabsList>
+                    
+                    {sections.length > 0 && (
+                      <div className="flex items-center">
+                        <Label htmlFor="filter" className="mr-2">Filter:</Label>
+                        <select
+                          id="filter"
+                          value={filter}
+                          onChange={(e) => setFilter(e.target.value)}
+                          className="p-2 border rounded-md text-sm"
+                        >
+                          <option value="all">All Sections</option>
+                          {sections.map(section => (
+                            <option key={section} value={section}>
+                              {section}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <TabsContent value="list">
+                    {citations.length === 0 ? (
+                      <Alert className="bg-yellow-50">
+                        <Info className="h-4 w-4" />
+                        <AlertTitle>No Citations Yet</AlertTitle>
+                        <AlertDescription>
+                          Use the Literature Search feature to find and cite relevant sources for your 510(k) submission
+                        </AlertDescription>
+                      </Alert>
+                    ) : (
+                      <ScrollArea className="max-h-[500px]">
+                        {getFilteredCitations().map(citation => (
+                          <CitationItem
+                            key={citation.id}
+                            citation={citation}
+                            onRemove={handleRemoveCitation}
+                            onEdit={handleEditCitation}
+                          />
+                        ))}
+                      </ScrollArea>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="organized">
+                    {citations.length === 0 ? (
+                      <Alert className="bg-yellow-50">
+                        <Info className="h-4 w-4" />
+                        <AlertTitle>No Citations Yet</AlertTitle>
+                        <AlertDescription>
+                          Use the Literature Search feature to find and cite relevant sources for your 510(k) submission
+                        </AlertDescription>
+                      </Alert>
+                    ) : (
+                      <ScrollArea className="max-h-[500px]">
+                        {Object.entries(getCitationsBySection()).map(([section, sectionCitations]) => (
+                          <div key={section} className="mb-6">
+                            <h3 className="text-md font-semibold mb-2 flex items-center">
+                              <Tag className="h-4 w-4 mr-2" />
+                              {section} 
+                              <Badge className="ml-2" variant="outline">
+                                {sectionCitations.length}
+                              </Badge>
+                            </h3>
+                            <Separator className="mb-3" />
+                            <div className="pl-1">
+                              {sectionCitations.map(citation => (
+                                <CitationItem
+                                  key={citation.id}
+                                  citation={citation}
+                                  onRemove={handleRemoveCitation}
+                                  onEdit={handleEditCitation}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </ScrollArea>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+      
+      {/* Edit Citation Dialog */}
+      <Dialog open={editMode} onOpenChange={(open) => {
+        if (!open) {
+          setEditMode(false);
+          setSelectedCitation(null);
+        }
+      }}>
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Citation Details</DialogTitle>
+            <DialogTitle>Edit Citation</DialogTitle>
             <DialogDescription>
-              View detailed information about this citation.
+              Modify the citation text to match your preferred format
             </DialogDescription>
           </DialogHeader>
-          
-          {selectedCitation && (
-            <div className="citation-details space-y-4">
-              <div className="title">
-                <h3 className="font-bold text-lg">{selectedCitation.literature_title}</h3>
-              </div>
-              
-              <div className="metadata grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm font-medium mb-1">Authors</p>
-                  <p className="text-sm">
-                    {selectedCitation.literature_authors?.join(', ') || 'Unknown'}
-                  </p>
-                </div>
-                
-                <div>
-                  <p className="text-sm font-medium mb-1">Publication</p>
-                  <p className="text-sm">
-                    {selectedCitation.literature_journal || 'Unknown'} • 
-                    {selectedCitation.literature_publication_date ? 
-                      ` ${new Date(selectedCitation.literature_publication_date).toLocaleDateString()}` : 
-                      ' Unknown date'}
-                  </p>
-                </div>
-                
-                <div>
-                  <p className="text-sm font-medium mb-1">Source</p>
-                  <Badge variant="outline">{selectedCitation.source_name || 'Unknown'}</Badge>
-                </div>
-                
-                <div>
-                  <p className="text-sm font-medium mb-1">Document Section</p>
-                  <p className="text-sm">{selectedCitation.section_name || selectedCitation.section_id}</p>
-                </div>
-              </div>
-              
-              {selectedCitation.literature_abstract && (
-                <div className="abstract">
-                  <p className="text-sm font-medium mb-1">Abstract</p>
-                  <ScrollArea className="h-32 rounded-md border p-4">
-                    <p className="text-sm">{selectedCitation.literature_abstract}</p>
-                  </ScrollArea>
-                </div>
-              )}
-              
-              {selectedCitation.citation_text && (
-                <div className="citation-text">
-                  <p className="text-sm font-medium mb-1">Citation Text</p>
-                  <div className="text-sm rounded-md border p-4">
-                    {selectedCitation.citation_text}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-          
+          <div className="my-4">
+            <Label htmlFor="citation-text" className="mb-2 block">Citation Text</Label>
+            <textarea
+              id="citation-text"
+              value={editCitationText}
+              onChange={(e) => setEditCitationText(e.target.value)}
+              className="w-full p-2 border rounded-md h-[100px]"
+            />
+          </div>
           <DialogFooter>
-            {selectedCitation?.literature_url && (
-              <Button variant="outline" asChild>
-                <a 
-                  href={selectedCitation.literature_url} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  View Source
-                </a>
-              </Button>
-            )}
-            <Button onClick={() => setIsPreviewOpen(false)}>Close</Button>
+            <Button variant="outline" onClick={() => {
+              setEditMode(false);
+              setSelectedCitation(null);
+            }}>
+              Cancel
+            </Button>
+            <Button onClick={saveCitationEdit}>
+              Save Changes
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   );
 };
 
