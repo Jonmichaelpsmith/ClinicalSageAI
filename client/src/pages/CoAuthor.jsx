@@ -1666,9 +1666,8 @@ export default function CoAuthor() {
                 </div>
               </div>
             </div>
-              </div>
-              
-              <div className="mt-6 pt-6 border-t">
+            
+            <div className="mt-6 pt-6 border-t">
                 <div className="text-sm font-medium mb-2">Document Health</div>
                 <div className="space-y-3">
                   <div>
