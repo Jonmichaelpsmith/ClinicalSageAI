@@ -90,6 +90,11 @@ declare module './routes/510k-literature-routes' {
   export default router;
 }
 
+declare module './routes/510kEstarRoutes' {
+  const router: express.Router;
+  export default router;
+}
+
 // Import routes after declaring the modules
 import indWizardRouter from './routes/indWizardAPI.js';
 import cerRouter from './routes/cer-final.js';
@@ -114,6 +119,7 @@ import maudRouter from './routes/maud-routes';
 import fda510kLiteratureRouter from './routes/510k-literature-routes';
 import fda510kRouter from './routes/fda510k-routes';
 import fda510kComplianceRouter from './routes/510k-compliance-routes';
+import fda510kEstarRouter from './routes/510kEstarRoutes';
 // Import existing router or create empty one
 import express from 'express';
 import * as fs from 'fs';
@@ -268,6 +274,7 @@ export default function registerRoutes(app: Express): void {
   // Register 510(k) Pathway and Equivalence API routes
   app.use('/api/fda510k', fda510kRouter);
   app.use('/api/fda510k', fda510kComplianceRouter);
+  app.use('/api/fda510k', fda510kEstarRouter);
   
   // Register Authentication routes
   app.use('/auth', authRouter);

@@ -2,9 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import { spawnSync } from 'child_process';
 import crypto from 'crypto';
-import { create } from 'xmlbuilder2';
-import Ajv from 'ajv';
-import { openai } from './openai-service';
+// Use require for now since the module imports are giving TS errors
+const xmlbuilder2 = require('xmlbuilder2');
+const Ajv = require('ajv');
+import * as openaiService from './openai-service';
 import { db } from '../db';
 
 // Initialize Ajv schema validator
