@@ -6,7 +6,7 @@
  */
 
 import express, { Request, Response } from 'express';
-import { createPool } from 'pg';
+import { Pool } from 'pg';
 import * as dotenv from 'dotenv';
 
 // Load environment variables
@@ -16,7 +16,7 @@ dotenv.config();
 const router = express.Router();
 
 // Database connection
-const pool = createPool({
+const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
@@ -776,6 +776,182 @@ router.get('/submission-history', async (req: Request, res: Response) => {
     res.json(filteredHistory);
   } catch (error) {
     console.error('Error fetching submission history:', error);
+    res.status(500).json({
+      error: error.message,
+      status: 'error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * GET /api/fda510k/guidance-documents
+ * Get FDA guidance documents for a specific device type or pathway
+ */
+router.get('/guidance-documents', async (req: Request, res: Response) => {
+  try {
+    const deviceType = req.query.deviceType as string || 'Generic Medical Device';
+    const pathway = req.query.pathway as string || null;
+    const tenantContext = (req as any).tenantContext;
+    
+    console.log('FDA guidance documents request:', {
+      deviceType,
+      pathway,
+      tenantContext
+    });
+    
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Return simulated guidance documents
+    const documents = [
+      {
+        id: 'guid-001',
+        title: 'Format for Traditional and Abbreviated 510(k)s',
+        description: 'Guidance for Industry and Food and Drug Administration Staff',
+        category: 'Administrative',
+        url: 'https://www.fda.gov/media/130647/download',
+        publicationDate: '2019-09-13'
+      },
+      {
+        id: 'guid-002',
+        title: 'The 510(k) Program: Evaluating Substantial Equivalence',
+        description: 'Guidance for Industry and Food and Drug Administration Staff',
+        category: 'Substantial Equivalence',
+        url: 'https://www.fda.gov/media/82395/download',
+        publicationDate: '2014-07-28'
+      },
+      {
+        id: 'guid-003',
+        title: 'Benefit-Risk Factors to Consider When Determining Substantial Equivalence',
+        description: 'Guidance for Industry and Food and Drug Administration Staff',
+        category: 'Substantial Equivalence',
+        url: 'https://www.fda.gov/media/99567/download',
+        publicationDate: '2018-09-25'
+      },
+      {
+        id: 'guid-004',
+        title: 'Appropriate Use of Voluntary Consensus Standards in Premarket Submissions',
+        description: 'Guidance for Industry and Food and Drug Administration Staff',
+        category: 'Standards',
+        url: 'https://www.fda.gov/media/108819/download',
+        publicationDate: '2018-09-14'
+      },
+      {
+        id: 'guid-005',
+        title: 'Device-specific guidance for ' + deviceType,
+        description: 'Specific considerations for ' + deviceType + ' submissions',
+        category: 'Device-Specific',
+        url: 'https://www.fda.gov/medical-devices/guidance-documents',
+        publicationDate: '2022-04-15'
+      }
+    ];
+    
+    // Filter by pathway if specified
+    const filteredDocuments = pathway 
+      ? documents.filter(doc => 
+          doc.title.includes(pathway) || 
+          doc.description.includes(pathway) ||
+          doc.category === 'Substantial Equivalence'
+        )
+      : documents;
+    
+    res.json({
+      documents: filteredDocuments,
+      metadata: {
+        timestamp: new Date().toISOString(),
+        deviceType,
+        pathway,
+        totalCount: filteredDocuments.length
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching guidance documents:', error);
+    res.status(500).json({
+      error: error.message,
+      status: 'error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * POST /api/fda510k/relevant-literature
+ * Find relevant literature based on draft content
+ */
+router.post('/relevant-literature', async (req: Request, res: Response) => {
+  try {
+    const { projectId, draftText } = req.body;
+    const tenantContext = (req as any).tenantContext;
+    
+    console.log('Relevant literature request:', {
+      projectId,
+      textLength: draftText?.length || 0,
+      tenantContext
+    });
+    
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    
+    // Use an extraction algorithm to get keywords from the text
+    // Here we're just simulating that process
+    const keywords = ["medical device", "substantial equivalence", "FDA", "predicate device", "safety", "efficacy"];
+    
+    // Return simulated literature references
+    const references = [
+      {
+        id: 'lit-001',
+        title: 'Substantial Equivalence in 510(k) Submissions: Emerging Trends and Best Practices',
+        authors: 'Smith, J., Johnson, A., Williams, M.',
+        journal: 'Journal of Medical Device Regulation',
+        year: '2023',
+        abstract: 'This study examines recent trends in FDA 510(k) clearances, focusing on successful substantial equivalence demonstrations and key factors that contribute to first-round clearance.',
+        url: 'https://doi.org/10.1000/journal.med.2023.001',
+        relevanceScore: 92
+      },
+      {
+        id: 'lit-002',
+        title: 'Predicate Device Selection Strategies: A Comprehensive Analysis',
+        authors: 'Brown, R., Davis, S., Wilson, T.',
+        journal: 'Medical Device Innovation',
+        year: '2022',
+        abstract: 'An analysis of predicate device selection criteria and their impact on 510(k) clearance success rates, with case studies from various device categories.',
+        url: 'https://doi.org/10.1000/journal.mdi.2022.015',
+        relevanceScore: 87
+      },
+      {
+        id: 'lit-003',
+        title: 'Technical Performance Testing for 510(k) Submissions: A Practical Guide',
+        authors: 'Anderson, P., Thompson, J., Garcia, M.',
+        journal: 'Regulatory Science and Engineering',
+        year: '2021',
+        abstract: 'This paper provides a framework for designing and executing performance tests that effectively support substantial equivalence claims in 510(k) submissions.',
+        url: 'https://doi.org/10.1000/journal.rse.2021.042',
+        relevanceScore: 76
+      },
+      {
+        id: 'lit-004',
+        title: 'FDA Expectations for Substantial Equivalence: Analysis of 510(k) Decision Letters',
+        authors: 'Martinez, C., Lewis, T., Kim, S.',
+        journal: 'Regulatory Affairs Professional Society Journal',
+        year: '2022',
+        abstract: 'A systematic review of FDA decision letters to identify common deficiencies in substantial equivalence demonstrations and strategies for addressing them.',
+        url: 'https://doi.org/10.1000/journal.raps.2022.018',
+        relevanceScore: 85
+      }
+    ];
+    
+    res.json({
+      references,
+      keywords,
+      metadata: {
+        timestamp: new Date().toISOString(),
+        processingTimeMs: 1180,
+        confidence: 0.89
+      }
+    });
+  } catch (error) {
+    console.error('Error finding relevant literature:', error);
     res.status(500).json({
       error: error.message,
       status: 'error',
