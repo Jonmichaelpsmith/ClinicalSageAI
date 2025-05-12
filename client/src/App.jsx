@@ -110,6 +110,9 @@ const TenantManagement = lazy(() => import('./pages/TenantManagement'));
 const ClientManagement = lazy(() => import('./pages/ClientManagement'));
 const Settings = lazy(() => import('./pages/Settings'));
 
+// FDA 510(k) Automation Pages
+const FDA510kPage = lazy(() => import('./pages/510kPage'));
+
 function App() {
   // Default tab for the UnifiedTopNavV3 component
   const [activeTab, setActiveTab] = useState('RiskHeatmap');
@@ -195,6 +198,7 @@ function App() {
               <Route path="/client-portal/csr-analyzer" component={CSRPage} />
               <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
               <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
+              <Route path="/client-portal/510k" component={FDA510kPage} />
               <Route path="/client-portal/client-management">
                 {() => (
                   <Suspense fallback={<LoadingPage />}>
@@ -235,6 +239,7 @@ function App() {
               <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
               <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}
               <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
+              <Route path="/510k" component={FDA510kPage} /> {/* FDA 510(k) Automation page route */}
               <Route path="/csr" component={CSRPage} /> {/* CSR Deep Intelligence page route */}
               <Route path="/csr-library" component={CSRLibraryPage} /> {/* CSR Library page route */}
               <Route path="/cmc" component={CMCPage} /> {/* CMC Module page route */}
