@@ -1854,6 +1854,15 @@ export default function CoAuthor() {
             <h1 className="text-2xl font-bold">eCTD Co-Author Module</h1>
           </div>
           <div className="flex items-center space-x-3">
+            {/* Phase 6: Chat with Dossier Button */}
+            <Button 
+              variant="outline" 
+              onClick={() => setShowChatDossier(true)}
+              className="bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200"
+            >
+              <MessageSquare className="h-4 w-4 mr-2 text-blue-600" />
+              Chat with Dossier
+            </Button>
             {/* Phase 5: Document Export Button */}
             <Button 
               variant="outline"
@@ -5395,6 +5404,236 @@ export default function CoAuthor() {
             </div>
             <Button variant="outline" size="sm" onClick={() => setShowVectorSearchDialog(false)}>
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Chat with Your Dossier Dialog */}
+      <Dialog open={showChatDossier} onOpenChange={setShowChatDossier}>
+        <DialogContent className="sm:max-w-[700px] h-[600px] flex flex-col">
+          <DialogHeader>
+            <div className="flex items-center">
+              <MessageSquare className="h-6 w-6 mr-2 text-blue-600" />
+              <DialogTitle>Chat with Your Dossier</DialogTitle>
+            </div>
+            <DialogDescription>
+              Ask questions about your regulatory documents and get AI-powered answers based on your indexed content.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-y-auto border rounded-md p-4 my-4 bg-slate-50">
+            {chatMessages.length === 0 ? (
+              <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
+                <Search className="h-12 w-12 mb-4 text-slate-300" />
+                <h3 className="text-lg font-medium">No conversations yet</h3>
+                <p className="text-sm max-w-md mt-2">
+                  Start by asking a question about your documents. For example, "What safety signals emerged in Module 2.7?" or "Summarize the efficacy endpoints from our clinical trials."
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {chatMessages.map((message, index) => (
+                  <div 
+                    key={index}
+                    className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div 
+                      className={`rounded-lg p-3 max-w-[80%] ${
+                        message.role === 'user' 
+                          ? 'bg-blue-600 text-white' 
+                          : 'bg-white border border-slate-200'
+                      }`}
+                    >
+                      <div className="whitespace-pre-wrap">
+                        {message.content}
+                      </div>
+                      
+                      {message.sources && message.sources.length > 0 && (
+                        <div className="mt-3 pt-2 border-t border-slate-200 text-xs text-slate-500">
+                          <div className="font-medium mb-1">Sources:</div>
+                          <div className="space-y-1">
+                            {message.sources.map((source, sourceIndex) => (
+                              <div key={sourceIndex} className="flex items-start">
+                                <div className="w-4">{sourceIndex + 1}.</div>
+                                <div>
+                                  <span className="font-medium">{source.title || 'Document'}</span>
+                                  <span className="text-slate-400"> ({source.section || 'Section'}, {new Date(source.date).toLocaleDateString()})</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                
+                {isGeneratingChatResponse && (
+                  <div className="flex justify-start">
+                    <div className="rounded-lg p-4 max-w-[80%] bg-white border border-slate-200">
+                      <div className="flex items-center space-x-2">
+                        <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+                        <span className="text-slate-500">Generating answer...</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Input
+              className="flex-1"
+              placeholder="Ask a question about your documents..."
+              value={chatQuery}
+              onChange={(e) => setChatQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey && chatQuery.trim()) {
+                  e.preventDefault();
+                  const newMessage = { role: 'user', content: chatQuery };
+                  setChatMessages([...chatMessages, newMessage]);
+                  
+                  // Generate response
+                  setIsGeneratingChatResponse(true);
+                  generateChatResponse(chatQuery).then((response) => {
+                    setChatMessages([
+                      ...chatMessages, 
+                      newMessage,
+                      { 
+                        role: 'assistant', 
+                        content: response.text,
+                        sources: response.sources
+                      }
+                    ]);
+                  });
+                  
+                  setChatQuery('');
+                }
+              }}
+            />
+            <Button 
+              disabled={!chatQuery.trim() || isGeneratingChatResponse}
+              onClick={() => {
+                const newMessage = { role: 'user', content: chatQuery };
+                setChatMessages([...chatMessages, newMessage]);
+                
+                // Generate response
+                setIsGeneratingChatResponse(true);
+                generateChatResponse(chatQuery).then((response) => {
+                  setChatMessages([
+                    ...chatMessages, 
+                    newMessage,
+                    { 
+                      role: 'assistant', 
+                      content: response.text,
+                      sources: response.sources
+                    }
+                  ]);
+                });
+                
+                setChatQuery('');
+              }}
+            >
+              <Send className="h-4 w-4" />
+              <span className="sr-only">Send</span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Smart Reuse Panel Dialog */}
+      <Dialog open={showSmartReusePanel} onOpenChange={setShowSmartReusePanel}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <div className="flex items-center">
+              <Sparkles className="h-5 w-5 mr-2 text-amber-500" />
+              <DialogTitle>Smart Reuse</DialogTitle>
+            </div>
+            <DialogDescription>
+              Discover similar content from your approved documents that matches your selected text.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="border rounded-md p-3 bg-slate-50 mb-4">
+            <h4 className="text-sm font-medium mb-1">Your selected text:</h4>
+            <p className="text-sm text-slate-700">
+              {selectedText || "No text selected. Please select some text in the editor."}
+            </p>
+          </div>
+          
+          {isFindingSimilarContent ? (
+            <div className="py-8 flex flex-col items-center justify-center">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
+              <p className="text-slate-500">Finding similar content...</p>
+            </div>
+          ) : similarContentResults.length > 0 ? (
+            <div className="space-y-3 max-h-[400px] overflow-y-auto">
+              <h4 className="text-sm font-medium">Similar content found:</h4>
+              {similarContentResults.map((result, index) => (
+                <div key={index} className="border rounded-md p-3 bg-white">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center">
+                      <File className="h-4 w-4 mr-2 text-blue-500" />
+                      <span className="text-sm font-medium">{result.documentTitle}</span>
+                      <Badge variant="outline" className="ml-2 px-1 py-0 text-xs">
+                        {(result.similarity * 100).toFixed(0)}% match
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-slate-500">
+                      Module: {result.module}
+                    </div>
+                  </div>
+                  <p className="text-sm text-slate-700 mb-2">{result.content}</p>
+                  <div className="flex justify-between items-center">
+                    <div className="text-xs text-slate-500">
+                      Section: {result.section}
+                    </div>
+                    <Button 
+                      size="sm" 
+                      variant="secondary"
+                      className="text-xs"
+                      onClick={() => {
+                        // In a real implementation, we would insert the content into the editor
+                        toast({
+                          title: "Content Inserted",
+                          description: "The selected content has been inserted into your document.",
+                          variant: "default",
+                        });
+                        setShowSmartReusePanel(false);
+                      }}
+                    >
+                      <Copy className="h-3 w-3 mr-1" />
+                      Insert
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-8 flex flex-col items-center justify-center text-center">
+              <SearchX className="h-8 w-8 text-slate-300 mb-4" />
+              <h3 className="text-lg font-medium">No similar content found</h3>
+              <p className="text-sm text-slate-500 max-w-md mt-2">
+                Try selecting different text or creating more documents to improve search results.
+              </p>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setShowSmartReusePanel(false)}
+            >
+              Close
+            </Button>
+            <Button 
+              disabled={!selectedText || isFindingSimilarContent} 
+              onClick={() => findSimilarContent(selectedText)}
+            >
+              <Sparkles className="h-4 w-4 mr-2" />
+              Refresh Results
             </Button>
           </DialogFooter>
         </DialogContent>
