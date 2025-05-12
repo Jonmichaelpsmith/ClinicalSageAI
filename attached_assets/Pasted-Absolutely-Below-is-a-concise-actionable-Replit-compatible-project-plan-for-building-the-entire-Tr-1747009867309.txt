@@ -1,0 +1,139 @@
+Absolutely. Below is a concise, actionable Replit-compatible project plan for building the entire TrialSage eCTD Co-Author Module excluding Google Sheets/Docs embedding. It is tailored for Replit’s agent and delivery model.
+
+⸻
+
+TrialSage eCTD Co-Author Module
+
+Replit Implementation Plan (excluding Google Docs)
+Client: TrialSage Regulatory Systems
+Hosted: Replit Always-On
+Scope: AI co-authoring, Vault document control, validation engine, submission packaging, CTD tree, and template logic.
+
+⸻
+
+Phase 1: Core Infrastructure Setup
+
+Objective: Scaffold backend + frontend and configure secure integrations.
+   •   Initialize monorepo: backend/ (Node.js + Express), frontend/ (React + Tailwind).
+   •   Connect to Supabase (PostgreSQL): create schema for users, documents, templates, versions, audit logs.
+   •   Configure Replit Secrets:
+      •   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+      •   OPENAI_API_KEY, DOCUSHARE_* credentials
+   •   Set up secure JWT-based session handling (fallback if Supabase Auth isn’t used).
+
+⸻
+
+Phase 2: CTD Document Tree + UI Rendering
+
+Objective: Build a dynamic UI that reflects CTD structure (Modules 1–5) and allows per-section navigation.
+   •   Build DocumentStructurePanel.jsx with collapsible CTD tree.
+   •   Integrate section status (Draft, Review, Final, Locked) via color-coded badges.
+   •   Include “Create Document” or “Open Editor” button per section.
+
+⸻
+
+Phase 3: Vault Document Manager (DocuShare Integration)
+
+Objective: Enable file versioning and regulated archive syncing.
+   •   Create backend utility: docushareService.js
+   •   On document finalization:
+      •   Export to DOCX or PDF (simulate for now).
+      •   Upload to DocuShare via API.
+      •   Store docushare_id, version_number, etc. in Supabase.
+   •   Build VaultPanel.jsx to show save/export controls and history.
+
+⸻
+
+Phase 4: AI Co-Author Tools
+
+Objective: Provide inline suggestions, validations, and draft generation using GPT-4.
+   •   Backend: POST /ai/suggest, POST /ai/validate, POST /ai/draft
+   •   Prompt templates per CTD module (e.g. 2.5, 3.2.P, 2.7.1)
+   •   Frontend: AISidebar.jsx
+      •   Suggest edits based on paragraph input
+      •   Validate section (list compliance issues)
+      •   Generate section draft based on prompts or templates
+
+⸻
+
+Phase 5: Template Library + Section Editor (non-Google)
+
+Objective: Allow template-based drafting without Google Docs dependency.
+   •   Build TemplateLibrary.jsx with region/module filtering.
+   •   On “Use Template,” render section in markdown or rich-text editor (e.g. react-quill or @uiw/react-md-editor)
+   •   Support placeholder variables (e.g. [PRODUCT_NAME]) with metadata injection.
+
+⸻
+
+Phase 6: Lifecycle Workflow Engine
+
+Objective: Enforce document states with role-based transitions.
+   •   Define Draft → Review → Final → Locked state machine.
+   •   Backend: POST /documents/:id/state with role-checking middleware.
+   •   Frontend: show next actions per role (e.g., Reviewer sees “Approve Final”).
+
+⸻
+
+Phase 7: eCTD Submission Compilation
+
+Objective: Convert all Final documents into a .zip with valid XML backbone.
+   •   Backend: POST /submissions/export
+      •   Gather all Final/Locked docs
+      •   Simulate export to PDF (for now)
+      •   Generate index.xml using CTD hierarchy
+      •   Zip all PDFs + XML to /mnt/data/Submission_{sequence}.zip
+   •   Frontend: ExportPanel.jsx with wizard (region, sequence, modules)
+
+⸻
+
+Phase 8: Validation & Submission Readiness Dashboard
+
+Objective: Ensure eCTD completeness and highlight gaps.
+   •   Frontend: ValidationDashboard.jsx
+      •   Per-section checklist (based on CTD config)
+      •   AI feedback panel (call /ai/validate)
+      •   Status bar: “65% ready for submission”
+   •   Backend:
+      •   GET /validation/project/:id
+      •   Use rules and section mapping to check status
+
+⸻
+
+Phase 9: Submission History & Regulatory Search
+
+Objective: Let users query prior submissions for reuse.
+   •   SearchPanel.jsx for full-text and keyword search.
+   •   GET /search?query=...
+   •   Index finalized documents (store text in DocumentVersions)
+   •   Allow copy/paste or “Insert Snippet” into section editor.
+
+⸻
+
+Optional Dev Enhancements
+   •   WebSockets for real-time sync (status changes, AI feedback)
+   •   Submission audit trail: AuditLog table per doc/event
+   •   Email notifications for reviewers (via 3rd-party service or log-only)
+
+⸻
+
+Out of Scope (Hired out separately)
+   •   Embedded Google Docs iframe
+   •   Google Drive API for real-time editing/export
+   •   Docs API insertions/suggestions
+
+⸻
+
+Tech Stack
+   •   Frontend: React (w/ Tailwind CSS)
+   •   Backend: Node.js + Express
+   •   Auth: JWT (or Supabase Auth)
+   •   DB: Supabase Postgres
+   •   AI: OpenAI GPT-4
+   •   Vault: DocuShare DMS (Xerox)
+   •   Deployment: Replit container (Always-On)
+   •   Secrets: Managed via Replit Secret Manager
+   •   Storage: /mnt/data/ for ZIP, Supabase for metadata
+
+⸻
+
+Would you like this exported as a project brief PDF or pasted into Replit’s agent as-is?
