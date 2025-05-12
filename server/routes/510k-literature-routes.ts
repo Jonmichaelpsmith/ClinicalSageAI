@@ -11,6 +11,110 @@ import literatureSummarizer from '../services/LiteratureSummarizerService';
 
 const router = Router();
 
+// Custom validation helper functions 
+interface ValidationError {
+  param: string;
+  msg: string;
+}
+
+const validateRequest = (req: Request, rules: Record<string, any>): ValidationError[] => {
+  const errors: ValidationError[] = [];
+  
+  for (const [field, validation] of Object.entries(rules)) {
+    const value = getValueFromRequest(req, field, validation.location);
+    
+    // Check if field is required but missing
+    if (validation.required && (value === undefined || value === null || value === '')) {
+      errors.push({
+        param: field,
+        msg: validation.message || `${field} is required`
+      });
+      continue;
+    }
+    
+    // Skip other validations if field is not present and not required
+    if (value === undefined || value === null) {
+      continue;
+    }
+    
+    // Type validations
+    if (validation.type === 'string' && typeof value !== 'string') {
+      errors.push({
+        param: field,
+        msg: `${field} must be a string`
+      });
+    }
+    
+    if (validation.type === 'number' && (typeof value !== 'number' && isNaN(Number(value)))) {
+      errors.push({
+        param: field,
+        msg: `${field} must be a number`
+      });
+    }
+    
+    if (validation.type === 'boolean' && typeof value !== 'boolean') {
+      // Try to convert string 'true'/'false' to boolean
+      if (value === 'true' || value === 'false') {
+        req.body[field] = value === 'true';
+      } else {
+        errors.push({
+          param: field,
+          msg: `${field} must be a boolean`
+        });
+      }
+    }
+    
+    if (validation.type === 'array' && !Array.isArray(value)) {
+      errors.push({
+        param: field,
+        msg: `${field} must be an array`
+      });
+    }
+    
+    // Range validations for numbers
+    if (validation.type === 'number' && (typeof value === 'number' || !isNaN(Number(value)))) {
+      const numValue = typeof value === 'number' ? value : Number(value);
+      
+      if (validation.min !== undefined && numValue < validation.min) {
+        errors.push({
+          param: field,
+          msg: `${field} must be at least ${validation.min}`
+        });
+      }
+      
+      if (validation.max !== undefined && numValue > validation.max) {
+        errors.push({
+          param: field,
+          msg: `${field} must be at most ${validation.max}`
+        });
+      }
+    }
+    
+    // Enum validation (allowable values)
+    if (validation.enum && !validation.enum.includes(value)) {
+      errors.push({
+        param: field,
+        msg: `${field} must be one of: ${validation.enum.join(', ')}`
+      });
+    }
+  }
+  
+  return errors;
+};
+
+const getValueFromRequest = (req: Request, field: string, location: string = 'body'): any => {
+  switch (location) {
+    case 'body':
+      return req.body[field];
+    case 'query':
+      return req.query[field];
+    case 'params':
+      return req.params[field];
+    default:
+      return req.body[field];
+  }
+};
+
 /**
  * Middleware to extract tenant context
  */
@@ -46,21 +150,60 @@ router.get('/sources', async (req: Request, res: Response) => {
 router.post(
   '/search',
   extractTenantContext,
-  [
-    body('query').isString().notEmpty().withMessage('Search query is required'),
-    body('sources').optional().isArray(),
-    body('startDate').optional().isString(),
-    body('endDate').optional().isString(),
-    body('useSemanticSearch').optional().isBoolean(),
-    body('filters').optional().isObject(),
-    body('limit').optional().isInt({ min: 1, max: 100 }),
-    body('offset').optional().isInt({ min: 0 })
-  ],
   async (req: Request, res: Response) => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      // Define validation rules
+      const validationRules = {
+        'query': { 
+          required: true, 
+          type: 'string', 
+          message: 'Search query is required',
+          location: 'body'
+        },
+        'sources': { 
+          required: false, 
+          type: 'array',
+          location: 'body'
+        },
+        'startDate': { 
+          required: false, 
+          type: 'string',
+          location: 'body'
+        },
+        'endDate': { 
+          required: false, 
+          type: 'string',
+          location: 'body'
+        },
+        'useSemanticSearch': { 
+          required: false, 
+          type: 'boolean',
+          location: 'body'
+        },
+        'filters': { 
+          required: false, 
+          type: 'object',
+          location: 'body'
+        },
+        'limit': { 
+          required: false, 
+          type: 'number',
+          min: 1,
+          max: 100,
+          location: 'body'
+        },
+        'offset': { 
+          required: false, 
+          type: 'number',
+          min: 0,
+          location: 'body'
+        }
+      };
+      
+      // Validate request
+      const errors = validateRequest(req, validationRules);
+      if (errors.length > 0) {
+        return res.status(400).json({ errors });
       }
       
       const searchParams = {
