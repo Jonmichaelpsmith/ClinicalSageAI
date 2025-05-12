@@ -491,6 +491,73 @@ class FDA510kService {
       throw error;
     }
   }
+
+  /**
+   * Build and preview an eSTAR package
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {Object} options - Options for package building
+   * @param {boolean} options.includeCoverLetter - Whether to include an AI-generated cover letter
+   * @returns {Promise<Object>} Preview data including file list and compliance report
+   */
+  async buildAndPreview(projectId, options = { includeCoverLetter: true }) {
+    try {
+      const response = await apiRequest({
+        url: `/api/fda510k/preview-estar-plus/${projectId}`,
+        method: 'POST',
+        data: options
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error building and previewing eSTAR package:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Build and download a complete eSTAR package
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {Object} options - Options for package building
+   * @param {boolean} options.includeCoverLetter - Whether to include an AI-generated cover letter
+   * @param {boolean} options.autoUpload - Whether to automatically upload to FDA ESG
+   * @returns {Promise<Object>} Download URL and/or ESG status
+   */
+  async buildAndDownload(projectId, options = { includeCoverLetter: true, autoUpload: false }) {
+    try {
+      const response = await apiRequest({
+        url: `/api/fda510k/build-estar-plus/${projectId}`,
+        method: 'POST',
+        data: options
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error building eSTAR package:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Verify digital signature on an eSTAR package
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @returns {Promise<Object>} Verification result
+   */
+  async verifyDigitalSignature(projectId) {
+    try {
+      const response = await apiRequest({
+        url: `/api/fda510k/verify-signature/${projectId}`,
+        method: 'GET'
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error verifying digital signature:', error);
+      throw error;
+    }
+  }
 }
 
 // Create singleton instance
