@@ -998,11 +998,14 @@ const CerComprehensiveReportsPanel = () => {
 
   return (
     <div className="space-y-8">
-      <div className="p-4 bg-white rounded-lg border">
+      <div className="p-6 bg-gradient-to-b from-blue-50 to-white rounded-lg border shadow-sm">
         <div className="flex flex-col md:flex-row justify-between space-y-4 md:space-y-0 md:items-center mb-6">
           <div>
-            <h2 className="text-2xl font-bold mb-1">Comprehensive Reports</h2>
-            <p className="text-gray-500">
+            <h2 className="text-2xl font-bold mb-1 text-blue-700 flex items-center">
+              <FileBarChart2 className="h-6 w-6 mr-2 text-blue-600" />
+              Comprehensive Reports
+            </h2>
+            <p className="text-gray-600">
               Generate detailed reports to monitor compliance, activity, and quality metrics
             </p>
           </div>
@@ -1011,17 +1014,18 @@ const CerComprehensiveReportsPanel = () => {
             <Button
               onClick={generatePDFReport}
               disabled={isGeneratingReport}
-              className="flex items-center space-x-1"
+              className="flex items-center space-x-1 bg-blue-600 hover:bg-blue-700 shadow-sm transition-all hover:shadow"
             >
               <FileText className="h-4 w-4" />
               <span>Generate PDF Report</span>
+              {isGeneratingReport && <span className="ml-2 animate-spin">⟳</span>}
             </Button>
             
             <Button
               variant="outline"
               onClick={generatePDFReport}
               disabled={isGeneratingReport}
-              className="flex items-center space-x-1"
+              className="flex items-center space-x-1 border-blue-200 text-blue-700 hover:bg-blue-50 shadow-sm transition-all hover:shadow"
             >
               <Download className="h-4 w-4" />
               <span>Export Data</span>
@@ -1036,22 +1040,26 @@ const CerComprehensiveReportsPanel = () => {
             onValueChange={setActiveReportType}
             className="w-full md:w-auto"
           >
-            <TabsList>
-              <TabsTrigger value="compliance" className="flex items-center">
-                <FileCheck className="h-4 w-4 mr-1" />
+            <TabsList className="bg-blue-50 p-1">
+              <TabsTrigger value="compliance" className="flex items-center data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm">
+                <FileCheck className="h-4 w-4 mr-1.5 text-blue-600" />
                 Compliance
               </TabsTrigger>
-              <TabsTrigger value="activity" className="flex items-center">
-                <Users className="h-4 w-4 mr-1" />
+              <TabsTrigger value="activity" className="flex items-center data-[state=active]:bg-white data-[state=active]:text-green-700 data-[state=active]:shadow-sm">
+                <Users className="h-4 w-4 mr-1.5 text-green-600" />
                 Activity
               </TabsTrigger>
-              <TabsTrigger value="quality" className="flex items-center">
-                <FileBarChart2 className="h-4 w-4 mr-1" />
+              <TabsTrigger value="quality" className="flex items-center data-[state=active]:bg-white data-[state=active]:text-purple-700 data-[state=active]:shadow-sm">
+                <FileBarChart2 className="h-4 w-4 mr-1.5 text-purple-600" />
                 Quality
               </TabsTrigger>
-              <TabsTrigger value="trends" className="flex items-center">
-                <BarChart3 className="h-4 w-4 mr-1" />
+              <TabsTrigger value="trends" className="flex items-center data-[state=active]:bg-white data-[state=active]:text-amber-700 data-[state=active]:shadow-sm">
+                <BarChart3 className="h-4 w-4 mr-1.5 text-amber-600" />
                 Trends
+              </TabsTrigger>
+              <TabsTrigger value="dashboard" className="flex items-center data-[state=active]:bg-white data-[state=active]:text-blue-700 data-[state=active]:shadow-sm">
+                <Trophy className="h-4 w-4 mr-1.5 text-blue-600" />
+                Executive Dashboard
               </TabsTrigger>
             </TabsList>
           </Tabs>
