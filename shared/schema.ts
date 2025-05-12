@@ -1154,6 +1154,66 @@ export const fda510kPredicateDevices = pgTable('fda510k_predicate_devices', {
   metadata: json('metadata').$type<Record<string, any>>()
 });
 
+// 510(k) Relations
+export const fda510kProjectsRelations = relations(fda510kProjects, ({ one, many }) => ({
+  organization: one(organizations, {
+    fields: [fda510kProjects.organizationId],
+    references: [organizations.id],
+  }),
+  clientWorkspace: one(clientWorkspaces, {
+    fields: [fda510kProjects.clientWorkspaceId],
+    references: [clientWorkspaces.id],
+  }),
+  creator: one(users, {
+    fields: [fda510kProjects.createdById],
+    references: [users.id],
+  }),
+  sections: many(fda510kSections),
+  predicateDevices: many(fda510kPredicateDevices),
+}));
+
+export const fda510kSectionsRelations = relations(fda510kSections, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [fda510kSections.organizationId],
+    references: [organizations.id],
+  }),
+  project: one(fda510kProjects, {
+    fields: [fda510kSections.projectId],
+    references: [fda510kProjects.id],
+  }),
+}));
+
+export const fda510kPredicateDevicesRelations = relations(fda510kPredicateDevices, ({ one }) => ({
+  organization: one(organizations, {
+    fields: [fda510kPredicateDevices.organizationId],
+    references: [organizations.id],
+  }),
+  project: one(fda510kProjects, {
+    fields: [fda510kPredicateDevices.projectId],
+    references: [fda510kProjects.id],
+  }),
+}));
+
+// Export types for FDA 510(k) tables
+export type FDA510kProject = typeof fda510kProjects.$inferSelect;
+export type FDA510kSection = typeof fda510kSections.$inferSelect;
+export type FDA510kPredicateDevice = typeof fda510kPredicateDevices.$inferSelect;
+
+// Insert schemas for FDA 510(k) tables
+export const insertFDA510kProjectSchema = createInsertSchema(fda510kProjects)
+  .omit({ id: true, createdAt: true, updatedAt: true, submittedAt: true });
+
+export const insertFDA510kSectionSchema = createInsertSchema(fda510kSections)
+  .omit({ id: true, createdAt: true, updatedAt: true, completedAt: true });
+
+export const insertFDA510kPredicateDeviceSchema = createInsertSchema(fda510kPredicateDevices)
+  .omit({ id: true, createdAt: true, updatedAt: true });
+
+// Insert types for FDA 510(k) tables
+export type InsertFDA510kProject = z.infer<typeof insertFDA510kProjectSchema>;
+export type InsertFDA510kSection = z.infer<typeof insertFDA510kSectionSchema>;
+export type InsertFDA510kPredicateDevice = z.infer<typeof insertFDA510kPredicateDeviceSchema>;
+
 // Enums for Regulatory Submissions
 export const submissionTypeEnum = pgEnum('submission_type', [
   'IND', 'eCTD', 'NDA', 'BLA', 'ANDA', 'DMF'
