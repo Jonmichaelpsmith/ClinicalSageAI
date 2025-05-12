@@ -141,7 +141,10 @@ export default function CERV2Page() {
             <span>Quality Management</span>
             <span className="text-[0.65rem] text-blue-600">ICH E6(R3)</span>
           </div>, icon: <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-          { id: "documents", label: "Documents", icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
+          { id: "documents", label: <div className="flex flex-col items-center leading-tight">
+            <span>Documents</span>
+            <span className="text-[0.65rem] text-blue-600">Validated for GxP</span>
+          </div>, icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
           { id: "data-retrieval", label: "Data Retrieval", icon: <Database className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
         ]
       },
