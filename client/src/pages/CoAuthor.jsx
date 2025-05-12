@@ -1602,6 +1602,60 @@ export default function CoAuthor() {
     }
   };
   
+  // Function to handle editing content from search results
+  const handleEditSearchResult = (result) => {
+    setSelectedSearchResult(result);
+    setEditedContent(result.content);
+    setShowEditFromSearchDialog(true);
+  };
+  
+  // Function to save the edited content and propagate changes if selected
+  const saveEditedContent = async () => {
+    setIsEditingSaving(true);
+    
+    try {
+      // Simulate API call to save changes
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const affectedDocuments = propagateChanges 
+        ? vectorizedDocuments
+            .filter(doc => doc.module === selectedSearchResult.module || 
+                         doc.title.includes(selectedSearchResult.documentTitle.split(' ')[0]))
+            .map(doc => doc.title)
+        : [selectedSearchResult.documentTitle];
+      
+      // Update the search results with edited content
+      if (selectedSearchResult) {
+        const updatedResults = semanticSearchResults.map(result => {
+          if (result.documentId === selectedSearchResult.documentId && 
+              result.section === selectedSearchResult.section) {
+            return { ...result, content: editedContent };
+          }
+          return result;
+        });
+        
+        setSemanticSearchResults(updatedResults);
+      }
+      
+      toast({
+        title: "Changes saved successfully",
+        description: `Updated ${affectedDocuments.length} document${affectedDocuments.length !== 1 ? 's' : ''}: ${affectedDocuments.slice(0, 2).join(', ')}${affectedDocuments.length > 2 ? ` and ${affectedDocuments.length - 2} more` : ''}`,
+        variant: "default"
+      });
+      
+      setShowEditFromSearchDialog(false);
+    } catch (error) {
+      console.error("Error saving edited content:", error);
+      toast({
+        title: "Error saving changes",
+        description: "An error occurred while saving your changes. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsEditingSaving(false);
+    }
+  };
+  
   // Serialize the document state to JSON
   const serializeDocument = () => {
     try {
@@ -6017,7 +6071,17 @@ export default function CoAuthor() {
                     {result.content}
                   </div>
                   
-                  <div className="flex justify-end">
+                  <div className="flex justify-end space-x-2">
+                    <Button 
+                      variant="secondary" 
+                      size="sm" 
+                      className="text-xs"
+                      onClick={() => handleEditSearchResult(result)}
+                    >
+                      <Pencil className="h-3 w-3 mr-1" />
+                      Edit Content
+                    </Button>
+                    
                     <Button 
                       variant="link" 
                       size="sm" 
