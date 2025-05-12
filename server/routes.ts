@@ -112,6 +112,7 @@ import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
 import authRouter from './routes/auth.js';
 import maudRouter from './routes/maud-routes';
 import fda510kLiteratureRouter from './routes/510k-literature-routes';
+import fda510kRouter from './routes/fda510k-routes';
 // Import existing router or create empty one
 import express from 'express';
 import * as fs from 'fs';

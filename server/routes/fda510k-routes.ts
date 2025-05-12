@@ -492,6 +492,135 @@ router.post('/generate-draft', async (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/fda510k/pathway-recommendation/:projectId
+ * Get recommended regulatory pathway for a specific project
+ */
+router.get('/pathway-recommendation/:projectId', async (req: Request, res: Response) => {
+  try {
+    const { projectId } = req.params;
+    const tenantContext = (req as any).tenantContext;
+    
+    console.log('510(k) Pathway recommendation request:', {
+      projectId,
+      tenantContext
+    });
+    
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    
+    // Return simulated pathway recommendation
+    const results = {
+      recommendedPathway: 'Traditional 510(k)',
+      alternativePathways: ['Special 510(k)', 'Abbreviated 510(k)'],
+      rationale: 'Based on the device characteristics and the presence of similar predicate devices, the most appropriate pathway is a Traditional 510(k) submission.',
+      estimatedTimelineInDays: 90,
+      requirements: [
+        'Substantial Equivalence demonstration',
+        'Performance testing',
+        'Software validation (if applicable)',
+        'Biocompatibility assessment',
+        'Clinical data (if necessary)'
+      ],
+      confidenceScore: 0.92,
+      timestamp: new Date().toISOString(),
+      processingTimeMs: 1150
+    };
+    
+    res.json(results);
+  } catch (error) {
+    console.error('Error in pathway recommendation:', error);
+    res.status(500).json({
+      error: error.message,
+      status: 'error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * POST /api/fda510k/draft-equivalence
+ * Generate a substantial equivalence draft for a 510(k) submission
+ */
+router.post('/draft-equivalence', async (req: Request, res: Response) => {
+  try {
+    const { projectId } = req.body;
+    const tenantContext = (req as any).tenantContext;
+    
+    console.log('510(k) Equivalence draft request:', {
+      projectId,
+      tenantContext
+    });
+    
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Return simulated draft text
+    const draftText = `# Substantial Equivalence Statement
+
+## 1. Introduction
+
+This submission provides information to demonstrate the substantial equivalence of [Device Name] to the identified predicate device(s). The information provided supports the determination that [Device Name] is as safe and effective as the legally marketed predicate device.
+
+## 2. Subject Device Information
+
+[Device Name] is a [brief description of device type] designed for [intended use summary]. The device utilizes [key technology] to [primary function]. It is classified as a Class II medical device under product code [XXX].
+
+## 3. Predicate Device Information
+
+The primary predicate device for this submission is [Predicate Device Name] (K number: [KXXXXXX]), manufactured by [Manufacturer Name], which was determined to be substantially equivalent on [clearance date].
+
+## 4. Comparison of Intended Use
+
+The intended use of [Device Name] is [detailed intended use statement].
+
+The intended use of the predicate device [Predicate Device Name] is [predicate intended use statement].
+
+Both devices are intended for [common intended use elements], demonstrating equivalence in intended use.
+
+## 5. Comparison of Technological Characteristics
+
+| Characteristic | Subject Device | Predicate Device | Discussion |
+|----------------|----------------|------------------|------------|
+| Operating Principle | [Description] | [Description] | [Comparison] |
+| Design | [Description] | [Description] | [Comparison] |
+| Materials | [Description] | [Description] | [Comparison] |
+| Performance | [Description] | [Description] | [Comparison] |
+| Safety Features | [Description] | [Description] | [Comparison] |
+
+## 6. Non-Clinical Performance Testing
+
+The following non-clinical tests were conducted to demonstrate substantial equivalence:
+
+- [Test 1]: [Brief description of results]
+- [Test 2]: [Brief description of results]
+- [Test 3]: [Brief description of results]
+
+These test results demonstrate that [Device Name] meets its design specifications and performs as intended.
+
+## 7. Clinical Testing
+
+[Include if applicable, otherwise state "No clinical testing was deemed necessary to demonstrate substantial equivalence."]
+
+## 8. Substantial Equivalence Conclusion
+
+Based on the similarities in intended use, technological characteristics, and performance testing results, [Device Name] is substantially equivalent to the predicate device [Predicate Device Name] (K[XXXXXX]). Any differences between the subject and predicate device do not raise new questions of safety or effectiveness.`;
+    
+    res.json({
+      draftText,
+      wordCount: draftText.split(/\s+/).length,
+      generationTime: '1.8 seconds'
+    });
+  } catch (error) {
+    console.error('Error generating equivalence draft:', error);
+    res.status(500).json({
+      error: error.message,
+      status: 'error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
  * POST /api/fda510k/validate-submission
  * Validate a 510(k) submission for completeness and compliance
  */
