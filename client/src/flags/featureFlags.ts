@@ -53,6 +53,13 @@ export const featureFlags: Record<string, FeatureFlag> = {
     defaultValue: true,
     enabled: true
   },
+  ENABLE_EQUIVALENCE_DRAFTING: {
+    id: 'ENABLE_EQUIVALENCE_DRAFTING',
+    name: 'Substantial Equivalence Drafting',
+    description: 'Enables AI-powered substantial equivalence statement drafting',
+    defaultValue: true,
+    enabled: true
+  },
   ENABLE_SECTION_RECOMMENDER: {
     id: 'ENABLE_SECTION_RECOMMENDER',
     name: 'Document Section Recommender',

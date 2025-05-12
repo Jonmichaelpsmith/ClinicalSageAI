@@ -40,6 +40,7 @@ const FDA510kPage = () => {
   const isDocumentRecommenderEnabled = isFeatureEnabled('ENABLE_SECTION_RECOMMENDER', currentOrganization?.id);
   const isLiteratureDiscoveryEnabled = isFeatureEnabled('ENABLE_LITERATURE_DISCOVERY', currentOrganization?.id);
   const isPathwayAdvisorEnabled = isFeatureEnabled('ENABLE_PATHWAY_ADVISOR', currentOrganization?.id);
+  const isEquivalenceDraftingEnabled = isFeatureEnabled('ENABLE_EQUIVALENCE_DRAFTING', currentOrganization?.id);
 
   // Load device profile if available
   useEffect(() => {
@@ -146,7 +147,7 @@ const FDA510kPage = () => {
           <TabsTrigger 
             value="equivalenceDraft" 
             className="flex items-center"
-            disabled={!deviceProfile || !isPathwayAdvisorEnabled || !predicateDevice}
+            disabled={!deviceProfile || !isEquivalenceDraftingEnabled || !predicateDevice}
           >
             <FileText className="h-4 w-4 mr-2" />
             SE Draft
@@ -237,7 +238,7 @@ const FDA510kPage = () => {
         </TabsContent>
         
         <TabsContent value="equivalenceDraft" className="space-y-4">
-          {isPathwayAdvisorEnabled && predicateDevice ? (
+          {isEquivalenceDraftingEnabled && predicateDevice ? (
             <EquivalenceDraft
               projectId={deviceProfile?.id}
               onAddToReport={(draftText) => {
