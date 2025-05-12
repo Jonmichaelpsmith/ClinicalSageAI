@@ -345,16 +345,16 @@ export class eSTARPlusBuilder {
   }> {
     try {
       // Query the database for project metadata
-      const project = await db.query(
-        `SELECT * FROM fda_510k_projects WHERE id = $1`,
-        [projectId]
-      );
+      // Use Drizzle ORM instead of raw query
+      const project = await db?.fda510kProjects.findFirst({
+        where: (projects, { eq }) => eq(projects.id, projectId)
+      });
       
-      if (!project.rows || project.rows.length === 0) {
+      if (!project) {
         throw new Error(`Project not found: ${projectId}`);
       }
       
-      const projectData = project.rows[0];
+      const projectData = project;
       
       return {
         manufacturer: projectData.manufacturer_name || 'Unknown Manufacturer',
@@ -391,24 +391,26 @@ export class eSTARPlusBuilder {
   }>> {
     try {
       // Query the database for final sections
-      const sections = await db.query(
-        `SELECT * FROM fda_510k_sections 
-         WHERE project_id = $1 AND status = 'final'
-         ORDER BY section_order`,
-        [projectId]
-      );
+      // Use Drizzle ORM for sections query
+      const sections = await db?.fda510kSections.findMany({
+        where: (sections, { eq, and }) => and(
+          eq(sections.projectId, projectId),
+          eq(sections.status, 'final')
+        ),
+        orderBy: (sections, { asc }) => [asc(sections.sectionOrder)]
+      });
       
-      if (!sections.rows || sections.rows.length === 0) {
+      if (!sections || sections.length === 0) {
         console.warn(`No final sections found for project: ${projectId}`);
         // Return mock sections for development
         return eSTARPlusBuilder.getMockSections();
       }
       
-      return sections.rows.map(section => ({
+      return sections.map(section => ({
         id: section.id,
-        name: section.section_key,
+        name: section.sectionKey,
         title: section.title,
-        filePathDOCX: section.file_path
+        filePathDOCX: section.filePath
       }));
     } catch (error) {
       console.error('Error fetching project sections:', error);
