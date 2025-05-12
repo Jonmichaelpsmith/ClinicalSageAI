@@ -111,7 +111,9 @@ import {
   SearchX,
   Send,
   Copy,
-  Zap
+  Zap,
+  FileText as TextSelect,
+  RefreshCcw
 } from 'lucide-react';
 
 // Custom Google icon component
@@ -1236,6 +1238,7 @@ export default function CoAuthor() {
     }
     
     return defaultHierarchy;
+  };
   
   /**
    * Simulates embedding generation (would be replaced with actual OpenAI API call)
