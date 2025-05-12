@@ -7,8 +7,7 @@ import { Upload, Search, FilePlus, BarChart, ArrowRight, Shield, BrainCircuit, Z
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { findPredicateDevices, analyzeRegulatoryPathway, generate510kDraft, 
-  getSubmissionRequirements, validateSubmission } from '@/services/FDA510kService';
+import FDA510kService from '../../services/FDA510kService';
 import { useTenant } from '@/contexts/TenantContext';
 
 export default function KAutomationPanel() {
@@ -36,10 +35,10 @@ export default function KAutomationPanel() {
   useEffect(() => {
     const loadRequirements = async () => {
       try {
-        const requirementData = await getSubmissionRequirements(
-          deviceData.deviceClass, 
-          currentOrganization?.id
+        const response = await FDA510kService.getRequirements(
+          deviceData.deviceClass
         );
+        const requirementData = response.requirements;
         setRequirements(requirementData);
       } catch (error) {
         console.error('Error loading 510(k) requirements:', error);
@@ -76,10 +75,11 @@ export default function KAutomationPanel() {
       
       // Select API call based on step
       if (step === 'findPredicatesAndLiterature') {
-        results = await findPredicateDevices(
+        const predicateResponse = await FDA510kService.findPredicateDevices(
           deviceData, 
           currentOrganization?.id
         );
+        results = predicateResponse.predicates || [];
         
         // Transform API results to insights format
         const insights = [];
