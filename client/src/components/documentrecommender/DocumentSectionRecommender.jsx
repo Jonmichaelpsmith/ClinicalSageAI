@@ -1,264 +1,357 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Progress } from '@/components/ui/progress';
-import { Lightbulb, CheckCircle2, AlertTriangle, ArrowRight, FileText, ListChecks, Sparkles, FileSearch } from 'lucide-react';
-import DocumentSectionRecommenderService from '../../services/DocumentSectionRecommenderService';
-import { useTenant } from '@/contexts/TenantContext';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Loader2, FileText, CheckCircle, AlertCircle, BookOpen } from 'lucide-react';
 import { isFeatureEnabled } from '../../flags/featureFlags';
-import SectionPriorityList from './SectionPriorityList';
-import ContentSuggestionPanel from './ContentSuggestionPanel';
-import DocumentGapAnalysis from './DocumentGapAnalysis';
+import DocumentSectionRecommenderService from '../../services/DocumentSectionRecommenderService';
+import { ContentSuggestionPanel } from './ContentSuggestionPanel';
+import { DocumentGapAnalysis } from './DocumentGapAnalysis';
 
 /**
- * Intelligent Document Section Recommender Component
+ * DocumentSectionRecommender Component
  * 
- * This component provides AI-driven recommendations for document sections,
- * content suggestions, and gap analysis for regulatory documents.
+ * This component provides intelligent section recommendations for regulatory documents
+ * based on device profile information.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.documentType - The type of document (e.g., '510k', 'cer')
+ * @param {Object} props.deviceProfile - The device profile information
+ * @param {Object} props.existingContent - Content that already exists in the document
+ * @param {Object} props.predicateDevice - Optional predicate device information (for 510k)
+ * @param {Function} props.onSectionSelect - Callback when a section is selected
  */
-const DocumentSectionRecommender = ({ 
-  deviceProfile, 
-  documentType = '510k', 
-  currentContent = {}, 
-  onSectionSelect 
+export const DocumentSectionRecommender = ({
+  documentType = '510k',
+  deviceProfile,
+  existingContent = {},
+  predicateDevice = null,
+  onSectionSelect
 }) => {
-  const [activeTab, setActiveTab] = useState('recommendations');
-  const [loading, setLoading] = useState(false);
-  const [recommendations, setRecommendations] = useState([]);
-  const [priorityOrder, setPriorityOrder] = useState([]);
-  const [insightSummary, setInsightSummary] = useState('');
+  const [activeTab, setActiveTab] = useState('recommended');
   const [selectedSection, setSelectedSection] = useState(null);
-  const [contentSuggestions, setContentSuggestions] = useState([]);
-  const [gapAnalysis, setGapAnalysis] = useState(null);
-  const [error, setError] = useState(null);
   
-  const { currentOrganization } = useTenant();
-  const isEnabled = isFeatureEnabled('documentRecommender', currentOrganization?.id);
-
-  // Load initial recommendations when device profile changes
-  useEffect(() => {
-    if (!deviceProfile || !isEnabled) return;
-    
-    loadRecommendations();
-  }, [deviceProfile, documentType]);
-
-  // Fetch recommendations from API
-  const loadRecommendations = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await DocumentSectionRecommenderService.getSectionRecommendations(
-        deviceProfile,
-        documentType,
-        currentOrganization?.id
-      );
-      
-      if (response.success) {
-        setRecommendations(response.recommendations);
-        setPriorityOrder(response.priorityOrder);
-        setInsightSummary(response.insightSummary);
-      } else {
-        setError(response.error);
-      }
-    } catch (err) {
-      setError('Failed to load recommendations. Please try again.');
-      console.error('Document recommender error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Load content suggestions for a selected section
-  const loadContentSuggestions = async (sectionKey) => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await DocumentSectionRecommenderService.getSectionContentSuggestions(
-        deviceProfile,
-        documentType,
-        sectionKey,
-        currentOrganization?.id
-      );
-      
-      if (response.success) {
-        setContentSuggestions(response.suggestions);
-        setSelectedSection(sectionKey);
-        setActiveTab('contentSuggestions');
-      } else {
-        setError(response.error);
-      }
-    } catch (err) {
-      setError('Failed to load content suggestions. Please try again.');
-      console.error('Content suggestion error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Load gap analysis
-  const loadGapAnalysis = async () => {
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const response = await DocumentSectionRecommenderService.getDocumentGapAnalysis(
-        deviceProfile,
-        documentType,
-        currentContent,
-        currentOrganization?.id
-      );
-      
-      if (response.success) {
-        setGapAnalysis(response);
-        setActiveTab('gapAnalysis');
-      } else {
-        setError(response.error);
-      }
-    } catch (err) {
-      setError('Failed to perform gap analysis. Please try again.');
-      console.error('Gap analysis error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Query for section recommendations
+  const recommendationsQuery = useQuery({
+    queryKey: ['sectionRecommendations', documentType, deviceProfile?.id],
+    queryFn: () => DocumentSectionRecommenderService.getRecommendedSections(documentType, deviceProfile),
+    enabled: isFeatureEnabled('ENABLE_SECTION_RECOMMENDER') && !!deviceProfile,
+    staleTime: 60 * 60 * 1000, // 1 hour
+  });
+  
+  // Query for gap analysis
+  const gapAnalysisQuery = useQuery({
+    queryKey: ['contentGapAnalysis', documentType, deviceProfile?.id, Object.keys(existingContent).length],
+    queryFn: () => DocumentSectionRecommenderService.analyzeContentGaps(documentType, deviceProfile, existingContent),
+    enabled: isFeatureEnabled('ENABLE_SECTION_RECOMMENDER') && !!deviceProfile && activeTab === 'gaps',
+  });
+  
+  // Query for regulatory overview
+  const regulatoryOverviewQuery = useQuery({
+    queryKey: ['regulatoryOverview', documentType, deviceProfile?.id],
+    queryFn: () => DocumentSectionRecommenderService.generateRegulatoryOverview(documentType, deviceProfile),
+    enabled: isFeatureEnabled('ENABLE_SECTION_RECOMMENDER') && !!deviceProfile && activeTab === 'overview',
+  });
 
   // Handle section selection
-  const handleSectionSelect = (sectionKey) => {
+  const handleSectionSelect = (section) => {
+    setSelectedSection(section);
+    
     if (onSectionSelect) {
-      onSectionSelect(sectionKey);
+      onSectionSelect(section);
     }
-    loadContentSuggestions(sectionKey);
   };
-
-  if (!isEnabled) {
+  
+  // Group sections by priority
+  const getSectionsByPriority = (sections) => {
+    if (!sections) return {};
+    
+    return sections.reduce((grouped, section) => {
+      const priority = section.priority || 'medium';
+      if (!grouped[priority]) {
+        grouped[priority] = [];
+      }
+      grouped[priority].push(section);
+      return grouped;
+    }, {});
+  };
+  
+  // Get sections grouped by priority
+  const sectionsByPriority = getSectionsByPriority(recommendationsQuery.data);
+  
+  // Feature flag check
+  if (!isFeatureEnabled('ENABLE_SECTION_RECOMMENDER')) {
     return (
-      <Card className="w-full h-full shadow-md">
+      <Card>
         <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <Lightbulb className="mr-2 h-5 w-5 text-primary" />
-            Intelligent Document Section Recommender
-          </CardTitle>
+          <CardTitle>Document Section Recommender</CardTitle>
           <CardDescription>
-            This feature is not enabled for your organization.
+            This feature is currently disabled. Please contact your administrator to enable it.
+          </CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
+  
+  // Loading states
+  const isLoading = recommendationsQuery.isLoading || 
+    (activeTab === 'gaps' && gapAnalysisQuery.isLoading) ||
+    (activeTab === 'overview' && regulatoryOverviewQuery.isLoading);
+  
+  // Error states
+  const hasError = recommendationsQuery.error || 
+    (activeTab === 'gaps' && gapAnalysisQuery.error) ||
+    (activeTab === 'overview' && regulatoryOverviewQuery.error);
+
+  if (!deviceProfile) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Document Section Recommender</CardTitle>
+          <CardDescription>
+            Please complete your device profile to receive section recommendations.
           </CardDescription>
         </CardHeader>
       </Card>
     );
   }
 
+  if (hasError) {
+    return (
+      <Card className="border-destructive">
+        <CardHeader>
+          <CardTitle className="text-destructive">Error Loading Recommendations</CardTitle>
+          <CardDescription>
+            Failed to load section recommendations. Please try again.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <Button variant="outline" onClick={() => {
+            if (activeTab === 'recommended') recommendationsQuery.refetch();
+            if (activeTab === 'gaps') gapAnalysisQuery.refetch();
+            if (activeTab === 'overview') regulatoryOverviewQuery.refetch();
+          }}>
+            Retry
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
+  
   return (
-    <Card className="w-full h-full shadow-md">
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center">
-          <Lightbulb className="mr-2 h-5 w-5 text-primary" />
-          Intelligent Document Section Recommender
-          {loading && <span className="ml-2 text-sm font-normal text-muted-foreground">Loading...</span>}
-        </CardTitle>
-        <CardDescription>
-          AI-driven recommendations for document sections, content, and regulatory gaps
-        </CardDescription>
-      </CardHeader>
-      
-      <CardContent>
-        {error && (
-          <div className="mb-4 p-3 bg-destructive/10 text-destructive rounded-md">
-            <AlertTriangle className="h-4 w-4 inline mr-2" />
-            {error}
-          </div>
-        )}
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="recommendations" className="flex items-center">
-              <ListChecks className="mr-2 h-4 w-4" />
-              Recommendations
-            </TabsTrigger>
-            <TabsTrigger value="contentSuggestions" className="flex items-center" disabled={!selectedSection}>
-              <FileText className="mr-2 h-4 w-4" />
-              Content Suggestions
-            </TabsTrigger>
-            <TabsTrigger value="gapAnalysis" className="flex items-center">
-              <FileSearch className="mr-2 h-4 w-4" />
-              Gap Analysis
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="recommendations" className="pt-2">
-            {insightSummary && (
-              <div className="mb-4 p-3 bg-muted rounded-md">
-                <p className="text-sm">{insightSummary}</p>
-              </div>
-            )}
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Document Section Recommender</CardTitle>
+          <CardDescription>
+            Get intelligent section recommendations and content suggestions for your {documentType.toUpperCase()} submission.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="grid grid-cols-3 mb-6">
+              <TabsTrigger value="recommended" className="flex items-center">
+                <FileText className="h-4 w-4 mr-2" />
+                Recommended Sections
+              </TabsTrigger>
+              <TabsTrigger value="gaps" className="flex items-center">
+                <AlertCircle className="h-4 w-4 mr-2" />
+                Gap Analysis
+              </TabsTrigger>
+              <TabsTrigger value="overview" className="flex items-center">
+                <BookOpen className="h-4 w-4 mr-2" />
+                Regulatory Overview
+              </TabsTrigger>
+            </TabsList>
             
-            <div className="mb-4">
-              <h4 className="font-medium mb-2 flex items-center">
-                <Sparkles className="h-4 w-4 mr-2 text-primary" />
-                Recommended Section Priority
-              </h4>
-              <SectionPriorityList 
-                sections={priorityOrder} 
-                recommendations={recommendations}
-                onSectionSelect={handleSectionSelect}
-              />
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="contentSuggestions" className="pt-2">
-            {selectedSection ? (
-              <ContentSuggestionPanel 
-                suggestions={contentSuggestions}
-                sectionKey={selectedSection}
-                onBack={() => setActiveTab('recommendations')}
-              />
-            ) : (
-              <div className="text-center py-8">
-                <FileText className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
-                <p>Select a section from recommendations to see content suggestions</p>
-                <Button 
-                  variant="outline" 
-                  className="mt-4"
-                  onClick={() => setActiveTab('recommendations')}
-                >
-                  Go to Recommendations
-                </Button>
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="gapAnalysis" className="pt-2">
-            <div className="mb-4">
-              <Button
-                variant="outline"
-                size="sm"
-                className="mb-4"
-                onClick={loadGapAnalysis}
-                disabled={loading}
-              >
-                <FileSearch className="mr-2 h-4 w-4" />
-                Run Gap Analysis
-              </Button>
-              
-              {gapAnalysis ? (
-                <DocumentGapAnalysis 
-                  analysis={gapAnalysis}
-                  onSectionSelect={handleSectionSelect}
-                />
+            <TabsContent value="recommended">
+              {isLoading ? (
+                <div className="flex justify-center items-center p-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
               ) : (
-                <div className="text-center py-6 text-muted-foreground">
-                  <p>Click the button above to run a gap analysis on your document</p>
+                <div className="space-y-6">
+                  {sectionsByPriority.high && (
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">High Priority <Badge>Required</Badge></h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {sectionsByPriority.high.map((section) => (
+                          <div
+                            key={section.key}
+                            className={`p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors ${
+                              selectedSection?.key === section.key ? 'border-primary bg-primary/10' : ''
+                            }`}
+                            onClick={() => handleSectionSelect(section)}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-medium">{section.title}</h4>
+                                <p className="text-sm text-muted-foreground mt-1">{section.description}</p>
+                              </div>
+                              <Badge variant="default">High</Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {sectionsByPriority.medium && (
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Medium Priority</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {sectionsByPriority.medium.map((section) => (
+                          <div
+                            key={section.key}
+                            className={`p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors ${
+                              selectedSection?.key === section.key ? 'border-primary bg-primary/10' : ''
+                            }`}
+                            onClick={() => handleSectionSelect(section)}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-medium">{section.title}</h4>
+                                <p className="text-sm text-muted-foreground mt-1">{section.description}</p>
+                              </div>
+                              <Badge variant="secondary">Medium</Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {sectionsByPriority.low && (
+                    <div>
+                      <h3 className="text-lg font-medium mb-4">Low Priority <Badge variant="outline">Optional</Badge></h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {sectionsByPriority.low.map((section) => (
+                          <div
+                            key={section.key}
+                            className={`p-4 border rounded-lg cursor-pointer hover:bg-muted transition-colors ${
+                              selectedSection?.key === section.key ? 'border-primary bg-primary/10' : ''
+                            }`}
+                            onClick={() => handleSectionSelect(section)}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-medium">{section.title}</h4>
+                                <p className="text-sm text-muted-foreground mt-1">{section.description}</p>
+                              </div>
+                              <Badge variant="outline">Low</Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {(!recommendationsQuery.data || recommendationsQuery.data.length === 0) && (
+                    <div className="text-center p-6">
+                      <p>No section recommendations available for your device profile.</p>
+                      <Button variant="outline" className="mt-4" onClick={() => recommendationsQuery.refetch()}>
+                        Refresh Recommendations
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
-            </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+            </TabsContent>
+            
+            <TabsContent value="gaps">
+              <DocumentGapAnalysis 
+                isLoading={gapAnalysisQuery.isLoading}
+                gapAnalysis={gapAnalysisQuery.data}
+                onSectionSelect={handleSectionSelect}
+                onRefresh={() => gapAnalysisQuery.refetch()}
+              />
+            </TabsContent>
+            
+            <TabsContent value="overview">
+              {regulatoryOverviewQuery.isLoading ? (
+                <div className="flex justify-center items-center p-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : regulatoryOverviewQuery.data ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Regulatory Pathway Overview</CardTitle>
+                    <CardDescription>
+                      Based on your device profile information, here is the recommended regulatory pathway.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h3 className="text-lg font-medium">Recommended Pathway</h3>
+                      <p className="mt-1">{regulatoryOverviewQuery.data.recommendedPathway}</p>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div>
+                      <h3 className="text-lg font-medium">Rationale</h3>
+                      <p className="mt-1">{regulatoryOverviewQuery.data.rationale}</p>
+                    </div>
+                    
+                    {regulatoryOverviewQuery.data.requirements && (
+                      <>
+                        <Separator />
+                        
+                        <div>
+                          <h3 className="text-lg font-medium">Key Requirements</h3>
+                          <ul className="mt-2 space-y-2">
+                            {regulatoryOverviewQuery.data.requirements.map((req, index) => (
+                              <li key={index} className="flex items-start">
+                                <CheckCircle className="h-5 w-5 text-green-600 mr-2 flex-shrink-0 mt-0.5" />
+                                <span>{req}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      </>
+                    )}
+                    
+                    {regulatoryOverviewQuery.data.timeline && (
+                      <>
+                        <Separator />
+                        
+                        <div>
+                          <h3 className="text-lg font-medium">Estimated Timeline</h3>
+                          <p className="mt-1">
+                            Approximately {regulatoryOverviewQuery.data.timeline} days from submission to clearance
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="text-center p-6">
+                  <p>No regulatory overview available for your device profile.</p>
+                  <Button variant="outline" className="mt-4" onClick={() => regulatoryOverviewQuery.refetch()}>
+                    Generate Overview
+                  </Button>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+      
+      {selectedSection && (
+        <ContentSuggestionPanel 
+          documentType={documentType}
+          section={selectedSection}
+          deviceProfile={deviceProfile}
+          predicateDevice={predicateDevice}
+          existingContent={existingContent[selectedSection.key]}
+        />
+      )}
+    </div>
   );
 };
 
