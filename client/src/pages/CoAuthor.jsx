@@ -778,6 +778,7 @@ export default function CoAuthor() {
     try {
       // In a real implementation, this would extract the editor's content
       // Here we simulate collecting all content atoms in the document
+      // Phase 5: Enhanced document serialization with eCTD metadata
       const documentContent = {
         title: documentTitle || "Untitled Document",
         module: documentModule || "2.5",
@@ -788,7 +789,22 @@ export default function CoAuthor() {
         ),
         metadata: {
           ...documentMetadata,
-          lastModified: new Date().toISOString()
+          lastModified: new Date().toISOString(),
+          // eCTD specific metadata for regulatory submissions
+          ectd: {
+            sequenceNumber: documentMetadata.sequence,
+            submissionType: "original",
+            applicationNumber: documentMetadata.applicationId,
+            submissionId: `${documentMetadata.applicationId}-${documentMetadata.sequence}`,
+            leafTitle: documentTitle || "Module 2.5 Clinical Overview",
+            lifecycle: documentLifecycle.status,
+            version: documentLifecycle.version,
+            dtd: "ectd-2-0",
+            checksums: {
+              md5: "placeholder-for-actual-md5-checksum",
+              sha256: "placeholder-for-actual-sha256-checksum"
+            }
+          }
         }
       };
       
@@ -844,13 +860,52 @@ export default function CoAuthor() {
         variant: "success",
       });
       
-      // If eCTD generation was requested
+      // Phase 5: Enhanced eCTD package generation
       if (exportOptions.generateEctdXml) {
-        toast({
-          title: "eCTD Package Ready",
-          description: "eCTD package with XML backbone and checksums has been generated.",
-          variant: "default",
+        // Simulate generating the eCTD XML backbone
+        const ectdResult = await fetch('/api/ectd-backbone', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            metadata: documentMetadata,
+            lifecycle: documentLifecycle,
+            module: documentModule || "2.5",
+            region: exportRegion,
+            checksums: exportOptions.includeChecksums
+          })
         });
+        
+        // Process eCTD generation result
+        if (ectdResult.ok) {
+          const ectdData = await ectdResult.json();
+          toast({
+            title: "eCTD Package Ready",
+            description: `eCTD package with XML backbone and ${exportOptions.includeChecksums ? 'MD5/SHA-256 checksums' : 'no checksums'} has been generated.`,
+            variant: "default",
+          });
+          
+          // Update document lifecycle to track this eCTD packaging event
+          if (documentLifecycle.status === 'Approved') {
+            const newHistory = [...documentLifecycle.history];
+            newHistory.push({
+              id: `lc-${newHistory.length + 1}`,
+              event: 'eCTD Packaged',
+              timestamp: new Date().toISOString(),
+              user: 'Current User',
+              details: `Document exported as eCTD package for ${exportRegion} submission`,
+              version: documentLifecycle.version
+            });
+            
+            setDocumentLifecycle({
+              ...documentLifecycle,
+              history: newHistory
+            });
+          }
+        } else {
+          throw new Error('Failed to generate eCTD package');
+        }
       }
       
       setShowExportDialog(false);
