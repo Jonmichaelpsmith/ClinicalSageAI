@@ -1329,7 +1329,7 @@ export default function CoAuthor() {
                             
                             {/* Display section badges for eCTD module sections */}
                             {template.contentBlocks && template.contentBlocks.length > 0 && (
-                              <div className="mt-2 flex flex-wrap gap-1">
+                              <div className="mt-2 flex flex-wrap gap-2">
                                 {template.contentBlocks.map(blockId => {
                                   // Find the block in the registry
                                   let block = null;
@@ -1348,35 +1348,26 @@ export default function CoAuthor() {
                                   
                                   if (!block) return null;
                                   
-                                  // Badge colors based on module section
-                                  let bgColor = 'bg-blue-100'; 
-                                  let textColor = 'text-blue-800';
+                                  // Badge color based on section number exactly matching screenshot
+                                  let badgeColor = '';
                                   
-                                  if (block.section.startsWith('2.5')) {
-                                    bgColor = 'bg-blue-100';
-                                    textColor = 'text-blue-800';
-                                  } else if (block.section.startsWith('2.7')) {
-                                    bgColor = 'bg-purple-100';
-                                    textColor = 'text-purple-800';
-                                  } else if (block.section.startsWith('3.')) {
-                                    bgColor = 'bg-green-100';
-                                    textColor = 'text-green-800';
-                                  }
-                                  
-                                  // Icons for different block types
-                                  let icon = '';
-                                  if (blockType === 'table') {
-                                    icon = '⚏ ';
-                                  } else if (blockType === 'narrative') {
-                                    icon = '📄 ';
-                                  } else if (blockType === 'figure') {
-                                    icon = '📊 ';
+                                  // Color mappings based on the screenshot
+                                  if (block.section === '2.5') {
+                                    badgeColor = 'bg-blue-100 text-blue-800';
+                                  } else if (block.section === '2.5.6') {
+                                    badgeColor = 'bg-blue-100 text-blue-800';
+                                  } else if (block.section === '2.7.3') {
+                                    badgeColor = 'bg-purple-100 text-purple-800';
+                                  } else if (block.section === '3.2.S.4.1') {
+                                    badgeColor = 'bg-green-100 text-green-800';
+                                  } else if (block.section === '1.2') {
+                                    badgeColor = 'bg-blue-100 text-blue-800';
                                   }
                                   
                                   return (
                                     <Badge 
                                       key={blockId}
-                                      className={`${bgColor} ${textColor} h-5 px-2 justify-center text-xs rounded`}
+                                      className={`${badgeColor} h-5 px-2 justify-center text-xs rounded-full`}
                                     >
                                       {block.section}
                                     </Badge>
