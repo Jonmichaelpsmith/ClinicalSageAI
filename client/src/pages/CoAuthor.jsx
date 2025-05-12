@@ -2113,10 +2113,15 @@ export default function CoAuthor() {
                     <Button 
                       size="sm" 
                       className="w-full bg-purple-600 hover:bg-purple-700"
-                      onClick={() => setShowValidationDialog(true)}
+                      onClick={() => validateEctdDocument(true)}
+                      disabled={validationInProgress}
                     >
-                      <FileCheck className="h-4 w-4 mr-2" />
-                      Open Validation Report
+                      {validationInProgress ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <FileCheck className="h-4 w-4 mr-2" />
+                      )}
+                      {validationInProgress ? 'Validating...' : 'Validate Document'}
                     </Button>
                   </div>
                 </div>
@@ -2158,10 +2163,15 @@ export default function CoAuthor() {
                   variant="outline" 
                   size="sm" 
                   className="border-blue-200 text-blue-700"
-                  onClick={() => setShowValidationDialog(true)}
+                  onClick={() => validateEctdDocument(true)}
+                  disabled={validationInProgress}
                 >
-                  <FileCheck className="h-4 w-4 mr-2" />
-                  Validate
+                  {validationInProgress ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <FileCheck className="h-4 w-4 mr-2" />
+                  )}
+                  {validationInProgress ? 'Validating...' : 'Validate'}
                 </Button>
                 <Button 
                   variant="outline" 
