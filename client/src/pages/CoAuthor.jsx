@@ -2357,8 +2357,8 @@ export default function CoAuthor() {
             <h1 className="text-2xl font-bold">eCTD Co-Author Module</h1>
           </div>
           
-          {/* Phase 6: Google-like Enhanced Vector Search in header */}
-          <div className="flex-1 mx-6 max-w-2xl">
+          {/* Phase 6: Unified Google-like Enhanced Vector Search in header */}
+          <div className="flex-1 mx-6 max-w-3xl">
             <div className="relative">
               <div className="flex items-center border rounded-full shadow-sm overflow-hidden bg-white">
                 {isSearchingVectors ? (
@@ -2369,7 +2369,7 @@ export default function CoAuthor() {
                 
                 <Input
                   type="search"
-                  placeholder={`Search ${vectorizedDocuments.length > 0 ? `${vectorizedDocuments.length} regulatory documents...` : 'your eCTD dossier...'}`}
+                  placeholder={`Search ${vectorizedDocuments.length > 0 ? `${vectorizedDocuments.length} regulatory documents across all modules...` : 'your eCTD dossier...'}`}
                   className="pl-12 pr-12 py-2.5 h-11 w-full border-0 focus:ring-0 focus:outline-none text-sm bg-transparent"
                   value={semanticSearchQuery}
                   onChange={(e) => {
@@ -2398,7 +2398,8 @@ export default function CoAuthor() {
                         return {
                           text: context,
                           documentTitle: chunk.metadata.documentTitle,
-                          section: chunk.metadata.section
+                          section: chunk.metadata.section,
+                          module: chunk.metadata.module
                         };
                       });
                     
@@ -2427,7 +2428,8 @@ export default function CoAuthor() {
                     setSearchSuggestions([
                       { text: "Try searching for specific medical terms", isHint: true },
                       { text: "Search for safety signals or efficacy data", isHint: true },
-                      { text: "Find content from a specific CTD module section", isHint: true }
+                      { text: "Find content from a specific CTD module section", isHint: true },
+                      { text: "Search for content to edit and propagate changes", isHint: true }
                     ]);
                   }
                 }}
@@ -2437,21 +2439,134 @@ export default function CoAuthor() {
                 }}
               />
               
-              {/* Vector Database Status Badge */}
-              {vectorizedDocuments.length > 0 && (
-                <Badge 
-                  className="absolute right-2.5 top-2 bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer"
-                  onClick={() => toast({
-                    title: "Vector Database",
-                    description: `${vectorizedDocuments.length} documents indexed with ${
-                      vectorizedDocuments.reduce((sum, doc) => sum + doc.embeddingCount, 0)
-                    } semantic vectors.`,
-                    variant: "default",
-                  })}
+              {/* Search control buttons */}
+              <div className="absolute right-2 top-2 flex items-center gap-2">
+                {/* Vector Database Status Badge */}
+                {vectorizedDocuments.length > 0 && (
+                  <Badge 
+                    className="bg-blue-100 text-blue-800 hover:bg-blue-200 cursor-pointer"
+                    onClick={() => toast({
+                      title: "Vector Database",
+                      description: `${vectorizedDocuments.length} documents indexed with ${
+                        vectorizedDocuments.reduce((sum, doc) => sum + doc.embeddingCount, 0)
+                      } semantic vectors.`,
+                      variant: "default",
+                    })}
+                  >
+                    <Database className="h-3 w-3 mr-1" />
+                    {vectorizedDocuments.length}
+                  </Badge>
+                )}
+                
+                {/* Advanced search toggle */}
+                <Badge
+                  className="bg-gray-100 text-gray-800 hover:bg-gray-200 cursor-pointer"
+                  onClick={() => setShowSearchFilters(!showSearchFilters)}
                 >
-                  <Database className="h-3 w-3 mr-1" />
-                  {vectorizedDocuments.length}
+                  <SlidersHorizontal className="h-3 w-3 mr-1" />
+                  Filters
                 </Badge>
+              </div>
+              
+              {/* Advanced search filters */}
+              {showSearchFilters && (
+                <div className="absolute top-full left-0 right-0 mt-2 p-4 bg-white rounded-md shadow-lg border border-slate-200 z-40">
+                  <div className="text-sm font-medium mb-2">Filter search results by:</div>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="module-filter" className="text-xs">CTD Module</Label>
+                      <Select 
+                        value={searchFilters.module || ""} 
+                        onValueChange={(value) => setSearchFilters({...searchFilters, module: value})}
+                      >
+                        <SelectTrigger id="module-filter" className="h-8 text-xs">
+                          <SelectValue placeholder="All modules" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All modules</SelectItem>
+                          <SelectItem value="1">Module 1</SelectItem>
+                          <SelectItem value="2">Module 2</SelectItem>
+                          <SelectItem value="3">Module 3</SelectItem>
+                          <SelectItem value="4">Module 4</SelectItem>
+                          <SelectItem value="5">Module 5</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="doctype-filter" className="text-xs">Document Type</Label>
+                      <Select 
+                        value={searchFilters.docType || ""} 
+                        onValueChange={(value) => setSearchFilters({...searchFilters, docType: value})}
+                      >
+                        <SelectTrigger id="doctype-filter" className="h-8 text-xs">
+                          <SelectValue placeholder="All types" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All types</SelectItem>
+                          <SelectItem value="clinical">Clinical</SelectItem>
+                          <SelectItem value="nonclinical">Non-clinical</SelectItem>
+                          <SelectItem value="quality">Quality</SelectItem>
+                          <SelectItem value="regulatory">Regulatory</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="status-filter" className="text-xs">Status</Label>
+                      <Select 
+                        value={searchFilters.status || ""} 
+                        onValueChange={(value) => setSearchFilters({...searchFilters, status: value})}
+                      >
+                        <SelectTrigger id="status-filter" className="h-8 text-xs">
+                          <SelectValue placeholder="All statuses" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">All statuses</SelectItem>
+                          <SelectItem value="draft">Draft</SelectItem>
+                          <SelectItem value="review">In Review</SelectItem>
+                          <SelectItem value="approved">Approved</SelectItem>
+                          <SelectItem value="published">Published</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 flex justify-between">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="text-xs"
+                      onClick={() => {
+                        setSearchFilters({});
+                        setShowSearchFilters(false);
+                      }}
+                    >
+                      Clear filters
+                    </Button>
+                    
+                    <Button 
+                      size="sm" 
+                      className="text-xs"
+                      onClick={() => {
+                        // Apply filters and perform search
+                        if (semanticSearchQuery.trim()) {
+                          setIsSearchingVectors(true);
+                          setSearchSuggestions([]);
+                          
+                          performSemanticSearch(semanticSearchQuery, searchFilters).then((results) => {
+                            setSemanticSearchResults(results);
+                            setShowVectorSearchDialog(true);
+                            setIsSearchingVectors(false);
+                          });
+                        }
+                        setShowSearchFilters(false);
+                      }}
+                    >
+                      Apply filters
+                    </Button>
+                  </div>
+                </div>
               )}
               
               {/* Search Suggestions Dropdown */}
@@ -2570,33 +2685,8 @@ export default function CoAuthor() {
           </div>
         </div>
         <div className="flex justify-between items-center">
-          {/* Phase 6: Semantic Search Input */}
+          {/* Additional action buttons */}
           <div className="flex items-center">
-            <div className="relative w-80">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
-              <input
-                type="text"
-                placeholder="Semantic search across all vectorized documents..."
-                className="pl-8 pr-3 py-2 w-full h-9 rounded-md border border-input text-sm shadow-sm focus:border-blue-500 focus:outline-none"
-                value={semanticSearchQuery}
-                onChange={(e) => setSemanticSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    performSemanticSearch(semanticSearchQuery);
-                    e.preventDefault();
-                    setShowVectorSearchDialog(true);
-                  }
-                }}
-              />
-              {semanticSearchQuery && (
-                <button
-                  className="absolute right-2 top-2.5 text-gray-400 hover:text-gray-600"
-                  onClick={() => setSemanticSearchQuery('')}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
             <Button 
               variant="ghost" 
               size="sm" 
