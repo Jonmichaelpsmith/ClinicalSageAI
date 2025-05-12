@@ -135,60 +135,70 @@ export default function CERV2Page() {
       {
         label: "Preparation:",
         tabs: [
-          { id: "builder", label: "Builder", icon: <FileText className="h-3.5 w-3.5 mr-1.5" /> },
-          { id: "cep", label: "Evaluation Plan", icon: <ClipboardList className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "builder", label: "Builder", icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
+          { id: "cep", label: "Evaluation Plan", icon: <ClipboardList className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
           { id: "qmp", label: <div className="flex flex-col items-center leading-tight">
             <span>Quality Management</span>
-            <span className="text-[0.65rem] text-gray-600">ICH E6(R3)</span>
-          </div>, icon: <ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> },
-          { id: "documents", label: "Documents", icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5" /> },
-          { id: "data-retrieval", label: "Data Retrieval", icon: <Database className="h-3.5 w-3.5 mr-1.5" /> }
+            <span className="text-[0.65rem] text-blue-600">ICH E6(R3)</span>
+          </div>, icon: <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
+          { id: "documents", label: "Documents", icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
+          { id: "data-retrieval", label: "Data Retrieval", icon: <Database className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
         ]
       },
       {
         label: "Evidence:",
         tabs: [
-          { id: "literature", label: "Literature", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5" /> },
-          { id: "literature-review", label: "Literature Review", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5" /> },
-          { id: "internal-clinical-data", label: "Internal Clinical Data", icon: <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" /> },
-          { id: "sota", label: "State of Art", icon: <BookMarked className="h-3.5 w-3.5 mr-1.5" /> }
+          { id: "literature", label: "Literature", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
+          { id: "literature-review", label: "Literature Review", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
+          { id: "internal-clinical-data", label: "Internal Clinical Data", icon: <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
+          { id: "sota", label: "State of Art", icon: <BookMarked className="h-3.5 w-3.5 mr-1.5 text-green-600" /> }
         ]
       },
       {
         label: "Analysis:",
         tabs: [
-          { id: "equivalence", label: "Equivalence", icon: <GitCompare className="h-3.5 w-3.5 mr-1.5" /> },
-          { id: "gspr-mapping", label: "GSPR Mapping", icon: <BarChart className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "equivalence", label: "Equivalence", icon: <GitCompare className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
+          { id: "gspr-mapping", label: "GSPR Mapping", icon: <BarChart className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
           { id: "traceability", label: <div className="flex flex-col items-center leading-tight">
             <span>Regulatory Traceability</span>
-            <span className="text-[0.65rem] text-gray-600">ICH E6(R3) & MDR</span>
-          </div>, icon: <ShieldCheck className="h-3.5 w-3.5 mr-1.5" /> },
-          { id: "compliance", label: "Compliance", icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5" /> },
+            <span className="text-[0.65rem] text-purple-600">ICH E6(R3) & MDR</span>
+          </div>, icon: <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
+          { id: "compliance", label: "Compliance", icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
           { id: "reports", label: <div className="flex items-center">
             <span>Reports</span>
-            <span className="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full">New</span>
+            <span className="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full shadow-sm">New</span>
           </div>, icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-          { id: "assistant", label: "Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5" /> }
+          { id: "assistant", label: "Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> }
         ]
       },
       {
         label: "Export:",
         tabs: [
-          { id: "export", label: "Export Options", icon: <Download className="h-3.5 w-3.5 mr-1.5" /> }
+          { id: "export", label: "Export Options", icon: <Download className="h-3.5 w-3.5 mr-1.5 text-green-600" /> }
         ]
       }
     ];
 
     return (
-      <nav className="w-full">
+      <nav className="w-full shadow-sm rounded-md overflow-hidden">
         {tabGroups.map((group, groupIndex) => (
           <div 
             key={groupIndex} 
-            className={`overflow-x-auto whitespace-nowrap bg-white border-b border-[#E1DFDD] py-2 ${groupIndex === tabGroups.length - 1 ? 'mb-4' : ''}`}
+            className={`overflow-x-auto whitespace-nowrap bg-white border-b border-[#E1DFDD] py-2 ${groupIndex === tabGroups.length - 1 ? 'mb-4' : ''} ${
+              groupIndex === 0 ? 'bg-gradient-to-r from-blue-50 to-white' : 
+              groupIndex === 1 ? 'bg-gradient-to-r from-green-50 to-white' :
+              groupIndex === 2 ? 'bg-gradient-to-r from-purple-50 to-white' :
+              'bg-gradient-to-r from-gray-50 to-white'
+            }`}
           >
             <div className="flex items-center px-6">
               <div className="flex items-center mr-4 flex-shrink-0">
-                <span className="text-xs font-medium text-[#605E5C]">{group.label}</span>
+                <span className={`text-xs font-medium ${
+                  groupIndex === 0 ? 'text-blue-700' : 
+                  groupIndex === 1 ? 'text-green-700' :
+                  groupIndex === 2 ? 'text-purple-700' :
+                  'text-gray-700'
+                }`}>{group.label}</span>
               </div>
               
               <div className="inline-flex items-center">
@@ -197,11 +207,12 @@ export default function CERV2Page() {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`
-                      flex-shrink-0 mx-1 rounded-none border-b-2 px-3 py-1 
+                      flex-shrink-0 mx-1 rounded-none border-b-2 px-3 py-1.5
                       font-normal text-xs sm:text-sm flex items-center
+                      transition-all duration-200 ease-in-out
                       ${activeTab === tab.id 
-                        ? 'border-[#0F6CBD] text-[#0F6CBD]' 
-                        : 'border-transparent text-[#616161] hover:text-[#0F6CBD]'
+                        ? `border-[#0F6CBD] text-[#0F6CBD] bg-blue-50 bg-opacity-50` 
+                        : 'border-transparent text-[#616161] hover:text-[#0F6CBD] hover:bg-blue-50 hover:bg-opacity-20'
                       }
                     `}
                   >
@@ -221,13 +232,13 @@ export default function CERV2Page() {
   const renderContent = () => {
     if (activeTab === 'builder') {
       return (
-        <div className="bg-[#F9F9F9] py-4">
+        <div className="bg-gradient-to-b from-blue-50 to-white py-4 rounded-md">
           <div className="flex flex-col md:flex-row items-start justify-between">
             <div className="flex-1 px-4">
-              <h2 className="text-xl font-semibold text-[#323130]">Section Generator</h2>
+              <h2 className="text-xl font-semibold text-blue-700">Section Generator</h2>
               <div className="mt-2 mb-4">
-                <div className="bg-[#EFF6FC] rounded-md px-3 py-1 text-sm inline-flex items-center gap-1 text-[#0F6CBD]">
-                  <span>AI-Powered</span>
+                <div className="bg-blue-100 rounded-md px-3 py-1 text-sm inline-flex items-center gap-1 text-blue-700 shadow-sm">
+                  <span className="flex items-center"><Lightbulb className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> AI-Powered</span>
                 </div>
               </div>
               <CerBuilderPanel
@@ -861,21 +872,21 @@ export default function CERV2Page() {
             One-Click CER
           </Button>
           {draftStatus === 'in-progress' && (
-            <Badge variant="outline" className="ml-2 bg-[#FFF4CE] text-[#797673] border-[#F9E8A0] px-2 py-1 flex items-center">
-              <Clock className="h-3.5 w-3.5 mr-1.5 text-[#797673]" />
-              Draft
+            <Badge variant="outline" className="ml-2 bg-[#FFF4CE] text-[#797673] border-[#F9E8A0] px-2 py-1 flex items-center shadow-sm">
+              <Clock className="h-3.5 w-3.5 mr-1.5 text-amber-500 animate-pulse" />
+              <span className="font-medium">Draft</span>
             </Badge>
           )}
           {draftStatus === 'needs-review' && (
-            <Badge variant="outline" className="ml-2 bg-[#FCF4FF] text-[#8F7098] border-[#E6BEEE] px-2 py-1 flex items-center">
-              <AlertCircle className="h-3.5 w-3.5 mr-1.5 text-[#8F7098]" />
-              Ready for Review
+            <Badge variant="outline" className="ml-2 bg-[#FCF4FF] text-[#8F7098] border-[#E6BEEE] px-2 py-1 flex items-center shadow-sm">
+              <AlertCircle className="h-3.5 w-3.5 mr-1.5 text-purple-500 animate-pulse" />
+              <span className="font-medium">Ready for Review</span>
             </Badge>
           )}
           {draftStatus === 'approved' && (
-            <Badge variant="outline" className="ml-2 bg-[#DFF6DD] text-[#107C10] border-[#C3F1C2] px-2 py-1 flex items-center">
-              <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-[#107C10]" />
-              Approved
+            <Badge variant="outline" className="ml-2 bg-[#DFF6DD] text-[#107C10] border-[#C3F1C2] px-2 py-1 flex items-center shadow-sm">
+              <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-500" />
+              <span className="font-medium">Approved</span>
             </Badge>
           )}
         </div>
@@ -885,16 +896,21 @@ export default function CERV2Page() {
       {renderNavigation()}
       
       {/* Content container */}
-      <div className="w-full mt-0">
-        {renderContent()}
+      <div className="w-full mt-0 rounded-md bg-white shadow-sm border border-gray-100">
+        <div className="p-1">
+          {renderContent()}
+        </div>
       </div>
 
       {/* Device Info Dialog */}
       <Dialog open={showDeviceInfoDialog} onOpenChange={setShowDeviceInfoDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Device Information</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="sm:max-w-[500px] shadow-lg border-blue-100">
+          <DialogHeader className="bg-gradient-to-r from-blue-50 to-white rounded-t-lg pb-2">
+            <DialogTitle className="text-blue-700 flex items-center">
+              <ShieldCheck className="h-5 w-5 mr-2 text-blue-600" />
+              Device Information
+            </DialogTitle>
+            <DialogDescription className="text-gray-600">
               Please provide information about your medical device to generate a personalized CER.
             </DialogDescription>
           </DialogHeader>
