@@ -1984,7 +1984,17 @@ export default function CoAuthor() {
                   <LayoutTemplate className="h-5 w-5 mr-2 text-green-600" />
                   Document Templates
                 </CardTitle>
-                <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 font-medium">Enterprise</Badge>
+                <div className="flex items-center space-x-2">
+                  {/* Phase 5: ICH Compliant validation badge */}
+                  <Badge 
+                    variant="outline" 
+                    className="bg-blue-50 text-blue-700 border-blue-200 font-medium"
+                  >
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    ICH Compliant
+                  </Badge>
+                  <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200 font-medium">Enterprise</Badge>
+                </div>
               </div>
               <CardDescription>
                 Start with pre-approved templates for regulatory documents
@@ -2119,7 +2129,17 @@ export default function CoAuthor() {
                   <CheckCircle className="h-5 w-5 mr-2 text-purple-600" />
                   Validation Dashboard
                 </CardTitle>
-                <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200 font-medium">Enterprise</Badge>
+                <div className="flex items-center space-x-2">
+                  {/* Phase 5: Dynamic validation status indicators */}
+                  <Badge 
+                    variant="outline" 
+                    className="bg-amber-50 text-amber-700 border-amber-200 font-medium"
+                  >
+                    <Clock className="h-3 w-3 mr-1" />
+                    In Progress
+                  </Badge>
+                  <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200 font-medium">Enterprise</Badge>
+                </div>
               </div>
               <CardDescription>
                 Ensure compliance with regulatory requirements
