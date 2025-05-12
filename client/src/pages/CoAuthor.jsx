@@ -212,6 +212,54 @@ export default function CoAuthor() {
     documentDate: new Date().toISOString().split('T')[0]
   });
   
+  // Document lifecycle state management
+  const [documentLifecycle, setDocumentLifecycle] = useState({
+    status: 'In Progress', // In Progress, In Review, Approved, Published
+    version: '1.0',
+    lastModified: new Date().toISOString(),
+    history: [
+      {
+        id: 'lc-1',
+        event: 'Created',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
+        user: 'John Smith',
+        details: 'Document initially created from Module 2.5 Clinical Overview template',
+        version: '0.1'
+      },
+      {
+        id: 'lc-2',
+        event: 'Edited',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
+        user: 'Sarah Johnson',
+        details: 'Added safety summary and efficacy data sections',
+        version: '0.5'
+      },
+      {
+        id: 'lc-3',
+        event: 'Validated',
+        timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+        user: 'Regulatory Bot',
+        details: 'Automated ICH M4E compliance check - 92% compliant',
+        version: '0.9'
+      },
+      {
+        id: 'lc-4',
+        event: 'Version Updated',
+        timestamp: new Date().toISOString(),
+        user: 'John Smith',
+        details: 'Main document content finalized for review',
+        version: '1.0'
+      }
+    ]
+  });
+  
+  // Document approval workflow state
+  const [showLifecycleDialog, setShowLifecycleDialog] = useState(false);
+  const [pendingApprovers, setPendingApprovers] = useState([
+    { id: 'app-1', name: 'Dr. Michael Chen', role: 'Medical Director', status: 'pending' },
+    { id: 'app-2', name: 'Jane Wilson', role: 'Regulatory Affairs', status: 'pending' }
+  ]);
+  
   const { toast } = useToast();
   
   // Check Google authentication on component mount
@@ -2144,6 +2192,35 @@ export default function CoAuthor() {
                   <FileCheck className="h-4 w-4 mr-2" />
                   Validate
                 </Button>
+                <Button
+                  variant="outline" 
+                  size="sm" 
+                  className="border-indigo-200 text-indigo-700 mr-2"
+                  onClick={() => setShowLifecycleDialog(true)}
+                >
+                  <GitBranch className="h-4 w-4 mr-2" />
+                  Lifecycle
+                  {documentLifecycle.status !== 'In Progress' && (
+                    <span className="ml-1.5">
+                      {documentLifecycle.status === 'In Review' && (
+                        <span className="relative flex h-2 w-2 items-center">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-sky-500"></span>
+                        </span>
+                      )}
+                      {documentLifecycle.status === 'Approved' && (
+                        <span className="relative flex h-2 w-2 items-center">
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                        </span>
+                      )}
+                      {documentLifecycle.status === 'Published' && (
+                        <span className="relative flex h-2 w-2 items-center">
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-purple-500"></span>
+                        </span>
+                      )}
+                    </span>
+                  )}
+                </Button>
                 <Button 
                   variant="outline" 
                   size="sm" 
@@ -4008,6 +4085,203 @@ export default function CoAuthor() {
               }}
             >
               Create Document
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Phase 5: Document Lifecycle - Status Badge */}
+      <Dialog open={showLifecycleDialog} onOpenChange={setShowLifecycleDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <GitBranch className="h-5 w-5 mr-2 text-indigo-600" />
+              Document Lifecycle Management
+            </DialogTitle>
+            <DialogDescription>
+              Manage document status, approvals, and track lifecycle events.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-6 py-4">
+            {/* Current Document Status */}
+            <div className="grid gap-3">
+              <div className="text-sm font-medium">Current Status</div>
+              <div className="flex items-center space-x-2 bg-gray-50 p-3 rounded-md border">
+                <div className="flex-1">
+                  <div className="flex items-center">
+                    <span className="font-medium mr-3">Status:</span>
+                    <span>
+                      {documentLifecycle.status === 'In Progress' && (
+                        <Badge className="bg-amber-100 text-amber-800 border-amber-200">In Progress</Badge>
+                      )}
+                      {documentLifecycle.status === 'In Review' && (
+                        <Badge className="bg-blue-100 text-blue-800 border-blue-200">In Review</Badge>
+                      )}
+                      {documentLifecycle.status === 'Approved' && (
+                        <Badge className="bg-green-100 text-green-800 border-green-200">Approved</Badge>
+                      )}
+                      {documentLifecycle.status === 'Published' && (
+                        <Badge className="bg-purple-100 text-purple-800 border-purple-200">Published</Badge>
+                      )}
+                    </span>
+                  </div>
+                  <div className="mt-2 text-sm text-gray-500">
+                    Version: {documentLifecycle.version} • Last Modified: {new Date(documentLifecycle.lastModified).toLocaleDateString()}
+                  </div>
+                </div>
+                
+                <div>
+                  <select
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    value={documentLifecycle.status}
+                    onChange={(e) => {
+                      setDocumentLifecycle({
+                        ...documentLifecycle,
+                        status: e.target.value,
+                        lastModified: new Date().toISOString(),
+                        history: [
+                          ...documentLifecycle.history,
+                          {
+                            id: `lc-${documentLifecycle.history.length + 1}`,
+                            event: 'Status Changed',
+                            timestamp: new Date().toISOString(),
+                            user: 'Current User',
+                            details: `Status changed from ${documentLifecycle.status} to ${e.target.value}`,
+                            version: documentLifecycle.version
+                          }
+                        ]
+                      });
+                      
+                      toast({
+                        title: "Status Updated",
+                        description: `Document status changed to: ${e.target.value}`,
+                        variant: "default",
+                      });
+                    }}
+                  >
+                    <option value="In Progress">In Progress</option>
+                    <option value="In Review">In Review</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Published">Published</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            {/* Approvals */}
+            <div className="grid gap-3">
+              <div className="text-sm font-medium">Required Approvals</div>
+              <div className="border rounded-md divide-y">
+                {pendingApprovers.map((approver) => (
+                  <div key={approver.id} className="p-3 flex items-center justify-between">
+                    <div>
+                      <div className="font-medium">{approver.name}</div>
+                      <div className="text-xs text-gray-500">{approver.role}</div>
+                    </div>
+                    <div>
+                      {approver.status === 'pending' && (
+                        <Badge className="bg-amber-100 text-amber-800 border-amber-200">Pending</Badge>
+                      )}
+                      {approver.status === 'approved' && (
+                        <Badge className="bg-green-100 text-green-800 border-green-200">Approved</Badge>
+                      )}
+                      {approver.status === 'rejected' && (
+                        <Badge className="bg-red-100 text-red-800 border-red-200">Rejected</Badge>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => {
+                  // Simulate approval from all approvers
+                  setPendingApprovers(pendingApprovers.map(approver => ({
+                    ...approver,
+                    status: 'approved'
+                  })));
+                  
+                  // Update document lifecycle
+                  setDocumentLifecycle({
+                    ...documentLifecycle,
+                    status: 'Approved',
+                    lastModified: new Date().toISOString(),
+                    history: [
+                      ...documentLifecycle.history,
+                      {
+                        id: `lc-${documentLifecycle.history.length + 1}`,
+                        event: 'Approvals Completed',
+                        timestamp: new Date().toISOString(),
+                        user: 'System',
+                        details: 'All required approvals received',
+                        version: documentLifecycle.version
+                      }
+                    ]
+                  });
+                  
+                  toast({
+                    title: "Approvals Completed",
+                    description: "All required approvals have been received.",
+                    variant: "success",
+                  });
+                }}
+              >
+                <Check className="h-4 w-4 mr-2" />
+                Simulate All Approvals
+              </Button>
+            </div>
+            
+            {/* Lifecycle History */}
+            <div className="grid gap-3">
+              <div className="text-sm font-medium">Lifecycle History</div>
+              <div className="border rounded-md max-h-[200px] overflow-y-auto">
+                <div className="divide-y">
+                  {documentLifecycle.history.map((event, index) => (
+                    <div key={event.id} className="p-3 flex items-start">
+                      <div className="flex flex-col items-center mr-3">
+                        <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
+                          index === 0 ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {index === 0 ? (
+                            <FileText className="h-3.5 w-3.5" />
+                          ) : event.event === 'Validated' ? (
+                            <CheckCircle className="h-3.5 w-3.5" />
+                          ) : event.event === 'Status Changed' ? (
+                            <RefreshCw className="h-3.5 w-3.5" />
+                          ) : (
+                            <Edit className="h-3.5 w-3.5" />
+                          )}
+                        </div>
+                        {index < documentLifecycle.history.length - 1 && (
+                          <div className="w-px h-5 bg-gray-200"></div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div className="font-medium">{event.event}</div>
+                          <div className="text-xs text-gray-500">v{event.version}</div>
+                        </div>
+                        <div className="text-xs text-gray-500 mb-1">
+                          {new Date(event.timestamp).toLocaleString()} • {event.user}
+                        </div>
+                        <div className="text-sm">{event.details}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowLifecycleDialog(false)}
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
