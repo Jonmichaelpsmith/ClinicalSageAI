@@ -60,6 +60,13 @@ export const featureFlags: Record<string, FeatureFlag> = {
     defaultValue: true,
     enabled: true
   },
+  ENABLE_COMPLIANCE_CHECKER: {
+    id: 'ENABLE_COMPLIANCE_CHECKER',
+    name: 'Pre-Submission Compliance Checker',
+    description: 'Enables automated pre-submission quality checks to verify compliance with FDA regulations',
+    defaultValue: true,
+    enabled: true
+  },
   ENABLE_SECTION_RECOMMENDER: {
     id: 'ENABLE_SECTION_RECOMMENDER',
     name: 'Document Section Recommender',
