@@ -123,10 +123,11 @@ export default function KAutomationPanel() {
         setAiInsights(insights);
       } 
       else if (step === 'adviseRegulatoryPathway') {
-        results = await analyzeRegulatoryPathway(
+        const pathwayResponse = await FDA510kService.analyzeRegulatoryPathway(
           deviceData, 
           currentOrganization?.id
         );
+        results = pathwayResponse;
         
         // Transform pathway analysis to insights
         const insights = [
@@ -150,7 +151,7 @@ export default function KAutomationPanel() {
       }
       else if (step === 'draftSectionsWithAI') {
         // For draft generation, we'll simulate the API call for now
-        // In a real implementation, this would call generate510kDraft()
+        // In a real implementation, this would call FDA510kService.generateSectionDraft()
         await new Promise(resolve => setTimeout(resolve, 2500));
         
         // Show success message
@@ -167,7 +168,7 @@ export default function KAutomationPanel() {
       }
       else if (step === 'runComplianceChecks') {
         // For compliance validation, we'll simulate the API call for now
-        // In a real implementation, this would call validateSubmission()
+        // In a real implementation, this would call FDA510kService.validateDeviceProfile()
         await new Promise(resolve => setTimeout(resolve, 2000));
         
         // Show validation results
