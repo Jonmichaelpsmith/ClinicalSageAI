@@ -188,6 +188,30 @@ export default function CoAuthor() {
   const [atomImprovementFeedback, setAtomImprovementFeedback] = useState('');
   const [showImprovementDialog, setShowImprovementDialog] = useState(false);
   
+  // Phase 5: Document Lifecycle & eCTD Export state
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportInProgress, setExportInProgress] = useState(false);
+  const [exportFormat, setExportFormat] = useState('html');
+  const [exportRegion, setExportRegion] = useState('US');
+  const [exportOptions, setExportOptions] = useState({
+    includeToc: true,
+    includeValidationReport: true,
+    applyIchStandards: true,
+    generateEctdXml: true,
+    includeChecksums: true,
+    vaultStorage: true
+  });
+  const [serializedDocument, setSerializedDocument] = useState(null);
+  const [documentMetadata, setDocumentMetadata] = useState({
+    docType: 'Clinical Overview',
+    sequence: '0001',
+    applicationId: 'IND-123456',
+    sponsor: 'Acme Pharmaceuticals',
+    product: 'Test Drug',
+    moduleSection: '2.5',
+    documentDate: new Date().toISOString().split('T')[0]
+  });
+  
   const { toast } = useToast();
   
   // Check Google authentication on component mount
@@ -250,15 +274,7 @@ export default function CoAuthor() {
       }
     ]
   });
-  const [showExportDialog, setShowExportDialog] = useState(false);
-  const [exportFormat, setExportFormat] = useState('pdf');
-  const [exportOptions, setExportOptions] = useState({
-    includeComments: true,
-    includeTrackChanges: false,
-    includeCoverPage: true,
-    includeTableOfContents: true,
-    includeAppendices: true
-  });
+  // Phase 5 export options defined at the top of the component
   
   // AI query submission handler
   const handleAiQuerySubmit = async (e) => {
@@ -704,6 +720,103 @@ export default function CoAuthor() {
       return null;
     } finally {
       setAtomDraftingInProgress(false);
+    }
+  };
+  
+  // Phase 5: Document Lifecycle & eCTD Export functions
+  
+  // Serialize the document state to JSON
+  const serializeDocument = () => {
+    try {
+      // In a real implementation, this would extract the editor's content
+      // Here we simulate collecting all content atoms in the document
+      const documentContent = {
+        title: documentTitle || "Untitled Document",
+        module: documentModule || "2.5",
+        atoms: contentAtoms.filter(atom => 
+          // In a real implementation, this would filter only the atoms that are
+          // actually in the document, not all available atoms
+          atom.module.toString() === (documentModule || "2").toString()
+        ),
+        metadata: {
+          ...documentMetadata,
+          lastModified: new Date().toISOString()
+        }
+      };
+      
+      setSerializedDocument(documentContent);
+      return documentContent;
+    } catch (error) {
+      console.error("Error serializing document:", error);
+      toast({
+        title: "Serialization Error",
+        description: "Failed to serialize document content: " + error.message,
+        variant: "destructive",
+      });
+      return null;
+    }
+  };
+  
+  // Export document to the selected format
+  const exportDocument = async () => {
+    try {
+      setExportInProgress(true);
+      
+      // First, serialize the document
+      const documentContent = serializeDocument();
+      if (!documentContent) return;
+      
+      // Simulate API call to convert to the selected format
+      const response = await fetch('/api/export', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          content: documentContent,
+          format: exportFormat,
+          region: exportRegion,
+          options: exportOptions,
+          metadata: documentMetadata
+        })
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Export failed: ${response.statusText}`);
+      }
+      
+      const exportResult = await response.json();
+      
+      // Show success message with appropriate actions
+      toast({
+        title: "Export Successful",
+        description: `Document successfully exported to ${exportFormat.toUpperCase()}. ${
+          exportOptions.vaultStorage ? "Document saved to Vault." : ""
+        }`,
+        variant: "success",
+      });
+      
+      // If eCTD generation was requested
+      if (exportOptions.generateEctdXml) {
+        toast({
+          title: "eCTD Package Ready",
+          description: "eCTD package with XML backbone and checksums has been generated.",
+          variant: "default",
+        });
+      }
+      
+      setShowExportDialog(false);
+      return exportResult;
+    } catch (error) {
+      console.error("Error exporting document:", error);
+      toast({
+        title: "Export Error",
+        description: "Failed to export document: " + error.message,
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setExportInProgress(false);
     }
   };
   
@@ -2274,6 +2387,16 @@ export default function CoAuthor() {
                               <Filter className="h-3.5 w-3.5 mr-1.5" />
                               Filter
                             </Button>
+                            
+                            {/* Phase 4: AI-Enhanced Atom Generation button */}
+                            <Button 
+                              onClick={() => setShowDraftAtomDialog(true)}
+                              size="sm" 
+                              className="h-8 bg-blue-600 hover:bg-blue-700"
+                            >
+                              <Wand2 className="h-3.5 w-3.5 mr-1.5" />
+                              AI Generate
+                            </Button>
                           </div>
                         </div>
                         
@@ -2391,10 +2514,26 @@ export default function CoAuthor() {
                                       </div>
                                     </div>
                                     
-                                    <Badge variant="secondary" className="text-xs">
-                                      <CheckCircle className="h-3 w-3 mr-1" />
-                                      ICH Validated
-                                    </Badge>
+                                    <div className="flex flex-col space-y-1">
+                                      <Badge variant="secondary" className="text-xs">
+                                        <CheckCircle className="h-3 w-3 mr-1" />
+                                        ICH Validated
+                                      </Badge>
+                                      
+                                      {/* Phase 4: Validate atom button */}
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="h-6 text-xs px-2 mt-1"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          validateContentAtom(atom);
+                                        }}
+                                      >
+                                        <ShieldCheck className="h-3 w-3 mr-1 text-green-600" />
+                                        Validate
+                                      </Button>
+                                    </div>
                                   </div>
                                 </div>
                               ))
