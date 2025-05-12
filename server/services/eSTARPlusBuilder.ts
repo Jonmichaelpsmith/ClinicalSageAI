@@ -55,9 +55,10 @@ export class DigitalSigner {
       }
       
       return doc.toString({ prettyPrint: true });
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error adding signature to manifest:', error);
-      throw new Error('Failed to sign manifest: ' + error.message);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error('Failed to sign manifest: ' + errorMessage);
     }
   }
   
