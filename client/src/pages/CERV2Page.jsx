@@ -270,21 +270,28 @@ export default function CERV2Page() {
               />
             </div>
             <div className="w-full md:w-auto md:min-w-[280px] md:max-w-[320px] px-4 mt-6 md:mt-0">
-              <h2 className="text-xl font-semibold text-[#323130]">Report Sections</h2>
+              <h2 className="text-xl font-semibold text-[#323130]">
+                {documentType === 'cer' ? 'Report Sections' : 'Submission Sections'}
+              </h2>
               <div className="mt-2 mb-4">
                 <div className="bg-[#F3F2F1] rounded px-3 py-1 text-sm inline-flex items-center gap-1">
                   <span>{sections.length} sections</span>
                 </div>
+                <div className="mt-2 text-xs text-blue-600 font-medium">
+                  {documentType === 'cer' ? 'EU MDR Compliant' : 'FDA 510(K) Format'}
+                </div>
               </div>
               
               <div className="mb-4">
-                <h3 className="text-md font-medium mb-2 text-[#323130]">Report Title</h3>
+                <h3 className="text-md font-medium mb-2 text-[#323130]">
+                  {documentType === 'cer' ? 'Report Title' : 'Submission Title'}
+                </h3>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   className="w-full p-2 border border-[#E1DFDD] rounded"
-                  placeholder="Clinical Evaluation Report"
+                  placeholder={documentType === 'cer' ? 'Clinical Evaluation Report' : '510(K) Premarket Notification'}
                 />
               </div>
               
@@ -303,15 +310,34 @@ export default function CERV2Page() {
               )}
             </div>
           </div>
-          <div className="px-4 mt-4 text-center">
+          <div className="px-4 mt-4 text-center flex justify-center space-x-3">
             <Button 
               onClick={() => handleExport('docx')} 
               className="bg-transparent text-[#0F6CBD] hover:bg-[#EFF6FC] border-none" 
               variant="outline"
             >
               <Download className="h-4 w-4 mr-2" />
-              Export
+              Export to Word
             </Button>
+            <Button 
+              onClick={() => handleExport('pdf')} 
+              className="bg-transparent text-green-600 hover:bg-green-50 border-none" 
+              variant="outline"
+            >
+              <FileText className="h-4 w-4 mr-2" />
+              Export to PDF
+            </Button>
+            {documentType === '510k' && (
+              <Button 
+                onClick={() => handleExport('eCopy')} 
+                className="bg-transparent text-purple-600 hover:bg-purple-50 border-none" 
+                variant="outline"
+                title="Creates FDA eCopy format for submission"
+              >
+                <Archive className="h-4 w-4 mr-2" />
+                FDA eCopy
+              </Button>
+            )}
           </div>
         </div>
       );
