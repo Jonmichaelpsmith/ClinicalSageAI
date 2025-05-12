@@ -425,15 +425,26 @@ router.post(
 router.get(
   '/citations/:documentId',
   extractTenantContext,
-  [
-    param('documentId').isString().notEmpty().withMessage('Document ID is required'),
-    query('type').optional().isString()
-  ],
   async (req: Request, res: Response) => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      // Validate parameters
+      const validationRules = {
+        documentId: {
+          location: 'params',
+          required: true,
+          type: 'string',
+          message: 'Document ID is required'
+        },
+        type: {
+          location: 'query',
+          required: false,
+          type: 'string'
+        }
+      };
+      
+      const errors = validateRequest(req, validationRules);
+      if (errors.length > 0) {
+        return res.status(400).json({ errors });
       }
       
       const documentType = req.query.type?.toString() || '510k';
