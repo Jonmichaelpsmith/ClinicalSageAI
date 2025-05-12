@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { validateDeviceProfile } from '../../utils/schemaValidator';
+import FDA510kService from '../../services/FDA510kService';
 
 /**
  * Device Profile Form Component for 510(k) submissions
