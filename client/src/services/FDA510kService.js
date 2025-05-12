@@ -228,6 +228,33 @@ export class FDA510kService {
       return handleError(error);
     }
   }
+  
+  /**
+   * Generate a substantial equivalence draft based on device and predicate data
+   * 
+   * @param {Object} payload - Contains deviceProfile, predicateProfile, and equivalenceData
+   * @param {string} organizationId - The organization ID
+   * @returns {Promise<Object>} Response containing generated draft text or error
+   */
+  static async draftEquivalence(payload, organizationId) {
+    try {
+      const url = `${API_BASE_URL}/510k/draft-equivalence`;
+      const response = await apiRequest(url, {
+        method: "POST",
+        body: JSON.stringify({
+          ...payload,
+          organizationId
+        })
+      });
+
+      return {
+        success: true,
+        draftText: response.draftText
+      };
+    } catch (error) {
+      return handleError(error);
+    }
+  }
 
   /**
    * Search for relevant scientific literature

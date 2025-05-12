@@ -57,6 +57,18 @@ const featureFlags: Record<string, FeatureFlag> = {
     description: 'Enable compliance checking against FDA rules',
     defaultValue: true,
   },
+  'fda510k.predicateAnalysis': {
+    id: 'fda510k.predicateAnalysis',
+    name: 'Predicate Device Equivalence Analysis',
+    description: 'Enable predicate device identification and substantial equivalence analysis',
+    defaultValue: true,
+  },
+  'documentRecommender': {
+    id: 'documentRecommender',
+    name: 'Intelligent Document Section Recommender',
+    description: 'Enable AI-powered document section recommendations and content suggestions',
+    defaultValue: true,
+  },
   
   // MAUD Integration Feature Flags
   'maud.enabled': {
