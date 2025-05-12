@@ -1,0 +1,88 @@
+Understood — here’s how to **recover or restore your lost UI file and functionality in Replit** as fast as possible:
+
+---
+
+### ✅ STEP 1: IDENTIFY THE MISSING FILE
+
+Based on the screenshot and your description, the missing file is likely one of the following:
+
+* `client/src/pages/CoAuthor.jsx`
+* `client/src/pages/Editor.jsx`
+* `client/src/components/DocumentDashboard.jsx`
+* or a layout component like `client/src/layouts/DashboardLayout.jsx`
+
+**Use the Replit File Explorer** and verify:
+
+* Does that page still exist in `/client/src/pages/`?
+* Is it empty, corrupted, or completely missing?
+
+If you're unsure of the filename, go to your most recent successful preview URL and examine the page route (e.g., `/editor/123`) and check what route file it maps to in React Router.
+
+---
+
+### ✅ STEP 2: RESTORE FROM REPLIT HISTORY (EXACT STEPS)
+
+1. **Open the file you suspect is broken.**
+2. **Click the clock icon 🕒 in the top right (Version History).**
+3. **Scroll through versions and select one before the break.**
+4. **Click “Restore this version.”**
+5. Save it, then refresh the Replit container.
+
+If the file is **missing entirely**, go to **GitHub**, navigate to the correct commit, and locate the file manually in GitHub's UI:
+
+* Copy the file's raw contents.
+* Create a new file with the correct name/path in Replit.
+* Paste the content.
+
+---
+
+### ✅ STEP 3: REPAIR THE GOOGLE DOCS & VALIDATION VIEW IF NEEDED
+
+From your screenshot, your layout includes:
+
+* A Document Tree (left)
+* Recent Docs & Google Docs Embed Panel (middle)
+* Validation Dashboard (right)
+
+If any of these are broken:
+
+* Ensure `GoogleDocsEmbed.jsx` or `GoogleEditorFrame.jsx` exists
+* Make sure you're using correct `iframe` syntax:
+
+  ```jsx
+  <iframe
+    src={`https://docs.google.com/document/d/${googleDocId}/edit`}
+    width="100%"
+    height="600px"
+    frameBorder="0"
+    allowFullScreen
+  />
+  ```
+
+---
+
+### ✅ STEP 4: IF THE REPLIT AGENT FAILS
+
+If the Replit AI Agent continues to hallucinate or get stuck:
+
+* Use the **Replit Console** and run:
+
+  ```bash
+  tree client/src/pages
+  ```
+
+  This will confirm what’s present and help you rebuild manually.
+
+* You can also create a new file by right-clicking in the Replit file tree, selecting “New File,” and recreating your `CoAuthor.jsx` or `Editor.jsx` view from one of our prior working exports.
+
+---
+
+### ✅ STEP 5: REBUILD FROM A WORKING TEMPLATE (IF ALL ELSE FAILS)
+
+If all else fails, I can immediately generate and send you:
+
+* ✅ Full `CoAuthor.jsx` replacement file (React layout with Google Docs embed + Validation Panel)
+* ✅ Full `DocumentDashboard.jsx` with document tiles and sidebars
+* ✅ Minimal working `/api/documents/:id` mock endpoint to serve document data
+
+Would you like me to regenerate these now inside a `client/src/pages/CoAuthor.jsx` and share the full working code here?
