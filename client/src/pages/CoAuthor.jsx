@@ -629,15 +629,75 @@ ${vaultDoc.name.includes('.pdf') ? '(This is a PDF document and cannot be edited
       return;
     }
     
-    // Set all documents in module to locked
-    moduleDocs.forEach(doc => {
-      lockDocument(doc.id);
-    });
+    // Show a working indicator
+    setVaultLoading(true);
     
-    toast({
-      title: "Module Compiled",
-      description: `${moduleId} documents have been compiled and locked for editing`,
-    });
+    // Simulate API call to compile documents
+    setTimeout(() => {
+      try {
+        // Get sorted docs from the module
+        const sortedDocs = [...moduleDocs].sort((a, b) => 
+          a.section.localeCompare(b.section, undefined, { numeric: true, sensitivity: 'base' })
+        );
+        
+        // Create compilation content
+        let compiledContent = `# Compiled ${moduleId.replace('module', 'Module ')} Document\n\n`;
+        compiledContent += `*Compilation Date: ${new Date().toLocaleString()}*\n\n`;
+        compiledContent += `*Contains ${sortedDocs.length} document sections*\n\n`;
+        compiledContent += `## Table of Contents\n\n`;
+        
+        // Add TOC
+        sortedDocs.forEach(doc => {
+          compiledContent += `- Section ${doc.section}: ${doc.name.replace(/\.(docx|pdf)$/, '')}\n`;
+        });
+        
+        compiledContent += `\n## Document Content\n\n`;
+        
+        // Add placeholder content for each document
+        sortedDocs.forEach(doc => {
+          compiledContent += `### Section ${doc.section}: ${doc.name.replace(/\.(docx|pdf)$/, '')}\n\n`;
+          compiledContent += `*Status: ${documentStatus[doc.id] || doc.status}*\n\n`;
+          compiledContent += `This is the compiled content for ${doc.name}. In a production environment, this would contain the actual document content retrieved from the Vault DMS.\n\n`;
+          compiledContent += `[Original document location: ${doc.path}${doc.name}]\n\n`;
+          compiledContent += `---\n\n`;
+        });
+        
+        // Create a new "compiled" document object
+        const compiledDoc = {
+          id: `compiled-${moduleId}-${Date.now()}`,
+          title: `Compiled ${moduleId.replace('module', 'Module ')} Document`,
+          documentType: "Compiled Document",
+          section: moduleId.replace('module', ''),
+          moduleId: moduleId,
+          status: "draft",
+          isCompiled: true,
+          originalDocs: sortedDocs.map(d => d.id)
+        };
+        
+        // Set as selected document
+        setSelectedDocument(compiledDoc);
+        setDocumentContent(compiledContent);
+        
+        // Set all documents in module to locked
+        moduleDocs.forEach(doc => {
+          lockDocument(doc.id);
+        });
+        
+        toast({
+          title: "Module Compiled",
+          description: `${moduleId.replace('module', 'Module ')} documents have been compiled and locked for editing`,
+        });
+      } catch (error) {
+        console.error("Error compiling documents:", error);
+        toast({
+          title: "Compilation Error",
+          description: "Failed to compile documents. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setVaultLoading(false);
+      }
+    }, 1000);
   };
   
   // Re-atomize a compiled document back to individual sections
@@ -647,15 +707,41 @@ ${vaultDoc.name.includes('.pdf') ? '(This is a PDF document and cannot be edited
     const moduleDocs = vaultDocuments.filter(d => d.moduleId === moduleId);
     if (moduleDocs.length === 0) return;
     
-    // Unlock all documents in the module
-    moduleDocs.forEach(doc => {
-      unlockDocument(doc.id);
-    });
+    // Show a working indicator
+    setVaultLoading(true);
     
-    toast({
-      title: "Documents Re-atomized",
-      description: `${moduleId} has been re-atomized into individual documents`
-    });
+    // Simulate API call for re-atomization
+    setTimeout(() => {
+      try {
+        // In a real implementation, we would parse the compiled document
+        // and update each component document with its content section
+        
+        // Unlock all documents in the module
+        moduleDocs.forEach(doc => {
+          unlockDocument(doc.id);
+        });
+        
+        // Clear selection if it's the compiled document
+        if (selectedDocument && selectedDocument.isCompiled && selectedDocument.moduleId === moduleId) {
+          setSelectedDocument(null);
+          setDocumentContent('');
+        }
+        
+        toast({
+          title: "Documents Re-atomized",
+          description: `${moduleId.replace('module', 'Module ')} has been re-atomized into individual documents`
+        });
+      } catch (error) {
+        console.error("Error re-atomizing documents:", error);
+        toast({
+          title: "Re-atomization Error",
+          description: "Failed to re-atomize documents. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setVaultLoading(false);
+      }
+    }, 800);
   };
   
   // Load document version
