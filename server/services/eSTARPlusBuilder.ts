@@ -270,9 +270,10 @@ export class eSTARPlusBuilder {
       }
       
       return { zipPath };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error building eSTAR package:', error);
-      throw new Error(`Failed to build eSTAR package: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to build eSTAR package: ${errorMessage}`);
     }
   }
   
@@ -328,9 +329,10 @@ export class eSTARPlusBuilder {
         aiComplianceReport,
         downloadUrl
       };
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error previewing eSTAR package:', error);
-      throw new Error(`Failed to preview eSTAR package: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Failed to preview eSTAR package: ${errorMessage}`);
     }
   }
   

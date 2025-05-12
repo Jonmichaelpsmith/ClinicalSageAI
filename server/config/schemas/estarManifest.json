@@ -1,50 +1,167 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "eSTAR Submission Manifest",
-  "description": "Schema for FDA eSTAR submission manifest XML document",
+  "title": "eSTAR Plus Manifest Schema",
+  "description": "JSON Schema for validating FDA eSTAR Plus submission manifests",
   "type": "object",
   "required": ["estarSubmission"],
   "properties": {
     "estarSubmission": {
       "type": "object",
-      "required": ["company", "deviceName", "sequence", "submissionDate", "documents"],
+      "required": [
+        "metadata",
+        "sections"
+      ],
       "properties": {
-        "company": {
-          "type": "string",
-          "description": "The company/manufacturer name"
+        "metadata": {
+          "type": "object",
+          "required": [
+            "submissionId",
+            "submissionDate",
+            "applicant",
+            "deviceName",
+            "deviceClass"
+          ],
+          "properties": {
+            "submissionId": {
+              "type": "string",
+              "description": "Unique identifier for the submission",
+              "minLength": 1
+            },
+            "submissionDate": {
+              "type": "string",
+              "description": "Date of submission in ISO format",
+              "format": "date-time"
+            },
+            "applicant": {
+              "type": "object",
+              "required": ["name"],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "address": {
+                  "type": "string"
+                },
+                "contactPerson": {
+                  "type": "string"
+                },
+                "phoneNumber": {
+                  "type": "string"
+                },
+                "email": {
+                  "type": "string",
+                  "format": "email"
+                }
+              }
+            },
+            "deviceName": {
+              "type": "string",
+              "minLength": 1
+            },
+            "deviceClass": {
+              "type": "string",
+              "enum": ["I", "II", "III"]
+            },
+            "productCode": {
+              "type": "string"
+            },
+            "regulationNumber": {
+              "type": "string"
+            },
+            "submissionType": {
+              "type": "string",
+              "enum": ["Traditional", "Special", "Abbreviated"]
+            }
+          }
         },
-        "deviceName": {
-          "type": "string",
-          "description": "The name of the device being submitted"
-        },
-        "sequence": {
-          "type": "string",
-          "description": "The submission sequence number"
-        },
-        "submissionDate": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Date of submission in ISO format"
-        },
-        "documents": {
+        "sections": {
           "type": "array",
-          "description": "List of documents included in the submission",
+          "minItems": 1,
           "items": {
             "type": "object",
-            "required": ["sectionName", "filePath"],
+            "required": [
+              "sectionId",
+              "title",
+              "files"
+            ],
             "properties": {
-              "sectionName": {
+              "sectionId": {
                 "type": "string",
-                "description": "Name of the section (e.g., 'DeviceDescription', 'SubstantialEquivalence')"
+                "minLength": 1
               },
-              "filePath": {
+              "title": {
                 "type": "string",
-                "description": "Relative path to the section file within the package"
+                "minLength": 1
               },
-              "pdfPath": {
-                "type": "string",
-                "description": "Optional relative path to the PDF version of the file"
+              "description": {
+                "type": "string"
+              },
+              "files": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "object",
+                  "required": [
+                    "fileName",
+                    "path",
+                    "fileType"
+                  ],
+                  "properties": {
+                    "fileName": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "path": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "fileType": {
+                      "type": "string",
+                      "enum": ["pdf", "docx", "xlsx", "pptx", "xml", "json", "txt", "jpg", "png"]
+                    },
+                    "fileSize": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "contentDescription": {
+                      "type": "string"
+                    },
+                    "hashValue": {
+                      "type": "string"
+                    },
+                    "hashAlgorithm": {
+                      "type": "string",
+                      "enum": ["SHA-256", "SHA-512", "MD5"]
+                    }
+                  }
+                }
               }
+            }
+          }
+        },
+        "digitalSignature": {
+          "type": "object",
+          "required": [
+            "algorithm",
+            "value",
+            "signedAt"
+          ],
+          "properties": {
+            "algorithm": {
+              "type": "string",
+              "enum": ["HMAC-SHA256", "RSA-SHA256"]
+            },
+            "value": {
+              "type": "string",
+              "minLength": 64
+            },
+            "signedAt": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "certificate": {
+              "type": "string"
             }
           }
         }

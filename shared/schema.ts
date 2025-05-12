@@ -1080,6 +1080,80 @@ export const projectTasksRelations = relations(projectTasks, ({ one, many }) => 
  * that combines IND and eCTD functionality in a single framework.
  */
 
+/**
+ * FDA 510(k) Submissions Module
+ * 
+ * Tables for managing FDA 510(k) submissions, device profiles,
+ * predicate devices, and eSTAR packages.
+ */
+
+// 510(k) Project Status
+export const fda510kStatusEnum = pgEnum('fda510k_status', [
+  'draft', 'inReview', 'approved', 'submitted', 'cleared', 'notCleared'
+]);
+
+// 510(k) Section Status
+export const fda510kSectionStatusEnum = pgEnum('fda510k_section_status', [
+  'notStarted', 'inProgress', 'completed', 'approved'
+]);
+
+// 510(k) Project Table
+export const fda510kProjects = pgTable('fda510k_projects', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  clientWorkspaceId: integer('client_workspace_id').references(() => clientWorkspaces.id),
+  name: text('name').notNull(),
+  deviceName: text('device_name').notNull(),
+  deviceClass: text('device_class').notNull(),
+  productCode: text('product_code'),
+  regulationNumber: text('regulation_number'),
+  submissionType: text('submission_type').default('Traditional'),
+  status: fda510kStatusEnum('status').default('draft'),
+  description: text('description'),
+  createdById: integer('created_by_id').references(() => users.id),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+  submittedAt: timestamp('submitted_at'),
+  metadata: json('metadata').$type<Record<string, any>>()
+});
+
+// 510(k) Sections Table
+export const fda510kSections = pgTable('fda510k_sections', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  projectId: uuid('project_id').notNull().references(() => fda510kProjects.id),
+  name: text('name').notNull(),
+  title: text('title').notNull(),
+  description: text('description'),
+  status: fda510kSectionStatusEnum('status').default('notStarted'),
+  sectionKey: text('section_key').notNull(),
+  filePathDOCX: text('file_path_docx'),
+  filePathPDF: text('file_path_pdf'),
+  content: text('content'),
+  order: integer('order').notNull(),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+  completedAt: timestamp('completed_at'),
+  metadata: json('metadata').$type<Record<string, any>>()
+});
+
+// 510(k) Predicate Devices Table
+export const fda510kPredicateDevices = pgTable('fda510k_predicate_devices', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  organizationId: integer('organization_id').notNull().references(() => organizations.id),
+  projectId: uuid('project_id').notNull().references(() => fda510kProjects.id),
+  deviceName: text('device_name').notNull(),
+  manufacturer: text('manufacturer').notNull(),
+  k510Number: text('k510_number'),
+  productCode: text('product_code'),
+  decisionDate: timestamp('decision_date'),
+  primaryPredicate: boolean('primary_predicate').default(false),
+  description: text('description'),
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+  metadata: json('metadata').$type<Record<string, any>>()
+});
+
 // Enums for Regulatory Submissions
 export const submissionTypeEnum = pgEnum('submission_type', [
   'IND', 'eCTD', 'NDA', 'BLA', 'ANDA', 'DMF'
