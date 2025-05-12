@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -461,10 +461,74 @@ export default function CERV2Page() {
     // documents, data-retrieval, equivalence, gspr-mapping, sota, assistant
     
     if (activeTab === 'maud') {
+      // Store the document ID in localStorage for persistence across module changes
+      if (cerDocumentId) {
+        localStorage.setItem('cerDocumentId', cerDocumentId);
+      }
+      
       return (
-        <MAUDIntegrationPanel 
-          documentId={cerDocumentId || "CER-" + Math.floor(100000 + Math.random() * 900000)}
-        />
+        <div className="space-y-4">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h2 className="text-2xl font-bold flex items-center">
+                <ShieldCheck className="mr-2 h-6 w-6 text-blue-600" />
+                <span>MAUD Algorithm Validation</span>
+              </h2>
+              <p className="text-gray-600 mt-1">
+                Validate your clinical evaluation report with certified algorithms for regulatory compliance
+              </p>
+            </div>
+            
+            <Badge 
+              variant="outline" 
+              className="bg-blue-100 text-blue-800 border-blue-200 font-medium px-3 py-1"
+            >
+              <Clock className="h-3.5 w-3.5 mr-1.5" />
+              {new Date().toLocaleDateString()} - Version 2.1
+            </Badge>
+          </div>
+          
+          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
+            <div className="flex items-start">
+              <div className="bg-blue-100 p-2 rounded-md mr-3">
+                <ShieldCheck className="h-5 w-5 text-blue-700" />
+              </div>
+              <div>
+                <h3 className="font-medium text-blue-900">Enhanced Regulatory Compliance</h3>
+                <p className="text-sm text-blue-800 mt-1">
+                  MAUD (Medical Algorithm User Database) provides certified algorithm validation for clinical evaluation reports, 
+                  ensuring compliance with EU MDR, FDA regulations, and ISO 14155 standards.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <MAUDIntegrationPanel 
+            documentId={localStorage.getItem('cerDocumentId') || cerDocumentId || "CER-" + Math.floor(100000 + Math.random() * 900000)}
+          />
+          
+          <div className="mt-6 bg-gray-50 border rounded-md p-4">
+            <h3 className="font-medium text-lg mb-2 text-gray-800">Validation Benefits</h3>
+            <ul className="space-y-2 text-sm">
+              <li className="flex items-start">
+                <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                <span>Automated validation against medical device regulatory requirements</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                <span>Traceability to international standards and regulatory frameworks</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                <span>Certified algorithm validation improves regulatory submission success rates</span>
+              </li>
+              <li className="flex items-start">
+                <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
+                <span>Documentation of compliance for notified bodies and regulatory audits</span>
+              </li>
+            </ul>
+          </div>
+        </div>
       );
     }
     
