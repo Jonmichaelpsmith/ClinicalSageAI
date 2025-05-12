@@ -837,15 +837,15 @@ export default function CERV2Page() {
 
   return (
     <div className="max-w-[1200px] mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-start p-6 pb-2">
+      <div className="flex flex-col md:flex-row justify-between items-start p-6 pb-2 bg-gradient-to-r from-blue-50 to-white rounded-t-lg shadow-sm">
         <div>
-          <h1 className="text-2xl font-semibold text-[#323130] mb-1">CER Builder</h1>
+          <h1 className="text-2xl font-semibold text-[#0F6CBD] mb-1">CER Builder</h1>
           <p className="text-[#616161]">EU MDR compliant Clinical Evaluation Report generator</p>
         </div>
         <Button 
           variant="outline" 
           size="sm"
-          className="flex items-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200"
+          className="flex items-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200 shadow-sm transition-all hover:shadow"
           onClick={() => window.location.href = '/cer-projects'}
         >
           <FolderOpen className="h-4 w-4" />
@@ -855,7 +855,7 @@ export default function CERV2Page() {
         <div className="flex gap-2 mt-2 md:mt-0">
           <Button
             onClick={() => setShowDeviceInfoDialog(true)}
-            className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+            className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white shadow-sm transition-all hover:shadow"
           >
             <ZapIcon className="h-4 w-4 mr-2" />
             One-Click CER
