@@ -26,7 +26,6 @@ const EquivalenceDraft = ({ projectId, onAddToReport }) => {
   const [activeTab, setActiveTab] = useState('preview');
   const [generating, setGenerating] = useState(false);
   const { toast } = useToast();
-  const fda510kService = new FDA510kService();
 
   useEffect(() => {
     if (projectId) {
@@ -38,7 +37,7 @@ const EquivalenceDraft = ({ projectId, onAddToReport }) => {
   const fetchDraft = async () => {
     try {
       setLoading(true);
-      const result = await fda510kService.draftEquivalence(projectId);
+      const result = await FDA510kService.draftEquivalence(projectId);
       setDraft(result.draftText);
       setEditedDraft(result.draftText);
       setLoading(false);
@@ -57,7 +56,7 @@ const EquivalenceDraft = ({ projectId, onAddToReport }) => {
   const generateDraft = async () => {
     try {
       setGenerating(true);
-      const result = await fda510kService.draftEquivalence(projectId);
+      const result = await FDA510kService.draftEquivalence(projectId);
       setDraft(result.draftText);
       setEditedDraft(result.draftText);
       setGenerating(false);
@@ -79,8 +78,8 @@ const EquivalenceDraft = ({ projectId, onAddToReport }) => {
   // Save the edited draft
   const saveDraft = async () => {
     try {
-      // Call the API to save the draft
-      // In a real implementation, you would make an API call here
+      // Save the draft using the service
+      await FDA510kService.saveDraftVersion(projectId, editedDraft, `Draft ${new Date().toLocaleString()}`);
       toast({
         title: "Draft Saved",
         description: "Your changes to the draft have been saved"
