@@ -1335,6 +1335,28 @@ export default function CoAuthor() {
             <h1 className="text-2xl font-bold">eCTD Co-Author Module</h1>
           </div>
           <div className="flex items-center space-x-3">
+            {/* Phase 5: Document Export Button */}
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={() => setShowExportDialog(true)}
+              className="flex items-center border-green-200 text-green-700"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+            
+            {/* Phase 5: Document Lifecycle Button */}
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={() => setShowLifecycleDialog(true)}
+              className="flex items-center border-purple-200 text-purple-700"
+            >
+              <GitBranch className="h-4 w-4 mr-2" />
+              Lifecycle
+            </Button>
+            
             <Button 
               variant="outline" 
               size="sm" 
@@ -2176,13 +2198,53 @@ export default function CoAuthor() {
               <div className="flex items-center">
                 <FileText className="h-5 w-5 mr-2 text-blue-600" />
                 <div>
-                  <h2 className="text-xl font-semibold">{selectedDocument.title}</h2>
+                  <div className="flex items-center">
+                    <h2 className="text-xl font-semibold">{selectedDocument.title}</h2>
+                    
+                    {/* Phase 5: Document Status Indicator */}
+                    <div className="ml-3">
+                      {documentLifecycle.status === 'In Progress' && (
+                        <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">
+                          <Clock className="h-3 w-3 mr-1" />
+                          In Progress
+                        </Badge>
+                      )}
+                      {documentLifecycle.status === 'In Review' && (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          <User className="h-3 w-3 mr-1" />
+                          In Review
+                        </Badge>
+                      )}
+                      {documentLifecycle.status === 'Approved' && (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          <CheckCircle className="h-3 w-3 mr-1" />
+                          Approved
+                        </Badge>
+                      )}
+                      {documentLifecycle.status === 'Published' && (
+                        <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                          <FileCheck className="h-3 w-3 mr-1" />
+                          Published
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
                   <div className="text-sm text-slate-500">
-                    {selectedDocument.module} • Last edited {selectedDocument.lastEdited}
+                    {selectedDocument.module} • Last edited {selectedDocument.lastEdited} • v{documentLifecycle.version}
                   </div>
                 </div>
               </div>
               <div className="flex gap-2">
+                {/* Phase 5: Document Export Button in document toolbar */}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-green-200 text-green-700"
+                  onClick={() => setShowExportDialog(true)}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Document
+                </Button>
                 <Button 
                   variant="outline" 
                   size="sm" 
