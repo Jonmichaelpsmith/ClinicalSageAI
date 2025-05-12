@@ -275,6 +275,15 @@ export default function CoAuthor() {
   const [similarityFilter, setSimilarityFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
   
+  // Enhanced Smart Reuse Panel filters for Phase 6
+  const [smartReuseFilters, setSmartReuseFilters] = useState({
+    module: 'all',
+    contentType: 'all',
+    relevance: 0,
+    documentType: 'all',
+    regulatoryRegion: 'all'
+  });
+  
   // Phase 4: AI-Enhanced Atom Generation & Validation state
   const [showDraftAtomDialog, setShowDraftAtomDialog] = useState(false);
   const [atomDraftingInProgress, setAtomDraftingInProgress] = useState(false);
@@ -6316,13 +6325,220 @@ export default function CoAuthor() {
               </Tooltip>
             </div>
             
-            {/* Add module filters - horizontal pill selector */}
-            <div className="flex flex-wrap gap-1">
+            {/* Enhanced Advanced Filters for Smart Reuse - Phase 6 implementation */}
+            <div className="border rounded-md p-3 mt-2">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium flex items-center">
+                  <Sliders className="h-4 w-4 mr-1.5 text-blue-600" />
+                  Advanced Filters
+                </h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-7 px-2 text-xs"
+                  onClick={() => setSmartReuseFilters({
+                    module: 'all',
+                    contentType: 'all',
+                    relevance: 0,
+                    documentType: 'all',
+                    regulatoryRegion: 'all'
+                  })}
+                >
+                  Reset
+                </Button>
+              </div>
+              
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs" htmlFor="moduleFilter">CTD Module</Label>
+                    <Select 
+                      value={smartReuseFilters.module} 
+                      onValueChange={(value) => setSmartReuseFilters({...smartReuseFilters, module: value})}
+                    >
+                      <SelectTrigger id="moduleFilter" className="h-8 text-xs">
+                        <SelectValue placeholder="All Modules" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Modules</SelectItem>
+                        <SelectGroup>
+                          <SelectLabel className="text-xs">Administrative</SelectLabel>
+                          <SelectItem value="m1">Module 1 - Regional</SelectItem>
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel className="text-xs">Quality</SelectLabel>
+                          <SelectItem value="m2.3">M2.3 - Quality Summary</SelectItem>
+                          <SelectItem value="m3">Module 3 - Quality</SelectItem>
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel className="text-xs">Non-Clinical</SelectLabel>
+                          <SelectItem value="m2.4">M2.4 - Non-Clinical Overview</SelectItem>
+                          <SelectItem value="m4">Module 4 - Non-Clinical</SelectItem>
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel className="text-xs">Clinical</SelectLabel>
+                          <SelectItem value="m2.5">M2.5 - Clinical Overview</SelectItem>
+                          <SelectItem value="m2.7">M2.7 - Clinical Summary</SelectItem>
+                          <SelectItem value="m5">Module 5 - Clinical</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label className="text-xs" htmlFor="contentTypeFilter">Content Type</Label>
+                    <Select 
+                      value={smartReuseFilters.contentType} 
+                      onValueChange={(value) => setSmartReuseFilters({...smartReuseFilters, contentType: value})}
+                    >
+                      <SelectTrigger id="contentTypeFilter" className="h-8 text-xs">
+                        <SelectValue placeholder="All Types" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Types</SelectItem>
+                        <SelectGroup>
+                          <SelectLabel className="text-xs">Data Elements</SelectLabel>
+                          <SelectItem value="table">Tables</SelectItem>
+                          <SelectItem value="figure">Figures & Graphs</SelectItem>
+                          <SelectItem value="chart">Charts</SelectItem>
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel className="text-xs">Text Content</SelectLabel>
+                          <SelectItem value="text">Text Blocks</SelectItem>
+                          <SelectItem value="list">Lists</SelectItem>
+                          <SelectItem value="heading">Section Headings</SelectItem>
+                          <SelectItem value="reference">References</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs" htmlFor="documentTypeFilter">Document Type</Label>
+                    <Select 
+                      value={smartReuseFilters.documentType || 'all'} 
+                      onValueChange={(value) => setSmartReuseFilters({...smartReuseFilters, documentType: value})}
+                    >
+                      <SelectTrigger id="documentTypeFilter" className="h-8 text-xs">
+                        <SelectValue placeholder="All Documents" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Documents</SelectItem>
+                        <SelectGroup>
+                          <SelectLabel className="text-xs">Regulatory</SelectLabel>
+                          <SelectItem value="csr">Clinical Study Reports</SelectItem>
+                          <SelectItem value="protocol">Study Protocols</SelectItem>
+                          <SelectItem value="overview">Overviews</SelectItem>
+                          <SelectItem value="summary">Summaries</SelectItem>
+                        </SelectGroup>
+                        <SelectGroup>
+                          <SelectLabel className="text-xs">Technical</SelectLabel>
+                          <SelectItem value="analytical">Analytical Reports</SelectItem>
+                          <SelectItem value="validation">Validation Reports</SelectItem>
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <Label className="text-xs" htmlFor="regionFilter">Regulatory Region</Label>
+                    <Select 
+                      value={smartReuseFilters.regulatoryRegion || 'all'} 
+                      onValueChange={(value) => setSmartReuseFilters({...smartReuseFilters, regulatoryRegion: value})}
+                    >
+                      <SelectTrigger id="regionFilter" className="h-8 text-xs">
+                        <SelectValue placeholder="All Regions" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Regions</SelectItem>
+                        <SelectItem value="us">FDA (US)</SelectItem>
+                        <SelectItem value="eu">EMA (EU)</SelectItem>
+                        <SelectItem value="jp">PMDA (Japan)</SelectItem>
+                        <SelectItem value="ca">Health Canada</SelectItem>
+                        <SelectItem value="uk">MHRA (UK)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs" htmlFor="relevanceFilter">Minimum Relevance</Label>
+                    <span className="text-xs text-muted-foreground">{smartReuseFilters.relevance}%</span>
+                  </div>
+                  <Slider
+                    id="relevanceFilter"
+                    min={0}
+                    max={100}
+                    step={10}
+                    value={[smartReuseFilters.relevance]}
+                    onValueChange={(values) => setSmartReuseFilters({...smartReuseFilters, relevance: values[0]})}
+                    className="py-1"
+                  />
+                </div>
+                
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {smartReuseFilters.module !== 'all' && (
+                    <Badge variant="secondary" className="text-xs flex items-center gap-1 h-6">
+                      <FileText className="h-3 w-3 mr-0.5" />
+                      {smartReuseFilters.module}
+                      <X className="h-3 w-3 cursor-pointer ml-0.5" 
+                        onClick={() => setSmartReuseFilters({...smartReuseFilters, module: 'all'})} 
+                      />
+                    </Badge>
+                  )}
+                  {smartReuseFilters.contentType !== 'all' && (
+                    <Badge variant="secondary" className="text-xs flex items-center gap-1 h-6">
+                      <Table className="h-3 w-3 mr-0.5" />
+                      {smartReuseFilters.contentType}
+                      <X className="h-3 w-3 cursor-pointer ml-0.5" 
+                        onClick={() => setSmartReuseFilters({...smartReuseFilters, contentType: 'all'})} 
+                      />
+                    </Badge>
+                  )}
+                  {smartReuseFilters.documentType && smartReuseFilters.documentType !== 'all' && (
+                    <Badge variant="secondary" className="text-xs flex items-center gap-1 h-6">
+                      <File className="h-3 w-3 mr-0.5" />
+                      {smartReuseFilters.documentType}
+                      <X className="h-3 w-3 cursor-pointer ml-0.5" 
+                        onClick={() => setSmartReuseFilters({...smartReuseFilters, documentType: 'all'})} 
+                      />
+                    </Badge>
+                  )}
+                  {smartReuseFilters.regulatoryRegion && smartReuseFilters.regulatoryRegion !== 'all' && (
+                    <Badge variant="secondary" className="text-xs flex items-center gap-1 h-6">
+                      <Globe className="h-3 w-3 mr-0.5" />
+                      {smartReuseFilters.regulatoryRegion}
+                      <X className="h-3 w-3 cursor-pointer ml-0.5" 
+                        onClick={() => setSmartReuseFilters({...smartReuseFilters, regulatoryRegion: 'all'})} 
+                      />
+                    </Badge>
+                  )}
+                  {smartReuseFilters.relevance > 0 && (
+                    <Badge variant="secondary" className="text-xs flex items-center gap-1 h-6">
+                      <BarChart3 className="h-3 w-3 mr-0.5" />
+                      {smartReuseFilters.relevance}% relevance
+                      <X className="h-3 w-3 cursor-pointer ml-0.5" 
+                        onClick={() => setSmartReuseFilters({...smartReuseFilters, relevance: 0})} 
+                      />
+                    </Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Quick module filters - horizontal pill selector */}
+            <div className="flex flex-wrap gap-1 mt-2">
               <Button
                 size="sm"
                 variant={moduleFilter === 'all' ? 'default' : 'outline'}
                 className="h-7 text-xs rounded-full px-3"
-                onClick={() => setModuleFilter('all')}
+                onClick={() => {
+                  setModuleFilter('all');
+                  setSmartReuseFilters({...smartReuseFilters, module: 'all'});
+                }}
               >
                 All Modules
               </Button>
@@ -6333,7 +6549,10 @@ export default function CoAuthor() {
                   size="sm"
                   variant={moduleFilter === module ? 'default' : 'outline'}
                   className="h-7 text-xs rounded-full px-3"
-                  onClick={() => setModuleFilter(module)}
+                  onClick={() => {
+                    setModuleFilter(module);
+                    setSmartReuseFilters({...smartReuseFilters, module: module.toLowerCase()});
+                  }}
                 >
                   {module}
                 </Button>
