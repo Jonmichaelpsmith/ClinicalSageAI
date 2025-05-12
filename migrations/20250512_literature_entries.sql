@@ -1,68 +1,84 @@
--- Migration for literature entries and embeddings tables
--- This adds support for literature search, semantic embeddings, and citations
+-- Literature Entries Migration
+-- Creates tables and indexes for the enhanced literature discovery feature
 
 -- Enable pgvector extension if not already enabled
 CREATE EXTENSION IF NOT EXISTS vector;
 
 -- Create literature_entries table
 CREATE TABLE IF NOT EXISTS literature_entries (
-  id TEXT PRIMARY KEY,
-  project_id UUID NOT NULL,
+  id SERIAL PRIMARY KEY,
   title TEXT NOT NULL,
-  authors TEXT[],
-  journal TEXT,
-  source TEXT NOT NULL,
-  year INT,
   abstract TEXT,
-  url TEXT,
+  authors TEXT,
+  journal TEXT,
+  publication_date DATE,
   pmid TEXT,
-  nct_id TEXT,
   doi TEXT,
-  publication_type TEXT[],
-  summary TEXT,
-  insights JSONB,
-  selected BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  url TEXT,
+  source TEXT NOT NULL,
+  relevance_score FLOAT,
+  full_text TEXT,
+  metadata JSONB,
+  organization_id TEXT,
+  tenant_id TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create literature_embeddings table for vector search
+-- Create literature_embeddings table
 CREATE TABLE IF NOT EXISTS literature_embeddings (
-  id TEXT PRIMARY KEY REFERENCES literature_entries(id) ON DELETE CASCADE,
-  project_id UUID NOT NULL,
-  vector vector(1536), -- OpenAI embeddings are 1536-dimensional
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
+  id SERIAL PRIMARY KEY,
+  literature_id INTEGER NOT NULL REFERENCES literature_entries(id) ON DELETE CASCADE,
+  embedding_type TEXT NOT NULL,
+  embedding vector(1536),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create indexes
-CREATE INDEX IF NOT EXISTS idx_literature_entries_project_id ON literature_entries(project_id);
-CREATE INDEX IF NOT EXISTS idx_literature_entries_selected ON literature_entries(selected);
-CREATE INDEX IF NOT EXISTS idx_literature_entries_source ON literature_entries(source);
-CREATE INDEX IF NOT EXISTS idx_literature_entries_year ON literature_entries(year);
-CREATE INDEX IF NOT EXISTS idx_literature_embeddings_project_id ON literature_embeddings(project_id);
+-- Create semantic_search_history table
+CREATE TABLE IF NOT EXISTS semantic_search_history (
+  id SERIAL PRIMARY KEY,
+  user_id TEXT,
+  query TEXT NOT NULL,
+  result_count INTEGER,
+  filters JSONB,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  organization_id TEXT,
+  tenant_id TEXT
+);
 
--- Create vector index for semantic search
-CREATE INDEX IF NOT EXISTS idx_literature_embeddings_vector ON literature_embeddings USING ivfflat (vector vector_cosine_ops) WITH (lists = 100);
+-- Create literature_citations table
+CREATE TABLE IF NOT EXISTS literature_citations (
+  id SERIAL PRIMARY KEY,
+  document_id TEXT NOT NULL,
+  section_id TEXT,
+  literature_id INTEGER REFERENCES literature_entries(id) ON DELETE SET NULL,
+  citation_text TEXT NOT NULL,
+  citation_style TEXT DEFAULT 'APA',
+  inserted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  organization_id TEXT,
+  tenant_id TEXT,
+  user_id TEXT
+);
 
--- Function to update the updated_at timestamp
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-   NEW.updated_at = NOW();
-   RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
+-- Create literature_summaries table
+CREATE TABLE IF NOT EXISTS literature_summaries (
+  id SERIAL PRIMARY KEY,
+  literature_id INTEGER NOT NULL REFERENCES literature_entries(id) ON DELETE CASCADE,
+  summary_text TEXT NOT NULL,
+  summary_type TEXT NOT NULL, -- e.g., 'abstract', 'conclusion', 'methods', 'full'
+  ai_generated BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  organization_id TEXT,
+  tenant_id TEXT
+);
 
--- Create trigger to automatically update timestamps
-DROP TRIGGER IF EXISTS literature_entries_updated_at ON literature_entries;
-CREATE TRIGGER literature_entries_updated_at
-BEFORE UPDATE ON literature_entries
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
-
-DROP TRIGGER IF EXISTS literature_embeddings_updated_at ON literature_embeddings;
-CREATE TRIGGER literature_embeddings_updated_at
-BEFORE UPDATE ON literature_embeddings
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column();
+-- Create indexes for faster queries
+CREATE INDEX IF NOT EXISTS idx_literature_tenant ON literature_entries(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_literature_org ON literature_entries(organization_id);
+CREATE INDEX IF NOT EXISTS idx_literature_pmid ON literature_entries(pmid);
+CREATE INDEX IF NOT EXISTS idx_literature_doi ON literature_entries(doi);
+CREATE INDEX IF NOT EXISTS idx_literature_date ON literature_entries(publication_date);
+CREATE INDEX IF NOT EXISTS idx_literature_source ON literature_entries(source);
+CREATE INDEX IF NOT EXISTS idx_citations_document ON literature_citations(document_id);
+CREATE INDEX IF NOT EXISTS idx_citations_literature ON literature_citations(literature_id);
+CREATE INDEX IF NOT EXISTS idx_search_history_user ON semantic_search_history(user_id);
