@@ -1,0 +1,93 @@
+Fantastic—now let’s detail the **implementation checklist** and the **exact file/module locations** where each piece should live, so your Replit AI agent can pick up and code straight away.
+
+---
+
+## 13. Implementation Checklist
+
+| Step | Task                                                                                      | File/Location                                                                                 |
+| ---- | ----------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 1    | **Device Profile Form**<br>– Build intake UI and JSON schema                              | `client/src/components/510k/DeviceProfileForm.jsx`<br>`client/src/schemas/deviceProfile.json` |
+| 2    | **Schema Validation**<br>– Wire AJV schema in form<br>– Server‐side validation middleware | `client/src/utils/validateSchema.js`<br>`server/middleware/validateSchema.ts`                 |
+| 3    | **Predicate Finder Service**<br>– FDA Device API integration                              | `server/services/PredicateFinderService.ts`                                                   |
+| 4    | **PubMed Integration**<br>– Fetch & summarize articles                                    | `server/services/LiteratureService.ts`                                                        |
+| 5    | **Regulatory Pathway Advisor**<br>– Expert rules engine                                   | `server/services/PathwayAdvisor.ts`                                                           |
+| 6    | **KAutomationPanel UI**<br>– New tab under CER builder for 510(k)                         | `client/src/components/CER2V/KAutomationPanel.jsx`                                            |
+| 7    | **AI Section Drafting**<br>– Extend AISectionWriter prompts                               | `server/services/AISectionWriter.ts`                                                          |
+| 8    | **Compliance Checker Rules**<br>– Add 510(k) rule set                                     | `server/config/complianceRules/510k.json`                                                     |
+| 9    | **eSTAR Package Builder**<br>– ZIP + manifest assembler                                   | `server/services/eSTARBuilder.ts`                                                             |
+| 10   | **Submission Tracker**<br>– Poll FDA status API                                           | `server/services/SubmissionTracker.ts`                                                        |
+| 11   | **Analytics Dashboard**<br>– New KPI widgets                                              | `client/src/components/Analytics/510kDashboard.jsx`                                           |
+| 12   | **Secure Routes & Feature Flags**<br>– Guard 510(k) endpoints                             | `server/routes/510kRoutes.ts`<br>`client/src/flags/featureFlags.ts`                           |
+| 13   | **Environment & Secrets**<br>– Add to Replit secrets manager                              | `DATABASE_URL_510K`, `FDA_API_KEY`, `PUBMED_API_KEY`, `AI_SERVICE_KEY`                        |
+| 14   | **Tests & CI**<br>– Unit + integration                                                    | `client/__tests__/510k/**`, `server/__tests__/510k/**`                                        |
+| 15   | **Documentation**<br>– End‐user guide                                                     | `docs/510k_workflow.md`                                                                       |
+
+---
+
+## 14. Folder Structure
+
+```
+client/
+└── src/
+    └── components/
+        └── CER2V/
+            └── KAutomationPanel.jsx
+        └── 510k/
+            ├── DeviceProfileForm.jsx
+            ├── PredicateFinderCard.jsx
+            ├── LiteratureCard.jsx
+            └── PathwayAdvisorCard.jsx
+    ├── schemas/
+    │   └── deviceProfile.json
+    ├── flags/
+    │   └── featureFlags.ts
+    └── __tests__/
+        └── 510k/
+
+server/
+├── services/
+│   ├── PredicateFinderService.ts
+│   ├── LiteratureService.ts
+│   ├── PathwayAdvisor.ts
+│   ├── AISectionWriter.ts
+│   ├── eSTARBuilder.ts
+│   └── SubmissionTracker.ts
+├── middleware/
+│   └── validateSchema.ts
+├── routes/
+│   └── 510kRoutes.ts
+├── config/
+│   └── complianceRules/
+│       └── 510k.json
+└── __tests__/
+    └── 510k/
+```
+
+---
+
+## 15. Feature Flag
+
+```ts
+// client/src/flags/featureFlags.ts
+export const FEATURE_510K = process.env.REACT_APP_ENABLE_510K === 'true';
+```
+
+Then wrap your new tab:
+
+```jsx
+{FEATURE_510K && <TabsTrigger value="510k">510(k) Automation</TabsTrigger>}
+```
+
+---
+
+## 16. Next Steps for Replit Agent
+
+1. **Create** each file above with the given paths.
+2. **Implement** logic in each service stub (comments with `// TODO`).
+3. **Register** `510kRoutes` in `server/index.ts`.
+4. **Add** UI tab and wire through to `KAutomationPanel.jsx`.
+5. **Validate** environment variables in `.env` (through Replit secrets).
+6. **Write** basic unit tests that assert the new endpoints respond.
+7. **Deploy** and smoke‐test `/cerv2?tab=510k` to confirm the new tab appears.
+
+With this actionable plan—complete with file paths, feature flags, and service outlines—your Replit AI agent can scaffold the entire 510(k) automation workflow end-to-end.
