@@ -4,6 +4,7 @@ import {
   CheckCircle, AlertTriangle, FileBarChart2, FileCheck,
   Trophy, ShieldCheck
 } from 'lucide-react';
+import ExecutiveDashboard from './ExecutiveDashboard';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -1215,7 +1216,7 @@ const CerComprehensiveReportsPanel = () => {
       case 'trends':
         return renderTrendReport();
       case 'dashboard':
-        return renderExecutiveDashboard();
+        return <ExecutiveDashboard />;
       default:
         return <div>Select a report type to view</div>;
     }
