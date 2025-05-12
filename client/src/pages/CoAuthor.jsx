@@ -5155,6 +5155,109 @@ export default function CoAuthor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Phase 6: Semantic Search Results Dialog */}
+      <Dialog open={showVectorSearchDialog} onOpenChange={setShowVectorSearchDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl flex items-center">
+              <Search className="h-5 w-5 mr-2 text-blue-600" />
+              Semantic Search Results
+            </DialogTitle>
+            <DialogDescription>
+              Showing results for query: <span className="font-medium">{semanticSearchQuery}</span>
+            </DialogDescription>
+          </DialogHeader>
+          
+          {isSearchingVectors ? (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600 mb-4" />
+              <p className="text-sm text-gray-500">Searching across vectorized documents...</p>
+            </div>
+          ) : semanticSearchResults.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <Info className="h-8 w-8 text-gray-400 mb-4" />
+              <h3 className="text-lg font-medium">No results found</h3>
+              <p className="text-sm text-gray-500 mt-2">
+                Try using different keywords or approving more documents to expand the search index.
+              </p>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-4">
+              <div className="bg-blue-50 p-3 rounded-md border border-blue-100">
+                <p className="text-sm text-blue-700 flex items-center">
+                  <Info className="h-4 w-4 mr-2" />
+                  <span>Found {semanticSearchResults.length} semantic matches across indexed documents</span>
+                </p>
+              </div>
+              
+              {semanticSearchResults.map((result, index) => (
+                <div 
+                  key={`search-result-${index}`} 
+                  className="border rounded-md p-4 hover:shadow-md transition-shadow duration-200"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="font-medium text-blue-800 flex items-center">
+                      <FileText className="h-4 w-4 mr-2 text-blue-600" />
+                      {result.documentTitle}
+                    </h3>
+                    <Badge variant="outline" className="text-xs">
+                      {result.module}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center text-xs text-gray-500 mb-3 space-x-3">
+                    <span className="flex items-center">
+                      <Clock className="h-3 w-3 mr-1" />
+                      v{result.documentVersion}
+                    </span>
+                    <span className="flex items-center">
+                      <BookOpen className="h-3 w-3 mr-1" />
+                      {result.section}
+                    </span>
+                    <span className="flex items-center">
+                      <BarChart className="h-3 w-3 mr-1" />
+                      {Math.round(result.similarity * 100)}% match
+                    </span>
+                  </div>
+                  
+                  <div className="bg-gray-50 p-3 rounded text-sm mb-3">
+                    {result.content}
+                  </div>
+                  
+                  <div className="flex justify-end">
+                    <Button 
+                      variant="link" 
+                      size="sm" 
+                      className="text-xs"
+                      onClick={() => {
+                        setShowVectorSearchDialog(false);
+                        // In a real implementation, this would navigate to the document
+                        toast({
+                          title: "Reference Selected",
+                          description: `Selected content from "${result.documentTitle}"`,
+                        });
+                      }}
+                    >
+                      Use as reference
+                      <ArrowUpRight className="ml-1 h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+          
+          <DialogFooter className="flex items-center justify-between">
+            <div className="text-xs text-gray-500">
+              {vectorizedDocuments.length} documents in vector index
+            </div>
+            <Button variant="outline" size="sm" onClick={() => setShowVectorSearchDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
