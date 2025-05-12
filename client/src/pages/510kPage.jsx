@@ -125,13 +125,14 @@ const FDA510kPage = () => {
             <Database className="h-4 w-4 mr-2" />
             Device Profile
           </TabsTrigger>
+
           <TabsTrigger 
             value="pathwayAdvisor" 
             className="flex items-center"
             disabled={!deviceProfile || !isPathwayAdvisorEnabled}
           >
-            <FileText className="h-4 w-4 mr-2" />
-            Pathway Advisor
+            <Settings className="h-4 w-4 mr-2" />
+            Regulatory Pathway
           </TabsTrigger>
           <TabsTrigger 
             value="predicateAnalysis" 
@@ -181,6 +182,31 @@ const FDA510kPage = () => {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="pathwayAdvisor" className="space-y-4">
+          {isPathwayAdvisorEnabled ? (
+            <PathwayAdvisorCard
+              projectId={deviceProfile?.id}
+              onConfirm={(pathway) => {
+                toast({
+                  title: "Pathway Selected",
+                  description: `${pathway} confirmed as your submission pathway`
+                });
+                // Navigate to the next logical step after pathway confirmation
+                setActiveTab("predicateAnalysis");
+              }}
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Regulatory Pathway Advisor</CardTitle>
+                <CardDescription>
+                  This feature is not enabled for your organization.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+        </TabsContent>
         
         <TabsContent value="predicateAnalysis" className="space-y-4">
           {isPredicateAnalysisEnabled ? (
@@ -193,6 +219,29 @@ const FDA510kPage = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Predicate Analysis</CardTitle>
+                <CardDescription>
+                  This feature is not enabled for your organization.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="literatureDiscovery" className="space-y-4">
+          {isLiteratureDiscoveryEnabled ? (
+            <EnhancedLiteratureDiscovery
+              deviceProfile={deviceProfile}
+              onLiteratureAdded={(citations) => {
+                toast({
+                  title: "Literature Added",
+                  description: `${citations.length} citations added to your submission`
+                });
+              }}
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Enhanced Literature Discovery</CardTitle>
                 <CardDescription>
                   This feature is not enabled for your organization.
                 </CardDescription>
