@@ -1,0 +1,956 @@
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  FileText, 
+  ChevronDown,
+  ChevronRight,
+  ExternalLink,
+  Download,
+  FileCheck,
+  Check,
+  X,
+  Clipboard,
+  RefreshCw,
+  Settings,
+  Search,
+  Eye,
+  Edit,
+  CheckCircle,
+  Clock,
+  ArrowUpRight,
+  ListChecks
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+/**
+ * eCTD Co-Author Module
+ * 
+ * A comprehensive solution for creating and managing eCTD regulatory documents
+ * with CTD structure navigation, validation, and submission export capabilities.
+ */
+const CoAuthor = () => {
+  // Component state for navigation and display controls
+  const [isTreeOpen, setIsTreeOpen] = useState(true);
+  const [activeModule, setActiveModule] = useState('module2');
+  const [activeTab, setActiveTab] = useState('editor');
+  const [selectedDocument, setSelectedDocument] = useState({ 
+    id: 1, 
+    title: 'Module 2.5 Clinical Overview',
+    status: 'In Progress',
+    version: 'v4.0',
+    lastEdited: '2 hours ago',
+    editedBy: 'John Doe'
+  });
+  
+  // Document validation state
+  const [showValidationDialog, setShowValidationDialog] = useState(false);
+  const [validationResults, setValidationResults] = useState({
+    completeness: 78,
+    regulatory: 92,
+    references: 65,
+    consistency: 86,
+    issues: [
+      {
+        id: 1,
+        severity: 'critical',
+        section: '2.5.4',
+        description: 'Missing source citations for efficacy claims',
+        suggestion: 'Add references to support the primary endpoint efficacy claims'
+      },
+      {
+        id: 2,
+        severity: 'major',
+        section: '2.5.6',
+        description: 'Incomplete benefit-risk assessment',
+        suggestion: 'Expand the benefit-risk section to include analysis of secondary endpoints'
+      },
+      {
+        id: 3,
+        severity: 'minor',
+        section: '2.5.2',
+        description: 'Inconsistent product name usage',
+        suggestion: 'Standardize product name as "Drug X" throughout the document'
+      }
+    ]
+  });
+  
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [exportFormat, setExportFormat] = useState('ectd');
+  const [exportingDocument, setExportingDocument] = useState(false);
+  
+  const { toast } = useToast();
+
+  // Mock document content
+  const [documentContent, setDocumentContent] = useState(`# Module 2.5: Clinical Overview
+
+## Introduction
+The Clinical Overview is a comprehensive and critical analysis of the clinical data submitted in the application. It should provide a detailed discussion of the benefits and risks of the medicinal product based on the clinical data.
+
+## Overview of Clinical Development
+Drug X was evaluated in 6 randomized, controlled clinical trials involving a total of 1,245 subjects. The primary efficacy endpoint was reduction in symptom severity at 12 weeks.
+
+## Overview of Efficacy
+The efficacy results demonstrate a clinically meaningful improvement in symptom scores compared to placebo (p<0.001) across all pivotal studies.
+
+## Overview of Safety
+The safety profile of Drug X was assessed in 6 randomized controlled trials involving 1,245 subjects. Adverse events were mild to moderate in nature, with headache being the most commonly reported event (12% of subjects).
+
+## Benefit-Risk Assessment
+Based on the efficacy and safety data obtained from the clinical development program, Drug X demonstrates a favorable benefit-risk profile for the proposed indication.`);
+
+  // Document structure data
+  const ctdStructure = [
+    {
+      id: 'module1',
+      title: 'Module 1: Administrative Information',
+      icon: <FileText className="h-5 w-5 mr-2 text-gray-500" />,
+      sections: [
+        { id: 'section1.1', title: 'Section 1.1: Cover Letter', status: null },
+        { id: 'section1.2', title: 'Section 1.2: Table of Contents', status: 'current' }
+      ]
+    },
+    {
+      id: 'module2',
+      title: 'Module 2: Common Technical Document',
+      icon: <FileText className="h-5 w-5 mr-2 text-blue-500" />,
+      sections: [
+        { id: 'section2.1', title: 'Section 2.1: CTD Table of Contents', status: null },
+        { id: 'section2.2', title: 'Section 2.2: Introduction', status: null },
+        { id: 'section2.3', title: 'Section 2.3: Quality Overall Summary', status: null },
+        { id: 'section2.5', title: 'Section 2.5: Clinical Overview', status: 'review' }
+      ]
+    },
+    {
+      id: 'module3',
+      title: 'Module 3: Quality',
+      icon: <FileText className="h-5 w-5 mr-2 text-green-500" />,
+      sections: [
+        { id: 'section3.2.p', title: 'Section 3.2.P: Drug Product', status: null },
+        { id: 'section3.2.s', title: 'Section 3.2.S: Drug Substance', status: null }
+      ]
+    },
+    {
+      id: 'module4',
+      title: 'Module 4: Nonclinical Study Reports',
+      icon: <FileText className="h-5 w-5 mr-2 text-purple-500" />,
+      sections: []
+    },
+    {
+      id: 'module5',
+      title: 'Module 5: Clinical Study Reports',
+      icon: <FileText className="h-5 w-5 mr-2 text-orange-500" />,
+      sections: []
+    }
+  ];
+  
+  // Featured templates data
+  const featuredTemplates = [
+    {
+      id: 'clin-overview',
+      title: 'Clinical Overview Template',
+      module: 'Module 2',
+      agency: 'US FDA',
+      lastUpdated: '2 months ago'
+    },
+    {
+      id: 'ctd-mod3',
+      title: 'CTD Module 3 Quality Template',
+      module: 'Module 3',
+      agency: 'US FDA / EU EMA',
+      lastUpdated: '1 month ago'
+    },
+    {
+      id: 'nda-cover',
+      title: 'NDA Cover Letter Template',
+      module: 'Module 1',
+      agency: 'US FDA',
+      lastUpdated: '3 weeks ago'
+    }
+  ];
+  
+  // Recent documents data
+  const recentDocuments = [
+    { 
+      id: 1, 
+      title: 'Module 2.5 Clinical Overview', 
+      status: 'In Progress',
+      module: 'Module 2',
+      lastEdited: '2 hours ago',
+      editedBy: 'John Doe'
+    },
+    { 
+      id: 2, 
+      title: 'CMC Section 3.2.P', 
+      status: 'Draft',
+      module: 'Module 3',
+      lastEdited: '1 day ago',
+      editedBy: 'Mark Wilson'
+    },
+    { 
+      id: 3, 
+      title: 'Clinical Overview', 
+      status: 'Final',
+      module: 'Module 2',
+      lastEdited: '3 days ago',
+      editedBy: 'Jane Smith'
+    }
+  ];
+  
+  // Handle document section click
+  const handleSectionClick = (sectionId) => {
+    // In a real implementation, this would load the specific section
+    toast({
+      title: "Section Selected",
+      description: `Navigating to ${sectionId}`,
+    });
+    
+    // Find the document that matches this section
+    const targetModule = ctdStructure.find(m => 
+      m.sections.some(s => s.id === sectionId)
+    );
+    
+    if (targetModule) {
+      setActiveModule(targetModule.id);
+      
+      // Load the selected document (mock implementation)
+      const matchingDoc = recentDocuments.find(d => 
+        d.title.toLowerCase().includes(sectionId.split('.')[0]) || 
+        d.title.toLowerCase().includes(sectionId.split('.')[1])
+      );
+      
+      if (matchingDoc) {
+        setSelectedDocument(matchingDoc);
+      }
+    }
+  };
+  
+  // Handle validation run
+  const runValidation = () => {
+    // In a real implementation, this would call an API to validate the document
+    toast({
+      title: "Validation Complete",
+      description: "Document validation has been completed.",
+    });
+    
+    setShowValidationDialog(true);
+  };
+  
+  // Handle export
+  const handleExport = () => {
+    setShowExportDialog(true);
+  };
+  
+  const exportDocument = () => {
+    setExportingDocument(true);
+    
+    // Simulate export process
+    setTimeout(() => {
+      setExportingDocument(false);
+      setShowExportDialog(false);
+      
+      toast({
+        title: "Export Successful",
+        description: `Document exported as ${exportFormat.toUpperCase()}`,
+      });
+    }, 2000);
+  };
+  
+  // Calculate overall validation score
+  const overallValidationScore = Math.round(
+    (validationResults.completeness + 
+     validationResults.regulatory + 
+     validationResults.references + 
+     validationResults.consistency) / 4
+  );
+  
+  // Render document health metrics
+  const renderDocumentHealth = () => (
+    <div className="space-y-4 p-4 border rounded-md bg-gray-50">
+      <h3 className="text-md font-medium mb-2">Document Health</h3>
+      
+      <div className="space-y-3">
+        <div>
+          <div className="flex justify-between mb-1">
+            <span className="text-sm">Completeness</span>
+            <span className="text-sm font-medium">{validationResults.completeness}%</span>
+          </div>
+          <Progress value={validationResults.completeness} className="h-2" />
+        </div>
+        
+        <div>
+          <div className="flex justify-between mb-1">
+            <span className="text-sm">Consistency</span>
+            <span className="text-sm font-medium">{validationResults.consistency}%</span>
+          </div>
+          <Progress value={validationResults.consistency} className="h-2" />
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col h-full">
+      {/* Header Section */}
+      <header className="mb-6 pt-4 px-6">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center">
+            <img src="https://www.trialsage.com/logo.svg" alt="TrialSage" className="h-8 mr-2" />
+            <h1 className="text-2xl font-bold">eCTD Co-Author Module</h1>
+          </div>
+          <div className="flex items-center space-x-3">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setIsTreeOpen(!isTreeOpen)}
+            >
+              {isTreeOpen ? "Hide Navigation" : "Show Navigation"}
+            </Button>
+            <Button 
+              variant="outline"
+              size="sm"
+              onClick={() => {}}
+            >
+              Team Collaboration
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {}}
+            >
+              AI Assistant
+            </Button>
+          </div>
+        </div>
+        
+        <div className="text-sm text-gray-500">
+          Enterprise Edition | Powered by AI Document Intelligence
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex flex-1 px-6 pb-6 space-x-6 overflow-hidden">
+        {/* Left Sidebar - Document Structure (CTD Navigation) */}
+        {isTreeOpen && (
+          <div className="w-72 flex-shrink-0 overflow-auto border-r pr-4">
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold">Document Structure</h2>
+              <Button variant="ghost" size="icon" className="h-8 w-8">
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="space-y-4">
+              {ctdStructure.map((module) => (
+                <div key={module.id} className="border-l-4 pl-3 py-1" 
+                  style={{ 
+                    borderColor: activeModule === module.id ? 
+                      module.id === 'module1' ? '#3b82f6' : 
+                      module.id === 'module2' ? '#3b82f6' : 
+                      module.id === 'module3' ? '#10b981' : 
+                      module.id === 'module4' ? '#8b5cf6' : 
+                      '#f59e0b' 
+                    : 'transparent'
+                  }}
+                >
+                  <div
+                    className={`flex items-center mb-2 cursor-pointer ${
+                      activeModule === module.id ? 'font-medium' : ''
+                    }`}
+                    onClick={() => setActiveModule(module.id)}
+                  >
+                    {module.icon}
+                    <span>{module.title}</span>
+                  </div>
+                  
+                  {activeModule === module.id && (
+                    <div className="pl-6 space-y-3">
+                      {module.sections.map((section) => (
+                        <div 
+                          key={section.id} 
+                          className="flex items-center cursor-pointer hover:text-blue-600"
+                          onClick={() => handleSectionClick(section.id)}
+                        >
+                          <FileText className="h-4 w-4 mr-2 text-gray-400" />
+                          <span>{section.title}</span>
+                          {section.status === 'current' && (
+                            <Badge className="ml-2 bg-blue-100 text-blue-700 hover:bg-blue-200">Current</Badge>
+                          )}
+                          {section.status === 'review' && (
+                            <Badge className="ml-2 bg-amber-100 text-amber-700 hover:bg-amber-200">In Review</Badge>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Center Content Area */}
+        <div className="flex-1 overflow-auto space-y-6">
+          {/* Tabs Navigation */}
+          <Tabs defaultValue="editor" value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="mb-4">
+              <TabsTrigger value="editor">Editor</TabsTrigger>
+              <TabsTrigger value="templates">Document Templates</TabsTrigger>
+              <TabsTrigger value="validation">Validation Dashboard</TabsTrigger>
+            </TabsList>
+
+            {/* Editor Tab */}
+            <TabsContent value="editor" className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h2 className="text-xl font-bold mb-1">{selectedDocument?.title || "Module 2.5 Clinical Overview"}</h2>
+                  <div className="text-sm text-gray-500 flex items-center space-x-3">
+                    <span>Last edited: {selectedDocument?.lastEdited || "2 hours ago"}</span>
+                    <span>•</span>
+                    <span>Version: {selectedDocument?.version || "v4.0"}</span>
+                    <span>•</span>
+                    <span>Status: {selectedDocument?.status || "In Progress"}</span>
+                  </div>
+                </div>
+                
+                <div className="flex space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={runValidation}
+                  >
+                    <FileCheck className="h-4 w-4 mr-2" />
+                    Validate
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleExport}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Document Editor */}
+              <Card>
+                <CardHeader className="bg-gray-50 border-b px-4 py-3">
+                  <div className="flex justify-between items-center">
+                    <div className="flex space-x-2">
+                      <Button size="sm" variant="ghost">
+                        <Edit className="h-4 w-4 mr-1" />
+                        Format
+                      </Button>
+                      <Button size="sm" variant="ghost">
+                        <Eye className="h-4 w-4 mr-1" />
+                        Preview
+                      </Button>
+                    </div>
+                    
+                    <Button size="sm" variant="default">
+                      <RefreshCw className="h-3 w-3 mr-2" />
+                      Auto-saving...
+                    </Button>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-0">
+                  <textarea
+                    className="w-full h-[500px] p-4 font-mono text-sm focus:outline-none resize-none"
+                    value={documentContent}
+                    onChange={(e) => setDocumentContent(e.target.value)}
+                  />
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Templates Tab */}
+            <TabsContent value="templates" className="space-y-6">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-xl font-bold">Document Templates</h2>
+                  <p className="text-sm text-gray-500">Start with pre-approved templates for regulatory documents</p>
+                </div>
+                
+                <div className="flex space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                  >
+                    <Settings className="h-4 w-4 mr-2" />
+                    Template Settings
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                  >
+                    <Clipboard className="h-4 w-4 mr-2" />
+                    Upload Template
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Featured Templates */}
+              <div>
+                <h3 className="text-md font-medium mb-4">Featured Templates</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {featuredTemplates.map((template) => (
+                    <Card key={template.id}>
+                      <CardContent className="p-4">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h4 className="font-medium">{template.title}</h4>
+                            <div className="text-sm text-gray-500 mt-1">
+                              {template.module} • Updated {template.lastUpdated}
+                            </div>
+                            <div className="flex items-center mt-2">
+                              <Badge variant="outline" className="bg-gray-100">
+                                {template.agency}
+                              </Badge>
+                            </div>
+                          </div>
+                          
+                          <Button variant="ghost" size="sm">
+                            <ArrowUpRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Recent Documents */}
+              <div>
+                <h3 className="text-md font-medium mb-4">Recent Documents</h3>
+                
+                <div className="space-y-2">
+                  {recentDocuments.map((doc) => (
+                    <div 
+                      key={doc.id} 
+                      className="flex items-center justify-between p-3 border rounded-md hover:bg-gray-50 cursor-pointer"
+                      onClick={() => {
+                        setSelectedDocument(doc);
+                        setActiveTab('editor');
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <FileText className="h-5 w-5 mr-3 text-blue-500" />
+                        <div>
+                          <h4 className="font-medium">{doc.title}</h4>
+                          <div className="text-sm text-gray-500">
+                            {doc.module} • Last edited {doc.lastEdited}
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Badge 
+                          className={`${
+                            doc.status === 'Final' 
+                              ? 'bg-green-100 text-green-700' 
+                              : doc.status === 'In Progress'
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {doc.status}
+                        </Badge>
+                        <ChevronRight className="h-4 w-4 text-gray-400" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <div className="mt-3 text-center">
+                  <Button variant="link" size="sm">
+                    View All Documents
+                  </Button>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Validation Dashboard Tab */}
+            <TabsContent value="validation" className="space-y-6">
+              <div className="flex justify-between items-center mb-6">
+                <div>
+                  <h2 className="text-xl font-bold">Validation Dashboard</h2>
+                  <p className="text-sm text-gray-500">Ensure compliance with regulatory requirements</p>
+                </div>
+                
+                <div className="flex space-x-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                  >
+                    <ListChecks className="h-4 w-4 mr-2" />
+                    Validation Settings
+                  </Button>
+                  
+                  <Button 
+                    onClick={runValidation}
+                    size="sm"
+                  >
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Run Validation
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Module 2.5 Clinical Overview */}
+              <Card>
+                <CardHeader className="bg-gray-50 border-b px-4 py-3">
+                  <div className="flex justify-between items-center">
+                    <CardTitle className="text-lg">Module 2.5 Clinical Overview</CardTitle>
+                    <Badge className="bg-amber-100 text-amber-700">In Progress</Badge>
+                  </div>
+                </CardHeader>
+                
+                <CardContent className="p-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-md font-medium mb-2">Content Completeness</h3>
+                        
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm">Overall completion</span>
+                            <span className="text-sm font-medium">{validationResults.completeness}%</span>
+                          </div>
+                          <Progress value={validationResults.completeness} className="h-2" />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-md font-medium mb-2">Regulatory Compliance</h3>
+                        
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm">Compliance score</span>
+                            <span className="text-sm font-medium">{validationResults.regulatory}%</span>
+                          </div>
+                          <Progress value={validationResults.regulatory} className="h-2" />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h3 className="text-md font-medium mb-2">Reference Validation</h3>
+                        
+                        <div>
+                          <div className="flex justify-between mb-1">
+                            <span className="text-sm">Citation accuracy</span>
+                            <span className="text-sm font-medium">{validationResults.references}%</span>
+                          </div>
+                          <Progress value={validationResults.references} className="h-2" />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-md font-medium mb-2">Validation Issues ({validationResults.issues.length})</h3>
+                      
+                      <div className="space-y-3 max-h-[250px] overflow-y-auto pr-2">
+                        {validationResults.issues.map((issue) => (
+                          <div key={issue.id} className="p-3 border rounded-md">
+                            <div className="flex justify-between items-start">
+                              <div className="flex items-center">
+                                <div 
+                                  className={`w-2 h-2 rounded-full mr-2 ${
+                                    issue.severity === 'critical' ? 'bg-red-500' :
+                                    issue.severity === 'major' ? 'bg-amber-500' :
+                                    'bg-blue-500'
+                                  }`} 
+                                />
+                                <span className="font-medium text-sm">
+                                  {issue.section}: {issue.description}
+                                </span>
+                              </div>
+                              <Badge 
+                                className={`${
+                                  issue.severity === 'critical' ? 'bg-red-100 text-red-700' :
+                                  issue.severity === 'major' ? 'bg-amber-100 text-amber-700' :
+                                  'bg-blue-100 text-blue-700'
+                                }`}
+                              >
+                                {issue.severity}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-2 pl-4">
+                              {issue.suggestion}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                      
+                      <div className="mt-4 flex justify-between items-center">
+                        <div className="text-sm text-gray-500">
+                          Last validation: 35 minutes ago
+                        </div>
+                        
+                        <Button variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-2" />
+                          Export Report
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-6 pt-4 border-t flex justify-between items-center">
+                    <div className="flex items-center">
+                      <h3 className="font-medium mr-3">Overall: {overallValidationScore}% complete</h3>
+                      <Progress value={overallValidationScore} className="w-32 h-2" />
+                    </div>
+                    
+                    <Button size="sm">
+                      <FileCheck className="h-4 w-4 mr-2" />
+                      Export Document
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        {/* Right Sidebar - Metadata & Health */}
+        <div className="w-64 flex-shrink-0 space-y-6">
+          {/* Document health metrics */}
+          {renderDocumentHealth()}
+
+          {/* Online status */}
+          <div className="text-center text-sm text-green-600 font-medium flex items-center justify-center">
+            <div className="w-2 h-2 rounded-full bg-green-500 mr-2"></div>
+            Online
+          </div>
+        </div>
+      </div>
+
+      {/* Validation Dialog */}
+      <Dialog open={showValidationDialog} onOpenChange={setShowValidationDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Document Validation Results</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="flex flex-col items-center p-3 border rounded-md">
+                <div className="text-2xl font-bold mb-1">{validationResults.completeness}%</div>
+                <div className="text-sm text-gray-500">Completeness</div>
+              </div>
+              
+              <div className="flex flex-col items-center p-3 border rounded-md">
+                <div className="text-2xl font-bold mb-1">{validationResults.regulatory}%</div>
+                <div className="text-sm text-gray-500">Regulatory</div>
+              </div>
+              
+              <div className="flex flex-col items-center p-3 border rounded-md">
+                <div className="text-2xl font-bold mb-1">{validationResults.references}%</div>
+                <div className="text-sm text-gray-500">References</div>
+              </div>
+              
+              <div className="flex flex-col items-center p-3 border rounded-md">
+                <div className="text-2xl font-bold mb-1">{validationResults.consistency}%</div>
+                <div className="text-sm text-gray-500">Consistency</div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 className="text-md font-medium mb-2">Validation Issues</h3>
+              
+              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
+                {validationResults.issues.map((issue) => (
+                  <div key={issue.id} className="p-3 border rounded-md">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center">
+                        <div 
+                          className={`w-2 h-2 rounded-full mr-2 ${
+                            issue.severity === 'critical' ? 'bg-red-500' :
+                            issue.severity === 'major' ? 'bg-amber-500' :
+                            'bg-blue-500'
+                          }`} 
+                        />
+                        <span className="font-medium">
+                          {issue.section}: {issue.description}
+                        </span>
+                      </div>
+                      <Badge 
+                        className={`${
+                          issue.severity === 'critical' ? 'bg-red-100 text-red-700' :
+                          issue.severity === 'major' ? 'bg-amber-100 text-amber-700' :
+                          'bg-blue-100 text-blue-700'
+                        }`}
+                      >
+                        {issue.severity}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-gray-500 mt-2 pl-4">
+                      {issue.suggestion}
+                    </p>
+                    <div className="mt-2 pl-4 flex space-x-2">
+                      <Button variant="outline" size="sm">
+                        <Check className="h-3.5 w-3.5 mr-1" />
+                        Apply Fix
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <X className="h-3.5 w-3.5 mr-1" />
+                        Ignore
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <div className="flex justify-between items-center w-full">
+              <div className="text-sm text-gray-500">
+                <Clock className="h-3.5 w-3.5 inline mr-1" />
+                Validated 35 minutes ago
+              </div>
+              
+              <div className="space-x-2">
+                <Button variant="outline" onClick={() => setShowValidationDialog(false)}>
+                  Close
+                </Button>
+                <Button onClick={() => setShowValidationDialog(false)}>
+                  Export Report
+                </Button>
+              </div>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Export Dialog */}
+      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Export Document</DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Export Format</label>
+              <div className="grid grid-cols-2 gap-2 mt-1">
+                <div
+                  className={`border rounded-md p-3 cursor-pointer flex items-center ${
+                    exportFormat === 'ectd' ? 'border-blue-500 bg-blue-50' : ''
+                  }`}
+                  onClick={() => setExportFormat('ectd')}
+                >
+                  <div className={`w-4 h-4 rounded-full border mr-2 flex items-center justify-center ${
+                    exportFormat === 'ectd' ? 'border-blue-500' : 'border-gray-300'
+                  }`}>
+                    {exportFormat === 'ectd' && (
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    )}
+                  </div>
+                  <span>eCTD Package</span>
+                </div>
+                
+                <div
+                  className={`border rounded-md p-3 cursor-pointer flex items-center ${
+                    exportFormat === 'pdf' ? 'border-blue-500 bg-blue-50' : ''
+                  }`}
+                  onClick={() => setExportFormat('pdf')}
+                >
+                  <div className={`w-4 h-4 rounded-full border mr-2 flex items-center justify-center ${
+                    exportFormat === 'pdf' ? 'border-blue-500' : 'border-gray-300'
+                  }`}>
+                    {exportFormat === 'pdf' && (
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    )}
+                  </div>
+                  <span>PDF Document</span>
+                </div>
+                
+                <div
+                  className={`border rounded-md p-3 cursor-pointer flex items-center ${
+                    exportFormat === 'docx' ? 'border-blue-500 bg-blue-50' : ''
+                  }`}
+                  onClick={() => setExportFormat('docx')}
+                >
+                  <div className={`w-4 h-4 rounded-full border mr-2 flex items-center justify-center ${
+                    exportFormat === 'docx' ? 'border-blue-500' : 'border-gray-300'
+                  }`}>
+                    {exportFormat === 'docx' && (
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    )}
+                  </div>
+                  <span>Word Document</span>
+                </div>
+                
+                <div
+                  className={`border rounded-md p-3 cursor-pointer flex items-center ${
+                    exportFormat === 'zip' ? 'border-blue-500 bg-blue-50' : ''
+                  }`}
+                  onClick={() => setExportFormat('zip')}
+                >
+                  <div className={`w-4 h-4 rounded-full border mr-2 flex items-center justify-center ${
+                    exportFormat === 'zip' ? 'border-blue-500' : 'border-gray-300'
+                  }`}>
+                    {exportFormat === 'zip' && (
+                      <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    )}
+                  </div>
+                  <span>ZIP Archive</span>
+                </div>
+              </div>
+            </div>
+            
+            {exportFormat === 'ectd' && (
+              <div>
+                <label className="text-sm font-medium">eCTD Metadata</label>
+                <div className="border rounded-md p-3 mt-1">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm">Sequence Number</span>
+                    <span className="text-sm font-medium">0023</span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-sm">Submission Type</span>
+                    <span className="text-sm font-medium">Original Application</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm">Application Number</span>
+                    <span className="text-sm font-medium">NDA 123456</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowExportDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={exportDocument} disabled={exportingDocument}>
+              {exportingDocument ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Export
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+};
+
+export default CoAuthor;
