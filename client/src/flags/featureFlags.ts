@@ -1,188 +1,132 @@
 /**
- * Feature Flags Configuration for TrialSage
+ * Feature Flags System
  * 
- * This module provides a centralized way to control feature availability
- * across different environments and for different organizations.
+ * This module defines the available feature flags for controlling feature visibility 
+ * throughout the application. Feature flags enable us to build features in isolation
+ * and control their rollout independently.
  */
 
+// Define feature flag types
 export type FeatureFlag = {
   id: string;
   name: string;
   description: string;
   defaultValue: boolean;
-  overrides?: Record<string, boolean>; // Overrides by organization ID
+  enabled: boolean;
 };
 
-const featureFlags: Record<string, FeatureFlag> = {
-  // 510(k) Automation Feature Flags
-  'fda510k.enabled': {
-    id: 'fda510k.enabled',
-    name: 'FDA 510(k) Automation',
-    description: 'Enable FDA 510(k) automation features in the Medical Device and Diagnostics module',
+// Define all available feature flags
+export const featureFlags: Record<string, FeatureFlag> = {
+  // 510k module flags
+  ENABLE_510K_MODULE: {
+    id: 'ENABLE_510K_MODULE',
+    name: '510(k) Module',
+    description: 'Enables the 510(k) submission module in the application',
     defaultValue: true,
+    enabled: true
   },
-  'fda510k.deviceProfile': {
-    id: 'fda510k.deviceProfile',
-    name: 'Device Profile Management',
-    description: 'Enable device profile creation and management for 510(k) submissions',
+  ENABLE_PREDICATE_SEARCH: {
+    id: 'ENABLE_PREDICATE_SEARCH',
+    name: 'Predicate Device Search',
+    description: 'Enables the predicate device search functionality in the 510(k) module',
     defaultValue: true,
+    enabled: true
   },
-  'fda510k.predicateFinder': {
-    id: 'fda510k.predicateFinder',
-    name: 'Predicate Device Finder',
-    description: 'Enable AI-powered predicate device search functionality',
+  ENABLE_EQUIVALENCE_ANALYSIS: {
+    id: 'ENABLE_EQUIVALENCE_ANALYSIS',
+    name: 'Equivalence Analysis',
+    description: 'Enables the substantial equivalence analysis tools in the 510(k) module',
     defaultValue: true,
+    enabled: true
   },
-  'fda510k.literatureSearch': {
-    id: 'fda510k.literatureSearch',
-    name: 'Literature Search',
-    description: 'Enable AI-powered literature search for 510(k) submissions',
+  ENABLE_SECTION_RECOMMENDER: {
+    id: 'ENABLE_SECTION_RECOMMENDER',
+    name: 'Document Section Recommender',
+    description: 'Enables intelligent section recommendations for regulatory documents',
     defaultValue: true,
-  },
-  'fda510k.pathwayAdvisor': {
-    id: 'fda510k.pathwayAdvisor',
-    name: 'Regulatory Pathway Advisor',
-    description: 'Enable AI-powered regulatory pathway analysis',
-    defaultValue: true,
-  },
-  'fda510k.aiDrafting': {
-    id: 'fda510k.aiDrafting',
-    name: 'AI-Powered Section Drafting',
-    description: 'Enable AI-powered drafting of 510(k) submission sections',
-    defaultValue: true,
-  },
-  'fda510k.compliance': {
-    id: 'fda510k.compliance',
-    name: 'Compliance Rules Integration',
-    description: 'Enable compliance checking against FDA rules',
-    defaultValue: true,
-  },
-  'fda510k.predicateAnalysis': {
-    id: 'fda510k.predicateAnalysis',
-    name: 'Predicate Device Equivalence Analysis',
-    description: 'Enable predicate device identification and substantial equivalence analysis',
-    defaultValue: true,
-  },
-  'documentRecommender': {
-    id: 'documentRecommender',
-    name: 'Intelligent Document Section Recommender',
-    description: 'Enable AI-powered document section recommendations and content suggestions',
-    defaultValue: true,
+    enabled: true
   },
   
-  // MAUD Integration Feature Flags
-  'maud.enabled': {
-    id: 'maud.enabled',
-    name: 'MAUD Integration',
-    description: 'Enable integration with FDA MAUD database',
+  // CER module flags
+  ENABLE_CER_MODULE: {
+    id: 'ENABLE_CER_MODULE',
+    name: 'CER Module',
+    description: 'Enables the Clinical Evaluation Report module in the application',
     defaultValue: true,
+    enabled: true
   },
-  'maud.validation': {
-    id: 'maud.validation',
+  
+  // MAUD validation flags
+  ENABLE_MAUD_VALIDATION: {
+    id: 'ENABLE_MAUD_VALIDATION',
     name: 'MAUD Validation',
-    description: 'Enable MAUD validation for device and documentation safety',
+    description: 'Enables MAUD validation tools and compliance checks',
     defaultValue: true,
-  },
-  'maud.reporting': {
-    id: 'maud.reporting',
-    name: 'MAUD Reporting',
-    description: 'Enable detailed reports from MAUD database analysis',
-    defaultValue: true,
+    enabled: true
   },
   
-  // General Feature Flags
-  'cer.aiEnhancedValidation': {
-    id: 'cer.aiEnhancedValidation',
-    name: 'AI-Enhanced Document Validation',
-    description: 'Enable AI-powered validation of clinical evaluation reports',
+  // Advanced AI features
+  ENABLE_AI_GENERATION: {
+    id: 'ENABLE_AI_GENERATION',
+    name: 'AI Content Generation',
+    description: 'Enables AI-powered content generation for regulatory documents',
     defaultValue: true,
+    enabled: true
   },
-  'unified.search': {
-    id: 'unified.search',
-    name: 'Unified Search Experience',
-    description: 'Enable unified search across all document types',
+  ENABLE_SEMANTIC_SEARCH: {
+    id: 'ENABLE_SEMANTIC_SEARCH',
+    name: 'Semantic Search',
+    description: 'Enables semantic search capabilities across regulatory documents',
     defaultValue: true,
-  },
-  'multiTenant.isolation': {
-    id: 'multiTenant.isolation',
-    name: 'Multi-Tenant Data Isolation',
-    description: 'Ensure strict data isolation between different tenants',
-    defaultValue: true,
+    enabled: true
   }
 };
 
 /**
- * Get the value of a feature flag
- * 
- * @param flagId The ID of the feature flag
- * @param organizationId Optional organization ID for overrides
- * @returns Boolean indicating if the feature is enabled
+ * Check if a feature flag is enabled
+ * @param flagId The ID of the feature flag to check
+ * @returns true if the feature flag is enabled, false otherwise
  */
-export function isFeatureEnabled(flagId: string, organizationId?: string | null): boolean {
+export function isFeatureEnabled(flagId: string): boolean {
   const flag = featureFlags[flagId];
   
   if (!flag) {
-    console.warn(`Feature flag '${flagId}' not found, defaulting to false`);
+    console.warn(`Feature flag "${flagId}" does not exist`);
     return false;
   }
   
-  // Check for organization-specific override
-  if (organizationId && flag.overrides && flag.overrides[organizationId] !== undefined) {
-    return flag.overrides[organizationId];
-  }
-  
-  return flag.defaultValue;
+  return flag.enabled;
 }
 
 /**
- * Get a list of all feature flags
- * 
+ * Set the enabled state of a feature flag
+ * @param flagId The ID of the feature flag to update
+ * @param enabled The new enabled state
+ */
+export function setFeatureEnabled(flagId: string, enabled: boolean): void {
+  const flag = featureFlags[flagId];
+  
+  if (!flag) {
+    console.warn(`Feature flag "${flagId}" does not exist`);
+    return;
+  }
+  
+  flag.enabled = enabled;
+}
+
+/**
+ * Reset all feature flags to their default values
+ */
+export function resetFeatureFlags(): void {
+  Object.keys(featureFlags).forEach(flagId => {
+    featureFlags[flagId].enabled = featureFlags[flagId].defaultValue;
+  });
+}
+
+/**
+ * Get all feature flags
  * @returns Array of all feature flags
  */
 export function getAllFeatureFlags(): FeatureFlag[] {
   return Object.values(featureFlags);
 }
-
-/**
- * Set organization-specific overrides for a feature flag
- * 
- * @param flagId The ID of the feature flag
- * @param organizationId The organization ID
- * @param value The override value
- */
-export function setFeatureOverride(flagId: string, organizationId: string, value: boolean): void {
-  const flag = featureFlags[flagId];
-  
-  if (!flag) {
-    console.warn(`Feature flag '${flagId}' not found, override not set`);
-    return;
-  }
-  
-  if (!flag.overrides) {
-    flag.overrides = {};
-  }
-  
-  flag.overrides[organizationId] = value;
-}
-
-/**
- * Get a set of related feature flags by prefix
- * 
- * @param prefix The prefix to filter flags by (e.g., 'fda510k.')
- * @returns Record of feature flags with the specified prefix
- */
-export function getFeatureFlagsByPrefix(prefix: string): Record<string, FeatureFlag> {
-  return Object.entries(featureFlags)
-    .filter(([key]) => key.startsWith(prefix))
-    .reduce((acc, [key, value]) => {
-      acc[key] = value;
-      return acc;
-    }, {} as Record<string, FeatureFlag>);
-}
-
-export default {
-  isFeatureEnabled,
-  getAllFeatureFlags,
-  setFeatureOverride,
-  getFeatureFlagsByPrefix
-};

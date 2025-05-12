@@ -1,214 +1,236 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { Loader2, Search, Database, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, Search, Filter, Info } from 'lucide-react';
 import FDA510kService from '../../services/FDA510kService';
-import { useTenant } from '@/contexts/TenantContext';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 /**
  * PredicateSearch Component
  * 
- * This component allows users to search for FDA-registered predicate devices 
- * by name or 510(k) number, view matching results, and select a predicate
- * for their substantial equivalence analysis.
+ * This component provides a search interface for finding predicate devices 
+ * to use in 510(k) substantial equivalence claims.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.deviceProfile - The current device profile
+ * @param {Function} props.onSelect - Callback when a device is selected
  */
-const PredicateSearch = ({ onPredicateSelect, deviceProfile }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState([]);
-  const [error, setError] = useState(null);
-  const [selectedPredicate, setSelectedPredicate] = useState(null);
-  const searchTimeout = useRef(null);
-  
-  const { currentOrganization } = useTenant();
+export const PredicateSearch = ({ 
+  deviceProfile = {},
+  onSelect
+}) => {
+  const [searchTerm, setSearchTerm] = useState(deviceProfile.deviceName || '');
+  const [productCodeFilter, setProductCodeFilter] = useState(deviceProfile.productCode || '');
+  const [selectedDevice, setSelectedDevice] = useState(null);
+  const { toast } = useToast();
 
-  // Handle search input change with debounce
-  const handleSearchChange = (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    
-    // Clear previous timeout
-    if (searchTimeout.current) {
-      clearTimeout(searchTimeout.current);
+  // Query for predicate devices
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: ['predicateSearch', searchTerm, productCodeFilter],
+    queryFn: () => FDA510kService.searchPredicateDevices(searchTerm, productCodeFilter || null),
+    enabled: false, // Don't run automatically
+  });
+
+  // Handle search form submission
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (!searchTerm.trim()) {
+      toast({
+        title: "Search Term Required",
+        description: "Please enter a device name or keyword to search.",
+        variant: "destructive",
+      });
+      return;
     }
     
-    // Debounce search to avoid too many API calls
-    if (query.length >= 3) {
-      searchTimeout.current = setTimeout(() => {
-        searchPredicateDevices(query);
-      }, 500);
-    } else if (query.length === 0) {
-      setResults([]);
-      setError(null);
-    }
+    refetch();
   };
 
-  // Search predicate devices via API
-  const searchPredicateDevices = async (query) => {
-    setIsLoading(true);
-    setError(null);
+  // Handle device selection
+  const handleDeviceSelect = async (device) => {
+    setSelectedDevice(device);
     
     try {
-      const searchData = {
-        query,
-        limit: 10,
-        ...deviceProfile && { productCode: deviceProfile.productCode }
-      };
+      // Get detailed information about the predicate device
+      const details = await FDA510kService.getPredicateDetails(device.kNumber);
       
-      const response = await FDA510kService.findPredicateDevices(
-        searchData,
-        currentOrganization?.id
-      );
-      
-      if (response.success) {
-        setResults(response.predicates || []);
-        
-        if (response.predicates.length === 0) {
-          setError('No predicate devices found matching your search. Try a different query.');
-        }
-      } else {
-        setError(response.error || 'Failed to search for predicate devices.');
+      if (onSelect) {
+        onSelect({
+          ...device,
+          ...details,
+        });
       }
-    } catch (err) {
-      console.error('Predicate search error:', err);
-      setError('An error occurred while searching. Please try again.');
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      console.error('Error fetching predicate details:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load predicate device details. Please try again.",
+        variant: "destructive",
+      });
     }
-  };
-
-  // Handle predicate selection
-  const handlePredicateSelect = async (predicate) => {
-    setSelectedPredicate(predicate);
-    
-    try {
-      // Get full predicate device details
-      const response = await FDA510kService.getPredicateDetails(
-        predicate.predicateId,
-        currentOrganization?.id
-      );
-      
-      if (response.success && response.predicateDetails) {
-        if (onPredicateSelect) {
-          onPredicateSelect(response.predicateDetails);
-        }
-      } else {
-        setError('Failed to load complete predicate device details.');
-      }
-    } catch (err) {
-      console.error('Predicate details error:', err);
-      setError('An error occurred while loading predicate details.');
-    }
-  };
-
-  // Format decision date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    
-    const date = new Date(dateString);
-    if (isNaN(date)) return dateString;
-    
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
   };
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center">
-          <Database className="h-5 w-5 mr-2 text-primary" />
-          Predicate Device Search
-        </CardTitle>
-        <CardDescription>
-          Search for FDA-registered predicate devices by name or 510(k) number
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div className="flex space-x-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder="Search by device name or 510(k) number..."
-                className="pl-8"
-                value={searchQuery}
-                onChange={handleSearchChange}
-              />
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Find Predicate Devices</CardTitle>
+          <CardDescription>
+            Search for predicate devices similar to your device that have received 510(k) clearance.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSearch} className="space-y-4">
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1">
+                <Input
+                  placeholder="Search by device name, manufacturer, etc."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div className="md:w-1/3">
+                <Input
+                  placeholder="Filter by product code (optional)"
+                  value={productCodeFilter}
+                  onChange={(e) => setProductCodeFilter(e.target.value)}
+                  className="w-full"
+                />
+              </div>
+              <div className="flex-shrink-0">
+                <Button type="submit" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Searching...
+                    </>
+                  ) : (
+                    <>
+                      <Search className="h-4 w-4 mr-2" />
+                      Search
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
-            <Button 
-              disabled={searchQuery.length < 3 || isLoading}
-              onClick={() => searchPredicateDevices(searchQuery)}
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-              ) : (
-                <Search className="h-4 w-4 mr-2" />
-              )}
-              Search
-            </Button>
-          </div>
-          
-          {error && (
-            <div className="p-3 text-sm bg-destructive/10 text-destructive rounded-md flex items-center">
-              <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0" />
-              <span>{error}</span>
-            </div>
-          )}
-          
-          {results.length > 0 && (
-            <div>
-              <h4 className="font-medium text-sm mb-2">Search Results</h4>
-              <ScrollArea className="h-[400px] rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Device Name</TableHead>
-                      <TableHead>K-Number</TableHead>
-                      <TableHead>Decision Date</TableHead>
-                      <TableHead>Product Code</TableHead>
-                      <TableHead></TableHead>
+            
+            {productCodeFilter && (
+              <div className="flex items-center">
+                <Badge variant="secondary" className="mr-2">
+                  <Filter className="h-3 w-3 mr-1" />
+                  Product Code: {productCodeFilter}
+                </Badge>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setProductCodeFilter('')}
+                  className="h-6 text-xs"
+                >
+                  Clear
+                </Button>
+              </div>
+            )}
+          </form>
+        </CardContent>
+      </Card>
+
+      {error && (
+        <Card className="border-destructive">
+          <CardHeader>
+            <CardTitle className="text-destructive">Search Error</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>Failed to search for predicate devices: {error.message}</p>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" onClick={() => refetch()}>Retry Search</Button>
+          </CardFooter>
+        </Card>
+      )}
+
+      {data && data.length === 0 && !isLoading && (
+        <Card>
+          <CardHeader>
+            <CardTitle>No Results Found</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>No predicate devices found matching your search criteria. Try broadening your search terms.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {data && data.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Search Results</CardTitle>
+            <CardDescription>
+              {data.length} predicate devices found. Select a device to view details and analyze substantial equivalence.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[250px]">Device Name</TableHead>
+                    <TableHead>Manufacturer</TableHead>
+                    <TableHead>K Number</TableHead>
+                    <TableHead>Product Code</TableHead>
+                    <TableHead>Decision Date</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {data.map((device) => (
+                    <TableRow 
+                      key={device.kNumber}
+                      className={selectedDevice?.kNumber === device.kNumber ? "bg-muted" : ""}
+                    >
+                      <TableCell className="font-medium">{device.deviceName}</TableCell>
+                      <TableCell>{device.manufacturer}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline">{device.kNumber}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        {device.productCode && (
+                          <Badge variant="secondary">{device.productCode}</Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>{device.decisionDate}</TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant={selectedDevice?.kNumber === device.kNumber ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handleDeviceSelect(device)}
+                        >
+                          <Info className="h-4 w-4 mr-2" />
+                          {selectedDevice?.kNumber === device.kNumber ? "Selected" : "Select"}
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {results.map((predicate) => (
-                      <TableRow 
-                        key={predicate.predicateId}
-                        className={selectedPredicate?.predicateId === predicate.predicateId ? 
-                          "bg-accent" : ""}
-                      >
-                        <TableCell className="font-medium">{predicate.deviceName}</TableCell>
-                        <TableCell>{predicate.kNumber}</TableCell>
-                        <TableCell>{formatDate(predicate.decisionDate)}</TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{predicate.productCode}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Button 
-                            size="sm" 
-                            onClick={() => handlePredicateSelect(predicate)}
-                          >
-                            <CheckCircle2 className="h-4 w-4 mr-2" />
-                            Select
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </ScrollArea>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <div className="text-sm text-muted-foreground">
+              Showing {data.length} predicate devices
+            </div>
+            {selectedDevice && (
+              <Button onClick={() => onSelect(selectedDevice)}>
+                Use Selected Device
+              </Button>
+            )}
+          </CardFooter>
+        </Card>
+      )}
+    </div>
   );
 };
 
