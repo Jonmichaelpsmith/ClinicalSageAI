@@ -1,129 +1,160 @@
--- Migration for Literature Management System for 510(k) Submissions
+-- Literature Management Tables for 510(k) submissions
+-- Created: May 12, 2025
 
--- Enable pgvector extension if not already enabled
-CREATE EXTENSION IF NOT EXISTS vector;
-
--- Create literature sources table
-CREATE TABLE IF NOT EXISTS literature_sources (
-  id SERIAL PRIMARY KEY,
-  source_name VARCHAR(255) NOT NULL,
-  source_type VARCHAR(50) NOT NULL,
-  api_endpoint VARCHAR(512),
-  requires_auth BOOLEAN NOT NULL DEFAULT FALSE,
-  enabled BOOLEAN NOT NULL DEFAULT TRUE,
-  priority INTEGER NOT NULL DEFAULT 0,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+-- Enable vector extension for semantic search
+CREATE EXTENSION IF NOT EXISTS "vector";
 
 -- Create literature entries table
-CREATE TABLE IF NOT EXISTS literature_entries (
-  id SERIAL PRIMARY KEY,
-  tenant_id INTEGER NOT NULL,
-  organization_id INTEGER NOT NULL,
-  source_id INTEGER NOT NULL REFERENCES literature_sources(id),
-  external_id VARCHAR(255) NOT NULL,
-  title TEXT NOT NULL,
-  authors TEXT[],
-  publication_date DATE,
-  journal VARCHAR(512),
-  abstract TEXT,
-  full_text TEXT,
-  doi VARCHAR(255),
-  pmid VARCHAR(255),
-  url VARCHAR(1024),
-  citation_count INTEGER DEFAULT 0,
-  publication_type VARCHAR(255),
-  keywords TEXT[],
-  mesh_terms TEXT[],
-  embedding VECTOR(1536),
-  fulltext_available BOOLEAN DEFAULT FALSE,
-  pdf_path VARCHAR(1024),
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  UNIQUE(tenant_id, organization_id, source_id, external_id)
+CREATE TABLE IF NOT EXISTS "literature_entries" (
+  "id" VARCHAR(36) PRIMARY KEY,
+  "title" TEXT NOT NULL,
+  "authors" TEXT[] DEFAULT ARRAY[]::TEXT[],
+  "abstract" TEXT,
+  "publication_date" DATE,
+  "journal" TEXT,
+  "doi" TEXT,
+  "url" TEXT,
+  "source_name" VARCHAR(50) NOT NULL,
+  "source_id" VARCHAR(100),
+  "relevance_score" FLOAT,
+  "organization_id" VARCHAR(36) NOT NULL,
+  "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  "embedding" VECTOR(1536)
 );
 
--- Create index on tenant_id and organization_id for data isolation
-CREATE INDEX IF NOT EXISTS idx_literature_entries_tenant_org 
-ON literature_entries(tenant_id, organization_id);
+-- Create indices for literature entries table
+CREATE INDEX IF NOT EXISTS "idx_literature_entries_source" ON "literature_entries" ("source_name", "source_id");
+CREATE INDEX IF NOT EXISTS "idx_literature_entries_organization" ON "literature_entries" ("organization_id");
+CREATE INDEX IF NOT EXISTS "idx_literature_entries_publication_date" ON "literature_entries" ("publication_date");
 
--- Create index on title and abstract for text search
-CREATE INDEX IF NOT EXISTS idx_literature_entries_text_search 
-ON literature_entries USING gin(to_tsvector('english', coalesce(title, '') || ' ' || coalesce(abstract, '')));
-
--- Create index on vector embedding for similarity search
-CREATE INDEX IF NOT EXISTS idx_literature_entries_embedding 
-ON literature_entries USING hnsw (embedding vector_cosine_ops) WITH (ef_construction = 128, m = 16);
-
--- Create literature search history table
-CREATE TABLE IF NOT EXISTS literature_search_history (
-  id SERIAL PRIMARY KEY,
-  tenant_id INTEGER NOT NULL,
-  organization_id INTEGER NOT NULL,
-  user_id INTEGER,
-  query_text TEXT NOT NULL,
-  sources TEXT[],
-  filters JSONB,
-  semantic_search BOOLEAN DEFAULT FALSE,
-  result_count INTEGER,
-  execution_time_ms INTEGER,
-  timestamp TIMESTAMP NOT NULL DEFAULT NOW()
+-- Create document citations table
+CREATE TABLE IF NOT EXISTS "document_citations" (
+  "id" VARCHAR(36) PRIMARY KEY,
+  "literature_id" VARCHAR(36) NOT NULL,
+  "document_id" VARCHAR(36) NOT NULL,
+  "document_type" VARCHAR(50) NOT NULL,
+  "section_id" VARCHAR(100) NOT NULL,
+  "section_name" TEXT,
+  "citation_text" TEXT,
+  "organization_id" VARCHAR(36) NOT NULL,
+  "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  FOREIGN KEY ("literature_id") REFERENCES "literature_entries" ("id") ON DELETE CASCADE
 );
 
--- Create index on tenant_id and organization_id for data isolation
-CREATE INDEX IF NOT EXISTS idx_literature_search_history_tenant_org 
-ON literature_search_history(tenant_id, organization_id);
+-- Create indices for document citations table
+CREATE INDEX IF NOT EXISTS "idx_document_citations_document" ON "document_citations" ("document_id", "document_type");
+CREATE INDEX IF NOT EXISTS "idx_document_citations_literature" ON "document_citations" ("literature_id");
+CREATE INDEX IF NOT EXISTS "idx_document_citations_organization" ON "document_citations" ("organization_id");
 
--- Create literature citations table (which papers are cited in which documents)
-CREATE TABLE IF NOT EXISTS literature_citations (
-  id SERIAL PRIMARY KEY,
-  literature_id INTEGER NOT NULL REFERENCES literature_entries(id),
-  document_id INTEGER NOT NULL,
-  document_type VARCHAR(50) NOT NULL,
-  section_id VARCHAR(255) NOT NULL,
-  section_name VARCHAR(255),
-  citation_text TEXT,
-  tenant_id INTEGER NOT NULL,
-  organization_id INTEGER NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  UNIQUE(literature_id, document_id, document_type, section_id)
+-- Create literature summaries table
+CREATE TABLE IF NOT EXISTS "literature_summaries" (
+  "id" VARCHAR(36) PRIMARY KEY,
+  "summary_text" TEXT NOT NULL,
+  "summary_type" VARCHAR(50) NOT NULL,
+  "focus_area" TEXT,
+  "literature_ids" TEXT[] NOT NULL,
+  "organization_id" VARCHAR(36) NOT NULL,
+  "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+  "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Create index on document_id and document_type for retrieving citations for a document
-CREATE INDEX IF NOT EXISTS idx_literature_citations_document 
-ON literature_citations(document_id, document_type);
+-- Create indices for literature summaries table
+CREATE INDEX IF NOT EXISTS "idx_literature_summaries_type" ON "literature_summaries" ("summary_type");
+CREATE INDEX IF NOT EXISTS "idx_literature_summaries_organization" ON "literature_summaries" ("organization_id");
 
--- Create index on tenant_id and organization_id for data isolation
-CREATE INDEX IF NOT EXISTS idx_literature_citations_tenant_org 
-ON literature_citations(tenant_id, organization_id);
-
--- Create literature summaries table (AI-generated summaries of literature)
-CREATE TABLE IF NOT EXISTS literature_summaries (
-  id SERIAL PRIMARY KEY,
-  literature_ids INTEGER[] NOT NULL,
-  search_id INTEGER,
-  summary_type VARCHAR(50) NOT NULL,
-  focus TEXT,
-  summary_text TEXT NOT NULL,
-  tenant_id INTEGER NOT NULL,
-  organization_id INTEGER NOT NULL,
-  user_id INTEGER,
-  model_used VARCHAR(255),
-  prompt_tokens INTEGER,
-  completion_tokens INTEGER,
-  processing_time_ms INTEGER,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+-- Create literature summary entries table for many-to-many relationship
+CREATE TABLE IF NOT EXISTS "literature_summary_entries" (
+  "summary_id" VARCHAR(36) NOT NULL,
+  "literature_id" VARCHAR(36) NOT NULL,
+  "organization_id" VARCHAR(36) NOT NULL,
+  PRIMARY KEY ("summary_id", "literature_id"),
+  FOREIGN KEY ("summary_id") REFERENCES "literature_summaries" ("id") ON DELETE CASCADE,
+  FOREIGN KEY ("literature_id") REFERENCES "literature_entries" ("id") ON DELETE CASCADE
 );
 
--- Create index on tenant_id and organization_id for data isolation
-CREATE INDEX IF NOT EXISTS idx_literature_summaries_tenant_org 
-ON literature_summaries(tenant_id, organization_id);
+-- Create indices for literature summary entries table
+CREATE INDEX IF NOT EXISTS "idx_literature_summary_entries_summary" ON "literature_summary_entries" ("summary_id");
+CREATE INDEX IF NOT EXISTS "idx_literature_summary_entries_literature" ON "literature_summary_entries" ("literature_id");
+CREATE INDEX IF NOT EXISTS "idx_literature_summary_entries_organization" ON "literature_summary_entries" ("organization_id");
 
--- Insert default literature sources
-INSERT INTO literature_sources (source_name, source_type, api_endpoint, requires_auth, enabled, priority)
-VALUES 
-  ('PubMed', 'academic', 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/', TRUE, TRUE, 10),
-  ('FDA', 'regulatory', 'https://api.fda.gov/', FALSE, TRUE, 9),
-  ('ClinicalTrials', 'clinical', 'https://clinicaltrials.gov/api/', FALSE, TRUE, 8)
-ON CONFLICT (id) DO NOTHING;
+-- Create function to update timestamps
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+   NEW.updated_at = NOW();
+   RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+-- Create triggers to automatically update timestamps
+CREATE TRIGGER update_literature_entries_timestamp
+BEFORE UPDATE ON literature_entries
+FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at_column();
+
+CREATE TRIGGER update_document_citations_timestamp
+BEFORE UPDATE ON document_citations
+FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at_column();
+
+CREATE TRIGGER update_literature_summaries_timestamp
+BEFORE UPDATE ON literature_summaries
+FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at_column();
+
+-- Organization access control
+CREATE OR REPLACE FUNCTION check_literature_entry_organization() RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.organization_id IS NULL THEN
+    RAISE EXCEPTION 'organization_id cannot be null';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION check_document_citation_organization() RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.organization_id IS NULL THEN
+    RAISE EXCEPTION 'organization_id cannot be null';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION check_literature_summary_organization() RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.organization_id IS NULL THEN
+    RAISE EXCEPTION 'organization_id cannot be null';
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create triggers for organization access control
+CREATE TRIGGER enforce_literature_entry_organization
+BEFORE INSERT OR UPDATE ON literature_entries
+FOR EACH ROW
+EXECUTE PROCEDURE check_literature_entry_organization();
+
+CREATE TRIGGER enforce_document_citation_organization
+BEFORE INSERT OR UPDATE ON document_citations
+FOR EACH ROW
+EXECUTE PROCEDURE check_document_citation_organization();
+
+CREATE TRIGGER enforce_literature_summary_organization
+BEFORE INSERT OR UPDATE ON literature_summaries
+FOR EACH ROW
+EXECUTE PROCEDURE check_literature_summary_organization();
+
+-- Add created_by field to all tables
+ALTER TABLE literature_entries ADD COLUMN IF NOT EXISTS created_by VARCHAR(36);
+ALTER TABLE document_citations ADD COLUMN IF NOT EXISTS created_by VARCHAR(36);
+ALTER TABLE literature_summaries ADD COLUMN IF NOT EXISTS created_by VARCHAR(36);
+
+-- Comment on tables and columns
+COMMENT ON TABLE literature_entries IS 'Stores literature entries from multiple sources for 510(k) submissions';
+COMMENT ON TABLE document_citations IS 'Stores citations to literature entries within 510(k) documents';
+COMMENT ON TABLE literature_summaries IS 'Stores AI-generated summaries of literature entries';
+COMMENT ON TABLE literature_summary_entries IS 'Maps many-to-many relationship between summaries and literature entries';

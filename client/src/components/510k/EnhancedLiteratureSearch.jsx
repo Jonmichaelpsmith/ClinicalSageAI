@@ -1,1269 +1,915 @@
 /**
  * Enhanced Literature Search Component
  * 
- * This component provides an advanced literature search interface for the 510(k) submission process,
- * with semantic search capabilities and multi-source aggregation.
+ * This component provides advanced literature search capabilities for 510(k) submissions,
+ * including semantic search, multi-source querying, and AI-powered summaries.
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import axios from 'axios';
-import debounce from 'lodash/debounce';
+import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Switch } from '@/components/ui/switch';
+import { DatePicker } from '@/components/ui/date-picker';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { formatDistanceToNow } from 'date-fns';
 import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  Checkbox,
-  Chip,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Divider,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  Grid,
-  IconButton,
-  InputAdornment,
-  InputLabel,
-  MenuItem,
-  Paper,
-  Select,
-  Slider,
-  Stack,
-  Tab,
-  Tabs,
-  TextField,
-  Typography,
-  useTheme
-} from '@mui/material';
-import {
-  Add,
-  ArrowBack,
-  BookmarkAdd,
-  CalendarMonth,
-  ExpandMore,
-  FileDownload,
-  FilterAlt,
-  Info,
-  LibraryBooks,
-  Link as LinkIcon,
-  NewReleases,
-  PictureAsPdf,
   Search,
-  Source,
-  Summarize,
-  Tune
-} from '@mui/icons-material';
-import { DataGrid } from '@mui/x-data-grid';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { format, parseISO } from 'date-fns';
+  BookOpen,
+  FileText,
+  ListFilter,
+  Calendar,
+  Database,
+  Link,
+  ArrowUpRight,
+  Bookmark,
+  BookmarkPlus,
+  Check,
+  X,
+  Download,
+  RefreshCw,
+  Sparkles,
+  Brain,
+  FileDigit,
+  Copy,
+  Clock,
+  AlignJustify
+} from 'lucide-react';
 
-// Source data for filtering
-const LITERATURE_SOURCES = [
-  { id: 'pubmed', label: 'PubMed', color: '#4285F4', icon: <LibraryBooks /> },
-  { id: 'fda', label: 'FDA Database', color: '#EA4335', icon: <Source /> },
-  { id: 'internal', label: 'Internal Documents', color: '#34A853', icon: <PictureAsPdf /> },
-  { id: 'eudamed', label: 'EUDAMED', color: '#FBBC05', icon: <LinkIcon /> },
-  { id: 'pmcid', label: 'PubMed Central', color: '#8F44AD', icon: <BookmarkAdd /> }
-];
-
-// Citation styles
-const CITATION_STYLES = [
-  { id: 'APA', label: 'APA Style' },
-  { id: 'AMA', label: 'AMA Style' },
-  { id: 'Vancouver', label: 'Vancouver Style' },
-  { id: 'Harvard', label: 'Harvard Style' },
-  { id: 'Chicago', label: 'Chicago Style' }
-];
-
-// Summary types
-const SUMMARY_TYPES = [
-  { id: 'abstract', label: 'Abstract Summary' },
-  { id: 'conclusion', label: 'Key Conclusions' },
-  { id: 'methods', label: 'Methods Summary' },
-  { id: 'results', label: 'Results Summary' },
-  { id: 'regulatory', label: 'Regulatory Implications' },
-  { id: 'full', label: 'Full Summary' }
-];
-
-/**
- * Enhanced Literature Search Component
- * 
- * @param {Object} props Component props
- * @param {string} props.documentId 510(k) document ID
- * @param {string} props.deviceType Device type for context-specific search
- * @param {string} props.predicateDevice Predicate device for context
- * @param {function} props.onBack Callback for back navigation
- * @param {function} props.onAddCitation Callback when citation is added
- */
-const EnhancedLiteratureSearch = ({ 
-  documentId, 
-  deviceType = '', 
-  predicateDevice = '',
-  onBack,
-  onAddCitation
-}) => {
-  const theme = useTheme();
-
-  // Search state
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [selectedResult, setSelectedResult] = useState(null);
-  const [activeTab, setActiveTab] = useState(0);
+const EnhancedLiteratureSearch = ({ documentId, documentType = '510k', onCiteReference, compact = false }) => {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
   
-  // Filters state
-  const [filters, setFilters] = useState({
-    sources: LITERATURE_SOURCES.map(s => s.id),
+  // State for search parameters
+  const [searchParams, setSearchParams] = useState({
+    query: '',
+    sources: [],
     startDate: null,
     endDate: null,
-    relevanceThreshold: 20,
-    journals: [],
-    authors: [],
-    includePredicateContext: true
+    useSemanticSearch: true,
+    filters: {}
   });
   
-  // Filter dialog state
-  const [showFilters, setShowFilters] = useState(false);
-  const [tempFilters, setTempFilters] = useState({...filters});
+  // State for search execution
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [totalResults, setTotalResults] = useState(0);
+  const [executionTime, setExecutionTime] = useState(0);
+  const [sourcesQueried, setSourcesQueried] = useState([]);
   
-  // Summary dialog state
-  const [showSummary, setShowSummary] = useState(false);
-  const [summaryType, setSummaryType] = useState('abstract');
-  const [summaryContent, setSummaryContent] = useState('');
-  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  // State for summary generation
+  const [selectedEntries, setSelectedEntries] = useState([]);
+  const [summaryType, setSummaryType] = useState('standard');
+  const [summaryFocus, setSummaryFocus] = useState('');
+  const [isSummaryDialogOpen, setIsSummaryDialogOpen] = useState(false);
+  const [generatedSummary, setGeneratedSummary] = useState('');
+  const [isSummarizing, setIsSummarizing] = useState(false);
   
-  // Citation dialog state
-  const [showCitation, setShowCitation] = useState(false);
-  const [citationStyle, setCitationStyle] = useState('APA');
-  const [citationText, setCitationText] = useState('');
-  const [sectionId, setSectionId] = useState('');
-  const [sections, setSections] = useState([
-    { id: 'literature-review', name: 'Literature Review' },
-    { id: 'device-description', name: 'Device Description' },
-    { id: 'substantial-equivalence', name: 'Substantial Equivalence' },
-    { id: 'performance-data', name: 'Performance Data' },
-    { id: 'clinical-studies', name: 'Clinical Studies' }
-  ]);
+  // State for UI
+  const [activeTab, setActiveTab] = useState('search');
+  const [viewMode, setViewMode] = useState('list');
   
-  // Error handling
-  const [error, setError] = useState(null);
+  // Fetch available literature sources
+  const { data: sources = [], isLoading: isLoadingSources } = useQuery({
+    queryKey: ['/api/510k/literature/sources'],
+    refetchOnWindowFocus: false
+  });
   
-  // Data grid columns
-  const columns = [
-    { 
-      field: 'source', 
-      headerName: 'Source', 
-      width: 140,
-      renderCell: (params) => {
-        const source = LITERATURE_SOURCES.find(s => s.id === params.value) || 
-          { label: params.value, color: '#777', icon: <LinkIcon /> };
-        
-        return (
-          <Chip
-            icon={source.icon}
-            label={source.label}
-            size="small"
-            style={{ 
-              backgroundColor: `${source.color}22`,
-              borderColor: source.color,
-              color: source.color
-            }}
-            variant="outlined"
-          />
-        );
-      }
+  // Fetch recent literature entries
+  const { data: recentLiterature = [], isLoading: isLoadingRecent } = useQuery({
+    queryKey: ['/api/510k/literature/recent'],
+    queryFn: async () => {
+      const response = await apiRequest('/api/510k/literature/recent?limit=10');
+      return response.entries || [];
     },
-    { 
-      field: 'title', 
-      headerName: 'Title', 
-      flex: 1,
-      renderCell: (params) => (
-        <Typography variant="body2" style={{ fontWeight: 500 }}>
-          {params.value}
-        </Typography>
-      )
+    refetchOnWindowFocus: false
+  });
+  
+  // Fetch recent summaries
+  const { data: recentSummaries = [], isLoading: isLoadingSummaries } = useQuery({
+    queryKey: ['/api/510k/literature/summaries'],
+    queryFn: async () => {
+      const response = await apiRequest('/api/510k/literature/summaries?limit=5');
+      return response.summaries || [];
     },
-    { 
-      field: 'publication_date', 
-      headerName: 'Date', 
-      width: 120,
-      valueGetter: (params) => {
-        if (!params.value) return '';
-        try {
-          return format(new Date(params.value), 'MMM d, yyyy');
-        } catch (e) {
-          return params.value;
-        }
-      }
-    },
-    { 
-      field: 'relevance_score', 
-      headerName: 'Relevance', 
-      width: 120,
-      renderCell: (params) => {
-        const score = params.value || 0;
-        const color = score > 80 ? '#4caf50' : 
-                      score > 60 ? '#ff9800' : 
-                      score > 40 ? '#ffc107' : 
-                      '#f44336';
-        return (
-          <Box display="flex" alignItems="center">
-            <Box width={50} mr={1}>
-              <LinearProgressWithLabel value={score} color={color} />
-            </Box>
-            <Typography variant="body2">{Math.round(score)}%</Typography>
-          </Box>
-        );
-      }
-    },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 160,
-      renderCell: (params) => (
-        <Box>
-          <IconButton 
-            size="small" 
-            onClick={() => handleViewSummary(params.row)}
-            title="View Summary"
-          >
-            <Summarize fontSize="small" />
-          </IconButton>
-          <IconButton 
-            size="small" 
-            onClick={() => handleAddCitation(params.row)}
-            title="Add Citation"
-          >
-            <Add fontSize="small" />
-          </IconButton>
-          {params.row.url && (
-            <IconButton 
-              size="small" 
-              component="a" 
-              href={params.row.url}
-              target="_blank"
-              rel="noopener noreferrer" 
-              title="Open Original Source"
-            >
-              <LinkIcon fontSize="small" />
-            </IconButton>
-          )}
-        </Box>
-      ),
-    }
-  ];
-
-  // Debounced search function
-  const debouncedSearch = useCallback(
-    debounce((query, filters) => {
-      if (!query.trim()) return;
-      
-      performSearch(query, filters);
-    }, 500),
-    []
-  );
-
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    const query = e.target.value;
-    setSearchQuery(query);
-    
-    if (query.trim()) {
-      debouncedSearch(query, filters);
-    } else {
-      setSearchResults([]);
-    }
-  };
-
-  // Perform search API call
-  const performSearch = async (query, filters) => {
-    setIsSearching(true);
-    setError(null);
-    
-    try {
-      // Build query parameters
-      const params = {
-        query,
-        source: filters.sources,
-        relevanceThreshold: filters.relevanceThreshold
-      };
-      
-      // Add date filters if present
-      if (filters.startDate) {
-        params.startDate = format(filters.startDate, 'yyyy-MM-dd');
-      }
-      
-      if (filters.endDate) {
-        params.endDate = format(filters.endDate, 'yyyy-MM-dd');
-      }
-      
-      // Add device context if present
-      if (deviceType) {
-        params.deviceType = deviceType;
-      }
-      
-      // Add predicate device context if enabled and present
-      if (filters.includePredicateContext && predicateDevice) {
-        params.predicate = true;
-      }
-      
-      // Make API call
-      const response = await axios.get('/api/510k/literature/search', { params });
-      
-      // Process and set results
-      setSearchResults(response.data.entries.map((entry, index) => ({
-        ...entry,
-        id: entry.id || `result-${index}`
-      })));
-    } catch (error) {
-      console.error('Error searching literature:', error);
-      setError('Failed to search literature. Please try again later.');
-    } finally {
-      setIsSearching(false);
-    }
-  };
-
-  // Handle filter changes
-  const handleFilterChange = (filter, value) => {
-    setTempFilters(prev => ({
-      ...prev,
-      [filter]: value
-    }));
-  };
-
-  // Apply filters
-  const applyFilters = () => {
-    setFilters(tempFilters);
-    setShowFilters(false);
-    
-    if (searchQuery.trim()) {
-      performSearch(searchQuery, tempFilters);
-    }
-  };
-
-  // Reset filters
-  const resetFilters = () => {
-    const defaultFilters = {
-      sources: LITERATURE_SOURCES.map(s => s.id),
-      startDate: null,
-      endDate: null,
-      relevanceThreshold: 20,
-      journals: [],
-      authors: [],
-      includePredicateContext: true
-    };
-    
-    setTempFilters(defaultFilters);
-  };
-
-  // Custom progress bar component
-  const LinearProgressWithLabel = ({ value, color }) => {
-    return (
-      <Box sx={{ position: 'relative', display: 'inline-flex', width: '100%' }}>
-        <Box
-          sx={{
-            width: '100%',
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: '#eee',
-          }}
-        >
-          <Box
-            sx={{
-              height: '100%',
-              borderRadius: 4,
-              backgroundColor: color,
-              width: `${value}%`,
-            }}
-          />
-        </Box>
-      </Box>
-    );
-  };
-
-  // Handle viewing a summary
-  const handleViewSummary = async (literature) => {
-    setSelectedResult(literature);
-    setSummaryType('abstract');
-    setSummaryContent('');
-    setShowSummary(true);
-    
-    try {
-      await generateSummary(literature.id, 'abstract');
-    } catch (error) {
-      setSummaryContent('Failed to generate summary. Please try again.');
-    }
-  };
-
-  // Generate a summary
-  const generateSummary = async (literatureId, type) => {
-    setIsGeneratingSummary(true);
-    
-    try {
-      const response = await axios.post(`/api/510k/literature/${literatureId}/summary`, {
-        type,
-        regulatoryContext: true,
-        device510k: true,
-        comparativeFocus: type === 'regulatory'
-      });
-      
-      setSummaryContent(response.data.summary);
-    } catch (error) {
-      console.error('Error generating summary:', error);
-      throw error;
-    } finally {
-      setIsGeneratingSummary(false);
-    }
-  };
-
-  // Handle changing summary type
-  const handleSummaryTypeChange = async (event) => {
-    const newType = event.target.value;
-    setSummaryType(newType);
-    
-    if (selectedResult) {
+    refetchOnWindowFocus: false
+  });
+  
+  // Mutation for performing a literature search
+  const searchMutation = useMutation({
+    mutationFn: async (params) => {
+      setIsSearching(true);
       try {
-        await generateSummary(selectedResult.id, newType);
-      } catch (error) {
-        setSummaryContent('Failed to generate summary. Please try again.');
+        const response = await apiRequest('/api/510k/literature/search', 'POST', params);
+        return response;
+      } finally {
+        setIsSearching(false);
       }
-    }
-  };
-
-  // Handle adding a citation
-  const handleAddCitation = (literature) => {
-    setSelectedResult(literature);
-    setSectionId(sections[0].id);
-    
-    // Generate default citation text based on style
-    generateCitationText(literature, 'APA');
-    
-    setShowCitation(true);
-  };
-
-  // Generate citation text based on style
-  const generateCitationText = (literature, style) => {
-    setCitationStyle(style);
-    
-    let citation = '';
-    const {
-      title,
-      authors,
-      journal,
-      publication_date,
-      doi,
-      url
-    } = literature;
-    
-    const year = publication_date ? 
-      new Date(publication_date).getFullYear() : 
-      'n.d.';
-    
-    switch (style) {
-      case 'APA':
-        citation = `${authors || 'Author, A.'} (${year}). ${title}. ${journal || ''}`;
-        if (doi) citation += ` doi:${doi}`;
-        break;
-        
-      case 'AMA':
-        citation = `${authors || 'Author A'}. ${title}. ${journal || ''}. `;
-        citation += `Published ${publication_date ? format(new Date(publication_date), 'MMM d, yyyy') : 'n.d.'}.`;
-        if (doi) citation += ` doi:${doi}`;
-        break;
-        
-      case 'Vancouver':
-        citation = `${authors ? authors.split(',')[0] + ' et al.' : 'Author A et al.'}. `;
-        citation += `${title}. ${journal || ''}. ${year};`;
-        break;
-        
-      case 'Harvard':
-        citation = `${authors || 'Author, A.'} (${year}) "${title}", ${journal || ''}`;
-        break;
-        
-      case 'Chicago':
-        citation = `${authors || 'Author, A.'} "${title}" ${journal || ''} (${year})`;
-        break;
-        
-      default:
-        citation = `${authors || 'Author, A.'} (${year}). ${title}. ${journal || ''}`;
-    }
-    
-    setCitationText(citation);
-  };
-
-  // Handle citation style change
-  const handleCitationStyleChange = (event) => {
-    const style = event.target.value;
-    
-    if (selectedResult) {
-      generateCitationText(selectedResult, style);
-    }
-  };
-
-  // Submit citation
-  const submitCitation = async () => {
-    try {
-      const response = await axios.post('/api/510k/literature/citations', {
-        documentId,
-        sectionId,
-        literatureId: selectedResult.id,
-        citationText,
-        citationStyle
+    },
+    onSuccess: (data) => {
+      setSearchResults(data.results || []);
+      setTotalResults(data.total || 0);
+      setExecutionTime(data.execution_time_ms || 0);
+      setSourcesQueried(data.sources_queried || []);
+      toast({
+        title: 'Search completed',
+        description: `Found ${data.total} results in ${(data.execution_time_ms / 1000).toFixed(2)} seconds`,
       });
-      
-      setShowCitation(false);
-      
-      // Call the onAddCitation callback if provided
-      if (onAddCitation) {
-        onAddCitation({
-          id: response.data.id,
-          literature: selectedResult,
-          citationText,
-          citationStyle,
-          sectionId
-        });
-      }
-    } catch (error) {
-      console.error('Error adding citation:', error);
-      setError('Failed to add citation. Please try again later.');
+    },
+    onError: (error) => {
+      toast({
+        title: 'Search failed',
+        description: error.message || 'Failed to search literature',
+        variant: 'destructive',
+      });
     }
-  };
-
-  // Auto-focus search input on component mount
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      const searchInput = document.getElementById('literature-search-input');
-      if (searchInput) {
-        searchInput.focus();
+  });
+  
+  // Mutation for generating a summary
+  const summarizeMutation = useMutation({
+    mutationFn: async (params) => {
+      setIsSummarizing(true);
+      try {
+        const response = await apiRequest('/api/510k/literature/summarize', 'POST', params);
+        return response;
+      } finally {
+        setIsSummarizing(false);
       }
-    }, 100);
+    },
+    onSuccess: (data) => {
+      setGeneratedSummary(data.summary || '');
+      toast({
+        title: 'Summary generated',
+        description: `Summary generated in ${(data.processing_time_ms / 1000).toFixed(2)} seconds`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Summary generation failed',
+        description: error.message || 'Failed to generate summary',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Mutation for citing a reference
+  const citeMutation = useMutation({
+    mutationFn: async (params) => {
+      const response = await apiRequest('/api/510k/literature/cite', 'POST', params);
+      return response;
+    },
+    onSuccess: (data) => {
+      toast({
+        title: 'Reference cited',
+        description: 'Reference has been added to your document',
+      });
+      if (onCiteReference) {
+        onCiteReference(data.citation_id);
+      }
+      // Invalidate citations query
+      queryClient.invalidateQueries({ queryKey: [`/api/510k/literature/citations/${documentId}`] });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Failed to cite reference',
+        description: error.message || 'An error occurred while citing the reference',
+        variant: 'destructive',
+      });
+    }
+  });
+  
+  // Handle search execution
+  const handleSearch = useCallback(() => {
+    if (!searchParams.query) {
+      toast({
+        title: 'Search query required',
+        description: 'Please enter a search term',
+        variant: 'destructive',
+      });
+      return;
+    }
     
-    return () => clearTimeout(timer);
+    searchMutation.mutate(searchParams);
+  }, [searchParams, searchMutation, toast]);
+  
+  // Handle source selection
+  const handleSourceToggle = useCallback((sourceId) => {
+    setSearchParams(prev => {
+      const sources = [...prev.sources];
+      const index = sources.indexOf(sourceId);
+      
+      if (index !== -1) {
+        sources.splice(index, 1);
+      } else {
+        sources.push(sourceId);
+      }
+      
+      return { ...prev, sources };
+    });
   }, []);
+  
+  // Handle selection of entries for summary
+  const handleEntrySelection = useCallback((entryId) => {
+    setSelectedEntries(prev => {
+      const entries = [...prev];
+      const index = entries.indexOf(entryId);
+      
+      if (index !== -1) {
+        entries.splice(index, 1);
+      } else {
+        entries.push(entryId);
+      }
+      
+      return entries;
+    });
+  }, []);
+  
+  // Handle summary generation
+  const handleGenerateSummary = useCallback(() => {
+    if (selectedEntries.length === 0) {
+      toast({
+        title: 'No entries selected',
+        description: 'Please select at least one entry to summarize',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    summarizeMutation.mutate({
+      literatureIds: selectedEntries,
+      summaryType,
+      focus: summaryFocus || undefined
+    });
+  }, [selectedEntries, summaryType, summaryFocus, summarizeMutation, toast]);
+  
+  // Handle citation of a reference
+  const handleCiteReference = useCallback((entryId, sectionId = 'main', sectionName = 'Main Text') => {
+    if (!documentId) {
+      toast({
+        title: 'Document ID required',
+        description: 'Cannot cite reference without a document ID',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    citeMutation.mutate({
+      literatureId: entryId,
+      documentId,
+      documentType,
+      sectionId,
+      sectionName,
+      citationText: ''
+    });
+  }, [documentId, documentType, citeMutation, toast]);
+  
+  // Handle copying summary to clipboard
+  const handleCopySummary = useCallback(() => {
+    navigator.clipboard.writeText(generatedSummary).then(() => {
+      toast({
+        title: 'Summary copied',
+        description: 'The summary has been copied to your clipboard',
+      });
+    }).catch(err => {
+      toast({
+        title: 'Failed to copy',
+        description: 'Could not copy the summary to clipboard',
+        variant: 'destructive',
+      });
+    });
+  }, [generatedSummary, toast]);
 
-  return (
-    <Box>
-      {/* Header section */}
-      <Box mb={2} display="flex" alignItems="center">
-        <IconButton 
-          onClick={onBack}
-          sx={{ mr: 1 }}
-        >
-          <ArrowBack />
-        </IconButton>
-        <Typography variant="h5" component="h2">
-          Enhanced Literature Search
-        </Typography>
-        
-        <Box sx={{ ml: 'auto', display: 'flex', alignItems: 'center' }}>
-          <Button 
-            variant="outlined" 
-            startIcon={<Info />}
-            sx={{ mr: 1 }}
-            size="small"
-          >
-            Help
-          </Button>
-        </Box>
-      </Box>
-      
-      {/* Context chips */}
-      {(deviceType || predicateDevice) && (
-        <Box mb={2} display="flex" flexWrap="wrap" gap={1}>
-          {deviceType && (
-            <Chip 
-              label={`Device: ${deviceType}`} 
-              size="small" 
-              color="primary" 
-              variant="outlined"
+  // Render compact view
+  if (compact) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-lg flex items-center">
+            <Search className="h-5 w-5 mr-2" />
+            Enhanced Literature Search
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex mb-4">
+            <Input
+              placeholder="Search for medical device literature..."
+              value={searchParams.query}
+              onChange={(e) => setSearchParams({ ...searchParams, query: e.target.value })}
+              className="mr-2 flex-1"
             />
-          )}
-          {predicateDevice && (
-            <Chip 
-              label={`Predicate: ${predicateDevice}`} 
-              size="small"
-              color="secondary"
-              variant="outlined"
-            />
-          )}
-        </Box>
-      )}
-      
-      {/* Search box */}
-      <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
-        <TextField
-          id="literature-search-input"
-          fullWidth
-          label="Search for literature..."
-          variant="outlined"
-          value={searchQuery}
-          onChange={handleSearchChange}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search />
-              </InputAdornment>
-            ),
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton 
-                  onClick={() => setShowFilters(true)}
-                  edge="end"
-                >
-                  <FilterAlt />
-                </IconButton>
-              </InputAdornment>
-            )
-          }}
-          placeholder="Example: performance data for transcatheter valve"
-        />
-        
-        {/* Active filters display */}
-        {(filters.sources.length !== LITERATURE_SOURCES.length || 
-          filters.startDate || 
-          filters.endDate ||
-          filters.relevanceThreshold !== 20) && (
-          <Box mt={1} display="flex" flexWrap="wrap" gap={0.5}>
-            {filters.sources.length !== LITERATURE_SOURCES.length && (
-              <Chip 
-                label={`Sources: ${filters.sources.length}`} 
-                size="small"
-                onDelete={() => setShowFilters(true)}
-                color="primary"
-                variant="outlined"
-              />
-            )}
-            
-            {filters.startDate && (
-              <Chip 
-                label={`From: ${format(filters.startDate, 'MM/dd/yyyy')}`} 
-                size="small"
-                onDelete={() => setShowFilters(true)}
-                color="primary"
-                variant="outlined"
-              />
-            )}
-            
-            {filters.endDate && (
-              <Chip 
-                label={`To: ${format(filters.endDate, 'MM/dd/yyyy')}`} 
-                size="small"
-                onDelete={() => setShowFilters(true)}
-                color="primary"
-                variant="outlined"
-              />
-            )}
-            
-            {filters.relevanceThreshold !== 20 && (
-              <Chip 
-                label={`Min relevance: ${filters.relevanceThreshold}%`} 
-                size="small"
-                onDelete={() => setShowFilters(true)}
-                color="primary"
-                variant="outlined"
-              />
-            )}
-          </Box>
-        )}
-      </Paper>
-      
-      {/* Results container */}
-      <Box mb={3} position="relative" minHeight={400}>
-        {isSearching && (
-          <Box
-            position="absolute"
-            top={0}
-            left={0}
-            right={0}
-            bottom={0}
-            display="flex"
-            alignItems="center"
-            justifyContent="center"
-            bgcolor="rgba(255, 255, 255, 0.7)"
-            zIndex={1}
-          >
-            <CircularProgress />
-          </Box>
-        )}
-        
-        {error && (
-          <Paper elevation={1} sx={{ p: 2, mb: 2, bgcolor: '#ffebee' }}>
-            <Typography color="error">{error}</Typography>
-          </Paper>
-        )}
-        
-        {searchResults.length > 0 ? (
-          <Box>
-            <Box mb={2} display="flex" justifyContent="space-between" alignItems="center">
-              <Typography variant="subtitle1">
-                {searchResults.length} results found
-              </Typography>
-              
-              <Box display="flex" alignItems="center">
-                <Tabs 
-                  value={activeTab} 
-                  onChange={(e, newValue) => setActiveTab(newValue)}
-                  aria-label="view tabs"
-                  sx={{ mr: 2 }}
-                >
-                  <Tab label="Table View" />
-                  <Tab label="Card View" />
-                </Tabs>
-              </Box>
-            </Box>
-            
-            {activeTab === 0 ? (
-              <div style={{ height: 500, width: '100%' }}>
-                <DataGrid
-                  rows={searchResults}
-                  columns={columns}
-                  pageSize={10}
-                  rowsPerPageOptions={[10, 25, 50]}
-                  disableSelectionOnClick
-                  isRowSelectable={() => false}
-                  density="standard"
-                  getRowClassName={(params) => {
-                    return params.row.relevance_score > 80 ? 'high-relevance' : '';
-                  }}
-                  sx={{
-                    '& .high-relevance': {
-                      bgcolor: `${theme.palette.success.light}22`
-                    }
-                  }}
-                />
-              </div>
-            ) : (
-              <Grid container spacing={2}>
-                {searchResults.map((result) => (
-                  <Grid item xs={12} sm={6} md={4} key={result.id}>
-                    <Card 
-                      elevation={2}
-                      sx={{
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        transition: 'transform 0.2s',
-                        '&:hover': {
-                          transform: 'translateY(-4px)',
-                          boxShadow: theme.shadows[4]
-                        }
-                      }}
-                    >
-                      <CardHeader
-                        title={
-                          <Box display="flex" alignItems="flex-start">
-                            {/* Source chip */}
-                            <Box mr={1}>
-                              {(() => {
-                                const source = LITERATURE_SOURCES.find(s => s.id === result.source) || 
-                                  { label: result.source, color: '#777', icon: <LinkIcon /> };
-                                
-                                return (
-                                  <Chip
-                                    icon={source.icon}
-                                    label={source.label}
-                                    size="small"
-                                    style={{ 
-                                      backgroundColor: `${source.color}22`,
-                                      borderColor: source.color,
-                                      color: source.color
-                                    }}
-                                    variant="outlined"
-                                  />
-                                );
-                              })()}
-                            </Box>
-                            
-                            {/* Date if available */}
-                            {result.publication_date && (
-                              <Typography variant="caption" color="textSecondary">
-                                {format(new Date(result.publication_date), 'MMM d, yyyy')}
-                              </Typography>
-                            )}
-                            
-                            {/* Relevance indicator */}
-                            <Box ml="auto">
-                              <Chip
-                                label={`${Math.round(result.relevance_score || 0)}%`}
-                                size="small"
-                                sx={{
-                                  bgcolor: (() => {
-                                    const score = result.relevance_score || 0;
-                                    return score > 80 ? `${theme.palette.success.light}22` :
-                                           score > 60 ? `${theme.palette.warning.light}22` :
-                                           score > 40 ? `${theme.palette.info.light}22` :
-                                           `${theme.palette.error.light}22`;
-                                  })(),
-                                  borderColor: (() => {
-                                    const score = result.relevance_score || 0;
-                                    return score > 80 ? theme.palette.success.main :
-                                           score > 60 ? theme.palette.warning.main :
-                                           score > 40 ? theme.palette.info.main :
-                                           theme.palette.error.main;
-                                  })(),
-                                  color: (() => {
-                                    const score = result.relevance_score || 0;
-                                    return score > 80 ? theme.palette.success.main :
-                                           score > 60 ? theme.palette.warning.main :
-                                           score > 40 ? theme.palette.info.main :
-                                           theme.palette.error.main;
-                                  })()
-                                }}
-                                variant="outlined"
-                              />
-                            </Box>
-                          </Box>
-                        }
-                        subheader={
-                          <Typography 
-                            variant="subtitle1" 
-                            sx={{ mt: 2, fontSize: '0.95rem', fontWeight: 500 }}
-                          >
-                            {result.title}
-                          </Typography>
-                        }
-                      />
-                      <CardContent sx={{ flexGrow: 1 }}>
-                        {result.abstract && (
-                          <Typography 
-                            variant="body2" 
-                            color="textSecondary"
-                            sx={{
-                              display: '-webkit-box',
-                              WebkitLineClamp: 4,
-                              WebkitBoxOrient: 'vertical',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis'
-                            }}
-                          >
-                            {result.abstract}
-                          </Typography>
-                        )}
-                        
-                        {result.authors && (
-                          <Typography 
-                            variant="body2" 
-                            color="textSecondary"
-                            sx={{ mt: 1, fontStyle: 'italic' }}
-                          >
-                            {result.authors}
-                          </Typography>
-                        )}
-                        
-                        {result.journal && (
-                          <Typography 
-                            variant="body2" 
-                            color="textSecondary"
-                            sx={{ mt: 0.5 }}
-                          >
-                            {result.journal}
-                          </Typography>
-                        )}
-                      </CardContent>
-                      
-                      <Divider />
-                      
-                      <Box 
-                        p={1} 
-                        display="flex" 
-                        justifyContent="space-between"
-                        alignItems="center"
-                      >
-                        <IconButton 
-                          size="small" 
-                          onClick={() => handleViewSummary(result)}
-                          title="View Summary"
-                        >
-                          <Summarize fontSize="small" />
-                        </IconButton>
-                        
-                        <IconButton 
-                          size="small" 
-                          onClick={() => handleAddCitation(result)}
-                          title="Add Citation"
-                          color="primary"
-                        >
-                          <Add fontSize="small" />
-                        </IconButton>
-                        
-                        {result.url && (
-                          <IconButton 
-                            size="small" 
-                            component="a" 
-                            href={result.url}
-                            target="_blank"
-                            rel="noopener noreferrer" 
-                            title="Open Original Source"
-                          >
-                            <LinkIcon fontSize="small" />
-                          </IconButton>
-                        )}
-                        
-                        {result.pdf_url && (
-                          <IconButton 
-                            size="small" 
-                            component="a" 
-                            href={result.pdf_url}
-                            target="_blank"
-                            rel="noopener noreferrer" 
-                            title="Download PDF"
-                          >
-                            <FileDownload fontSize="small" />
-                          </IconButton>
-                        )}
-                      </Box>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            )}
-          </Box>
-        ) : (
-          !isSearching && searchQuery && (
-            <Box 
-              display="flex" 
-              flexDirection="column" 
-              alignItems="center" 
-              justifyContent="center"
-              p={4}
-            >
-              <Typography variant="h6" color="textSecondary" gutterBottom>
-                No results found
-              </Typography>
-              <Typography variant="body2" color="textSecondary" align="center">
-                Try adjusting your search terms or filters.
-              </Typography>
-            </Box>
-          )
-        )}
-        
-        {!searchQuery && !isSearching && (
-          <Box 
-            display="flex" 
-            flexDirection="column" 
-            alignItems="center" 
-            justifyContent="center"
-            p={4}
-          >
-            <Search fontSize="large" color="disabled" sx={{ mb: 2, fontSize: 60 }} />
-            <Typography variant="h6" color="textSecondary" gutterBottom>
-              Start your literature search
-            </Typography>
-            <Typography variant="body2" color="textSecondary" align="center" sx={{ maxWidth: 450 }}>
-              Search across multiple sources including PubMed, FDA databases, 
-              and internal documents. For 510(k) submissions, try searching for 
-              literature related to your device type and predicate device.
-            </Typography>
-          </Box>
-        )}
-      </Box>
-      
-      {/* Filter dialog */}
-      <Dialog
-        open={showFilters}
-        onClose={() => setShowFilters(false)}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box display="flex" alignItems="center">
-            <FilterAlt sx={{ mr: 1 }} />
-            Search Filters
-          </Box>
-        </DialogTitle>
-        
-        <DialogContent>
-          <Grid container spacing={3}>
-            {/* Sources filter */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Literature Sources
-              </Typography>
-              <FormGroup row>
-                {LITERATURE_SOURCES.map((source) => (
-                  <FormControlLabel
-                    key={source.id}
-                    control={
-                      <Checkbox
-                        checked={tempFilters.sources.includes(source.id)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            handleFilterChange('sources', [
-                              ...tempFilters.sources,
-                              source.id
-                            ]);
-                          } else {
-                            handleFilterChange(
-                              'sources',
-                              tempFilters.sources.filter(s => s !== source.id)
-                            );
-                          }
-                        }}
-                        style={{ color: source.color }}
-                      />
-                    }
-                    label={
-                      <Box display="flex" alignItems="center">
-                        {source.icon}
-                        <Typography sx={{ ml: 0.5 }}>{source.label}</Typography>
-                      </Box>
-                    }
-                  />
-                ))}
-              </FormGroup>
-            </Grid>
-            
-            {/* Date range filter */}
-            <Grid item xs={12} sm={6}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  label="From Date"
-                  value={tempFilters.startDate}
-                  onChange={(newValue) => {
-                    handleFilterChange('startDate', newValue);
-                  }}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
-                />
-              </LocalizationProvider>
-            </Grid>
-            
-            <Grid item xs={12} sm={6}>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  label="To Date"
-                  value={tempFilters.endDate}
-                  onChange={(newValue) => {
-                    handleFilterChange('endDate', newValue);
-                  }}
-                  renderInput={(params) => <TextField {...params} fullWidth />}
-                />
-              </LocalizationProvider>
-            </Grid>
-            
-            {/* Relevance threshold */}
-            <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
-                Minimum Relevance Score: {tempFilters.relevanceThreshold}%
-              </Typography>
-              <Slider
-                value={tempFilters.relevanceThreshold}
-                onChange={(e, newValue) => {
-                  handleFilterChange('relevanceThreshold', newValue);
-                }}
-                aria-labelledby="relevance-threshold-slider"
-                valueLabelDisplay="auto"
-                step={5}
-                marks
-                min={0}
-                max={100}
-              />
-            </Grid>
-            
-            {/* Predicate device context */}
-            {predicateDevice && (
-              <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={tempFilters.includePredicateContext}
-                      onChange={(e) => {
-                        handleFilterChange('includePredicateContext', e.target.checked);
-                      }}
-                      color="primary"
-                    />
-                  }
-                  label={`Include predicate device context (${predicateDevice})`}
-                />
-              </Grid>
-            )}
-          </Grid>
-        </DialogContent>
-        
-        <DialogActions>
-          <Button onClick={resetFilters} color="inherit">
-            Reset Filters
-          </Button>
-          <Button onClick={() => setShowFilters(false)} color="inherit">
-            Cancel
-          </Button>
-          <Button onClick={applyFilters} color="primary" variant="contained">
-            Apply Filters
-          </Button>
-        </DialogActions>
-      </Dialog>
-      
-      {/* Summary dialog */}
-      <Dialog
-        open={showSummary}
-        onClose={() => setShowSummary(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box display="flex" flexDirection="column">
-            <Typography variant="h6">
-              Summary
-            </Typography>
-            {selectedResult && (
-              <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
-                {selectedResult.title}
-              </Typography>
-            )}
-          </Box>
-        </DialogTitle>
-        
-        <DialogContent>
-          <FormControl fullWidth sx={{ mb: 3 }}>
-            <InputLabel id="summary-type-label">Summary Type</InputLabel>
-            <Select
-              labelId="summary-type-label"
-              value={summaryType}
-              onChange={handleSummaryTypeChange}
-              label="Summary Type"
-            >
-              {SUMMARY_TYPES.map((type) => (
-                <MenuItem key={type.id} value={type.id}>
-                  {type.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+            <Button onClick={handleSearch} disabled={isSearching}>
+              {isSearching ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4 mr-2" />}
+              Search
+            </Button>
+          </div>
           
-          <Box minHeight={200} position="relative">
-            {isGeneratingSummary ? (
-              <Box 
-                display="flex" 
-                justifyContent="center" 
-                alignItems="center"
-                height={200}
-              >
-                <CircularProgress />
-              </Box>
-            ) : (
-              <Typography variant="body1">
-                {summaryContent}
-              </Typography>
-            )}
-          </Box>
-        </DialogContent>
-        
-        <DialogActions>
-          <Button onClick={() => setShowSummary(false)} color="inherit">
-            Close
-          </Button>
+          <div className="flex items-center mb-4 text-sm">
+            <Switch
+              checked={searchParams.useSemanticSearch}
+              onCheckedChange={(checked) => setSearchParams({ ...searchParams, useSemanticSearch: checked })}
+              id="semantic-search-compact"
+            />
+            <Label htmlFor="semantic-search-compact" className="ml-2">
+              Semantic Search
+            </Label>
+            
+            <Separator orientation="vertical" className="mx-2 h-4" />
+            
+            <Label className="mr-2">Sources:</Label>
+            <div className="flex space-x-2">
+              {!isLoadingSources && sources.slice(0, 3).map((source) => (
+                <Badge 
+                  key={source.id} 
+                  variant={searchParams.sources.includes(source.source_name) ? "default" : "outline"}
+                  className="cursor-pointer"
+                  onClick={() => handleSourceToggle(source.source_name)}
+                >
+                  {source.source_name}
+                </Badge>
+              ))}
+            </div>
+          </div>
+          
+          {searchResults.length > 0 ? (
+            <ScrollArea className="h-60 rounded-md border p-2">
+              {searchResults.slice(0, 5).map((entry) => (
+                <div key={entry.id} className="mb-3 p-2 rounded hover:bg-accent">
+                  <div className="flex justify-between items-start">
+                    <h4 className="font-medium text-sm">{entry.title}</h4>
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      onClick={() => handleCiteReference(entry.id)}
+                    >
+                      <BookmarkPlus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="text-xs text-muted-foreground mt-1">
+                    {entry.source_name} • {entry.publication_date ? new Date(entry.publication_date).toLocaleDateString() : 'Unknown date'}
+                  </div>
+                </div>
+              ))}
+              {searchResults.length > 5 && (
+                <div className="text-center text-sm text-muted-foreground py-2">
+                  + {searchResults.length - 5} more results
+                </div>
+              )}
+            </ScrollArea>
+          ) : (
+            <div className="h-60 flex flex-col items-center justify-center text-center rounded-md border p-4">
+              <BookOpen className="h-10 w-10 text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">
+                {isSearching 
+                  ? 'Searching literature sources...' 
+                  : 'Search for medical literature to cite in your 510(k) submission'}
+              </p>
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-between pt-2">
+          <div className="text-xs text-muted-foreground">
+            {totalResults > 0 && `${totalResults} results in ${(executionTime / 1000).toFixed(2)}s`}
+          </div>
           <Button 
-            onClick={() => {
-              // First close the summary
-              setShowSummary(false);
+            variant="outline" 
+            size="sm" 
+            onClick={() => setIsSummaryDialogOpen(true)}
+            disabled={selectedEntries.length === 0}
+          >
+            <Sparkles className="h-4 w-4 mr-1" />
+            Summarize
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  // Render full view
+  return (
+    <div className="literature-search-container">
+      <Tabs defaultValue="search" value={activeTab} onValueChange={setActiveTab}>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-2xl font-bold">Enhanced Literature Discovery</h2>
+          <TabsList>
+            <TabsTrigger value="search" className="flex items-center">
+              <Search className="h-4 w-4 mr-2" />
+              Search
+            </TabsTrigger>
+            <TabsTrigger value="recent" className="flex items-center">
+              <Clock className="h-4 w-4 mr-2" />
+              Recent
+            </TabsTrigger>
+            <TabsTrigger value="summaries" className="flex items-center">
+              <Brain className="h-4 w-4 mr-2" />
+              Summaries
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        
+        <TabsContent value="search">
+          <Card>
+            <CardHeader>
+              <CardTitle>Literature Search</CardTitle>
+              <CardDescription>
+                Search across multiple literature sources to find relevant information for your 510(k) submission.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="search-controls space-y-4">
+                <div className="flex space-x-2">
+                  <div className="flex-1">
+                    <Input
+                      placeholder="Search for medical device literature, clinical studies, predicate devices..."
+                      value={searchParams.query}
+                      onChange={(e) => setSearchParams({ ...searchParams, query: e.target.value })}
+                      className="w-full"
+                    />
+                  </div>
+                  <Button onClick={handleSearch} disabled={isSearching}>
+                    {isSearching ? <RefreshCw className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2" />}
+                    Search
+                  </Button>
+                </div>
+                
+                <div className="search-options">
+                  <Accordion type="single" collapsible defaultValue="sources">
+                    <AccordionItem value="sources">
+                      <AccordionTrigger>
+                        <span className="flex items-center">
+                          <Database className="h-4 w-4 mr-2" />
+                          Literature Sources
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="source-selector grid grid-cols-2 md:grid-cols-3 gap-2 pt-2">
+                          {isLoadingSources ? (
+                            <>
+                              <Skeleton className="h-8 w-full" />
+                              <Skeleton className="h-8 w-full" />
+                              <Skeleton className="h-8 w-full" />
+                            </>
+                          ) : (
+                            sources.map((source) => (
+                              <div key={source.id} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`source-${source.id}`}
+                                  checked={searchParams.sources.includes(source.source_name)}
+                                  onCheckedChange={() => handleSourceToggle(source.source_name)}
+                                />
+                                <Label
+                                  htmlFor={`source-${source.id}`}
+                                  className="cursor-pointer"
+                                >
+                                  {source.source_name}
+                                </Label>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    
+                    <AccordionItem value="filters">
+                      <AccordionTrigger>
+                        <span className="flex items-center">
+                          <ListFilter className="h-4 w-4 mr-2" />
+                          Advanced Filters
+                        </span>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="advanced-filters grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                          <div className="date-range">
+                            <Label className="mb-1 block">Publication Date Range</Label>
+                            <div className="flex space-x-2">
+                              <div className="flex-1">
+                                <DatePicker
+                                  placeholder="Start date"
+                                  value={searchParams.startDate}
+                                  onChange={(date) => setSearchParams({ ...searchParams, startDate: date })}
+                                />
+                              </div>
+                              <div className="flex-1">
+                                <DatePicker
+                                  placeholder="End date"
+                                  value={searchParams.endDate}
+                                  onChange={(date) => setSearchParams({ ...searchParams, endDate: date })}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="semantic-search">
+                            <div className="flex items-center space-x-2">
+                              <Switch
+                                id="semantic-search"
+                                checked={searchParams.useSemanticSearch}
+                                onCheckedChange={(checked) => setSearchParams({ ...searchParams, useSemanticSearch: checked })}
+                              />
+                              <Label htmlFor="semantic-search">Enable Semantic Search</Label>
+                            </div>
+                            <p className="text-sm text-muted-foreground mt-1">
+                              {searchParams.useSemanticSearch
+                                ? "Using AI to find conceptually related results even if they don't match keywords exactly"
+                                : "Using exact keyword matching only"}
+                            </p>
+                          </div>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+              </div>
               
-              // Then open the citation dialog
-              if (selectedResult) {
-                handleAddCitation(selectedResult);
-              }
-            }} 
-            color="primary"
-            variant="contained"
-            startIcon={<Add />}
-          >
-            Add as Citation
-          </Button>
-        </DialogActions>
-      </Dialog>
+              <div className="search-results mt-6">
+                {isSearching ? (
+                  <div className="searching-indicator flex flex-col items-center justify-center p-8">
+                    <RefreshCw className="h-8 w-8 animate-spin text-primary mb-4" />
+                    <p className="text-lg">Searching literature sources...</p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Querying {sourcesQueried.length > 0 ? sourcesQueried.join(', ') : 'multiple sources'}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="results">
+                    {searchResults.length > 0 ? (
+                      <>
+                        <div className="results-header flex justify-between items-center mb-4">
+                          <div className="results-count">
+                            <h3 className="text-lg font-semibold">
+                              {totalResults} Results
+                              <span className="text-sm font-normal text-muted-foreground ml-2">
+                                ({(executionTime / 1000).toFixed(2)} seconds)
+                              </span>
+                            </h3>
+                          </div>
+                          <div className="view-controls flex items-center space-x-2">
+                            <Button
+                              variant={viewMode === 'list' ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => setViewMode('list')}
+                            >
+                              <AlignJustify className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant={viewMode === 'grid' ? 'default' : 'outline'}
+                              size="sm" 
+                              onClick={() => setViewMode('grid')}
+                            >
+                              <FileDigit className="h-4 w-4" />
+                            </Button>
+                            <Button 
+                              onClick={() => setIsSummaryDialogOpen(true)}
+                              disabled={selectedEntries.length === 0}
+                              size="sm"
+                            >
+                              <Sparkles className="h-4 w-4 mr-2" />
+                              Summarize Selected ({selectedEntries.length})
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        <div className={`results-list ${viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4' : 'space-y-4'}`}>
+                          {searchResults.map((entry) => (
+                            <Card key={entry.id} className="result-card">
+                              <CardHeader className="pb-2">
+                                <div className="flex justify-between items-start">
+                                  <div className="flex-1">
+                                    <Badge variant="outline" className="mb-2">
+                                      {entry.source_name}
+                                    </Badge>
+                                    <CardTitle className="text-lg">{entry.title}</CardTitle>
+                                  </div>
+                                  <Checkbox
+                                    checked={selectedEntries.includes(entry.id)}
+                                    onCheckedChange={() => handleEntrySelection(entry.id)}
+                                    className="mt-1"
+                                  />
+                                </div>
+                              </CardHeader>
+                              <CardContent className="pb-3">
+                                {entry.authors && entry.authors.length > 0 && (
+                                  <p className="text-sm mb-2">
+                                    <span className="font-medium">Authors:</span> {entry.authors.join(', ')}
+                                  </p>
+                                )}
+                                
+                                {entry.publication_date && (
+                                  <p className="text-sm mb-2">
+                                    <span className="font-medium">Published:</span> {new Date(entry.publication_date).toLocaleDateString()}
+                                  </p>
+                                )}
+                                
+                                {entry.journal && (
+                                  <p className="text-sm mb-2">
+                                    <span className="font-medium">Journal:</span> {entry.journal}
+                                  </p>
+                                )}
+                                
+                                {entry.abstract && (
+                                  <div className="abstract mt-3">
+                                    <p className="text-sm line-clamp-3">{entry.abstract}</p>
+                                  </div>
+                                )}
+                                
+                                {entry.relevance_score !== undefined && (
+                                  <div className="relevance mt-2">
+                                    <p className="text-xs text-muted-foreground">
+                                      Relevance Score: {Math.round(entry.relevance_score * 100)}%
+                                    </p>
+                                  </div>
+                                )}
+                              </CardContent>
+                              <CardFooter className="pt-0 flex justify-between">
+                                <div className="links flex gap-2">
+                                  {entry.url && (
+                                    <Button variant="outline" size="sm" asChild>
+                                      <a href={entry.url} target="_blank" rel="noopener noreferrer">
+                                        <ArrowUpRight className="h-4 w-4 mr-1" />
+                                        View Source
+                                      </a>
+                                    </Button>
+                                  )}
+                                  {entry.doi && (
+                                    <Button variant="outline" size="sm" asChild>
+                                      <a href={`https://doi.org/${entry.doi}`} target="_blank" rel="noopener noreferrer">
+                                        <Link className="h-4 w-4 mr-1" />
+                                        DOI
+                                      </a>
+                                    </Button>
+                                  )}
+                                </div>
+                                <Button 
+                                  onClick={() => handleCiteReference(entry.id)}
+                                  disabled={!documentId}
+                                >
+                                  <BookmarkPlus className="h-4 w-4 mr-2" />
+                                  Cite
+                                </Button>
+                              </CardFooter>
+                            </Card>
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="no-results flex flex-col items-center justify-center p-12 text-center">
+                        <BookOpen className="h-16 w-16 text-muted-foreground mb-4" />
+                        <h3 className="text-xl font-semibold mb-2">No Literature Found</h3>
+                        <p className="text-muted-foreground mb-4">
+                          {searchParams.query
+                            ? `No results found for "${searchParams.query}". Try broadening your search or adjusting filters.`
+                            : 'Enter a search query to find relevant literature for your 510(k) submission.'}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="recent">
+          <Card>
+            <CardHeader>
+              <CardTitle>Recently Accessed Literature</CardTitle>
+              <CardDescription>
+                Quick access to recently viewed or cited literature entries.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoadingRecent ? (
+                <div className="space-y-4">
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                  <Skeleton className="h-24 w-full" />
+                </div>
+              ) : recentLiterature.length > 0 ? (
+                <div className="space-y-4">
+                  {recentLiterature.map((entry) => (
+                    <Card key={entry.id} className="recent-entry">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-base">{entry.title}</CardTitle>
+                        <CardDescription>
+                          {entry.source_name} • {entry.publication_date ? new Date(entry.publication_date).toLocaleDateString() : 'Unknown date'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardFooter className="pt-0 flex justify-between">
+                        <div className="text-xs text-muted-foreground">
+                          Added {formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })}
+                        </div>
+                        <Button 
+                          size="sm"
+                          onClick={() => handleCiteReference(entry.id)}
+                          disabled={!documentId}
+                        >
+                          <BookmarkPlus className="h-4 w-4 mr-2" />
+                          Cite
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="no-recent flex flex-col items-center justify-center p-12 text-center">
+                  <BookOpen className="h-16 w-16 text-muted-foreground mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No Recent Literature</h3>
+                  <p className="text-muted-foreground mb-4">
+                    You haven't viewed or cited any literature entries recently.
+                  </p>
+                  <Button onClick={() => setActiveTab('search')}>
+                    <Search className="h-4 w-4 mr-2" />
+                    Search Literature
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="summaries">
+          <Card>
+            <CardHeader>
+              <CardTitle>AI-Generated Literature Summaries</CardTitle>
+              <CardDescription>
+                Access previously generated summaries or create new ones from your search results.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoadingSummaries ? (
+                <div className="space-y-6">
+                  <Skeleton className="h-32 w-full" />
+                  <Skeleton className="h-32 w-full" />
+                </div>
+              ) : recentSummaries.length > 0 ? (
+                <div className="space-y-6">
+                  {recentSummaries.map((summary) => (
+                    <Card key={summary.id} className="summary-card">
+                      <CardHeader className="pb-2">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <CardTitle className="text-base">{summary.summary_type.charAt(0).toUpperCase() + summary.summary_type.slice(1)} Summary</CardTitle>
+                            <CardDescription>
+                              {summary.literature_preview?.length > 0 
+                                ? `Based on ${summary.total_literature_count} sources including: ${summary.literature_preview.map(l => l.title).join(', ').substring(0, 100)}${summary.literature_preview.length > 1 ? '...' : ''}`
+                                : `Based on ${summary.literature_ids.length} sources`}
+                            </CardDescription>
+                          </div>
+                          <Badge variant="outline">{formatDistanceToNow(new Date(summary.created_at), { addSuffix: true })}</Badge>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <ScrollArea className="h-40 rounded-md border p-4">
+                          <div className="summary-text whitespace-pre-line">
+                            {summary.summary_text}
+                          </div>
+                        </ScrollArea>
+                      </CardContent>
+                      <CardFooter className="flex justify-end">
+                        <Button variant="outline" size="sm" onClick={() => {
+                          navigator.clipboard.writeText(summary.summary_text);
+                          toast({
+                            title: 'Summary copied',
+                            description: 'The summary has been copied to your clipboard',
+                          });
+                        }}>
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copy to Clipboard
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="no-summaries flex flex-col items-center justify-center p-12 text-center">
+                  <Brain className="h-16 w-16 text-muted-foreground mb-4" />
+                  <h3 className="text-xl font-semibold mb-2">No Summaries Generated</h3>
+                  <p className="text-muted-foreground mb-4">
+                    You haven't created any AI-powered literature summaries yet.
+                  </p>
+                  <Button onClick={() => setActiveTab('search')}>
+                    <Search className="h-4 w-4 mr-2" />
+                    Search and Summarize
+                  </Button>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
       
-      {/* Citation dialog */}
-      <Dialog
-        open={showCitation}
-        onClose={() => setShowCitation(false)}
-        maxWidth="md"
-        fullWidth
-      >
-        <DialogTitle>
-          <Box display="flex" flexDirection="column">
-            <Typography variant="h6">
-              Add Citation
-            </Typography>
-            {selectedResult && (
-              <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
-                {selectedResult.title}
-              </Typography>
-            )}
-          </Box>
-        </DialogTitle>
-        
-        <DialogContent>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel id="citation-style-label">Citation Style</InputLabel>
-                <Select
-                  labelId="citation-style-label"
-                  value={citationStyle}
-                  onChange={handleCitationStyleChange}
-                  label="Citation Style"
-                >
-                  {CITATION_STYLES.map((style) => (
-                    <MenuItem key={style.id} value={style.id}>
-                      {style.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
+      {/* Summary Dialog */}
+      <Dialog open={isSummaryDialogOpen} onOpenChange={setIsSummaryDialogOpen}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>Generate Literature Summary</DialogTitle>
+            <DialogDescription>
+              Create an AI-powered summary of the selected literature entries.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="summary-options grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="summary-type">
+              <Label htmlFor="summary-type" className="mb-2 block">Summary Type</Label>
+              <Select value={summaryType} onValueChange={setSummaryType}>
+                <SelectTrigger id="summary-type">
+                  <SelectValue placeholder="Select summary type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">Standard Summary</SelectItem>
+                  <SelectItem value="detailed">Detailed Analysis</SelectItem>
+                  <SelectItem value="critical">Critical Evaluation</SelectItem>
+                  <SelectItem value="comparison">Comparative Analysis</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel id="section-label">Document Section</InputLabel>
-                <Select
-                  labelId="section-label"
-                  value={sectionId}
-                  onChange={(e) => setSectionId(e.target.value)}
-                  label="Document Section"
-                >
-                  {sections.map((section) => (
-                    <MenuItem key={section.id} value={section.id}>
-                      {section.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            
-            <Grid item xs={12}>
-              <TextField
-                label="Citation Text"
-                multiline
-                rows={4}
-                value={citationText}
-                onChange={(e) => setCitationText(e.target.value)}
-                fullWidth
-                variant="outlined"
+            <div className="summary-focus">
+              <Label htmlFor="summary-focus" className="mb-2 block">Focus Area (Optional)</Label>
+              <Input
+                id="summary-focus"
+                placeholder="E.g., Safety, Effectiveness, Technological characteristics"
+                value={summaryFocus}
+                onChange={(e) => setSummaryFocus(e.target.value)}
               />
-            </Grid>
-          </Grid>
+            </div>
+          </div>
+          
+          <div className="selected-entries mb-4">
+            <Label className="mb-2 block">Selected Literature ({selectedEntries.length})</Label>
+            <ScrollArea className="h-32 rounded-md border p-2">
+              {searchResults
+                .filter(entry => selectedEntries.includes(entry.id))
+                .map(entry => (
+                  <div key={entry.id} className="py-1 flex justify-between">
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">{entry.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {entry.source_name} • {entry.publication_date ? new Date(entry.publication_date).toLocaleDateString() : 'Unknown date'}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEntrySelection(entry.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+            </ScrollArea>
+          </div>
+          
+          {generatedSummary && (
+            <div className="generated-summary mb-4">
+              <div className="flex justify-between items-center mb-2">
+                <Label>Generated Summary</Label>
+                <Button variant="outline" size="sm" onClick={handleCopySummary}>
+                  <Copy className="h-4 w-4 mr-2" />
+                  Copy
+                </Button>
+              </div>
+              <ScrollArea className="h-60 rounded-md border p-4">
+                <div className="whitespace-pre-line">
+                  {generatedSummary}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsSummaryDialogOpen(false)}>Cancel</Button>
+            <Button 
+              onClick={handleGenerateSummary} 
+              disabled={selectedEntries.length === 0 || isSummarizing}
+            >
+              {isSummarizing ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Generate Summary
+                </>
+              )}
+            </Button>
+          </DialogFooter>
         </DialogContent>
-        
-        <DialogActions>
-          <Button onClick={() => setShowCitation(false)} color="inherit">
-            Cancel
-          </Button>
-          <Button 
-            onClick={submitCitation} 
-            color="primary"
-            variant="contained"
-          >
-            Add Citation
-          </Button>
-        </DialogActions>
       </Dialog>
-    </Box>
+    </div>
   );
 };
 
