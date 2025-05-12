@@ -39,6 +39,13 @@ export const featureFlags: Record<string, FeatureFlag> = {
     defaultValue: true,
     enabled: true
   },
+  ENABLE_LITERATURE_DISCOVERY: {
+    id: 'ENABLE_LITERATURE_DISCOVERY',
+    name: 'Enhanced Literature Discovery',
+    description: 'Enables semantic literature search, citation management, and AI-powered summaries',
+    defaultValue: true,
+    enabled: true
+  },
   ENABLE_SECTION_RECOMMENDER: {
     id: 'ENABLE_SECTION_RECOMMENDER',
     name: 'Document Section Recommender',

@@ -2,15 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Settings, FileText, Clipboard, Database, BookOpen } from 'lucide-react';
+import { ArrowLeft, Settings, FileText, Clipboard, Database, BookOpen, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTenant } from '@/contexts/TenantContext';
 import { useNavigate } from 'wouter';
 import FDA510kService from '../services/FDA510kService';
 import { isFeatureEnabled } from '../flags/featureFlags';
 
-// Import our new components
-import { DeviceProfileForm, PredicateAnalysis } from '../components/510k';
+// Import our components
+import { 
+  DeviceProfileForm, 
+  PredicateAnalysis, 
+  EnhancedLiteratureDiscovery 
+} from '../components/510k';
 import { DocumentSectionRecommender } from '../components/documentrecommender';
 
 /**
