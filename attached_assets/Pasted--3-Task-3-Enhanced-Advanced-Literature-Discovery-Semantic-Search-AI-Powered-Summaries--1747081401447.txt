@@ -1,0 +1,168 @@
+### 3️⃣ Task 3 (Enhanced): Advanced Literature Discovery, Semantic Search & AI-Powered Summaries
+
+**Goal:** Turn literature review from a manual chore into a seamless, AI-guided process—supporting multiple sources, semantic relevance ranking, bulk summarization, citation management, and direct integration into your 510(k) report.
+
+---
+
+#### A. Unified Literature Search UI
+
+1. **Component:** `client/src/components/510k/EnhancedLiteratureSearch.jsx`
+2. **Features:**
+
+   * **Multi-source Tabs:** PubMed | ClinicalTrials.gov | Grey Lit (bioRxiv, medRxiv)
+   * **Simple + Advanced Modes:**
+
+     * *Simple Mode:* Single search box auto-injects device name + default keywords.
+     * *Advanced Mode:* Allows boolean operators, field-specific filters (author, journal), MeSH term selector.
+   * **Date Range & Publication Type Filters:** dropdowns for clinical trial, review, meta-analysis.
+   * **Semantic Relevance Toggle:** switch between keyword vs. embedding-based search (requires AI embeddings).
+   * **Live Search Results Table:**
+
+     * Columns: Title, Year, Source, Relevance Score (if semantic), “Summarize” button, checkbox
+     * Pagination or infinite scroll
+   * **Bulk Actions Toolbar:** “Summarize Selected”, “Add Citations to Report”, “Export BibTeX”
+
+---
+
+#### B. Backend: Multi-Source Aggregator & Semantic Index
+
+1. **Service:** `server/services/LiteratureAggregatorService.ts`
+
+   * **Methods:**
+
+     * `searchPubMed(query, filters)`: uses E-utilities for PMIDs + summaries
+     * `searchClinicalTrials(query, filters)`: calls WHO ICTRP or ClinicalTrials.gov API
+     * `searchPreprints(query, filters)`: scrapes bioRxiv/medRxiv APIs
+   * **Normalize** all results to a common `LiteratureResult` interface.
+
+2. **Semantic Ranking (Optional):**
+
+   * **Table:** `literature_embeddings` with columns `(id, project_id, vector)` using **pgvector**
+   * **Process:** After initial keyword fetch, generate OpenAI embeddings for each abstract, store or update vector. On “semantic” toggle, compute query embedding and run `ORDER BY embedding <-> query_embedding LIMIT 50`.
+
+---
+
+#### C. AI Summarization & Insight Extraction
+
+1. **Service:** `server/services/LiteratureSummarizerService.ts`
+
+   * **Endpoints:**
+
+     * `POST /api/510k/literature/summarize`
+     * `POST /api/510k/literature/insights`
+   * **Summarization Prompt:**
+
+     ```text
+     “Summarize the following abstract in two sentences focused on:  
+      • Safety findings  
+      • Key performance results  
+      • Any notable device-related adverse events”
+     Abstract: {abstract}
+     ```
+   * **Insight Extraction Prompt:**
+
+     ```text
+     “From this abstract, extract:  
+      1. Study design (eg. RCT, cohort)  
+      2. Sample size  
+      3. Primary efficacy endpoint  
+      4. Safety concerns  
+     Return as JSON.”
+     Abstract: {abstract}
+     ```
+
+2. **Caching & Bulk Processing:**
+
+   * Batch-summarize up to 10 abstracts per API call.
+   * Store both `summary` and `insights` JSON in DB for reuse.
+
+---
+
+#### D. Citation & Reference Management
+
+1. **DB Table:** `literature_entries` (enhanced)
+
+   ```sql
+   CREATE TABLE literature_entries (
+     id TEXT PRIMARY KEY,
+     project_id UUID REFERENCES projects(id),
+     title TEXT,
+     authors TEXT[],
+     journal TEXT,
+     year INT,
+     source TEXT,
+     abstract TEXT,
+     summary TEXT,
+     insights JSONB,
+     selected BOOLEAN DEFAULT FALSE,
+     created_at TIMESTAMPTZ DEFAULT NOW(),
+     updated_at TIMESTAMPTZ DEFAULT NOW()
+   );
+   ```
+
+2. **BibTeX Export:**
+
+   * **Endpoint:** `GET /api/510k/literature/export/bibtex?projectId=…`
+   * Formats all selected entries into a `.bib` file for download.
+
+---
+
+#### E. Direct Report Integration
+
+1. **“Add to Report” Workflow:**
+
+   * Selected summaries/insights can be **dragged** into the 510(k) Report Editor as citations or appendix entries.
+   * Implements a **Citation Manager Panel** in the report editor sidebar, showing all saved entries.
+
+2. **Citation Insertion:**
+
+   * When author clicks “Insert Citation”, it places a footnote marker (e.g. `[1]`) and automatically updates a “References” section in the draft.
+
+---
+
+#### F. UI & Component Wiring
+
+```jsx
+// EnhancedLiteratureSearch.jsx (simplified)
+import React, { useState } from 'react';
+import { fetchLiterature, summarizeBatch } from '../../api/510k';
+
+export default function EnhancedLiteratureSearch({ projectId }) {
+  const [results, setResults] = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [mode, setMode] = useState('keyword'); // or 'semantic'
+
+  const handleSearch = async (query, filters) => {
+    const resp = await fetchLiterature({ query, filters, mode, projectId });
+    setResults(resp.results);
+  };
+
+  const handleSummarize = async () => {
+    const abstracts = results.filter(r => selectedIds.includes(r.id)).map(r => r.abstract);
+    const summaries = await summarizeBatch(abstracts);
+    // PATCH each entry with its summary
+  };
+
+  return (
+    <div>
+      {/* Search form, mode toggle, filters */}
+      {/* Results table with checkboxes */}
+      <button onClick={handleSummarize}>Summarize Selected</button>
+      <button onClick={() => insertCitations(selectedIds)}>Add Citations to Report</button>
+    </div>
+  );
+}
+```
+
+---
+
+### 🔍 Next Steps for Replit Agent
+
+1. **Create** `EnhancedLiteratureSearch.jsx` under `client/src/components/510k/`.
+2. **Implement** `LiteratureAggregatorService`, `LiteratureSummarizerService` in `server/services/`.
+3. **Add** `literature_entries` migration and pgvector extension if using semantic search.
+4. **Wire** API routes in `server/routes/510kRoutes.ts`.
+5. **Update** report editor to include a **Citation Manager** panel (e.g. `client/src/components/510k/CitationManager.jsx`).
+6. **Test** end-to-end: search → summarize → add to report.
+
+This enhanced design makes your literature pipeline **truly powerful**—leveraging multiple data sources, semantic AI, bulk summarization, and seamless report integration for your Med/Tech RA team.
