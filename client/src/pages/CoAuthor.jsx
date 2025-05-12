@@ -263,6 +263,9 @@ export default function CoAuthor() {
   const [vectorizedDocuments, setVectorizedDocuments] = useState([]);
   const [embeddingInProgress, setEmbeddingInProgress] = useState(false);
   const [embeddingStatus, setEmbeddingStatus] = useState(null);
+  const [searchFilters, setSearchFilters] = useState({});
+  const [showSearchFilters, setShowSearchFilters] = useState(false);
+  const [isSemanticSearchActive, setIsSemanticSearchActive] = useState(false);
   
   // Edit from search dialog state
   const [showEditFromSearchDialog, setShowEditFromSearchDialog] = useState(false);
