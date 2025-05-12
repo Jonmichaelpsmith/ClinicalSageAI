@@ -216,7 +216,8 @@ const CerComprehensiveReportsPanel = () => {
     const reportTypes = {
       compliance: "Compliance",
       activity: "Activity",
-      quality: "Quality Management"
+      quality: "Quality Management",
+      dashboard: "Executive Dashboard"
     };
     return reportTypes[reportType] || reportType;
   };
