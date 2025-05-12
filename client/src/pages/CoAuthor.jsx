@@ -34,8 +34,9 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 // TipTap editor imports 
 // (These will be used once packages are installed, include them now for preparation)
@@ -2300,7 +2301,7 @@ export default function CoAuthor() {
                   <Search className="absolute left-3.5 top-3 h-5 w-5 text-slate-400" />
                 )}
                 
-                <CommandRoot>
+                <Command className="rounded-lg border-0 shadow-none">
                   <CommandInput
                     placeholder={`Search ${vectorizedDocuments.length > 0 ? `${vectorizedDocuments.length} regulatory documents...` : 'your eCTD dossier...'}`}
                     className="pl-12 pr-12 py-2.5 h-11 w-full border-0 focus:ring-0 focus:outline-none text-sm bg-transparent"
@@ -2322,9 +2323,9 @@ export default function CoAuthor() {
                           .map(chunk => {
                         // Extract a relevant phrase containing the query text
                         const text = chunk.chunk.text;
-                        const queryIndex = text.toLowerCase().indexOf(e.target.value.toLowerCase());
+                        const queryIndex = text.toLowerCase().indexOf(value.toLowerCase());
                         const start = Math.max(0, queryIndex - 20);
-                        const end = Math.min(text.length, queryIndex + e.target.value.length + 20);
+                        const end = Math.min(text.length, queryIndex + value.length + 20);
                         const context = text.substring(start, end);
                         
                         return {
