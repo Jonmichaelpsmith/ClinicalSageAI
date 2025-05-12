@@ -53,6 +53,8 @@ import {
   Upload,
   Download,
   History,
+  Table as TableIcon,
+  BarChart3,
   Share2,
   Database,
   BarChart,
@@ -1427,17 +1429,26 @@ export default function CoAuthor() {
                   </Button>
                 </div>
                 <div className="border rounded-md">
-                  <div className="bg-slate-50 p-2 font-medium border-b text-sm">
-                    Featured Templates
+                  <div className="bg-slate-50 p-2 font-medium border-b text-sm flex justify-between items-center">
+                    <span>Featured Templates</span>
+                    <Badge className="bg-blue-100 text-blue-800 border-blue-200 text-xs">ICH-Compliant</Badge>
                   </div>
                   <div className="divide-y">
                     {templates.map((template) => (
-                      <div key={template.id} className="p-3 hover:bg-slate-50 cursor-pointer">
+                      <div key={template.id} className="p-3 hover:bg-slate-50 cursor-pointer" onClick={() => setSelectedTemplate(template)}>
                         <div className="flex items-start space-x-2">
                           <LayoutTemplate className="h-5 w-5 text-green-600 mt-0.5" />
-                          <div>
-                            <div className="font-medium">{template.name}</div>
+                          <div className="w-full">
+                            <div className="font-medium flex items-center justify-between">
+                              <span>{template.name}</span>
+                              <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
+                                <CheckCircle className="h-3 w-3 mr-1" />
+                                Validated
+                              </Badge>
+                            </div>
                             <div className="text-xs text-gray-500 mt-1">{template.category} • Updated {template.lastUpdated}</div>
+                            
+                            {/* Region Badges */}
                             <div className="flex flex-wrap gap-2 text-xs items-center">
                               {template.regions.map((region) => (
                                 <Badge 
@@ -1450,52 +1461,70 @@ export default function CoAuthor() {
                               ))}
                             </div>
                             
-                            {/* Display section badges for eCTD module sections */}
+                            {/* Structured Content Block Section */}
                             {template.contentBlocks && template.contentBlocks.length > 0 && (
-                              <div className="mt-2 flex flex-wrap gap-2">
-                                {template.contentBlocks.map(blockId => {
-                                  // Find the block in the registry
-                                  let block = null;
-                                  let blockType = '';
-                                  
-                                  if (blockId.startsWith('table-')) {
-                                    block = contentBlockRegistry.tables.find(t => t.id === blockId);
-                                    blockType = 'table';
-                                  } else if (blockId.startsWith('narrative-')) {
-                                    block = contentBlockRegistry.narratives.find(n => n.id === blockId);
-                                    blockType = 'narrative';
-                                  } else if (blockId.startsWith('figure-')) {
-                                    block = contentBlockRegistry.figures.find(f => f.id === blockId);
-                                    blockType = 'figure';
-                                  }
-                                  
-                                  if (!block) return null;
-                                  
-                                  // Badge color based on section number exactly matching screenshot
-                                  let badgeColor = '';
-                                  
-                                  // Color mappings based on the screenshot
-                                  if (block.section === '2.5') {
-                                    badgeColor = 'bg-blue-100 text-blue-800';
-                                  } else if (block.section === '2.5.6') {
-                                    badgeColor = 'bg-blue-100 text-blue-800';
-                                  } else if (block.section === '2.7.3') {
-                                    badgeColor = 'bg-purple-100 text-purple-800';
-                                  } else if (block.section === '3.2.S.4.1') {
-                                    badgeColor = 'bg-green-100 text-green-800';
-                                  } else if (block.section === '1.2') {
-                                    badgeColor = 'bg-blue-100 text-blue-800';
-                                  }
-                                  
-                                  return (
-                                    <Badge 
-                                      key={blockId}
-                                      className={`${badgeColor} h-5 px-2 justify-center text-xs rounded-full`}
-                                    >
-                                      {block.section}
-                                    </Badge>
-                                  );
-                                })}
+                              <div className="mt-3 border-t pt-2">
+                                <div className="text-xs font-medium mb-1 flex justify-between">
+                                  <span>eCTD Structured Content Blocks:</span>
+                                  <span className="text-green-600 text-[10px]">ICH Guidelines Referenced</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                  {template.contentBlocks.map(blockId => {
+                                    // Find the block in the registry
+                                    let block = null;
+                                    let blockType = '';
+                                    let icon = null;
+                                    
+                                    if (blockId.startsWith('table-')) {
+                                      block = contentBlockRegistry.tables.find(t => t.id === blockId);
+                                      blockType = 'table';
+                                      icon = <TableIcon className="h-3 w-3 mr-1" />;
+                                    } else if (blockId.startsWith('narrative-')) {
+                                      block = contentBlockRegistry.narratives.find(n => n.id === blockId);
+                                      blockType = 'narrative';
+                                      icon = <FileText className="h-3 w-3 mr-1" />;
+                                    } else if (blockId.startsWith('figure-')) {
+                                      block = contentBlockRegistry.figures.find(f => f.id === blockId);
+                                      blockType = 'figure';
+                                      icon = <BarChart3 className="h-3 w-3 mr-1" />;
+                                    }
+                                    
+                                    if (!block) return null;
+                                    
+                                    // Badge color based on section number exactly matching screenshot
+                                    let badgeColor = '';
+                                    
+                                    // Color mappings based on the screenshot
+                                    if (block.section === '2.5') {
+                                      badgeColor = 'bg-blue-100 text-blue-800';
+                                    } else if (block.section === '2.5.6') {
+                                      badgeColor = 'bg-blue-100 text-blue-800';
+                                    } else if (block.section === '2.7.3') {
+                                      badgeColor = 'bg-purple-100 text-purple-800';
+                                    } else if (block.section === '3.2.S.4.1') {
+                                      badgeColor = 'bg-green-100 text-green-800';
+                                    } else if (block.section === '1.2') {
+                                      badgeColor = 'bg-blue-100 text-blue-800';
+                                    }
+                                    
+                                    const hasIchReference = block.metadata?.ichGuideline || 
+                                               (block.schema?.rules?.validation && 
+                                                Object.values(block.schema.rules.validation).some(v => v.ichReference));
+                                    
+                                    return (
+                                      <Badge 
+                                        key={blockId}
+                                        className={`${badgeColor} h-5 px-2 justify-center text-xs rounded-full flex items-center`}
+                                      >
+                                        {icon}
+                                        <span>{block.section}</span>
+                                        {hasIchReference && (
+                                          <Check className="h-3 w-3 ml-1 text-white bg-green-600 rounded-full p-[1px]" />
+                                        )}
+                                      </Badge>
+                                    );
+                                  })}
+                                </div>
                               </div>
                             )}
                           </div>
