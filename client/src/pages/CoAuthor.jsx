@@ -151,6 +151,11 @@ export default function CoAuthor() {
   const [isLoadingAtoms, setIsLoadingAtoms] = useState(false);
   const [selectedContentAtom, setSelectedContentAtom] = useState(null);
   const [atomRegionFilter, setAtomRegionFilter] = useState('US');
+  
+  // Template Library state
+  const [templateLibraryView, setTemplateLibraryView] = useState('atoms'); // 'atoms' or 'templates'
+  const [templateRegionFilter, setTemplateRegionFilter] = useState('US');
+  const [templateModuleFilter, setTemplateModuleFilter] = useState('all');
   const [selectedContentBlocks, setSelectedContentBlocks] = useState([]);
   const [documentTitle, setDocumentTitle] = useState('');
   const [documentModule, setDocumentModule] = useState('');
