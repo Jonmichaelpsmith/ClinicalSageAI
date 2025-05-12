@@ -3,8 +3,8 @@
  * 
  * This is the ONE AND ONLY official implementation of the eCTD Co-Author Module
  * 
- * Version: 5.1.0 - May 11, 2025
- * Status: STABLE - GOOGLE DOCS INTEGRATION ACTIVE
+ * Version: 5.2.0 - May 12, 2025
+ * Status: STABLE - NATIVE DOCUMENT EDITING
  * 
  * Any attempt to create duplicate modules or alternate implementations
  * should be prevented. This is the golden source implementation.
@@ -19,9 +19,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 
-// Import Google Docs services
-import * as googleDocsService from '../services/googleDocsService';
-import * as googleAuthService from '../services/googleAuthService';
+// Import services
 import * as copilotService from '../services/copilotService';
 
 // AI services
@@ -29,8 +27,6 @@ import * as aiService from '../services/aiService';
 
 // Import the components with lazy loading for better performance
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
-const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
-const GoogleDocsEmbed = lazy(() => import('../components/GoogleDocsEmbed'));
 import { 
   FileText, 
   Edit, 
@@ -114,13 +110,7 @@ export default function CoAuthor() {
   const [lockedBy, setLockedBy] = useState(null);
   const [showValidationDialog, setShowValidationDialog] = useState(false);
   // Document editor integration state
-  const [msWordPopupOpen, setMsWordPopupOpen] = useState(false);
-  const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
-  const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
-  const [isGoogleAuthenticated, setIsGoogleAuthenticated] = useState(false);
-  const [googleUserInfo, setGoogleUserInfo] = useState(null);
-  const [authLoading, setAuthLoading] = useState(false);
-  const [editorType, setEditorType] = useState('google'); // Changed default to 'google'
+  const [editorType, setEditorType] = useState('native'); // Changed to native editor
   // AI Assistant state
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
   const [aiAssistantMode, setAiAssistantMode] = useState('suggestions'); // 'suggestions', 'compliance', 'formatting'
@@ -131,28 +121,9 @@ export default function CoAuthor() {
   
   const { toast } = useToast();
   
-  // Check Google authentication on component mount
+  // Initialize component
   useEffect(() => {
-    const checkGoogleAuth = async () => {
-      try {
-        setAuthLoading(true);
-        const isAuthenticated = googleAuthService.isGoogleAuthenticated();
-        setIsGoogleAuthenticated(isAuthenticated);
-        
-        if (isAuthenticated) {
-          setGoogleUserInfo(googleAuthService.getCurrentUser());
-          console.log('User is authenticated with Google');
-        } else {
-          console.log('User is not authenticated with Google');
-        }
-      } catch (error) {
-        console.error('Error checking Google authentication:', error);
-      } finally {
-        setAuthLoading(false);
-      }
-    };
-    
-    checkGoogleAuth();
+    console.log('eCTD Co-Author Module initialized with native document editing');
   }, []);
   
   const [validationResults] = useState({
