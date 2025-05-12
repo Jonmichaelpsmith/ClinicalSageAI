@@ -2301,12 +2301,13 @@ export default function CoAuthor() {
                   <Search className="absolute left-3.5 top-3 h-5 w-5 text-slate-400" />
                 )}
                 
-                <Command className="rounded-lg border-0 shadow-none">
-                  <CommandInput
-                    placeholder={`Search ${vectorizedDocuments.length > 0 ? `${vectorizedDocuments.length} regulatory documents...` : 'your eCTD dossier...'}`}
-                    className="pl-12 pr-12 py-2.5 h-11 w-full border-0 focus:ring-0 focus:outline-none text-sm bg-transparent"
-                    value={semanticSearchQuery}
-                    onValueChange={(value) => {
+                <Input
+                  type="search"
+                  placeholder={`Search ${vectorizedDocuments.length > 0 ? `${vectorizedDocuments.length} regulatory documents...` : 'your eCTD dossier...'}`}
+                  className="pl-12 pr-12 py-2.5 h-11 w-full border-0 focus:ring-0 focus:outline-none text-sm bg-transparent"
+                  value={semanticSearchQuery}
+                  onChange={(e) => {
+                    const value = e.target.value;
                       setSemanticSearchQuery(value);
                       setIsSemanticSearchActive(true);
                       
