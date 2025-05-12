@@ -16,7 +16,8 @@ import {
   EnhancedLiteratureDiscovery,
   PathwayAdvisorCard,
   EquivalenceDraft,
-  ComplianceChecker
+  ComplianceChecker,
+  PackagePreview
 } from '../components/510k';
 import { DocumentSectionRecommender } from '../components/documentrecommender';
 
@@ -124,7 +125,7 @@ const FDA510kPage = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-7 mb-8">
+        <TabsList className="grid grid-cols-8 mb-8">
           <TabsTrigger value="deviceProfile" className="flex items-center">
             <Database className="h-4 w-4 mr-2" />
             Device Profile
@@ -179,6 +180,14 @@ const FDA510kPage = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
             Compliance Check
+          </TabsTrigger>
+          <TabsTrigger 
+            value="packageAssembly" 
+            className="flex items-center"
+            disabled={!deviceProfile || !isFeatureEnabled('ENABLE_PACKAGE_ASSEMBLY')}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            eSTAR Package
           </TabsTrigger>
         </TabsList>
         
