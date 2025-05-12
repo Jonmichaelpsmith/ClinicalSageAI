@@ -321,7 +321,8 @@ class LiteratureAggregatorService {
           [citationId, organizationId]
         );
         
-        return result.rowCount > 0;
+        // Handle possible null or undefined rowCount
+        return result.rowCount !== null && result.rowCount !== undefined && result.rowCount > 0;
       } finally {
         client.release();
       }
