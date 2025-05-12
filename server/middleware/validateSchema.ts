@@ -24,7 +24,8 @@ interface ValidationResult {
  */
 function loadSchema(schemaName: string): any {
   try {
-    const schemaPath = path.join(__dirname, '..', '..', 'client', 'src', 'schemas', `${schemaName}.json`);
+    // In ES modules, use a relative path from project root
+    const schemaPath = `./client/src/schemas/${schemaName}.json`;
     const schemaData = fs.readFileSync(schemaPath, 'utf8');
     return JSON.parse(schemaData);
   } catch (error) {

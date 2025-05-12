@@ -1,0 +1,126 @@
+### 1️⃣ Task 1: Device Profile Form & JSON Schema
+
+**Goal:** Capture all device‐specific metadata required for a 510(k) submission.
+
+---
+
+#### A. JSON Schema
+
+* **Path:** `client/src/schemas/deviceProfile.json`
+* **Contents:**
+
+  ```jsonc
+  {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Device Profile",
+    "type": "object",
+    "required": ["deviceName","deviceClass","intendedUse","substantialEquivalencePredicate"],
+    "properties": {
+      "deviceName": { "type": "string" },
+      "modelNumber": { "type": "string" },
+      "manufacturer": { "type": "string" },
+      "deviceClass": {
+        "type": "string",
+        "enum": ["I","II","III"]
+      },
+      "intendedUse": { "type": "string" },
+      "technologyType": { "type": "string" },
+      "predicateDevice": { "type": "string" },
+      "substantialEquivalencePredicate": { "type": "string" },
+      "diagnosticCodes": {
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    }
+  }
+  ```
+
+---
+
+#### B. React Form Component
+
+* **Path:** `client/src/components/510k/DeviceProfileForm.jsx`
+* **Skeleton:**
+
+  ```jsx
+  import React from 'react';
+  import AJV from 'ajv';
+  import deviceProfileSchema from '../../schemas/deviceProfile.json';
+
+  const ajv = new AJV();
+  const validate = ajv.compile(deviceProfileSchema);
+
+  export default function DeviceProfileForm({ onSave }) {
+    const [formData, setFormData] = React.useState({});
+    const [errors, setErrors] = React.useState([]);
+
+    const handleChange = e => {
+      setFormData({ ...formData, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = () => {
+      const valid = validate(formData);
+      if (!valid) {
+        setErrors(validate.errors);
+        return;
+      }
+      onSave(formData);
+    };
+
+    return (
+      <div>
+        <h2>510(k) Device Profile</h2>
+        {Object.keys(deviceProfileSchema.properties).map(key => (
+          <div key={key} className="mb-4">
+            <label className="block font-medium">{key}</label>
+            <input
+              name={key}
+              value={formData[key]||''}
+              onChange={handleChange}
+              className="border p-2 w-full"
+            />
+          </div>
+        ))}
+        {errors.length > 0 && (
+          <ul className="text-red-600">
+            {errors.map((err,i) => (
+              <li key={i}>{err.dataPath} {err.message}</li>
+            ))}
+          </ul>
+        )}
+        <button onClick={handleSubmit} className="btn-primary">Save Profile</button>
+      </div>
+    );
+  }
+  ```
+
+---
+
+#### C. Validation Middleware (Server)
+
+* **Path:** `server/middleware/validateSchema.ts`
+* **Skeleton:**
+
+  ```ts
+  import { Request, Response, NextFunction } from 'express';
+  import Ajv from 'ajv';
+  import deviceProfileSchema from '../schemas/deviceProfile.json';
+
+  const ajv = new Ajv();
+
+  export function validateDeviceProfile(req: Request, res: Response, next: NextFunction) {
+    const valid = ajv.validate(deviceProfileSchema, req.body);
+    if (!valid) {
+      return res.status(400).json({ errors: ajv.errors });
+    }
+    next();
+  }
+  ```
+
+---
+
+🔜 **Next Steps:**
+
+* Hook  `DeviceProfileForm`’s `onSave` to the new server endpoint (`POST /api/510k/device-profile`).
+* Register the middleware in `server/routes/510kRoutes.ts` under that route.
+* Confirm the front‐end can persist profiles before moving on to Predicate Finder.
