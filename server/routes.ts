@@ -264,6 +264,9 @@ export default function registerRoutes(app: Express): void {
   // Register 510(k) Literature API routes
   app.use('/api/510k/literature', fda510kLiteratureRouter);
   
+  // Register 510(k) Pathway and Equivalence API routes
+  app.use('/api/fda510k', fda510kRouter);
+  
   // Register Authentication routes
   app.use('/auth', authRouter);
   
