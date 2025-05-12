@@ -109,6 +109,7 @@ import {
   Clipboard,
   Wand2,
   ShieldCheck,
+  File,
   PlusCircle,
   SearchX,
   Send,
