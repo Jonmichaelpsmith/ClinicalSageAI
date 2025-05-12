@@ -9,6 +9,18 @@ import { Router, Request, Response } from 'express';
 import literatureAggregator, { LITERATURE_SOURCES } from '../services/LiteratureAggregatorService';
 import literatureSummarizer from '../services/LiteratureSummarizerService';
 
+/**
+ * Middleware to extract tenant context information
+ */
+const extractTenantContext = (req: Request, res: Response, next: Function) => {
+  // For now, just ensure organizationId is available in the query or body
+  if (!req.query.organizationId && !req.body?.organizationId) {
+    req.query.organizationId = 'test-org-id'; // Default for development
+  }
+  
+  next();
+};
+
 const router = Router();
 
 // Custom validation helper functions 
@@ -16,6 +28,21 @@ interface ValidationError {
   param: string;
   msg: string;
 }
+
+/**
+ * Get value from the appropriate location in the request
+ */
+const getValueFromRequest = (req: Request, field: string, location: string = 'body'): any => {
+  switch (location) {
+    case 'params':
+      return req.params[field];
+    case 'query':
+      return req.query[field];
+    case 'body':
+    default:
+      return req.body?.[field];
+  }
+};
 
 const validateRequest = (req: Request, rules: Record<string, any>): ValidationError[] => {
   const errors: ValidationError[] = [];
@@ -237,14 +264,21 @@ router.post(
 router.get(
   '/entry/:id',
   extractTenantContext,
-  [
-    param('id').isString().notEmpty().withMessage('Literature ID is required')
-  ],
   async (req: Request, res: Response) => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      // Validate parameters
+      const validationRules = {
+        id: {
+          location: 'params',
+          required: true,
+          type: 'string',
+          message: 'Literature ID is required'
+        }
+      };
+      
+      const errors = validateRequest(req, validationRules);
+      if (errors.length > 0) {
+        return res.status(400).json({ errors });
       }
       
       const organizationId = req.query.organizationId?.toString() || 'test-org-id';
@@ -271,14 +305,25 @@ router.get(
 router.get(
   '/recent',
   extractTenantContext,
-  [
-    query('limit').optional().isInt({ min: 1, max: 50 }).toInt()
-  ],
   async (req: Request, res: Response) => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      // Validate parameters
+      const validationRules = {
+        limit: {
+          location: 'query',
+          required: false,
+          type: 'number',
+          validator: (value: any) => {
+            const num = parseInt(value, 10);
+            return !isNaN(num) && num >= 1 && num <= 50;
+          },
+          message: 'Limit must be a number between 1 and 50'
+        }
+      };
+      
+      const errors = validateRequest(req, validationRules);
+      if (errors.length > 0) {
+        return res.status(400).json({ errors });
       }
       
       const limit = req.query.limit ? parseInt(req.query.limit.toString(), 10) : 10;
@@ -303,19 +348,50 @@ router.get(
 router.post(
   '/cite',
   extractTenantContext,
-  [
-    body('literatureId').isString().notEmpty().withMessage('Literature ID is required'),
-    body('documentId').isString().notEmpty().withMessage('Document ID is required'),
-    body('documentType').isString().notEmpty().withMessage('Document type is required'),
-    body('sectionId').isString().notEmpty().withMessage('Section ID is required'),
-    body('sectionName').isString().withMessage('Section name is required'),
-    body('citationText').optional().isString()
-  ],
   async (req: Request, res: Response) => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      // Validate parameters
+      const validationRules = {
+        literatureId: {
+          location: 'body',
+          required: true,
+          type: 'string',
+          message: 'Literature ID is required'
+        },
+        documentId: {
+          location: 'body',
+          required: true,
+          type: 'string',
+          message: 'Document ID is required'
+        },
+        documentType: {
+          location: 'body',
+          required: true,
+          type: 'string',
+          message: 'Document type is required'
+        },
+        sectionId: {
+          location: 'body',
+          required: true,
+          type: 'string',
+          message: 'Section ID is required'
+        },
+        sectionName: {
+          location: 'body',
+          required: true,
+          type: 'string',
+          message: 'Section name is required'
+        },
+        citationText: {
+          location: 'body',
+          required: false,
+          type: 'string'
+        }
+      };
+      
+      const errors = validateRequest(req, validationRules);
+      if (errors.length > 0) {
+        return res.status(400).json({ errors });
       }
       
       const citation = await literatureAggregator.addCitation(
