@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { isFeatureEnabled } from '../../flags/featureFlags';
-import { FDA510kService } from '../../services/FDA510kService';
+import FDA510kService from '../../services/FDA510kService';
 
 /**
  * PredicateFinderCard component for finding predicate devices for 510(k) submissions

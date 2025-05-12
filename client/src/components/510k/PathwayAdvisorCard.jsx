@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FDA510kService } from '../../services/FDA510kService';
+import FDA510kService from '../../services/FDA510kService';
 
 /**
  * PathwayAdvisorCard Component
