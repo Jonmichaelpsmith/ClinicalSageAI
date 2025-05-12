@@ -6114,73 +6114,183 @@ export default function CoAuthor() {
             </p>
           </div>
           
-          {/* Search filters and controls */}
-          <div className="flex gap-2 items-center mb-4">
-            <div className="w-44">
-              <Select 
-                defaultValue="similarity"
-                onValueChange={(value) => {
-                  // Sort results based on selected criteria
-                  const sortedResults = [...similarContentResults];
-                  if (value === 'similarity') {
-                    sortedResults.sort((a, b) => b.similarity - a.similarity);
-                  } else if (value === 'recency') {
-                    // Sort by document recency (simulated)
-                    sortedResults.sort((a, b) => b.documentId.localeCompare(a.documentId));
-                  } else if (value === 'module') {
-                    // Sort by module
-                    sortedResults.sort((a, b) => a.module.localeCompare(b.module));
+          {/* Enhanced search filters and controls */}
+          <div className="space-y-3 mb-4">
+            <div className="p-2 bg-blue-50 border border-blue-100 rounded text-xs text-blue-700 flex items-start">
+              <Info className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="font-medium mb-1">Smart Reuse Engine</p>
+                <p>This panel uses AI to find contextually similar content in your approved regulatory documents. 
+                   Results are ranked by semantic similarity to your selected text.</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 items-center">
+              <div className="w-44">
+                <Select 
+                  defaultValue="similarity"
+                  onValueChange={(value) => {
+                    // Sort results based on selected criteria
+                    const sortedResults = [...similarContentResults];
+                    if (value === 'similarity') {
+                      sortedResults.sort((a, b) => b.similarity - a.similarity);
+                    } else if (value === 'recency') {
+                      // Sort by document recency (simulated)
+                      sortedResults.sort((a, b) => b.documentId.localeCompare(a.documentId));
+                    } else if (value === 'module') {
+                      // Sort by module
+                      sortedResults.sort((a, b) => a.module.localeCompare(b.module));
+                    } else if (value === 'regulatory') {
+                      // Sort by regulatory relevance
+                      const relevanceOrder = { 'High': 0, 'Standard': 1 };
+                      sortedResults.sort((a, b) => 
+                        (relevanceOrder[a.regulatory || 'Standard'] - relevanceOrder[b.regulatory || 'Standard']) ||
+                        (b.similarity - a.similarity)
+                      );
+                    }
+                    setSimilarContentResults(sortedResults);
+                  }}
+                >
+                  <SelectTrigger className="h-8 text-xs">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="similarity">Sort by Match %</SelectItem>
+                    <SelectItem value="recency">Sort by Recency</SelectItem>
+                    <SelectItem value="module">Sort by Module</SelectItem>
+                    <SelectItem value="regulatory">Sort by Regulatory Relevance</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <Input 
+                placeholder="Filter results..."
+                className="h-8 text-xs flex-1"
+                onChange={(e) => {
+                  const filterText = e.target.value.toLowerCase();
+                  if (!filterText) {
+                    // If filter is cleared, refresh results from search
+                    findSimilarContent(selectedText);
+                    return;
                   }
-                  setSimilarContentResults(sortedResults);
+                  
+                  // Filter current results
+                  const filteredResults = similarContentResults.filter(
+                    result => result.content.toLowerCase().includes(filterText) || 
+                              result.section.toLowerCase().includes(filterText) ||
+                              result.documentTitle.toLowerCase().includes(filterText) ||
+                              result.module.toLowerCase().includes(filterText)
+                  );
+                  setSimilarContentResults(filteredResults);
                 }}
-              >
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="Sort by" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="similarity">Sort by Match %</SelectItem>
-                  <SelectItem value="recency">Sort by Recency</SelectItem>
-                  <SelectItem value="module">Sort by Module</SelectItem>
-                </SelectContent>
-              </Select>
+              />
+              
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    size="icon" 
+                    variant="ghost" 
+                    className="h-8 w-8 text-slate-700"
+                    onClick={() => findSimilarContent(selectedText)}
+                    disabled={!selectedText || isFindingSimilarContent}
+                  >
+                    <RefreshCcw className="h-4 w-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Refresh search results</TooltipContent>
+              </Tooltip>
             </div>
             
-            <Input 
-              placeholder="Filter results..."
-              className="h-8 text-xs flex-1"
-              onChange={(e) => {
-                const filterText = e.target.value.toLowerCase();
-                if (!filterText) {
-                  // If filter is cleared, refresh results from search
-                  findSimilarContent(selectedText);
-                  return;
-                }
-                
-                // Filter current results
-                const filteredResults = similarContentResults.filter(
-                  result => result.content.toLowerCase().includes(filterText) || 
-                            result.section.toLowerCase().includes(filterText) ||
-                            result.documentTitle.toLowerCase().includes(filterText) ||
-                            result.module.toLowerCase().includes(filterText)
-                );
-                setSimilarContentResults(filteredResults);
-              }}
-            />
-            
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  size="icon" 
-                  variant="ghost" 
-                  className="h-8 w-8 text-slate-700"
-                  onClick={() => findSimilarContent(selectedText)}
-                  disabled={!selectedText || isFindingSimilarContent}
+            {/* Add module filters - horizontal pill selector */}
+            <div className="flex flex-wrap gap-1">
+              <Button
+                size="sm"
+                variant={moduleFilter === 'all' ? 'default' : 'outline'}
+                className="h-7 text-xs rounded-full px-3"
+                onClick={() => setModuleFilter('all')}
+              >
+                All Modules
+              </Button>
+              
+              {Array.from(new Set(similarContentResults.map(r => r.module))).map(module => (
+                <Button
+                  key={module}
+                  size="sm"
+                  variant={moduleFilter === module ? 'default' : 'outline'}
+                  className="h-7 text-xs rounded-full px-3"
+                  onClick={() => setModuleFilter(module)}
                 >
-                  <RefreshCcw className="h-4 w-4" />
+                  {module}
                 </Button>
-              </TooltipTrigger>
-              <TooltipContent>Refresh search results</TooltipContent>
-            </Tooltip>
+              ))}
+              
+              {/* Section filter toggle */}
+              {similarContentResults.length > 0 && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs rounded-full px-3 ml-auto"
+                      onClick={() => setShowFilters(!showFilters)}
+                    >
+                      <SlidersHorizontal className="h-3 w-3 mr-1" />
+                      More Filters
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>Show advanced filtering options</TooltipContent>
+                </Tooltip>
+              )}
+            </div>
+            
+            {/* Advanced filters - conditionally displayed */}
+            {showFilters && (
+              <div className="grid grid-cols-2 gap-2 p-2 border rounded bg-slate-50">
+                <div>
+                  <p className="text-xs font-medium mb-1 text-slate-700">Regulatory Relevance</p>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant={regulatoryFilter === 'all' ? 'default' : 'outline'}
+                      className="h-6 text-xs"
+                      onClick={() => setRegulatoryFilter('all')}
+                    >
+                      All
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={regulatoryFilter === 'High' ? 'default' : 'outline'}
+                      className="h-6 text-xs"
+                      onClick={() => setRegulatoryFilter('High')}
+                    >
+                      High
+                    </Button>
+                  </div>
+                </div>
+                
+                <div>
+                  <p className="text-xs font-medium mb-1 text-slate-700">Match Quality</p>
+                  <div className="flex gap-1">
+                    <Button
+                      size="sm"
+                      variant={similarityFilter === 'all' ? 'default' : 'outline'}
+                      className="h-6 text-xs"
+                      onClick={() => setSimilarityFilter('all')}
+                    >
+                      All
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant={similarityFilter === 'high' ? 'default' : 'outline'}
+                      className="h-6 text-xs"
+                      onClick={() => setSimilarityFilter('high')}
+                    >
+                      High {'>'}80%
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           
           {isFindingSimilarContent ? (
