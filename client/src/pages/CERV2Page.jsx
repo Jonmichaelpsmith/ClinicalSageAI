@@ -182,7 +182,12 @@ export default function CERV2Page() {
             <span>Regulatory Traceability</span>
             <span className="text-[0.65rem] text-purple-600">ICH E6(R3) & MDR</span>
           </div>, icon: <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
-          { id: "compliance", label: "Compliance", icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
+          { id: "compliance", label: documentType === '510k' ? 
+            <div className="flex flex-col items-center leading-tight">
+              <span>FDA Compliance</span>
+              <span className="text-[0.65rem] text-purple-600">510(k) Requirements</span>
+            </div> : "Compliance", 
+            icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
           { id: "maud", label: <div className="flex flex-col items-center leading-tight">
             <span>MAUD Integration</span>
             <span className="text-[0.65rem] text-purple-600">Algorithm Validation</span>
@@ -593,7 +598,6 @@ export default function CERV2Page() {
               {/* Use modified version of ComplianceChecker for 510(k) submissions */}
               <ComplianceScorePanel
                 title="FDA 510(k) Compliance Assessment"
-                template="fda-510k"
                 description="Verify your submission against FDA 510(k) requirements"
                 sections={sections}
                 template="fda-510k"
