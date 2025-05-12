@@ -1,626 +1,333 @@
 /**
  * Literature Summarizer Service
  * 
- * This service provides AI-powered summaries of literature and research papers,
- * generating concise, structured overviews for use in 510k submissions.
+ * This service provides AI-powered summaries of literature entries
+ * for 510(k) submissions, helping users quickly understand and incorporate
+ * key information from multiple sources.
  */
 
-import { Pool } from 'pg';
-import OpenAI from 'openai';
+import { v4 as uuidv4 } from 'uuid';
+import { OpenAI } from 'openai';
+import { pool } from '../db/setupLiterature';
+import literatureAggregator, { LiteratureEntry } from './LiteratureAggregatorService';
+import dotenv from 'dotenv';
 
-interface SummaryRequest {
-  literatureIds: number[];
-  searchId?: number;
-  summaryType: 'standard' | 'detailed' | 'critical' | 'comparison';
+// Load environment variables
+dotenv.config();
+
+// Initialize OpenAI client
+const openai = process.env.OPENAI_API_KEY ?
+  new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) :
+  null;
+
+// Summary types and their descriptions
+const SUMMARY_TYPES = {
+  standard: 'Generate a concise summary of the key points from the literature',
+  detailed: 'Generate a comprehensive summary with methodology, results, and implications',
+  critical: 'Generate a critical analysis highlighting strengths, weaknesses, and potential biases',
+  comparison: 'Compare and contrast the findings, methodologies, and conclusions across the literature'
+};
+
+// Summary request parameters
+export interface SummaryParams {
+  literatureIds: string[];
+  summaryType: string;
   focus?: string;
-  tenantId: number;
-  organizationId: number;
-  userId?: number;
+  organizationId: string;
 }
 
-interface LiteratureEntry {
-  id: number;
-  title: string;
-  authors?: string[];
-  publication_date?: Date;
-  journal?: string;
-  abstract?: string;
-  full_text?: string;
-  doi?: string;
-  pmid?: string;
-  url?: string;
-  citation_count?: number;
-  publication_type?: string;
-  keywords?: string[];
-  mesh_terms?: string[];
-  source_name?: string;
-}
-
-interface SummaryResponse {
+// Summary result interface
+export interface SummaryResult {
+  id: string;
   summary: string;
-  summaryId?: number;
-  literatureIds: number[];
-  processingTimeMs: number;
-  modelUsed: string;
-  promptTokens?: number;
-  completionTokens?: number;
+  processing_time_ms: number;
+  literature_ids: string[];
+  literature_preview?: LiteratureEntry[];
+  total_literature_count: number;
 }
 
-export class LiteratureSummarizerService {
-  private pool: Pool;
-  private openai: OpenAI | null = null;
-
-  constructor(pool: Pool) {
-    this.pool = pool;
-    
-    // Initialize OpenAI if API key is available
-    if (process.env.OPENAI_API_KEY) {
-      this.openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-    }
-  }
-
+/**
+ * Literature Summarizer Service Class
+ */
+class LiteratureSummarizerService {
   /**
-   * Generate a summary of literature entries
+   * Generate a summary from multiple literature entries
    */
-  async generateSummary(request: SummaryRequest): Promise<SummaryResponse> {
+  public async generateSummary(params: SummaryParams): Promise<SummaryResult> {
     const startTime = Date.now();
     
-    // Fetch literature entries
-    const entries = await this.fetchLiteratureEntries(request.literatureIds, request.tenantId);
-    
-    if (entries.length === 0) {
-      throw new Error('No literature entries found with the provided IDs');
-    }
-    
-    // Default response parameters
-    let summary = '';
-    let modelUsed = 'gpt-4o'; // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
-    let promptTokens = 0;
-    let completionTokens = 0;
-    
-    // Generate summary based on type
     try {
-      if (!this.openai) {
-        throw new Error('OpenAI API is not available');
+      // Validate summary type
+      if (!Object.keys(SUMMARY_TYPES).includes(params.summaryType)) {
+        throw new Error(`Invalid summary type: ${params.summaryType}`);
       }
       
-      let summaryResult;
-      switch (request.summaryType) {
-        case 'detailed':
-          summaryResult = await this.generateDetailedSummary(entries, request.focus);
-          break;
-        case 'critical':
-          summaryResult = await this.generateCriticalSummary(entries, request.focus);
-          break;
-        case 'comparison':
-          summaryResult = await this.generateComparisonSummary(entries, request.focus);
-          break;
-        case 'standard':
-        default:
-          summaryResult = await this.generateStandardSummary(entries, request.focus);
-          break;
+      // Fetch literature entries
+      const literatureEntries: LiteratureEntry[] = [];
+      for (const literatureId of params.literatureIds) {
+        const entry = await literatureAggregator.getLiteratureById(
+          literatureId,
+          params.organizationId
+        );
+        
+        if (entry) {
+          literatureEntries.push(entry);
+        }
       }
       
-      summary = summaryResult.summary;
-      modelUsed = summaryResult.modelUsed;
-      promptTokens = summaryResult.promptTokens || 0;
-      completionTokens = summaryResult.completionTokens || 0;
-    } catch (error) {
-      console.error('Error generating literature summary:', error);
-      summary = `Error generating summary: ${error instanceof Error ? error.message : String(error)}`;
-    }
-    
-    // Store summary in database
-    const summaryId = await this.storeSummary({
-      summary,
-      literatureIds: request.literatureIds,
-      searchId: request.searchId,
-      summaryType: request.summaryType,
-      focus: request.focus,
-      tenantId: request.tenantId,
-      organizationId: request.organizationId,
-      userId: request.userId,
-      modelUsed,
-      promptTokens,
-      completionTokens,
-      processingTimeMs: Date.now() - startTime,
-    });
-    
-    return {
-      summary,
-      summaryId,
-      literatureIds: request.literatureIds,
-      processingTimeMs: Date.now() - startTime,
-      modelUsed,
-      promptTokens,
-      completionTokens,
-    };
-  }
-
-  /**
-   * Fetch literature entries from database
-   */
-  private async fetchLiteratureEntries(ids: number[], tenantId: number): Promise<LiteratureEntry[]> {
-    try {
-      const result = await this.pool.query(`
-        SELECT 
-          e.*,
-          s.source_name
-        FROM literature_entries e
-        JOIN literature_sources s ON e.source_id = s.id
-        WHERE 
-          e.id = ANY($1) AND
-          e.tenant_id = $2
-      `, [ids, tenantId]);
+      if (literatureEntries.length === 0) {
+        throw new Error('No valid literature entries found for the provided IDs');
+      }
       
-      return result.rows;
+      // Generate summary using AI
+      const summary = await this.generateSummaryWithAI(
+        literatureEntries,
+        params.summaryType,
+        params.focus
+      );
+      
+      const executionTime = Date.now() - startTime;
+      
+      // Create a preview of the first few entries (up to 3)
+      const previewEntries = literatureEntries.slice(0, 3);
+      
+      // Save summary to database
+      const summaryId = await this.saveSummary(
+        summary,
+        params.summaryType,
+        params.focus || '',
+        params.literatureIds,
+        params.organizationId
+      );
+      
+      return {
+        id: summaryId,
+        summary,
+        processing_time_ms: executionTime,
+        literature_ids: params.literatureIds,
+        literature_preview: previewEntries,
+        total_literature_count: literatureEntries.length
+      };
     } catch (error) {
-      console.error('Error fetching literature entries:', error);
+      console.error('Error generating summary:', error);
       throw error;
     }
   }
-
+  
   /**
-   * Store summary in database
+   * Get recent summaries for an organization
    */
-  private async storeSummary(data: {
-    summary: string;
-    literatureIds: number[];
-    searchId?: number;
-    summaryType: string;
-    focus?: string;
-    tenantId: number;
-    organizationId: number;
-    userId?: number;
-    modelUsed: string;
-    promptTokens: number;
-    completionTokens: number;
-    processingTimeMs: number;
-  }): Promise<number> {
+  public async getRecentSummaries(organizationId: string, limit: number = 5): Promise<any[]> {
     try {
-      const result = await this.pool.query(`
-        INSERT INTO literature_summaries (
-          literature_ids,
-          search_id,
-          summary_type,
-          focus,
-          summary_text,
-          tenant_id,
-          organization_id,
-          user_id,
-          model_used,
-          prompt_tokens,
-          completion_tokens,
-          processing_time_ms,
-          created_at
-        )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
-        RETURNING id
-      `, [
-        data.literatureIds,
-        data.searchId || null,
-        data.summaryType,
-        data.focus || null,
-        data.summary,
-        data.tenantId,
-        data.organizationId,
-        data.userId || null,
-        data.modelUsed,
-        data.promptTokens,
-        data.completionTokens,
-        data.processingTimeMs,
-      ]);
+      const client = await pool.connect();
       
-      return result.rows[0].id;
-    } catch (error) {
-      console.error('Error storing literature summary:', error);
-      return 0;
-    }
-  }
-
-  /**
-   * Generate a standard summary of literature
-   */
-  private async generateStandardSummary(
-    entries: LiteratureEntry[],
-    focus?: string
-  ): Promise<{ summary: string; modelUsed: string; promptTokens?: number; completionTokens?: number }> {
-    if (!this.openai) {
-      throw new Error('OpenAI API is not available');
-    }
-    
-    // Prepare literature data for the prompt
-    const literatureData = entries.map(entry => {
-      const authors = entry.authors && entry.authors.length > 0 
-        ? entry.authors.join(', ') 
-        : 'Unknown';
+      try {
+        const result = await client.query(
+          `SELECT s.*, 
+            (SELECT jsonb_agg(jsonb_build_object(
+              'id', le.id,
+              'title', le.title,
+              'source_name', le.source_name,
+              'publication_date', le.publication_date
+            )) FROM literature_entries le
+            WHERE le.id = ANY(s.literature_ids)
+            AND le.organization_id = s.organization_id
+            LIMIT 3) as literature_preview
+          FROM literature_summaries s
+          WHERE s.organization_id = $1
+          ORDER BY s.created_at DESC
+          LIMIT $2`,
+          [organizationId, limit]
+        );
         
-      const date = entry.publication_date 
-        ? new Date(entry.publication_date).toISOString().split('T')[0] 
-        : 'Unknown date';
-        
-      return `
-TITLE: ${entry.title}
-AUTHORS: ${authors}
-DATE: ${date}
-SOURCE: ${entry.source_name || 'Unknown'}
-${entry.journal ? `JOURNAL: ${entry.journal}` : ''}
-${entry.pmid ? `PMID: ${entry.pmid}` : ''}
-${entry.doi ? `DOI: ${entry.doi}` : ''}
-
-ABSTRACT:
-${entry.abstract || 'No abstract available.'}
--------------------
-`;
-    }).join('\n');
-    
-    // Create a system message
-    const systemMessage = `You are an expert medical device regulatory analyst tasked with summarizing literature for 510(k) submissions. Provide a concise, factual, and neutral summary that captures the key points from the literature entries provided. Focus on the following aspects:
-1. Key findings relevant to medical devices
-2. Safety and effectiveness data
-3. Regulatory implications
-4. Technological characteristics
-5. Clinical performance
-
-${focus ? `Pay special attention to aspects related to: ${focus}` : ''}
-
-Your summary should be well-structured, using bullet points where appropriate, and divided into clear sections. Avoid introducing information not present in the source material. Citations to specific papers should be in the format (Author et al., Year).`;
-
-    // Generate the summary
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: systemMessage,
-        },
-        {
-          role: "user",
-          content: `Please provide a standard summary of the following literature entries for use in a 510(k) submission:\n\n${literatureData}`,
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 1500,
-    });
-    
-    // Extract the summary
-    const summary = response.choices[0].message.content || 'No summary could be generated.';
-    
-    return {
-      summary,
-      modelUsed: response.model,
-      promptTokens: response.usage?.prompt_tokens,
-      completionTokens: response.usage?.completion_tokens,
-    };
-  }
-
-  /**
-   * Generate a detailed summary of literature
-   */
-  private async generateDetailedSummary(
-    entries: LiteratureEntry[],
-    focus?: string
-  ): Promise<{ summary: string; modelUsed: string; promptTokens?: number; completionTokens?: number }> {
-    if (!this.openai) {
-      throw new Error('OpenAI API is not available');
-    }
-    
-    // Prepare literature data for the prompt
-    const literatureData = entries.map(entry => {
-      const authors = entry.authors && entry.authors.length > 0 
-        ? entry.authors.join(', ') 
-        : 'Unknown';
-        
-      const date = entry.publication_date 
-        ? new Date(entry.publication_date).toISOString().split('T')[0] 
-        : 'Unknown date';
-      
-      // Include full text if available
-      const contentText = entry.full_text || entry.abstract || 'No content available.';
-        
-      return `
-TITLE: ${entry.title}
-AUTHORS: ${authors}
-DATE: ${date}
-SOURCE: ${entry.source_name || 'Unknown'}
-${entry.journal ? `JOURNAL: ${entry.journal}` : ''}
-${entry.pmid ? `PMID: ${entry.pmid}` : ''}
-${entry.doi ? `DOI: ${entry.doi}` : ''}
-
-CONTENT:
-${contentText}
--------------------
-`;
-    }).join('\n');
-    
-    // Create a system message
-    const systemMessage = `You are an expert medical device regulatory analyst tasked with creating detailed summaries of literature for 510(k) submissions. Provide a comprehensive, in-depth analysis that thoroughly examines the key points, methodologies, results, and conclusions from the literature entries provided. Your summary should include:
-
-1. Detailed description of study designs and methodologies
-2. Comprehensive analysis of safety and effectiveness data
-3. Statistical significance of findings
-4. Thorough examination of technological characteristics
-5. Complete analysis of clinical performance metrics
-6. Critical evaluation of the strength of evidence
-
-${focus ? `Pay special attention to aspects related to: ${focus}` : ''}
-
-Your summary should be well-structured with clear section headings, detailed bullet points, and proper citations to specific papers in the format (Author et al., Year). Include a conclusion section that synthesizes the findings across all papers.`;
-
-    // Generate the summary
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: systemMessage,
-        },
-        {
-          role: "user",
-          content: `Please provide a detailed, comprehensive summary of the following literature entries for use in a 510(k) submission:\n\n${literatureData}`,
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 2500,
-    });
-    
-    // Extract the summary
-    const summary = response.choices[0].message.content || 'No summary could be generated.';
-    
-    return {
-      summary,
-      modelUsed: response.model,
-      promptTokens: response.usage?.prompt_tokens,
-      completionTokens: response.usage?.completion_tokens,
-    };
-  }
-
-  /**
-   * Generate a critical summary of literature
-   */
-  private async generateCriticalSummary(
-    entries: LiteratureEntry[],
-    focus?: string
-  ): Promise<{ summary: string; modelUsed: string; promptTokens?: number; completionTokens?: number }> {
-    if (!this.openai) {
-      throw new Error('OpenAI API is not available');
-    }
-    
-    // Prepare literature data for the prompt
-    const literatureData = entries.map(entry => {
-      const authors = entry.authors && entry.authors.length > 0 
-        ? entry.authors.join(', ') 
-        : 'Unknown';
-        
-      const date = entry.publication_date 
-        ? new Date(entry.publication_date).toISOString().split('T')[0] 
-        : 'Unknown date';
-      
-      // Include full text if available
-      const contentText = entry.full_text || entry.abstract || 'No content available.';
-        
-      return `
-TITLE: ${entry.title}
-AUTHORS: ${authors}
-DATE: ${date}
-SOURCE: ${entry.source_name || 'Unknown'}
-${entry.journal ? `JOURNAL: ${entry.journal}` : ''}
-${entry.pmid ? `PMID: ${entry.pmid}` : ''}
-${entry.doi ? `DOI: ${entry.doi}` : ''}
-
-CONTENT:
-${contentText}
--------------------
-`;
-    }).join('\n');
-    
-    // Create a system message
-    const systemMessage = `You are an expert medical device regulatory analyst tasked with critically evaluating literature for 510(k) submissions. Provide a balanced, objective assessment that examines both strengths and limitations of the literature entries provided. Your critical summary should include:
-
-1. Evaluation of study design quality and potential biases
-2. Assessment of statistical rigor and appropriateness of methods
-3. Analysis of potential confounding factors
-4. Discussion of how generalizable the findings are to the broader device category
-5. Identification of gaps in the evidence
-6. Comparison with current regulatory standards and expectations
-
-${focus ? `Pay special attention to aspects related to: ${focus}` : ''}
-
-Your summary should be thorough but fair, highlighting both supportive evidence and areas where additional data may be needed. Structure your response with clear sections for each paper and a synthesis section that weighs the collective evidence. Use proper citations in the format (Author et al., Year).`;
-
-    // Generate the summary
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: systemMessage,
-        },
-        {
-          role: "user",
-          content: `Please provide a critical evaluation of the following literature entries for use in a 510(k) submission:\n\n${literatureData}`,
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 2000,
-    });
-    
-    // Extract the summary
-    const summary = response.choices[0].message.content || 'No summary could be generated.';
-    
-    return {
-      summary,
-      modelUsed: response.model,
-      promptTokens: response.usage?.prompt_tokens,
-      completionTokens: response.usage?.completion_tokens,
-    };
-  }
-
-  /**
-   * Generate a comparison summary of literature
-   */
-  private async generateComparisonSummary(
-    entries: LiteratureEntry[],
-    focus?: string
-  ): Promise<{ summary: string; modelUsed: string; promptTokens?: number; completionTokens?: number }> {
-    if (!this.openai) {
-      throw new Error('OpenAI API is not available');
-    }
-    
-    if (entries.length < 2) {
-      throw new Error('At least two literature entries are required for a comparison summary');
-    }
-    
-    // Prepare literature data for the prompt
-    const literatureData = entries.map(entry => {
-      const authors = entry.authors && entry.authors.length > 0 
-        ? entry.authors.join(', ') 
-        : 'Unknown';
-        
-      const date = entry.publication_date 
-        ? new Date(entry.publication_date).toISOString().split('T')[0] 
-        : 'Unknown date';
-      
-      // Include full text if available
-      const contentText = entry.full_text || entry.abstract || 'No content available.';
-        
-      return `
-TITLE: ${entry.title}
-AUTHORS: ${authors}
-DATE: ${date}
-SOURCE: ${entry.source_name || 'Unknown'}
-${entry.journal ? `JOURNAL: ${entry.journal}` : ''}
-${entry.pmid ? `PMID: ${entry.pmid}` : ''}
-${entry.doi ? `DOI: ${entry.doi}` : ''}
-
-CONTENT:
-${contentText}
--------------------
-`;
-    }).join('\n');
-    
-    // Create a system message
-    const systemMessage = `You are an expert medical device regulatory analyst tasked with comparing literature for 510(k) submissions. Create a structured comparative analysis that highlights similarities, differences, and complementary findings across the literature entries provided. Your comparison should include:
-
-1. Side-by-side comparison of key methodologies
-2. Comparative analysis of safety and effectiveness outcomes
-3. Consistency and contradictions in findings across studies
-4. Relative strengths of evidence for each study
-5. Evolution of understanding over time if studies span different periods
-6. Complementary aspects that collectively strengthen the overall evidence
-
-${focus ? `Pay special attention to aspects related to: ${focus}` : ''}
-
-Organize your response using a clear comparative structure with tables or parallel sections where appropriate. Highlight points of consensus and divergence. Conclude with a synthesis that explains how these studies collectively inform the 510(k) submission. Use proper citations in the format (Author et al., Year).`;
-
-    // Generate the summary
-    const response = await this.openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "system",
-          content: systemMessage,
-        },
-        {
-          role: "user",
-          content: `Please provide a comparative analysis of the following literature entries for use in a 510(k) submission:\n\n${literatureData}`,
-        },
-      ],
-      temperature: 0.3,
-      max_tokens: 2500,
-    });
-    
-    // Extract the summary
-    const summary = response.choices[0].message.content || 'No summary could be generated.';
-    
-    return {
-      summary,
-      modelUsed: response.model,
-      promptTokens: response.usage?.prompt_tokens,
-      completionTokens: response.usage?.completion_tokens,
-    };
-  }
-
-  /**
-   * Get summary by ID
-   */
-  async getSummaryById(summaryId: number, tenantId: number): Promise<any> {
-    try {
-      const result = await this.pool.query(`
-        SELECT *
-        FROM literature_summaries
-        WHERE id = $1 AND tenant_id = $2
-      `, [summaryId, tenantId]);
-      
-      if (result.rows.length === 0) {
-        return null;
+        return result.rows;
+      } finally {
+        client.release();
       }
-      
-      // Get literature details for the summary
-      const literatureResult = await this.pool.query(`
-        SELECT 
-          e.*,
-          s.source_name
-        FROM literature_entries e
-        JOIN literature_sources s ON e.source_id = s.id
-        WHERE e.id = ANY($1) AND e.tenant_id = $2
-      `, [result.rows[0].literature_ids, tenantId]);
-      
-      return {
-        ...result.rows[0],
-        literature: literatureResult.rows,
-      };
     } catch (error) {
-      console.error(`Error getting summary ${summaryId}:`, error);
-      return null;
+      console.error('Error getting recent summaries:', error);
+      throw error;
     }
   }
-
+  
   /**
-   * Get recent summaries for a tenant
+   * Get a specific summary by ID
    */
-  async getRecentSummaries(tenantId: number, limit: number = 10): Promise<any[]> {
+  public async getSummaryById(summaryId: string, organizationId: string): Promise<any | null> {
     try {
-      const result = await this.pool.query(`
-        SELECT *
-        FROM literature_summaries
-        WHERE tenant_id = $1
-        ORDER BY created_at DESC
-        LIMIT $2
-      `, [tenantId, limit]);
+      const client = await pool.connect();
       
-      // For each summary, fetch the first few literature entries
-      const summaries = [];
-      for (const summary of result.rows) {
-        // Get up to 3 literature entries for preview
-        const literatureIds = summary.literature_ids.slice(0, 3);
+      try {
+        const result = await client.query(
+          `SELECT s.*, 
+            (SELECT jsonb_agg(jsonb_build_object(
+              'id', le.id,
+              'title', le.title,
+              'authors', le.authors,
+              'abstract', le.abstract,
+              'journal', le.journal,
+              'publication_date', le.publication_date,
+              'source_name', le.source_name,
+              'url', le.url
+            )) FROM literature_entries le
+            WHERE le.id = ANY(s.literature_ids)
+            AND le.organization_id = s.organization_id) as literature_entries
+          FROM literature_summaries s
+          WHERE s.id = $1 AND s.organization_id = $2`,
+          [summaryId, organizationId]
+        );
         
-        const literatureResult = await this.pool.query(`
-          SELECT 
-            e.id,
-            e.title,
-            e.authors,
-            e.publication_date,
-            e.journal,
-            s.source_name
-          FROM literature_entries e
-          JOIN literature_sources s ON e.source_id = s.id
-          WHERE e.id = ANY($1) AND e.tenant_id = $2
-        `, [literatureIds, tenantId]);
+        if (result.rows.length === 0) {
+          return null;
+        }
         
-        summaries.push({
-          ...summary,
-          literature_preview: literatureResult.rows,
-          total_literature_count: summary.literature_ids.length,
-        });
+        return result.rows[0];
+      } finally {
+        client.release();
       }
-      
-      return summaries;
     } catch (error) {
-      console.error(`Error getting recent summaries for tenant ${tenantId}:`, error);
-      return [];
+      console.error('Error getting summary by ID:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Generate summary using OpenAI
+   */
+  private async generateSummaryWithAI(
+    literatureEntries: LiteratureEntry[],
+    summaryType: string,
+    focus?: string
+  ): Promise<string> {
+    if (!openai) {
+      return 'AI-powered summaries are not available. Please configure the OpenAI API key.';
+    }
+    
+    try {
+      // Create a formatted representation of the literature entries
+      const formattedEntries = literatureEntries.map((entry, index) => {
+        return `
+ENTRY ${index + 1}:
+Title: ${entry.title}
+${entry.authors && entry.authors.length > 0 ? `Authors: ${entry.authors.join(', ')}` : ''}
+${entry.journal ? `Journal: ${entry.journal}` : ''}
+${entry.publication_date ? `Date: ${entry.publication_date}` : ''}
+${entry.source_name ? `Source: ${entry.source_name}` : ''}
+${entry.abstract ? `Abstract: ${entry.abstract}` : ''}
+        `;
+      }).join('\n\n');
+      
+      // Create prompt based on summary type and focus
+      const typeDescription = SUMMARY_TYPES[summaryType as keyof typeof SUMMARY_TYPES];
+      const focusInstruction = focus ? `Pay special attention to aspects related to: ${focus}` : '';
+      
+      const prompt = `
+I need you to ${typeDescription} for a 510(k) medical device submission.
+${focusInstruction}
+
+The literature entries are:
+
+${formattedEntries}
+
+Generate a well-structured, comprehensive summary that:
+1. Identifies key findings and their relevance to medical devices
+2. Highlights methodological strengths and limitations where appropriate
+3. Notes any safety or efficacy considerations that would be relevant for regulatory submissions
+4. Presents information in a clear, objective manner suitable for inclusion in a 510(k) submission
+5. Uses proper citations and maintains scientific rigor throughout
+      `;
+      
+      // Call OpenAI API
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o', // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an expert medical and regulatory literature specialist assisting with a 510(k) submission for a medical device.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 2000,
+        temperature: 0.3
+      });
+      
+      return response.choices[0].message.content || 'Error generating summary.';
+    } catch (error) {
+      console.error('Error generating summary with AI:', error);
+      return `Error generating summary: ${error instanceof Error ? error.message : String(error)}`;
+    }
+  }
+  
+  /**
+   * Save summary to database
+   */
+  private async saveSummary(
+    summaryText: string,
+    summaryType: string,
+    focusArea: string,
+    literatureIds: string[],
+    organizationId: string
+  ): Promise<string> {
+    try {
+      const client = await pool.connect();
+      
+      try {
+        // Begin transaction
+        await client.query('BEGIN');
+        
+        const summaryId = uuidv4();
+        
+        // Insert summary
+        await client.query(
+          `INSERT INTO literature_summaries (
+            id, summary_text, summary_type, focus_area,
+            literature_ids, organization_id, created_at, updated_at
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())`,
+          [
+            summaryId,
+            summaryText,
+            summaryType,
+            focusArea,
+            literatureIds,
+            organizationId
+          ]
+        );
+        
+        // Insert entries in the many-to-many table
+        for (const literatureId of literatureIds) {
+          await client.query(
+            `INSERT INTO literature_summary_entries (
+              summary_id, literature_id, organization_id
+            )
+            VALUES ($1, $2, $3)
+            ON CONFLICT (summary_id, literature_id) DO NOTHING`,
+            [summaryId, literatureId, organizationId]
+          );
+        }
+        
+        // Commit transaction
+        await client.query('COMMIT');
+        
+        return summaryId;
+      } catch (error) {
+        // Rollback transaction on error
+        await client.query('ROLLBACK');
+        throw error;
+      } finally {
+        client.release();
+      }
+    } catch (error) {
+      console.error('Error saving summary:', error);
+      throw error;
     }
   }
 }
+
+// Create singleton instance
+const literatureSummarizer = new LiteratureSummarizerService();
+
+export default literatureSummarizer;

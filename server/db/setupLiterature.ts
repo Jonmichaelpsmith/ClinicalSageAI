@@ -6,16 +6,30 @@
  */
 
 import { Pool } from 'pg';
-import fs from 'fs';
+import { readFile } from 'fs/promises';
 import path from 'path';
-import OpenAI from 'openai';
+import { OpenAI } from 'openai';
 import axios from 'axios';
+import dotenv from 'dotenv';
 
-// Database connection pool
+// Load environment variables
+dotenv.config();
+
+// Initialize database connection pool
 let pool: Pool;
+try {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+  });
+} catch (error) {
+  console.error('Error initializing database pool:', error);
+  throw error;
+}
 
-// Initialize OpenAI client
-let openai: OpenAI | null = null;
+// Initialize OpenAI client (if available)
+const openai = process.env.OPENAI_API_KEY ? 
+  new OpenAI({ apiKey: process.env.OPENAI_API_KEY }) : 
+  null;
 
 /**
  * Setup literature system
@@ -27,45 +41,40 @@ export async function setupLiteratureSystem(): Promise<{
   pubmedWorking: boolean;
 }> {
   try {
-    // Initialize database connection
-    pool = new Pool({
-      connectionString: process.env.DATABASE_URL,
-    });
+    console.log('Setting up literature management system...');
     
-    // Setup results
-    const results = {
-      tablesSetup: false,
-      pgvectorWorking: false,
-      openaiWorking: false,
-      pubmedWorking: false,
+    // Check and setup database tables
+    const tablesSetup = await setupDatabaseTables();
+    
+    // Test pgvector extension
+    const pgvectorWorking = await testPgVector();
+    
+    // Test OpenAI connection
+    const openaiWorking = await testOpenAI();
+    
+    // Test PubMed connection
+    const pubmedWorking = await testPubMed();
+    
+    console.log('Literature system setup complete with status:');
+    console.log(`- Database tables: ${tablesSetup ? 'SETUP' : 'FAILED'}`);
+    console.log(`- pgvector extension: ${pgvectorWorking ? 'WORKING' : 'NOT WORKING'}`);
+    console.log(`- OpenAI connection: ${openaiWorking ? 'WORKING' : 'NOT WORKING'}`);
+    console.log(`- PubMed connection: ${pubmedWorking ? 'WORKING' : 'NOT WORKING'}`);
+    
+    return {
+      tablesSetup,
+      pgvectorWorking,
+      openaiWorking,
+      pubmedWorking
     };
-    
-    // Create database tables
-    results.tablesSetup = await setupDatabaseTables();
-    
-    // Test PgVector extension
-    results.pgvectorWorking = await testPgVector();
-    
-    // Test OpenAI API connection
-    results.openaiWorking = await testOpenAI();
-    
-    // Test PubMed API connection
-    results.pubmedWorking = await testPubMed();
-    
-    return results;
   } catch (error) {
     console.error('Error setting up literature system:', error);
     return {
       tablesSetup: false,
       pgvectorWorking: false,
       openaiWorking: false,
-      pubmedWorking: false,
+      pubmedWorking: false
     };
-  } finally {
-    // Close database connection
-    if (pool) {
-      await pool.end();
-    }
   }
 }
 
@@ -74,14 +83,46 @@ export async function setupLiteratureSystem(): Promise<{
  */
 async function setupDatabaseTables(): Promise<boolean> {
   try {
-    // Read migration SQL file
-    const migrationFile = path.join(process.cwd(), 'migrations', '20250512_literature_entries.sql');
-    const sql = fs.readFileSync(migrationFile, 'utf8');
+    const client = await pool.connect();
     
-    // Execute migration SQL
-    await pool.query(sql);
-    
-    return true;
+    try {
+      // Check if migration script exists
+      let migrationScript: string;
+      try {
+        migrationScript = await readFile(
+          path.join(__dirname, '../../migrations/20250512_literature_entries.sql'),
+          'utf-8'
+        );
+      } catch (err) {
+        console.error('Migration script not found:', err);
+        return false;
+      }
+      
+      // Execute migration script
+      await client.query(migrationScript);
+      
+      // Verify essential tables exist
+      const tables = ['literature_entries', 'document_citations', 'literature_summaries'];
+      for (const table of tables) {
+        const result = await client.query(
+          `SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_name = $1
+          )`,
+          [table]
+        );
+        
+        if (!result.rows[0].exists) {
+          console.error(`Table "${table}" does not exist after migration`);
+          return false;
+        }
+      }
+      
+      console.log('Literature tables verified');
+      return true;
+    } finally {
+      client.release();
+    }
   } catch (error) {
     console.error('Error setting up database tables:', error);
     return false;
@@ -93,15 +134,38 @@ async function setupDatabaseTables(): Promise<boolean> {
  */
 async function testPgVector(): Promise<boolean> {
   try {
-    // Test vector operations
-    const result = await pool.query(`
-      SELECT 
-        '[1,2,3]'::vector <-> '[4,5,6]'::vector as distance
-    `);
+    const client = await pool.connect();
     
-    return result.rows.length > 0;
+    try {
+      // Check if pgvector extension is available
+      const result = await client.query(
+        `SELECT EXISTS (
+          SELECT FROM pg_extension
+          WHERE extname = 'vector'
+        )`
+      );
+      
+      if (!result.rows[0].exists) {
+        console.error('pgvector extension not installed');
+        return false;
+      }
+      
+      // Test basic vector functionality
+      try {
+        await client.query(`
+          SELECT '[1,2,3]'::vector <-> '[4,5,6]'::vector as distance
+        `);
+        console.log('pgvector extension working');
+        return true;
+      } catch (err) {
+        console.error('Error testing pgvector functionality:', err);
+        return false;
+      }
+    } finally {
+      client.release();
+    }
   } catch (error) {
-    console.error('Error testing PgVector extension:', error);
+    console.error('Error testing pgvector:', error);
     return false;
   }
 }
@@ -110,26 +174,28 @@ async function testPgVector(): Promise<boolean> {
  * Test OpenAI API connection
  */
 async function testOpenAI(): Promise<boolean> {
-  if (!process.env.OPENAI_API_KEY) {
-    console.warn('OpenAI API key not found');
+  if (!openai) {
+    console.log('OpenAI API key not configured');
     return false;
   }
   
   try {
-    // Initialize OpenAI client
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-    
     // Test API connection with a simple embedding request
     const response = await openai.embeddings.create({
-      model: "text-embedding-ada-002",
-      input: "Hello, world!",
+      model: 'text-embedding-3-small',
+      input: 'Testing OpenAI connection',
+      encoding_format: 'float'
     });
     
-    return response.data && response.data.length > 0;
+    if (response && response.data && response.data.length > 0) {
+      console.log('OpenAI API connection working');
+      return true;
+    } else {
+      console.error('OpenAI API response incomplete');
+      return false;
+    }
   } catch (error) {
-    console.error('Error testing OpenAI API connection:', error);
+    console.error('Error testing OpenAI API:', error);
     return false;
   }
 }
@@ -138,53 +204,54 @@ async function testOpenAI(): Promise<boolean> {
  * Test PubMed API connection
  */
 async function testPubMed(): Promise<boolean> {
-  const pubmedKey = process.env.PUBMED_API_KEY;
-  
   try {
-    // Base URL for PubMed E-utilities
-    const baseUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/';
+    // Test PubMed API connection with a simple search
+    const baseUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
+    const searchUrl = `${baseUrl}/esearch.fcgi?db=pubmed&term=medical+device&retmax=1&retmode=json`;
     
-    // Simple query to test the API
-    const url = `${baseUrl}esearch.fcgi?db=pubmed&term=medical+device&retmode=json&retmax=1${pubmedKey ? `&api_key=${pubmedKey}` : ''}`;
+    // Add API key if available
+    const pubmedApiKey = process.env.PUBMED_API_KEY;
+    const apiKeyParam = pubmedApiKey ? `&api_key=${pubmedApiKey}` : '';
     
-    const response = await axios.get(url);
+    const response = await axios.get(searchUrl + apiKeyParam);
     
-    return response.status === 200 && response.data && response.data.esearchresult;
+    if (response && response.data && response.data.esearchresult) {
+      console.log('PubMed API connection working');
+      return true;
+    } else {
+      console.error('PubMed API response incomplete');
+      return false;
+    }
   } catch (error) {
-    console.error('Error testing PubMed API connection:', error);
+    console.error('Error testing PubMed API:', error);
     return false;
   }
 }
 
-// Function to run standalone setup (can be called from CLI tools)
+/**
+ * Run standalone setup
+ */
 export async function runStandaloneSetup(): Promise<void> {
-  try {
-    const results = await setupLiteratureSystem();
-      
-    console.log('\nLiterature System Setup Results:');
-    console.log('---------------------------------');
-    console.log(`Database Tables: ${results.tablesSetup ? '✅ Setup Complete' : '❌ Failed'}`);
-    console.log(`PgVector Extension: ${results.pgvectorWorking ? '✅ Working' : '❌ Not Working'}`);
-    console.log(`OpenAI API: ${results.openaiWorking ? '✅ Connected' : '❌ Not Connected'}`);
-    console.log(`PubMed API: ${results.pubmedWorking ? '✅ Connected' : '❌ Not Connected'}`);
-    console.log('---------------------------------');
-    
-    if (!results.tablesSetup || !results.pgvectorWorking) {
-      console.error('\nCritical components failed setup. Literature search features may not work correctly.');
-      return;
-    }
-    
-    if (!results.openaiWorking) {
-      console.warn('\nOpenAI API connection failed. Semantic search features will not be available.');
-    }
-    
-    if (!results.pubmedWorking) {
-      console.warn('\nPubMed API connection failed. PubMed literature search will not be available.');
-    }
-    
-    console.log('\nSetup completed successfully.');
-  } catch (error) {
-    console.error('Setup failed with error:', error);
-    throw error;
+  console.log('Running standalone literature system setup...');
+  const result = await setupLiteratureSystem();
+  
+  if (result.tablesSetup && result.pgvectorWorking) {
+    console.log('Literature system setup successful');
+  } else {
+    console.error('Literature system setup failed');
+    console.error('Please check the error messages above and fix the issues');
   }
+  
+  // Close the database connection
+  await pool.end();
 }
+
+// For ESM compatibility, detect if file is being run directly
+// Note: In ESM, we can't use require.main === module
+const isMainModule = import.meta.url.endsWith(process.argv[1]);
+if (isMainModule) {
+  runStandaloneSetup().catch(console.error);
+}
+
+// Export the database pool for reuse in other modules
+export { pool };

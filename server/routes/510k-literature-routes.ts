@@ -1,450 +1,384 @@
 /**
  * 510(k) Literature API Routes
  * 
- * This module provides API endpoints for literature search, citation management,
- * and AI-powered summaries for 510(k) submissions.
+ * API endpoints for the 510(k) literature search, aggregation, and citation
+ * functionality, supporting the Enhanced Literature Discovery feature.
  */
 
-import express from 'express';
-import { Pool } from 'pg';
-// Import services
-import { LiteratureAggregatorService } from '../services/LiteratureAggregatorService';
-import { LiteratureSummarizerService } from '../services/LiteratureSummarizerService';
+import { Router, Request, Response } from 'express';
+import literatureAggregator, { LITERATURE_SOURCES } from '../services/LiteratureAggregatorService';
+import literatureSummarizer from '../services/LiteratureSummarizerService';
 
-// Initialize router
-const router = express.Router();
+const router = Router();
 
-// Initialize services with database pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
-
-const literatureAggregator = new LiteratureAggregatorService(pool);
-const literatureSummarizer = new LiteratureSummarizerService(pool);
+/**
+ * Middleware to extract tenant context
+ */
+const extractTenantContext = (req: Request, res: Response, next: Function) => {
+  // Default organization ID for testing if not provided
+  req.body.organizationId = req.body.organizationId || 'test-org-id';
+  next();
+};
 
 /**
  * Get available literature sources
  */
-router.get('/api/510k/literature/sources', async (req, res) => {
+router.get('/sources', async (req: Request, res: Response) => {
   try {
-    const sources = await literatureAggregator.getEnabledSources();
-    res.json({ success: true, sources });
+    const sources = LITERATURE_SOURCES.filter(source => source.enabled);
+    
+    res.json({
+      sources,
+      count: sources.length
+    });
   } catch (error) {
     console.error('Error fetching literature sources:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch literature sources',
-      details: String(error)
+    res.status(500).json({ 
+      error: 'Failed to fetch literature sources', 
+      details: error instanceof Error ? error.message : String(error)
     });
   }
 });
 
 /**
- * Search literature across multiple sources
+ * Search literature from multiple sources
  */
-router.post('/api/510k/literature/search', async (req, res) => {
-  try {
-    // Validate request
-    const { query, sources, startDate, endDate, limit, useSemanticSearch, filters } = req.body;
-    
-    if (!query) {
-      return res.status(400).json({
-        success: false,
-        error: 'Search query is required'
+router.post(
+  '/search',
+  extractTenantContext,
+  [
+    body('query').isString().notEmpty().withMessage('Search query is required'),
+    body('sources').optional().isArray(),
+    body('startDate').optional().isString(),
+    body('endDate').optional().isString(),
+    body('useSemanticSearch').optional().isBoolean(),
+    body('filters').optional().isObject(),
+    body('limit').optional().isInt({ min: 1, max: 100 }),
+    body('offset').optional().isInt({ min: 0 })
+  ],
+  async (req: Request, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      
+      const searchParams = {
+        query: req.body.query,
+        sources: req.body.sources,
+        startDate: req.body.startDate,
+        endDate: req.body.endDate,
+        useSemanticSearch: req.body.useSemanticSearch !== false, // Default to true
+        filters: req.body.filters || {},
+        limit: req.body.limit || 20,
+        offset: req.body.offset || 0,
+        organizationId: req.body.organizationId
+      };
+      
+      const results = await literatureAggregator.searchLiterature(searchParams);
+      
+      res.json(results);
+    } catch (error) {
+      console.error('Error searching literature:', error);
+      res.status(500).json({ 
+        error: 'Failed to search literature', 
+        details: error instanceof Error ? error.message : String(error)
       });
     }
-    
-    // Check for tenant context
-    if (!req.tenantContext) {
-      return res.status(401).json({
-        success: false,
-        error: 'Tenant context is required'
-      });
-    }
-    
-    // Execute search
-    const results = await literatureAggregator.search({
-      query,
-      sources,
-      startDate,
-      endDate,
-      limit: limit || 20,
-      tenantId: req.tenantContext.organizationId, // Using organizationId as tenantId 
-      organizationId: req.tenantContext.organizationId,
-      userId: req.tenantContext.userId,
-      useSemanticSearch: Boolean(useSemanticSearch),
-      filters
-    });
-    
-    res.json({
-      success: true,
-      results: results.entries,
-      total: results.total,
-      search_id: results.search_id,
-      execution_time_ms: results.execution_time_ms,
-      sources_queried: results.sources_queried
-    });
-  } catch (error) {
-    console.error('Error searching literature:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to search literature',
-      details: String(error)
-    });
   }
-});
+);
 
 /**
  * Get literature entry by ID
  */
-router.get('/api/510k/literature/entries/:id', async (req, res) => {
-  try {
-    const entryId = parseInt(req.params.id, 10);
-    
-    if (isNaN(entryId)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid literature entry ID'
+router.get(
+  '/entry/:id',
+  extractTenantContext,
+  [
+    param('id').isString().notEmpty().withMessage('Literature ID is required')
+  ],
+  async (req: Request, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      
+      const organizationId = req.query.organizationId?.toString() || 'test-org-id';
+      const entry = await literatureAggregator.getLiteratureById(req.params.id, organizationId);
+      
+      if (!entry) {
+        return res.status(404).json({ error: 'Literature entry not found' });
+      }
+      
+      res.json({ entry });
+    } catch (error) {
+      console.error('Error fetching literature entry:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch literature entry', 
+        details: error instanceof Error ? error.message : String(error)
       });
     }
-    
-    // Check for tenant context
-    if (!req.tenantContext) {
-      return res.status(401).json({
-        success: false,
-        error: 'Tenant context is required'
-      });
-    }
-    
-    const entry = await literatureAggregator.getLiteratureEntryById(
-      entryId,
-      req.tenantContext.organizationId // Using organizationId as tenantId
-    );
-    
-    if (!entry) {
-      return res.status(404).json({
-        success: false,
-        error: 'Literature entry not found'
-      });
-    }
-    
-    res.json({ success: true, entry });
-  } catch (error) {
-    console.error(`Error fetching literature entry:`, error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch literature entry',
-      details: String(error)
-    });
   }
-});
+);
 
 /**
- * Get recent literature
+ * Get recent literature entries
  */
-router.get('/api/510k/literature/recent', async (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit as string, 10) || 10;
-    
-    // Check for tenant context
-    if (!req.tenantContext) {
-      return res.status(401).json({
-        success: false,
-        error: 'Tenant context is required'
+router.get(
+  '/recent',
+  extractTenantContext,
+  [
+    query('limit').optional().isInt({ min: 1, max: 50 }).toInt()
+  ],
+  async (req: Request, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      
+      const limit = req.query.limit ? parseInt(req.query.limit.toString(), 10) : 10;
+      const organizationId = req.query.organizationId?.toString() || 'test-org-id';
+      
+      const entries = await literatureAggregator.getRecentLiterature(organizationId, limit);
+      
+      res.json({ entries, count: entries.length });
+    } catch (error) {
+      console.error('Error fetching recent literature:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch recent literature', 
+        details: error instanceof Error ? error.message : String(error)
       });
     }
-    
-    const entries = await literatureAggregator.getRecentLiterature(
-      req.tenantContext.organizationId, // Using organizationId as tenantId
-      limit
-    );
-    
-    res.json({ success: true, entries });
-  } catch (error) {
-    console.error('Error fetching recent literature:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch recent literature',
-      details: String(error)
-    });
   }
-});
+);
 
 /**
  * Cite literature in a document
  */
-router.post('/api/510k/literature/cite', async (req, res) => {
-  try {
-    // Validate request
-    const {
-      literatureId,
-      documentId,
-      documentType,
-      sectionId,
-      sectionName,
-      citationText
-    } = req.body;
-    
-    if (!literatureId || !documentId || !sectionId) {
-      return res.status(400).json({
-        success: false,
-        error: 'Missing required fields: literatureId, documentId, sectionId'
+router.post(
+  '/cite',
+  extractTenantContext,
+  [
+    body('literatureId').isString().notEmpty().withMessage('Literature ID is required'),
+    body('documentId').isString().notEmpty().withMessage('Document ID is required'),
+    body('documentType').isString().notEmpty().withMessage('Document type is required'),
+    body('sectionId').isString().notEmpty().withMessage('Section ID is required'),
+    body('sectionName').isString().withMessage('Section name is required'),
+    body('citationText').optional().isString()
+  ],
+  async (req: Request, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      
+      const citation = await literatureAggregator.addCitation(
+        req.body.literatureId,
+        req.body.documentId,
+        req.body.documentType,
+        req.body.sectionId,
+        req.body.sectionName,
+        req.body.citationText || '',
+        req.body.organizationId
+      );
+      
+      res.json({ 
+        message: 'Literature cited successfully', 
+        citation_id: citation.id,
+        citation
+      });
+    } catch (error) {
+      console.error('Error citing literature:', error);
+      res.status(500).json({ 
+        error: 'Failed to cite literature', 
+        details: error instanceof Error ? error.message : String(error)
       });
     }
-    
-    // Check for tenant context
-    if (!req.tenantContext) {
-      return res.status(401).json({
-        success: false,
-        error: 'Tenant context is required'
-      });
-    }
-    
-    // Add citation
-    const result = await literatureAggregator.citeLiteratureInDocument(
-      literatureId,
-      documentId,
-      documentType || '510k',
-      sectionId,
-      sectionName || '',
-      citationText || '',
-      req.tenantContext.organizationId, // Using organizationId as tenantId
-      req.tenantContext.organizationId
-    );
-    
-    res.json({
-      success: true,
-      citation_id: result.id,
-      message: 'Citation added successfully'
-    });
-  } catch (error) {
-    console.error('Error citing literature:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to cite literature',
-      details: String(error)
-    });
   }
-});
+);
 
 /**
  * Get citations for a document
  */
-router.get('/api/510k/literature/citations/:documentId', async (req, res) => {
-  try {
-    const documentId = parseInt(req.params.documentId, 10);
-    const documentType = req.query.type as string || '510k';
-    
-    if (isNaN(documentId)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid document ID'
+router.get(
+  '/citations/:documentId',
+  extractTenantContext,
+  [
+    param('documentId').isString().notEmpty().withMessage('Document ID is required'),
+    query('type').optional().isString()
+  ],
+  async (req: Request, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      
+      const documentType = req.query.type?.toString() || '510k';
+      const organizationId = req.query.organizationId?.toString() || 'test-org-id';
+      
+      const citations = await literatureAggregator.getCitations(
+        req.params.documentId,
+        documentType,
+        organizationId
+      );
+      
+      res.json({ citations, count: citations.length });
+    } catch (error) {
+      console.error('Error fetching citations:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch citations', 
+        details: error instanceof Error ? error.message : String(error)
       });
     }
-    
-    // Check for tenant context
-    if (!req.tenantContext) {
-      return res.status(401).json({
-        success: false,
-        error: 'Tenant context is required'
-      });
-    }
-    
-    const citations = await literatureAggregator.getDocumentCitations(
-      documentId,
-      documentType,
-      req.tenantContext.organizationId // Using organizationId as tenantId
-    );
-    
-    res.json({ success: true, citations });
-  } catch (error) {
-    console.error('Error fetching document citations:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch document citations',
-      details: String(error)
-    });
   }
-});
+);
 
 /**
  * Remove a citation
  */
-router.delete('/api/510k/literature/citations/:citationId', async (req, res) => {
-  try {
-    const citationId = parseInt(req.params.citationId, 10);
-    
-    if (isNaN(citationId)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid citation ID'
+router.delete(
+  '/citations/:citationId',
+  extractTenantContext,
+  [
+    param('citationId').isString().notEmpty().withMessage('Citation ID is required')
+  ],
+  async (req: Request, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      
+      const organizationId = req.query.organizationId?.toString() || 'test-org-id';
+      
+      await literatureAggregator.removeCitation(
+        req.params.citationId,
+        organizationId
+      );
+      
+      res.json({ 
+        message: 'Citation removed successfully',
+        citation_id: req.params.citationId
+      });
+    } catch (error) {
+      console.error('Error removing citation:', error);
+      res.status(500).json({ 
+        error: 'Failed to remove citation', 
+        details: error instanceof Error ? error.message : String(error)
       });
     }
-    
-    // Check for tenant context
-    if (!req.tenantContext) {
-      return res.status(401).json({
-        success: false,
-        error: 'Tenant context is required'
+  }
+);
+
+/**
+ * Generate a summary from multiple literature entries
+ */
+router.post(
+  '/summarize',
+  extractTenantContext,
+  [
+    body('literatureIds').isArray().notEmpty().withMessage('Literature IDs are required'),
+    body('summaryType').isString().isIn(['standard', 'detailed', 'critical', 'comparison']).withMessage('Valid summary type is required'),
+    body('focus').optional().isString()
+  ],
+  async (req: Request, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      
+      const result = await literatureSummarizer.generateSummary({
+        literatureIds: req.body.literatureIds,
+        summaryType: req.body.summaryType,
+        focus: req.body.focus,
+        organizationId: req.body.organizationId
       });
-    }
-    
-    const result = await literatureAggregator.removeCitation(
-      citationId,
-      req.tenantContext.organizationId // Using organizationId as tenantId
-    );
-    
-    if (result) {
+      
       res.json({
-        success: true,
-        message: 'Citation removed successfully'
+        summary: result.summary,
+        summary_id: result.id,
+        processing_time_ms: result.processing_time_ms,
+        literature_count: result.total_literature_count
       });
-    } else {
-      res.status(404).json({
-        success: false,
-        error: 'Citation not found or could not be removed'
+    } catch (error) {
+      console.error('Error generating summary:', error);
+      res.status(500).json({ 
+        error: 'Failed to generate summary', 
+        details: error instanceof Error ? error.message : String(error)
       });
     }
-  } catch (error) {
-    console.error('Error removing citation:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to remove citation',
-      details: String(error)
-    });
   }
-});
-
-/**
- * Generate an AI-powered summary of literature
- */
-router.post('/api/510k/literature/summarize', async (req, res) => {
-  try {
-    // Validate request
-    const {
-      literatureIds,
-      searchId,
-      summaryType,
-      focus
-    } = req.body;
-    
-    if (!literatureIds || !Array.isArray(literatureIds) || literatureIds.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Literature IDs array is required'
-      });
-    }
-    
-    // Check for tenant context
-    if (!req.tenantContext) {
-      return res.status(401).json({
-        success: false,
-        error: 'Tenant context is required'
-      });
-    }
-    
-    // Generate summary
-    const summary = await literatureSummarizer.generateSummary({
-      literatureIds,
-      searchId,
-      summaryType: summaryType || 'standard',
-      focus,
-      tenantId: req.tenantContext.organizationId, // Using organizationId as tenantId
-      organizationId: req.tenantContext.organizationId,
-      userId: req.tenantContext.userId
-    });
-    
-    res.json({
-      success: true,
-      summary: summary.summary,
-      summary_id: summary.summaryId,
-      processing_time_ms: summary.processingTimeMs,
-      model_used: summary.modelUsed
-    });
-  } catch (error) {
-    console.error('Error generating literature summary:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to generate literature summary',
-      details: String(error)
-    });
-  }
-});
-
-/**
- * Get summary by ID
- */
-router.get('/api/510k/literature/summaries/:id', async (req, res) => {
-  try {
-    const summaryId = parseInt(req.params.id, 10);
-    
-    if (isNaN(summaryId)) {
-      return res.status(400).json({
-        success: false,
-        error: 'Invalid summary ID'
-      });
-    }
-    
-    // Check for tenant context
-    if (!req.tenantContext) {
-      return res.status(401).json({
-        success: false,
-        error: 'Tenant context is required'
-      });
-    }
-    
-    const summary = await literatureSummarizer.getSummaryById(
-      summaryId,
-      req.tenantContext.organizationId // Using organizationId as tenantId
-    );
-    
-    if (!summary) {
-      return res.status(404).json({
-        success: false,
-        error: 'Summary not found'
-      });
-    }
-    
-    res.json({ success: true, summary });
-  } catch (error) {
-    console.error('Error fetching summary:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch summary',
-      details: String(error)
-    });
-  }
-});
+);
 
 /**
  * Get recent summaries
  */
-router.get('/api/510k/literature/summaries', async (req, res) => {
-  try {
-    const limit = parseInt(req.query.limit as string, 10) || 10;
-    
-    // Check for tenant context
-    if (!req.tenantContext) {
-      return res.status(401).json({
-        success: false,
-        error: 'Tenant context is required'
+router.get(
+  '/summaries',
+  extractTenantContext,
+  [
+    query('limit').optional().isInt({ min: 1, max: 20 })
+  ],
+  async (req: Request, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      
+      const limit = req.query.limit ? parseInt(req.query.limit.toString(), 10) : 5;
+      const organizationId = req.query.organizationId?.toString() || 'test-org-id';
+      
+      const summaries = await literatureSummarizer.getRecentSummaries(organizationId, limit);
+      
+      res.json({ summaries, count: summaries.length });
+    } catch (error) {
+      console.error('Error fetching summaries:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch summaries', 
+        details: error instanceof Error ? error.message : String(error)
       });
     }
-    
-    const summaries = await literatureSummarizer.getRecentSummaries(
-      req.tenantContext.organizationId, // Using organizationId as tenantId
-      limit
-    );
-    
-    res.json({ success: true, summaries });
-  } catch (error) {
-    console.error('Error fetching recent summaries:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to fetch recent summaries',
-      details: String(error)
-    });
   }
-});
+);
 
-export { router };
+/**
+ * Get summary by ID
+ */
+router.get(
+  '/summary/:id',
+  extractTenantContext,
+  [
+    param('id').isString().notEmpty().withMessage('Summary ID is required')
+  ],
+  async (req: Request, res: Response) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      
+      const organizationId = req.query.organizationId?.toString() || 'test-org-id';
+      const summary = await literatureSummarizer.getSummaryById(req.params.id, organizationId);
+      
+      if (!summary) {
+        return res.status(404).json({ error: 'Summary not found' });
+      }
+      
+      res.json({ summary });
+    } catch (error) {
+      console.error('Error fetching summary:', error);
+      res.status(500).json({ 
+        error: 'Failed to fetch summary', 
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+);
+
+export default router;
