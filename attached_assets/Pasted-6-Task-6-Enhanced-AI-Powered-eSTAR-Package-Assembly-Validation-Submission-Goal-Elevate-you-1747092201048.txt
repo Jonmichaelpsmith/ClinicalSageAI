@@ -1,0 +1,244 @@
+6️⃣ Task 6 (Enhanced): AI-Powered eSTAR Package Assembly, Validation & Submission
+
+Goal: Elevate your eSTAR packaging step into an intelligent, end-to-end AI-driven service that not only bundles your finalized 510(k) sections into a compliant ZIP, but also:
+   •   Automates metadata extraction & manifest generation
+   •   AI-validates package contents against FDA rules
+   •   Digitally signs & timestamps the package
+   •   Optionally pushes directly to FDA’s ESG portal
+   •   Provides a live preview and compliance summary before download/submission
+
+⸻
+
+A. eSTARPlusBuilder Service
+	1.	Path: server/services/eSTARPlusBuilder.ts
+	2.	Dependencies:
+      •   libreoffice-headless or unoconv for DOCX→PDF/XHTML
+      •   archiver for ZIPs
+      •   xmlbuilder2 for XML
+      •   ajv for manifest schema validation
+      •   OpenAI client for AI checks
+      •   Node WebCrypto (crypto.subtle) or jsonwebtoken for digital signatures
+      •   FDA ESG API client (if direct upload)
+	3.	Enhanced Skeleton:
+
+import fs from 'fs';
+import path from 'path';
+import { spawnSync } from 'child_process';
+import archiver from 'archiver';
+import { create } from 'xmlbuilder2';
+import Ajv from 'ajv';
+import { aiClient } from './AIClient';
+import { signPackage } from './DigitalSigner';
+import { uploadToESG } from './ESGClient';
+import { listFinalSections, getProjectMeta } from '../db';
+
+const ajv = new Ajv();
+const manifestSchema = require('../config/schemas/estarManifest.json');
+
+export class eSTARPlusBuilder {
+  static async build(projectId: string, options: {
+    autoUpload?: boolean;
+    includeCoverLetter?: boolean;
+  }) {
+    // 1) Prepare tmp directory
+    const tmp = path.join('/tmp', `estar_plus_${projectId}_${Date.now()}`);
+    fs.mkdirSync(tmp, { recursive: true });
+
+    // 2) Gather project metadata
+    const meta = await getProjectMeta(projectId); 
+    // E.g. submission date, sequence number, company info…
+
+    // 3) Convert sections and inject metadata
+    const sections = await listFinalSections(projectId);
+    for (const sec of sections) {
+      const inDocx = sec.filePathDOCX;
+      const outXhtml = path.join(tmp, `${sec.name}.xhtml`);
+      const outPdf   = path.join(tmp, `${sec.name}.pdf`);
+      spawnSync('soffice', ['--headless','--convert-to','xhtml','--outdir',tmp,inDocx]);
+      spawnSync('soffice', ['--headless','--convert-to','pdf','--outdir',tmp,inDocx]);
+
+      // AI-powered quality check on converted PDF
+      const pdfBuffer = fs.readFileSync(outPdf);
+      const aiCheck = await aiClient.generate({
+        prompt: `Check this PDF for missing headers, incorrect margins, or non-compliant fonts per FDA eSTAR spec.`,
+        files: [{ name: sec.name+'.pdf', data: pdfBuffer }]
+      });
+      if (aiCheck.choices[0].message.content.match(/error/i)) {
+        console.warn(`AI flagged issues in ${sec.name}.pdf:`, aiCheck.choices[0].message.content);
+      }
+
+      sec.xhtml = outXhtml; sec.pdf = outPdf;
+    }
+
+    // 4) Optionally generate a Cover Letter
+    if (options.includeCoverLetter) {
+      const coverPrompt = `
+        Draft an FDA 510(k) cover letter for device ${meta.deviceName}, 
+        predicate ${meta.predicate}, sequence ${meta.sequence}.
+      `;
+      const coverText = await aiClient.generate({ prompt: coverPrompt, maxTokens: 500 });
+      fs.writeFileSync(path.join(tmp,'cover_letter.txt'), coverText.choices[0].message.content);
+    }
+
+    // 5) Build eSTAR XML manifest with metadata
+    const root = create({ version: '1.0' })
+      .ele('estarSubmission')
+        .ele('company').txt(meta.manufacturer).up()
+        .ele('deviceName').txt(meta.deviceName).up()
+        .ele('sequence').txt(meta.sequence).up()
+        .ele('submissionDate').txt(new Date().toISOString()).up();
+
+    root.ele('documents');
+    for (const sec of sections) {
+      root.ele('document')
+        .ele('sectionName').txt(sec.name).up()
+        .ele('filePath').txt(sec.name + '.xhtml').up()
+        .ele('pdfPath').txt(sec.name + '.pdf').up()
+      .up();
+    }
+    if (options.includeCoverLetter) {
+      root.ele('document')
+        .ele('sectionName').txt('CoverLetter').up()
+        .ele('filePath').txt('cover_letter.txt').up()
+      .up();
+    }
+    const manifest = root.end({ prettyPrint: true });
+    // Validate manifest
+    const validate = ajv.compile(manifestSchema);
+    if (!validate(manifest)) {
+      throw new Error('Manifest validation errors: ' + JSON.stringify(validate.errors));
+    }
+    fs.writeFileSync(path.join(tmp,'manifest.xml'), manifest);
+
+    // 6) Digital‐sign the manifest
+    const signedManifest = await signPackage(manifest);
+    fs.writeFileSync(path.join(tmp,'manifest-signed.xml'), signedManifest);
+
+    // 7) Bundle everything into a ZIP
+    const zipPath = path.join(tmp, `${projectId}_eSTAR_plus.zip`);
+    await new Promise<void>((resolve, reject) => {
+      const output = fs.createWriteStream(zipPath);
+      const archive = archiver('zip', { zlib: { level: 9 } });
+      output.on('close', () => resolve());
+      archive.on('error', err => reject(err));
+      archive.pipe(output);
+      // include files
+      archive.file(path.join(tmp,'manifest-signed.xml'), { name: 'manifest-signed.xml' });
+      for (const sec of sections) {
+        archive.file(sec.xhtml, { name: path.basename(sec.xhtml) });
+        archive.file(sec.pdf,  { name: path.basename(sec.pdf) });
+      }
+      if (options.includeCoverLetter) {
+        archive.file(path.join(tmp,'cover_letter.txt'), { name: 'cover_letter.txt' });
+      }
+      archive.finalize();
+    });
+
+    // 8) Optionally auto-upload to FDA ESG
+    if (options.autoUpload) {
+      const esgResp = await uploadToESG(zipPath, {
+        apiKey: process.env.FDA_ESG_API_KEY,
+        metadata: { projectId, deviceName: meta.deviceName, sequence: meta.sequence }
+      });
+      return { zipPath, esgStatus: esgResp };
+    }
+
+    return { zipPath };
+  }
+}
+
+
+
+⸻
+
+B. AI-Enhanced Package Preview & Compliance Summary
+	1.	Component: client/src/components/510k/PackagePreview.jsx
+	2.	Features:
+      •   File Tree View: show each file in the package (manifest, XHTMLs, PDFs, cover letter)
+      •   AI Compliance Panel: highlights any manifest↔files mismatches, missing sections, or signature issues
+      •   Digital Signature Status: green icon if signed manifest verified, red with details if not
+      •   “Submit to FDA” Toggle: ability to opt-in to direct ESG upload
+	3.	Skeleton:
+
+import React, { useEffect, useState } from 'react';
+import { previewPackage, buildAndPreview } from '../../api/510k';
+
+export default function PackagePreview({ projectId }) {
+  const [preview, setPreview] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const handlePreview = async () => {
+    setLoading(true);
+    const data = await buildAndPreview(projectId, { includeCoverLetter: true });
+    setPreview(data);
+    setLoading(false);
+  };
+
+  useEffect(() => { handlePreview(); }, [projectId]);
+
+  if (loading || !preview) return <p>Preparing package preview…</p>;
+
+  return (
+    <div className="space-y-4">
+      <h3 className="font-semibold">Package Preview & Compliance</h3>
+      <FileTree files={preview.files} />
+      <div className="p-4 bg-gray-50 rounded">
+        <h4>AI Compliance Summary</h4>
+        <pre>{preview.aiComplianceReport}</pre>
+      </div>
+      <button
+        className="btn-primary"
+        onClick={() => window.open(preview.downloadUrl)}
+      >
+        Download Signed eSTAR Package
+      </button>
+      {preview.esgStatus && (
+        <div>
+          <h4>ESG Submission Status:</h4>
+          <pre>{JSON.stringify(preview.esgStatus, null, 2)}</pre>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+⸻
+
+C. API Routes for eSTARPlus
+
+// server/routes/510kRoutes.ts
+import { eSTARPlusBuilder } from '../services/eSTARPlusBuilder';
+
+router.post('/build-estar-plus/:projectId', async (req, res) => {
+  const { autoUpload } = req.body;
+  const { zipPath, esgStatus } = await eSTARPlusBuilder.build(req.params.projectId, { 
+    includeCoverLetter: true, 
+    autoUpload 
+  });
+  if (autoUpload) {
+    res.json({ downloadUrl: null, esgStatus });
+  } else {
+    res.download(zipPath);
+  }
+});
+
+router.get('/preview-estar-plus/:projectId', async (req, res) => {
+  // Return file list + AI compliance summary without downloading
+  const { files, aiComplianceReport, downloadUrl, esgStatus } =
+    await eSTARPlusBuilder.preview(req.params.projectId, { includeCoverLetter: true });
+  res.json({ files, aiComplianceReport, downloadUrl, esgStatus });
+});
+
+
+⸻
+
+🔍 Next Steps
+	1.	Implement eSTARPlusBuilder.ts, including AI checks & digital signing.
+	2.	Add manifest JSON Schema at server/config/schemas/estarManifest.json.
+	3.	Create PackagePreview.jsx and wire /preview-estar-plus + /build-estar-plus routes.
+	4.	Install any new dependencies (xmlbuilder2, ajv, archiver, digital-signature libs).
+	5.	Test full flow: preview AI report → download signed ZIP → (optionally) auto-upload to ESG.
+
+With this enhancement, your 510(k) workflow delivers a smart, AI-validated, digitally-signed, and FDA-ready package—complete with live previews and direct submission capability!

@@ -234,7 +234,7 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = 'compliance_scorecard.pdf';
+      link.download = template === 'fda-510k' ? 'fda_510k_compliance_report.pdf' : 'cer_compliance_scorecard.pdf';
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -396,7 +396,11 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
         
         {analyzing && (
           <div className="space-y-4 my-3">
-            <p className="text-sm text-[#616161]">Analyzing regulatory compliance against standards...</p>
+            <p className="text-sm text-[#616161]">
+              {template === 'fda-510k' 
+                ? 'Analyzing FDA 510(k) compliance against submission requirements...' 
+                : 'Analyzing regulatory compliance against standards...'}
+            </p>
             <div className="space-y-3">
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-24 w-full" />
