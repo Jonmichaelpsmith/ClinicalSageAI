@@ -1,83 +1,190 @@
 /**
- * Literature Entries Database Setup
+ * Literature System Setup Module
  * 
- * This script specifically runs the migration to set up the tables needed
- * for the enhanced literature discovery feature.
+ * This module handles the initialization of the literature management system,
+ * including database tables, PgVector extension, and external API connections.
  */
 
-import path from 'path';
-import fs from 'fs';
 import { Pool } from 'pg';
+import fs from 'fs';
+import path from 'path';
+import OpenAI from 'openai';
+import axios from 'axios';
 
-// Connection to the database
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-});
+// Database connection pool
+let pool: Pool;
+
+// Initialize OpenAI client
+let openai: OpenAI | null = null;
 
 /**
- * Run a migration SQL file
- * 
- * @param {string} filePath - Path to the SQL migration file
+ * Setup literature system
  */
-async function runMigration(filePath: string): Promise<void> {
+export async function setupLiteratureSystem(): Promise<{
+  tablesSetup: boolean;
+  pgvectorWorking: boolean;
+  openaiWorking: boolean;
+  pubmedWorking: boolean;
+}> {
   try {
-    console.log(`Running migration: ${filePath}`);
+    // Initialize database connection
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+    });
     
-    // Read the SQL file
-    const sql = fs.readFileSync(filePath, 'utf8');
+    // Setup results
+    const results = {
+      tablesSetup: false,
+      pgvectorWorking: false,
+      openaiWorking: false,
+      pubmedWorking: false,
+    };
     
-    // Execute the SQL
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-      
-      // Split the SQL file by semicolons to execute each statement separately
-      const statements = sql.split(';').filter(stmt => stmt.trim() !== '');
-      
-      for (const statement of statements) {
-        try {
-          await client.query(statement);
-          console.log('Statement executed successfully');
-        } catch (err: any) {
-          console.error('Error executing statement:', err.message);
-          console.log('Statement:', statement);
-          throw err;
-        }
-      }
-      
-      await client.query('COMMIT');
-      console.log('Migration completed successfully');
-    } catch (err) {
-      await client.query('ROLLBACK');
-      console.error('Migration failed, rolled back changes:', err);
-      throw err;
-    } finally {
-      client.release();
+    // Create database tables
+    results.tablesSetup = await setupDatabaseTables();
+    
+    // Test PgVector extension
+    results.pgvectorWorking = await testPgVector();
+    
+    // Test OpenAI API connection
+    results.openaiWorking = await testOpenAI();
+    
+    // Test PubMed API connection
+    results.pubmedWorking = await testPubMed();
+    
+    return results;
+  } catch (error) {
+    console.error('Error setting up literature system:', error);
+    return {
+      tablesSetup: false,
+      pgvectorWorking: false,
+      openaiWorking: false,
+      pubmedWorking: false,
+    };
+  } finally {
+    // Close database connection
+    if (pool) {
+      await pool.end();
     }
-  } catch (err) {
-    console.error('Error running migration:', err);
-    throw err;
   }
 }
 
-export async function setupLiteratureTables(): Promise<void> {
+/**
+ * Setup database tables for literature management
+ */
+async function setupDatabaseTables(): Promise<boolean> {
   try {
-    console.log('Setting up literature database tables...');
+    // Read migration SQL file
+    const migrationFile = path.join(process.cwd(), 'migrations', '20250512_literature_entries.sql');
+    const sql = fs.readFileSync(migrationFile, 'utf8');
     
-    // Path to the literature migration file
-    const migrationFile = '20250512_literature_entries.sql';
-    const migrationPath = path.join(__dirname, '../../migrations', migrationFile);
+    // Execute migration SQL
+    await pool.query(sql);
     
-    if (!fs.existsSync(migrationPath)) {
-      console.error(`Migration file does not exist: ${migrationPath}`);
-      throw new Error(`Migration file not found: ${migrationFile}`);
+    return true;
+  } catch (error) {
+    console.error('Error setting up database tables:', error);
+    return false;
+  }
+}
+
+/**
+ * Test PgVector extension
+ */
+async function testPgVector(): Promise<boolean> {
+  try {
+    // Test vector operations
+    const result = await pool.query(`
+      SELECT 
+        '[1,2,3]'::vector <-> '[4,5,6]'::vector as distance
+    `);
+    
+    return result.rows.length > 0;
+  } catch (error) {
+    console.error('Error testing PgVector extension:', error);
+    return false;
+  }
+}
+
+/**
+ * Test OpenAI API connection
+ */
+async function testOpenAI(): Promise<boolean> {
+  if (!process.env.OPENAI_API_KEY) {
+    console.warn('OpenAI API key not found');
+    return false;
+  }
+  
+  try {
+    // Initialize OpenAI client
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+    
+    // Test API connection with a simple embedding request
+    const response = await openai.embeddings.create({
+      model: "text-embedding-ada-002",
+      input: "Hello, world!",
+    });
+    
+    return response.data && response.data.length > 0;
+  } catch (error) {
+    console.error('Error testing OpenAI API connection:', error);
+    return false;
+  }
+}
+
+/**
+ * Test PubMed API connection
+ */
+async function testPubMed(): Promise<boolean> {
+  const pubmedKey = process.env.PUBMED_API_KEY;
+  
+  try {
+    // Base URL for PubMed E-utilities
+    const baseUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/';
+    
+    // Simple query to test the API
+    const url = `${baseUrl}esearch.fcgi?db=pubmed&term=medical+device&retmode=json&retmax=1${pubmedKey ? `&api_key=${pubmedKey}` : ''}`;
+    
+    const response = await axios.get(url);
+    
+    return response.status === 200 && response.data && response.data.esearchresult;
+  } catch (error) {
+    console.error('Error testing PubMed API connection:', error);
+    return false;
+  }
+}
+
+// Function to run standalone setup (can be called from CLI tools)
+export async function runStandaloneSetup(): Promise<void> {
+  try {
+    const results = await setupLiteratureSystem();
+      
+    console.log('\nLiterature System Setup Results:');
+    console.log('---------------------------------');
+    console.log(`Database Tables: ${results.tablesSetup ? '✅ Setup Complete' : '❌ Failed'}`);
+    console.log(`PgVector Extension: ${results.pgvectorWorking ? '✅ Working' : '❌ Not Working'}`);
+    console.log(`OpenAI API: ${results.openaiWorking ? '✅ Connected' : '❌ Not Connected'}`);
+    console.log(`PubMed API: ${results.pubmedWorking ? '✅ Connected' : '❌ Not Connected'}`);
+    console.log('---------------------------------');
+    
+    if (!results.tablesSetup || !results.pgvectorWorking) {
+      console.error('\nCritical components failed setup. Literature search features may not work correctly.');
+      return;
     }
     
-    await runMigration(migrationPath);
+    if (!results.openaiWorking) {
+      console.warn('\nOpenAI API connection failed. Semantic search features will not be available.');
+    }
     
-    console.log('Literature database tables setup completed');
-  } catch (err) {
-    console.error('Error setting up literature database tables:', err);
-    throw err;
+    if (!results.pubmedWorking) {
+      console.warn('\nPubMed API connection failed. PubMed literature search will not be available.');
+    }
+    
+    console.log('\nSetup completed successfully.');
+  } catch (error) {
+    console.error('Setup failed with error:', error);
+    throw error;
   }
 }

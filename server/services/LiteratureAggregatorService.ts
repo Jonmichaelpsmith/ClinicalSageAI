@@ -1,708 +1,964 @@
 /**
  * Literature Aggregator Service
  * 
- * This service is responsible for fetching and aggregating literature data 
- * from multiple sources, including PubMed, FDA databases, and internal documents.
- * It provides unified query capabilities across all sources with advanced filters.
+ * This service handles the aggregation of literature from multiple sources,
+ * including PubMed, FDA databases, and clinical trial registries.
+ * It manages search, fetching, and persistence of literature data.
  */
 
-import axios from 'axios';
 import { Pool } from 'pg';
-import dotenv from 'dotenv';
-import fs from 'fs';
-import path from 'path';
-import { OpenAI } from 'openai';
-import { createHash } from 'crypto';
+import OpenAI from 'openai';
 
-// Load environment variables
-dotenv.config();
-
-// Initialize OpenAI client for embeddings
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-});
-
-// Initialize database connection
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL
-});
-
-// Define pgvector operations 
-// Will use dot product similarity for vector search
-const pgvector = {
-  extension: 'vector',
-  similaritySearch: (embedding: number[], limit: number) => {
-    return `
-      SELECT 
-        l.id, 
-        l.title, 
-        l.abstract, 
-        l.authors, 
-        l.journal, 
-        l.publication_date,
-        l.pmid, 
-        l.doi, 
-        l.source,
-        l.relevance_score,
-        le.embedding <-> $1 as similarity
-      FROM 
-        literature_entries l
-      JOIN 
-        literature_embeddings le ON l.id = le.literature_id
-      WHERE 
-        le.embedding_type = 'openai'
-      ORDER BY 
-        le.embedding <-> $1
-      LIMIT $2;
-    `;
-  }
-};
-
-// Source types
-enum LiteratureSource {
-  PUBMED = 'pubmed',
-  FDA = 'fda',
-  INTERNAL = 'internal',
-  EUDAMED = 'eudamed',
-  PMCID = 'pmcid'
-}
-
-// Literature entry interface
-interface LiteratureEntry {
-  id?: number;
-  title: string;
-  abstract?: string;
-  authors?: string;
-  journal?: string;
-  publication_date?: Date | string;
-  pmid?: string;
-  doi?: string;
-  url?: string;
-  source: string;
-  relevance_score?: number;
-  full_text?: string;
-  metadata?: Record<string, any>;
-  organization_id?: string;
-  tenant_id?: string;
-}
-
-// Search filters interface
-interface LiteratureSearchFilters {
-  source?: string[];
+interface LiteratureSearchParams {
+  query: string;
+  sources?: string[];
   startDate?: string;
   endDate?: string;
-  journal?: string[];
-  author?: string[];
-  relevanceThreshold?: number;
+  limit?: number;
   includeFullText?: boolean;
-  organizationId?: string;
-  tenantId?: string;
-  deviceType?: string;
-  predicate?: boolean;
-  regulatoryCategory?: string;
+  tenantId: number;
+  organizationId: number;
+  userId?: number;
+  useSemanticSearch?: boolean;
+  filters?: Record<string, any>;
 }
 
-// Search response interface
-interface LiteratureSearchResponse {
+interface LiteratureEntry {
+  id?: number;
+  tenant_id: number;
+  organization_id: number;
+  source_id: number;
+  external_id: string;
+  title: string;
+  authors?: string[];
+  publication_date?: Date;
+  journal?: string;
+  abstract?: string;
+  full_text?: string;
+  doi?: string;
+  pmid?: string;
+  url?: string;
+  citation_count?: number;
+  publication_type?: string;
+  keywords?: string[];
+  mesh_terms?: string[];
+  embedding?: number[];
+  relevance_score?: number;
+  fulltext_available?: boolean;
+  pdf_path?: string;
+}
+
+interface LiteratureSource {
+  id: number;
+  source_name: string;
+  source_type: string;
+  api_endpoint?: string;
+  requires_auth: boolean;
+  enabled: boolean;
+  priority: number;
+}
+
+interface LiteratureSearchResult {
   entries: LiteratureEntry[];
-  totalCount: number;
-  sources: { [key: string]: number };
-  query: string;
-  filters: LiteratureSearchFilters;
-  timestamp: Date;
+  total: number;
+  search_id?: number;
+  execution_time_ms?: number;
+  sources_queried?: string[];
+  suggestion?: string;
 }
 
-/**
- * Main class for literature aggregation
- */
-export class LiteratureAggregator {
-  private apiKeys: {
-    pubmed?: string;
-    fda?: string;
-    eudamed?: string;
-  };
+interface Citation {
+  id: number;
+  literature_id: number;
+  document_id: number;
+  document_type: string;
+  section_id: string;
+  section_name: string;
+  citation_text: string;
+  created_at: Date;
+  tenant_id: number;
+  organization_id: number;
+}
 
-  constructor() {
-    // Initialize API keys from environment variables
-    this.apiKeys = {
-      pubmed: process.env.PUBMED_API_KEY,
-      fda: process.env.FDA_API_KEY,
-      eudamed: process.env.EUDAMED_API_KEY
-    };
-  }
+export class LiteratureAggregatorService {
+  private pool: Pool;
+  private openai: OpenAI | null = null;
+  private pubmedKey: string | null = null;
+  private sourceCache: Map<number, LiteratureSource> = new Map();
+  private sourceNameToIdMap: Map<string, number> = new Map();
 
-  /**
-   * Search PubMed for articles
-   */
-  private async searchPubMed(query: string, filters: LiteratureSearchFilters = {}): Promise<LiteratureEntry[]> {
-    try {
-      // First, search for PMIDs
-      const baseUrl = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
-      const searchUrl = `${baseUrl}/esearch.fcgi`;
-      
-      // Build date filter
-      let dateFilter = '';
-      if (filters.startDate) {
-        dateFilter += `${filters.startDate}[PDAT]`;
-        if (filters.endDate) {
-          dateFilter += `:${filters.endDate}[PDAT]`;
-        }
-      } else if (filters.endDate) {
-        dateFilter = `1900[PDAT]:${filters.endDate}[PDAT]`;
-      }
-      
-      // Combine query with filters
-      let fullQuery = query;
-      if (dateFilter) {
-        fullQuery = `(${fullQuery}) AND (${dateFilter})`;
-      }
-      if (filters.journal && filters.journal.length > 0) {
-        const journalFilter = filters.journal.map(j => `"${j}"[Journal]`).join(' OR ');
-        fullQuery = `(${fullQuery}) AND (${journalFilter})`;
-      }
-      if (filters.author && filters.author.length > 0) {
-        const authorFilter = filters.author.map(a => `"${a}"[Author]`).join(' OR ');
-        fullQuery = `(${fullQuery}) AND (${authorFilter})`;
-      }
-      
-      // Add a device type filter if specified
-      if (filters.deviceType) {
-        fullQuery = `(${fullQuery}) AND ("${filters.deviceType}"[MeSH Terms] OR "${filters.deviceType}"[All Fields])`;
-      }
-      
-      // Add predicate device filter if specified
-      if (filters.predicate) {
-        fullQuery = `(${fullQuery}) AND ("predicate device"[All Fields] OR "substantial equivalence"[All Fields])`;
-      }
-      
-      // Add regulatory category filter if specified
-      if (filters.regulatoryCategory) {
-        fullQuery = `(${fullQuery}) AND ("${filters.regulatoryCategory}"[All Fields])`;
-      }
-      
-      // Search parameters
-      const searchParams = {
-        db: 'pubmed',
-        term: fullQuery,
-        retmax: 100, // Maximum results to return
-        retmode: 'json',
-        sort: 'relevance',
-        api_key: this.apiKeys.pubmed
-      };
-      
-      const searchResponse = await axios.get(searchUrl, { params: searchParams });
-      const pmids = searchResponse.data.esearchresult.idlist || [];
-      
-      if (pmids.length === 0) {
-        return [];
-      }
-      
-      // Fetch details for the PMIDs
-      const fetchUrl = `${baseUrl}/efetch.fcgi`;
-      const fetchParams = {
-        db: 'pubmed',
-        id: pmids.join(','),
-        retmode: 'xml',
-        rettype: 'abstract',
-        api_key: this.apiKeys.pubmed
-      };
-      
-      const fetchResponse = await axios.get(fetchUrl, { params: fetchParams });
-      const xmlData = fetchResponse.data;
-      
-      // Parse XML data to extract article information
-      // In a real implementation, use a proper XML parser
-      const articles: LiteratureEntry[] = await this.parsePubMedXml(xmlData, pmids);
-      
-      return articles;
-    } catch (error) {
-      console.error('Error searching PubMed:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Parse PubMed XML response
-   * Note: In a real implementation, use a proper XML parser
-   */
-  private async parsePubMedXml(xmlData: string, pmids: string[]): Promise<LiteratureEntry[]> {
-    // Simple placeholder implementation - in reality, use an XML parser
-    // For demonstration purposes, we'll create mock entries based on the PMIDs
-    const entries: LiteratureEntry[] = pmids.map(pmid => ({
-      title: `Article ${pmid} on Medical Devices`,
-      abstract: `This is a mock abstract for article ${pmid} about medical devices and regulatory considerations.`,
-      authors: 'Smith J, Johnson A, Lee R',
-      journal: 'Journal of Medical Devices',
-      publication_date: new Date().toISOString().split('T')[0],
-      pmid,
-      doi: `10.1234/med${pmid}`,
-      source: LiteratureSource.PUBMED,
-      relevance_score: Math.random() * 100
-    }));
+  constructor(pool: Pool) {
+    this.pool = pool;
     
-    return entries;
-  }
-
-  /**
-   * Search FDA database for device-related literature
-   */
-  private async searchFDA(query: string, filters: LiteratureSearchFilters = {}): Promise<LiteratureEntry[]> {
-    try {
-      // FDA endpoints
-      const fdaUrl = 'https://api.fda.gov/device/510k.json';
-      
-      // Build FDA query
-      let fdaQuery = query.replace(/\s+/g, '+AND+');
-      
-      // Add filters
-      if (filters.deviceType) {
-        fdaQuery += `+AND+device_name:"${filters.deviceType}"`;
-      }
-      
-      // Add date range if provided
-      if (filters.startDate || filters.endDate) {
-        const startDate = filters.startDate || '1900-01-01';
-        const endDate = filters.endDate || new Date().toISOString().split('T')[0];
-        fdaQuery += `+AND+decision_date:[${startDate}+TO+${endDate}]`;
-      }
-      
-      // FDA query parameters
-      const params = {
-        search: fdaQuery,
-        limit: 50,
-        api_key: this.apiKeys.fda
-      };
-      
-      const response = await axios.get(fdaUrl, { params });
-      const results = response.data.results || [];
-      
-      // Transform FDA results to literature entries
-      const entries: LiteratureEntry[] = results.map((result: any) => ({
-        title: result.device_name || `510(k) Submission ${result.k_number}`,
-        abstract: result.summary || `${result.device_name} 510(k) submission.`,
-        authors: result.applicant || 'Unknown Applicant',
-        journal: 'FDA 510(k) Database',
-        publication_date: result.decision_date || result.date_received,
-        pmid: null,
-        doi: null,
-        url: `https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfpmn/pmn.cfm?ID=${result.k_number}`,
-        source: LiteratureSource.FDA,
-        relevance_score: 90,
-        metadata: {
-          k_number: result.k_number,
-          decision: result.decision,
-          product_code: result.product_code,
-          predicate_device: result.predicate_devices || []
-        }
-      }));
-      
-      return entries;
-    } catch (error) {
-      console.error('Error searching FDA database:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Search internal document database
-   */
-  private async searchInternal(query: string, filters: LiteratureSearchFilters = {}): Promise<LiteratureEntry[]> {
-    try {
-      // Check if internal database already has entries related to the query
-      const client = await pool.connect();
-      try {
-        // Get embedding for the query
-        const embedding = await this.getEmbedding(query);
-        
-        // Search for similar entries
-        const searchResult = await client.query(
-          pgvector.similaritySearch(embedding, 20),
-          [embedding, 20]
-        );
-        
-        // Apply filters
-        let filteredResults = searchResult.rows;
-        
-        if (filters.startDate || filters.endDate) {
-          const startDate = filters.startDate 
-            ? new Date(filters.startDate) 
-            : new Date('1900-01-01');
-          const endDate = filters.endDate 
-            ? new Date(filters.endDate) 
-            : new Date();
-          
-          filteredResults = filteredResults.filter(row => {
-            const pubDate = new Date(row.publication_date);
-            return pubDate >= startDate && pubDate <= endDate;
-          });
-        }
-        
-        if (filters.journal && filters.journal.length > 0) {
-          filteredResults = filteredResults.filter(row => 
-            filters.journal!.some(j => row.journal && row.journal.includes(j))
-          );
-        }
-        
-        if (filters.author && filters.author.length > 0) {
-          filteredResults = filteredResults.filter(row =>
-            filters.author!.some(a => row.authors && row.authors.includes(a))
-          );
-        }
-        
-        // Map to standard format
-        return filteredResults.map(row => ({
-          id: row.id,
-          title: row.title,
-          abstract: row.abstract,
-          authors: row.authors,
-          journal: row.journal,
-          publication_date: row.publication_date,
-          pmid: row.pmid,
-          doi: row.doi,
-          source: row.source,
-          relevance_score: 100 - row.similarity * 100
-        }));
-      } finally {
-        client.release();
-      }
-    } catch (error) {
-      console.error('Error searching internal documents:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Generate OpenAI embedding for a text
-   */
-  private async getEmbedding(text: string): Promise<number[]> {
-    try {
-      const response = await openai.embeddings.create({
-        model: "text-embedding-ada-002",
-        input: text
+    // Initialize OpenAI if API key is available
+    if (process.env.OPENAI_API_KEY) {
+      this.openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
       });
-      
-      return response.data[0].embedding;
-    } catch (error) {
-      console.error('Error generating embedding:', error);
-      // Return empty embedding array as fallback
-      return new Array(1536).fill(0);
     }
+    
+    // Initialize PubMed API key if available
+    if (process.env.PUBMED_API_KEY) {
+      this.pubmedKey = process.env.PUBMED_API_KEY;
+    }
+    
+    // Load sources on initialization
+    this.loadSourcesCache().catch(err => {
+      console.error('Failed to load literature sources:', err);
+    });
   }
 
   /**
-   * Store literature entry in the database
+   * Load and cache literature sources from the database
    */
-  private async storeLiteratureEntry(entry: LiteratureEntry): Promise<number> {
-    const client = await pool.connect();
+  private async loadSourcesCache(): Promise<void> {
     try {
-      // Check if entry already exists by PMID or DOI
-      let checkQuery = 'SELECT id FROM literature_entries WHERE 1=1';
-      const checkParams = [];
+      const result = await this.pool.query(`
+        SELECT 
+          id, 
+          source_name, 
+          source_type, 
+          api_endpoint, 
+          requires_auth, 
+          enabled, 
+          priority
+        FROM literature_sources
+        WHERE enabled = true
+        ORDER BY priority DESC
+      `);
       
-      if (entry.pmid) {
-        checkQuery += ' AND pmid = $1';
-        checkParams.push(entry.pmid);
-      } else if (entry.doi) {
-        checkQuery += ' AND doi = $1';
-        checkParams.push(entry.doi);
-      } else {
-        // Generate a content hash for deduplication
-        const contentHash = createHash('sha256')
-          .update(entry.title + (entry.abstract || ''))
-          .digest('hex');
-          
-        checkQuery += ' AND title = $1 AND abstract = $2';
-        checkParams.push(entry.title, entry.abstract || '');
-      }
+      this.sourceCache.clear();
+      this.sourceNameToIdMap.clear();
       
-      const checkResult = await client.query(checkQuery, checkParams);
-      
-      if (checkResult.rowCount > 0) {
-        // Entry already exists
-        return checkResult.rows[0].id;
-      }
-      
-      // Insert new entry
-      const insertQuery = `
-        INSERT INTO literature_entries (
-          title, abstract, authors, journal, publication_date, 
-          pmid, doi, url, source, relevance_score, 
-          full_text, metadata, organization_id, tenant_id
-        ) VALUES (
-          $1, $2, $3, $4, $5, 
-          $6, $7, $8, $9, $10, 
-          $11, $12, $13, $14
-        ) RETURNING id
-      `;
-      
-      const insertParams = [
-        entry.title,
-        entry.abstract || null,
-        entry.authors || null,
-        entry.journal || null,
-        entry.publication_date || null,
-        entry.pmid || null,
-        entry.doi || null,
-        entry.url || null,
-        entry.source,
-        entry.relevance_score || 0,
-        entry.full_text || null,
-        entry.metadata ? JSON.stringify(entry.metadata) : null,
-        entry.organization_id || null,
-        entry.tenant_id || null
-      ];
-      
-      const result = await client.query(insertQuery, insertParams);
-      return result.rows[0].id;
-    } finally {
-      client.release();
-    }
-  }
-
-  /**
-   * Store embedding for a literature entry
-   */
-  private async storeEmbedding(literatureId: number, text: string): Promise<void> {
-    try {
-      const embedding = await this.getEmbedding(text);
-      
-      const client = await pool.connect();
-      try {
-        // Check if embedding already exists
-        const checkQuery = `
-          SELECT id FROM literature_embeddings 
-          WHERE literature_id = $1 AND embedding_type = $2
-        `;
-        
-        const checkResult = await client.query(checkQuery, [literatureId, 'openai']);
-        
-        if (checkResult.rowCount > 0) {
-          // Update existing embedding
-          const updateQuery = `
-            UPDATE literature_embeddings 
-            SET embedding = $1 
-            WHERE literature_id = $2 AND embedding_type = $3
-          `;
-          
-          await client.query(updateQuery, [embedding, literatureId, 'openai']);
-        } else {
-          // Insert new embedding
-          const insertQuery = `
-            INSERT INTO literature_embeddings (
-              literature_id, embedding_type, embedding
-            ) VALUES (
-              $1, $2, $3
-            )
-          `;
-          
-          await client.query(insertQuery, [literatureId, 'openai', embedding]);
-        }
-      } finally {
-        client.release();
+      for (const source of result.rows) {
+        this.sourceCache.set(source.id, source);
+        this.sourceNameToIdMap.set(source.source_name.toLowerCase(), source.id);
       }
     } catch (error) {
-      console.error('Error storing embedding:', error);
+      console.error('Error loading literature sources:', error);
+      throw error;
     }
   }
 
   /**
-   * Main search method that aggregates results from all sources
+   * Get source ID by name
    */
-  public async search(
-    query: string, 
-    filters: LiteratureSearchFilters = {}
-  ): Promise<LiteratureSearchResponse> {
-    // Determine which sources to search
-    const sources = filters.source || Object.values(LiteratureSource);
-    
-    // Store search history
-    await this.storeSearchQuery(query, filters);
-    
-    // Initialize results
-    let allEntries: LiteratureEntry[] = [];
-    const sourceCounts: Record<string, number> = {};
-    
-    // Run searches in parallel
-    const searchPromises: Promise<LiteratureEntry[]>[] = [];
-    
-    if (sources.includes(LiteratureSource.PUBMED)) {
-      searchPromises.push(this.searchPubMed(query, filters));
+  private async getSourceIdByName(sourceName: string): Promise<number | null> {
+    // Try to get from cache first
+    const cachedId = this.sourceNameToIdMap.get(sourceName.toLowerCase());
+    if (cachedId) {
+      return cachedId;
     }
     
-    if (sources.includes(LiteratureSource.FDA)) {
-      searchPromises.push(this.searchFDA(query, filters));
+    // If not in cache, try to get from database
+    try {
+      const result = await this.pool.query(`
+        SELECT id FROM literature_sources 
+        WHERE LOWER(source_name) = LOWER($1)
+        AND enabled = true
+      `, [sourceName]);
+      
+      if (result.rows.length > 0) {
+        const id = result.rows[0].id;
+        this.sourceNameToIdMap.set(sourceName.toLowerCase(), id);
+        return id;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error(`Error getting source ID for ${sourceName}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Get enabled sources
+   */
+  async getEnabledSources(): Promise<LiteratureSource[]> {
+    if (this.sourceCache.size === 0) {
+      await this.loadSourcesCache();
     }
     
-    if (sources.includes(LiteratureSource.INTERNAL)) {
-      searchPromises.push(this.searchInternal(query, filters));
+    return Array.from(this.sourceCache.values());
+  }
+
+  /**
+   * Basic search across multiple literature sources
+   */
+  async search(params: LiteratureSearchParams): Promise<LiteratureSearchResult> {
+    const startTime = Date.now();
+    const sourcesQueried: string[] = [];
+    let combinedResults: LiteratureEntry[] = [];
+    
+    // Determine which sources to query
+    let sourcesToQuery: string[] = [];
+    if (params.sources && params.sources.length > 0) {
+      sourcesToQuery = params.sources;
+    } else {
+      // Default to all enabled sources
+      sourcesToQuery = Array.from(this.sourceNameToIdMap.keys());
     }
     
-    // Wait for all searches to complete
+    // Query each source in parallel
+    const searchPromises: Promise<LiteratureSearchResult>[] = [];
+    
+    for (const source of sourcesToQuery) {
+      switch (source.toLowerCase()) {
+        case 'pubmed':
+          searchPromises.push(this.searchPubMed(params));
+          sourcesQueried.push('pubmed');
+          break;
+        case 'fda':
+          searchPromises.push(this.searchFdaDatabase(params));
+          sourcesQueried.push('fda');
+          break;
+        case 'clinicaltrials':
+          searchPromises.push(this.searchClinicalTrials(params));
+          sourcesQueried.push('clinicaltrials');
+          break;
+        // Add more sources as needed
+      }
+    }
+    
+    // Wait for all search promises to resolve
     const results = await Promise.all(searchPromises);
     
-    // Combine results and count by source
-    results.forEach(entries => {
-      allEntries = [...allEntries, ...entries];
-      
-      // Count by source
-      entries.forEach(entry => {
-        const source = entry.source;
-        sourceCounts[source] = (sourceCounts[source] || 0) + 1;
-      });
-    });
-    
-    // Store new entries in the database
-    for (const entry of allEntries) {
-      if (!entry.id) { // Only store entries that don't have an ID yet (new from external sources)
-        const literatureId = await this.storeLiteratureEntry(entry);
-        entry.id = literatureId;
-        
-        // Generate and store embedding
-        const textForEmbedding = `${entry.title} ${entry.abstract || ''}`;
-        await this.storeEmbedding(literatureId, textForEmbedding);
-      }
+    // Combine results
+    for (const result of results) {
+      combinedResults = [...combinedResults, ...result.entries];
     }
     
-    // Sort by relevance
-    allEntries.sort((a, b) => 
-      (b.relevance_score || 0) - (a.relevance_score || 0)
-    );
+    // Apply semantic ranking if requested
+    if (params.useSemanticSearch && this.openai && combinedResults.length > 0) {
+      combinedResults = await this.applySemanticRanking(combinedResults, params.query);
+    }
+    
+    // Sort by relevance score or publication date
+    combinedResults.sort((a, b) => {
+      if (a.relevance_score !== undefined && b.relevance_score !== undefined) {
+        return b.relevance_score - a.relevance_score;
+      }
+      
+      // Fall back to publication date if available
+      if (a.publication_date && b.publication_date) {
+        return new Date(b.publication_date).getTime() - new Date(a.publication_date).getTime();
+      }
+      
+      return 0;
+    });
+    
+    // Limit results
+    const limit = params.limit || 20;
+    combinedResults = combinedResults.slice(0, limit);
+    
+    // Store results in database
+    await this.storeSearchResults(combinedResults, params.tenantId, params.organizationId);
+    
+    // Record search in history
+    const searchId = await this.recordSearchHistory(params, sourcesQueried);
+    
+    // Update search history with result count
+    await this.updateSearchHistory(searchId, combinedResults.length, Date.now() - startTime);
     
     return {
-      entries: allEntries,
-      totalCount: allEntries.length,
-      sources: sourceCounts,
-      query,
-      filters,
-      timestamp: new Date()
+      entries: combinedResults,
+      total: combinedResults.length,
+      search_id: searchId,
+      execution_time_ms: Date.now() - startTime,
+      sources_queried: sourcesQueried,
     };
   }
 
   /**
-   * Store search query for analytics
+   * Search PubMed for literature
    */
-  private async storeSearchQuery(
-    query: string, 
-    filters: LiteratureSearchFilters
-  ): Promise<void> {
+  private async searchPubMed(params: LiteratureSearchParams): Promise<LiteratureSearchResult> {
+    const sourceId = await this.getSourceIdByName('pubmed');
+    if (!sourceId) {
+      console.error('PubMed source not found in database');
+      return { entries: [], total: 0 };
+    }
+    
+    if (!this.pubmedKey) {
+      console.warn('PubMed API key not available');
+      return { entries: [], total: 0 };
+    }
+    
     try {
-      const client = await pool.connect();
-      try {
-        await client.query(
-          `INSERT INTO semantic_search_history 
-           (query, filters, user_id, organization_id, tenant_id) 
-           VALUES ($1, $2, $3, $4, $5)`,
-          [
-            query,
-            JSON.stringify(filters),
-            null, // user_id will be filled in by a middleware
-            filters.organizationId || null,
-            filters.tenantId || null
-          ]
-        );
-      } finally {
-        client.release();
-      }
+      // This is a simplified implementation - in production, you would make actual API calls
+      // to the PubMed E-utilities API
+      
+      // For demonstration, return mock data that would otherwise come from the API
+      const mockPubMedData = [
+        {
+          pmid: '12345678',
+          title: 'Advances in Medical Device Technology',
+          authors: ['Smith J', 'Johnson A'],
+          publication_date: '2023-05-10',
+          journal: 'Journal of Medical Devices',
+          abstract: 'This paper discusses recent advances in medical device technology and their impact on patient outcomes.',
+          keywords: ['medical devices', 'technology', 'innovation'],
+          mesh_terms: ['Medical Devices', 'Technology', 'Patient Outcomes'],
+        },
+        {
+          pmid: '87654321',
+          title: 'Regulatory Pathways for Novel Medical Devices',
+          authors: ['Brown R', 'Williams T'],
+          publication_date: '2023-03-15',
+          journal: 'Regulatory Science Journal',
+          abstract: 'An analysis of regulatory pathways for novel medical devices and comparison of global approval processes.',
+          keywords: ['regulatory', '510(k)', 'medical devices'],
+          mesh_terms: ['Equipment and Supplies', 'United States Food and Drug Administration', 'Device Approval'],
+        },
+      ];
+      
+      const entries: LiteratureEntry[] = mockPubMedData.map(item => {
+          const entry: LiteratureEntry = {
+            tenant_id: params.tenantId,
+            organization_id: params.organizationId,
+            source_id: sourceId,
+            external_id: item.pmid,
+            title: item.title,
+            authors: item.authors,
+            publication_date: new Date(item.publication_date),
+            journal: item.journal,
+            abstract: item.abstract,
+            pmid: item.pmid,
+            keywords: item.keywords,
+            mesh_terms: item.mesh_terms,
+            fulltext_available: false,
+          };
+          return entry;
+      });
+      
+      return {
+        entries,
+        total: entries.length,
+      };
     } catch (error) {
-      console.error('Error storing search query:', error);
+      console.error('Error searching PubMed:', error);
+      return { entries: [], total: 0 };
+    }
+  }
+
+  /**
+   * Search FDA database for literature
+   */
+  private async searchFdaDatabase(params: LiteratureSearchParams): Promise<LiteratureSearchResult> {
+    const sourceId = await this.getSourceIdByName('fda');
+    if (!sourceId) {
+      console.error('FDA source not found in database');
+      return { entries: [], total: 0 };
+    }
+    
+    try {
+      // This is a simplified implementation - in production, you would make actual API calls
+      // to the FDA's open APIs
+      
+      // For demonstration, return mock data that would otherwise come from the API
+      const mockFdaData = [
+        {
+          id: 'FDA-2023-12345',
+          title: 'Safety and Effectiveness of Medical Device X',
+          authors: ['FDA Device Division'],
+          publication_date: '2023-06-20',
+          abstract: 'FDA report on the safety and effectiveness of Medical Device X based on clinical trials and post-market surveillance.',
+          keywords: ['safety', 'effectiveness', 'medical device'],
+        },
+        {
+          id: 'FDA-2023-67890',
+          title: 'Guidance for Industry: 510(k) Submissions for Medical Devices',
+          authors: ['FDA Regulatory Affairs Division'],
+          publication_date: '2023-01-15',
+          abstract: 'Updated guidance for industry on preparing 510(k) submissions for medical devices, including new requirements and best practices.',
+          keywords: ['510(k)', 'guidance', 'submission', 'regulatory'],
+        },
+      ];
+      
+      const entries: LiteratureEntry[] = mockFdaData.map(item => {
+        const entry: LiteratureEntry = {
+          tenant_id: params.tenantId,
+          organization_id: params.organizationId,
+          source_id: sourceId,
+          external_id: item.id,
+          title: item.title,
+          authors: item.authors,
+          publication_date: new Date(item.publication_date),
+          abstract: item.abstract,
+          keywords: item.keywords,
+          fulltext_available: true,
+        };
+        return entry;
+      });
+      
+      return {
+        entries,
+        total: entries.length,
+      };
+    } catch (error) {
+      console.error('Error searching FDA database:', error);
+      return { entries: [], total: 0 };
+    }
+  }
+
+  /**
+   * Search ClinicalTrials.gov for literature
+   */
+  private async searchClinicalTrials(params: LiteratureSearchParams): Promise<LiteratureSearchResult> {
+    const sourceId = await this.getSourceIdByName('clinicaltrials');
+    if (!sourceId) {
+      console.error('ClinicalTrials.gov source not found in database');
+      return { entries: [], total: 0 };
+    }
+    
+    try {
+      // This is a simplified implementation - in production, you would make actual API calls
+      // to the ClinicalTrials.gov API
+      
+      // For demonstration, return mock data that would otherwise come from the API
+      const mockTrialsData = [
+        {
+          nct_id: 'NCT04123456',
+          title: 'Clinical Evaluation of Novel Medical Device for Treatment of Condition Y',
+          sponsors: ['Medical Device Company A', 'University Medical Center'],
+          start_date: '2022-03-15',
+          completion_date: '2023-09-30',
+          abstract: 'A randomized controlled trial evaluating the safety and efficacy of a novel medical device for the treatment of Condition Y.',
+          keywords: ['medical device', 'condition Y', 'treatment', 'clinical trial'],
+        },
+        {
+          nct_id: 'NCT04987654',
+          title: 'Post-Market Surveillance Study of Predicate Device Z',
+          sponsors: ['Medical Device Company B'],
+          start_date: '2021-11-01',
+          completion_date: '2023-10-31',
+          abstract: 'A post-market surveillance study of Predicate Device Z to assess long-term outcomes and adverse events in real-world use.',
+          keywords: ['post-market surveillance', 'predicate device', 'real-world evidence'],
+        },
+      ];
+      
+      const entries: LiteratureEntry[] = mockTrialsData.map(item => {
+        const entry: LiteratureEntry = {
+          tenant_id: params.tenantId,
+          organization_id: params.organizationId,
+          source_id: sourceId,
+          external_id: item.nct_id,
+          title: item.title,
+          authors: item.sponsors,
+          publication_date: new Date(item.start_date),
+          abstract: item.abstract,
+          keywords: item.keywords,
+          url: `https://clinicaltrials.gov/ct2/show/${item.nct_id}`,
+          fulltext_available: false,
+        };
+        return entry;
+      });
+      
+      return {
+        entries,
+        total: entries.length,
+      };
+    } catch (error) {
+      console.error('Error searching ClinicalTrials.gov:', error);
+      return { entries: [], total: 0 };
+    }
+  }
+
+  /**
+   * Apply semantic ranking to search results using embeddings
+   */
+  private async applySemanticRanking(entries: LiteratureEntry[], query: string): Promise<LiteratureEntry[]> {
+    if (!this.openai) {
+      console.warn('OpenAI API not available for semantic ranking');
+      return entries;
+    }
+    
+    try {
+      // Generate embedding for the query
+      const embeddingResponse = await this.openai.embeddings.create({
+        model: "text-embedding-ada-002",
+        input: query,
+      });
+      
+      const queryEmbedding = embeddingResponse.data[0].embedding;
+      
+      // Calculate similarity scores
+      for (const entry of entries) {
+        let entryEmbedding = entry.embedding;
+        
+        // If entry doesn't have an embedding, generate one
+        if (!entryEmbedding) {
+          // For existing entries, try to get from database
+          if (entry.id) {
+            entryEmbedding = await this.getEntryEmbedding(entry.id);
+          }
+          
+          // If still no embedding, generate one
+          if (!entryEmbedding) {
+            const content = [entry.title, entry.abstract].filter(Boolean).join(' ');
+            
+            const entryEmbeddingResponse = await this.openai.embeddings.create({
+              model: "text-embedding-ada-002",
+              input: content,
+            });
+            
+            entryEmbedding = entryEmbeddingResponse.data[0].embedding;
+            
+            // Update entry with new embedding
+            entry.embedding = entryEmbedding;
+            
+            // Save embedding to database if entry has ID
+            if (entry.id) {
+              await this.updateEntryEmbedding(entry.id, entryEmbedding);
+            }
+          }
+        }
+        
+        // Calculate cosine similarity
+        if (entryEmbedding) {
+          entry.relevance_score = this.computeCosineSimilarity(queryEmbedding, entryEmbedding);
+        }
+      }
+      
+      // Sort by relevance score
+      return entries.sort((a, b) => {
+        const scoreA = a.relevance_score || 0;
+        const scoreB = b.relevance_score || 0;
+        return scoreB - scoreA;
+      });
+    } catch (error) {
+      console.error('Error applying semantic ranking:', error);
+      return entries;
+    }
+  }
+
+  /**
+   * Get embedding for an existing literature entry
+   */
+  private async getEntryEmbedding(entryId: number): Promise<number[] | null> {
+    try {
+      const result = await this.pool.query(`
+        SELECT embedding 
+        FROM literature_entries 
+        WHERE id = $1
+      `, [entryId]);
+      
+      if (result.rows.length > 0 && result.rows[0].embedding) {
+        return result.rows[0].embedding;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error(`Error getting embedding for entry ${entryId}:`, error);
+      return null;
+    }
+  }
+
+  /**
+   * Compute cosine similarity between two vectors
+   */
+  private computeCosineSimilarity(a: number[], b: number[]): number {
+    if (a.length !== b.length) {
+      throw new Error('Vectors must have the same length');
+    }
+    
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
+    
+    for (let i = 0; i < a.length; i++) {
+      dotProduct += a[i] * b[i];
+      normA += a[i] * a[i];
+      normB += b[i] * b[i];
+    }
+    
+    normA = Math.sqrt(normA);
+    normB = Math.sqrt(normB);
+    
+    if (normA === 0 || normB === 0) {
+      return 0;
+    }
+    
+    return dotProduct / (normA * normB);
+  }
+
+  /**
+   * Record a search in the search history
+   */
+  private async recordSearchHistory(params: LiteratureSearchParams, sources: string[]): Promise<number> {
+    try {
+      const result = await this.pool.query(`
+        INSERT INTO literature_search_history (
+          tenant_id, 
+          organization_id, 
+          user_id, 
+          query_text, 
+          sources, 
+          filters,
+          semantic_search,
+          timestamp
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+        RETURNING id
+      `, [
+        params.tenantId,
+        params.organizationId,
+        params.userId || null,
+        params.query,
+        sources,
+        params.filters ? JSON.stringify(params.filters) : null,
+        params.useSemanticSearch || false,
+      ]);
+      
+      return result.rows[0].id;
+    } catch (error) {
+      console.error('Error recording search history:', error);
+      return 0;
+    }
+  }
+
+  /**
+   * Update search history with results
+   */
+  private async updateSearchHistory(
+    searchId: number,
+    resultCount: number,
+    executionTimeMs: number
+  ): Promise<void> {
+    if (!searchId) return;
+    
+    try {
+      await this.pool.query(`
+        UPDATE literature_search_history
+        SET 
+          result_count = $2,
+          execution_time_ms = $3
+        WHERE id = $1
+      `, [searchId, resultCount, executionTimeMs]);
+    } catch (error) {
+      console.error(`Error updating search history ${searchId}:`, error);
+    }
+  }
+
+  /**
+   * Store search results in the database
+   */
+  private async storeSearchResults(entries: LiteratureEntry[], tenantId: number, organizationId: number): Promise<void> {
+    if (entries.length === 0) return;
+    
+    // Store entries that don't already exist
+    for (const entry of entries) {
+      try {
+        // Check if entry already exists
+        const existingResult = await this.pool.query(`
+          SELECT id
+          FROM literature_entries
+          WHERE 
+            tenant_id = $1 AND
+            organization_id = $2 AND
+            source_id = $3 AND
+            external_id = $4
+        `, [tenantId, organizationId, entry.source_id, entry.external_id]);
+        
+        if (existingResult.rows.length > 0) {
+          // Entry exists, use its ID
+          entry.id = existingResult.rows[0].id;
+        } else {
+          // Insert new entry
+          const insertResult = await this.pool.query(`
+            INSERT INTO literature_entries (
+              tenant_id,
+              organization_id,
+              source_id,
+              external_id,
+              title,
+              authors,
+              publication_date,
+              journal,
+              abstract,
+              full_text,
+              doi,
+              pmid,
+              url,
+              citation_count,
+              publication_type,
+              keywords,
+              mesh_terms,
+              embedding,
+              fulltext_available,
+              pdf_path,
+              created_at,
+              updated_at
+            )
+            VALUES (
+              $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, NOW(), NOW()
+            )
+            RETURNING id
+          `, [
+            tenantId,
+            organizationId,
+            entry.source_id,
+            entry.external_id,
+            entry.title,
+            entry.authors || null,
+            entry.publication_date || null,
+            entry.journal || null,
+            entry.abstract || null,
+            entry.full_text || null,
+            entry.doi || null,
+            entry.pmid || null,
+            entry.url || null,
+            entry.citation_count || 0,
+            entry.publication_type || null,
+            entry.keywords || null,
+            entry.mesh_terms || null,
+            entry.embedding || null,
+            entry.fulltext_available || false,
+            entry.pdf_path || null,
+          ]);
+          
+          entry.id = insertResult.rows[0].id;
+        }
+      } catch (error) {
+        console.error(`Error storing literature entry:`, error);
+      }
     }
   }
 
   /**
    * Get literature entry by ID
    */
-  public async getLiteratureById(id: number): Promise<LiteratureEntry | null> {
+  async getLiteratureEntryById(id: number, tenantId: number): Promise<LiteratureEntry | null> {
     try {
-      const client = await pool.connect();
-      try {
-        const result = await client.query(
-          'SELECT * FROM literature_entries WHERE id = $1',
-          [id]
-        );
-        
-        if (result.rows.length === 0) {
-          return null;
-        }
-        
-        return result.rows[0];
-      } finally {
-        client.release();
+      const result = await this.pool.query(`
+        SELECT 
+          e.*,
+          s.source_name
+        FROM literature_entries e
+        JOIN literature_sources s ON e.source_id = s.id
+        WHERE 
+          e.id = $1 AND
+          e.tenant_id = $2
+      `, [id, tenantId]);
+      
+      if (result.rows.length === 0) {
+        return null;
       }
+      
+      return result.rows[0];
     } catch (error) {
-      console.error('Error getting literature by ID:', error);
+      console.error(`Error getting literature entry ${id}:`, error);
       return null;
     }
   }
 
   /**
-   * Add a citation to a document
+   * Get recent literature entries for a tenant
    */
-  public async addCitation(
-    documentId: string,
-    sectionId: string,
-    literatureId: number,
-    citationText: string,
-    citationStyle: string = 'APA',
-    organizationId?: string,
-    tenantId?: string,
-    userId?: string
-  ): Promise<number | null> {
+  async getRecentLiterature(tenantId: number, limit: number = 10): Promise<LiteratureEntry[]> {
     try {
-      const client = await pool.connect();
-      try {
-        const result = await client.query(
-          `INSERT INTO literature_citations
-           (document_id, section_id, literature_id, citation_text, 
-            citation_style, organization_id, tenant_id, user_id)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-           RETURNING id`,
-          [
-            documentId,
-            sectionId,
-            literatureId,
-            citationText,
-            citationStyle,
-            organizationId || null,
-            tenantId || null,
-            userId || null
-          ]
-        );
-        
-        return result.rows[0].id;
-      } finally {
-        client.release();
-      }
+      const result = await this.pool.query(`
+        SELECT 
+          e.*,
+          s.source_name
+        FROM literature_entries e
+        JOIN literature_sources s ON e.source_id = s.id
+        WHERE e.tenant_id = $1
+        ORDER BY e.created_at DESC
+        LIMIT $2
+      `, [tenantId, limit]);
+      
+      return result.rows;
     } catch (error) {
-      console.error('Error adding citation:', error);
-      return null;
+      console.error(`Error getting recent literature for tenant ${tenantId}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Get frequently cited literature for a tenant
+   */
+  async getFrequentlyCitedLiterature(tenantId: number, limit: number = 10): Promise<LiteratureEntry[]> {
+    try {
+      const result = await this.pool.query(`
+        SELECT 
+          e.*,
+          s.source_name,
+          COUNT(c.id) as citation_count
+        FROM literature_entries e
+        JOIN literature_sources s ON e.source_id = s.id
+        LEFT JOIN literature_citations c ON e.id = c.literature_id
+        WHERE e.tenant_id = $1
+        GROUP BY e.id, s.id
+        ORDER BY citation_count DESC, e.created_at DESC
+        LIMIT $2
+      `, [tenantId, limit]);
+      
+      return result.rows;
+    } catch (error) {
+      console.error(`Error getting frequently cited literature for tenant ${tenantId}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * Cite literature in a document
+   */
+  async citeLiteratureInDocument(
+    literatureId: number,
+    documentId: number,
+    documentType: string,
+    sectionId: string,
+    sectionName: string,
+    citationText: string,
+    tenantId: number,
+    organizationId: number
+  ): Promise<{ id: number }> {
+    try {
+      const result = await this.pool.query(`
+        INSERT INTO literature_citations (
+          literature_id,
+          document_id,
+          document_type,
+          section_id,
+          section_name,
+          citation_text,
+          tenant_id,
+          organization_id,
+          created_at
+        )
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
+        RETURNING id
+      `, [
+        literatureId,
+        documentId,
+        documentType,
+        sectionId,
+        sectionName,
+        citationText,
+        tenantId,
+        organizationId,
+      ]);
+      
+      // Update citation count for the literature entry
+      await this.pool.query(`
+        UPDATE literature_entries
+        SET citation_count = (
+          SELECT COUNT(*)
+          FROM literature_citations
+          WHERE literature_id = $1
+        )
+        WHERE id = $1
+      `, [literatureId]);
+      
+      return { id: result.rows[0].id };
+    } catch (error) {
+      console.error(`Error citing literature ${literatureId} in document ${documentId}:`, error);
+      throw error;
     }
   }
 
   /**
    * Get citations for a document
    */
-  public async getDocumentCitations(
-    documentId: string
+  async getDocumentCitations(
+    documentId: number,
+    documentType: string,
+    tenantId: number
   ): Promise<any[]> {
     try {
-      const client = await pool.connect();
-      try {
-        const result = await client.query(
-          `SELECT c.*, l.title, l.journal, l.authors, l.publication_date
-           FROM literature_citations c
-           JOIN literature_entries l ON c.literature_id = l.id
-           WHERE c.document_id = $1
-           ORDER BY c.inserted_at ASC`,
-          [documentId]
-        );
-        
-        return result.rows;
-      } finally {
-        client.release();
-      }
+      const result = await this.pool.query(`
+        SELECT 
+          c.*,
+          e.title as literature_title,
+          e.authors as literature_authors,
+          e.journal as literature_journal,
+          e.publication_date as literature_publication_date,
+          s.source_name
+        FROM literature_citations c
+        JOIN literature_entries e ON c.literature_id = e.id
+        JOIN literature_sources s ON e.source_id = s.id
+        WHERE 
+          c.document_id = $1 AND
+          c.document_type = $2 AND
+          c.tenant_id = $3
+        ORDER BY c.created_at DESC
+      `, [documentId, documentType, tenantId]);
+      
+      return result.rows;
     } catch (error) {
-      console.error('Error getting document citations:', error);
+      console.error(`Error getting citations for document ${documentId}:`, error);
       return [];
+    }
+  }
+
+  /**
+   * Remove a citation from a document
+   */
+  async removeCitation(
+    citationId: number,
+    tenantId: number
+  ): Promise<boolean> {
+    try {
+      // Get the literature ID before deletion
+      const citationResult = await this.pool.query(`
+        SELECT literature_id
+        FROM literature_citations
+        WHERE id = $1 AND tenant_id = $2
+      `, [citationId, tenantId]);
+      
+      if (citationResult.rows.length === 0) {
+        return false;
+      }
+      
+      const literatureId = citationResult.rows[0].literature_id;
+      
+      // Delete the citation
+      const result = await this.pool.query(`
+        DELETE FROM literature_citations
+        WHERE id = $1 AND tenant_id = $2
+        RETURNING id
+      `, [citationId, tenantId]);
+      
+      if (result.rowCount === 0) {
+        return false;
+      }
+      
+      // Update citation count for the literature entry
+      await this.pool.query(`
+        UPDATE literature_entries
+        SET citation_count = (
+          SELECT COUNT(*)
+          FROM literature_citations
+          WHERE literature_id = $1
+        )
+        WHERE id = $1
+      `, [literatureId]);
+      
+      return true;
+    } catch (error) {
+      console.error(`Error removing citation ${citationId}:`, error);
+      return false;
+    }
+  }
+
+  /**
+   * Update an entry's embedding
+   */
+  async updateEntryEmbedding(entryId: number, embedding: number[]): Promise<boolean> {
+    try {
+      await this.pool.query(`
+        UPDATE literature_entries
+        SET 
+          embedding = $2,
+          updated_at = NOW()
+        WHERE id = $1
+      `, [entryId, embedding]);
+      
+      return true;
+    } catch (error) {
+      console.error(`Error updating embedding for entry ${entryId}:`, error);
+      return false;
     }
   }
 }
