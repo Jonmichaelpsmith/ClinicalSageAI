@@ -129,6 +129,13 @@ export default function CoAuthor() {
   const [aiIsLoading, setAiIsLoading] = useState(false);
   const [aiError, setAiError] = useState(null);
   
+  // Structured Content Blocks state
+  const [newDocumentDialogOpen, setNewDocumentDialogOpen] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const [selectedContentBlocks, setSelectedContentBlocks] = useState([]);
+  const [documentTitle, setDocumentTitle] = useState('');
+  const [documentModule, setDocumentModule] = useState('');
+  
   const { toast } = useToast();
   
   // Check Google authentication on component mount
