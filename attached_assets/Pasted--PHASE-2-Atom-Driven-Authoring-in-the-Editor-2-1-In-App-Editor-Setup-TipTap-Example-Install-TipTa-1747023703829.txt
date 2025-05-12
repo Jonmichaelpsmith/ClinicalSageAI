@@ -1,0 +1,73 @@
+ PHASE 2: Atom-Driven Authoring in the Editor
+2.1 In-App Editor Setup (TipTap Example)
+Install TipTap:
+
+bash
+Copy
+Edit
+cd frontend && npm install @tiptap/react @tiptap/starter-kit @tiptap/extension-placeholder
+Initialize in EditorPanel.jsx:
+
+jsx
+Copy
+Edit
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+
+export default function EditorPanel({ documentId }) {
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: '<p>Start writing...</p>',
+  });
+
+  // handleInsertAtom will insert a JSON-driven node (e.g. a table or placeholder)
+  function handleInsertAtom(atom) {
+    // Convert atom.schema_json + ui_config into HTML or structured node
+    const html = renderAtomToHtml(atom);
+    editor.chain().focus().insertContent(html).run();
+  }
+
+  return (
+    <div className="h-full flex flex-col">
+      {/* Toolbar omitted for brevity */}
+      <EditorContent editor={editor} className="flex-1 overflow-auto p-4" />
+    </div>
+  );
+}
+renderAtomToHtml(atom) must map the JSON schema to an HTML snippet:
+
+js
+Copy
+Edit
+export function renderAtomToHtml(atom) {
+  switch(atom.type) {
+    case 'narrative':
+      return `<section><h2>${atom.ui_config.title}</h2><p>${atom.schema_json.defaultText||''}</p></section>`;
+    case 'table':
+      // generate table markup based on schema_json.columns
+      const cols = atom.schema_json.columns.map(c=>`<th>${c.label}</th>`).join('');
+      return `<table class="border"><thead><tr>${cols}</tr></thead><tbody><tr>${atom.schema_json.columns.map(_=>'<td></td>').join('')}</tr></tbody></table>`;
+    // …figures, lists…
+    default:
+      return `<div>Unsupported atom type</div>`;
+  }
+}
+Wire the Library: In your main layout:
+
+jsx
+Copy
+Edit
+<div className="grid grid-cols-12 gap-4 h-full">
+  <div className="col-span-3"><DocumentStructurePanel/></div>
+  <div className="col-span-5">
+    <EditorPanel documentId={currentDocId} />
+  </div>
+  <div className="col-span-2">
+    <ContentAtomLibrary
+      currentModule={selectedModule}
+      currentSection={selectedSection}
+      onInsertAtom={handleInsertAtom}
+    />
+  </div>
+  <div className="col-span-2"><ValidationDashboard/></div>
+</div>
