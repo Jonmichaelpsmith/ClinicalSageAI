@@ -106,8 +106,7 @@ import {
   ShieldCheck,
   PlusCircle,
   Zap,
-  Send,
-  LockClosed
+  Send
 } from 'lucide-react';
 
 // Custom Google icon component
@@ -4791,7 +4790,7 @@ export default function CoAuthor() {
                     </div>
                   </div>
                   <div className="flex items-center space-x-1 text-xs bg-blue-100 px-2 py-1 rounded-full text-blue-700">
-                    <LockClosed className="h-3 w-3" />
+                    <Lock className="h-3 w-3" />
                     <span>21 CFR Part 11</span>
                   </div>
                 </div>
