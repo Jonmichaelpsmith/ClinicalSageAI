@@ -200,6 +200,91 @@ const checkContentLength = (content, documentType) => {
 };
 
 /**
+ * Get CTD section mapping for a given module
+ * 
+ * @param {string} moduleId - The module ID (module1, module2, etc.)
+ * @returns {Object} CTD section mapping for the module
+ */
+export const getCtdSectionMapping = (moduleId) => {
+  if (moduleId && ctdStructure[moduleId]) {
+    return ctdStructure[moduleId].sections;
+  }
+  
+  // Return all sections if no moduleId provided
+  const allSections = {};
+  Object.keys(ctdStructure).forEach(module => {
+    Object.entries(ctdStructure[module].sections).forEach(([key, value]) => {
+      allSections[key] = value;
+    });
+  });
+  
+  return allSections;
+};
+
+/**
+ * Get module-specific validation rules
+ * 
+ * @param {string} moduleId - The module ID (module1, module2, etc.)
+ * @returns {Object} Module validation rules
+ */
+export const getModuleValidationRules = (moduleId) => {
+  const moduleRules = {
+    module1: {
+      requiredSections: ['1.2', '1.3'],
+      criticalSections: ['1.2', '1.3.4'],
+      validationRules: {
+        '1.2': 'Must include cover letter with submission intent',
+        '1.3': 'Must include all administrative information',
+        '1.3.4': 'Marketing status information required for submissions'
+      }
+    },
+    module2: {
+      requiredSections: ['2.3', '2.5', '2.7'],
+      criticalSections: ['2.5'],
+      validationRules: {
+        '2.3': 'Quality Overall Summary must address all CMC aspects',
+        '2.5': 'Clinical Overview must include benefit-risk assessment',
+        '2.7': 'Clinical Summary must include comprehensive study results'
+      }
+    },
+    module3: {
+      requiredSections: ['3.2.S', '3.2.P'],
+      criticalSections: ['3.2.P'],
+      validationRules: {
+        '3.2.S': 'Must include complete drug substance information',
+        '3.2.P': 'Must include complete drug product information',
+        '3.2.R': 'Regional information must be provided if required'
+      }
+    },
+    module4: {
+      requiredSections: ['4.2.1', '4.2.3'],
+      criticalSections: ['4.2.3'],
+      validationRules: {
+        '4.2.1': 'Pharmacology studies must be included',
+        '4.2.2': 'Pharmacokinetic studies must be summarized',
+        '4.2.3': 'Toxicology studies must be comprehensive'
+      }
+    },
+    module5: {
+      requiredSections: ['5.2', '5.3.5'],
+      criticalSections: ['5.3.5'],
+      validationRules: {
+        '5.2': 'Must include tabular listing of all clinical trials',
+        '5.3.5': 'Clinical study reports must follow ICH E3 format',
+        '5.3.6': 'Post-marketing experience must be included if available'
+      }
+    }
+  };
+  
+  if (moduleId && moduleRules[moduleId]) {
+    return moduleRules[moduleId];
+  }
+  
+  // Return all module rules if no moduleId provided
+  return moduleRules;
+};
+
+/**
  * Validate a document against eCTD specifications
  * 
  * @param {string} content - Document content to validate
