@@ -31,6 +31,14 @@ export default function CoAuthor() {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [documentContent, setDocumentContent] = useState('');
   
+  // Vault DMS integration state
+  const [vaultDocuments, setVaultDocuments] = useState([]);
+  const [vaultFolders, setVaultFolders] = useState({});
+  const [vaultLoading, setVaultLoading] = useState(false);
+  const [selectedEctdSection, setSelectedEctdSection] = useState(null);
+  const [documentStatus, setDocumentStatus] = useState({});
+  const [isDocumentLocked, setIsDocumentLocked] = useState(false);
+  
   // Validation state
   const [validationInProgress, setValidationInProgress] = useState(false);
   const [validationResults, setValidationResults] = useState({
@@ -398,6 +406,252 @@ export default function CoAuthor() {
     return newVersion;
   };
   
+  // Vault DMS Integration Functions
+  
+  // Fetch documents from Vault DMS
+  const fetchVaultDocuments = async () => {
+    setVaultLoading(true);
+    
+    try {
+      // Simulate API call to Vault DMS
+      // In production, this would be a real API call to the Vault DMS system
+      console.log("Fetching documents from Vault DMS...");
+      
+      // Simulate response delay
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Sample Vault documents based on the eCTD structure in the attached PDF
+      const vaultDocData = [
+        // Module 1 documents
+        { id: "v1", name: "Form 1574.pdf", section: "1.1", moduleId: "module1", status: "final", path: "/module1/1.1/" },
+        { id: "v2", name: "Cover Letter.docx", section: "1.2", moduleId: "module1", status: "final", path: "/module1/1.2/" },
+        { id: "v3", name: "Sponsor contact information.docx", section: "1.3.1", moduleId: "module1", status: "draft", path: "/module1/1.3.1/" },
+        { id: "v4", name: "Roadmap of Responses from pre-IND meeting.docx", section: "1.12.1.4", moduleId: "module1", status: "draft", path: "/module1/1.12.1.4/" },
+        { id: "v5", name: "Request for waiver of in vivo studies.docx", section: "1.12.13", moduleId: "module1", status: "draft", path: "/module1/1.12.13/" },
+        
+        // Module 2 documents
+        { id: "v6", name: "Overview.docx", section: "2.2", moduleId: "module2", status: "final", path: "/module2/2.2/" },
+        { id: "v7", name: "Quality Overall Summary.docx", section: "2.3", moduleId: "module2", status: "draft", path: "/module2/2.3/" },
+        { id: "v8", name: "Nonclinical Overview.docx", section: "2.4", moduleId: "module2", status: "final", path: "/module2/2.4/" },
+        { id: "v9", name: "Clinical Overview.docx", section: "2.5", moduleId: "module2", status: "draft", path: "/module2/2.5/" },
+        
+        // Module 3 documents
+        { id: "v10", name: "Facilities and equipment (Lumen Bioscience).pdf", section: "3.2.A.1", moduleId: "module3", status: "final", path: "/module3/3.2.A.1/" },
+        { id: "v11", name: "Description and composition (LMN-201, capsules).docx", section: "3.2.P.1", moduleId: "module3", status: "final", path: "/module3/3.2.P.1/" },
+        { id: "v12", name: "General Information (SP1308 SP1312 SP1313 SP1287, Lumen Bioscience).docx", section: "3.2.S.1", moduleId: "module3", status: "final", path: "/module3/3.2.S.1/" }
+      ];
+      
+      // Create folder structure from documents
+      const folders = {};
+      vaultDocData.forEach(doc => {
+        const moduleId = doc.moduleId;
+        const section = doc.section;
+        
+        if (!folders[moduleId]) {
+          folders[moduleId] = {};
+        }
+        
+        if (!folders[moduleId][section]) {
+          folders[moduleId][section] = [];
+        }
+        
+        folders[moduleId][section].push(doc);
+      });
+      
+      // Create document status mapping
+      const statusMap = {};
+      vaultDocData.forEach(doc => {
+        statusMap[doc.id] = doc.status;
+      });
+      
+      setVaultDocuments(vaultDocData);
+      setVaultFolders(folders);
+      setDocumentStatus(statusMap);
+      
+      toast({
+        title: "Vault Documents Loaded",
+        description: `${vaultDocData.length} documents loaded from Vault DMS`
+      });
+    } catch (error) {
+      console.error("Error fetching vault documents:", error);
+      toast({
+        title: "Error Loading Vault Documents",
+        description: "Failed to load documents from Vault DMS. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setVaultLoading(false);
+    }
+  };
+  
+  // Load document from Vault DMS
+  const loadVaultDocument = async (documentId) => {
+    if (isDocumentLocked) {
+      toast({
+        title: "Document Locked",
+        description: "This document is currently locked for editing by another user",
+        variant: "warning"
+      });
+      return;
+    }
+    
+    setVaultLoading(true);
+    
+    try {
+      // Find the document in our vault documents
+      const vaultDoc = vaultDocuments.find(d => d.id === documentId);
+      if (!vaultDoc) {
+        throw new Error("Document not found in Vault");
+      }
+      
+      // Simulate API call to get document content
+      await new Promise(resolve => setTimeout(resolve, 600));
+      
+      // Create dummy content based on the document name
+      const dummyContent = `# ${vaultDoc.name.replace('.docx', '').replace('.pdf', '')}
+
+## eCTD Section ${vaultDoc.section}
+This is a placeholder content for the ${vaultDoc.name} document.
+
+## Document Properties
+- **Section**: ${vaultDoc.section}
+- **Status**: ${vaultDoc.status}
+- **Path**: ${vaultDoc.path}
+- **Module**: ${vaultDoc.moduleId}
+
+## Content Guidelines
+Follow the ICH eCTD format requirements for this section.
+${vaultDoc.name.includes('.pdf') ? '(This is a PDF document and cannot be edited directly in this interface)' : ''}`;
+      
+      // Update state
+      setDocumentContent(dummyContent);
+      setSelectedDocument({
+        id: vaultDoc.id,
+        title: vaultDoc.name,
+        documentType: vaultDoc.name.split('.')[0],
+        section: vaultDoc.section,
+        moduleId: vaultDoc.moduleId,
+        status: vaultDoc.status,
+        path: vaultDoc.path
+      });
+      setSelectedEctdSection(vaultDoc.section);
+      
+      // Run validation silently
+      setTimeout(() => {
+        validateEctdDocument(false);
+      }, 500);
+      
+      toast({
+        title: "Document Loaded",
+        description: `${vaultDoc.name} loaded from Vault DMS`
+      });
+    } catch (error) {
+      console.error("Error loading vault document:", error);
+      toast({
+        title: "Error Loading Document",
+        description: error.message || "Failed to load document from Vault DMS",
+        variant: "destructive"
+      });
+    } finally {
+      setVaultLoading(false);
+    }
+  };
+  
+  // Change document status in Vault
+  const changeDocumentStatus = (documentId, newStatus) => {
+    if (!documentId || !newStatus) return;
+    
+    // Update status in state
+    setDocumentStatus(prev => ({
+      ...prev,
+      [documentId]: newStatus
+    }));
+    
+    // Get document
+    const doc = vaultDocuments.find(d => d.id === documentId);
+    if (!doc) return;
+    
+    toast({
+      title: "Status Updated",
+      description: `${doc.name} status changed to ${newStatus}`
+    });
+  };
+  
+  // Lock document for editing
+  const lockDocument = (documentId) => {
+    if (!documentId) return;
+    
+    // Get document
+    const doc = vaultDocuments.find(d => d.id === documentId);
+    if (!doc) return;
+    
+    setIsDocumentLocked(true);
+    
+    toast({
+      title: "Document Locked",
+      description: `${doc.name} is now locked for editing`
+    });
+  };
+  
+  // Unlock document
+  const unlockDocument = (documentId) => {
+    if (!documentId) return;
+    
+    // Get document
+    const doc = vaultDocuments.find(d => d.id === documentId);
+    if (!doc) return;
+    
+    setIsDocumentLocked(false);
+    
+    toast({
+      title: "Document Unlocked",
+      description: `${doc.name} is now unlocked`
+    });
+  };
+  
+  // Create a compiled document from multiple sections
+  const createCompiledDocument = (moduleId) => {
+    if (!moduleId) return;
+    
+    const moduleDocs = vaultDocuments.filter(d => d.moduleId === moduleId);
+    if (moduleDocs.length === 0) {
+      toast({
+        title: "No Documents Found",
+        description: `No documents found for ${moduleId}`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Set all documents in module to locked
+    moduleDocs.forEach(doc => {
+      lockDocument(doc.id);
+    });
+    
+    toast({
+      title: "Module Compiled",
+      description: `${moduleId} documents have been compiled and locked for editing`,
+    });
+  };
+  
+  // Re-atomize a compiled document back to individual sections
+  const reatomizeDocument = (moduleId) => {
+    if (!moduleId) return;
+    
+    const moduleDocs = vaultDocuments.filter(d => d.moduleId === moduleId);
+    if (moduleDocs.length === 0) return;
+    
+    // Unlock all documents in the module
+    moduleDocs.forEach(doc => {
+      unlockDocument(doc.id);
+    });
+    
+    toast({
+      title: "Documents Re-atomized",
+      description: `${moduleId} has been re-atomized into individual documents`
+    });
+  };
+  
   // Load document version
   const loadDocumentVersion = (versionId) => {
     const version = documentVersions.find(v => v.id === versionId);
@@ -426,7 +680,7 @@ export default function CoAuthor() {
   
   // Initialize component data and setup connections between features
   useEffect(() => {
-    // Initialize sample documents
+    // Initialize basic documents (will be replaced by Vault documents)
     const initialDocuments = [
       { id: 1, title: "Clinical Overview", documentType: "Clinical Overview", section: "2.5", moduleId: "module2" },
       { id: 2, title: "Risk Management Plan", documentType: "Risk Management Plan", section: "1.10", moduleId: "module1" },
@@ -434,36 +688,6 @@ export default function CoAuthor() {
     ];
     
     setDocuments(initialDocuments);
-    
-    // Set first document as selected by default and initialize with content
-    if (initialDocuments.length > 0) {
-      setSelectedDocument(initialDocuments[0]);
-      
-      // Initialize document content with template for Clinical Overview
-      const initialContent = `# ${initialDocuments[0].title}
-
-## 1. Introduction
-This document provides an overview of the clinical development program.
-
-## 2. Disease Background
-Background information on the disease and current treatment options.
-
-## 3. Clinical Efficacy
-Summary of efficacy results from the pivotal clinical studies.
-
-## 4. Clinical Safety
-Overview of the safety profile based on clinical trial data.
-
-## 5. Benefit-Risk Assessment
-Evaluation of the overall benefit-risk profile of the product.`;
-
-      setDocumentContent(initialContent);
-      
-      // Run initial validation silently
-      setTimeout(() => {
-        validateEctdDocument(false);
-      }, 500);
-    }
     
     // Initialize with a sample version history record
     const now = new Date();
@@ -492,6 +716,9 @@ Evaluation of the overall benefit-risk profile of the product.`;
     };
     
     window.addEventListener('keydown', handleKeyDown);
+    
+    // Fetch documents from Vault DMS
+    fetchVaultDocuments();
     
     // Cleanup function
     return () => {
@@ -545,7 +772,7 @@ Evaluation of the overall benefit-risk profile of the product.`;
             <div className="w-64 border-r pr-4 mr-6">
               <div className="sticky top-0">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-lg font-medium">Document Structure</h3>
+                  <h3 className="text-lg font-medium">eCTD Structure</h3>
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -555,6 +782,34 @@ Evaluation of the overall benefit-risk profile of the product.`;
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
                 </div>
+                
+                {vaultLoading ? (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    <span>Loading Vault documents...</span>
+                  </div>
+                ) : (
+                  <div className="space-y-2 mb-4">
+                    {/* Vault Documents Heading */}
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium text-slate-500">Vault DMS Documents</h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0"
+                        onClick={fetchVaultDocuments}
+                        title="Refresh Documents"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500">
+                          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                          <path d="M3 3v5h5"></path>
+                          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+                          <path d="M16 16h5v5"></path>
+                        </svg>
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="space-y-1">
                   {/* Module 1 */}
