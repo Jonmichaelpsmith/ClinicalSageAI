@@ -67,24 +67,38 @@ const PathwayAdvisorCard = ({ projectId, onConfirm }) => {
     try {
       // Get comparison data for different regulatory pathways
       const comparison = await FDA510kService.getPathwayComparisonData();
-      setComparisonData(comparison);
+      if (comparison) {
+        setComparisonData(comparison);
+      }
       
       // If we have a recommendation, get detailed timeline for it
       if (recommendation && recommendation.recommendedPathway) {
-        const deviceType = "Generic Medical Device"; // This would come from your device profile
-        const timeline = await FDA510kService.getPathwayTimeline(
-          recommendation.recommendedPathway, 
-          deviceType
-        );
-        setTimelineData(timeline);
+        try {
+          const deviceType = "Generic Medical Device"; // This would come from your device profile
+          const timeline = await FDA510kService.getPathwayTimeline(
+            recommendation.recommendedPathway, 
+            deviceType
+          );
+          if (timeline) {
+            setTimelineData(timeline);
+          }
+        } catch (timelineErr) {
+          console.error('Error fetching timeline data:', timelineErr);
+        }
         
-        // Get success metrics for this device type and class
-        const deviceClass = "II"; // This would come from your device profile
-        const metrics = await FDA510kService.getPathwaySuccessMetrics(
-          deviceType,
-          deviceClass
-        );
-        setSuccessMetrics(metrics);
+        try {
+          // Get success metrics for this device type and class
+          const deviceClass = "II"; // This would come from your device profile
+          const metrics = await FDA510kService.getPathwaySuccessMetrics(
+            deviceType,
+            deviceClass
+          );
+          if (metrics) {
+            setSuccessMetrics(metrics);
+          }
+        } catch (metricsErr) {
+          console.error('Error fetching success metrics:', metricsErr);
+        }
       }
     } catch (err) {
       console.error('Error fetching comparison data:', err);
@@ -297,14 +311,22 @@ const PathwayAdvisorCard = ({ projectId, onConfirm }) => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {comparisonData?.features?.map((feature, index) => (
-                            <TableRow key={index}>
-                              <TableCell className="font-medium">{feature.name}</TableCell>
-                              <TableCell>{feature.traditional}</TableCell>
-                              <TableCell>{feature.abbreviated}</TableCell>
-                              <TableCell>{feature.special}</TableCell>
+                          {comparisonData?.features?.length > 0 ? (
+                            comparisonData.features.map((feature, index) => (
+                              <TableRow key={index}>
+                                <TableCell className="font-medium">{feature.name || `Feature ${index + 1}`}</TableCell>
+                                <TableCell>{feature.traditional || '-'}</TableCell>
+                                <TableCell>{feature.abbreviated || '-'}</TableCell>
+                                <TableCell>{feature.special || '-'}</TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
+                                No feature comparison data available
+                              </TableCell>
                             </TableRow>
-                          ))}
+                          )}
                         </TableBody>
                       </Table>
                     </TabsContent>
@@ -320,36 +342,50 @@ const PathwayAdvisorCard = ({ projectId, onConfirm }) => {
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {comparisonData?.timelines?.map((item, index) => (
-                            <TableRow key={index}>
-                              <TableCell className="font-medium">{item.pathway}</TableCell>
-                              <TableCell>{item.reviewDays} days</TableCell>
-                              <TableCell>{item.prepDays} days</TableCell>
-                              <TableCell className="font-semibold">
-                                {item.reviewDays + item.prepDays} days
+                          {comparisonData?.timelines?.length > 0 ? (
+                            comparisonData.timelines.map((item, index) => (
+                              <TableRow key={index}>
+                                <TableCell className="font-medium">{item.pathway || `Pathway ${index + 1}`}</TableCell>
+                                <TableCell>{item.reviewDays || 0} days</TableCell>
+                                <TableCell>{item.prepDays || 0} days</TableCell>
+                                <TableCell className="font-semibold">
+                                  {(item.reviewDays || 0) + (item.prepDays || 0)} days
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
+                                No timeline comparison data available
                               </TableCell>
                             </TableRow>
-                          ))}
+                          )}
                         </TableBody>
                       </Table>
                     </TabsContent>
                     
                     <TabsContent value="success">
-                      {successMetrics && (
+                      {successMetrics ? (
                         <div className="space-y-4">
                           <div>
                             <h4 className="text-sm font-medium mb-2">First-Time Success Rates</h4>
-                            <div className="grid grid-cols-3 gap-4">
-                              {successMetrics.successRates.map((rate, index) => (
-                                <div key={index} className="rounded-md border p-3">
-                                  <div className="text-sm text-muted-foreground">{rate.pathway}</div>
-                                  <div className="mt-1 flex items-center gap-2">
-                                    <Progress value={rate.percentage} className="h-2" />
-                                    <span className="text-sm font-medium">{rate.percentage}%</span>
+                            {successMetrics.successRates && successMetrics.successRates.length > 0 ? (
+                              <div className="grid grid-cols-3 gap-4">
+                                {successMetrics.successRates.map((rate, index) => (
+                                  <div key={index} className="rounded-md border p-3">
+                                    <div className="text-sm text-muted-foreground">{rate.pathway || `Pathway ${index + 1}`}</div>
+                                    <div className="mt-1 flex items-center gap-2">
+                                      <Progress value={rate.percentage || 0} className="h-2" />
+                                      <span className="text-sm font-medium">{rate.percentage || 0}%</span>
+                                    </div>
                                   </div>
-                                </div>
-                              ))}
-                            </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="text-center py-4 text-muted-foreground border rounded-md">
+                                No success rate data available
+                              </div>
+                            )}
                           </div>
                           
                           <div>
@@ -363,16 +399,28 @@ const PathwayAdvisorCard = ({ projectId, onConfirm }) => {
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {successMetrics.cycleStats.map((stat, index) => (
-                                  <TableRow key={index}>
-                                    <TableCell>{stat.pathway}</TableCell>
-                                    <TableCell>{stat.avgCycles}</TableCell>
-                                    <TableCell>{stat.range}</TableCell>
+                                {successMetrics.cycleStats && successMetrics.cycleStats.length > 0 ? (
+                                  successMetrics.cycleStats.map((stat, index) => (
+                                    <TableRow key={index}>
+                                      <TableCell>{stat.pathway || `Pathway ${index + 1}`}</TableCell>
+                                      <TableCell>{stat.avgCycles || '-'}</TableCell>
+                                      <TableCell>{stat.range || '-'}</TableCell>
+                                    </TableRow>
+                                  ))
+                                ) : (
+                                  <TableRow>
+                                    <TableCell colSpan={3} className="text-center py-4 text-muted-foreground">
+                                      No cycle statistics available
+                                    </TableCell>
                                   </TableRow>
-                                ))}
+                                )}
                               </TableBody>
                             </Table>
                           </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-6 text-muted-foreground">
+                          No success metrics data available for this device type
                         </div>
                       )}
                     </TabsContent>
@@ -410,8 +458,12 @@ const PathwayAdvisorCard = ({ projectId, onConfirm }) => {
                   <div className="relative mt-6 mb-6">
                     <div className="absolute left-0 top-1/2 w-full h-1 bg-primary/20 -translate-y-1/2"></div>
                     
-                    {timelineData.milestones.map((milestone, index) => {
-                      const position = (milestone.dayFromStart / timelineData.totalDays) * 100;
+                    {timelineData.milestones && timelineData.milestones.map((milestone, index) => {
+                      // Default to a position based on index if dayFromStart or totalDays is missing
+                      const totalDays = timelineData.totalDays || 100;
+                      const dayFromStart = milestone.dayFromStart || (index * (totalDays / (timelineData.milestones.length || 1)));
+                      const position = (dayFromStart / totalDays) * 100;
+                      
                       return (
                         <div 
                           key={index} 
@@ -420,8 +472,8 @@ const PathwayAdvisorCard = ({ projectId, onConfirm }) => {
                         >
                           <div className="w-3 h-3 bg-primary rounded-full z-10"></div>
                           <div className={`absolute top-5 w-40 ${index % 2 === 0 ? '-translate-x-1/4' : '-translate-x-3/4'}`}>
-                            <p className="text-xs font-medium">Day {milestone.dayFromStart}</p>
-                            <p className="text-xs text-muted-foreground">{milestone.name}</p>
+                            <p className="text-xs font-medium">Day {milestone.dayFromStart || '?'}</p>
+                            <p className="text-xs text-muted-foreground">{milestone.name || `Milestone ${index + 1}`}</p>
                           </div>
                         </div>
                       );
@@ -431,14 +483,20 @@ const PathwayAdvisorCard = ({ projectId, onConfirm }) => {
                   <div className="mt-16">
                     <h4 className="text-sm font-medium mb-2">Key Milestones</h4>
                     <div className="grid gap-2">
-                      {timelineData.milestones.map((milestone, index) => (
+                      {timelineData.milestones && timelineData.milestones.map((milestone, index) => (
                         <div key={index} className="flex items-start gap-3 text-sm">
                           <div className="flex-shrink-0 mt-0.5">
                             <Clock3 className="h-4 w-4 text-primary" />
                           </div>
                           <div>
-                            <div className="font-medium">{milestone.name} <span className="text-muted-foreground font-normal">(Day {milestone.dayFromStart})</span></div>
-                            <p className="text-muted-foreground">{milestone.description}</p>
+                            <div className="font-medium">{milestone.name || `Milestone ${index + 1}`} 
+                              <span className="text-muted-foreground font-normal">
+                                (Day {milestone.dayFromStart || '?'})
+                              </span>
+                            </div>
+                            <p className="text-muted-foreground">
+                              {milestone.description || 'No description available'}
+                            </p>
                           </div>
                         </div>
                       ))}
