@@ -206,6 +206,30 @@ export class FDA510kService {
   }
 
   /**
+   * Get detailed information about a specific predicate device
+   * 
+   * @param {string} predicateId - The ID of the predicate device
+   * @param {string} organizationId - The organization ID
+   * @returns {Promise<Object>} Response containing detailed predicate information or error
+   */
+  static async getPredicateDetails(predicateId, organizationId) {
+    try {
+      const url = `${API_BASE_URL}/510k/predicate-devices/${predicateId}`;
+      const response = await apiRequest(url, {
+        method: "GET",
+        params: { organizationId }
+      });
+
+      return {
+        success: true,
+        predicateDetails: response.predicateDetails
+      };
+    } catch (error) {
+      return handleError(error);
+    }
+  }
+
+  /**
    * Search for relevant scientific literature
    * 
    * @param {Object} searchData - Search criteria for literature
