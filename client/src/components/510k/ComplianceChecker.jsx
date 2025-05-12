@@ -7,8 +7,24 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { FaCheckCircle, FaExclamationCircle, FaExclamationTriangle, 
-  FaFilePdf, FaFileExcel, FaMagic, FaSpinner, FaRedo } from 'react-icons/fa';
+import { 
+  FaCheckCircle, 
+  FaExclamationCircle, 
+  FaExclamationTriangle, 
+  FaFilePdf, 
+  FaFileExcel, 
+  FaMagic, 
+  FaSpinner, 
+  FaRedo,
+  FaDownload,
+  FaClipboardCheck
+} from 'react-icons/fa';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
+import { useToast } from '@/hooks/use-toast';
 import fda510kService from '../../services/FDA510kService';
 
 // Progress bar component
@@ -28,24 +44,24 @@ const ProgressBar = ({ value, max, color }) => {
 const StatusBadge = ({ status }) => {
   if (status === 'passed') {
     return (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+      <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 border-green-200">
         <FaCheckCircle className="mr-1" />
         Passed
-      </span>
+      </Badge>
     );
   } else if (status === 'warning') {
     return (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+      <Badge variant="outline" className="bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-800 border-yellow-200">
         <FaExclamationTriangle className="mr-1" />
         Warning
-      </span>
+      </Badge>
     );
   } else if (status === 'failed') {
     return (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+      <Badge variant="outline" className="bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800 border-red-200">
         <FaExclamationCircle className="mr-1" />
         Failed
-      </span>
+      </Badge>
     );
   }
   return null;
@@ -59,6 +75,7 @@ const ComplianceChecker = ({ projectId }) => {
   const [applyingFix, setApplyingFix] = useState({ status: false, checkId: null });
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const { toast } = useToast();
 
   // Fetch initial compliance results
   useEffect(() => {
@@ -150,26 +167,43 @@ const ComplianceChecker = ({ projectId }) => {
 
   if (loading) {
     return (
-      <div className="p-6 bg-white rounded-lg shadow-md">
-        <div className="flex items-center justify-center py-8">
-          <FaSpinner className="animate-spin text-blue-500 mr-2 text-xl" />
-          <span>Loading compliance check results...</span>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-center py-12">
+            <FaSpinner className="animate-spin text-primary mr-3 text-2xl" />
+            <span className="text-muted-foreground text-lg">Loading compliance check results...</span>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6 bg-white rounded-lg shadow-md">
-        <div className="text-red-500 mb-4">{error}</div>
-        <button
-          onClick={fetchComplianceResults}
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-        >
-          Retry
-        </button>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-destructive">Error Loading Compliance Data</CardTitle>
+          <CardDescription>
+            We encountered a problem while fetching compliance check results
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-destructive mb-6 p-4 bg-destructive/10 rounded-md">{error}</div>
+          <Button
+            onClick={() => {
+              fetchComplianceResults();
+              toast({
+                title: "Retrying",
+                description: "Attempting to fetch compliance results again",
+              });
+            }}
+            variant="default"
+            className="gap-2"
+          >
+            <FaRedo className="h-4 w-4" /> Retry
+          </Button>
+        </CardContent>
+      </Card>
     );
   }
 
