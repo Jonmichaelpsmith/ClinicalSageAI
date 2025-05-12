@@ -308,4 +308,229 @@ class FDA510kService {
 // Singleton instance
 const fda510kService = new FDA510kService();
 
+  /**
+   * Get pathway comparison data for different regulatory pathways
+   * 
+   * @returns {Promise<Object>} Comparison data for different pathways
+   */
+  async getPathwayComparisonData() {
+    try {
+      const response = await apiRequest({
+        url: '/api/fda510k/pathway-comparison',
+        method: 'GET'
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error fetching pathway comparison data:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get historical success metrics for different pathways
+   * 
+   * @param {string} deviceType - Type of medical device
+   * @param {string} deviceClass - Device class (I, II, III)
+   * @returns {Promise<Object>} Historical success metrics
+   */
+  async getPathwaySuccessMetrics(deviceType, deviceClass) {
+    try {
+      const response = await apiRequest({
+        url: '/api/fda510k/pathway-success-metrics',
+        method: 'GET',
+        params: { deviceType, deviceClass }
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error fetching pathway success metrics:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get detailed timeline for a specific regulatory pathway
+   * 
+   * @param {string} pathway - The regulatory pathway (e.g., "Traditional 510(k)")
+   * @param {string} deviceType - Type of medical device
+   * @returns {Promise<Object>} Timeline data
+   */
+  async getPathwayTimeline(pathway, deviceType) {
+    try {
+      const response = await apiRequest({
+        url: '/api/fda510k/pathway-timeline',
+        method: 'GET',
+        params: { pathway, deviceType }
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error fetching pathway timeline:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get FDA guidance documents for a specific device type or pathway
+   * 
+   * @param {string} deviceType - Type of medical device
+   * @param {string} pathway - Optional regulatory pathway
+   * @returns {Promise<Array>} List of guidance documents
+   */
+  async getFdaGuidanceDocuments(deviceType, pathway = null) {
+    try {
+      const response = await apiRequest({
+        url: '/api/fda510k/guidance-documents',
+        method: 'GET',
+        params: { deviceType, pathway }
+      });
+      
+      return response.documents;
+    } catch (error) {
+      console.error('Error fetching FDA guidance documents:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get equivalence draft templates for various device types
+   * 
+   * @returns {Promise<Array>} List of available templates
+   */
+  async getDraftTemplates() {
+    try {
+      const response = await apiRequest({
+        url: '/api/fda510k/draft-templates',
+        method: 'GET'
+      });
+      
+      return response.templates;
+    } catch (error) {
+      console.error('Error fetching draft templates:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Save a draft version
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {string} draftText - The draft text to save
+   * @param {string} versionName - Optional name for this version
+   * @returns {Promise<Object>} Save result
+   */
+  async saveDraftVersion(projectId, draftText, versionName = null) {
+    try {
+      const response = await apiRequest({
+        url: '/api/fda510k/save-draft',
+        method: 'POST',
+        data: { 
+          projectId,
+          draftText,
+          versionName
+        }
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error saving draft version:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get draft version history
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @returns {Promise<Array>} List of draft versions
+   */
+  async getDraftVersionHistory(projectId) {
+    try {
+      const response = await apiRequest({
+        url: `/api/fda510k/draft-history/${projectId}`,
+        method: 'GET'
+      });
+      
+      return response.versions;
+    } catch (error) {
+      console.error('Error fetching draft version history:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Export draft to different formats
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {string} format - Export format ('pdf', 'docx', etc.)
+   * @returns {Promise<Object>} Export result with download URL
+   */
+  async exportDraft(projectId, format) {
+    try {
+      const response = await apiRequest({
+        url: '/api/fda510k/export-draft',
+        method: 'POST',
+        data: { 
+          projectId,
+          format 
+        }
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error exporting draft:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get submission progress across all 510(k) steps
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @returns {Promise<Object>} Progress data
+   */
+  async getSubmissionProgress(projectId) {
+    try {
+      const response = await apiRequest({
+        url: `/api/fda510k/submission-progress/${projectId}`,
+        method: 'GET'
+      });
+      
+      return response;
+    } catch (error) {
+      console.error('Error fetching submission progress:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Find relevant literature references based on draft content
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {string} draftText - The current draft text
+   * @returns {Promise<Array>} Relevant literature references
+   */
+  async findRelevantLiterature(projectId, draftText) {
+    try {
+      const response = await apiRequest({
+        url: '/api/fda510k/relevant-literature',
+        method: 'POST',
+        data: { 
+          projectId,
+          draftText 
+        }
+      });
+      
+      return response.references;
+    } catch (error) {
+      console.error('Error finding relevant literature:', error);
+      throw error;
+    }
+  }
+}
+
+// Singleton instance
+const fda510kService = new FDA510kService();
+
 export default fda510kService;
