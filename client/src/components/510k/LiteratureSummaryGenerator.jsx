@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 
 import { useContext } from 'react';
-import { TenantContext } from '../../contexts/TenantContext';
+import { useTenant } from '../../contexts/TenantContext';
 
 // Summary types with descriptions
 const SUMMARY_TYPES = [

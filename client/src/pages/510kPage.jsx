@@ -34,8 +34,10 @@ const FDA510kPage = () => {
   const [_, navigate] = useNavigate();
 
   // Check if features are enabled
-  const isPredicateAnalysisEnabled = isFeatureEnabled('fda510k.predicateAnalysis', currentOrganization?.id);
-  const isDocumentRecommenderEnabled = isFeatureEnabled('documentRecommender', currentOrganization?.id);
+  const isPredicateAnalysisEnabled = isFeatureEnabled('ENABLE_PREDICATE_SEARCH', currentOrganization?.id);
+  const isDocumentRecommenderEnabled = isFeatureEnabled('ENABLE_SECTION_RECOMMENDER', currentOrganization?.id);
+  const isLiteratureDiscoveryEnabled = isFeatureEnabled('ENABLE_LITERATURE_DISCOVERY', currentOrganization?.id);
+  const isPathwayAdvisorEnabled = true; // Adding the new Task 4 feature
 
   // Load device profile if available
   useEffect(() => {
