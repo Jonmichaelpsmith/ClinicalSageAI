@@ -38,7 +38,9 @@ export default function CERV2Page() {
   const [manufacturer, setManufacturer] = useState('');
   const [intendedUse, setIntendedUse] = useState('');
   const [faers, setFaers] = useState([]);
-  const [cerDocumentId, setCerDocumentId] = useState('');
+  const [cerDocumentId, setCerDocumentId] = useState(() => 
+    "CER-" + Math.floor(100000 + Math.random() * 900000)
+  );
   const [comparators, setComparators] = useState([]);
   const [sections, setSections] = useState([]);
   const [equivalenceData, setEquivalenceData] = useState(null);
@@ -1030,6 +1032,16 @@ export default function CERV2Page() {
             <Button 
               onClick={() => {
                 setShowDeviceInfoDialog(false);
+                
+                // Save device data including cerDocumentId to localStorage
+                localStorage.setItem('cerDeviceData', JSON.stringify({
+                  deviceName,
+                  manufacturer,
+                  deviceType,
+                  intendedUse,
+                  cerDocumentId
+                }));
+                
                 toast({
                   title: "Device Info Saved",
                   description: "Your device information has been saved and applied to the CER.",
