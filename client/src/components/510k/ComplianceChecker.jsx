@@ -17,49 +17,46 @@ import {
   FaSpinner, 
   FaRedo,
   FaDownload,
-  FaClipboardCheck
+  FaClipboardCheck,
+  FaChevronDown,
+  FaChevronRight
 } from 'react-icons/fa';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useToast } from '@/hooks/use-toast';
 import fda510kService from '../../services/FDA510kService';
-
-// Progress bar component
-const ProgressBar = ({ value, max, color }) => {
-  const percentage = (value / max) * 100;
-  return (
-    <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
-      <div 
-        className={`h-full ${color}`} 
-        style={{ width: `${percentage}%` }}
-      ></div>
-    </div>
-  );
-};
 
 // Status badge component
 const StatusBadge = ({ status }) => {
   if (status === 'passed') {
     return (
       <Badge variant="outline" className="bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 border-green-200">
-        <FaCheckCircle className="mr-1" />
+        <FaCheckCircle className="mr-1.5" />
         Passed
       </Badge>
     );
   } else if (status === 'warning') {
     return (
       <Badge variant="outline" className="bg-yellow-50 text-yellow-700 hover:bg-yellow-100 hover:text-yellow-800 border-yellow-200">
-        <FaExclamationTriangle className="mr-1" />
+        <FaExclamationTriangle className="mr-1.5" />
         Warning
       </Badge>
     );
   } else if (status === 'failed') {
     return (
       <Badge variant="outline" className="bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800 border-red-200">
-        <FaExclamationCircle className="mr-1" />
+        <FaExclamationCircle className="mr-1.5" />
         Failed
       </Badge>
     );
@@ -75,6 +72,7 @@ const ComplianceChecker = ({ projectId }) => {
   const [applyingFix, setApplyingFix] = useState({ status: false, checkId: null });
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
   const { toast } = useToast();
 
   // Fetch initial compliance results
@@ -108,9 +106,18 @@ const ComplianceChecker = ({ projectId }) => {
     try {
       const data = await fda510kService.runComplianceCheck(projectId);
       setResults(data);
+      toast({
+        title: "Compliance Check Complete",
+        description: `Overall score: ${data.overallScore}/100 with ${data.criticalIssues} critical issues found`,
+      });
     } catch (err) {
       console.error('Error running compliance check:', err);
       setError('Failed to run compliance check. Please try again.');
+      toast({
+        title: "Error Running Check",
+        description: "There was a problem running the compliance check",
+        variant: "destructive"
+      });
     } finally {
       setChecking(false);
     }
@@ -125,9 +132,18 @@ const ComplianceChecker = ({ projectId }) => {
       await fda510kService.applyAutoFix(projectId, sectionId, checkId);
       // Refresh compliance results after applying fix
       await fetchComplianceResults();
+      toast({
+        title: "Auto-Fix Applied",
+        description: "The compliance issue has been automatically fixed",
+      });
     } catch (err) {
       console.error('Error applying auto-fix:', err);
       setError('Failed to apply automatic fix. Please try again.');
+      toast({
+        title: "Auto-Fix Failed",
+        description: "The compliance issue could not be automatically fixed",
+        variant: "destructive"
+      });
     } finally {
       setApplyingFix({ status: false, checkId: null });
     }
@@ -137,6 +153,7 @@ const ComplianceChecker = ({ projectId }) => {
   const exportReport = async (format) => {
     setExporting(true);
     setError(null);
+    setExportDropdownOpen(false);
     
     try {
       const result = await fda510kService.exportComplianceReport(projectId, format);
@@ -148,9 +165,19 @@ const ComplianceChecker = ({ projectId }) => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+
+      toast({
+        title: `${format.toUpperCase()} Report Generated`,
+        description: `Your compliance report has been downloaded`,
+      });
     } catch (err) {
       console.error('Error exporting report:', err);
       setError('Failed to export compliance report. Please try again.');
+      toast({
+        title: "Export Failed",
+        description: `Could not generate the ${format.toUpperCase()} report`,
+        variant: "destructive"
+      });
     } finally {
       setExporting(false);
     }
@@ -208,187 +235,240 @@ const ComplianceChecker = ({ projectId }) => {
   }
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold text-gray-800">Pre-Submission Compliance Check</h2>
-        <div className="flex gap-2">
-          <button
-            onClick={runComplianceCheck}
-            disabled={checking}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center disabled:opacity-50"
-          >
-            {checking ? (
-              <>
-                <FaSpinner className="animate-spin mr-2" />
-                Running Check...
-              </>
-            ) : (
-              <>
-                <FaRedo className="mr-2" />
-                Run Check
-              </>
-            )}
-          </button>
-          <div className="relative group">
-            <button
-              className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition-colors flex items-center"
+    <Card className="border-t-4 border-t-primary">
+      <CardHeader>
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+          <div>
+            <CardTitle className="text-2xl">Pre-Submission Compliance Check</CardTitle>
+            <CardDescription>
+              Validate that your 510(k) submission meets all FDA requirements
+            </CardDescription>
+          </div>
+          <div className="flex gap-2">
+            <Button
+              onClick={runComplianceCheck}
+              disabled={checking}
+              variant="default"
+              className="gap-2"
             >
-              Export Report
-            </button>
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-20 hidden group-hover:block">
-              <button
-                onClick={() => exportReport('pdf')}
-                disabled={exporting}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center"
-              >
-                <FaFilePdf className="mr-2 text-red-500" />
-                Export as PDF
-              </button>
-              <button
-                onClick={() => exportReport('excel')}
-                disabled={exporting}
-                className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 flex items-center"
-              >
-                <FaFileExcel className="mr-2 text-green-500" />
-                Export as Excel
-              </button>
-            </div>
+              {checking ? (
+                <>
+                  <FaSpinner className="animate-spin h-4 w-4" />
+                  Running Check...
+                </>
+              ) : (
+                <>
+                  <FaRedo className="h-4 w-4" />
+                  Run Check
+                </>
+              )}
+            </Button>
+            
+            <DropdownMenu open={exportDropdownOpen} onOpenChange={setExportDropdownOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  disabled={exporting || !results}
+                  variant="outline"
+                  className="gap-2"
+                >
+                  {exporting ? (
+                    <>
+                      <FaSpinner className="animate-spin h-4 w-4" />
+                      Exporting...
+                    </>
+                  ) : (
+                    <>
+                      <FaDownload className="h-4 w-4" />
+                      Export
+                    </>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem 
+                  onClick={() => exportReport('pdf')}
+                  disabled={exporting}
+                  className="cursor-pointer"
+                >
+                  <FaFilePdf className="mr-2 text-red-500 h-4 w-4" />
+                  <span>Export as PDF</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  onClick={() => exportReport('excel')}
+                  disabled={exporting}
+                  className="cursor-pointer"
+                >
+                  <FaFileExcel className="mr-2 text-green-500 h-4 w-4" />
+                  <span>Export as Excel</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-      </div>
+      </CardHeader>
+
+      <CardContent>
+        {results ? (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card className="bg-white/50">
+                <CardContent className="pt-6">
+                  <div className="text-sm text-muted-foreground">Overall Score</div>
+                  <div className="text-3xl font-bold text-primary mt-1">{results.overallScore}/100</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/50">
+                <CardContent className="pt-6">
+                  <div className="text-sm text-muted-foreground">Completed Sections</div>
+                  <div className="text-3xl font-bold text-green-600 mt-1">{results.completedSections}/{results.totalSections}</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/50">
+                <CardContent className="pt-6">
+                  <div className="text-sm text-muted-foreground">Critical Issues</div>
+                  <div className="text-3xl font-bold text-destructive mt-1">{results.criticalIssues}</div>
+                </CardContent>
+              </Card>
+              <Card className="bg-white/50">
+                <CardContent className="pt-6">
+                  <div className="text-sm text-muted-foreground">Warnings</div>
+                  <div className="text-3xl font-bold text-amber-500 mt-1">{results.warnings}</div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="mb-6">
+              <div className="text-sm text-muted-foreground mb-2">Overall Progress</div>
+              <Progress value={(results.completedSections / results.totalSections) * 100} className="h-2" />
+            </div>
+
+            <div className="space-y-4 mt-8">
+              {results.sections.map((section) => (
+                <Collapsible 
+                  key={section.id} 
+                  open={activeSection === section.id}
+                  onOpenChange={() => toggleSection(section.id)}
+                  className="border rounded-md overflow-hidden"
+                >
+                  <CollapsibleTrigger className="w-full">
+                    <div 
+                      className={`flex justify-between items-center p-4 ${
+                        section.status === 'passed' 
+                          ? 'bg-green-50 hover:bg-green-100' 
+                          : section.status === 'warning' 
+                            ? 'bg-amber-50 hover:bg-amber-100' 
+                            : 'bg-red-50 hover:bg-red-100'
+                      } transition-colors`}
+                    >
+                      <div className="flex items-center">
+                        <StatusBadge status={section.status} />
+                        <h3 className="ml-3 font-semibold text-foreground">{section.name}</h3>
+                      </div>
+                      <div className="text-muted-foreground">
+                        {activeSection === section.id ? (
+                          <FaChevronDown className="h-4 w-4" />
+                        ) : (
+                          <FaChevronRight className="h-4 w-4" />
+                        )}
+                      </div>
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="bg-white p-4">
+                      <ul className="space-y-4">
+                        {section.checks.map((check) => (
+                          <li key={check.id} className="flex flex-col md:flex-row justify-between border-b border-border pb-4 last:border-0 last:pb-0">
+                            <div className="flex-1">
+                              <div className="flex items-center">
+                                {check.status === 'passed' ? (
+                                  <FaCheckCircle className="text-green-500 mr-2 h-4 w-4 shrink-0" />
+                                ) : check.status === 'warning' ? (
+                                  <FaExclamationTriangle className="text-amber-500 mr-2 h-4 w-4 shrink-0" />
+                                ) : (
+                                  <FaExclamationCircle className="text-destructive mr-2 h-4 w-4 shrink-0" />
+                                )}
+                                <span className="font-medium">{check.description}</span>
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1 ml-6">{check.message}</p>
+                            </div>
+                            
+                            {check.autoFixAvailable && (
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  applyAutoFix(section.id, check.id);
+                                }}
+                                disabled={applyingFix.status}
+                                variant="outline"
+                                className="mt-2 md:mt-0 md:ml-6 gap-1 h-8"
+                                size="sm"
+                              >
+                                {applyingFix.status && applyingFix.checkId === check.id ? (
+                                  <>
+                                    <FaSpinner className="animate-spin h-3.5 w-3.5" />
+                                    <span>Applying...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <FaMagic className="h-3.5 w-3.5" />
+                                    <span>Auto-Fix</span>
+                                  </>
+                                )}
+                              </Button>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-12">
+            <FaClipboardCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-medium mb-2">No Compliance Checks Run</h3>
+            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+              Run a compliance check to verify that your 510(k) submission meets all FDA requirements
+              and identify any issues that need to be fixed.
+            </p>
+            <Button
+              onClick={runComplianceCheck}
+              disabled={checking}
+              variant="default"
+              className="gap-2"
+            >
+              {checking ? (
+                <>
+                  <FaSpinner className="animate-spin h-4 w-4" />
+                  Running Check...
+                </>
+              ) : (
+                <>
+                  <FaRedo className="h-4 w-4" />
+                  Run Compliance Check
+                </>
+              )}
+            </Button>
+          </div>
+        )}
+      </CardContent>
 
       {results && (
-        <>
-          <div className="bg-gray-50 p-4 rounded-lg mb-6">
-            <div className="flex flex-wrap gap-4 mb-4">
-              <div className="bg-white p-3 rounded-md shadow-sm flex-1">
-                <div className="text-sm text-gray-500 mb-1">Overall Score</div>
-                <div className="text-2xl font-bold text-blue-600">{results.overallScore}/100</div>
-              </div>
-              <div className="bg-white p-3 rounded-md shadow-sm flex-1">
-                <div className="text-sm text-gray-500 mb-1">Completed Sections</div>
-                <div className="text-2xl font-bold text-green-600">{results.completedSections}/{results.totalSections}</div>
-              </div>
-              <div className="bg-white p-3 rounded-md shadow-sm flex-1">
-                <div className="text-sm text-gray-500 mb-1">Critical Issues</div>
-                <div className="text-2xl font-bold text-red-600">{results.criticalIssues}</div>
-              </div>
-              <div className="bg-white p-3 rounded-md shadow-sm flex-1">
-                <div className="text-sm text-gray-500 mb-1">Warnings</div>
-                <div className="text-2xl font-bold text-yellow-600">{results.warnings}</div>
-              </div>
-            </div>
-            <div>
-              <div className="text-sm text-gray-500 mb-1">Overall Progress</div>
-              <ProgressBar 
-                value={results.completedSections} 
-                max={results.totalSections} 
-                color="bg-blue-500" 
-              />
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {results.sections.map((section) => (
-              <div key={section.id} className="border border-gray-200 rounded-md overflow-hidden">
-                <div 
-                  className={`flex justify-between items-center p-4 cursor-pointer ${
-                    section.status === 'passed' 
-                      ? 'bg-green-50' 
-                      : section.status === 'warning' 
-                        ? 'bg-yellow-50' 
-                        : 'bg-red-50'
-                  }`}
-                  onClick={() => toggleSection(section.id)}
-                >
-                  <div className="flex items-center">
-                    <StatusBadge status={section.status} />
-                    <h3 className="ml-3 font-medium text-gray-900">{section.name}</h3>
-                  </div>
-                  <div className="text-gray-500">
-                    {activeSection === section.id ? (
-                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                      </svg>
-                    ) : (
-                      <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-
-                {activeSection === section.id && (
-                  <div className="p-4 bg-white">
-                    <ul className="space-y-3">
-                      {section.checks.map((check) => (
-                        <li key={check.id} className="flex flex-col md:flex-row justify-between border-b border-gray-100 pb-3">
-                          <div className="flex-1">
-                            <div className="flex items-center">
-                              {check.status === 'passed' ? (
-                                <FaCheckCircle className="text-green-500 mr-2" />
-                              ) : check.status === 'warning' ? (
-                                <FaExclamationTriangle className="text-yellow-500 mr-2" />
-                              ) : (
-                                <FaExclamationCircle className="text-red-500 mr-2" />
-                              )}
-                              <span className="font-medium">{check.description}</span>
-                            </div>
-                            <p className="text-sm text-gray-600 mt-1 ml-6">{check.message}</p>
-                          </div>
-                          
-                          {check.autoFixAvailable && (
-                            <button
-                              onClick={() => applyAutoFix(section.id, check.id)}
-                              disabled={applyingFix.status}
-                              className="mt-2 md:mt-0 ml-6 px-3 py-1.5 bg-indigo-100 text-indigo-700 rounded-md hover:bg-indigo-200 transition-colors text-sm flex items-center disabled:opacity-50"
-                            >
-                              {applyingFix.status && applyingFix.checkId === check.id ? (
-                                <>
-                                  <FaSpinner className="animate-spin mr-1.5" />
-                                  Applying...
-                                </>
-                              ) : (
-                                <>
-                                  <FaMagic className="mr-1.5" />
-                                  Auto-Fix
-                                </>
-                              )}
-                            </button>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 p-4 bg-blue-50 rounded-md">
-            <h3 className="font-medium text-blue-800 mb-2">About Compliance Checks</h3>
-            <p className="text-blue-700 text-sm">
+        <CardFooter>
+          <Alert>
+            <FaClipboardCheck className="h-4 w-4" />
+            <AlertTitle>About Compliance Checks</AlertTitle>
+            <AlertDescription>
               This automated compliance checker verifies that your 510(k) submission meets FDA requirements. 
               It checks for completeness, consistency, and adherence to FDA guidelines. 
               Address all critical issues before submission to increase chances of acceptance.
-            </p>
-          </div>
-        </>
+            </AlertDescription>
+          </Alert>
+        </CardFooter>
       )}
-
-      {!results && !loading && !error && (
-        <div className="text-center py-8">
-          <p className="text-gray-500 mb-4">No compliance checks have been run for this project.</p>
-          <button
-            onClick={runComplianceCheck}
-            disabled={checking}
-            className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
-          >
-            {checking ? 'Running Check...' : 'Run Compliance Check'}
-          </button>
-        </div>
-      )}
-    </div>
+    </Card>
   );
 };
 
