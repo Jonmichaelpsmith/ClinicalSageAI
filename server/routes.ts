@@ -99,6 +99,7 @@ import emergencyFixRouter from './routes/emergency-fix.js';
 import aiRouter from './routes/ai-routes.js';
 import sotaRouter from './routes/sota-api.mjs';
 import equivalenceRouter from './routes/equivalence-api.mjs';
+import fda510kEquivalenceRouter from './routes/510k-equivalence-api.js';
 import internalClinicalDataRouter from './routes/internal-clinical-data.js';
 import qmpRouter from './routes/qmp-api.js';
 import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
@@ -224,6 +225,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register Equivalence API routes
   app.use('/api/cer/equivalence', equivalenceRouter);
+  
+  // Register 510(k) Equivalence API routes
+  app.use('/api/510k', fda510kEquivalenceRouter);
   
   // Register Internal Clinical Data API routes
   app.use('/api/cer/internal-data', internalClinicalDataRouter);
