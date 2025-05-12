@@ -253,7 +253,9 @@ export default function CERV2Page() {
 
   // Direct action for 510(k) Automation
   const show510kPanel = () => {
+    console.log("Attempting to show 510k panel");
     setActiveTab('510k');
+    console.log("Active tab set to:", '510k');
   };
   
   // Render content based on active tab
@@ -625,6 +627,7 @@ export default function CERV2Page() {
     }
     
     if (activeTab === '510k') {
+      console.log("Rendering 510k tab content");
       return (
         <div className="bg-white p-6 rounded-md shadow-sm border border-blue-100">
           <KAutomationPanel />
@@ -1029,8 +1032,27 @@ export default function CERV2Page() {
     );
   };
 
+  // For debugging purposes
+  useEffect(() => {
+    console.log("Current activeTab:", activeTab);
+  }, [activeTab]);
+
   return (
     <div className="max-w-[1200px] mx-auto">
+      {/* Direct 510(k) Automation Panel */}
+      <div className="bg-white mb-6 p-6 border border-blue-200 rounded-lg shadow-md">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-semibold text-blue-700">510(k) Automation Pipeline</h2>
+          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+            FDA Submission
+          </Badge>
+        </div>
+        <p className="text-gray-600 mb-6">Complete automation pipeline for FDA 510(k) submissions with intelligent predicate discovery.</p>
+        <div className="p-4 bg-blue-50 rounded-md mb-6">
+          <KAutomationPanel />
+        </div>
+      </div>
+    
       <div className="flex flex-col md:flex-row justify-between items-start p-6 pb-2 bg-gradient-to-r from-blue-50 to-white rounded-t-lg shadow-sm">
         <div>
           <h1 className="text-2xl font-semibold text-[#0F6CBD] mb-1">CER Builder</h1>
