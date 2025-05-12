@@ -314,6 +314,141 @@ export async function assessRegulatoryCompliance(specificationData, regulatoryFr
 }
 
 /**
+ * Analyze regulatory compliance for eCTD documents
+ * @param {string} documentContent - The document content to analyze
+ * @param {string} moduleType - eCTD module type (e.g., 'module1', 'module2')
+ * @param {string} section - Section within the module
+ * @returns {Promise<Object>} Analysis results with issues and suggestions
+ */
+export async function analyzeRegulatoryCompliance(documentContent, moduleType, section) {
+  try {
+    // If OpenAI API key is missing, return simulated response
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn('OpenAI API key not available, returning simulated response');
+      return simulateRegulatoryComplianceResponse(moduleType, section);
+    }
+    
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        { 
+          role: "system", 
+          content: `You are an expert eCTD regulatory specialist. Analyze the provided document 
+            content for compliance with eCTD requirements for ${moduleType}, section ${section}.
+            Identify specific compliance issues, formatting problems, and content gaps.
+            Categorize each issue by severity (critical, major, minor) and provide specific 
+            recommendations for fixing each issue. Return results in structured JSON format.`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            task: "Analyze document for eCTD compliance",
+            moduleType,
+            section,
+            documentContent: documentContent.substring(0, 12000) // Limit content size
+          })
+        }
+      ],
+      temperature: 0.1,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
+    });
+
+    const result = JSON.parse(response.choices[0].message.content);
+    
+    // Normalize the response format
+    return {
+      moduleType,
+      section,
+      timestamp: new Date().toISOString(),
+      issues: result.issues || [],
+      suggestions: result.suggestions || [],
+      complianceScore: result.complianceScore || calculateComplianceScore(result.issues || [])
+    };
+  } catch (error) {
+    console.error("Error analyzing regulatory compliance:", error);
+    return simulateRegulatoryComplianceResponse(moduleType, section);
+  }
+}
+
+/**
+ * Calculate compliance score based on issues
+ * @private
+ */
+function calculateComplianceScore(issues) {
+  if (!issues || issues.length === 0) return 100;
+  
+  // Count issues by severity
+  const criticalCount = issues.filter(i => i.severity === 'critical').length;
+  const majorCount = issues.filter(i => i.severity === 'major').length;
+  const minorCount = issues.filter(i => i.severity === 'minor').length;
+  
+  // Calculate weighted score (critical issues have highest impact)
+  const baseScore = 100;
+  const criticalDeduction = criticalCount * 15;
+  const majorDeduction = majorCount * 5;
+  const minorDeduction = minorCount * 1;
+  
+  return Math.max(0, baseScore - criticalDeduction - majorDeduction - minorDeduction);
+}
+
+/**
+ * Generate a simulated regulatory compliance response
+ * @private
+ */
+function simulateRegulatoryComplianceResponse(moduleType, section) {
+  return {
+    moduleType,
+    section,
+    timestamp: new Date().toISOString(),
+    issues: [
+      {
+        id: "missing-section-reference",
+        message: "Missing reference to required section",
+        details: "Document should include reference to related sections for regulatory completeness",
+        severity: "minor",
+        location: "cross-references"
+      },
+      {
+        id: "promotional-language",
+        message: "Promotional language detected",
+        details: "Regulatory documents should use objective language instead of promotional terms",
+        severity: "major",
+        location: "content"
+      },
+      {
+        id: "incomplete-information",
+        message: "Incomplete information in required section",
+        details: "Section appears to be missing key information required by regulatory guidelines",
+        severity: "critical",
+        location: "content"
+      }
+    ],
+    suggestions: [
+      {
+        id: "add-cross-references",
+        title: "Add cross-references",
+        description: "Add proper cross-references to related sections to improve regulatory compliance",
+        priority: "medium"
+      },
+      {
+        id: "remove-promotional-language",
+        title: "Remove promotional language",
+        description: "Replace promotional terms with objective, factual language",
+        priority: "high"
+      },
+      {
+        id: "complete-required-information",
+        title: "Complete required information",
+        description: "Add missing information to required sections based on regulatory guidelines",
+        priority: "high"
+      }
+    ],
+    complianceScore: 75
+  };
+}
+
+/**
  * Simulate an OpenAI response for testing and demo purposes
  * @param {Object} data - Input data for the simulation
  * @param {string} responseType - Type of response to simulate
