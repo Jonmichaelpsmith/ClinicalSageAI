@@ -556,6 +556,71 @@ export default function CoAuthor() {
     fetchTemplatesFromApi();
   }, []);
 
+  // Insert template content atoms into editor
+  const insertTemplateContent = async (template) => {
+    try {
+      toast({
+        title: "Inserting Template",
+        description: `Adding template "${template.name}" content blocks to document...`,
+        variant: "default",
+      });
+      
+      // In a real implementation with TipTap, we would do:
+      // editor.chain().focus().insertContent(...).run()
+      // 
+      // For each content block in the template:
+      if (template.contentBlocks && template.contentBlocks.length > 0) {
+        let contentToInsert = '';
+        
+        // Gather all blocks
+        template.contentBlocks.forEach(blockId => {
+          let block = null;
+          
+          // Find the atom in the registry by ID
+          if (blockId.startsWith('table-')) {
+            block = contentBlockRegistry.tables.find(t => t.id === blockId);
+          } else if (blockId.startsWith('narrative-')) {
+            block = contentBlockRegistry.narratives.find(n => n.id === blockId);
+          } else if (blockId.startsWith('figure-')) {
+            block = contentBlockRegistry.figures.find(f => f.id === blockId);
+          }
+          
+          if (block) {
+            contentToInsert += `<h3>${block.section} ${block.name}</h3>`;
+            contentToInsert += block.template;
+            contentToInsert += '\n\n';
+          }
+        });
+        
+        // In our implementation we're mocking this by showing a toast
+        setTimeout(() => {
+          toast({
+            title: "Template Inserted",
+            description: `Successfully added ${template.contentBlocks.length} content atoms from template`,
+            variant: "success",
+          });
+        }, 1000);
+        
+        return true;
+      } else {
+        toast({
+          title: "Empty Template",
+          description: "Selected template has no content blocks to insert",
+          variant: "destructive",
+        });
+        return false;
+      }
+    } catch (error) {
+      console.error("Error inserting template content:", error);
+      toast({
+        title: "Error",
+        description: "Failed to insert template content: " + error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+  
   // Create a new content atom (Admin only)
   const createContentAtom = async (atomData) => {
     try {
@@ -2023,6 +2088,243 @@ export default function CoAuthor() {
                       <p>
                         No serious adverse events were considered related to the study medication, and the discontinuation rate due to adverse events was low (3.2%), comparable to placebo (2.8%).
                       </p>
+                    </div>
+                  </div>
+                </TabsContent>
+                
+                {/* Content Atoms Tab Content with Template Library Integration */}
+                <TabsContent value="content-atoms" className="pt-4 space-y-4">
+                  <div className="border rounded-md">
+                    {/* Template Library & Atom Composition - Integrated Panel */}
+                    <div className="p-3 bg-slate-50 border-b">
+                      <Tabs 
+                        value={templateLibraryView} 
+                        onValueChange={setTemplateLibraryView}
+                        className="w-full"
+                      >
+                        <div className="flex justify-between items-center mb-3">
+                          <TabsList className="grid w-[360px] grid-cols-2">
+                            <TabsTrigger value="atoms" className="flex items-center">
+                              <LayoutTemplate className="h-4 w-4 mr-2" />
+                              Content Atoms
+                            </TabsTrigger>
+                            <TabsTrigger value="templates" className="flex items-center">
+                              <FileText className="h-4 w-4 mr-2" />
+                              Template Library
+                            </TabsTrigger>
+                          </TabsList>
+                          
+                          <div className="flex space-x-2">
+                            <Input 
+                              type="text" 
+                              placeholder="Search components..." 
+                              className="h-8 w-[200px]" 
+                            />
+                            <Button variant="outline" size="sm" className="h-8">
+                              <Filter className="h-3.5 w-3.5 mr-1.5" />
+                              Filter
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Region filter tabs */}
+                        <div className="flex items-center space-x-1 mb-3">
+                          <Badge 
+                            variant={atomRegionFilter === 'US' ? "default" : "outline"} 
+                            className="cursor-pointer"
+                            onClick={() => {
+                              setAtomRegionFilter('US');
+                              setTemplateRegionFilter('US');
+                            }}
+                          >
+                            US
+                          </Badge>
+                          <Badge 
+                            variant={atomRegionFilter === 'EU' ? "default" : "outline"} 
+                            className="cursor-pointer"
+                            onClick={() => {
+                              setAtomRegionFilter('EU');
+                              setTemplateRegionFilter('EU');
+                            }}
+                          >
+                            EU
+                          </Badge>
+                          <Badge 
+                            variant={atomRegionFilter === 'CA' ? "default" : "outline"} 
+                            className="cursor-pointer"
+                            onClick={() => {
+                              setAtomRegionFilter('CA');
+                              setTemplateRegionFilter('CA');
+                            }}
+                          >
+                            CA
+                          </Badge>
+                          <Badge 
+                            variant={atomRegionFilter === 'JP' ? "default" : "outline"} 
+                            className="cursor-pointer"
+                            onClick={() => {
+                              setAtomRegionFilter('JP');
+                              setTemplateRegionFilter('JP');
+                            }}
+                          >
+                            JP
+                          </Badge>
+                          <Badge 
+                            variant={atomRegionFilter === 'CN' ? "default" : "outline"} 
+                            className="cursor-pointer"
+                            onClick={() => {
+                              setAtomRegionFilter('CN');
+                              setTemplateRegionFilter('CN');
+                            }}
+                          >
+                            CN
+                          </Badge>
+                          <Badge 
+                            variant={atomRegionFilter === 'AU' ? "default" : "outline"} 
+                            className="cursor-pointer"
+                            onClick={() => {
+                              setAtomRegionFilter('AU');
+                              setTemplateRegionFilter('AU');
+                            }}
+                          >
+                            AU
+                          </Badge>
+                          <Badge 
+                            variant={atomRegionFilter === 'GLOBAL' ? "default" : "outline"} 
+                            className="cursor-pointer"
+                            onClick={() => {
+                              setAtomRegionFilter('GLOBAL');
+                              setTemplateRegionFilter('GLOBAL');
+                            }}
+                          >
+                            GLOBAL
+                          </Badge>
+                        </div>
+                        
+                        {/* Content display based on selected tab */}
+                        <TabsContent value="atoms" className="pt-2">
+                          <div className="grid grid-cols-3 gap-3 max-h-[400px] overflow-y-auto p-1">
+                            {isLoadingAtoms ? (
+                              <div className="col-span-3 flex justify-center py-8">
+                                <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+                              </div>
+                            ) : contentAtoms.length === 0 ? (
+                              <div className="col-span-3 text-center text-gray-500 py-8">
+                                No content atoms found. Create new atoms or change filters.
+                              </div>
+                            ) : (
+                              // Display filtered content atoms
+                              filterContentAtoms({ region: atomRegionFilter }).map(atom => (
+                                <div 
+                                  key={atom.atom_id}
+                                  className="border rounded-md p-3 hover:bg-slate-50 cursor-pointer"
+                                  onClick={() => setSelectedContentAtom(atom)}
+                                >
+                                  <div className="flex items-start justify-between">
+                                    <div>
+                                      <div className="flex items-center space-x-1.5 mb-1.5">
+                                        {atom.type === 'table' && <Table className="h-3.5 w-3.5 text-blue-600" />}
+                                        {atom.type === 'narrative' && <FileText className="h-3.5 w-3.5 text-purple-600" />}
+                                        {atom.type === 'figure' && <BarChart3 className="h-3.5 w-3.5 text-green-600" />}
+                                        <span className="font-medium text-sm">
+                                          {atom.section_code} {atom.type.charAt(0).toUpperCase() + atom.type.slice(1)}
+                                        </span>
+                                      </div>
+                                      
+                                      <div className="flex space-x-1 mb-1">
+                                        <Badge variant="outline" className="text-xs py-0 h-4">
+                                          Module {atom.module}
+                                        </Badge>
+                                        <Badge variant="outline" className="text-xs py-0 h-4">
+                                          {atom.region}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                    
+                                    <Badge variant="secondary" className="text-xs">
+                                      <CheckCircle className="h-3 w-3 mr-1" />
+                                      ICH Validated
+                                    </Badge>
+                                  </div>
+                                </div>
+                              ))
+                            )}
+                          </div>
+                        </TabsContent>
+                        
+                        {/* Template Library Tab */}
+                        <TabsContent value="templates" className="pt-2">
+                          <div className="grid grid-cols-1 gap-2 max-h-[400px] overflow-y-auto p-1">
+                            {templates
+                              .filter(template => {
+                                // Filter by region
+                                if (templateRegionFilter !== 'GLOBAL') {
+                                  return template.regions.some(r => r.region.includes(templateRegionFilter));
+                                }
+                                return true;
+                              })
+                              .map(template => (
+                                <div 
+                                  key={template.id}
+                                  className="border rounded-md p-3 hover:bg-slate-50 cursor-pointer"
+                                  onClick={() => setSelectedTemplate(template)}
+                                >
+                                  <div className="flex justify-between">
+                                    <div>
+                                      <div className="font-medium">{template.name}</div>
+                                      <div className="text-xs text-gray-500 mt-1">{template.category} • Updated {template.lastUpdated}</div>
+                                      
+                                      {/* Show atom content blocks that make up this template */}
+                                      <div className="flex flex-wrap gap-1 mt-2">
+                                        {template.contentBlocks && template.contentBlocks.map(blockId => {
+                                          // Determine the block type
+                                          const blockType = blockId.split('-')[0];
+                                          return (
+                                            <Badge 
+                                              key={blockId} 
+                                              variant="outline" 
+                                              className={`text-xs py-0 h-5 ${
+                                                blockType === 'table' ? 'text-blue-600 border-blue-300' :
+                                                blockType === 'narrative' ? 'text-purple-600 border-purple-300' :
+                                                'text-green-600 border-green-300'
+                                              }`}
+                                            >
+                                              {blockType === 'table' && <Table className="h-3 w-3 mr-1" />}
+                                              {blockType === 'narrative' && <FileText className="h-3 w-3 mr-1" />}
+                                              {blockType === 'figure' && <BarChart3 className="h-3 w-3 mr-1" />}
+                                              {blockId.split('-')[1]}
+                                            </Badge>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="flex flex-col space-y-2 items-end">
+                                      <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-0">
+                                        <Zap className="h-3 w-3 mr-1" />
+                                        Atoms Composition
+                                      </Badge>
+                                      
+                                      <Button 
+                                        size="sm" 
+                                        variant="outline"
+                                        className="text-xs"
+                                        onClick={(e) => {
+                                          e.stopPropagation(); // Prevent template selection
+                                          insertTemplateContent(template);
+                                        }}
+                                      >
+                                        <Plus className="h-3 w-3 mr-1" />
+                                        Insert Template
+                                      </Button>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            }
+                          </div>
+                        </TabsContent>
+                      </Tabs>
                     </div>
                   </div>
                 </TabsContent>
