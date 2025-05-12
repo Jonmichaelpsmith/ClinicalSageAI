@@ -1093,7 +1093,7 @@ export default function CERV2Page() {
         <p>This tab is under development.</p>
       </div>
     );
-  };
+  }
 
   // For debugging purposes
   useEffect(() => {

@@ -29,7 +29,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Info, CheckCircle, AlertCircle, RefreshCw, FileText, Sparkles, Zap, XCircle, Plus, Shield, BarChart4, ArrowRight, ExternalLink, FileCheck, BookOpen } from 'lucide-react';
 
-export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report', onComplianceChange, onStatusChange }) {
+export default function ComplianceScorePanel({ sections, title = 'Clinical Evaluation Report', onComplianceChange, onStatusChange, template = 'cer' }) {
   const [analyzing, setAnalyzing] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState(null);
@@ -54,18 +54,36 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
   
   // Various regulatory standards for compliance analysis
   const availableStandards = [
-    { id: 'EU_MDR', name: 'EU MDR 2017/745', description: 'European Medical Device Regulation' },
-    { id: 'ISO_14155', name: 'ISO 14155:2020', description: 'Clinical investigation of medical devices' },
-    { id: 'FDA_21CFR812', name: 'FDA 21 CFR 812', description: 'Investigational Device Exemptions' },
-    { id: 'ISO_13485', name: 'ISO 13485:2016', description: 'Quality management systems' },
-    { id: 'MEDDEV_271', name: 'MEDDEV 2.7/1 Rev 4', description: 'Clinical evaluation guidance' },
-    { id: 'IVDR_2017746', name: 'EU IVDR 2017/746', description: 'In Vitro Diagnostic Regulation' },
-    { id: 'FDA_21CFR820', name: 'FDA 21 CFR 820', description: 'Quality System Regulation' },
-    { id: 'IMDRF_MDCE', name: 'IMDRF MDCE', description: 'Medical Device Clinical Evaluation guidance' }
+    // CER Standards
+    { id: 'EU_MDR', name: 'EU MDR 2017/745', description: 'European Medical Device Regulation', category: 'cer' },
+    { id: 'ISO_14155', name: 'ISO 14155:2020', description: 'Clinical investigation of medical devices', category: 'cer' },
+    { id: 'FDA_21CFR812', name: 'FDA 21 CFR 812', description: 'Investigational Device Exemptions', category: 'cer' },
+    { id: 'ISO_13485', name: 'ISO 13485:2016', description: 'Quality management systems', category: 'cer' },
+    { id: 'MEDDEV_271', name: 'MEDDEV 2.7/1 Rev 4', description: 'Clinical evaluation guidance', category: 'cer' },
+    { id: 'IVDR_2017746', name: 'EU IVDR 2017/746', description: 'In Vitro Diagnostic Regulation', category: 'cer' },
+    { id: 'FDA_21CFR820', name: 'FDA 21 CFR 820', description: 'Quality System Regulation', category: 'cer' },
+    { id: 'IMDRF_MDCE', name: 'IMDRF MDCE', description: 'Medical Device Clinical Evaluation guidance', category: 'cer' },
+    
+    // 510(k) Standards
+    { id: 'FDA_510K', name: 'FDA 510(k)', description: 'FDA 510(k) Premarket Notification requirements', category: '510k' },
+    { id: 'FDA_ESTAR', name: 'FDA eSTAR Format', description: 'Electronic Submission Template And Resource', category: '510k' },
+    { id: 'FDA_21CFR807', name: 'FDA 21 CFR 807', description: 'Establishment Registration and Device Listing', category: '510k' },
+    { id: 'FDA_SUBSTANTIAL_EQUIVALENCE', name: 'Substantial Equivalence', description: 'FDA guidance on substantial equivalence demonstrations', category: '510k' },
+    { id: 'FDA_SPECIAL_CONTROLS', name: 'FDA Special Controls', description: 'Class II device special controls requirements', category: '510k' },
+    { id: 'FDA_PERFORMANCE_TESTING', name: 'Performance Testing', description: 'FDA device performance testing requirements', category: '510k' }
   ];
   
-  // Selected regulatory standards (default to EU MDR, ISO 14155, and FDA)
-  const [selectedStandards, setSelectedStandards] = useState(['EU_MDR', 'ISO_14155', 'FDA_21CFR812']);
+  // Set default selected standards based on template prop
+  const getDefaultStandards = () => {
+    if (props.template === 'fda-510k') {
+      return ['FDA_510K', 'FDA_ESTAR', 'FDA_21CFR807', 'FDA_SUBSTANTIAL_EQUIVALENCE'];
+    } else {
+      return ['EU_MDR', 'ISO_14155', 'FDA_21CFR812'];
+    }
+  };
+  
+  // Selected regulatory standards (set defaults based on template)
+  const [selectedStandards, setSelectedStandards] = useState(getDefaultStandards());
   
   // Function to run compliance analysis with optional custom sections
   const runComplianceAnalysis = async (customSections = null) => {
