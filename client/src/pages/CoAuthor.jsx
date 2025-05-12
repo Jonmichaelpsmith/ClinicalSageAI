@@ -24,7 +24,7 @@ import {
 import { validateDocument } from '@/services/ectdValidationService';
 
 export default function CoAuthor() {
-  const toast = useToast();
+  const { toast } = useToast();
   
   // Document state
   const [documents, setDocuments] = useState([]);
@@ -472,6 +472,12 @@ export default function CoAuthor() {
         title: "Vault Documents Loaded",
         description: `${vaultDocData.length} documents loaded from Vault DMS`
       });
+      
+      // Log for debugging
+      console.log("Toast would show:", {
+        title: "Vault Documents Loaded",
+        description: `${vaultDocData.length} documents loaded from Vault DMS`
+      });
     } catch (error) {
       console.error("Error fetching vault documents:", error);
       toast({
@@ -817,24 +823,82 @@ ${vaultDoc.name.includes('.pdf') ? '(This is a PDF document and cannot be edited
                     className="border-l-4 border-blue-600 pl-2 py-1 font-medium flex items-center justify-between cursor-pointer"
                     onClick={() => setCTDExpandedSections(prev => ({...prev, module1: !prev.module1}))}
                   >
-                    <span>Module 1: Administrative Information</span>
-                    {ctdExpandedSections.module1 ? 
-                      <ChevronDown className="h-4 w-4" /> : 
-                      <ChevronRight className="h-4 w-4" />
-                    }
+                    <div className="flex items-center">
+                      <FolderTree className="h-4 w-4 mr-2 text-blue-600" />
+                      <span>Module 1: Administrative</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Button 
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 mr-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          createCompiledDocument('module1');
+                        }}
+                        title="Compile Module"
+                      >
+                        <Archive className="h-3.5 w-3.5 text-slate-500" />
+                      </Button>
+                      {ctdExpandedSections.module1 ? 
+                        <ChevronDown className="h-4 w-4" /> : 
+                        <ChevronRight className="h-4 w-4" />
+                      }
+                    </div>
                   </div>
                   {ctdExpandedSections.module1 && (
                     <div className="pl-4 space-y-1">
-                      <div 
-                        className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
-                        onClick={() => handleCTDSectionClick('module1', '1.1', 'Cover Letter')}
-                      >
-                        <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                        Section 1.1: Cover Letter
-                        {selectedDocument?.section === '1.1' && (
-                          <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
-                        )}
-                      </div>
+                      {/* If we have Vault documents for module1, display them */}
+                      {vaultFolders.module1 && Object.keys(vaultFolders.module1).sort().map(section => (
+                        <div key={section}>
+                          {vaultFolders.module1[section].map(doc => (
+                            <div 
+                              key={doc.id}
+                              className={`flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer ${selectedDocument?.id === doc.id ? 'bg-slate-100' : ''}`}
+                              onClick={() => loadVaultDocument(doc.id)}
+                              title={`${doc.name} (Status: ${documentStatus[doc.id] || doc.status})`}
+                            >
+                              <FileText className={`h-4 w-4 mr-2 ${doc.name.endsWith('.pdf') ? 'text-red-400' : 'text-slate-400'}`} />
+                              <span className="truncate flex-1">{section}: {doc.name}</span>
+                              <Badge 
+                                className={`ml-2 h-5 text-[10px] ${
+                                  documentStatus[doc.id] === 'final' ? 'bg-green-100 text-green-700 border-green-200' : 
+                                  documentStatus[doc.id] === 'draft' ? 'bg-amber-100 text-amber-700 border-amber-200' : 
+                                  'bg-blue-100 text-blue-700 border-blue-200'
+                                }`}
+                              >
+                                {documentStatus[doc.id] || doc.status}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                      
+                      {/* If we don't have any Vault documents for this module, show default sections */}
+                      {(!vaultFolders.module1 || Object.keys(vaultFolders.module1).length === 0) && (
+                        <>
+                          <div 
+                            className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                            onClick={() => handleCTDSectionClick('module1', '1.1', 'Cover Letter')}
+                          >
+                            <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                            Section 1.1: Cover Letter
+                            {selectedDocument?.section === '1.1' && (
+                              <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                            )}
+                          </div>
+                          <div 
+                            className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                            onClick={() => handleCTDSectionClick('module1', '1.2', 'Application Information')}
+                          >
+                            <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                            Section 1.2: Application Information
+                            {selectedDocument?.section === '1.2' && (
+                              <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
                   
@@ -843,24 +907,167 @@ ${vaultDoc.name.includes('.pdf') ? '(This is a PDF document and cannot be edited
                     className="border-l-4 border-green-600 pl-2 py-1 font-medium flex items-center justify-between cursor-pointer"
                     onClick={() => setCTDExpandedSections(prev => ({...prev, module2: !prev.module2}))}
                   >
-                    <span>Module 2: Common Technical Document</span>
-                    {ctdExpandedSections.module2 ? 
-                      <ChevronDown className="h-4 w-4" /> : 
-                      <ChevronRight className="h-4 w-4" />
-                    }
+                    <div className="flex items-center">
+                      <FolderTree className="h-4 w-4 mr-2 text-green-600" />
+                      <span>Module 2: Common Technical Document</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Button 
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 mr-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          createCompiledDocument('module2');
+                        }}
+                        title="Compile Module"
+                      >
+                        <Archive className="h-3.5 w-3.5 text-slate-500" />
+                      </Button>
+                      {ctdExpandedSections.module2 ? 
+                        <ChevronDown className="h-4 w-4" /> : 
+                        <ChevronRight className="h-4 w-4" />
+                      }
+                    </div>
                   </div>
                   {ctdExpandedSections.module2 && (
                     <div className="pl-4 space-y-1">
-                      <div 
-                        className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
-                        onClick={() => handleCTDSectionClick('module2', '2.5', 'Clinical Overview')}
+                      {/* If we have Vault documents for module2, display them */}
+                      {vaultFolders.module2 && Object.keys(vaultFolders.module2).sort().map(section => (
+                        <div key={section}>
+                          {vaultFolders.module2[section].map(doc => (
+                            <div 
+                              key={doc.id}
+                              className={`flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer ${selectedDocument?.id === doc.id ? 'bg-slate-100' : ''}`}
+                              onClick={() => loadVaultDocument(doc.id)}
+                              title={`${doc.name} (Status: ${documentStatus[doc.id] || doc.status})`}
+                            >
+                              <FileText className={`h-4 w-4 mr-2 ${doc.name.endsWith('.pdf') ? 'text-red-400' : 'text-slate-400'}`} />
+                              <span className="truncate flex-1">{section}: {doc.name}</span>
+                              <Badge 
+                                className={`ml-2 h-5 text-[10px] ${
+                                  documentStatus[doc.id] === 'final' ? 'bg-green-100 text-green-700 border-green-200' : 
+                                  documentStatus[doc.id] === 'draft' ? 'bg-amber-100 text-amber-700 border-amber-200' : 
+                                  'bg-blue-100 text-blue-700 border-blue-200'
+                                }`}
+                              >
+                                {documentStatus[doc.id] || doc.status}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                      
+                      {/* If we don't have any Vault documents for this module, show default sections */}
+                      {(!vaultFolders.module2 || Object.keys(vaultFolders.module2).length === 0) && (
+                        <>
+                          <div 
+                            className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                            onClick={() => handleCTDSectionClick('module2', '2.5', 'Clinical Overview')}
+                          >
+                            <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                            <span>Section 2.5: Clinical Overview</span>
+                            {selectedDocument?.section === '2.5' && (
+                              <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                            )}
+                          </div>
+                          <div 
+                            className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                            onClick={() => handleCTDSectionClick('module2', '2.4', 'Nonclinical Overview')}
+                          >
+                            <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                            <span>Section 2.4: Nonclinical Overview</span>
+                            {selectedDocument?.section === '2.4' && (
+                              <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                  
+                  {/* Module 3 */}
+                  <div 
+                    className="border-l-4 border-purple-600 pl-2 py-1 font-medium flex items-center justify-between cursor-pointer"
+                    onClick={() => setCTDExpandedSections(prev => ({...prev, module3: !prev.module3}))}
+                  >
+                    <div className="flex items-center">
+                      <FolderTree className="h-4 w-4 mr-2 text-purple-600" />
+                      <span>Module 3: Quality</span>
+                    </div>
+                    <div className="flex items-center">
+                      <Button 
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 mr-1"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          createCompiledDocument('module3');
+                        }}
+                        title="Compile Module"
                       >
-                        <FileText className="h-4 w-4 mr-2 text-slate-600" />
-                        <span>Section 2.5: Clinical Overview</span>
-                        {selectedDocument?.section === '2.5' && (
-                          <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
-                        )}
-                      </div>
+                        <Archive className="h-3.5 w-3.5 text-slate-500" />
+                      </Button>
+                      {ctdExpandedSections.module3 ? 
+                        <ChevronDown className="h-4 w-4" /> : 
+                        <ChevronRight className="h-4 w-4" />
+                      }
+                    </div>
+                  </div>
+                  
+                  {ctdExpandedSections.module3 && (
+                    <div className="pl-4 space-y-1">
+                      {/* If we have Vault documents for module3, display them */}
+                      {vaultFolders.module3 && Object.keys(vaultFolders.module3).sort().map(section => (
+                        <div key={section}>
+                          {vaultFolders.module3[section].map(doc => (
+                            <div 
+                              key={doc.id}
+                              className={`flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer ${selectedDocument?.id === doc.id ? 'bg-slate-100' : ''}`}
+                              onClick={() => loadVaultDocument(doc.id)}
+                              title={`${doc.name} (Status: ${documentStatus[doc.id] || doc.status})`}
+                            >
+                              <FileText className={`h-4 w-4 mr-2 ${doc.name.endsWith('.pdf') ? 'text-red-400' : 'text-slate-400'}`} />
+                              <span className="truncate flex-1">{section}: {doc.name}</span>
+                              <Badge 
+                                className={`ml-2 h-5 text-[10px] ${
+                                  documentStatus[doc.id] === 'final' ? 'bg-green-100 text-green-700 border-green-200' : 
+                                  documentStatus[doc.id] === 'draft' ? 'bg-amber-100 text-amber-700 border-amber-200' : 
+                                  'bg-blue-100 text-blue-700 border-blue-200'
+                                }`}
+                              >
+                                {documentStatus[doc.id] || doc.status}
+                              </Badge>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                      
+                      {/* If we don't have any Vault documents for this module, show default sections */}
+                      {(!vaultFolders.module3 || Object.keys(vaultFolders.module3).length === 0) && (
+                        <>
+                          <div 
+                            className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                            onClick={() => handleCTDSectionClick('module3', '3.2.P', 'Drug Product')}
+                          >
+                            <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                            <span>Section 3.2.P: Drug Product</span>
+                            {selectedDocument?.section === '3.2.P' && (
+                              <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                            )}
+                          </div>
+                          <div 
+                            className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                            onClick={() => handleCTDSectionClick('module3', '3.2.S', 'Drug Substance')}
+                          >
+                            <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                            <span>Section 3.2.S: Drug Substance</span>
+                            {selectedDocument?.section === '3.2.S' && (
+                              <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                            )}
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
@@ -880,8 +1087,70 @@ ${vaultDoc.name.includes('.pdf') ? '(This is a PDF document and cannot be edited
                 <TabsContent value="editor">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center mb-2">
-                      <h3 className="text-sm font-medium">Document Editor</h3>
+                      <div className="flex items-center">
+                        <h3 className="text-sm font-medium">
+                          {selectedDocument ? (
+                            <span className="flex items-center">
+                              {selectedDocument.title}
+                              <Badge className="ml-2" variant={isDocumentLocked ? "outline" : "secondary"}>
+                                {isDocumentLocked ? "Locked" : selectedDocument.status || "Draft"}
+                              </Badge>
+                              {selectedDocument.id && selectedDocument.id.startsWith('v') && (
+                                <Badge className="ml-2 bg-blue-100 text-blue-700 border-blue-200">Vault</Badge>
+                              )}
+                            </span>
+                          ) : "Document Editor"}
+                        </h3>
+                      </div>
+                      
                       <div className="flex items-center space-x-2">
+                        {selectedDocument && selectedDocument.id && selectedDocument.id.startsWith('v') && (
+                          <>
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => {
+                                if (isDocumentLocked) {
+                                  unlockDocument(selectedDocument.id);
+                                } else {
+                                  lockDocument(selectedDocument.id);
+                                }
+                              }}
+                            >
+                              {isDocumentLocked ? (
+                                <>
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    <path d="M12 14v3"></path>
+                                  </svg>
+                                  Unlock
+                                </>
+                              ) : (
+                                <>
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1">
+                                    <rect width="18" height="11" x="3" y="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                    <path d="M12 14v3"></path>
+                                  </svg>
+                                  Lock
+                                </>
+                              )}
+                            </Button>
+                            
+                            <Button 
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newStatus = documentStatus[selectedDocument.id] === 'draft' ? 'final' : 'draft';
+                                changeDocumentStatus(selectedDocument.id, newStatus);
+                              }}
+                            >
+                              {documentStatus[selectedDocument.id] === 'final' ? 'Set Draft' : 'Set Final'}
+                            </Button>
+                          </>
+                        )}
+                        
                         <Button 
                           variant="outline" 
                           size="sm"
@@ -940,11 +1209,30 @@ ${documentContent}
                       </div>
                     </div>
                     
+                    {/* Document metadata from Vault */}
+                    {selectedDocument && selectedDocument.id && selectedDocument.id.startsWith('v') && (
+                      <div className="grid grid-cols-3 gap-3 mb-3 bg-slate-50 p-3 rounded-md text-sm">
+                        <div>
+                          <p className="font-medium text-slate-500">eCTD Section</p>
+                          <p>{selectedDocument.section}</p>
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-500">Status</p>
+                          <p className="capitalize">{documentStatus[selectedDocument.id] || selectedDocument.status}</p>
+                        </div>
+                        <div>
+                          <p className="font-medium text-slate-500">Module</p>
+                          <p className="capitalize">{selectedDocument.moduleId}</p>
+                        </div>
+                      </div>
+                    )}
+                    
                     <textarea 
                       className="w-full h-64 p-4 border rounded-md font-mono text-sm"
                       value={documentContent || "Select a document to edit or create a new document"}
                       onChange={(e) => setDocumentContent(e.target.value)}
                       placeholder="Document content will appear here"
+                      disabled={isDocumentLocked}
                     />
                     
                     <div className="bg-slate-50 p-3 rounded-md text-xs text-slate-600">
