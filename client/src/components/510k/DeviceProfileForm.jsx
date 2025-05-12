@@ -157,7 +157,11 @@ const DeviceProfileForm = ({ initialData = {}, onSave, onValidationError }) => {
     
     try {
       // Validate form data against schema
-      const validationResult = await validateDeviceProfile(formData);
+      const validationResponse = await FDA510kService.validateDeviceProfile(formData);
+      const validationResult = {
+        isValid: validationResponse.isValid,
+        errors: validationResponse.errors || []
+      };
       
       if (!validationResult.isValid) {
         // Convert validation errors to field-specific error messages

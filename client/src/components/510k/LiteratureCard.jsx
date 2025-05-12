@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { isFeatureEnabled } from '../../flags/featureFlags';
-import { FDA510kService } from '../../services/FDA510kService';
+import FDA510kService from '../../services/FDA510kService';
 
 /**
  * LiteratureCard component for finding relevant scientific literature for 510(k) submissions
