@@ -1,0 +1,200 @@
+### 5️⃣ Task 5: Pre-Submission QA & Compliance Checks
+
+**Goal:** Automatically verify that every required 510(k) section is present, correctly formatted, and adheres to FDA’s RTA checklist—surfacing actionable warnings and errors before export.
+
+---
+
+#### A. Compliance Rules Configuration
+
+1. **Rule Definitions:**
+   Create a JSON file listing all FDA RTA checklist items and section‐level requirements.
+
+   * **Path:** `server/config/complianceRules/510k.json`
+   * **Example Contents:**
+
+     ```jsonc
+     {
+       "requiredSections": [
+         "DeviceDescription",
+         "IntendedUse",
+         "PredicateComparison",
+         "PerformanceTesting",
+         "Biocompatibility",
+         "SoftwareValidation",
+         "Labeling",
+         "RiskAnalysis"
+       ],
+       "sectionChecks": {
+         "DeviceDescription": {
+           "minWordCount": 100,
+           "mustInclude": ["model number", "manufacturer"]
+         },
+         "PredicateComparison": {
+           "mustMention": ["substantial equivalence", "predicate"]
+         }
+       },
+       "rtaChecklist": [
+         { "id": "RTA1", "description": "Form FDA 3601 completed" },
+         { "id": "RTA2", "description": "Device description present" },
+         { "id": "RTA3", "description": "Substantial equivalence rationale present" },
+         // … etc …
+       ]
+     }
+     ```
+
+---
+
+#### B. ComplianceChecker Service
+
+1. **Path:** `server/services/ComplianceChecker.ts`
+
+2. **Implementation Skeleton:**
+
+   ```ts
+   import rules from '../config/complianceRules/510k.json';
+   import { getSectionText } from '../db';
+
+   export class ComplianceChecker {
+     static async run(projectId: string) {
+       const report: any = { sections: {}, rta: [] };
+
+       // 1) Section presence
+       for (const sec of rules.requiredSections) {
+         const text = await getSectionText(projectId, sec);
+         report.sections[sec] = {
+           present: !!text,
+           wordCount: text ? text.split(/\s+/).length : 0,
+           errors: []
+         };
+         if (!text) report.sections[sec].errors.push('Section missing');
+       }
+
+       // 2) Section‐specific checks
+       for (const [sec, checks] of Object.entries(rules.sectionChecks)) {
+         const secReport = report.sections[sec];
+         if (secReport.present) {
+           const txt = await getSectionText(projectId, sec).then(t => t.toLowerCase());
+           if (checks.mustInclude) {
+             for (const term of checks.mustInclude) {
+               if (!txt.includes(term)) secReport.errors.push(`Missing term: "${term}"`);
+             }
+           }
+           if (checks.minWordCount && secReport.wordCount < checks.minWordCount) {
+             secReport.errors.push(`Too short (<${checks.minWordCount} words)`);
+           }
+         }
+       }
+
+       // 3) RTA checklist
+       for (const item of rules.rtaChecklist) {
+         const ok = await this.checkRTAItem(projectId, item.id);
+         report.rta.push({ ...item, passed: ok });
+       }
+
+       return report;
+     }
+
+     // Example stub for RTA item check
+     private static async checkRTAItem(projectId: string, itemId: string) {
+       // e.g. if itemId === 'RTA1', verify form status in DB
+       // For now, assume true if form data exists:
+       if (itemId === 'RTA1') {
+         const form = await getFormStatus(projectId, 'FDA3601');
+         return form?.completed === true;
+       }
+       return true;
+     }
+   }
+   ```
+
+3. **API Route:**
+
+   * **Path:** `server/routes/510kRoutes.ts`
+   * **Endpoint:**
+
+     ```ts
+     router.get('/compliance/:projectId', async (req, res) => {
+       const report = await ComplianceChecker.run(req.params.projectId);
+       res.json(report);
+     });
+     ```
+
+---
+
+#### C. Compliance Report UI
+
+1. **Component:** `client/src/components/510k/ComplianceReport.jsx`
+
+2. **Skeleton:**
+
+   ```jsx
+   import React, { useEffect, useState } from 'react';
+   import { fetchComplianceReport } from '../../api/510k';
+
+   export default function ComplianceReport({ projectId }) {
+     const [report, setReport] = useState(null);
+
+     useEffect(() => {
+       fetchComplianceReport(projectId).then(setReport);
+     }, [projectId]);
+
+     if (!report) return <p>Running compliance checks…</p>;
+
+     return (
+       <div className="space-y-6">
+         <h3 className="text-xl font-semibold">Compliance Report</h3>
+
+         <section>
+           <h4 className="font-medium">Section Presence & Checks</h4>
+           {Object.entries(report.sections).map(([sec, data]) => (
+             <div key={sec} className="p-3 border rounded mb-2">
+               <strong>{sec}</strong> — {data.present ? 'Present' : 'Missing'}
+               <ul className="ml-4 list-disc">
+                 {data.present && <li>Word count: {data.wordCount}</li>}
+                 {data.errors.map((err,i) => <li key={i} className="text-red-600">{err}</li>)}
+               </ul>
+             </div>
+           ))}
+         </section>
+
+         <section>
+           <h4 className="font-medium">RTA Checklist</h4>
+           <ul className="ml-4 list-none">
+             {report.rta.map((item,i) => (
+               <li key={i} className="flex items-center">
+                 {item.passed 
+                   ? <span className="text-green-600 mr-2">✔</span> 
+                   : <span className="text-red-600 mr-2">✖</span>}
+                 {item.description}
+               </li>
+             ))}
+           </ul>
+         </section>
+       </div>
+     );
+   }
+   ```
+
+3. **Integration in Panel:**
+
+   ```jsx
+   // In KAutomationPanel.jsx:
+   <Card>
+     <h3>Pre-Submission Compliance</h3>
+     <ComplianceReport projectId={projectId} />
+   </Card>
+   ```
+
+---
+
+### 🔍 Next Steps
+
+1. **Add** `510k.json` rules file under `server/config/complianceRules/`.
+2. **Implement** `ComplianceChecker.ts` and its route.
+3. **Create** `ComplianceReport.jsx` in client, wire to the `/compliance` endpoint.
+4. **Test** scenarios: missing sections, rule violations, and RTA items.
+5. **Refine** error messages and add “Fix” suggestions (via AI) in future iterations.
+
+---
+
+With Task 5 in place, your 510(k) module will proactively catch compliance gaps—ensuring submissions meet FDA standards before you ever build the eSTAR package.

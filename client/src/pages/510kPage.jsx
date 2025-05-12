@@ -121,7 +121,7 @@ const FDA510kPage = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-5 mb-8">
+        <TabsList className="grid grid-cols-6 mb-8">
           <TabsTrigger value="deviceProfile" className="flex items-center">
             <Database className="h-4 w-4 mr-2" />
             Device Profile
@@ -142,6 +142,14 @@ const FDA510kPage = () => {
           >
             <Clipboard className="h-4 w-4 mr-2" />
             Predicate Analysis
+          </TabsTrigger>
+          <TabsTrigger 
+            value="equivalenceDraft" 
+            className="flex items-center"
+            disabled={!deviceProfile || !isPathwayAdvisorEnabled || !predicateDevice}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            SE Draft
           </TabsTrigger>
           <TabsTrigger 
             value="literatureDiscovery" 
@@ -222,6 +230,33 @@ const FDA510kPage = () => {
                 <CardTitle>Predicate Analysis</CardTitle>
                 <CardDescription>
                   This feature is not enabled for your organization.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="equivalenceDraft" className="space-y-4">
+          {isPathwayAdvisorEnabled && predicateDevice ? (
+            <EquivalenceDraft
+              projectId={deviceProfile?.id}
+              onAddToReport={(draftText) => {
+                toast({
+                  title: "Draft Added",
+                  description: "Substantial Equivalence section added to your 510(k) report"
+                });
+                // Navigate to document recommendations after adding the draft to the report
+                setActiveTab("documentRecommender");
+              }}
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Substantial Equivalence Draft</CardTitle>
+                <CardDescription>
+                  {!predicateDevice 
+                    ? "Please complete the Predicate Analysis step first." 
+                    : "This feature is not enabled for your organization."}
                 </CardDescription>
               </CardHeader>
             </Card>
