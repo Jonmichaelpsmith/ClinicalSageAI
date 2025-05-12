@@ -15,7 +15,8 @@ import {
   PredicateAnalysis, 
   EnhancedLiteratureDiscovery,
   PathwayAdvisorCard,
-  EquivalenceDraft
+  EquivalenceDraft,
+  ComplianceChecker
 } from '../components/510k';
 import { DocumentSectionRecommender } from '../components/documentrecommender';
 
@@ -41,6 +42,7 @@ const FDA510kPage = () => {
   const isLiteratureDiscoveryEnabled = isFeatureEnabled('ENABLE_LITERATURE_DISCOVERY', currentOrganization?.id);
   const isPathwayAdvisorEnabled = isFeatureEnabled('ENABLE_PATHWAY_ADVISOR', currentOrganization?.id);
   const isEquivalenceDraftingEnabled = isFeatureEnabled('ENABLE_EQUIVALENCE_DRAFTING', currentOrganization?.id);
+  const isComplianceCheckerEnabled = isFeatureEnabled('ENABLE_COMPLIANCE_CHECKER', currentOrganization?.id);
 
   // Load device profile if available
   useEffect(() => {
@@ -122,7 +124,7 @@ const FDA510kPage = () => {
       </div>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-6 mb-8">
+        <TabsList className="grid grid-cols-7 mb-8">
           <TabsTrigger value="deviceProfile" className="flex items-center">
             <Database className="h-4 w-4 mr-2" />
             Device Profile
@@ -167,6 +169,16 @@ const FDA510kPage = () => {
           >
             <BookOpen className="h-4 w-4 mr-2" />
             Document Recommendations
+          </TabsTrigger>
+          <TabsTrigger 
+            value="complianceChecker" 
+            className="flex items-center"
+            disabled={!deviceProfile || !isComplianceCheckerEnabled}
+          >
+            <svg className="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Compliance Check
           </TabsTrigger>
         </TabsList>
         
@@ -298,6 +310,23 @@ const FDA510kPage = () => {
             <Card>
               <CardHeader>
                 <CardTitle>Document Recommendations</CardTitle>
+                <CardDescription>
+                  This feature is not enabled for your organization.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="complianceChecker" className="space-y-4">
+          {isComplianceCheckerEnabled ? (
+            <ComplianceChecker 
+              projectId={deviceProfile?.id || "demo-project-id"} 
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>Compliance Checker</CardTitle>
                 <CardDescription>
                   This feature is not enabled for your organization.
                 </CardDescription>
