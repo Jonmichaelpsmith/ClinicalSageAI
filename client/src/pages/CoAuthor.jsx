@@ -130,6 +130,75 @@ const GoogleIcon = ({ className }) => (
   </svg>
 );
 
+/**
+ * Creates content chunks from a document for embedding generation
+ * @param {Object} document - The document to chunk
+ * @returns {Array} - Array of content chunks with metadata
+ */
+const createContentChunks = (document) => {
+  if (!document) return [];
+  
+  // Extract text content from document
+  // In a real implementation, we would parse HTML or other formats
+  // and extract proper text content with section metadata
+  
+  const documentContent = document.content || "No content available";
+  const sections = [];
+  
+  // Process each section if available
+  if (document.sections && Array.isArray(document.sections)) {
+    document.sections.forEach((section, index) => {
+      sections.push({
+        text: section.content || `Content for section ${index + 1}`,
+        metadata: {
+          section: section.title || `Section ${index + 1}`,
+          chunkIndex: index,
+          sectionType: section.type || 'unknown'
+        }
+      });
+    });
+  } else {
+    // If no sections, create chunks based on paragraphs
+    const paragraphs = documentContent.split('\n\n').filter(p => p.trim().length > 0);
+    paragraphs.forEach((paragraph, index) => {
+      if (paragraph.length > 20) { // Only include substantial paragraphs
+        sections.push({
+          text: paragraph,
+          metadata: {
+            section: `Paragraph ${index + 1}`,
+            chunkIndex: index,
+            sectionType: 'paragraph'
+          }
+        });
+      }
+    });
+  }
+  
+  // If no content was extracted, add a placeholder
+  if (sections.length === 0) {
+    sections.push({
+      text: `Document: ${document.title || 'Untitled'}`,
+      metadata: {
+        section: 'Document Overview',
+        chunkIndex: 0,
+        sectionType: 'overview'
+      }
+    });
+  }
+  
+  return sections;
+};
+
+/**
+ * Generates a fake embedding vector for simulation purposes
+ * @returns {Array} - Array of floats representing an embedding vector
+ */
+const generateFakeEmbedding = () => {
+  // Generate a random 128-dimension embedding vector
+  // In a real implementation, this would come from OpenAI or other embedding API
+  return Array.from({ length: 128 }, () => (Math.random() * 2) - 1);
+};
+
 export default function CoAuthor() {
   // Component state
   const [isTreeOpen, setIsTreeOpen] = useState(false);
