@@ -16,7 +16,7 @@
  * should be prevented. This is the golden source implementation.
  */
 
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +24,13 @@ import { Progress } from '@/components/ui/progress';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
+import { Input } from '@/components/ui/input';
+
+// TipTap editor imports 
+// (These will be used once packages are installed, include them now for preparation)
+// import { useEditor, EditorContent } from '@tiptap/react';
+// import StarterKit from '@tiptap/starter-kit';
+// import Placeholder from '@tiptap/extension-placeholder';
 
 // Import Google Docs services
 import * as googleDocsService from '../services/googleDocsService';
@@ -48,6 +55,10 @@ import {
   ChevronDown,
   ChevronRight,
   ChevronLeft,
+  Table,
+  BarChart3,
+  Plus,
+  Loader2,
   ExternalLink,
   FilePlus2,
   Upload,
