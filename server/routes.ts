@@ -85,6 +85,11 @@ declare module './routes/auth.js' {
   export default router;
 }
 
+declare module './routes/510k-literature-routes' {
+  const router: express.Router;
+  export default router;
+}
+
 // Import routes after declaring the modules
 import indWizardRouter from './routes/indWizardAPI.js';
 import cerRouter from './routes/cer-final.js';
@@ -93,6 +98,7 @@ import literatureRouter from './routes/literature.js';
 import literatureReviewRouter from './routes/literature-review.js';
 import documentRouter from './routes/document-routes';
 import vaultRouter from './routes/vault-routes';
+import { router as literatureEnhancedRouter } from './routes/510k-literature-routes';
 import organizationsRouter from './routes/organizations-routes';  // Add organizations router
 // Regulatory submissions functionality removed as per client request
 import emergencyFixRouter from './routes/emergency-fix.js';
@@ -230,6 +236,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register 510(k) Equivalence API routes
   app.use('/api/510k', fda510kEquivalenceRouter);
+  
+  // Register 510(k) Literature API routes
+  app.use('/api/510k/literature', fda510kLiteratureRouter);
   
   // Register Section Recommender API routes
   app.use('/api/section-recommender', sectionRecommenderRouter);
