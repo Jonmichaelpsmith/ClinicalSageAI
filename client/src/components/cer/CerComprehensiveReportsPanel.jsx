@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { 
   BarChart3, FileText, Download, Calendar, Users, 
-  CheckCircle, AlertTriangle, FileBarChart2, FileCheck
+  CheckCircle, AlertTriangle, FileBarChart2, FileCheck,
+  Trophy, ShieldCheck
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
