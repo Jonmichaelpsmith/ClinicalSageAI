@@ -156,7 +156,11 @@ export default function CERV2Page() {
             <span>Documents</span>
             <span className="text-[0.65rem] text-blue-600">Validated for GxP</span>
           </div>, icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-          { id: "data-retrieval", label: "Data Retrieval", icon: <Database className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
+          { id: "data-retrieval", label: "Data Retrieval", icon: <Database className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
+          { id: "510k", label: <div className="flex flex-col items-center leading-tight">
+            <span>510(k) Automation</span>
+            <span className="text-[0.65rem] text-blue-600">FDA Submission</span>
+          </div>, icon: <Archive className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
         ]
       },
       {
@@ -614,6 +618,14 @@ export default function CERV2Page() {
       );
     }
     
+    if (activeTab === '510k') {
+      return (
+        <div className="bg-white p-6 rounded-md shadow-sm border border-blue-100">
+          <KAutomationPanel />
+        </div>
+      );
+    }
+
     if (activeTab === 'reports') {
       return (
         <CerComprehensiveReportsPanel 
