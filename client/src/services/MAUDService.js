@@ -4,10 +4,15 @@
  * This service provides integration with the MAUD system for medical algorithm
  * validation and regulatory compliance tracking within the CER2V module.
  * 
- * GA-Ready with full production API integration
+ * GA-Ready with full production API integration, database persistence,
+ * and multi-tenant isolation for enterprise usage.
  */
 
-const API_BASE_URL = '/api/maud';
+// Get base URL from environment if available, otherwise use default
+const API_BASE_URL = import.meta.env.VITE_MAUD_API_URL || '/api/maud';
+
+// Check if MAUD integration is enabled
+const MAUD_ENABLED = import.meta.env.VITE_MAUD_INTEGRATION_ENABLED === 'true';
 
 // Error handling utility for API responses
 const handleApiResponse = async (response) => {
@@ -23,23 +28,42 @@ const handleApiResponse = async (response) => {
  * Fetch MAUD algorithm validation status for a specific CER document
  * 
  * @param {string} documentId - The CER document ID
+ * @param {string} organizationId - Optional organization ID for multi-tenant support
  * @returns {Promise<Object>} The validation status and details
  */
-export const getMAUDValidationStatus = async (documentId) => {
+export const getMAUDValidationStatus = async (documentId, organizationId = null) => {
+  // If MAUD integration is disabled, return a disabled status
+  if (!MAUD_ENABLED) {
+    return {
+      status: 'disabled',
+      message: 'MAUD validation is currently disabled. Contact your administrator to enable this feature.'
+    };
+  }
+
   try {
     // Get validation status from database or cache first
-    const cachedStatus = localStorage.getItem(`maud_status_${documentId}`);
+    const cacheKey = organizationId 
+      ? `maud_status_${organizationId}_${documentId}` 
+      : `maud_status_${documentId}`;
+    const cachedStatus = localStorage.getItem(cacheKey);
     
     // For quick loading, return cached result first if available (but still fetch fresh data)
     let status = cachedStatus ? JSON.parse(cachedStatus) : null;
     
     // Make API call to get latest status
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-API-Key': import.meta.env.VITE_MAUD_API_KEY || localStorage.getItem('MAUD_API_KEY')
+    };
+    
+    // Add organization ID for multi-tenant support if available
+    if (organizationId) {
+      headers['X-Organization-ID'] = organizationId;
+    }
+    
     const response = await fetch(`${API_BASE_URL}/validation-status/${documentId}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': process.env.MAUD_API_KEY || localStorage.getItem('MAUD_API_KEY')
-      }
+      headers
     });
     
     // If API call fails but we have cached data, return the cached data with a warning flag
@@ -54,10 +78,10 @@ export const getMAUDValidationStatus = async (documentId) => {
     status = await handleApiResponse(response);
     
     // Save to local storage for faster loading next time
-    localStorage.setItem(`maud_status_${documentId}`, JSON.stringify(status));
+    localStorage.setItem(cacheKey, JSON.stringify(status));
     
     // For GA readiness, ensure we format the data consistently even with API changes
-    return {
+    const formattedStatus = {
       status: status.validationStatus || status.status,
       validationId: status.validationId,
       timestamp: status.timestamp,
@@ -69,6 +93,13 @@ export const getMAUDValidationStatus = async (documentId) => {
         validationScore: status.validationScore || 0
       }
     };
+    
+    // Add tenant ID to the response for multi-tenant tracking
+    if (organizationId) {
+      formattedStatus.organizationId = organizationId;
+    }
+    
+    return formattedStatus;
   } catch (error) {
     console.error('Error fetching MAUD validation status:', error);
     
@@ -87,52 +118,87 @@ export const getMAUDValidationStatus = async (documentId) => {
  * 
  * @param {string} documentId - The CER document ID
  * @param {Object} documentData - The CER document data to validate
+ * @param {string} organizationId - Optional organization ID for multi-tenant support
  * @returns {Promise<Object>} The validation request confirmation
  */
-export const submitForMAUDValidation = async (documentId, documentData) => {
+export const submitForMAUDValidation = async (documentId, documentData, organizationId = null) => {
+  // If MAUD integration is disabled, return a disabled status
+  if (!MAUD_ENABLED) {
+    return {
+      status: 'disabled',
+      message: 'MAUD validation is currently disabled. Contact your administrator to enable this feature.'
+    };
+  }
+
   try {
     // Add additional metadata for validation request
     const validationRequest = {
       documentId,
-      algorithms: documentData.selectedAlgorithms,
+      algorithms: documentData.selectedAlgorithms || [],
       metadata: {
         source: 'TrialSage CER2V',
         clientId: localStorage.getItem('clientId') || 'default',
+        organizationId: organizationId,
         timestamp: new Date().toISOString(),
-        priority: 'normal'
+        priority: documentData.priority || 'normal',
+        documentType: documentData.documentType || 'CER',
+        documentVersion: documentData.version || '1.0',
+        regulatoryFrameworks: documentData.regulatoryFrameworks || []
       }
     };
     
     // Make API call to submit for validation
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-API-Key': import.meta.env.VITE_MAUD_API_KEY || localStorage.getItem('MAUD_API_KEY')
+    };
+    
+    // Add organization ID for multi-tenant support if available
+    if (organizationId) {
+      headers['X-Organization-ID'] = organizationId;
+    }
+    
     const response = await fetch(`${API_BASE_URL}/validate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': process.env.MAUD_API_KEY || localStorage.getItem('MAUD_API_KEY')
-      },
+      headers,
       body: JSON.stringify(validationRequest)
     });
     
     const result = await handleApiResponse(response);
     
     // Keep track of pending validations locally for better UX
-    const pendingValidations = JSON.parse(localStorage.getItem('maud_pending_validations') || '[]');
+    // Get or create pending validations tracking with tenant support
+    const pendingValidationsKey = organizationId 
+      ? `maud_pending_validations_${organizationId}` 
+      : 'maud_pending_validations';
+    const pendingValidations = JSON.parse(localStorage.getItem(pendingValidationsKey) || '[]');
+    
+    // Add new pending validation
     pendingValidations.push({
       documentId,
       requestId: result.requestId,
       timestamp: new Date().toISOString(),
-      status: 'pending'
+      status: 'pending',
+      organizationId: organizationId
     });
-    localStorage.setItem('maud_pending_validations', JSON.stringify(pendingValidations));
+    
+    // Save updated pending validations list
+    localStorage.setItem(pendingValidationsKey, JSON.stringify(pendingValidations));
     
     // Update document status to reflect pending validation
     const status = {
       status: 'pending',
       requestId: result.requestId,
       timestamp: new Date().toISOString(),
-      estimatedCompletionTime: result.estimatedCompletionTime || new Date(Date.now() + 1800000).toISOString()
+      estimatedCompletionTime: result.estimatedCompletionTime || new Date(Date.now() + 1800000).toISOString(),
+      organizationId: organizationId
     };
-    localStorage.setItem(`maud_status_${documentId}`, JSON.stringify(status));
+    
+    // Use multi-tenant cache key
+    const cacheKey = organizationId 
+      ? `maud_status_${organizationId}_${documentId}` 
+      : `maud_status_${documentId}`;
+    localStorage.setItem(cacheKey, JSON.stringify(status));
     
     return {
       requestId: result.requestId,
@@ -152,13 +218,24 @@ export const submitForMAUDValidation = async (documentId, documentData) => {
 /**
  * Fetch available MAUD algorithms for CER validation
  * 
+ * @param {string} organizationId - Optional organization ID for multi-tenant support
  * @returns {Promise<Array>} List of available algorithms
  */
-export const getAvailableMAUDAlgorithms = async () => {
+export const getAvailableMAUDAlgorithms = async (organizationId = null) => {
+  // If MAUD integration is disabled, return empty list
+  if (!MAUD_ENABLED) {
+    return [];
+  }
+
   try {
-    // Check if we have cached algorithms
-    const cachedAlgorithms = localStorage.getItem('maud_available_algorithms');
-    const cacheTime = localStorage.getItem('maud_algorithms_cache_time');
+    // Create tenant-aware cache keys
+    const cacheKeySuffix = organizationId ? `_${organizationId}` : '';
+    const algorithmsKey = `maud_available_algorithms${cacheKeySuffix}`;
+    const cacheTimeKey = `maud_algorithms_cache_time${cacheKeySuffix}`;
+    
+    // Check if we have cached algorithms for this tenant
+    const cachedAlgorithms = localStorage.getItem(algorithmsKey);
+    const cacheTime = localStorage.getItem(cacheTimeKey);
     const cacheExpiration = 3600000; // 1 hour in milliseconds
     
     // Use cache if it's recent enough
@@ -166,13 +243,21 @@ export const getAvailableMAUDAlgorithms = async () => {
       return JSON.parse(cachedAlgorithms);
     }
     
-    // Make API call to get available algorithms
+    // Setup headers with tenant isolation
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-API-Key': import.meta.env.VITE_MAUD_API_KEY || localStorage.getItem('MAUD_API_KEY')
+    };
+    
+    // Add organization ID for multi-tenant support if available
+    if (organizationId) {
+      headers['X-Organization-ID'] = organizationId;
+    }
+    
+    // Make API call to get available algorithms with tenant isolation
     const response = await fetch(`${API_BASE_URL}/algorithms`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': process.env.MAUD_API_KEY || localStorage.getItem('MAUD_API_KEY')
-      }
+      headers
     });
     
     const algorithms = await handleApiResponse(response);
@@ -190,16 +275,19 @@ export const getAvailableMAUDAlgorithms = async () => {
       validationLevel: algorithm.validationLevel || algorithm.level || 'Standard'
     }));
     
-    // Cache the results for faster future loads
-    localStorage.setItem('maud_available_algorithms', JSON.stringify(validAlgorithms));
-    localStorage.setItem('maud_algorithms_cache_time', Date.now().toString());
+    // Cache the results for faster future loads with tenant isolation
+    localStorage.setItem(algorithmsKey, JSON.stringify(validAlgorithms));
+    localStorage.setItem(cacheTimeKey, Date.now().toString());
     
     return validAlgorithms;
   } catch (error) {
     console.error('Error fetching available MAUD algorithms:', error);
     
     // Try to use cached data even if it's expired when API fails
-    const cachedAlgorithms = localStorage.getItem('maud_available_algorithms');
+    const cacheKeySuffix = organizationId ? `_${organizationId}` : '';
+    const algorithmsKey = `maud_available_algorithms${cacheKeySuffix}`;
+    const cachedAlgorithms = localStorage.getItem(algorithmsKey);
+    
     if (cachedAlgorithms) {
       return JSON.parse(cachedAlgorithms);
     }
@@ -230,21 +318,78 @@ export const getAvailableMAUDAlgorithms = async () => {
  * Get validation history for a document
  * 
  * @param {string} documentId - The CER document ID
+ * @param {string} organizationId - Optional organization ID for multi-tenant support
  * @returns {Promise<Array>} List of validation history entries
  */
-export const getValidationHistory = async (documentId) => {
+export const getValidationHistory = async (documentId, organizationId = null) => {
+  // If MAUD integration is disabled, return empty history
+  if (!MAUD_ENABLED) {
+    return [];
+  }
+
   try {
+    // Get history from local cache first for faster loading
+    const cacheKey = organizationId 
+      ? `maud_history_${organizationId}_${documentId}` 
+      : `maud_history_${documentId}`;
+    const cachedHistory = localStorage.getItem(cacheKey);
+    
+    // Setup headers with tenant isolation
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-API-Key': import.meta.env.VITE_MAUD_API_KEY || localStorage.getItem('MAUD_API_KEY')
+    };
+    
+    // Add organization ID for multi-tenant support if available
+    if (organizationId) {
+      headers['X-Organization-ID'] = organizationId;
+    }
+    
+    // Make API call to get validation history with tenant isolation
     const response = await fetch(`${API_BASE_URL}/validation-history/${documentId}`, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': process.env.MAUD_API_KEY || localStorage.getItem('MAUD_API_KEY')
-      }
+      headers
     });
     
-    return await handleApiResponse(response);
+    // If API call fails but we have cached data, return the cached data with a warning flag
+    if (!response.ok && cachedHistory) {
+      const history = JSON.parse(cachedHistory);
+      
+      // Add warning to each history item
+      return history.map(item => ({
+        ...item,
+        warning: 'Using cached history data. Could not fetch latest validation history.'
+      }));
+    }
+    
+    // Process successful response
+    const history = await handleApiResponse(response);
+    
+    // Cache the history for faster loading next time
+    localStorage.setItem(cacheKey, JSON.stringify(history));
+    
+    return history;
   } catch (error) {
     console.error('Error fetching validation history:', error);
+    
+    // Try to return cached history when API errors out
+    try {
+      const cacheKey = organizationId 
+        ? `maud_history_${organizationId}_${documentId}` 
+        : `maud_history_${documentId}`;
+      const cachedHistory = localStorage.getItem(cacheKey);
+      
+      if (cachedHistory) {
+        const history = JSON.parse(cachedHistory);
+        return history.map(item => ({
+          ...item,
+          warning: 'Using cached history data. Could not fetch latest validation history.'
+        }));
+      }
+    } catch (cacheError) {
+      console.error('Error reading cached history:', cacheError);
+    }
+    
     return [];
   }
 };
@@ -254,23 +399,73 @@ export const getValidationHistory = async (documentId) => {
  * 
  * @param {string} documentId - The CER document ID
  * @param {string} validationId - The validation ID to export
+ * @param {string} organizationId - Optional organization ID for multi-tenant support
+ * @param {Object} exportOptions - Additional export options like format, includeSignature, etc.
  * @returns {Promise<Object>} Certificate data or download URL
  */
-export const exportValidationCertificate = async (documentId, validationId) => {
+export const exportValidationCertificate = async (
+  documentId, 
+  validationId, 
+  organizationId = null,
+  exportOptions = {}
+) => {
+  // If MAUD integration is disabled, return error
+  if (!MAUD_ENABLED) {
+    throw new Error('MAUD validation is currently disabled. Contact your administrator to enable this feature.');
+  }
+
   try {
+    // Setup headers with tenant isolation
+    const headers = {
+      'Content-Type': 'application/json',
+      'X-API-Key': import.meta.env.VITE_MAUD_API_KEY || localStorage.getItem('MAUD_API_KEY')
+    };
+    
+    // Add organization ID for multi-tenant support if available
+    if (organizationId) {
+      headers['X-Organization-ID'] = organizationId;
+    }
+    
+    // Prepare request payload
+    const payload = { 
+      documentId, 
+      validationId,
+      format: exportOptions.format || 'pdf',
+      includeDetails: exportOptions.includeDetails !== false,
+      includeSignature: exportOptions.includeSignature !== false,
+      includeTimestamp: exportOptions.includeTimestamp !== false,
+      includeQRCode: exportOptions.includeQRCode !== false,
+      issuer: exportOptions.issuer || 'TrialSage CER2V'
+    };
+    
+    // Make API call to export certificate
     const response = await fetch(`${API_BASE_URL}/export-certificate`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': process.env.MAUD_API_KEY || localStorage.getItem('MAUD_API_KEY')
-      },
-      body: JSON.stringify({ documentId, validationId })
+      headers,
+      body: JSON.stringify(payload)
     });
     
-    return await handleApiResponse(response);
+    // Handle successful response with certificate data or download link
+    const result = await handleApiResponse(response);
+    
+    // Cache certificate request to avoid unnecessary exports
+    const cacheKey = organizationId 
+      ? `maud_certificate_${organizationId}_${validationId}` 
+      : `maud_certificate_${validationId}`;
+      
+    // Only cache metadata, not the full certificate which could be large
+    localStorage.setItem(cacheKey, JSON.stringify({
+      validationId,
+      documentId,
+      exportTimestamp: new Date().toISOString(),
+      format: exportOptions.format || 'pdf',
+      downloadUrl: result.downloadUrl || null
+    }));
+    
+    return result;
   } catch (error) {
     console.error('Error exporting validation certificate:', error);
-    throw new Error('Failed to export validation certificate');
+    throw new Error(`Failed to export validation certificate: ${error.message}`);
   }
 };
 
