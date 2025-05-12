@@ -259,9 +259,12 @@ export default function CoAuthor() {
   const [embeddingInProgress, setEmbeddingInProgress] = useState(false);
   const [embeddingStatus, setEmbeddingStatus] = useState(null);
   
-  // Search result editing state
+  // Edit from search dialog state
   const [showEditFromSearchDialog, setShowEditFromSearchDialog] = useState(false);
   const [selectedSearchResult, setSelectedSearchResult] = useState(null);
+  const [editedContent, setEditedContent] = useState('');
+  const [propagateChanges, setPropagateChanges] = useState(true);
+  const [isEditingSaving, setIsEditingSaving] = useState(false);
   const [propagateChanges, setPropagateChanges] = useState(true);
   const [editedContent, setEditedContent] = useState('');
   const [isEditingSaving, setIsEditingSaving] = useState(false);
@@ -6947,6 +6950,109 @@ export default function CoAuthor() {
             >
               <Sparkles className="h-4 w-4 mr-2" />
               Find Similar Content
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Search Result Dialog */}
+      <Dialog open={showEditFromSearchDialog} onOpenChange={setShowEditFromSearchDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Pencil className="h-5 w-5 mr-2 text-blue-600" />
+              Edit Content
+            </DialogTitle>
+            <DialogDescription>
+              {selectedSearchResult && (
+                <div className="flex flex-col">
+                  <span>Editing content from <span className="font-medium">{selectedSearchResult.documentTitle}</span></span>
+                  <div className="flex items-center mt-1 text-xs text-slate-500">
+                    <FileText className="h-3 w-3 mr-1" />
+                    {selectedSearchResult.module} • {selectedSearchResult.section}
+                  </div>
+                </div>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <div className="flex flex-col mb-4">
+                <label htmlFor="editedContent" className="text-sm font-medium pb-2">Content</label>
+                <textarea
+                  id="editedContent"
+                  className="min-h-[200px] p-3 border rounded-md resize-y"
+                  placeholder="Edit the content here..."
+                  value={editedContent}
+                  onChange={(e) => setEditedContent(e.target.value)}
+                />
+              </div>
+              
+              <div className="flex items-center pt-2">
+                <input
+                  type="checkbox"
+                  id="propagateChanges"
+                  className="rounded border-gray-300 mr-2"
+                  checked={propagateChanges}
+                  onChange={(e) => setPropagateChanges(e.target.checked)}
+                />
+                <label htmlFor="propagateChanges" className="text-sm font-medium cursor-pointer">
+                  Propagate changes to all similar documents
+                </label>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <HelpCircle className="h-3.5 w-3.5 ml-1.5 text-slate-400" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <p>When enabled, changes will be applied to all documents that share similar content or belong to the same module. This ensures consistency across your regulatory documents.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+              
+              {propagateChanges && selectedSearchResult && (
+                <div className="bg-amber-50 text-amber-800 p-3 rounded-md border border-amber-200 text-xs mt-2">
+                  <div className="flex items-center">
+                    <AlertTriangle className="h-3.5 w-3.5 mr-1.5 text-amber-600" />
+                    <span className="font-medium">Changes will affect multiple documents</span>
+                  </div>
+                  <p className="mt-1">
+                    Your edits will be applied to all documents in module {selectedSearchResult.module} or with similar content. This helps maintain consistency across your dossier.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowEditFromSearchDialog(false)}
+              disabled={isEditingSaving}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              onClick={saveEditedContent}
+              disabled={isEditingSaving}
+              className="relative"
+            >
+              {isEditingSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving Changes...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 mr-2" />
+                  Save Changes {propagateChanges ? '(All Documents)' : ''}
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
