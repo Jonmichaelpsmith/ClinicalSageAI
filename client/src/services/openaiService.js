@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 // Initialize the OpenAI client
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: import.meta.env.VITE_OPENAI_API_KEY || '',
   dangerouslyAllowBrowser: true // Note: In production, API calls should be made server-side
 });
 
@@ -323,7 +323,7 @@ export async function assessRegulatoryCompliance(specificationData, regulatoryFr
 export async function analyzeRegulatoryCompliance(documentContent, moduleType, section) {
   try {
     // If OpenAI API key is missing, return simulated response
-    if (!process.env.OPENAI_API_KEY) {
+    if (!import.meta.env.VITE_OPENAI_API_KEY) {
       console.warn('OpenAI API key not available, returning simulated response');
       return simulateRegulatoryComplianceResponse(moduleType, section);
     }
