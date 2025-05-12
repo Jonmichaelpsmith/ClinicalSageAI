@@ -537,18 +537,44 @@ export default function CoAuthor() {
         type: 'narrative',
         moduleId: 'module1',
         section: '1.2',
+        description: 'Standard cover letter format for FDA New Drug Application submissions',
         schema: {
-          sections: ['Applicant Information', 'Product Information', 'Submission Details'],
+          sections: ['Applicant Information', 'Product Information', 'Submission Details', 'Regulatory History'],
           rules: {
-            required: ['Applicant Information', 'Product Information'],
-            wordCount: {min: 200, max: 1000}
+            required: ['Applicant Information', 'Product Information', 'Submission Details'],
+            wordCount: {min: 200, max: 1000},
+            validation: {
+              'Applicant Information': {
+                requiredElements: ['Company Name', 'Address', 'Contact Person', 'Phone', 'Email'],
+                message: 'Must include all required company contact information',
+                ichReference: 'FDA Guidance: Cover Letters and Information for NDA and BLA Submissions'
+              },
+              'Product Information': {
+                requiredElements: ['Proprietary Name', 'Established Name', 'Dosage Form', 'Strength', 'Route of Administration'],
+                message: 'Must include complete product identification information',
+                ichReference: 'FDA Guidance: Cover Letters and Information for NDA and BLA Submissions'
+              },
+              'Submission Details': {
+                requiredElements: ['Submission Type', 'Proposed Indication', 'User Fee ID', 'Date'],
+                message: 'Must specify submission type and related regulatory identifiers',
+                ichReference: 'FDA Guidance: Cover Letters and Information for NDA and BLA Submissions'
+              }
+            }
           }
         },
         regions: ['FDA', 'EMA'],
         metadata: {
           ichCompliant: true,
+          ichGuideline: 'FDA Guidance: Cover Letters for NDA and BLA Submissions',
+          ectdSection: '1.2',
           lastUpdated: '2025-04-15',
-          version: '1.1'
+          version: '1.1',
+          auditTrail: [
+            { date: '2025-01-22', user: 'Amanda Lewis', action: 'Created' },
+            { date: '2025-04-15', user: 'Robert Kim', action: 'Updated FDA requirements' }
+          ],
+          validationLevel: 'Required',
+          regulatoryRequirement: true
         },
         template: `<div class="border p-4 rounded">
           <h3 class="text-lg font-bold mb-4">NDA Cover Letter</h3>
@@ -559,7 +585,10 @@ export default function CoAuthor() {
           <p class="mb-4">[Insert product name, dosage form, strength, and intended use]</p>
           
           <h4 class="font-medium mb-2">Submission Details</h4>
-          <p>[Insert submission type, date, and reference information]</p>
+          <p class="mb-4">[Insert submission type, date, and reference information]</p>
+          
+          <h4 class="font-medium mb-2">Regulatory History</h4>
+          <p>[Insert previous meeting information, IND references, and other relevant history]</p>
         </div>`
       },
       {
@@ -568,18 +597,45 @@ export default function CoAuthor() {
         type: 'narrative',
         moduleId: 'module2',
         section: '2.5.6',
+        description: 'Structured framework for assessing benefit-risk balance per ICH M4E guidelines',
         schema: {
-          sections: ['Evidence of Benefits', 'Evidence of Risks', 'Benefit-Risk Summary'],
+          sections: ['Evidence of Benefits', 'Evidence of Risks', 'Benefit-Risk Assessment', 'Benefit-Risk Summary', 'Risk Management Strategies'],
           rules: {
-            required: ['Benefit-Risk Summary'],
-            wordCount: {min: 500, max: 2500}
+            required: ['Evidence of Benefits', 'Evidence of Risks', 'Benefit-Risk Summary'],
+            wordCount: {min: 500, max: 2500},
+            validation: {
+              'Evidence of Benefits': {
+                requiredElements: ['Efficacy Results', 'Clinical Significance', 'Statistical Analysis'],
+                message: 'Must summarize primary efficacy results with statistical significance',
+                ichReference: 'ICH M4E(R2) 2.5.6'
+              },
+              'Evidence of Risks': {
+                requiredElements: ['Safety Profile', 'Adverse Events', 'Serious Adverse Events'],
+                message: 'Must describe key safety findings including frequency and severity',
+                ichReference: 'ICH M4E(R2) 2.5.6'
+              },
+              'Benefit-Risk Summary': {
+                minLength: 100,
+                message: 'Must provide integrated assessment of overall benefit-risk balance',
+                ichReference: 'ICH M4E(R2) 2.5.6'
+              }
+            }
           }
         },
         regions: ['FDA', 'EMA', 'Health Canada', 'PMDA'],
         metadata: {
           ichCompliant: true,
+          ichGuideline: 'ICH M4E(R2) Common Technical Document',
+          ectdSection: '2.5.6',
           lastUpdated: '2025-05-01',
-          version: '3.1'
+          version: '3.1',
+          auditTrail: [
+            { date: '2024-07-18', user: 'John Davis', action: 'Created' },
+            { date: '2025-01-10', user: 'Emily Wilson', action: 'Updated risk assessment format' },
+            { date: '2025-05-01', user: 'Michael Chen', action: 'Added ICH M4E(R2) reference' }
+          ],
+          validationLevel: 'Required',
+          regulatoryRequirement: true
         },
         template: `<div class="border p-4 rounded">
           <h3 class="text-lg font-bold mb-4">Benefit-Risk Assessment Framework</h3>
@@ -589,8 +645,14 @@ export default function CoAuthor() {
           <h4 class="font-medium mb-2">Evidence of Risks</h4>
           <p class="mb-4">[Insert description of risks, including severity, frequency, and mitigation strategies]</p>
           
+          <h4 class="font-medium mb-2">Benefit-Risk Assessment</h4>
+          <p class="mb-4">[Insert analysis of benefits versus risks, including uncertainty considerations]</p>
+          
           <h4 class="font-medium mb-2">Benefit-Risk Summary</h4>
-          <p>[Insert integrated assessment of benefits and risks, concluding with overall benefit-risk determination]</p>
+          <p class="mb-4">[Insert integrated assessment of benefits and risks, concluding with overall benefit-risk determination]</p>
+          
+          <h4 class="font-medium mb-2">Risk Management Strategies</h4>
+          <p>[Insert proposed risk minimization measures and post-marketing surveillance plans]</p>
         </div>`
       }
     ],
@@ -603,19 +665,50 @@ export default function CoAuthor() {
         type: 'figure',
         moduleId: 'module2',
         section: '2.7.3',
+        description: 'Standardized forest plot for presenting efficacy results across subgroups',
         schema: {
-          elements: ['Title', 'Legend', 'Source Data Reference'],
+          elements: ['Title', 'Figure', 'Legend', 'Source Data Reference', 'Statistical Methods'],
           rules: {
-            required: ['Title', 'Source Data Reference'],
+            required: ['Title', 'Figure', 'Source Data Reference'],
             imageFormat: ['SVG', 'PNG', 'JPEG'],
-            resolution: {min: '300dpi'}
+            resolution: {min: '300dpi'},
+            validation: {
+              'Title': {
+                pattern: /^[A-Za-z0-9\s\-\(\):]+$/,
+                message: 'Must have clear descriptive title identifying the analysis',
+                ichReference: 'ICH E9 5.2.2'
+              },
+              'Figure': {
+                requiredElements: ['Treatment Groups', 'Effect Sizes', 'Confidence Intervals'],
+                message: 'Must display effect sizes with confidence intervals for all subgroups',
+                ichReference: 'ICH E3 11.4.2.2'
+              },
+              'Legend': {
+                minLength: 20,
+                message: 'Must explain all symbols, error bars, and interpretation guidance',
+                ichReference: 'ICH E3 Appendix IV'
+              },
+              'Source Data Reference': {
+                pattern: /^[A-Za-z0-9\s\-\.]+$/,
+                message: 'Must reference specific study and statistical analysis plan',
+                ichReference: 'ICH E3 11.4.2'
+              }
+            }
           }
         },
         regions: ['FDA', 'EMA', 'PMDA'],
         metadata: {
           ichCompliant: true,
+          ichGuideline: 'ICH E3 Clinical Study Reports',
+          ectdSection: '2.7.3',
           lastUpdated: '2025-03-10',
-          version: '1.2'
+          version: '1.2',
+          auditTrail: [
+            { date: '2024-12-03', user: 'Lisa Wang', action: 'Created' },
+            { date: '2025-03-10', user: 'James Miller', action: 'Updated statistical requirements' }
+          ],
+          validationLevel: 'Required',
+          regulatoryRequirement: true
         },
         template: `<div class="border p-4 rounded">
           <h4 class="text-lg font-medium mb-2">[Figure Title]</h4>
@@ -624,6 +717,7 @@ export default function CoAuthor() {
           </div>
           <p class="text-sm text-gray-500">Source: [Insert Data Source Reference]</p>
           <p class="text-sm italic mt-2">[Insert Figure Legend]</p>
+          <p class="text-xs text-gray-500 mt-2">Statistical Methods: [Insert statistical methods description]</p>
         </div>`
       }
     ]
