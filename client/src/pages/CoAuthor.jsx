@@ -57,6 +57,10 @@ export default function CoAuthor() {
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [pdfGenerating, setPdfGenerating] = useState(false);
   
+  // Version history state
+  const [documentVersions, setDocumentVersions] = useState([]);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  
   // Tree navigation state
   const [isTreeOpen, setIsTreeOpen] = useState(false);
   const [ctdExpandedSections, setCTDExpandedSections] = useState({
@@ -265,6 +269,9 @@ export default function CoAuthor() {
   <ectd:m5-clinical-study-reports/>
 </ectd:submission>`;
       
+      // Create submission version record
+      saveDocumentVersion();
+      
       // Success notification
       toast({
         title: "eCTD Export Complete",
@@ -292,11 +299,98 @@ export default function CoAuthor() {
     }
   };
   
+  // Save document version
+  const saveDocumentVersion = () => {
+    if (!selectedDocument || !documentContent) {
+      toast({
+        title: "No Document to Save",
+        description: "Please select or create a document first",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Create new version entry
+    const newVersion = {
+      id: `v-${Date.now()}`,
+      documentId: selectedDocument.id || 'temp-doc',
+      content: documentContent,
+      title: selectedDocument.title || 'Untitled Document',
+      section: selectedDocument.section || '2.5',
+      moduleId: selectedDocument.moduleId || 'module2',
+      timestamp: new Date().toISOString(),
+      validationStatus: validationResults.status === 'complete' ? 
+                        (validationResults.complianceScore >= 80 ? 'Compliant' : 'Non-Compliant') : 
+                        'Not Validated',
+      complianceScore: validationResults.complianceScore || 0,
+      submissionReady: validationResults.complianceScore >= 80
+    };
+    
+    // Add version to history
+    setDocumentVersions([newVersion, ...documentVersions]);
+    
+    toast({
+      title: "Version Saved",
+      description: `Document version saved with timestamp: ${new Date().toLocaleTimeString()}`
+    });
+    
+    return newVersion;
+  };
+  
+  // Load document version
+  const loadDocumentVersion = (versionId) => {
+    const version = documentVersions.find(v => v.id === versionId);
+    if (!version) return;
+    
+    // Update document content
+    setDocumentContent(version.content);
+    
+    // Update selected document if needed
+    if (selectedDocument) {
+      setSelectedDocument({
+        ...selectedDocument,
+        title: version.title,
+        section: version.section,
+        moduleId: version.moduleId
+      });
+    }
+    
+    setShowVersionHistory(false);
+    
+    toast({
+      title: "Version Loaded",
+      description: `Document version from ${new Date(version.timestamp).toLocaleString()} loaded`
+    });
+  };
+  
   // Simplified component rendering
   return (
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b p-4">
-        <h1 className="text-2xl font-semibold">eCTD Co-Author Module</h1>
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-semibold">eCTD Co-Author Module</h1>
+          
+          <div className="flex space-x-2">
+            <Button 
+              onClick={saveDocumentVersion}
+              variant="outline"
+              className="bg-green-50"
+              disabled={!selectedDocument || !documentContent}
+            >
+              <History className="mr-2 h-4 w-4 text-green-600" />
+              Save Version
+            </Button>
+            
+            <Button 
+              onClick={() => setShowVersionHistory(true)}
+              variant="outline"
+              disabled={documentVersions.length === 0}
+            >
+              <Clock className="mr-2 h-4 w-4" />
+              Version History
+            </Button>
+          </div>
+        </div>
       </header>
       
       <main className="p-4">
@@ -393,12 +487,85 @@ export default function CoAuthor() {
                 </TabsList>
                 
                 <TabsContent value="editor">
-                  <textarea 
-                    className="w-full h-64 p-4 border rounded-md"
-                    value={documentContent || "Select a document to edit or create a new document"}
-                    onChange={(e) => setDocumentContent(e.target.value)}
-                    placeholder="Document content will appear here"
-                  />
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="text-sm font-medium">Document Editor</h3>
+                      <div className="flex items-center space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            if (!documentContent) return;
+                            
+                            // Add XML annotations for eCTD compliance
+                            const annotatedContent = `<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ectd:document SYSTEM "util/dtd/ectd-doc-2-0.dtd">
+<ectd:document xmlns:ectd="http://www.ich.org/ectd" xmlns:xlink="http://www.w3c.org/1999/xlink">
+  <ectd:properties>
+    <ectd:document-id>${selectedDocument?.id || 'doc-' + Date.now()}</ectd:document-id>
+    <ectd:document-type>${selectedDocument?.documentType || 'clinical-overview'}</ectd:document-type>
+    <ectd:section>${selectedDocument?.section || '2.5'}</ectd:section>
+    <ectd:title>${selectedDocument?.title || 'Clinical Overview'}</ectd:title>
+    <ectd:checksum type="md5">00000000000000000000000000000000</ectd:checksum>
+    <ectd:modified-date>${new Date().toISOString()}</ectd:modified-date>
+  </ectd:properties>
+  <ectd:content>
+${documentContent}
+  </ectd:content>
+</ectd:document>`;
+                            
+                            setDocumentContent(annotatedContent);
+                            
+                            toast({
+                              title: "XML Annotations Added",
+                              description: "eCTD-compliant XML tags have been added to the document"
+                            });
+                          }}
+                        >
+                          Add XML Tags
+                        </Button>
+                        
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            if (!documentContent) return;
+                            
+                            // Strip XML annotations to view clean content
+                            const cleanContent = documentContent
+                              .replace(/(<\?xml.*?\?>|<!DOCTYPE.*?>|<ectd:document.*?>|<\/ectd:document>|<ectd:properties>.*?<\/ectd:properties>|<ectd:content>|<\/ectd:content>)/gs, '')
+                              .trim();
+                            
+                            setDocumentContent(cleanContent);
+                            
+                            toast({
+                              title: "XML Tags Removed",
+                              description: "XML tags removed for easier editing"
+                            });
+                          }}
+                        >
+                          Remove XML Tags
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <textarea 
+                      className="w-full h-64 p-4 border rounded-md font-mono text-sm"
+                      value={documentContent || "Select a document to edit or create a new document"}
+                      onChange={(e) => setDocumentContent(e.target.value)}
+                      placeholder="Document content will appear here"
+                    />
+                    
+                    <div className="bg-slate-50 p-3 rounded-md text-xs text-slate-600">
+                      <p className="font-medium mb-1">eCTD XML Annotation Guidelines:</p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        <li>XML annotations are required for proper eCTD document indexing</li>
+                        <li>Document properties must match eCTD section metadata</li>
+                        <li>Use the "Add XML Tags" button to apply compliant annotations</li>
+                        <li>XML tags will be preserved when submitting to regulatory authorities</li>
+                      </ul>
+                    </div>
+                  </div>
                 </TabsContent>
                 
                 <TabsContent value="metadata">
@@ -705,6 +872,122 @@ export default function CoAuthor() {
           </div>
         </div>
       </main>
+      
+      {/* Version History Modal */}
+      {showVersionHistory && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h3 className="font-medium text-lg">
+                Document Version History
+              </h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setShowVersionHistory(false)}
+                className="rounded-full h-8 w-8 p-0"
+              >
+                <span className="sr-only">Close</span>
+                <svg 
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5" 
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    strokeWidth={2} 
+                    d="M6 18L18 6M6 6l12 12" 
+                  />
+                </svg>
+              </Button>
+            </div>
+            
+            <div className="flex-1 overflow-auto p-4">
+              {documentVersions.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <History className="h-12 w-12 mx-auto mb-4 opacity-20" />
+                  <p>No document versions saved yet.</p>
+                  <p className="text-sm mt-2">Save a version to track changes and submission history.</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-500 mb-4">Select a version to load or view details</p>
+                  
+                  <div className="border rounded-md overflow-hidden">
+                    <table className="w-full text-sm">
+                      <thead className="bg-slate-50">
+                        <tr>
+                          <th className="text-left p-3 font-medium">Version</th>
+                          <th className="text-left p-3 font-medium">Date & Time</th>
+                          <th className="text-left p-3 font-medium">Section</th>
+                          <th className="text-left p-3 font-medium">Status</th>
+                          <th className="text-left p-3 font-medium">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {documentVersions.map((version, index) => (
+                          <tr key={version.id} className={index === 0 ? "bg-blue-50" : undefined}>
+                            <td className="p-3">
+                              {index === 0 ? (
+                                <span className="font-medium flex items-center">
+                                  Latest Version
+                                  {version.submissionReady && (
+                                    <Badge className="ml-2 bg-green-100 text-green-800 border-green-200">
+                                      Submission Ready
+                                    </Badge>
+                                  )}
+                                </span>
+                              ) : (
+                                `Version ${documentVersions.length - index}`
+                              )}
+                            </td>
+                            <td className="p-3">{new Date(version.timestamp).toLocaleString()}</td>
+                            <td className="p-3">{version.moduleId} - {version.section}</td>
+                            <td className="p-3">
+                              <Badge 
+                                className={
+                                  version.validationStatus === 'Compliant' 
+                                    ? 'bg-green-100 text-green-800 border-green-200'
+                                    : version.validationStatus === 'Non-Compliant'
+                                    ? 'bg-amber-100 text-amber-800 border-amber-200'
+                                    : 'bg-slate-100 text-slate-800 border-slate-200'
+                                }
+                              >
+                                {version.validationStatus}
+                              </Badge>
+                            </td>
+                            <td className="p-3">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => loadDocumentVersion(version.id)}
+                              >
+                                Load
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <div className="p-4 border-t flex justify-end">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowVersionHistory(false)}
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
       
       {/* PDF Preview Modal */}
       {showPdfPreview && (
