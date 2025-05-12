@@ -7,10 +7,11 @@
 
 import axios from 'axios';
 import { Pool } from 'pg';
-import { createClient } from '@supabase/supabase-js';
-import * as cheerio from 'cheerio';
-import { Database } from '../types/database';
-import { pgvector } from 'pgvector/pg';
+// Remove imports that might be causing issues
+// import { createClient } from '@supabase/supabase-js';
+// import * as cheerio from 'cheerio';
+// import { Database } from '../types/database';
+// import { pgvector } from 'pgvector/pg';
 import OpenAI from 'openai';
 
 // Initialize OpenAI client

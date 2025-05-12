@@ -106,6 +106,7 @@ import qmpRouter from './routes/qmp-api.js';
 import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
 import authRouter from './routes/auth.js';
 import maudRouter from './routes/maud-routes';
+import fda510kLiteratureRouter from './routes/510k-literature-routes';
 // Import existing router or create empty one
 import express from 'express';
 import * as fs from 'fs';
@@ -253,6 +254,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register MAUD validation API routes
   app.use('/api/maud', maudRouter);
+  
+  // Register 510(k) Literature API routes
+  app.use('/api/510k/literature', fda510kLiteratureRouter);
   
   // Register Authentication routes
   app.use('/auth', authRouter);
