@@ -503,6 +503,37 @@ export default function CoAuthor() {
     // Narrative blocks
     narratives: [
       {
+        id: 'narrative-1-2-cover',
+        name: 'NDA Cover Letter',
+        type: 'narrative',
+        moduleId: 'module1',
+        section: '1.2',
+        schema: {
+          sections: ['Applicant Information', 'Product Information', 'Submission Details'],
+          rules: {
+            required: ['Applicant Information', 'Product Information'],
+            wordCount: {min: 200, max: 1000}
+          }
+        },
+        regions: ['FDA', 'EMA'],
+        metadata: {
+          ichCompliant: true,
+          lastUpdated: '2025-04-15',
+          version: '1.1'
+        },
+        template: `<div class="border p-4 rounded">
+          <h3 class="text-lg font-bold mb-4">NDA Cover Letter</h3>
+          <h4 class="font-medium mb-2">Applicant Information</h4>
+          <p class="mb-4">[Insert applicant company name, address, and contact information]</p>
+          
+          <h4 class="font-medium mb-2">Product Information</h4>
+          <p class="mb-4">[Insert product name, dosage form, strength, and intended use]</p>
+          
+          <h4 class="font-medium mb-2">Submission Details</h4>
+          <p>[Insert submission type, date, and reference information]</p>
+        </div>`
+      },
+      {
         id: 'narrative-2-5-benefit-risk',
         name: 'Benefit-Risk Assessment Framework',
         type: 'narrative',
@@ -610,6 +641,9 @@ export default function CoAuthor() {
       regions: [
         { id: 201, name: 'FDA Module 1 Regional', region: 'US FDA', lastUpdated: '3 weeks ago' },
         { id: 202, name: 'EMA Module 1 Regional', region: 'EU EMA', lastUpdated: '1 month ago' }
+      ],
+      contentBlocks: [
+        'narrative-1-2-cover'
       ]
     }
   ]);
