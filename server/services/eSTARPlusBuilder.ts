@@ -5,7 +5,14 @@ import crypto from 'crypto';
 // Use require for now since the module imports are giving TS errors
 const xmlbuilder2 = require('xmlbuilder2');
 const Ajv = require('ajv');
-import * as openaiService from './openai-service';
+
+// Import OpenAI
+import OpenAI from 'openai';
+
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 import { db } from '../db';
 
 // Initialize Ajv schema validator
@@ -36,7 +43,7 @@ export class DigitalSigner {
     
     // Add signature to the manifest as a new element
     try {
-      const doc = create().fragment(manifest);
+      const doc = xmlbuilder2.create().fragment(manifest);
       const root = doc.root();
       
       // Add signature element
@@ -62,7 +69,7 @@ export class DigitalSigner {
    */
   static async verifySignature(signedManifest: string): Promise<{ valid: boolean; message: string }> {
     try {
-      const doc = create().fragment(signedManifest);
+      const doc = xmlbuilder2.create().fragment(signedManifest);
       const root = doc.root();
       
       if (!root || root.name !== 'estarSubmission') {
@@ -516,7 +523,7 @@ ${meta.manufacturer}
   ): Promise<string> {
     try {
       // Create XML document
-      const root = create()
+      const root = xmlbuilder2.create()
         .ele('estarSubmission')
           .ele('company').txt(meta.manufacturer).up()
           .ele('deviceName').txt(meta.deviceName).up()
