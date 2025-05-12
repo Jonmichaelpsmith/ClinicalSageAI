@@ -5751,85 +5751,231 @@ export default function CoAuthor() {
         </DialogContent>
       </Dialog>
       
-      {/* Smart Reuse Panel Dialog */}
+      {/* Smart Reuse Panel Dialog - Enhanced for Phase 6 */}
       <Dialog open={showSmartReusePanel} onOpenChange={setShowSmartReusePanel}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[700px]">
           <DialogHeader>
             <div className="flex items-center">
               <Sparkles className="h-5 w-5 mr-2 text-amber-500" />
               <DialogTitle>Smart Reuse</DialogTitle>
             </div>
             <DialogDescription>
-              Discover similar content from your approved documents that matches your selected text.
+              Find and reuse similar content from your approved documents using vector search technology.
             </DialogDescription>
           </DialogHeader>
           
-          <div className="border rounded-md p-3 bg-slate-50 mb-4">
-            <h4 className="text-sm font-medium mb-1">Your selected text:</h4>
+          <div className="border rounded-md p-3 bg-gradient-to-r from-amber-50 to-slate-50 mb-4">
+            <h4 className="text-sm font-medium mb-1 flex items-center">
+              <TextSelect className="h-4 w-4 mr-1 text-amber-600" />
+              Your selected text:
+            </h4>
             <p className="text-sm text-slate-700">
               {selectedText || "No text selected. Please select some text in the editor."}
             </p>
           </div>
           
+          {/* Search filters and controls */}
+          <div className="flex gap-2 items-center mb-4">
+            <div className="w-44">
+              <Select 
+                defaultValue="similarity"
+                onValueChange={(value) => {
+                  // Sort results based on selected criteria
+                  const sortedResults = [...similarContentResults];
+                  if (value === 'similarity') {
+                    sortedResults.sort((a, b) => b.similarity - a.similarity);
+                  } else if (value === 'recency') {
+                    // Sort by document recency (simulated)
+                    sortedResults.sort((a, b) => b.documentId.localeCompare(a.documentId));
+                  } else if (value === 'module') {
+                    // Sort by module
+                    sortedResults.sort((a, b) => a.module.localeCompare(b.module));
+                  }
+                  setSimilarContentResults(sortedResults);
+                }}
+              >
+                <SelectTrigger className="h-8 text-xs">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="similarity">Sort by Match %</SelectItem>
+                  <SelectItem value="recency">Sort by Recency</SelectItem>
+                  <SelectItem value="module">Sort by Module</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <Input 
+              placeholder="Filter results..."
+              className="h-8 text-xs flex-1"
+              onChange={(e) => {
+                const filterText = e.target.value.toLowerCase();
+                if (!filterText) {
+                  // If filter is cleared, refresh results from search
+                  findSimilarContent(selectedText);
+                  return;
+                }
+                
+                // Filter current results
+                const filteredResults = similarContentResults.filter(
+                  result => result.content.toLowerCase().includes(filterText) || 
+                            result.section.toLowerCase().includes(filterText) ||
+                            result.documentTitle.toLowerCase().includes(filterText) ||
+                            result.module.toLowerCase().includes(filterText)
+                );
+                setSimilarContentResults(filteredResults);
+              }}
+            />
+            
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  className="h-8 w-8 text-slate-700"
+                  onClick={() => findSimilarContent(selectedText)}
+                  disabled={!selectedText || isFindingSimilarContent}
+                >
+                  <RefreshCcw className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Refresh search results</TooltipContent>
+            </Tooltip>
+          </div>
+          
           {isFindingSimilarContent ? (
-            <div className="py-8 flex flex-col items-center justify-center">
-              <Loader2 className="h-8 w-8 animate-spin text-blue-500 mb-4" />
-              <p className="text-slate-500">Finding similar content...</p>
+            <div className="py-12 flex flex-col items-center justify-center">
+              <Loader2 className="h-10 w-10 animate-spin text-amber-500 mb-4" />
+              <p className="text-slate-500">Searching vectorized documents...</p>
+              <p className="text-xs text-slate-400 mt-1">Finding semantic matches across {vectorizedDocuments.length} indexed documents</p>
             </div>
           ) : similarContentResults.length > 0 ? (
-            <div className="space-y-3 max-h-[400px] overflow-y-auto">
-              <h4 className="text-sm font-medium">Similar content found:</h4>
+            <div className="space-y-3 max-h-[400px] overflow-y-auto p-1">
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium flex items-center">
+                  <Search className="h-4 w-4 mr-1 text-blue-600" />
+                  Results ({similarContentResults.length})
+                </h4>
+                {vectorizedDocuments.length > 0 && (
+                  <span className="text-xs text-slate-500">Searched across {vectorizedDocuments.length} documents</span>
+                )}
+              </div>
+              
               {similarContentResults.map((result, index) => (
-                <div key={index} className="border rounded-md p-3 bg-white">
+                <div 
+                  key={index} 
+                  className="border rounded-md p-3 bg-white hover:border-amber-300 hover:bg-amber-50 transition-colors duration-200"
+                >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center">
-                      <File className="h-4 w-4 mr-2 text-blue-500" />
+                      <FileText className="h-4 w-4 mr-2 text-blue-500" />
                       <span className="text-sm font-medium">{result.documentTitle}</span>
-                      <Badge variant="outline" className="ml-2 px-1 py-0 text-xs">
+                      <Badge 
+                        variant="outline" 
+                        className={`ml-2 px-1.5 py-0 text-xs ${
+                          result.similarity > 0.8 ? 'bg-green-100 text-green-800 border-green-200' :
+                          result.similarity > 0.6 ? 'bg-amber-100 text-amber-800 border-amber-200' :
+                          'bg-blue-100 text-blue-800 border-blue-200'
+                        }`}
+                      >
                         {(result.similarity * 100).toFixed(0)}% match
                       </Badge>
                     </div>
-                    <div className="text-xs text-slate-500">
-                      Module: {result.module}
-                    </div>
+                    <Badge variant="secondary" className="text-xs">
+                      {result.module}
+                    </Badge>
                   </div>
-                  <p className="text-sm text-slate-700 mb-2">{result.content}</p>
+                  
+                  <div className="bg-slate-50 p-2 rounded-md text-sm text-slate-700 mb-2 border border-slate-100">
+                    {result.content}
+                  </div>
+                  
                   <div className="flex justify-between items-center">
-                    <div className="text-xs text-slate-500">
-                      Section: {result.section}
+                    <div className="text-xs text-slate-500 flex items-center">
+                      <FileType className="h-3 w-3 mr-1" />
+                      {result.section}
                     </div>
-                    <Button 
-                      size="sm" 
-                      variant="secondary"
-                      className="text-xs"
-                      onClick={() => {
-                        // In a real implementation, we would insert the content into the editor
-                        toast({
-                          title: "Content Inserted",
-                          description: "The selected content has been inserted into your document.",
-                          variant: "default",
-                        });
-                        setShowSmartReusePanel(false);
-                      }}
-                    >
-                      <Copy className="h-3 w-3 mr-1" />
-                      Insert
-                    </Button>
+                    <div className="flex space-x-1">
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            size="sm" 
+                            variant="ghost"
+                            className="text-xs h-7 px-2"
+                            onClick={() => {
+                              navigator.clipboard.writeText(result.content);
+                              toast({
+                                title: "Copied to Clipboard",
+                                description: "Content copied to clipboard.",
+                                variant: "default",
+                              });
+                            }}
+                          >
+                            <Copy className="h-3 w-3 mr-1" />
+                            Copy
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Copy to clipboard</TooltipContent>
+                      </Tooltip>
+                      
+                      <Button 
+                        size="sm" 
+                        variant="default"
+                        className="text-xs h-7 px-2 bg-amber-600 hover:bg-amber-700"
+                        onClick={() => {
+                          // In a real implementation with Google Docs, we would:
+                          // 1. Use the Google Docs API to insert content
+                          // 2. Format the inserted content
+                          // 3. Return focus to the document
+                          
+                          toast({
+                            title: "Content Inserted",
+                            description: `Content from "${result.documentTitle}" inserted successfully.`,
+                            variant: "success",
+                          });
+                          setShowSmartReusePanel(false);
+                        }}
+                      >
+                        <Sparkles className="h-3 w-3 mr-1" />
+                        Insert
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="py-8 flex flex-col items-center justify-center text-center">
-              <SearchX className="h-8 w-8 text-slate-300 mb-4" />
+            <div className="py-12 flex flex-col items-center justify-center text-center">
+              <SearchX className="h-10 w-10 text-slate-300 mb-4" />
               <h3 className="text-lg font-medium">No similar content found</h3>
               <p className="text-sm text-slate-500 max-w-md mt-2">
-                Try selecting different text or creating more documents to improve search results.
+                {vectorizedDocuments.length > 0 
+                  ? "Try selecting different text or adding more specific keywords to your selection."
+                  : "No documents have been vectorized yet. Approve or publish documents to enable semantic search."}
               </p>
+              {vectorizedDocuments.length === 0 && (
+                <div className="mt-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      // Show the document lifecycle dialog to approve/publish documents
+                      setShowLifecycleDialog(true);
+                      setShowSmartReusePanel(false);
+                    }}
+                  >
+                    <GitBranch className="h-4 w-4 mr-1" />
+                    Manage Document Status
+                  </Button>
+                </div>
+              )}
             </div>
           )}
           
-          <DialogFooter>
+          <DialogFooter className="gap-2">
+            <div className="flex-1 text-xs text-slate-500">
+              {vectorizedDocuments.length > 0 && `${vectorizedDocuments.length} documents indexed for semantic search`}
+            </div>
             <Button 
               variant="outline" 
               onClick={() => setShowSmartReusePanel(false)}
@@ -5838,10 +5984,11 @@ export default function CoAuthor() {
             </Button>
             <Button 
               disabled={!selectedText || isFindingSimilarContent} 
+              variant="default"
               onClick={() => findSimilarContent(selectedText)}
             >
               <Sparkles className="h-4 w-4 mr-2" />
-              Refresh Results
+              Find Similar Content
             </Button>
           </DialogFooter>
         </DialogContent>
