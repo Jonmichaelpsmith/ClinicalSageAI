@@ -1,11 +1,13 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://trialsage.ai/schemas/deviceProfile.json",
+  "title": "Device Profile",
   "type": "object",
-  "required": ["name", "manufacturer", "intendedUse", "deviceClass"],
+  "required": ["deviceName", "manufacturer", "deviceClass", "intendedUse", "substantialEquivalencePredicate"],
   "properties": {
     "id": { "type": "string" },
-    "name": { "type": "string" },
-    "model": { "type": "string" },
+    "deviceName": { "type": "string" },
+    "modelNumber": { "type": "string" },
     "version": { "type": "string" },
     "manufacturer": { "type": "string" },
     "productCode": { "type": "string" },
@@ -15,7 +17,14 @@
     },
     "intendedUse": { "type": "string" },
     "indicationsForUse": { "type": "string" },
+    "technologyType": { "type": "string" },
+    "predicateDevice": { "type": "string" },
+    "substantialEquivalencePredicate": { "type": "string" },
     "medicalSpecialty": { "type": "string" },
+    "diagnosticCodes": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
     "predicates": {
       "type": "array",
       "items": { 

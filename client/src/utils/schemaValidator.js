@@ -1,130 +1,147 @@
-/**
- * Simple JSON Schema validator for device profiles
- * This provides basic validation without external dependencies
- */
+import Ajv from 'ajv';
+import deviceProfileSchema from '../schemas/deviceProfile.json';
+
+// Initialize Ajv
+const ajv = new Ajv({ allErrors: true });
+
+// Add schemas
+const validateDeviceProfileAjv = ajv.compile(deviceProfileSchema);
 
 /**
- * Validates data against a JSON schema
- * @param {Object} data - The data to validate
- * @param {Object} schema - The JSON schema to validate against
- * @returns {Object} - Validation result with isValid and errors properties
+ * Validate device profile data against JSON schema
+ * 
+ * @param {Object} data - The device profile data to validate
+ * @returns {Object} - Validation result with errors formatted for UI
  */
-export const validateAgainstSchema = (data, schema) => {
-  const errors = [];
+export const validateDeviceProfile = (data) => {
+  // Run validation
+  const isValid = validateDeviceProfileAjv(data);
   
-  // Check required fields
-  if (schema.required && Array.isArray(schema.required)) {
-    for (const requiredField of schema.required) {
-      if (data[requiredField] === undefined || data[requiredField] === null || data[requiredField] === '') {
-        errors.push({
-          field: requiredField,
-          message: `Field '${requiredField}' is required`
-        });
+  // Format errors for UI if validation failed
+  if (!isValid) {
+    const errors = (validateDeviceProfileAjv.errors || []).map(error => {
+      // Extract field name from error path
+      const field = error.instancePath.replace(/^\//, '') || error.params.missingProperty || 'unknown';
+      
+      // Format error message based on error type
+      let message = '';
+      
+      switch (error.keyword) {
+        case 'required':
+          message = `${error.params.missingProperty} is required`;
+          break;
+        case 'enum':
+          message = `${field} must be one of: ${error.params.allowedValues.join(', ')}`;
+          break;
+        case 'type':
+          message = `${field} must be a ${error.params.type}`;
+          break;
+        default:
+          message = error.message || 'Invalid value';
       }
-    }
-  }
-  
-  // Check property types and constraints
-  if (schema.properties) {
-    for (const [key, property] of Object.entries(schema.properties)) {
-      if (data[key] !== undefined && data[key] !== null) {
-        // Check type
-        if (property.type === 'string' && typeof data[key] !== 'string') {
-          errors.push({
-            field: key,
-            message: `Field '${key}' must be a string`
-          });
-        }
-        
-        if (property.type === 'number' && typeof data[key] !== 'number') {
-          errors.push({
-            field: key,
-            message: `Field '${key}' must be a number`
-          });
-        }
-        
-        if (property.type === 'boolean' && typeof data[key] !== 'boolean') {
-          errors.push({
-            field: key,
-            message: `Field '${key}' must be a boolean`
-          });
-        }
-        
-        if (property.type === 'array' && !Array.isArray(data[key])) {
-          errors.push({
-            field: key,
-            message: `Field '${key}' must be an array`
-          });
-        }
-        
-        // Check enum values
-        if (property.enum && !property.enum.includes(data[key])) {
-          errors.push({
-            field: key,
-            message: `Field '${key}' must be one of: ${property.enum.join(', ')}`
-          });
-        }
-        
-        // Validate array items if present
-        if (property.type === 'array' && Array.isArray(data[key]) && property.items) {
-          data[key].forEach((item, index) => {
-            if (property.items.type === 'object' && typeof item !== 'object') {
-              errors.push({
-                field: `${key}[${index}]`,
-                message: `Item at index ${index} must be an object`
-              });
-            }
-            
-            if (property.items.type === 'string' && typeof item !== 'string') {
-              errors.push({
-                field: `${key}[${index}]`,
-                message: `Item at index ${index} must be a string`
-              });
-            }
-          });
-        }
-      }
-    }
+      
+      return {
+        field,
+        message,
+        params: error.params,
+        raw: error
+      };
+    });
+    
+    return {
+      isValid: false,
+      errors
+    };
   }
   
   return {
-    isValid: errors.length === 0,
-    errors
+    isValid: true,
+    errors: []
   };
 };
 
 /**
- * Load a schema from the schemas directory
- * @param {string} schemaName - The name of the schema file (without .json extension)
- * @returns {Promise<Object>} - The schema object
+ * Validate schema with detailed error path mapping
+ * 
+ * This is a more generic validator that can be used for any schema
+ * 
+ * @param {Object} schema - JSON schema to validate against
+ * @param {Object} data - Data to validate
+ * @returns {Object} - Validation result with errors formatted for UI
  */
-export const loadSchema = async (schemaName) => {
-  try {
-    const schema = await import(`../schemas/${schemaName}.json`);
-    return schema.default || schema;
-  } catch (error) {
-    console.error(`Failed to load schema ${schemaName}:`, error);
-    throw new Error(`Schema ${schemaName} not found`);
-  }
-};
-
-/**
- * Validate device profile data against the device profile schema
- * @param {Object} deviceProfileData - The device profile data to validate
- * @returns {Promise<Object>} - Validation result
- */
-export const validateDeviceProfile = async (deviceProfileData) => {
-  try {
-    const schema = await loadSchema('deviceProfile');
-    return validateAgainstSchema(deviceProfileData, schema);
-  } catch (error) {
-    console.error('Error validating device profile:', error);
+export const validateSchema = (schema, data) => {
+  // Compile schema if it's not already compiled
+  const validate = typeof schema === 'function' ? schema : ajv.compile(schema);
+  
+  // Run validation
+  const isValid = validate(data);
+  
+  // Format errors for UI if validation failed
+  if (!isValid) {
+    const errors = (validate.errors || []).map(error => {
+      // Extract field name from error path
+      const fieldPath = error.instancePath.replace(/^\//, '').split('/');
+      const field = fieldPath.length ? fieldPath.join('.') : error.params.missingProperty || 'unknown';
+      
+      // Format user-friendly error message
+      let message = '';
+      
+      switch (error.keyword) {
+        case 'required':
+          message = `The field "${error.params.missingProperty}" is required`;
+          break;
+        case 'enum':
+          message = `"${field}" must be one of: ${error.params.allowedValues.join(', ')}`;
+          break;
+        case 'type':
+          message = `"${field}" must be a ${error.params.type}`;
+          break;
+        case 'format':
+          message = `"${field}" is not a valid ${error.params.format}`;
+          break;
+        case 'minimum':
+          message = `"${field}" must be greater than or equal to ${error.params.limit}`;
+          break;
+        case 'maximum':
+          message = `"${field}" must be less than or equal to ${error.params.limit}`;
+          break;
+        case 'minLength':
+          message = `"${field}" must be at least ${error.params.limit} characters`;
+          break;
+        case 'maxLength':
+          message = `"${field}" must be no more than ${error.params.limit} characters`;
+          break;
+        case 'pattern':
+          message = `"${field}" must match the pattern: ${error.params.pattern}`;
+          break;
+        default:
+          message = error.message || `Invalid value for "${field}"`;
+      }
+      
+      return {
+        path: fieldPath,
+        field,
+        message,
+        params: error.params,
+        keyword: error.keyword,
+        raw: error
+      };
+    });
+    
     return {
       isValid: false,
-      errors: [{
-        field: 'schema',
-        message: `Schema validation error: ${error.message}`
-      }]
+      errors
     };
   }
+  
+  return {
+    isValid: true,
+    errors: []
+  };
+};
+
+// Export all validators
+export default {
+  validateDeviceProfile,
+  validateSchema
 };

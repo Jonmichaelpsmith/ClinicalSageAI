@@ -96,6 +96,11 @@ import tenantSectionGatingRoutes from './routes/tenant-section-gating.js';
 app.use('/api/tenant-section-gating', tenantSectionGatingRoutes);
 console.log('Tenant Section Gating routes registered');
 
+// Import and register 510(k) automation routes
+import FDA510kRoutes from './routes/510kRoutes';
+app.use('/api/510k', FDA510kRoutes);
+console.log('FDA 510(k) Automation routes registered');
+
 // Import and register health check routes
 import { createHealthCheckRouter } from './routes/healthCheck';
 app.use('/api', createHealthCheckRouter(dbPool));
