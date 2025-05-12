@@ -341,7 +341,9 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
             <Button
               onClick={runComplianceAnalysis}
               disabled={analyzing || sections.length === 0}
-              className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+              className={`${template === 'fda-510k' 
+                ? 'bg-blue-700 hover:bg-blue-800' 
+                : 'bg-[#0F6CBD] hover:bg-[#115EA3]'} text-white`}
               size="sm"
             >
               {analyzing ? (
@@ -350,7 +352,13 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
                   <span>Analyzing...</span>
                 </>
               ) : (
-                <><BarChart4 className="h-3.5 w-3.5 mr-1.5" />Check Compliance</>
+                <>
+                  {template === 'fda-510k' 
+                    ? <Shield className="h-3.5 w-3.5 mr-1.5" />
+                    : <BarChart4 className="h-3.5 w-3.5 mr-1.5" />
+                  }
+                  {template === 'fda-510k' ? 'Check FDA Compliance' : 'Check Compliance'}
+                </>
               )}
             </Button>
           </div>
@@ -373,10 +381,13 @@ export default function ComplianceScorePanel({ sections, title = 'Clinical Evalu
             <div className="flex">
               <Info className="h-5 w-5 text-[#0F6CBD] mr-2 flex-shrink-0" />
               <div>
-                <p className="text-sm font-medium text-[#323130]">Regulatory Compliance Check</p>
+                <p className="text-sm font-medium text-[#323130]">
+                  {template === 'fda-510k' ? 'FDA 510(k) Compliance Check' : 'Regulatory Compliance Check'}
+                </p>
                 <p className="text-xs text-[#616161] mt-1">
-                  Click "Check Compliance" to analyze your report against EU MDR, FDA, and ISO 14155 standards.
-                  This will evaluate content quality, completeness, and alignment with regulatory requirements.
+                  {template === 'fda-510k' 
+                    ? 'Click "Check Compliance" to analyze your submission against FDA 510(k) and eSTAR requirements. This will evaluate substantial equivalence arguments, technical documentation, and readiness for FDA review.'
+                    : 'Click "Check Compliance" to analyze your report against EU MDR, FDA, and ISO 14155 standards. This will evaluate content quality, completeness, and alignment with regulatory requirements.'}
                 </p>
               </div>
             </div>
