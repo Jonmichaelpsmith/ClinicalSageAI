@@ -604,8 +604,8 @@ export default function CERV2Page() {
                 deviceType={deviceType}
                 onComplianceDataChange={(complianceData) => {
                   const existingIndex = sections.findIndex(
-                    section => section.type === 'compliance' || 
-                    (section.title && section.title.toLowerCase().includes('compliance'))
+                    section => section.type === 'fda-510k-compliance' || section.type === 'compliance' || 
+                    (section.title && section.title.toLowerCase().includes('fda') && section.title.toLowerCase().includes('compliance'))
                   );
                   
                   if (existingIndex >= 0) {
@@ -613,7 +613,7 @@ export default function CERV2Page() {
                     updatedSections[existingIndex] = {
                       ...updatedSections[existingIndex],
                       content: JSON.stringify(complianceData),
-                      type: 'compliance',
+                      type: 'fda-510k-compliance',
                       title: 'FDA 510(k) Compliance Assessment',
                       lastUpdated: new Date().toISOString()
                     };
@@ -626,7 +626,7 @@ export default function CERV2Page() {
                     });
                   } else {
                     setSections([...sections, {
-                      type: 'compliance',
+                      type: 'fda-510k-compliance',
                       title: 'FDA 510(k) Compliance Assessment',
                       content: JSON.stringify(complianceData),
                       lastUpdated: new Date().toISOString()
@@ -654,8 +654,8 @@ export default function CERV2Page() {
             deviceType={deviceType}
             onComplianceDataChange={(complianceData) => {
               const existingIndex = sections.findIndex(
-                section => section.type === 'compliance' || 
-                (section.title && section.title.toLowerCase().includes('compliance'))
+                section => section.type === 'eu-mdr-compliance' || section.type === 'compliance' || 
+                (section.title && section.title.toLowerCase().includes('regulatory') && section.title.toLowerCase().includes('compliance'))
               );
               
               if (existingIndex >= 0) {
@@ -663,7 +663,7 @@ export default function CERV2Page() {
                 updatedSections[existingIndex] = {
                   ...updatedSections[existingIndex],
                   content: JSON.stringify(complianceData),
-                  type: 'compliance',
+                  type: 'eu-mdr-compliance',
                   title: 'Regulatory Compliance Assessment',
                   lastUpdated: new Date().toISOString()
                 };
@@ -676,7 +676,7 @@ export default function CERV2Page() {
                 });
               } else {
                 setSections([...sections, {
-                  type: 'compliance',
+                  type: 'eu-mdr-compliance',
                   title: 'Regulatory Compliance Assessment',
                   content: JSON.stringify(complianceData),
                   lastUpdated: new Date().toISOString()
