@@ -1,84 +1,82 @@
-import { Router } from 'express';
-import eSTARPlusBuilder, { DigitalSigner } from '../services/eSTARPlusBuilder';
+import express from 'express';
 import path from 'path';
-import fs from 'fs';
+import { eSTARPlusBuilder, DigitalSigner, ESGClient } from '../services/eSTARPlusBuilder';
 
-const router = Router();
-
-/**
- * Build and download an eSTAR Plus package
- * POST /api/fda510k/build-estar-plus/:projectId
- */
-router.post('/build-estar-plus/:projectId', async (req, res) => {
-  try {
-    const { projectId } = req.params;
-    const { autoUpload, includeCoverLetter } = req.body;
-    
-    console.log(`Building eSTAR package for project ${projectId}`, {
-      autoUpload,
-      includeCoverLetter
-    });
-    
-    const result = await eSTARPlusBuilder.build(projectId, { 
-      includeCoverLetter: includeCoverLetter === true, 
-      autoUpload: autoUpload === true
-    });
-    
-    if (autoUpload) {
-      // If auto-uploaded, return the ESG status
-      res.json({ 
-        success: true,
-        downloadUrl: null, 
-        esgStatus: result.esgStatus 
-      });
-    } else {
-      // Otherwise, download the file
-      const fileName = path.basename(result.zipPath);
-      res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
-      res.setHeader('Content-Type', 'application/zip');
-      
-      if (fs.existsSync(result.zipPath)) {
-        const fileStream = fs.createReadStream(result.zipPath);
-        fileStream.pipe(res);
-      } else {
-        res.status(404).json({ success: false, error: 'Package file not found' });
-      }
-    }
-  } catch (error) {
-    console.error('Error building eSTAR package:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: error.message || 'Failed to build eSTAR package'
-    });
-  }
-});
+const router = express.Router();
 
 /**
  * Preview an eSTAR Plus package
  * POST /api/fda510k/preview-estar-plus/:projectId
  */
 router.post('/preview-estar-plus/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  const { includeCoverLetter = true } = req.body;
+  
   try {
-    const { projectId } = req.params;
-    const { includeCoverLetter } = req.body;
+    // Validate project ID
+    if (!projectId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Project ID is required' 
+      });
+    }
     
-    console.log(`Previewing eSTAR package for project ${projectId}`, {
+    // Generate preview data
+    const previewData = await eSTARPlusBuilder.preview(projectId, {
       includeCoverLetter
-    });
-    
-    const preview = await eSTARPlusBuilder.preview(projectId, { 
-      includeCoverLetter: includeCoverLetter === true
     });
     
     res.json({
       success: true,
-      ...preview
+      files: previewData.files,
+      aiComplianceReport: previewData.aiComplianceReport
     });
   } catch (error) {
     console.error('Error previewing eSTAR package:', error);
     res.status(500).json({ 
       success: false, 
-      error: error.message || 'Failed to preview eSTAR package'
+      message: error.message || 'Failed to preview eSTAR package' 
+    });
+  }
+});
+
+/**
+ * Build and download an eSTAR Plus package
+ * POST /api/fda510k/build-estar-plus/:projectId
+ */
+router.post('/build-estar-plus/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  const { 
+    includeCoverLetter = true,
+    autoUpload = false 
+  } = req.body;
+  
+  try {
+    // Validate project ID
+    if (!projectId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Project ID is required' 
+      });
+    }
+    
+    // Build the package
+    const result = await eSTARPlusBuilder.build(projectId, {
+      includeCoverLetter,
+      autoUpload
+    });
+    
+    res.json({
+      success: true,
+      packagePath: result.zipPath, // Use zipPath as packagePath
+      downloadUrl: result.downloadUrl || `/api/fda510k/download/${path.basename(result.zipPath)}`,
+      esgStatus: result.esgStatus
+    });
+  } catch (error) {
+    console.error('Error building eSTAR package:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Failed to build eSTAR package' 
     });
   }
 });
@@ -88,29 +86,25 @@ router.post('/preview-estar-plus/:projectId', async (req, res) => {
  * GET /api/fda510k/verify-signature/:projectId
  */
 router.get('/verify-signature/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  
   try {
-    const { projectId } = req.params;
+    // Retrieve latest manifest for the project
+    // This is a mock implementation - in production, you would fetch the actual manifest
+    const manifest = await eSTARPlusBuilder.getMockManifest(projectId);
     
-    // In a real implementation, this would get the signature from a stored manifest
-    // This is a simplified version that returns a mock response
-    
-    const result = {
-      valid: true,
-      message: 'Signature valid',
-      signedBy: 'TrialSage eSTAR System',
-      signedAt: new Date().toISOString(),
-      hashAlgorithm: 'HMAC-SHA256'
-    };
+    // Verify the signature
+    const verification = await DigitalSigner.verifySignature(manifest);
     
     res.json({
       success: true,
-      verification: result
+      verification
     });
   } catch (error) {
-    console.error('Error verifying signature:', error);
+    console.error('Error verifying digital signature:', error);
     res.status(500).json({ 
       success: false, 
-      error: error.message || 'Failed to verify signature'
+      message: error.message || 'Failed to verify digital signature' 
     });
   }
 });

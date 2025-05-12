@@ -420,6 +420,28 @@ export class eSTARPlusBuilder {
   }
   
   /**
+   * Get a mock XML manifest for testing signature verification
+   * 
+   * @param projectId Project ID to include in the manifest
+   * @returns Signed XML manifest string
+   */
+  static async getMockManifest(projectId: string): Promise<string> {
+    // Create a basic manifest
+    const meta = await this.getProjectMeta(projectId).catch(() => ({
+      manufacturer: 'ACME Medical Devices',
+      deviceName: 'Test Device',
+      sequence: '001',
+      submissionDate: new Date().toISOString()
+    }));
+    
+    // Build manifest XML
+    const manifest = await this.buildManifest(meta, this.getMockSections(), true);
+    
+    // Sign manifest
+    return DigitalSigner.signPackage(manifest);
+  }
+
+  /**
    * Generate mock sections for development and testing
    * 
    * @returns Array of mock section objects
