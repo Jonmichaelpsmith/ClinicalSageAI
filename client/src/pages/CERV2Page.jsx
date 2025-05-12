@@ -55,6 +55,7 @@ export default function CERV2Page() {
   const [isFetchingFaers, setIsFetchingFaers] = useState(false);
   const [isFetchingLiterature, setIsFetchingLiterature] = useState(false);
   const [activeTab, setActiveTab] = useState('builder');
+  console.log('Active Tab:', activeTab); // Debug helper
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
   const [exportTimestamp, setExportTimestamp] = useState(null);
