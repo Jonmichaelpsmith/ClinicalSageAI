@@ -883,22 +883,56 @@ export default function CoAuthor() {
    * @param {Object} metadata - Document metadata including id, title, version, etc.
    * @returns {Promise<Object|null>} - The created vectorized document or null if failed
    */
+  /**
+   * Creates vector embeddings for document content when it reaches Approved or Published status
+   * Enhanced for Phase 6 with improved chunking and metadata
+   * 
+   * @param {Array|string} documentContent - The document content (either content blocks or HTML)
+   * @param {Object} metadata - Document metadata including ID, title, version, etc.
+   * @returns {Promise<Object|null>} - The vectorized document or null if unsuccessful
+   */
   const createDocumentEmbeddings = async (documentContent, metadata) => {
     try {
+      // Check if a document with the same ID is already vectorized
+      const existingDocIndex = vectorizedDocuments.findIndex(doc => doc.id === metadata.id);
+      const isUpdate = existingDocIndex !== -1;
+      
       setEmbeddingInProgress(true);
-      setEmbeddingStatus({ status: 'processing', message: 'Creating document embeddings...' });
+      setEmbeddingStatus({ 
+        status: 'processing', 
+        message: isUpdate 
+          ? `Updating embeddings for document "${metadata.title}" (${metadata.version})...` 
+          : `Creating embeddings for document "${metadata.title}" (${metadata.version})...`
+      });
       
-      console.log('Creating embeddings for document:', metadata.title);
+      console.log(`${isUpdate ? 'Updating' : 'Creating'} embeddings for document:`, metadata.title);
       
-      // Break document into chunks for embedding
+      // Break document into semantic chunks for embedding
       const chunks = chunkDocumentContent(documentContent);
+      console.log(`Document chunked into ${chunks.length} semantic sections`);
       
-      // Create embeddings for each chunk
+      // Track embedding progress
+      let completedEmbeddings = 0;
+      const totalChunks = chunks.length;
+      const updateProgressStatus = () => {
+        completedEmbeddings++;
+        const percentComplete = Math.round((completedEmbeddings / totalChunks) * 100);
+        setEmbeddingStatus({ 
+          status: 'processing', 
+          message: `Processing document chunks: ${completedEmbeddings}/${totalChunks} (${percentComplete}%)` 
+        });
+      };
+      
+      // Create embeddings for each chunk with improved error handling
       const embeddingPromises = chunks.map(async (chunk, index) => {
         try {
-          // In a real implementation, we would call the OpenAI API here
-          // For now, we'll simulate the API call
+          // In a production environment, we would call the OpenAI API here
+          // For this implementation, we'll simulate the API call with a delay
+          // to simulate real embedding generation times
           const embedding = await simulateEmbeddingGeneration(chunk, index);
+          
+          // Update progress after each chunk is processed
+          updateProgressStatus();
           
           return {
             id: `emb-${metadata.id}-${index}`,
@@ -910,18 +944,47 @@ export default function CoAuthor() {
               documentVersion: metadata.version,
               module: metadata.module,
               section: chunk.section || 'unknown',
+              sectionType: chunk.atomType || 'text',
               chunkIndex: index,
-              timestamp: new Date().toISOString()
+              status: metadata.status,
+              timestamp: new Date().toISOString(),
+              lifecycle: {
+                lastUpdate: new Date().toISOString(),
+                status: metadata.status
+              }
             }
           };
         } catch (error) {
           console.error(`Error embedding chunk ${index}:`, error);
+          
+          // Log the issue but continue with other chunks
+          toast({
+            title: "Chunk Processing Warning",
+            description: `Issue with document section ${index + 1}. Continuing with remaining sections.`,
+            variant: "warning",
+          });
+          
+          // Update progress even for failed chunks
+          updateProgressStatus();
+          
           return null;
         }
       });
       
       const embeddings = await Promise.all(embeddingPromises);
       const validEmbeddings = embeddings.filter(emb => emb !== null);
+      
+      // If no valid embeddings were generated, throw an error
+      if (validEmbeddings.length === 0) {
+        throw new Error("No valid embeddings could be generated from document content");
+      }
+      
+      // Calculate document metrics for search relevance
+      const documentMetrics = {
+        averageChunkLength: validEmbeddings.reduce((sum, emb) => sum + emb.chunk.text.length, 0) / validEmbeddings.length,
+        totalTokenCount: validEmbeddings.reduce((sum, emb) => sum + (emb.chunk.text.split(/\s+/).length), 0),
+        sectionsCount: new Set(validEmbeddings.map(emb => emb.metadata.section)).size
+      };
       
       // In a production environment, we would store these embeddings in a vector database
       // For this implementation, we'll store them in state
@@ -930,28 +993,54 @@ export default function CoAuthor() {
         title: metadata.title,
         version: metadata.version,
         module: metadata.module,
+        status: metadata.status,
         embeddingCount: validEmbeddings.length,
+        metrics: documentMetrics,
         chunks: validEmbeddings,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
       
-      setVectorizedDocuments(prev => [...prev, newVectorizedDoc]);
-      
-      setEmbeddingStatus({ 
-        status: 'complete', 
-        message: `Successfully created ${validEmbeddings.length} embeddings for document "${metadata.title}"` 
-      });
-      
-      toast({
-        title: "Document Vectorized",
-        description: `Created ${validEmbeddings.length} semantic vectors for enhanced search capabilities.`,
-        variant: "success",
-      });
+      // Update state with the new vectorized document
+      if (isUpdate) {
+        // Replace existing document
+        setVectorizedDocuments(prev => 
+          prev.map(doc => doc.id === metadata.id ? newVectorizedDoc : doc)
+        );
+        
+        setEmbeddingStatus({ 
+          status: 'complete', 
+          message: `Updated ${validEmbeddings.length} embeddings for document "${metadata.title}" (v${metadata.version})` 
+        });
+        
+        toast({
+          title: "Document Vectors Updated",
+          description: `Updated ${validEmbeddings.length} semantic vectors for "${metadata.title}".`,
+          variant: "success",
+        });
+      } else {
+        // Add new document
+        setVectorizedDocuments(prev => [...prev, newVectorizedDoc]);
+        
+        setEmbeddingStatus({ 
+          status: 'complete', 
+          message: `Created ${validEmbeddings.length} embeddings for document "${metadata.title}" (v${metadata.version})` 
+        });
+        
+        toast({
+          title: "Document Vectorized",
+          description: `Created ${validEmbeddings.length} semantic vectors for enhanced search.`,
+          variant: "success",
+        });
+      }
       
       return newVectorizedDoc;
     } catch (error) {
       console.error('Error creating document embeddings:', error);
-      setEmbeddingStatus({ status: 'error', message: `Error creating embeddings: ${error.message}` });
+      setEmbeddingStatus({ 
+        status: 'error', 
+        message: `Error creating embeddings: ${error.message}` 
+      });
       
       toast({
         title: "Embedding Error",
@@ -970,8 +1059,15 @@ export default function CoAuthor() {
    * @param {Array|String} content - Document content to chunk
    * @returns {Array} Array of chunk objects with text and metadata
    */
+  /**
+   * Chunks document content into smaller, semantically meaningful pieces for embedding
+   * Enhanced for Phase 6 with improved chunking strategies
+   * 
+   * @param {Array|string} content - Either an array of content atoms or HTML string
+   * @returns {Array} - Array of chunks with metadata
+   */
   const chunkDocumentContent = (content) => {
-    // If the content is an array of atoms, process each atom
+    // If the content is an array of atoms (structured content), process each atom
     if (Array.isArray(content)) {
       let chunks = [];
       
@@ -983,12 +1079,21 @@ export default function CoAuthor() {
           atomText = atom.content.replace(/<[^>]*>/g, ' ').trim();
         }
         
+        // Skip empty chunks
+        if (!atomText) return;
+        
+        // Determine section hierarchy information
+        const sectionHierarchy = getSectionHierarchy(atom);
+        
         // Add metadata to the chunk
         chunks.push({
           text: atomText,
           atomId: atom.id,
           atomType: atom.type,
-          section: atom.section,
+          section: atom.section || 'Untitled Section',
+          sectionHierarchy,
+          contentLength: atomText.length,
+          tokens: atomText.split(/\s+/).length,
           index: atomIndex
         });
       });
@@ -996,15 +1101,61 @@ export default function CoAuthor() {
       return chunks;
     }
     
-    // If the content is HTML, break it into sections
+    // If the content is HTML, break it into sections using headers as delimiters
     if (typeof content === 'string' && content.includes('<')) {
-      // Simple HTML chunking - in a real implementation this would be more sophisticated
-      const sections = content.split(/<h[1-6][^>]*>/g);
-      return sections.map((section, index) => ({
-        text: section.replace(/<[^>]*>/g, ' ').trim(),
-        index,
-        section: `Section ${index + 1}`
-      }));
+      // Extract a title if available
+      const titleMatch = content.match(/<h1[^>]*>(.*?)<\/h1>/i);
+      const documentTitle = titleMatch ? titleMatch[1].trim() : 'Untitled Document';
+      
+      // HTML chunking with improved heading detection
+      const headingMatches = [...content.matchAll(/<h([1-6])[^>]*>(.*?)<\/h\1>/gi)];
+      
+      if (headingMatches.length === 0) {
+        // No headings found, split by paragraphs
+        const paragraphs = content.split(/<p[^>]*>|<\/p>/g).filter(p => p.trim());
+        return paragraphs.map((paragraph, index) => ({
+          text: paragraph.replace(/<[^>]*>/g, ' ').trim(),
+          index,
+          section: `Paragraph ${index + 1}`,
+          documentTitle,
+          contentLength: paragraph.length,
+          tokens: paragraph.replace(/<[^>]*>/g, ' ').trim().split(/\s+/).length
+        }));
+      }
+      
+      // Use headings to chunk the document
+      let chunks = [];
+      let lastIndex = 0;
+      
+      headingMatches.forEach((match, index) => {
+        const headingLevel = parseInt(match[1]);
+        const headingText = match[2].replace(/<[^>]*>/g, '').trim();
+        const matchIndex = match.index;
+        
+        // Get content between this heading and the next
+        let nextMatchIndex = (index < headingMatches.length - 1) ? headingMatches[index + 1].index : content.length;
+        let sectionContent = content.substring(matchIndex, nextMatchIndex);
+        
+        // Extract plain text
+        const plainText = sectionContent.replace(/<[^>]*>/g, ' ').trim();
+        
+        // Skip if section is empty
+        if (!plainText) return;
+        
+        chunks.push({
+          text: plainText,
+          index,
+          section: headingText,
+          level: headingLevel,
+          documentTitle,
+          contentLength: plainText.length,
+          tokens: plainText.split(/\s+/).length
+        });
+        
+        lastIndex = nextMatchIndex;
+      });
+      
+      return chunks;
     }
     
     // Default case - break plain text into chunks
@@ -1012,15 +1163,79 @@ export default function CoAuthor() {
     const chunkSize = 1000; // Characters per chunk
     
     for (let i = 0; i < content.length; i += chunkSize) {
+      const chunkText = content.slice(i, i + chunkSize);
       textChunks.push({
-        text: content.slice(i, i + chunkSize),
+        text: chunkText,
         index: Math.floor(i / chunkSize),
-        section: `Chunk ${Math.floor(i / chunkSize) + 1}`
+        section: `Chunk ${Math.floor(i / chunkSize) + 1}`,
+        contentLength: chunkText.length,
+        tokens: chunkText.split(/\s+/).length
       });
     }
     
     return textChunks;
   };
+  
+  /**
+   * Extracts section hierarchy information from a content atom
+   * This helps with organizing and structuring document chunks
+   * 
+   * @param {Object} atom - Content atom object
+   * @returns {Object} - Section hierarchy information
+   */
+  const getSectionHierarchy = (atom) => {
+    // Default hierarchy for atoms without specific section information
+    const defaultHierarchy = {
+      module: atom.module || 'Unknown Module',
+      section: atom.section || 'Unknown Section',
+      level: 1,
+      path: []
+    };
+    
+    // If the atom doesn't have section information, return default
+    if (!atom.section) return defaultHierarchy;
+    
+    // Try to parse ICH CTD section codes if present
+    const sectionMatch = atom.section.match(/^([0-9.]+)\s*(.*?)$/);
+    
+    if (sectionMatch) {
+      const sectionNumber = sectionMatch[1]; // e.g., "3.2.P.1"
+      const sectionTitle = sectionMatch[2]; // e.g., "Description and Composition"
+      
+      // Split the section number to get hierarchy
+      const path = sectionNumber.split('.');
+      
+      // Determine the CTD module from the first digit
+      let module = 'Unknown Module';
+      const firstDigit = parseInt(path[0]);
+      
+      if (firstDigit >= 1 && firstDigit <= 5) {
+        module = `Module ${firstDigit}`;
+      }
+      
+      return {
+        module,
+        section: atom.section,
+        sectionNumber,
+        sectionTitle: sectionTitle || atom.section,
+        level: path.length,
+        path,
+        isCtdFormat: true
+      };
+    }
+    
+    // If not CTD format but has module information
+    if (atom.module) {
+      return {
+        module: atom.module,
+        section: atom.section,
+        level: atom.level || 1,
+        path: [atom.module, atom.section],
+        isCtdFormat: false
+      };
+    }
+    
+    return defaultHierarchy;
   
   /**
    * Simulates embedding generation (would be replaced with actual OpenAI API call)
