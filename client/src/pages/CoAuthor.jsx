@@ -1342,9 +1342,9 @@ export default function CoAuthor() {
                                   return (
                                     <Badge 
                                       key={blockId}
-                                      className={`${bgColor} ${textColor} px-2 py-0.5 text-xs rounded`}
+                                      className={`${bgColor} ${textColor} h-5 px-2 justify-center text-xs rounded`}
                                     >
-                                      {icon}{block.section}
+                                      {block.section}
                                     </Badge>
                                   );
                                 })}
