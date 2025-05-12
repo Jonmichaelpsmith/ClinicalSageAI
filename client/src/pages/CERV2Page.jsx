@@ -38,6 +38,7 @@ export default function CERV2Page() {
   const [manufacturer, setManufacturer] = useState('');
   const [intendedUse, setIntendedUse] = useState('');
   const [faers, setFaers] = useState([]);
+  const [cerDocumentId, setCerDocumentId] = useState('');
   const [comparators, setComparators] = useState([]);
   const [sections, setSections] = useState([]);
   const [equivalenceData, setEquivalenceData] = useState(null);
@@ -455,7 +456,64 @@ export default function CERV2Page() {
     }
     
     // Add other tab content handlers for literature-review, internal-clinical-data, 
-    // documents, data-retrieval, equivalence, gspr-mapping, sota, compliance, assistant
+    // documents, data-retrieval, equivalence, gspr-mapping, sota, assistant
+    
+    if (activeTab === 'maud') {
+      return (
+        <MAUDIntegrationPanel 
+          documentId={cerDocumentId || "CER-" + Math.floor(100000 + Math.random() * 900000)}
+        />
+      );
+    }
+    
+    if (activeTab === 'compliance') {
+      return (
+        <ComplianceScorePanel
+          title="Regulatory Compliance Assessment"
+          description="Verify your CER against regulatory requirements and standards"
+          sections={sections}
+          template="eu-mdr"
+          deviceType={deviceType}
+          onComplianceDataChange={(complianceData) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'compliance' || 
+              (section.title && section.title.toLowerCase().includes('compliance'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: JSON.stringify(complianceData),
+                type: 'compliance',
+                title: 'Regulatory Compliance Assessment',
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "Compliance Check Updated",
+                description: "Your CER now includes the latest compliance assessment.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, {
+                type: 'compliance',
+                title: 'Regulatory Compliance Assessment',
+                content: JSON.stringify(complianceData),
+                lastUpdated: new Date().toISOString()
+              }]);
+              
+              toast({
+                title: "Compliance Check Added",
+                description: "Regulatory compliance assessment has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+        />
+      );
+    }
     
     if (activeTab === 'reports') {
       return (
