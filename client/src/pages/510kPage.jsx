@@ -343,6 +343,23 @@ const FDA510kPage = () => {
             </Card>
           )}
         </TabsContent>
+
+        <TabsContent value="packageAssembly" className="space-y-4">
+          {isFeatureEnabled('ENABLE_PACKAGE_ASSEMBLY') ? (
+            <PackagePreview 
+              projectId={deviceProfile?.id || "demo-project-id"} 
+            />
+          ) : (
+            <Card>
+              <CardHeader>
+                <CardTitle>eSTAR Package Assembly</CardTitle>
+                <CardDescription>
+                  This feature is not enabled for your organization.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          )}
+        </TabsContent>
       </Tabs>
     </div>
   );
