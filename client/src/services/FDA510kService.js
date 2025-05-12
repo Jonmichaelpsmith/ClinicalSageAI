@@ -16,7 +16,7 @@ class FDA510kService {
    * @param {boolean} options.includeCoverLetter - Whether to include AI-generated cover letter
    * @returns {Promise<Object>} - Preview data including files and compliance report
    */
-  async buildAndPreview(projectId, { includeCoverLetter = true } = {}) {
+  async previewESTARPackage(projectId, { includeCoverLetter = true } = {}) {
     try {
       const response = await axios.post(`/api/fda510k/preview-estar-plus/${projectId}`, {
         includeCoverLetter
@@ -38,7 +38,7 @@ class FDA510kService {
    * @param {boolean} options.autoUpload - Whether to auto-upload to FDA ESG
    * @returns {Promise<Object>} - Result object with download URL or ESG status
    */
-  async buildAndDownload(projectId, { includeCoverLetter = true, autoUpload = false } = {}) {
+  async buildESTARPackage(projectId, { includeCoverLetter = true, autoUpload = false } = {}) {
     try {
       const response = await axios.post(`/api/fda510k/build-estar-plus/${projectId}`, {
         includeCoverLetter,
@@ -58,13 +58,32 @@ class FDA510kService {
    * @param {string} projectId - The ID of the 510(k) project
    * @returns {Promise<Object>} - Verification result
    */
-  async verifyDigitalSignature(projectId) {
+  async verifySignature(projectId) {
     try {
       const response = await axios.get(`/api/fda510k/verify-signature/${projectId}`);
       return response.data;
     } catch (error) {
       console.error('Error verifying digital signature:', error);
       throw new Error(error.response?.data?.message || 'Failed to verify digital signature');
+    }
+  }
+  
+  /**
+   * Create default sections for a new 510(k) project
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {number} organizationId - The organization ID
+   * @returns {Promise<Object>} - Created sections
+   */
+  async createDefaultSections(projectId, organizationId) {
+    try {
+      const response = await axios.post(`/api/fda510k/create-default-sections/${projectId}`, {
+        organizationId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error creating default sections:', error);
+      throw new Error(error.response?.data?.message || 'Failed to create default sections');
     }
   }
 
@@ -121,3 +140,4 @@ class FDA510kService {
 // Create and export a singleton instance
 const fda510kService = new FDA510kService();
 export default fda510kService;
+export { fda510kService as FDA510kService };

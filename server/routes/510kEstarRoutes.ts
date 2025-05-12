@@ -69,7 +69,7 @@ router.post('/build-estar-plus/:projectId', async (req, res) => {
     res.json({
       success: true,
       packagePath: result.zipPath, // Use zipPath as packagePath
-      downloadUrl: result.downloadUrl || `/api/fda510k/download/${path.basename(result.zipPath)}`,
+      downloadUrl: `/api/fda510k/download/${path.basename(result.zipPath)}`,
       esgStatus: result.esgStatus
     });
   } catch (error) {
