@@ -108,8 +108,10 @@ import {
   Wand2,
   ShieldCheck,
   PlusCircle,
-  Zap,
-  Send
+  SearchX,
+  Send,
+  Copy,
+  Zap
 } from 'lucide-react';
 
 // Custom Google icon component
