@@ -117,7 +117,7 @@ class FDA510kService {
   async determineRegulatoryPathway(deviceProfile) {
     try {
       const response = await apiRequest({
-        url: '/api/510k/regulatory-pathway',
+        url: '/api/fda510k/regulatory-pathway-analysis',
         method: 'POST',
         data: {
           deviceProfile
@@ -261,7 +261,7 @@ class FDA510kService {
   async getPathwayRecommendation(projectId) {
     try {
       const response = await apiRequest({
-        url: `/api/510k/pathway-recommendation/${projectId}`,
+        url: `/api/fda510k/pathway-recommendation/${projectId}`,
         method: 'GET'
       });
       
@@ -288,7 +288,7 @@ class FDA510kService {
   async draftEquivalence(projectId) {
     try {
       const response = await apiRequest({
-        url: '/api/510k/draft-equivalence',
+        url: '/api/fda510k/draft-equivalence',
         method: 'POST',
         data: { projectId }
       });
