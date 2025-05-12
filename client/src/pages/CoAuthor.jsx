@@ -364,6 +364,7 @@ export default function CoAuthor() {
   const [isSaving, setIsSaving] = useState(false);
   const [createNewDocDialogOpen, setCreateNewDocDialogOpen] = useState(false);
   const [showValidationDialog, setShowValidationDialog] = useState(false);
+  const [validationInProgress, setValidationInProgress] = useState(false);
   
   // Document editor integration state
   const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
@@ -609,11 +610,14 @@ export default function CoAuthor() {
     };
   }, [isIframeLoaded, isDocLoadError, isGoogleAuthenticated]);
   
-  const [validationResults] = useState({
+  const [validationResults, setValidationResults] = useState({
     completeness: 78,
     consistency: 92,
     references: 65,
     regulatory: 87,
+    timestamp: new Date().toISOString(),
+    moduleType: '',
+    region: '',
     issues: [
       {
         id: 1,
@@ -657,7 +661,7 @@ export default function CoAuthor() {
   
   // Additional helper functions for document creation workflow
   
-  // Google Docs validation helper
+  // Google Docs validation helper - basic authentication check
   const validateDocumentRequirements = () => {
     if (!isGoogleAuthenticated) {
       toast({
@@ -669,6 +673,134 @@ export default function CoAuthor() {
     }
     
     return true;
+  };
+  
+  /**
+   * Perform eCTD validation on the current document using the eCTD validation service
+   * @param {boolean} showResults Whether to show validation results dialog after completion
+   * @returns {Promise<Object>} Validation results
+   */
+  const validateEctdDocument = async (showResults = true) => {
+    if (!selectedDocument || !selectedDocument.googleDocId) {
+      toast({
+        title: "No Document Selected",
+        description: "Please select a document to validate",
+        variant: "destructive"
+      });
+      return null;
+    }
+    
+    try {
+      // Set validation in progress
+      setValidationInProgress(true);
+      
+      // Notification toast
+      toast({
+        title: "Validating Document",
+        description: "Running validation for " + (selectedRegion || "FDA") + " requirements...",
+      });
+      
+      // Get document content via Google Docs service
+      let documentContent;
+      try {
+        documentContent = await googleDocsService.getDocumentContent(selectedDocument.googleDocId);
+      } catch (error) {
+        console.error('Error fetching document content:', error);
+        throw new Error('Could not retrieve document content. Please check your authentication and try again.');
+      }
+      
+      if (!documentContent) {
+        throw new Error('Retrieved empty document content');
+      }
+      
+      // Determine module type based on document metadata
+      const moduleType = selectedDocument.moduleType || 'module2';
+      const section = selectedDocument.section || 'clinical_overview';
+      
+      // Call validation service
+      const validationResult = await ectdValidationService.validateDocument(
+        documentContent,
+        moduleType,
+        section
+      );
+      
+      // Update state with validation results
+      setValidationResults({
+        completeness: calculateComplianceScore(validationResult.issues, 'completeness'),
+        consistency: calculateComplianceScore(validationResult.issues, 'consistency'),
+        references: calculateComplianceScore(validationResult.issues, 'references'),
+        regulatory: calculateComplianceScore(validationResult.issues, 'regulatory'),
+        issues: validationResult.issues || [],
+        timestamp: validationResult.timestamp || new Date().toISOString(),
+        moduleType: validationResult.moduleType || moduleType,
+        region: selectedRegion || 'FDA',
+        ctdSection: validationResult.ctdSection || '',
+        overallResult: validationResult.overallResult || 'warning'
+      });
+      
+      // Show validation dialog if requested
+      if (showResults) {
+        setShowValidationDialog(true);
+      }
+      
+      // Update document with validation status
+      const newDocStatus = validationResult.overallResult === 'passed' ? 'Validated' :
+                           validationResult.overallResult === 'warning' ? 'Warnings' : 'Failed';
+      
+      setDocuments(prevDocs => prevDocs.map(doc => 
+        doc.id === selectedDocument.id ? {...doc, validationStatus: newDocStatus} : doc
+      ));
+      
+      return validationResult;
+    } catch (error) {
+      console.error('Error validating document:', error);
+      toast({
+        title: "Validation Failed",
+        description: error.message || "An error occurred during validation",
+        variant: "destructive"
+      });
+      return null;
+    } finally {
+      setValidationInProgress(false);
+    }
+  };
+  
+  /**
+   * Calculate compliance scores based on issues
+   * @param {Array} issues - Validation issues 
+   * @param {string} type - Score type to calculate
+   * @returns {number} - Score from 0-100
+   */
+  const calculateComplianceScore = (issues, type) => {
+    if (!issues || issues.length === 0) return 100;
+    
+    // Filter issues by type/category
+    const relevantIssues = issues.filter(issue => {
+      if (type === 'completeness') {
+        return issue.id.includes('missing') || issue.id.includes('incomplete');
+      } else if (type === 'consistency') {
+        return issue.id.includes('inconsistent') || issue.id.includes('formatting');
+      } else if (type === 'references') {
+        return issue.id.includes('reference') || issue.id.includes('citation');
+      } else if (type === 'regulatory') {
+        return issue.id.includes('regulatory') || issue.id.includes('compliance');
+      }
+      return false;
+    });
+    
+    // Count issues by severity
+    const criticalCount = relevantIssues.filter(i => i.severity === 'critical').length;
+    const majorCount = relevantIssues.filter(i => i.severity === 'major').length;
+    const minorCount = relevantIssues.filter(i => i.severity === 'minor').length;
+    
+    // Calculate weighted score (critical issues have highest impact)
+    const baseScore = 100;
+    const criticalDeduction = criticalCount * 15;
+    const majorDeduction = majorCount * 8;
+    const minorDeduction = minorCount * 3;
+    
+    // Return score ensuring it's between 0-100
+    return Math.max(0, Math.min(100, baseScore - criticalDeduction - majorDeduction - minorDeduction));
   };
   
   // Template helper to map templates to eCTD module info
