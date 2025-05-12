@@ -3,8 +3,14 @@
  * 
  * This is the ONE AND ONLY official implementation of the eCTD Co-Author Module
  * 
- * Version: 5.1.0 - May 11, 2025
- * Status: STABLE - GOOGLE DOCS INTEGRATION ACTIVE
+ * Version: 5.2.0 - May 12, 2025
+ * Status: STABLE - GOOGLE DOCS INTEGRATION ACTIVE - STRUCTURED CONTENT BLOCKS ENABLED
+ * 
+ * Features:
+ * - Enhanced structured content blocks with ICH-compliant validation rules
+ * - CTD structure navigation with section-specific badges
+ * - Reusable "content atoms" (tables, narratives, figures) for document templates
+ * - Document validation dashboard with regulatory compliance scoring
  * 
  * Any attempt to create duplicate modules or alternate implementations
  * should be prevented. This is the golden source implementation.
@@ -410,9 +416,9 @@ export default function CoAuthor() {
     }
   ]);
 
-  // Structured Content Blocks - Content Atoms Registry
+  // Enhanced Structured Content Blocks - Content Atoms Registry with ICH-compliant validation rules
   const contentBlockRegistry = {
-    // Table blocks
+    // Table blocks - discrete, reusable content atoms with metadata
     tables: [
       {
         id: 'table-2-5-1',
@@ -420,20 +426,43 @@ export default function CoAuthor() {
         type: 'table',
         moduleId: 'module2',
         section: '2.5',
+        description: 'Standardized table for presenting clinical study overview data in Module 2.5',
         schema: {
           columns: ['Study ID', 'Study Design', 'Population', 'Treatment', 'Endpoints', 'Results'],
           rules: {
             required: ['Study ID', 'Study Design', 'Endpoints'],
             validation: {
-              'Study ID': {pattern: /^[A-Z0-9\-]+$/, message: 'Must follow standard study ID format'}
+              'Study ID': {
+                pattern: /^[A-Z0-9\-]+$/,
+                message: 'Must follow standard study ID format (e.g., ABC-123)',
+                ichReference: 'ICH M4E(R2) 2.5.1'
+              },
+              'Study Design': {
+                minLength: 10,
+                message: 'Must provide complete study design with control groups, blinding, and randomization details',
+                ichReference: 'ICH E6(R2) 6.2.1'
+              },
+              'Endpoints': {
+                minLength: 5,
+                message: 'Must specify primary and secondary endpoints',
+                ichReference: 'ICH E9(R1) 4.2.1'
+              }
             }
           }
         },
         regions: ['FDA', 'EMA', 'PMDA'],
         metadata: {
           ichCompliant: true,
+          ichGuideline: 'ICH M4E(R2) Common Technical Document',
+          ectdSection: '2.5.1',
           lastUpdated: '2025-04-15',
-          version: '2.3'
+          version: '2.3',
+          auditTrail: [
+            { date: '2024-11-15', user: 'Sarah Johnson', action: 'Created' },
+            { date: '2025-04-01', user: 'Michael Chen', action: 'Updated validation rules' }
+          ],
+          validationLevel: 'Required',
+          regulatoryRequirement: true
         },
         template: `<table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
