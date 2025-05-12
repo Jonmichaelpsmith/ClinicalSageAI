@@ -1,0 +1,87 @@
+### 2️⃣ Task 2: Predicate Device Identification & Equivalence Analysis
+
+**Goal:** Let users search for FDA‐registered predicate devices, compare key attributes, and draft a Substantial Equivalence analysis section.
+
+---
+
+#### A. Predicate Device Search
+
+1. **Front‐End Component**
+
+   * **Path:** `client/src/components/510k/PredicateSearch.jsx`
+   * **Features:**
+
+     * Search box for “Predicate Device Name or 510(k) Number”
+     * Auto‐suggest powered by the FDA 510(k) database API
+     * Display list of matches (Name, K‐Number, Decision Date, Product Code)
+     * “Select as Predicate” button
+
+2. **API Integration**
+
+   * **Endpoint:** `GET /api/510k/predicates?q=<query>`
+   * **Implementation:**
+
+     * Query FDA’s open 510(k) API (e.g. [https://api.fda.gov/device/510k.json](https://api.fda.gov/device/510k.json))
+     * Map results to `{ predicateId, kNumber, deviceName, decisionDate, productCode }`
+
+---
+
+#### B. Equivalence Comparison Table
+
+1. **Component**
+
+   * **Path:** `client/src/components/510k/EquivalenceTable.jsx`
+   * **Features:**
+
+     * Side‐by‐side table: “Your Device” vs. “Predicate”
+     * Key fields: Intended Use, Technology, Materials, Performance Specs
+     * Inline edit for any attribute differences
+     * Real‐time flagging of major deviations
+
+2. **Data Flow**
+
+   * After selecting predicate, fetch its full record via:
+
+     ```
+     GET /api/510k/predicates/:predicateId
+     ```
+   * Populate the table and allow user edits.
+
+---
+
+#### C. Automated Substantial Equivalence Draft
+
+1. **“Draft SE Section” Button**
+
+   * Triggers server-side AI prompt blending your device profile + predicate data
+
+2. **Server Endpoint**
+
+   * **POST** `/api/510k/draft-equivalence`
+   * **Payload:**
+
+     ```json
+     {
+       "deviceProfile": { … },
+       "predicateProfile": { … }
+     }
+     ```
+   * **Response:**
+
+     ```json
+     { "draftText": "Your AI-generated substantial equivalence narrative…" }
+     ```
+
+3. **UI Rendering**
+
+   * Show draft in a rich-text editor (e.g. Slate or Quill)
+   * Allow user to refine, then “Accept & Add to 510(k) Report”
+
+---
+
+🔜 **Next Steps:**
+
+* Wire up `PredicateSearch` to FDA API and test autocomplete.
+* Build `EquivalenceTable` UI with Prop-drilling or Context for data.
+* Implement `/draft-equivalence` using your AI service (OpenAI, Ollama, etc.).
+* Add “Add to Report” integration so the Section Generator in the CER2V UI can include the SE narrative.
