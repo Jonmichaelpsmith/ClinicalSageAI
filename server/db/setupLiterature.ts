@@ -107,4 +107,5 @@ export async function initializeLiteratureDatabase() {
   }
 }
 
+export { pool };
 export default { initializeLiteratureDatabase };

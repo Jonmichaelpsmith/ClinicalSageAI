@@ -32,14 +32,17 @@ export async function initializeDatabase() {
     // Initialize literature system if enabled
     if (process.env.ENABLE_LITERATURE_FEATURES !== 'false') {
       console.log('Initializing literature discovery system...');
-      const literatureStatus = await setupLiteratureSystem();
-      
-      if (!literatureStatus.tablesSetup) {
-        console.warn('Literature tables could not be set up. Literature features may be limited.');
-      }
-      
-      if (!literatureStatus.pgvectorWorking) {
-        console.warn('pgvector extension not working. Semantic search features will be disabled.');
+      try {
+        const literatureSetupSuccess = await setupLiterature.initializeLiteratureDatabase();
+        
+        if (literatureSetupSuccess) {
+          console.log('Literature discovery system initialized successfully');
+        } else {
+          console.warn('Literature tables could not be set up. Literature features may be limited.');
+        }
+      } catch (error) {
+        console.error('Error initializing literature system:', error);
+        console.warn('Literature discovery features may be limited or unavailable');
       }
     } else {
       console.log('Literature discovery features are disabled');
