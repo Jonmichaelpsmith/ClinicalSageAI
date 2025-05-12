@@ -1399,56 +1399,245 @@ export default function CoAuthor() {
               </div>
               
               <div className="space-y-1">
-                <div className="border-l-4 border-blue-600 pl-2 py-1 font-medium">
-                  Module 1: Administrative Information
+                {/* CTD Module Tree Structure - Start */}
+                {/* Module 1 */}
+                <div 
+                  className="border-l-4 border-blue-600 pl-2 py-1 font-medium flex items-center justify-between cursor-pointer"
+                  onClick={() => setCTDExpandedSections(prev => ({...prev, module1: !prev.module1}))}
+                >
+                  <span>Module 1: Administrative Information</span>
+                  {ctdExpandedSections.module1 ? 
+                    <ChevronDown className="h-4 w-4" /> : 
+                    <ChevronRight className="h-4 w-4" />
+                  }
                 </div>
-                <div className="pl-4 space-y-1">
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 1.1: Cover Letter
+                {ctdExpandedSections.module1 && (
+                  <div className="pl-4 space-y-1">
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module1', '1.1', 'Cover Letter')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 1.1: Cover Letter
+                      {selectedDocument?.section === '1.1' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module1', '1.2', 'Table of Contents')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 1.2: Table of Contents
+                      {selectedDocument?.section === '1.2' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module1', '1.3', 'Application Forms')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 1.3: Application Forms
+                      {selectedDocument?.section === '1.3' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer text-blue-600">
-                    <FileText className="h-4 w-4 mr-2 text-blue-600" />
-                    Section 1.2: Table of Contents
-                    <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
-                  </div>
-                </div>
+                )}
                 
-                <div className="border-l-4 border-green-600 pl-2 py-1 font-medium flex items-center justify-between group">
+                {/* Module 2 */}
+                <div 
+                  className="border-l-4 border-green-600 pl-2 py-1 font-medium flex items-center justify-between cursor-pointer"
+                  onClick={() => setCTDExpandedSections(prev => ({...prev, module2: !prev.module2}))}
+                >
                   <span>Module 2: Common Technical Document</span>
-                  <ChevronDown className="h-4 w-4 opacity-0 group-hover:opacity-100" />
+                  {ctdExpandedSections.module2 ? 
+                    <ChevronDown className="h-4 w-4" /> : 
+                    <ChevronRight className="h-4 w-4" />
+                  }
                 </div>
-                <div className="pl-4 space-y-1">
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 2.1: CTD Table of Contents
+                {ctdExpandedSections.module2 && (
+                  <div className="pl-4 space-y-1">
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module2', '2.1', 'CTD Table of Contents')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 2.1: CTD Table of Contents
+                      {selectedDocument?.section === '2.1' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module2', '2.2', 'Introduction')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 2.2: Introduction
+                      {selectedDocument?.section === '2.2' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module2', '2.3', 'Quality Overall Summary')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      <span>Section 2.3: Quality Overall Summary</span>
+                      {selectedDocument?.section === '2.3' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
+                    <div 
+                      className={`flex items-center text-sm py-1 ${selectedDocument?.section === '2.5' ? 'bg-slate-50 font-medium' : 'hover:bg-slate-50'} rounded px-2 cursor-pointer`}
+                      onClick={() => handleCTDSectionClick('module2', '2.5', 'Clinical Overview')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-600" />
+                      <span>Section 2.5: Clinical Overview</span>
+                      {selectedDocument?.section === '2.5' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                      {!selectedDocument?.section === '2.5' && (
+                        <Badge className="ml-2 h-5 bg-amber-100 text-amber-700 border-amber-200 text-[10px]">In Review</Badge>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 2.2: Introduction
-                  </div>
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    <span>Section 2.3: Quality Overall Summary</span>
-                  </div>
-                  <div className="flex items-center text-sm py-1 bg-slate-50 rounded px-2 cursor-pointer font-medium">
-                    <FileText className="h-4 w-4 mr-2 text-slate-600" />
-                    <span>Section 2.5: Clinical Overview</span>
-                    <Badge className="ml-2 h-5 bg-amber-100 text-amber-700 border-amber-200 text-[10px]">In Review</Badge>
-                  </div>
-                </div>
+                )}
                 
-                <div className="border-l-4 border-amber-600 pl-2 py-1 font-medium">
-                  Module 3: Quality
+                {/* Module 3 */}
+                <div 
+                  className="border-l-4 border-orange-600 pl-2 py-1 font-medium flex items-center justify-between cursor-pointer"
+                  onClick={() => setCTDExpandedSections(prev => ({...prev, module3: !prev.module3}))}
+                >
+                  <span>Module 3: Quality</span>
+                  {ctdExpandedSections.module3 ? 
+                    <ChevronDown className="h-4 w-4" /> : 
+                    <ChevronRight className="h-4 w-4" />
+                  }
                 </div>
-                <div className="pl-4 space-y-1">
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 3.2.P: Drug Product
+                {ctdExpandedSections.module3 && (
+                  <div className="pl-4 space-y-1">
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module3', '3.1', 'Table of Contents')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 3.1: Table of Contents
+                      {selectedDocument?.section === '3.1' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module3', '3.2', 'Body of Data')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 3.2: Body of Data
+                      {selectedDocument?.section === '3.2' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 3.2.S: Drug Substance
+                )}
+                
+                {/* Module 4 */}
+                <div 
+                  className="border-l-4 border-purple-600 pl-2 py-1 font-medium flex items-center justify-between cursor-pointer"
+                  onClick={() => setCTDExpandedSections(prev => ({...prev, module4: !prev.module4}))}
+                >
+                  <span>Module 4: Nonclinical Study Reports</span>
+                  {ctdExpandedSections.module4 ? 
+                    <ChevronDown className="h-4 w-4" /> : 
+                    <ChevronRight className="h-4 w-4" />
+                  }
+                </div>
+                {ctdExpandedSections.module4 && (
+                  <div className="pl-4 space-y-1">
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module4', '4.1', 'Table of Contents')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 4.1: Table of Contents
+                      {selectedDocument?.section === '4.1' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module4', '4.2', 'Study Reports')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 4.2: Study Reports
+                      {selectedDocument?.section === '4.2' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Module 5 */}
+                <div 
+                  className="border-l-4 border-teal-600 pl-2 py-1 font-medium flex items-center justify-between cursor-pointer"
+                  onClick={() => setCTDExpandedSections(prev => ({...prev, module5: !prev.module5}))}
+                >
+                  <span>Module 5: Clinical Study Reports</span>
+                  {ctdExpandedSections.module5 ? 
+                    <ChevronDown className="h-4 w-4" /> : 
+                    <ChevronRight className="h-4 w-4" />
+                  }
+                </div>
+                {ctdExpandedSections.module5 && (
+                  <div className="pl-4 space-y-1">
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module5', '5.1', 'Table of Contents')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 5.1: Table of Contents
+                      {selectedDocument?.section === '5.1' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module5', '5.2', 'Tabular Listing of Studies')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 5.2: Tabular Listing of Studies
+                      {selectedDocument?.section === '5.2' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module5', '5.3', 'Clinical Study Reports')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 5.3: Clinical Study Reports
+                      {selectedDocument?.section === '5.3' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
+                    <div 
+                      className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer"
+                      onClick={() => handleCTDSectionClick('module5', '5.4', 'Literature References')}
+                    >
+                      <FileText className="h-4 w-4 mr-2 text-slate-400" />
+                      Section 5.4: Literature References
+                      {selectedDocument?.section === '5.4' && (
+                        <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* eCTD Documentation Information */}
+                <div className="mt-6 border-l-4 border-gray-300 pl-2 py-1 text-sm text-gray-600">
+                  <p className="font-medium">eCTD Documentation</p>
+                  <p className="text-xs mt-1">Click on a section to navigate or edit. Validation is performed against ICH standards.</p>
+                </div>
                   </div>
                 </div>
                 
