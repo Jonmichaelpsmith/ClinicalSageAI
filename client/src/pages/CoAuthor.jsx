@@ -1311,7 +1311,7 @@ export default function CoAuthor() {
       setIsGeneratingChatResponse(true);
       
       // First, perform semantic search to retrieve relevant context
-      const searchResults = await performSemanticSearch(query);
+      const searchResults = await performSemanticSearch(query, searchFilters);
       
       // In a real implementation, we would:
       // 1. Format the search results as context
@@ -1554,9 +1554,13 @@ export default function CoAuthor() {
   /**
    * Performs semantic search using document embeddings
    * @param {string} query - Search query
+   * @param {Object} filters - Optional filters for search results
+   * @param {string} filters.module - Filter by CTD module
+   * @param {string} filters.docType - Filter by document type
+   * @param {string} filters.status - Filter by document status
    * @returns {Promise<Array>} - Search results
    */
-  const performSemanticSearch = async (query) => {
+  const performSemanticSearch = async (query, filters = {}) => {
     if (!query || !vectorizedDocuments.length) {
       return [];
     }
@@ -1566,14 +1570,34 @@ export default function CoAuthor() {
       
       // In a real implementation, we would:
       // 1. Generate an embedding for the query using OpenAI API
-      // 2. Search the vector database for similar embeddings
-      // 3. Return the results
+      // 2. Search the vector database for similar embeddings with filters
+      // 3. Return the filtered results
       
-      // For now, we'll simulate the search by waiting and returning random results
+      // For now, we'll simulate the search by waiting and returning filtered random results
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      // Simulate search results using existing documents
-      const simulatedResults = vectorizedDocuments
+      // Filter documents based on criteria if provided
+      const filteredDocuments = vectorizedDocuments.filter(doc => {
+        // Filter by module if specified
+        if (filters.module && filters.module !== "" && doc.module !== filters.module) {
+          return false;
+        }
+        
+        // Filter by document type if specified
+        if (filters.docType && filters.docType !== "" && doc.docType !== filters.docType) {
+          return false;
+        }
+        
+        // Filter by status if specified
+        if (filters.status && filters.status !== "" && doc.status !== filters.status) {
+          return false;
+        }
+        
+        return true;
+      });
+      
+      // Simulate search results using filtered documents
+      const simulatedResults = filteredDocuments
         .flatMap(doc => {
           // Get random chunks from each document
           const numResults = Math.floor(Math.random() * 3) + 1;
@@ -1586,6 +1610,8 @@ export default function CoAuthor() {
             documentTitle: doc.title,
             documentVersion: doc.version,
             module: doc.module,
+            docType: doc.docType || 'clinical', // Default to clinical for existing data
+            status: doc.status || 'approved', // Default to approved for existing data
             section: chunk.metadata?.section || 'Unknown Section',
             content: chunk.chunk.text,
             similarity: 0.5 + Math.random() * 0.5, // Random similarity score between 0.5 and 1.0
@@ -1593,7 +1619,7 @@ export default function CoAuthor() {
           }));
         })
         .sort((a, b) => b.similarity - a.similarity) // Sort by similarity (highest first)
-        .slice(0, 5); // Limit to 5 results
+        .slice(0, 10); // Limit to 10 results to show more with filtering
       
       setSemanticSearchResults(simulatedResults);
       return simulatedResults;
@@ -2416,7 +2442,7 @@ export default function CoAuthor() {
                     setIsSearchingVectors(true);
                     setSearchSuggestions([]);
                     
-                    performSemanticSearch(semanticSearchQuery).then((results) => {
+                    performSemanticSearch(semanticSearchQuery, searchFilters).then((results) => {
                       setSemanticSearchResults(results);
                       setShowVectorSearchDialog(true);
                       setIsSearchingVectors(false);
@@ -2590,7 +2616,7 @@ export default function CoAuthor() {
                             setSearchSuggestions([]);
                             setIsSearchingVectors(true);
                             
-                            performSemanticSearch(suggestion.text).then((results) => {
+                            performSemanticSearch(suggestion.text, searchFilters).then((results) => {
                               setSemanticSearchResults(results);
                               setShowVectorSearchDialog(true);
                               setIsSearchingVectors(false);
@@ -2696,7 +2722,7 @@ export default function CoAuthor() {
               className="ml-2 text-xs"
               onClick={() => {
                 if (semanticSearchQuery) {
-                  performSemanticSearch(semanticSearchQuery);
+                  performSemanticSearch(semanticSearchQuery, searchFilters);
                   setShowVectorSearchDialog(true);
                 }
               }}
