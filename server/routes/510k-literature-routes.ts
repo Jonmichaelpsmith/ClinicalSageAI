@@ -129,18 +129,7 @@ const validateRequest = (req: Request, rules: Record<string, any>): ValidationEr
   return errors;
 };
 
-const getValueFromRequest = (req: Request, field: string, location: string = 'body'): any => {
-  switch (location) {
-    case 'body':
-      return req.body[field];
-    case 'query':
-      return req.query[field];
-    case 'params':
-      return req.params[field];
-    default:
-      return req.body[field];
-  }
-};
+// This function is already defined above
 
 /**
  * Middleware to extract tenant context
@@ -473,14 +462,21 @@ router.get(
 router.delete(
   '/citations/:citationId',
   extractTenantContext,
-  [
-    param('citationId').isString().notEmpty().withMessage('Citation ID is required')
-  ],
   async (req: Request, res: Response) => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      // Validate parameters
+      const validationRules = {
+        citationId: {
+          location: 'params',
+          required: true,
+          type: 'string',
+          message: 'Citation ID is required'
+        }
+      };
+      
+      const errors = validateRequest(req, validationRules);
+      if (errors.length > 0) {
+        return res.status(400).json({ errors });
       }
       
       const organizationId = req.query.organizationId?.toString() || 'test-org-id';
@@ -510,16 +506,35 @@ router.delete(
 router.post(
   '/summarize',
   extractTenantContext,
-  [
-    body('literatureIds').isArray().notEmpty().withMessage('Literature IDs are required'),
-    body('summaryType').isString().isIn(['standard', 'detailed', 'critical', 'comparison']).withMessage('Valid summary type is required'),
-    body('focus').optional().isString()
-  ],
   async (req: Request, res: Response) => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      // Validate parameters
+      const validationRules = {
+        literatureIds: {
+          location: 'body',
+          required: true,
+          type: 'array',
+          message: 'Literature IDs are required'
+        },
+        summaryType: {
+          location: 'body',
+          required: true,
+          type: 'string',
+          validator: (value: any) => {
+            return ['standard', 'detailed', 'critical', 'comparison'].includes(value);
+          },
+          message: 'Valid summary type is required (standard, detailed, critical, or comparison)'
+        },
+        focus: {
+          location: 'body',
+          required: false,
+          type: 'string'
+        }
+      };
+      
+      const errors = validateRequest(req, validationRules);
+      if (errors.length > 0) {
+        return res.status(400).json({ errors });
       }
       
       const result = await literatureSummarizer.generateSummary({
@@ -551,14 +566,25 @@ router.post(
 router.get(
   '/summaries',
   extractTenantContext,
-  [
-    query('limit').optional().isInt({ min: 1, max: 20 })
-  ],
   async (req: Request, res: Response) => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      // Validate parameters
+      const validationRules = {
+        limit: {
+          location: 'query',
+          required: false,
+          type: 'number',
+          validator: (value: any) => {
+            const num = parseInt(value, 10);
+            return !isNaN(num) && num >= 1 && num <= 20;
+          },
+          message: 'Limit must be a number between 1 and 20'
+        }
+      };
+      
+      const errors = validateRequest(req, validationRules);
+      if (errors.length > 0) {
+        return res.status(400).json({ errors });
       }
       
       const limit = req.query.limit ? parseInt(req.query.limit.toString(), 10) : 5;
@@ -583,14 +609,21 @@ router.get(
 router.get(
   '/summary/:id',
   extractTenantContext,
-  [
-    param('id').isString().notEmpty().withMessage('Summary ID is required')
-  ],
   async (req: Request, res: Response) => {
     try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+      // Validate parameters
+      const validationRules = {
+        id: {
+          location: 'params',
+          required: true,
+          type: 'string',
+          message: 'Summary ID is required'
+        }
+      };
+      
+      const errors = validateRequest(req, validationRules);
+      if (errors.length > 0) {
+        return res.status(400).json({ errors });
       }
       
       const organizationId = req.query.organizationId?.toString() || 'test-org-id';
