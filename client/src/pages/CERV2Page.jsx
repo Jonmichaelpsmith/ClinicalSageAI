@@ -30,6 +30,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import KAutomationPanel from '@/components/cer/KAutomationPanel';
 
 export default function CERV2Page() {
   const [title, setTitle] = useState('Clinical Evaluation Report');
