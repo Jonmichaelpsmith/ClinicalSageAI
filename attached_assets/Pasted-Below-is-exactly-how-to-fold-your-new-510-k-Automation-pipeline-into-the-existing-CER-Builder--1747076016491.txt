@@ -1,0 +1,158 @@
+Below is exactly how to fold your new **510(k) Automation** pipeline into the existing CER Builder (CERV2) UI so it lives alongside your “Preparation → Builder → Evaluation Plan → …” tabs and provides a one-click, end-to-end 510(k) workflow.
+
+---
+
+## 1. Update the Top-Level Navigation
+
+1. **Open** `client/src/pages/CERV2Page.jsx`
+2. **Find** the `<TabsList>` where you define “Builder”, “Evaluation Plan”, etc.
+3. **Add** a new `<TabsTrigger>` for `value="510k"`:
+
+```jsx
+<Tabs defaultValue="builder" value={currentTab} onValueChange={setCurrentTab}>
+  <TabsList>
+    <TabsTrigger value="builder">Builder</TabsTrigger>
+    <TabsTrigger value="evaluation">Evaluation Plan</TabsTrigger>
+    <TabsTrigger value="quality">Quality Management</TabsTrigger>
+    <TabsTrigger value="documents">Documents</TabsTrigger>
+    <TabsTrigger value="data">Data Retrieval</TabsTrigger>
+    <!-- New: 510(k) Automation -->
+    <TabsTrigger value="510k">510(k) Automation</TabsTrigger>
+  </TabsList>
+
+  {/* … existing <TabsContent value="builder">… */}
+  <TabsContent value="510k">
+    <KAutomationPanel />
+  </TabsContent>
+</Tabs>
+```
+
+---
+
+## 2. Create the 510(k) Panel Component
+
+1. **Create** a new file `client/src/components/cer/KAutomationPanel.jsx`
+2. **Stub** out the high-level UI:
+
+```jsx
+import React from 'react';
+import { Button, Card } from '@components/ui'; // your design system
+
+export default function KAutomationPanel() {
+  return (
+    <div className="space-y-6 p-6">
+      <h2 className="text-2xl font-semibold">510(k) Automation</h2>
+
+      <Card>
+        <h3 className="font-medium">1. Device Intake</h3>
+        <p>Upload or enter device metadata to kick off the pipeline.</p>
+        <Button>Upload Device Profile</Button>
+      </Card>
+
+      <Card>
+        <h3 className="font-medium">2. Predicate & Literature Discovery</h3>
+        <p>Draft predicate list and literature search results.</p>
+        <Button>Run Predicate Finder</Button>
+      </Card>
+
+      <Card>
+        <h3 className="font-medium">3. One-Click 510(k) Draft</h3>
+        <p>AI-draft all required sections and assemble eSTAR package.</p>
+        <Button intent="primary">One-Click 510(k)</Button>
+      </Card>
+
+      <Card>
+        <h3 className="font-medium">4. Track & Report</h3>
+        <p>Monitor status, compliance issues, and key metrics in real-time.</p>
+        <Button>View 510(k) Dashboard</Button>
+      </Card>
+    </div>
+  );
+}
+```
+
+---
+
+## 3. Wire Up Your Pipeline
+
+In your **CER2V config** (e.g. `cer2v.config.js` or wherever you register pipelines), add:
+
+```js
+// cer2v.config.js
+module.exports = {
+  pipelines: {
+    // … existing …
+    '510kAutomation': {
+      description: 'End-to-end 510(k) submission automation',
+      steps: [
+        'ingestDeviceProfile',
+        'findPredicatesAndLiterature',
+        'adviseRegulatoryPathway',
+        'draftSectionsWithAI',
+        'runComplianceChecks',
+        'buildESTARPackage',
+        'trackSubmission',
+        'runPostSubmissionAnalytics'
+      ]
+    }
+  },
+  services: {
+    ingestDeviceProfile: require('./services/DeviceProfileService'),
+    findPredicatesAndLiterature: require('./services/PredicateFinderService'),
+    adviseRegulatoryPathway: require('./services/PathwayAdvisor'),
+    draftSectionsWithAI: require('./services/AISectionWriter'),
+    runComplianceChecks: require('./services/ComplianceChecker'),
+    buildESTARPackage: require('./services/eSTARBuilder'),
+    trackSubmission: require('./services/SubmissionTracker'),
+    runPostSubmissionAnalytics: require('./services/AnalyticsService')
+  },
+  integrations: {
+    fdaApi: { baseUrl: process.env.FDA_API_URL, key: process.env.FDA_API_KEY },
+    pubmed: { key: process.env.PUBMED_API_KEY },
+    aiService: { endpoint: process.env.AI_SERVICE_URL, key: process.env.AI_SERVICE_KEY },
+  }
+};
+```
+
+---
+
+## 4. Hook Buttons → Services
+
+Inside `KAutomationPanel.jsx`, wire each button’s `onClick` to dispatch the corresponding service:
+
+```jsx
+import { usePipeline } from '../hooks/usePipeline';
+
+export default function KAutomationPanel() {
+  const run = usePipeline('510kAutomation');
+
+  return (
+    // …
+    <Button onClick={() => run({ step: 'ingestDeviceProfile' })}>Upload Device Profile</Button>
+    // …
+    <Button intent="primary" onClick={() => run({ step: 'draftSectionsWithAI' })}>
+      One-Click 510(k)
+    </Button>
+  );
+}
+```
+
+---
+
+## 5. Update Routing & Permissions
+
+* **Ensure** your server-side routing (Express/Vite) catches `/cerv2?module=510k` or similar deep link.
+* **Guard** the 510(k) tab behind the proper feature-flag or user role in your `ModuleIntegrationLayer`.
+
+---
+
+### Result
+
+Once you’ve:
+
+1. Added the new `<TabsTrigger>` and `<TabsContent>`.
+2. Created `KAutomationPanel.jsx`.
+3. Registered the 510(k) pipeline in your config.
+4. Wired buttons to pipeline steps.
+
+→ Your CERV2 page will now show a **“510(k) Automation”** tab, giving your Med/Tech RA team a one-stop, largely hands-off 510(k) submission workflow—fully integrated into TrialSage’s CER Builder UI.
