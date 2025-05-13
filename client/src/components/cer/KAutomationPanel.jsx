@@ -5,7 +5,7 @@ import {
   Upload, Search, FilePlus, BarChart, ArrowRight, Shield, Zap, 
   FileCheck, CheckCircle2, AlertTriangle, Lightbulb, Bot, Star, ListChecks, BookOpen, 
   Clock, Info, Check, Brain, Activity, FileText, Undo2, Users, Plus, Database,
-  ChevronDown, ExternalLink
+  ChevronDown, ExternalLink, Bug, AlertCircle 
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -1569,6 +1569,94 @@ export default function KAutomationPanel() {
           </div>
           <Progress value={progress} className="h-2" />
         </div>
+      )}
+      
+      {/* Debug Panel - only shows in development environment */}
+      {process.env.NODE_ENV !== 'production' && (
+        <Card className="mt-8 border-yellow-300 shadow-sm">
+          <CardHeader className="bg-yellow-50">
+            <CardTitle className="flex items-center text-yellow-800">
+              <Bug className="h-5 w-5 mr-2 text-yellow-700" />
+              Debug Panel
+            </CardTitle>
+            <CardDescription className="text-yellow-700">
+              This panel only appears in development mode to help troubleshoot issues
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="text-sm font-medium mb-2">State Values</h3>
+                <div className="space-y-1 text-xs">
+                  <p><span className="font-medium">Active Tab:</span> {activeTab}</p>
+                  <p><span className="font-medium">Workflow SubTab:</span> {workflowSubTab}</p>
+                  <p><span className="font-medium">AI Processing:</span> {aiProcessing ? 'True' : 'False'}</p>
+                  <p><span className="font-medium">Progress:</span> {progress}%</p>
+                  <p><span className="font-medium">Device Profile:</span> {currentDeviceProfile ? currentDeviceProfile.deviceName : 'None'}</p>
+                  <p><span className="font-medium">Total Insights:</span> {aiInsights.length}</p>
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium mb-2">Insights Breakdown</h3>
+                <div className="space-y-1 text-xs">
+                  <p><span className="font-medium">Device Insights:</span> {aiInsights.filter(i => i.type === 'device').length}</p>
+                  <p><span className="font-medium">Predicate Insights:</span> {aiInsights.filter(i => i.type === 'predicate').length}</p>
+                  <p><span className="font-medium">Literature Insights:</span> {aiInsights.filter(i => i.type === 'literature').length}</p>
+                  <p><span className="font-medium">Regulatory Insights:</span> {aiInsights.filter(i => i.type === 'regulatory').length}</p>
+                  <p><span className="font-medium">Document Insights:</span> {aiInsights.filter(i => i.type === 'document').length}</p>
+                  <p><span className="font-medium">Validation Insights:</span> {aiInsights.filter(i => i.type === 'validation').length}</p>
+                </div>
+              </div>
+            </div>
+            
+            <Collapsible className="mt-4">
+              <CollapsibleTrigger className="flex items-center text-sm font-medium text-yellow-700 hover:text-yellow-900">
+                <span>Show aiInsights Raw Data</span>
+                <ChevronDown className="h-4 w-4 ml-1" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2">
+                <div className="bg-gray-50 p-2 rounded border border-gray-200 overflow-auto max-h-[200px]">
+                  <pre className="text-xs text-gray-800 whitespace-pre-wrap">
+                    {JSON.stringify(aiInsights, null, 2)}
+                  </pre>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+            
+            <div className="mt-4 flex space-x-2">
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="text-xs"
+                onClick={() => console.log('Current aiInsights:', aiInsights)}
+              >
+                Log Insights
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="text-xs"
+                onClick={() => setActiveTab('insights')}
+              >
+                Switch to Insights Tab
+              </Button>
+              <Button 
+                size="sm" 
+                variant="destructive" 
+                className="text-xs"
+                onClick={() => {
+                  const confirmReset = window.confirm('Are you sure you want to reset all insights data?');
+                  if (confirmReset) {
+                    setAiInsights([]);
+                    console.log('All insights have been reset');
+                  }
+                }}
+              >
+                Reset Insights
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
