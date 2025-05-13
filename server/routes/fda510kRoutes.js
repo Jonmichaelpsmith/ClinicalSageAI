@@ -504,26 +504,11 @@ router.post('/compliance-check', validateDeviceData, async (req, res) => {
     } catch (aiError) {
       console.error('Error using OpenAI for compliance check:', aiError);
       
-      // If OpenAI fails, fall back to the default compliance check logic
-      const totalChecks = deviceData.deviceClass === 'I' ? 24 : deviceData.deviceClass === 'II' ? 32 : 48;
-      const passedChecks = Math.floor(totalChecks * 0.92);
-      
-      const complianceResults = {
-        isValid: true,
-        score: 0.92,
-        passedChecks,
-        totalChecks,
-        criticalIssues: 0,
-        warnings: Math.floor((totalChecks - passedChecks) * 0.8),
-        errors: Math.ceil((totalChecks - passedChecks) * 0.2),
-        timestamp: new Date().toISOString(),
-        detailedChecks: generateDetailedChecks(deviceData, totalChecks, passedChecks)
-      };
-      
-      res.status(200).json({
-        success: true,
-        message: 'Using fallback compliance data due to AI processing error: ' + aiError.message,
-        ...complianceResults
+      // Instead of using mock fallback data, return an error for GA release quality
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to perform AI-powered compliance check: ' + aiError.message,
+        recommendation: 'Please try again or check your OpenAI API key configuration.'
       });
     }
   } catch (error) {
