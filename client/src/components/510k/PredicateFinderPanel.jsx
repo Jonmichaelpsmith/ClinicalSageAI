@@ -766,26 +766,19 @@ Match Rationale: ${device.matchRationale || 'Not available'}
                           variant="outline" 
                           size="sm" 
                           className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                          onClick={() => {
-                            // In a real implementation, this would add the citation to the 510(k) submission
-                            const citations = JSON.parse(localStorage.getItem('citations') || '[]');
-                            citations.push({
-                              id: new Date().getTime(),
-                              title: reference.title,
-                              authors: reference.authors,
-                              journal: reference.journal,
-                              year: reference.year,
-                              doi: reference.doi || '',
-                              addedAt: new Date().toISOString()
-                            });
-                            localStorage.setItem('citations', JSON.stringify(citations));
-                            
-                            toast({
-                              title: "Citation Added",
-                              description: `"${reference.title}" has been added to your 510(k) submission references`,
-                              variant: "success",
-                            });
-                          }}
+                          onClick={() => handleSaveReference({
+                            id: reference.id || `lit-${Date.now()}`,
+                            title: reference.title,
+                            authors: reference.authors,
+                            journal: reference.journal,
+                            year: reference.year,
+                            doi: reference.doi || '',
+                            url: reference.url,
+                            abstract: reference.abstract,
+                            relevanceScore: reference.relevanceScore,
+                            source: reference.source || reference.journal,
+                            type: "literature"
+                          })}
                         >
                           <FileText className="h-3.5 w-3.5 mr-1" />
                           Cite in Submission
@@ -908,148 +901,315 @@ Match Rationale: ${device.matchRationale || 'Not available'}
                 <TabsContent value="saved" className="m-0">
                   <ScrollArea className="h-[400px] pr-3">
                     {(() => {
-                      // Get saved predicates and citations from localStorage
-                      const savedPredicate = localStorage.getItem('selectedPredicate') 
-                        ? JSON.parse(localStorage.getItem('selectedPredicate')) 
-                        : null;
-                      const savedCitations = localStorage.getItem('citations') 
-                        ? JSON.parse(localStorage.getItem('citations')) 
-                        : [];
-                      
-                      if (!savedPredicate && savedCitations.length === 0) {
+                      if (savedReferences.length === 0) {
                         return (
                           <Alert className="bg-blue-50 border-blue-200 mb-4">
                             <AlertTitle className="text-blue-800">No saved references yet</AlertTitle>
                             <AlertDescription className="text-blue-700">
-                              Use the "Use as Predicate" and "Cite in Submission" buttons to save predicate devices and literature references for your 510(k) submission.
+                              Use the "Add as Predicate" button when viewing predicate devices or literature references to save them here for your 510(k) submission.
                             </AlertDescription>
                           </Alert>
                         );
                       }
                       
+                      // Group references by type
+                      const predicates = savedReferences.filter(ref => ref.type === 'predicate');
+                      const literature = savedReferences.filter(ref => ref.type === 'literature');
+                      
                       return (
                         <div className="space-y-6">
-                          {/* Selected Predicate Device */}
-                          {savedPredicate && (
+                          {predicates.length > 0 && (
                             <div>
-                              <h3 className="text-sm font-medium mb-3 flex items-center">
+                              <h3 className="text-sm font-medium mb-3 text-gray-700 flex items-center">
                                 <Database className="h-4 w-4 mr-2 text-blue-600" />
-                                Selected Predicate Device
+                                Saved Predicate Devices ({predicates.length})
                               </h3>
-                              <Card className="bg-blue-50 border-blue-200">
-                                <CardContent className="p-4">
-                                  <div className="flex items-start justify-between">
-                                    <div>
-                                      <h4 className="font-medium">{savedPredicate.deviceName}</h4>
-                                      <p className="text-sm text-gray-600">
-                                        {savedPredicate.manufacturer} • {savedPredicate.kNumber || 'No K-number'} • 
-                                        Class {savedPredicate.deviceClass || 'II'}
-                                      </p>
-                                      <p className="text-sm mt-2">{savedPredicate.description}</p>
-                                    </div>
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm"
-                                      className="text-red-600 border-red-200 hover:bg-red-50"
-                                      onClick={() => {
-                                        localStorage.removeItem('selectedPredicate');
-                                        toast({
-                                          title: "Predicate Device Removed",
-                                          description: "The predicate device has been removed from your saved references",
-                                        });
-                                        // Force re-render
-                                        setActiveTab('predicates');
-                                        setTimeout(() => setActiveTab('saved'), 10);
-                                      }}
-                                    >
-                                      Remove
-                                    </Button>
-                                  </div>
-                                  
-                                  <div className="mt-3 pt-3 border-t border-blue-200">
-                                    <h4 className="text-xs font-medium text-gray-500 mb-1">Match Rationale</h4>
-                                    <p className="text-sm">{savedPredicate.matchRationale}</p>
-                                  </div>
-                                </CardContent>
-                              </Card>
-                            </div>
-                          )}
-                          
-                          {/* Saved Citations */}
-                          {savedCitations.length > 0 && (
-                            <div>
-                              <h3 className="text-sm font-medium mb-3 flex items-center">
-                                <Book className="h-4 w-4 mr-2 text-emerald-600" />
-                                Saved Literature References
-                                <Badge className="ml-2 bg-emerald-100 text-emerald-800 border-emerald-200">
-                                  {savedCitations.length}
-                                </Badge>
-                              </h3>
-                              
                               <div className="space-y-3">
-                                {savedCitations.map((citation, index) => (
-                                  <Card key={citation.id} className="bg-emerald-50 border-emerald-200">
-                                    <CardContent className="p-4">
-                                      <div className="flex items-start justify-between">
+                                {predicates.map((pred) => (
+                                  <div key={pred.id} className="border rounded-md bg-white shadow-sm">
+                                    <div className="p-3">
+                                      <div className="flex justify-between">
                                         <div>
-                                          <h4 className="font-medium">{citation.title}</h4>
-                                          <p className="text-sm text-gray-600">
-                                            {citation.authors && citation.authors.length > 0 
-                                              ? citation.authors.slice(0, 2).join(', ') + (citation.authors.length > 2 ? ' et al.' : '')
-                                              : 'Unknown authors'
-                                            } • {citation.journal} • {citation.year}
-                                          </p>
-                                          {citation.doi && (
-                                            <p className="text-xs text-gray-500 mt-1">DOI: {citation.doi}</p>
-                                          )}
+                                          <div className="font-medium flex items-center">
+                                            {pred.title}
+                                            {pred.matchScore && formatMatchScore(pred.matchScore)}
+                                          </div>
+                                          <div className="text-sm text-gray-500">
+                                            {pred.authors} • {pred.referenceValue || 'No K-Number'} • Added {new Date(pred.savedAt).toLocaleDateString()}
+                                          </div>
                                         </div>
-                                        <div className="flex space-x-2">
-                                          <Button 
-                                            variant="outline" 
+                                        <div>
+                                          <Button
+                                            variant="ghost"
                                             size="sm"
-                                            className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
-                                            onClick={() => {
-                                              // Generate APA-style citation
-                                              const apaCitation = `${citation.authors ? citation.authors.join(', ') : 'Unknown'} (${citation.year}). ${citation.title}. ${citation.journal}. ${citation.doi ? `https://doi.org/${citation.doi}` : ''}`;
-                                              
-                                              // Copy to clipboard
-                                              navigator.clipboard.writeText(apaCitation);
-                                              
-                                              toast({
-                                                title: "Citation Copied",
-                                                description: "The citation has been copied to your clipboard in APA format",
-                                              });
-                                            }}
+                                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                                            onClick={() => handleRemoveReference(pred.id)}
                                           >
-                                            Copy Citation
-                                          </Button>
-                                          <Button 
-                                            variant="outline" 
-                                            size="sm"
-                                            className="text-red-600 border-red-200 hover:bg-red-50"
-                                            onClick={() => {
-                                              // Remove this citation
-                                              const updatedCitations = savedCitations.filter(c => c.id !== citation.id);
-                                              localStorage.setItem('citations', JSON.stringify(updatedCitations));
-                                              
-                                              toast({
-                                                title: "Citation Removed",
-                                                description: "The citation has been removed from your saved references",
-                                              });
-                                              
-                                              // Force re-render
-                                              setActiveTab('literature');
-                                              setTimeout(() => setActiveTab('saved'), 10);
-                                            }}
-                                          >
-                                            Remove
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              viewBox="0 0 24 24"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              strokeWidth="2"
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              className="h-4 w-4"
+                                            >
+                                              <path d="M3 6h18"></path>
+                                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                              <line x1="10" y1="11" x2="10" y2="17"></line>
+                                              <line x1="14" y1="11" x2="14" y2="17"></line>
+                                            </svg>
                                           </Button>
                                         </div>
                                       </div>
-                                    </CardContent>
-                                  </Card>
+                                      
+                                      <div className="flex justify-end mt-2 gap-2">
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="flex items-center gap-1"
+                                                onClick={() => {
+                                                  // Find the original device in results
+                                                  const originalDevice = results?.predicateDevices?.find(d => d.kNumber === pred.referenceValue);
+                                                  if (originalDevice) {
+                                                    setSelectedPredicate(originalDevice);
+                                                    toast({
+                                                      title: "Predicate Selected",
+                                                      description: `${originalDevice.deviceName} selected for detailed comparison.`,
+                                                    });
+                                                  } else {
+                                                    toast({
+                                                      title: "Device Not Found",
+                                                      description: "The original device data is not available. Try running the search again.",
+                                                      variant: "destructive",
+                                                    });
+                                                  }
+                                                }}
+                                              >
+                                                <Scissors className="h-3 w-3" />
+                                                <span>Compare</span>
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Compare this predicate with your device</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                        
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="flex items-center gap-1"
+                                                onClick={() => {
+                                                  const citation = `${pred.authors} (${pred.year}). ${pred.title}. FDA 510(k) Database, ${pred.referenceValue}.`;
+                                                  navigator.clipboard.writeText(citation);
+                                                  toast({
+                                                    title: "Citation Copied",
+                                                    description: "Reference citation copied to clipboard",
+                                                  });
+                                                }}
+                                              >
+                                                <Copy className="h-3 w-3" />
+                                                <span>Copy Citation</span>
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Copy formatted citation to clipboard</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      </div>
+                                    </div>
+                                  </div>
                                 ))}
                               </div>
+                            </div>
+                          )}
+                          
+                          {literature.length > 0 && (
+                            <div>
+                              <h3 className="text-sm font-medium mb-3 text-gray-700 flex items-center">
+                                <BookOpen className="h-4 w-4 mr-2 text-green-600" />
+                                Saved Literature References ({literature.length})
+                              </h3>
+                              <div className="space-y-3">
+                                {literature.map((lit) => (
+                                  <div key={lit.id} className="border rounded-md bg-white shadow-sm">
+                                    <div className="p-3">
+                                      <div className="flex justify-between">
+                                        <div>
+                                          <div className="font-medium flex items-center">
+                                            {lit.title}
+                                            {lit.relevanceScore && formatMatchScore(lit.relevanceScore)}
+                                          </div>
+                                          <div className="text-sm text-gray-500">
+                                            {lit.authors?.length > 0 
+                                              ? lit.authors.slice(0, 2).join(', ') + (lit.authors.length > 2 ? ' et al.' : '')
+                                              : 'Unknown authors'
+                                            } • {lit.journal || lit.source} • {lit.year}
+                                          </div>
+                                        </div>
+                                        <div>
+                                          <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
+                                            onClick={() => handleRemoveReference(lit.id)}
+                                          >
+                                            <svg
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              viewBox="0 0 24 24"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              strokeWidth="2"
+                                              strokeLinecap="round"
+                                              strokeLinejoin="round"
+                                              className="h-4 w-4"
+                                            >
+                                              <path d="M3 6h18"></path>
+                                              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
+                                              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
+                                              <line x1="10" y1="11" x2="10" y2="17"></line>
+                                              <line x1="14" y1="11" x2="14" y2="17"></line>
+                                            </svg>
+                                          </Button>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="flex justify-end mt-2 gap-2">
+                                        {lit.url && (
+                                          <TooltipProvider>
+                                            <Tooltip>
+                                              <TooltipTrigger asChild>
+                                                <Button
+                                                  variant="outline"
+                                                  size="sm"
+                                                  className="flex items-center gap-1"
+                                                  onClick={() => {
+                                                    window.open(lit.url, '_blank');
+                                                    toast({
+                                                      title: "Opened Publication",
+                                                      description: `Viewing publication in a new tab`,
+                                                    });
+                                                  }}
+                                                >
+                                                  <ExternalLink className="h-3 w-3" />
+                                                  <span>View Source</span>
+                                                </Button>
+                                              </TooltipTrigger>
+                                              <TooltipContent>
+                                                <p>Open publication in a new window</p>
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          </TooltipProvider>
+                                        )}
+                                        
+                                        <TooltipProvider>
+                                          <Tooltip>
+                                            <TooltipTrigger asChild>
+                                              <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="flex items-center gap-1"
+                                                onClick={() => {
+                                                  // Create citation in APA format
+                                                  let citation = '';
+                                                  if (lit.authors?.length) {
+                                                    if (lit.authors.length === 1) {
+                                                      citation = `${lit.authors[0]}`;
+                                                    } else if (lit.authors.length === 2) {
+                                                      citation = `${lit.authors[0]} & ${lit.authors[1]}`;
+                                                    } else {
+                                                      citation = `${lit.authors[0]} et al.`;
+                                                    }
+                                                  } else {
+                                                    citation = 'Unknown Author';
+                                                  }
+                                                  
+                                                  citation += ` (${lit.year}). ${lit.title}. `;
+                                                  
+                                                  if (lit.journal) {
+                                                    citation += `${lit.journal}, `;
+                                                  }
+                                                  
+                                                  if (lit.volume) {
+                                                    citation += `${lit.volume}`;
+                                                    if (lit.issue) {
+                                                      citation += `(${lit.issue})`;
+                                                    }
+                                                    citation += ', ';
+                                                  }
+                                                  
+                                                  if (lit.pages) {
+                                                    citation += `${lit.pages}. `;
+                                                  }
+                                                  
+                                                  if (lit.doi) {
+                                                    citation += `https://doi.org/${lit.doi}`;
+                                                  }
+                                                  
+                                                  navigator.clipboard.writeText(citation);
+                                                  toast({
+                                                    title: "Citation Copied",
+                                                    description: "Reference citation copied to clipboard",
+                                                  });
+                                                }}
+                                              >
+                                                <Copy className="h-3 w-3" />
+                                                <span>Copy Citation</span>
+                                              </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                              <p>Copy formatted citation to clipboard</p>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          
+                          {savedReferences.length > 0 && (
+                            <div className="flex justify-between pt-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-red-600 border-red-200 hover:bg-red-50"
+                                onClick={() => {
+                                  setSavedReferences([]);
+                                  toast({
+                                    title: "References Cleared",
+                                    description: "All saved references have been removed",
+                                  });
+                                }}
+                              >
+                                Clear All
+                              </Button>
+                              
+                              <Button
+                                size="sm"
+                                onClick={() => {
+                                  // In a real implementation, this would save the references to the server
+                                  // For now, we'll just show a toast message
+                                  toast({
+                                    title: "References Saved",
+                                    description: `${savedReferences.length} references have been saved to your 510(k) submission`,
+                                  });
+                                }}
+                              >
+                                Save to Submission
+                              </Button>
                             </div>
                           )}
                         </div>
