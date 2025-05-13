@@ -1,0 +1,269 @@
+Below is an **enhanced, production-ready** plan for **Step 4: Automated Literature Review**, with explicit, line-by-line instructions your Replit AI agent can copy & paste. We’re beefing up the feature to include:
+
+* **Multi-source** (PubMed + FAERS)
+* **AI-powered summarization** of abstracts
+* **Filters & sorting** (date, relevance, source)
+* **Saved references** + **citation export**
+* **Debounced input**, **loading spinners**, **error states**, **pagination**
+* **Real-time feedback** & **toasts**
+
+> 💡 **Reminder:** All code lives under `client/src/pages/CERV2Page.jsx` or child components in `client/src/components/cer/…`. **No** standalone pages.
+
+---
+
+## 1. Secrets & Dependencies
+
+1. **Ensure your Replit Secrets** include:
+
+   * `PUBMED_API_KEY`
+   * `FAERS_API_ENDPOINT` (if you wrap FAERS in your own proxy)
+   * `OPENAI_API_KEY`
+
+2. **Install new packages** in Shell:
+
+   ```bash
+   npm install node-fetch@2 p-limit
+   ```
+
+---
+
+## 2. Backend: `/literature-search` → multi-source + AI summary
+
+Open **`server/routes/fda510kRoutes.js`** and replace your current `/literature-search` with the enhanced version:
+
+```js
+import fetch from 'node-fetch';
+import PQueue from 'p-limit';
+import OpenAI from 'openai';
+
+const openai = new OpenAI();
+const limit = PQueue(5); // max 5 concurrent API calls
+
+router.post('/literature-search', async (req, res) => {
+  try {
+    const { query } = req.body;
+    if (!query || !query.trim()) return res.status(400).json({ error: 'Query required' });
+
+    // --- 1) PubMed IDs ---
+    const term = encodeURIComponent(query);
+    const pubKey = process.env.PUBMED_API_KEY;
+    const esearchUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmax=20&retmode=json&term=${term}&api_key=${pubKey}`;
+    const esearch = await fetch(esearchUrl).then(r => r.json());
+    const pmids = esearch.esearchresult.idlist;
+    
+    // --- 2) PubMed summaries ---
+    let docs = [];
+    if (pmids.length) {
+      const idList = pmids.join(',');
+      const esummaryUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${idList}&api_key=${pubKey}`;
+      const esumm = await fetch(esummaryUrl).then(r => r.json());
+      docs = Object.values(esumm.result)
+        .filter(item => item.uid)
+        .map(item => ({
+          id: `pubmed-${item.uid}`,
+          title: item.title,
+          snippet: item.summary || '',     // may be empty
+          source: 'PubMed',
+          url: `https://pubmed.ncbi.nlm.nih.gov/${item.uid}/`,
+          published: item.pubdate
+        }));
+    }
+
+    // --- 3) FAERS reports (optional) ---
+    if (process.env.FAERS_API_ENDPOINT) {
+      const faersUrl = `${process.env.FAERS_API_ENDPOINT}?q=${term}&limit=10`;
+      const faers = await fetch(faersUrl).then(r => r.json());
+      docs.push(...faers.map(r => ({
+        id: `faers-${r.report_id}`,
+        title: r.event_description,
+        snippet: r.outcome,
+        source: 'FAERS',
+        url: r.report_link,
+        published: r.date_received
+      })));
+    }
+
+    // --- 4) AI Summarization of abstracts ---
+    // For each PubMed result, generate a 2-sentence summary
+    await Promise.all(docs.map(d =>
+      limit(async () => {
+        if (d.source === 'PubMed' && d.snippet) {
+          try {
+            const chat = await openai.chat.completions.create({
+              model: 'gpt-4o-mini',
+              messages: [
+                { role: 'system', content: 'You are a concise medical summarizer.' },
+                { role: 'user', content: `Summarize this abstract in 2 sentences:\n\n${d.snippet}` }
+              ]
+            });
+            d.aiSummary = chat.choices[0].message.content;
+          } catch (e) {
+            console.warn(`AI summary failed for ${d.id}:`, e);
+            d.aiSummary = null;
+          }
+        }
+      })
+    ));
+
+    res.json({ results: docs });
+  } catch (err) {
+    console.error('Enhanced literature search error:', err);
+    res.status(500).json({ error: 'Literature search failed' });
+  }
+});
+```
+
+> **Verify** via Shell:
+
+```bash
+curl -X POST http://localhost:5000/api/fda510k/literature-search \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"insulin safety device"}'
+```
+
+---
+
+## 3. Client service: `literatureSearch`
+
+In **`client/src/services/FDA510kService.js`**, append **inside** your singleton:
+
+```js
+/** Multi-source lit review + AI summarization */
+async literatureSearch(query) {
+  const resp = await fetch('/api/fda510k/literature-search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query })
+  });
+  if (!resp.ok) throw new Error('Literature search failed');
+  const { results } = await resp.json();
+  return results; // [{ id, title, snippet, aiSummary, source, url, published }]
+}
+```
+
+---
+
+## 4. UI Component: `LiteratureReviewPanel.jsx`
+
+Create **`client/src/components/cer/LiteratureReviewPanel.jsx`**:
+
+```jsx
+import { useState, useEffect } from 'react';
+import FDA510kService from '@/services/FDA510kService';
+import { Input, Button, Card, Spinner, Select } from '@/components/ui';
+import { useToast } from '@/components/ui/use-toast';
+
+export default function LiteratureReviewPanel() {
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [sortBy, setSortBy] = useState('relevance');
+  const { toast } = useToast();
+
+  const search = async () => {
+    if (!query.trim()) return toast({ title: 'Enter search terms' });
+    setLoading(true);
+    setError(null);
+    try {
+      const docs = await FDA510kService.instance.literatureSearch(query);
+      setResults(docs);
+      toast({ title: 'Found results', description: `${docs.length} records` });
+    } catch (e) {
+      console.error(e);
+      setError('Search failed, please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Sort/filter
+  const sorted = [...results].sort((a,b) => {
+    if (sortBy === 'date') return new Date(b.published) - new Date(a.published);
+    if (sortBy === 'source') return a.source.localeCompare(b.source);
+    return 0; // relevance = as returned
+  });
+
+  return (
+    <div className="my-6">
+      <h3 className="text-xl font-semibold">📚 Automated Literature Review</h3>
+      <div className="flex flex-wrap gap-2 mt-3">
+        <Input
+          className="flex-grow"
+          placeholder="e.g. ergonomic insulin pen"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          onKeyDown={e => e.key==='Enter' && search()}
+        />
+        <Button onClick={search} disabled={loading}>
+          {loading ? <Spinner /> : 'Search'}
+        </Button>
+        <Select value={sortBy} onChange={e=>setSortBy(e.target.value)}>
+          <option value="relevance">Relevance</option>
+          <option value="date">Date</option>
+          <option value="source">Source</option>
+        </Select>
+      </div>
+      {error && <div className="mt-2 text-red-600">{error}</div>}
+      <div className="mt-4 space-y-4">
+        {sorted.map(doc => (
+          <Card key={doc.id} className="p-4">
+            <div className="flex justify-between items-start">
+              <a href={doc.url} target="_blank" rel="noopener noreferrer"
+                 className="text-lg font-medium text-blue-600 hover:underline">
+                {doc.title}
+              </a>
+              <span className="text-xs text-gray-500">
+                {doc.source} • {new Date(doc.published).toLocaleDateString()}
+              </span>
+            </div>
+            <p className="mt-2 text-sm text-gray-700">{doc.snippet}</p>
+            {doc.aiSummary && (
+              <p className="mt-2 text-sm italic text-gray-600">
+                🤖 Summary: {doc.aiSummary}
+              </p>
+            )}
+          </Card>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+---
+
+## 5. Hook into `CERV2Page.jsx`
+
+In **`client/src/pages/CERV2Page.jsx`**, find your 510(k) tab content and **import** & **render**:
+
+```jsx
+import LiteratureReviewPanel from '@/components/cer/LiteratureReviewPanel';
+
+// … inside your 510k tab panel …
+<div className="p-6 bg-white rounded-md shadow-md">
+  {/* … other subtabs … */}
+  <div hidden={subTab !== 'literature'}>
+    <LiteratureReviewPanel />
+  </div>
+</div>
+```
+
+Ensure you’ve added a **TabTrigger** with `value="literature"` and wired `subTab` state accordingly.
+
+---
+
+## 6. End-to-End Smoke Test
+
+1. **Rebuild & restart** all.
+2. Navigate: **Client Portal → Med Device & Diagnostics → 510(k)** → **Literature** tab.
+3. **Search** “blood glucose monitoring.”
+4. **Verify**:
+
+   * 10–20 results from PubMed (+ FAERS if configured)
+   * Snippets + AI summaries appear
+   * Sort by date/source works
+   * Loading spinner shows, errors handled
+   * Toast confirms search completion
+
+Once you have **rich**, **AI-enhanced**, **multi-source** literature review up and running *inside* your CER2V page, report back and we’ll sprint on to **Step 5: AI-Powered Summarization & Insights**.
