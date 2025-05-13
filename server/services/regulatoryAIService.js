@@ -19,8 +19,8 @@ const openai = new OpenAI({
 });
 
 /**
- * Simple vector similarity search using SQL (in a real implementation, 
- * we would use a proper vector database like FAISS or Pinecone)
+ * Enhanced semantic search to match user queries against knowledge base documents
+ * This version uses a more sophisticated keyword matching with ranking
  * @param {string} query - The user's query
  * @param {number} limit - Number of documents to retrieve
  * @returns {Promise<Array>} - Array of relevant documents
@@ -34,43 +34,156 @@ async function retrieveDocuments(query, limit = 5) {
         return;
       }
       
-      // In a real implementation, we would do semantic search
-      // For now, we'll use a simple keyword search
-      const keywords = query.toLowerCase()
-        .replace(/[^\w\s]/g, '')
-        .split(/\s+/)
-        .filter(word => word.length > 3);
+      // Extract and clean keywords from the query
+      const rawQuery = query.toLowerCase().trim();
       
-      if (keywords.length === 0) {
+      // Identify regulatory jurisdictions in the query
+      const jurisdictions = [
+        {term: 'fda', jurisdiction: 'USA'}, 
+        {term: 'ema', jurisdiction: 'EU'}, 
+        {term: 'eu mdr', jurisdiction: 'EU'},
+        {term: 'mdr', jurisdiction: 'EU'},
+        {term: 'eudamed', jurisdiction: 'EU'},
+        {term: 'pmda', jurisdiction: 'Japan'},
+        {term: 'japan', jurisdiction: 'Japan'},
+        {term: 'nmpa', jurisdiction: 'China'},
+        {term: 'china', jurisdiction: 'China'},
+        {term: 'health canada', jurisdiction: 'Canada'},
+        {term: 'canada', jurisdiction: 'Canada'},
+        {term: 'tga', jurisdiction: 'Australia'},
+        {term: 'australia', jurisdiction: 'Australia'},
+        {term: 'ich', jurisdiction: 'Global'}
+      ];
+      
+      // Check if any jurisdiction terms are in the query
+      let targetJurisdiction = null;
+      for (const j of jurisdictions) {
+        if (rawQuery.includes(j.term)) {
+          targetJurisdiction = j.jurisdiction;
+          break;
+        }
+      }
+      
+      // Process keywords for the search
+      const stopWords = ['a', 'an', 'the', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'with', 'by', 'about', 
+                         'as', 'into', 'like', 'through', 'after', 'over', 'between', 'out', 'against', 'during', 'without'];
+      
+      // Get all keywords
+      const allKeywords = rawQuery
+        .replace(/[^\w\s]/g, ' ')  // Replace punctuation with spaces
+        .split(/\s+/)              // Split on whitespace
+        .filter(word => word.length > 2 && !stopWords.includes(word)); // Remove stop words and short words
+      
+      // If no useful keywords, return empty
+      if (allKeywords.length === 0) {
         resolve([]);
         db.close();
         return;
       }
       
-      // Build a query that looks for each keyword in the content
-      const conditions = keywords.map(() => 'LOWER(content) LIKE ?').join(' OR ');
-      const params = keywords.map(keyword => `%${keyword}%`);
+      // Extract specialized regulatory terms
+      const regulatoryTerms = extractRegulatoryTerms(rawQuery);
       
-      const sql = `
-        SELECT id, source, section, content, jurisdiction, tags 
-        FROM knowledge_base 
-        WHERE ${conditions}
-        ORDER BY id DESC
-        LIMIT ?
-      `;
-      params.push(limit);
+      // Prepare SQL
+      let sql = `
+        SELECT id, source, section, content, jurisdiction, tags,
+               (`;
       
-      db.all(sql, params, (err, rows) => {
+      // Create a scoring formula - each keyword match adds points
+      const scoreClauses = allKeywords.map(keyword => 
+        `(CASE WHEN LOWER(content) LIKE '%${keyword}%' THEN 5 ELSE 0 END) + ` + 
+        `(CASE WHEN LOWER(source) LIKE '%${keyword}%' THEN 10 ELSE 0 END) + ` +
+        `(CASE WHEN LOWER(section) LIKE '%${keyword}%' THEN 8 ELSE 0 END)`
+      );
+      
+      // Add bonuses for regulatory term matches
+      const regulatoryScoreClauses = regulatoryTerms.map(term => 
+        `(CASE WHEN LOWER(content) LIKE '%${term}%' THEN 15 ELSE 0 END) + ` +
+        `(CASE WHEN LOWER(source) LIKE '%${term}%' THEN 20 ELSE 0 END) + ` +
+        `(CASE WHEN LOWER(tags) LIKE '%${term}%' THEN 15 ELSE 0 END)`
+      );
+      
+      // Combine all scoring clauses
+      const allScoreClauses = [...scoreClauses, ...regulatoryScoreClauses];
+      sql += allScoreClauses.join(' + ');
+      sql += `) AS relevance_score `;
+      
+      // FROM and WHERE clauses
+      sql += `FROM knowledge_base WHERE `;
+      
+      // Base condition - at least one keyword must match
+      const keywordConditions = allKeywords.map(keyword => 
+        `LOWER(content) LIKE '%${keyword}%' OR LOWER(source) LIKE '%${keyword}%' OR LOWER(section) LIKE '%${keyword}%' OR LOWER(tags) LIKE '%${keyword}%'`
+      );
+      sql += `(${keywordConditions.join(' OR ')})`;
+      
+      // Add jurisdiction filter if detected
+      if (targetJurisdiction) {
+        sql += ` AND (jurisdiction = '${targetJurisdiction}' OR jurisdiction = 'Global')`;
+      }
+      
+      // Order by relevance score and limit results
+      sql += ` ORDER BY relevance_score DESC LIMIT ${limit}`;
+      
+      // Execute query
+      db.all(sql, [], (err, rows) => {
         if (err) {
-          console.error('Error querying database:', err.message);
+          console.error('Error in similarity search:', err.message);
           reject(err);
         } else {
+          // Log the top match for debugging
+          if (rows.length > 0) {
+            console.log(`Top match for "${query}": ${rows[0].source} (Score: ${rows[0].relevance_score})`);
+          }
           resolve(rows);
         }
         db.close();
       });
     });
   });
+}
+
+/**
+ * Extract regulatory-specific terms from a query
+ * @param {string} query - The user's query 
+ * @returns {Array<string>} - Array of regulatory terms
+ */
+function extractRegulatoryTerms(query) {
+  // Key regulatory terminology to detect
+  const termDictionary = [
+    // Submission types
+    '510k', 'pma', 'de novo', 'hde', 'ide', 'ind', 'nda', 'anda', 'bla',
+    'premarket', 'post-market', 'postmarket', 'special', 'traditional', 'abbreviated',
+    
+    // Regulatory frameworks
+    'mdr', 'ivdr', 'gcp', 'gmp', 'qsr', 'iso 13485', 'iso 14971', 'meddev',
+    
+    // ICH Guidelines
+    'ich e1', 'ich e2', 'ich e3', 'ich e4', 'ich e5', 'ich e6', 'ich e7', 'ich e8',
+    'ich e9', 'ich e10', 'ich e11', 'ich e12', 'ich e14', 'ich e15', 'ich e16', 
+    'ich e17', 'ich e18', 'ich e19', 'ich e20',
+    
+    // Clinical content
+    'clinical evaluation', 'clinical trial', 'clinical data', 'clinical evidence',
+    'cer', 'clinical evaluation report', 'pmcf', 'safety', 'efficacy',
+    'substantial equivalence', 'predicate', 'device classification',
+    
+    // Technical terminology
+    'technical file', 'technical documentation', 'declaration of conformity',
+    'essential requirements', 'udigspr', 'notified body', 'competent authority'
+  ];
+  
+  // Check for each term in the query
+  const foundTerms = [];
+  const lowerQuery = query.toLowerCase();
+  
+  for (const term of termDictionary) {
+    if (lowerQuery.includes(term.toLowerCase())) {
+      foundTerms.push(term);
+    }
+  }
+  
+  return foundTerms;
 }
 
 /**
