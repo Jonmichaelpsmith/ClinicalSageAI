@@ -1,1308 +1,1399 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
-import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
-import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
-import LiteratureMethodologyPanel from '@/components/cer/LiteratureMethodologyPanel';
-import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
-import CerAssistantPanel from '@/components/cer/CerAssistantPanel';
-import DocumentVaultPanel from '@/components/cer/DocumentVaultPanel';
-import CerDataRetrievalPanel from '@/components/cer/CerDataRetrievalPanel';
-import EquivalenceBuilderPanel from '@/components/cer/EquivalenceBuilderPanel';
-import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
-import ClinicalEvaluationPlanPanel from '@/components/cer/ClinicalEvaluationPlanPanel';
-import QualityManagementPlanPanel from '@/components/cer/QualityManagementPlanPanel';
-import RegulatoryTraceabilityMatrix from '@/components/cer/RegulatoryTraceabilityMatrix';
-import GSPRMappingPanel from '@/components/cer/GSPRMappingPanel';
-import LiteratureReviewWorkflow from '@/components/cer/LiteratureReviewWorkflow';
-import NotificationBanner from '@/components/cer/NotificationBanner';
-import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPanel';
-import ExportModule from '@/components/cer/ExportModule';
-import CerComprehensiveReportsPanel from '@/components/cer/CerComprehensiveReportsPanel';
-import MAUDIntegrationPanel from '@/components/cer/MAUDIntegrationPanel';
-import ESTARPackageBuilder from '@/components/510k/ESTARPackageBuilder';
-import RegPathwayAnalyzer from '@/components/510k/RegPathwayAnalyzer';
-import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { cerApiService } from '@/services/CerAPIService';
-import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, GitBranch, ArrowRight, ArrowLeft, Package, Search } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import KAutomationPanel from '@/components/cer/KAutomationPanel';
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { fetchAllCERs, generateFullCER, generateSampleCER } from "../services/cerService";
+import { fetchDocuments, approveDocument, fetchCERHistory } from "../services/documentService";
+import DocumentFilterPanel from "../components/documents/DocumentFilterPanel";
+import DocumentList from "../components/documents/DocumentList";
+import { 
+  FileText, Search, Download, Upload, FileSpreadsheet, 
+  Book, Database, Layers, Settings, Microscope, BarChart4, 
+  Clock, CheckCircle2, AlarmClock, FolderOpen, FileCog, FilePlus2,
+  Folder, Copy, ChevronDown, ThumbsUp, ThumbsDown, RefreshCw, X
+} from 'lucide-react';
 
-export default function CERV2Page() {
-  const [title, setTitle] = useState('Clinical Evaluation Report');
-  const [deviceType, setDeviceType] = useState('Class II Medical Device');
-  const [documentType, setDocumentType] = useState('cer'); // Options: 'cer' or '510k'
+/**
+ * Advanced CER Generator™ Page (V2)
+ * 
+ * This page provides a comprehensive document management system for:
+ * - Creating Clinical Evaluation Reports with AI assistance
+ * - AI co-authoring with one-click full report generation
+ * - Past reports library with version management
+ * - Document vault integration
+ * - Integration with PubMed and FDA data sources
+ * - Template management and import
+ * - Collaborative review and audit trails
+ */
+const CERV2Page = () => {
+  const [activeTab, setActiveTab] = useState('input');
   const [deviceName, setDeviceName] = useState('');
+  const [deviceType, setDeviceType] = useState('');
   const [manufacturer, setManufacturer] = useState('');
-  const [intendedUse, setIntendedUse] = useState('');
-  const [faers, setFaers] = useState([]);
-  const [cerDocumentId, setCerDocumentId] = useState(() => {
-    const prefix = "CER-";
-    return prefix + Math.floor(100000 + Math.random() * 900000);
-  });
-  const [k510DocumentId, setK510DocumentId] = useState(() => {
-    const prefix = "510K-";
-    return prefix + Math.floor(100000 + Math.random() * 900000);
-  });
-  const [comparators, setComparators] = useState([]);
-  const [sections, setSections] = useState([]);
-  const [equivalenceData, setEquivalenceData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetchingFaers, setIsFetchingFaers] = useState(false);
-  const [isFetchingLiterature, setIsFetchingLiterature] = useState(false);
-  const [activeTab, setActiveTab] = useState('builder');
-  console.log('Active Tab:', activeTab); // Debug helper
-  const [compliance, setCompliance] = useState(null);
-  const [draftStatus, setDraftStatus] = useState('in-progress');
-  const [exportTimestamp, setExportTimestamp] = useState(null);
-  const [isComplianceRunning, setIsComplianceRunning] = useState(false);
-  const [isGeneratingFullCER, setIsGeneratingFullCER] = useState(false);
-  const [showDeviceInfoDialog, setShowDeviceInfoDialog] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState('eu-mdr');
-  const [showWizard, setShowWizard] = useState(false);
-  const [showEvidenceReminder, setShowEvidenceReminder] = useState(true);
-  const [showEstarPackage, setShowEstarPackage] = useState(false);
-  const { toast } = useToast();
+  const [selectedTemplate, setSelectedTemplate] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedArticles, setSelectedArticles] = useState([]);
+  const [fdaData, setFdaData] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [reportStatus, setReportStatus] = useState(null);
+  const [generationProgress, setGenerationProgress] = useState(0);
+  const [generationStep, setGenerationStep] = useState('');
+  const [sampleModalOpen, setSampleModalOpen] = useState(false);
+  const [loadingSample, setLoadingSample] = useState(false);
+  const [sampleURL, setSampleURL] = useState(null);
+  const [selectedSampleTemplate, setSelectedSampleTemplate] = useState('mdr-full');
   
-  // Helper function to format CtQ factors for a specific objective
-  const getCtqFactorsForSection = (objectiveId, ctqFactors) => {
-    const factors = ctqFactors.filter(factor => factor.objectiveId === objectiveId);
+  // Document filter state
+  const [docFilters, setDocFilters] = useState({});
+  const [documents, setDocuments] = useState([]);
+  const [docsLoading, setDocsLoading] = useState(false);
+  const [docsPagination, setDocsPagination] = useState({ page: 1, totalPages: 1 });
+  
+  // Mock data for existing CER reports
+  const [pastReports, setPastReports] = useState([
+    {
+      id: 'CER20250327001',
+      title: 'CardioMonitor Pro 3000 - EU MDR Clinical Evaluation',
+      status: 'final',
+      deviceName: 'CardioMonitor Pro 3000',
+      deviceType: 'Patient Monitoring Device',
+      manufacturer: 'MedTech Innovations, Inc.',
+      templateUsed: 'EU MDR 2017/745 Full Template',
+      generatedAt: '2025-03-27T14:23:45Z',
+      lastModified: '2025-04-02T09:15:22Z',
+      pageCount: 78,
+      wordCount: 28506,
+      sections: 14,
+      projectId: 'PR-CV-2025'
+    },
+    {
+      id: 'CER20250312002',
+      title: 'NeuroPulse Implant - MEDDEV Clinical Evaluation',
+      status: 'draft',
+      deviceName: 'NeuroPulse Implant',
+      deviceType: 'Implantable Medical Device',
+      manufacturer: 'Neural Systems Ltd.',
+      templateUsed: 'MEDDEV 2.7/1 Rev 4 Template',
+      generatedAt: '2025-03-12T10:08:31Z',
+      lastModified: '2025-03-12T10:08:31Z',
+      pageCount: 64,
+      wordCount: 22145,
+      sections: 12,
+      projectId: 'PR-IM-2025'
+    },
+    {
+      id: 'CER20250220003',
+      title: 'LaserScan X500 - FDA 510(k) Clinical Evaluation',
+      status: 'final',
+      deviceName: 'LaserScan X500',
+      deviceType: 'Diagnostic Equipment',
+      manufacturer: 'OptiMed Devices, Inc.',
+      templateUsed: 'FDA 510(k) Template',
+      generatedAt: '2025-02-20T16:42:19Z',
+      lastModified: '2025-03-01T11:33:57Z',
+      pageCount: 52,
+      wordCount: 18230,
+      sections: 10,
+      projectId: 'PR-DG-2025'
+    },
+    {
+      id: 'CER20250115004',
+      title: 'DermaSense Probe - PMDA Clinical Evaluation',
+      status: 'final',
+      deviceName: 'DermaSense Probe',
+      deviceType: 'Diagnostic Equipment',
+      manufacturer: 'TechMed Solutions',
+      templateUsed: 'PMDA Template (Japan)',
+      generatedAt: '2025-01-15T09:27:45Z',
+      lastModified: '2025-01-30T14:55:22Z',
+      pageCount: 62,
+      wordCount: 21578,
+      sections: 11,
+      projectId: 'PR-DG-2025'
+    },
+    {
+      id: 'CER20241205005',
+      title: 'SurgAssist Robotic Arm - EU MDR Clinical Evaluation',
+      status: 'draft',
+      deviceName: 'SurgAssist Robotic Arm',
+      deviceType: 'Surgical Instrument',
+      manufacturer: 'Surgical Robotics, Inc.',
+      templateUsed: 'EU MDR 2017/745 Full Template',
+      generatedAt: '2024-12-05T13:11:38Z',
+      lastModified: '2025-04-01T16:22:07Z',
+      pageCount: 85,
+      wordCount: 31240,
+      sections: 15,
+      projectId: 'PR-SR-2024'
+    }
+  ]);
+  
+  // Mock device type options
+  const deviceTypes = [
+    { value: 'implantable', label: 'Implantable Medical Device' },
+    { value: 'diagnostic', label: 'Diagnostic Equipment' },
+    { value: 'surgical', label: 'Surgical Instrument' },
+    { value: 'monitoring', label: 'Patient Monitoring Device' },
+    { value: 'therapeutic', label: 'Therapeutic Device' }
+  ];
+  
+  // Mock template options
+  const templateOptions = [
+    { value: 'template_mdr_full', label: 'EU MDR 2017/745 Full Template' },
+    { value: 'template_mdr_lite', label: 'EU MDR Simplified Template' },
+    { value: 'template_meddev', label: 'MEDDEV 2.7/1 Rev 4 Template' },
+    { value: 'template_fda', label: 'FDA 510(k) Template' },
+    { value: 'template_pmda', label: 'PMDA Template (Japan)' }
+  ];
+
+  // Simulated PubMed search
+  const handlePubMedSearch = async () => {
+    if (!searchTerm.trim()) return;
     
-    if (factors.length === 0) {
-      return "No Critical-to-Quality factors defined.";
-    }
+    setIsSearching(true);
     
-    return `**Critical-to-Quality Factors:**\n${factors.map(factor => `
-* **${factor.name}**
-  * Associated Section: ${factor.associatedSection}
-  * Risk Level: ${factor.riskLevel}
-  * Description: ${factor.description}
-  * Mitigation: ${factor.mitigation}
-`).join('')}`;
+    // Simulate API call with timeout
+    setTimeout(() => {
+      // Mock PubMed search results
+      const mockResults = [
+        {
+          id: 'pmid12345678',
+          title: 'Clinical outcomes of patients using ' + deviceName + ' for treatment of chronic conditions',
+          authors: 'Johnson AB, Smith CD, Thompson EF',
+          journal: 'Journal of Medical Devices',
+          year: '2024',
+          abstract: 'This study evaluated the safety and efficacy of ' + deviceName + ' in 150 patients over a 24-month period. Results showed statistically significant improvement in outcomes compared to traditional methods...'
+        },
+        {
+          id: 'pmid23456789',
+          title: 'Long-term safety analysis of ' + deviceType + ' systems in clinical practice',
+          authors: 'Williams GH, Davis IJ, Anderson KL',
+          journal: 'Medical Technology Research',
+          year: '2023',
+          abstract: 'A retrospective analysis of 500 patients treated with various ' + deviceType + ' systems, including evaluation of adverse events and device longevity. The study found overall complication rates of 3.2%...'
+        },
+        {
+          id: 'pmid34567890',
+          title: 'Comparing performance metrics between leading ' + deviceType + ' manufacturers',
+          authors: 'Chen M, Rodriguez P, Kim SJ',
+          journal: 'European Journal of Medical Engineering',
+          year: '2024',
+          abstract: 'This comparative study examined five leading ' + deviceType + ' systems from different manufacturers, assessing performance, reliability, and user satisfaction. Results indicated that devices from ' + (manufacturer || 'leading manufacturers') + ' performed consistently better in usability metrics...'
+        },
+        {
+          id: 'pmid45678901',
+          title: 'Risk assessment framework for ' + deviceType + ' systems in clinical environments',
+          authors: 'Taylor RB, Collins LM, Martinez NO',
+          journal: 'International Safety Journal',
+          year: '2022',
+          abstract: 'This paper proposes a standardized risk assessment framework specific to ' + deviceType + ' systems, with validation across 12 clinical sites. The framework identified previously overlooked risk factors and suggests mitigation strategies...'
+        },
+        {
+          id: 'pmid56789012',
+          title: 'Post-market surveillance data analysis for ' + deviceType + ' systems',
+          authors: 'Brown VP, Wilson ST, Lee JH',
+          journal: 'Regulatory Affairs in Medicine',
+          year: '2023',
+          abstract: 'Analysis of 5 years of post-market surveillance data for ' + deviceType + ' systems, covering over 10,000 device-years. The study identified trends in device-related incidents and suggested improvements to surveillance methodologies...'
+        }
+      ];
+      
+      setSearchResults(mockResults);
+      setIsSearching(false);
+    }, 1500);
   };
-
-  // Helper functions
-  const handleExport = async (format) => {
-    setIsLoading(true);
-    try {
-      // Code for export handling
-      setExportTimestamp(new Date());
-      toast({
-        title: `Export ${format.toUpperCase()} Successful`,
-        description: "Your Clinical Evaluation Report has been exported.",
-        variant: "success",
-      });
-    } catch (error) {
-      toast({
-        title: "Export Failed",
-        description: error.message || "There was an error exporting your CER.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const generateFullCER = async () => {
-    setIsGeneratingFullCER(true);
-    try {
-      // Code for CER generation
-      toast({
-        title: "CER Generated Successfully",
-        description: "Your Clinical Evaluation Report has been generated with all required sections.",
-        variant: "success",
-      });
-    } catch (error) {
-      toast({
-        title: "CER Generation Failed",
-        description: error.message || "There was an error generating your CER.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsGeneratingFullCER(false);
-    }
-  };
-
-  const getWizardStep = (tab) => {
-    if (['builder', 'cep', 'qmp', 'documents', 'data-retrieval'].includes(tab)) {
-      return 'preparation';
-    } else if (['literature', 'literature-review', 'internal-clinical-data', 'sota'].includes(tab)) {
-      return 'evidence';
-    } else if (['equivalence', 'gspr-mapping', 'compliance', 'assistant'].includes(tab)) {
-      return 'analysis';
-    } else if (['export'].includes(tab)) {
-      return 'export';
+  
+  // Add/remove article to selection
+  const toggleArticleSelection = (article) => {
+    if (selectedArticles.some(a => a.id === article.id)) {
+      setSelectedArticles(selectedArticles.filter(a => a.id !== article.id));
     } else {
-      return 'output';
+      setSelectedArticles([...selectedArticles, article]);
     }
-  };
-
-  // Simple navigation tab rendering function
-  const renderNavigation = () => {
-    // Define tab groups
-    const tabGroups = [
-      {
-        label: "Preparation:",
-        tabs: [
-          { id: "builder", label: "Builder", icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-          { id: "cep", label: "Evaluation Plan", icon: <ClipboardList className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-          { id: "qmp", label: <div className="flex flex-col items-center leading-tight">
-            <span>Quality Management</span>
-            <span className="text-[0.65rem] text-blue-600">ICH E6(R3)</span>
-          </div>, icon: <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-          { id: "documents", label: <div className="flex flex-col items-center leading-tight">
-            <span>Documents</span>
-            <span className="text-[0.65rem] text-blue-600">Validated for GxP</span>
-          </div>, icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-          { id: "data-retrieval", label: "Data Retrieval", icon: <Database className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-          { id: "510k", label: <div className="flex flex-col items-center leading-tight">
-            <span>510(k) Automation</span>
-            <span className="text-[0.65rem] text-blue-600">FDA Submission</span>
-          </div>, icon: <Archive className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
-        ]
-      },
-      {
-        label: "Evidence:",
-        tabs: [
-          { id: "literature", label: "Literature", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
-          { id: "literature-review", label: "Literature Review", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
-          { id: "internal-clinical-data", label: "Internal Clinical Data", icon: <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
-          { id: "sota", label: "State of Art", icon: <BookMarked className="h-3.5 w-3.5 mr-1.5 text-green-600" /> }
-        ]
-      },
-      {
-        label: "Analysis:",
-        tabs: [
-          { id: "equivalence", label: "Equivalence", icon: <GitCompare className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
-          { id: "gspr-mapping", label: "GSPR Mapping", icon: <BarChart className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
-          { id: "traceability", label: <div className="flex flex-col items-center leading-tight">
-            <span>Regulatory Traceability</span>
-            <span className="text-[0.65rem] text-purple-600">ICH E6(R3) & MDR</span>
-          </div>, icon: <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
-          { id: "compliance", label: documentType === '510k' ? 
-            <div className="flex flex-col items-center leading-tight">
-              <span>FDA Compliance</span>
-              <span className="text-[0.65rem] text-purple-600">510(k) Requirements</span>
-            </div> : "Compliance", 
-            icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
-          { id: "maud", label: <div className="flex flex-col items-center leading-tight">
-            <span>MAUD Integration</span>
-            <span className="text-[0.65rem] text-purple-600">Algorithm Validation</span>
-          </div>, icon: <Shield className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
-          { id: "reports", label: <div className="flex items-center">
-            <span>Reports</span>
-            <span className="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full shadow-sm">New</span>
-          </div>, icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-          { id: "assistant", label: "Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> }
-        ]
-      },
-      {
-        label: "Export:",
-        tabs: [
-          { id: "export", label: "Export Options", icon: <Download className="h-3.5 w-3.5 mr-1.5 text-green-600" /> }
-        ]
-      }
-    ];
-
-    return (
-      <nav className="w-full shadow-sm rounded-md overflow-hidden">
-        {tabGroups.map((group, groupIndex) => (
-          <div 
-            key={groupIndex} 
-            className={`overflow-x-auto whitespace-nowrap bg-white border-b border-[#E1DFDD] py-2 ${groupIndex === tabGroups.length - 1 ? 'mb-4' : ''} ${
-              groupIndex === 0 ? 'bg-gradient-to-r from-blue-50 to-white' : 
-              groupIndex === 1 ? 'bg-gradient-to-r from-green-50 to-white' :
-              groupIndex === 2 ? 'bg-gradient-to-r from-purple-50 to-white' :
-              'bg-gradient-to-r from-gray-50 to-white'
-            }`}
-          >
-            <div className="flex items-center px-6">
-              <div className="flex items-center mr-4 flex-shrink-0">
-                <span className={`text-xs font-medium ${
-                  groupIndex === 0 ? 'text-blue-700' : 
-                  groupIndex === 1 ? 'text-green-700' :
-                  groupIndex === 2 ? 'text-purple-700' :
-                  'text-gray-700'
-                }`}>{group.label}</span>
-              </div>
-              
-              <div className="inline-flex items-center">
-                {group.tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`
-                      flex-shrink-0 mx-1 rounded-none border-b-2 px-3 py-1.5
-                      font-normal text-xs sm:text-sm flex items-center
-                      transition-all duration-200 ease-in-out
-                      ${activeTab === tab.id 
-                        ? `border-[#0F6CBD] text-[#0F6CBD] bg-blue-50 bg-opacity-50` 
-                        : 'border-transparent text-[#616161] hover:text-[#0F6CBD] hover:bg-blue-50 hover:bg-opacity-20'
-                      }
-                    `}
-                  >
-                    {tab.icon}
-                    <span>{tab.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        ))}
-      </nav>
-    );
-  };
-
-  // Direct action for 510(k) Automation
-  const show510kPanel = () => {
-    console.log("Attempting to show 510k panel");
-    setActiveTab('510k');
-    console.log("Active tab set to:", '510k');
   };
   
-  // Navigate to eSTAR package builder tab directly
-  const navigateToESTARPackage = () => {
-    setDocumentType('510k'); // Set document type to 510k
-    setActiveTab('510k'); // Show 510k tab
-    setShowEstarPackage(true); // This flag will help the 510k tab initialize with the eSTAR tab active
-    console.log("Navigating to eSTAR package builder within Medical Device and Diagnostics module");
-  };
-  
-  // Render content based on active tab
-  const renderContent = () => {
-    if (activeTab === 'builder') {
-      return (
-        <div className="bg-gradient-to-b from-blue-50 to-white py-4 rounded-md">
-          <div className="flex flex-col md:flex-row items-start justify-between">
-            <div className="flex-1 px-4">
-              <h2 className="text-xl font-semibold text-blue-700">Section Generator</h2>
-              <div className="mt-2 mb-4">
-                <div className="bg-blue-100 rounded-md px-3 py-1 text-sm inline-flex items-center gap-1 text-blue-700 shadow-sm">
-                  <span className="flex items-center"><Lightbulb className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> AI-Powered</span>
-                </div>
-              </div>
-              <CerBuilderPanel
-                title={title}
-                faers={faers}
-                comparators={comparators}
-                sections={sections}
-                onTitleChange={setTitle}
-                onSectionsChange={setSections}
-                onFaersChange={setFaers}
-                onComparatorsChange={setComparators}
-              />
-            </div>
-            <div className="w-full md:w-auto md:min-w-[280px] md:max-w-[320px] px-4 mt-6 md:mt-0">
-              <h2 className="text-xl font-semibold text-[#323130]">
-                {documentType === 'cer' ? 'Report Sections' : 'Submission Sections'}
-              </h2>
-              <div className="mt-2 mb-4">
-                <div className="bg-[#F3F2F1] rounded px-3 py-1 text-sm inline-flex items-center gap-1">
-                  <span>{sections.length} sections</span>
-                </div>
-                <div className="mt-2 text-xs text-blue-600 font-medium">
-                  {documentType === 'cer' ? 'EU MDR Compliant' : 'FDA 510(K) Format'}
-                </div>
-              </div>
-              
-              <div className="mb-4">
-                <h3 className="text-md font-medium mb-2 text-[#323130]">
-                  {documentType === 'cer' ? 'Report Title' : 'Submission Title'}
-                </h3>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full p-2 border border-[#E1DFDD] rounded"
-                  placeholder={documentType === 'cer' ? 'Clinical Evaluation Report' : '510(K) Premarket Notification'}
-                />
-              </div>
-              
-              {sections.length > 0 ? (
-                <div className="space-y-2">
-                  {sections.map((section, idx) => (
-                    <div key={idx} className="bg-[#F3F2F1] p-2 rounded text-sm">
-                      {section.title}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-gray-500 text-sm italic">
-                  No sections added yet. Generate sections from the tools on the left.
-                </div>
-              )}
-            </div>
-          </div>
-          <div className="px-4 mt-4 text-center flex justify-center space-x-3">
-            <Button 
-              onClick={() => handleExport('docx')} 
-              className="bg-transparent text-[#0F6CBD] hover:bg-[#EFF6FC] border-none" 
-              variant="outline"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Export to Word
-            </Button>
-            <Button 
-              onClick={() => handleExport('pdf')} 
-              className="bg-transparent text-green-600 hover:bg-green-50 border-none" 
-              variant="outline"
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              Export to PDF
-            </Button>
-            {documentType === '510k' && (
-              <Button 
-                onClick={() => handleExport('eCopy')} 
-                className="bg-transparent text-purple-600 hover:bg-purple-50 border-none" 
-                variant="outline"
-                title="Creates FDA eCopy format for submission"
-              >
-                <Archive className="h-4 w-4 mr-2" />
-                FDA eCopy
-              </Button>
-            )}
-          </div>
-        </div>
-      );
-    }
+  // Fetch FDA data
+  const fetchFDAData = async () => {
+    if (!deviceName.trim()) return;
     
-    if (activeTab === 'cep') {
-      return (
-        <ClinicalEvaluationPlanPanel
-          onCEPGenerated={(cepData) => {
-            const existingIndex = sections.findIndex(
-              section => section.type === 'cep' || 
-              (section.title && section.title.toLowerCase().includes('evaluation plan'))
-            );
-            
-            if (existingIndex >= 0) {
-              const updatedSections = [...sections];
-              updatedSections[existingIndex] = {
-                ...updatedSections[existingIndex],
-                content: cepData.content,
-                lastUpdated: new Date().toISOString()
-              };
-              setSections(updatedSections);
-              
-              toast({
-                title: "CEP Updated",
-                description: "Clinical Evaluation Plan has been updated in your CER.",
-                variant: "success"
-              });
-            } else {
-              setSections([...sections, cepData]);
-              
-              toast({
-                title: "CEP Added",
-                description: "Clinical Evaluation Plan has been added to your CER.",
-                variant: "success"
-              });
-            }
-          }}
-          deviceName={deviceName}
-          deviceType={deviceType}
-          manufacturer={manufacturer}
-        />
-      );
-    }
+    setIsSearching(true);
     
-    if (activeTab === 'qmp') {
-      return (
-        <QualityManagementPlanPanel
-          deviceName={deviceName}
-          manufacturer={manufacturer}
-          cerData={{
-            version: "1.0",
-            author: "", // This would ideally come from user context
-            title: title
-          }}
-          onQMPGenerated={(qmpData) => {
-            // Create a new section for the QMS Plan with metadata
-            const qmpTitle = qmpData.title || "Quality Management Plan";
-            const qmpContent = qmpData.content || "";
-            const qmpMetadata = qmpData.metadata || {};
-            
-            const qmsSection = {
-              title: qmpTitle,
-              type: "qmp",
-              content: qmpContent,
-              metadata: qmpMetadata,
-              lastUpdated: qmpData.lastUpdated || new Date().toISOString()
-            };
-            
-            // Check if a QMS section already exists
-            const existingIndex = sections.findIndex(
-              section => section.type === 'qmp' || section.type === 'qms-plan' || 
-              (section.title && section.title.toLowerCase().includes('quality management'))
-            );
-            
-            if (existingIndex >= 0) {
-              const updatedSections = [...sections];
-              updatedSections[existingIndex] = {
-                ...updatedSections[existingIndex],
-                content: qmsSection.content,
-                metadata: qmpMetadata,
-                lastUpdated: new Date().toISOString()
-              };
-              setSections(updatedSections);
-              
-              toast({
-                title: "QMP Updated",
-                description: "Quality Management Plan (ICH E6(R3)) has been updated in your CER.",
-                variant: "success"
-              });
-            } else {
-              setSections([...sections, qmsSection]);
-              
-              toast({
-                title: "QMP Added",
-                description: "Quality Management Plan (ICH E6(R3)) has been added to your CER.",
-                variant: "success"
-              });
-            }
-          }}
-        />
-      );
-    }
-    
-    if (activeTab === 'literature') {
-      return (
-        <Tabs defaultValue="search" className="w-full">
-          <TabsList className="flex overflow-x-auto whitespace-nowrap bg-white border-b border-gray-200 rounded-none w-full justify-start gap-2">
-            <TabsTrigger value="search" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] flex-shrink-0">
-              Search & Analyze
-            </TabsTrigger>
-            <TabsTrigger value="methodology" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] flex-shrink-0">
-              Search Methodology
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="search" className="mt-4">
-            <LiteratureSearchPanel
-              onAddSection={(newSection) => {
-                setSections([...sections, newSection]);
-                toast({
-                  title: "Literature Review Added",
-                  description: "Added to your CER.",
-                  variant: "success",
-                });
-              }}
-              deviceName={deviceName}
-              manufacturer={manufacturer}
-              cerTitle={title}
-            />
-          </TabsContent>
-          
-          <TabsContent value="methodology" className="mt-4">
-            <LiteratureMethodologyPanel
-              onAddToCER={(newSection) => {
-                setSections([...sections, newSection]);
-                toast({
-                  title: "Literature Methodology Added",
-                  description: "Search methodology documentation added to your CER.",
-                  variant: "success",
-                });
-              }}
-              deviceName={deviceName}
-              deviceType={deviceType}
-              manufacturer={manufacturer}
-            />
-          </TabsContent>
-        </Tabs>
-      );
-    }
-    
-    // Add other tab content handlers for literature-review, internal-clinical-data, 
-    // documents, data-retrieval, equivalence, gspr-mapping, sota, assistant
-    
-    if (activeTab === 'maud') {
-      // Store the document ID in localStorage for persistence across module changes
-      if (cerDocumentId) {
-        localStorage.setItem('cerDocumentId', cerDocumentId);
-      }
+    try {
+      // Call our API route which wraps the OpenFDA API
+      const response = await fetch(`/api/openfda/events?device=${encodeURIComponent(deviceName)}&limit=10`);
+      const data = await response.json();
       
-      return (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h2 className="text-2xl font-bold flex items-center">
-                <ShieldCheck className="mr-2 h-6 w-6 text-blue-600" />
-                <span>MAUD Algorithm Validation</span>
-              </h2>
-              <p className="text-gray-600 mt-1">
-                Validate your clinical evaluation report with certified algorithms for regulatory compliance
-              </p>
-            </div>
-            
-            <Badge 
-              variant="outline" 
-              className="bg-blue-100 text-blue-800 border-blue-200 font-medium px-3 py-1"
-            >
-              <Clock className="h-3.5 w-3.5 mr-1.5" />
-              {new Date().toLocaleDateString()} - Version 2.1
-            </Badge>
-          </div>
-          
-          <div className="bg-blue-50 border border-blue-200 rounded-md p-4 mb-4">
-            <div className="flex items-start">
-              <div className="bg-blue-100 p-2 rounded-md mr-3">
-                <ShieldCheck className="h-5 w-5 text-blue-700" />
-              </div>
-              <div>
-                <h3 className="font-medium text-blue-900">Enhanced Regulatory Compliance</h3>
-                <p className="text-sm text-blue-800 mt-1">
-                  MAUD (Medical Algorithm User Database) provides certified algorithm validation for clinical evaluation reports, 
-                  ensuring compliance with EU MDR, FDA regulations, and ISO 14155 standards.
-                </p>
-              </div>
-            </div>
-          </div>
-          
-          <MAUDIntegrationPanel 
-            documentId={localStorage.getItem('cerDocumentId') || cerDocumentId || "CER-" + Math.floor(100000 + Math.random() * 900000)}
-          />
-          
-          <div className="mt-6 bg-gray-50 border rounded-md p-4">
-            <h3 className="font-medium text-lg mb-2 text-gray-800">Validation Benefits</h3>
-            <ul className="space-y-2 text-sm">
-              <li className="flex items-start">
-                <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                <span>Automated validation against medical device regulatory requirements</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                <span>Traceability to international standards and regulatory frameworks</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                <span>Certified algorithm validation improves regulatory submission success rates</span>
-              </li>
-              <li className="flex items-start">
-                <CheckCircle className="h-4 w-4 text-green-600 mr-2 mt-0.5" />
-                <span>Documentation of compliance for notified bodies and regulatory audits</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-      );
-    }
-    
-    if (activeTab === 'compliance') {
-      // Different compliance checking based on document type
-      if (documentType === '510k') {
-        // 510(k) specialized compliance checker
-        return (
-          <div className="bg-white border border-blue-100 rounded-lg shadow-sm">
-            <div className="border-b border-blue-100 p-4">
-              <h2 className="text-lg font-semibold text-blue-700">FDA 510(k) Pre-Submission Compliance Check</h2>
-              <p className="text-sm text-gray-600 mt-1">
-                Validate that your 510(k) submission meets all FDA requirements and standards
-              </p>
-            </div>
-            <div className="p-4">
-              {/* Use modified version of ComplianceChecker for 510(k) submissions */}
-              <ComplianceScorePanel
-                title="FDA 510(k) Compliance Assessment"
-                description="Verify your submission against FDA 510(k) requirements"
-                sections={sections}
-                template="fda-510k"
-                deviceType={deviceType}
-                onComplianceDataChange={(complianceData) => {
-                  const existingIndex = sections.findIndex(
-                    section => section.type === 'fda-510k-compliance' || section.type === 'compliance' || 
-                    (section.title && section.title.toLowerCase().includes('fda') && section.title.toLowerCase().includes('compliance'))
-                  );
-                  
-                  if (existingIndex >= 0) {
-                    const updatedSections = [...sections];
-                    updatedSections[existingIndex] = {
-                      ...updatedSections[existingIndex],
-                      content: JSON.stringify(complianceData),
-                      type: 'fda-510k-compliance',
-                      title: 'FDA 510(k) Compliance Assessment',
-                      lastUpdated: new Date().toISOString()
-                    };
-                    setSections(updatedSections);
-                    
-                    toast({
-                      title: "510(k) Compliance Check Updated",
-                      description: "Your submission now includes the latest FDA compliance assessment.",
-                      variant: "success"
-                    });
-                  } else {
-                    setSections([...sections, {
-                      type: 'fda-510k-compliance',
-                      title: 'FDA 510(k) Compliance Assessment',
-                      content: JSON.stringify(complianceData),
-                      lastUpdated: new Date().toISOString()
-                    }]);
-                    
-                    toast({
-                      title: "510(k) Compliance Check Added",
-                      description: "FDA regulatory compliance assessment has been added to your submission.",
-                      variant: "success"
-                    });
-                  }
-                }}
-              />
-            </div>
-          </div>
-        );
+      if (data.success) {
+        setFdaData({
+          searchTerm: data.searchTerm,
+          results: data.results,
+          summary: {
+            totalEvents: data.results.length,
+            severeCases: data.results.filter(event => event.severity === 'Severe').length,
+            moderateCases: data.results.filter(event => event.severity === 'Moderate').length,
+            mildCases: data.results.filter(event => event.severity === 'Mild').length,
+            commonOutcomes: ['Resolved without intervention', 'Outpatient treatment', 'Hospitalization']
+          }
+        });
       } else {
-        // Original CER compliance checker
-        return (
-          <ComplianceScorePanel
-            title="Regulatory Compliance Assessment"
-            description="Verify your CER against regulatory requirements and standards"
-            sections={sections}
-            template="eu-mdr"
-            deviceType={deviceType}
-            onComplianceDataChange={(complianceData) => {
-              const existingIndex = sections.findIndex(
-                section => section.type === 'eu-mdr-compliance' || section.type === 'compliance' || 
-                (section.title && section.title.toLowerCase().includes('regulatory') && section.title.toLowerCase().includes('compliance'))
-              );
-              
-              if (existingIndex >= 0) {
-                const updatedSections = [...sections];
-                updatedSections[existingIndex] = {
-                  ...updatedSections[existingIndex],
-                  content: JSON.stringify(complianceData),
-                  type: 'eu-mdr-compliance',
-                  title: 'Regulatory Compliance Assessment',
-                  lastUpdated: new Date().toISOString()
-                };
-                setSections(updatedSections);
-                
-                toast({
-                  title: "Compliance Check Updated",
-                  description: "Your CER now includes the latest compliance assessment.",
-                  variant: "success"
-                });
-              } else {
-                setSections([...sections, {
-                  type: 'eu-mdr-compliance',
-                  title: 'Regulatory Compliance Assessment',
-                  content: JSON.stringify(complianceData),
-                  lastUpdated: new Date().toISOString()
-                }]);
-                
-                toast({
-                  title: "Compliance Check Added",
-                  description: "Regulatory compliance assessment has been added to your CER.",
-                  variant: "success"
-                });
-              }
-            }}
-          />
-        );
+        console.error("Error fetching FDA data:", data.error);
       }
+    } catch (error) {
+      console.error("Failed to fetch FDA data:", error);
+    } finally {
+      setIsSearching(false);
     }
-    
-    if (activeTab === '510k') {
-      console.log("Rendering 510k tab content");
-      return (
-        <div className="bg-white p-6 rounded-md shadow-sm border border-blue-100">
-          <KAutomationPanel />
-        </div>
-      );
-    }
-
-    if (activeTab === 'reports') {
-      return (
-        <CerComprehensiveReportsPanel 
-          deviceName={deviceName}
-          deviceType={deviceType}
-          manufacturer={manufacturer}
-          cerData={{
-            title: title,
-            sections: sections
-          }}
-        />
-      );
-    }
-    
-    if (activeTab === 'traceability') {
-      return (
-        <RegulatoryTraceabilityMatrix
-          deviceName={deviceName}
-          manufacturer={manufacturer}
-          onGenerateReport={(reportData) => {
-            // Find if a traceability report already exists
-            const existingIndex = sections.findIndex(
-              section => section.type === 'traceability-report' || 
-              (section.title && section.title.toLowerCase().includes('traceability'))
-            );
-            
-            if (existingIndex >= 0) {
-              const updatedSections = [...sections];
-              updatedSections[existingIndex] = {
-                ...updatedSections[existingIndex],
-                content: reportData.content,
-                lastUpdated: new Date().toISOString()
-              };
-              setSections(updatedSections);
-              
-              toast({
-                title: "Traceability Report Updated",
-                description: "Regulatory Traceability Matrix Report has been updated in your CER.",
-                variant: "success"
-              });
-            } else {
-              setSections([...sections, reportData]);
-              
-              toast({
-                title: "Traceability Report Added",
-                description: "Regulatory Traceability Matrix Report has been added to your CER.",
-                variant: "success"
-              });
-            }
-          }}
-          onTraceabilityDataChange={(data) => {
-            console.log("Traceability data updated:", data);
-            // Save the traceability data for use in other components
-          }}
-        />
-      );
-    }
-    
-    if (activeTab === 'export') {
-      return (
-        <div className="bg-[#F9F9F9] py-4">
-          <div className="px-4">
-            <h2 className="text-xl font-semibold text-[#323130] mb-4">Export Options</h2>
-            <ExportModule 
-              title={title}
-              sections={sections}
-              deviceName={deviceName}
-              manufacturer={manufacturer}
-              deviceType={deviceType}
-              isComplete={sections.length > 5}
-              lastModified={new Date().toISOString()}
-              onExport={handleExport}
-            />
-          </div>
-        </div>
-      );
-    }
-
-    if (activeTab === 'sota') {
-      return (
-        <StateOfArtPanel
-          onSectionGenerated={(sotaSection) => {
-            const existingIndex = sections.findIndex(
-              section => section.type === 'state-of-art' || 
-              (section.title && section.title.toLowerCase().includes('state of the art'))
-            );
-            
-            if (existingIndex >= 0) {
-              const updatedSections = [...sections];
-              updatedSections[existingIndex] = {
-                ...updatedSections[existingIndex],
-                content: sotaSection.content,
-                lastUpdated: new Date().toISOString()
-              };
-              setSections(updatedSections);
-            } else {
-              setSections([...sections, sotaSection]);
-            }
-            
-            // Update localStorage
-            saveToLocalStorage('cer-sections', [...sections, sotaSection]);
-            
-            // Show success message
-            toast({
-              title: 'State of Art Section Added',
-              description: 'The section has been added to your CER document.',
-              variant: 'success',
-            });
-          }}
-        />
-      );
-    }
-
-    if (activeTab === 'literature-review') {
-      return (
-        <LiteratureReviewWorkflow
-          deviceName={deviceName}
-          manufacturer={manufacturer}
-          onAddToCER={(reviewData) => {
-            const existingIndex = sections.findIndex(
-              section => section.type === 'literature-review' || 
-              (section.title && section.title.toLowerCase().includes('literature review'))
-            );
-            
-            if (existingIndex >= 0) {
-              const updatedSections = [...sections];
-              updatedSections[existingIndex] = {
-                ...updatedSections[existingIndex],
-                content: reviewData.content,
-                lastUpdated: new Date().toISOString()
-              };
-              setSections(updatedSections);
-              
-              toast({
-                title: "Literature Review Updated",
-                description: "Literature review has been updated in your CER.",
-                variant: "success"
-              });
-            } else {
-              setSections([...sections, reviewData]);
-              
-              toast({
-                title: "Literature Review Added",
-                description: "Literature review has been added to your CER.",
-                variant: "success"
-              });
-            }
-          }}
-        />
-      );
-    }
-    
-    if (activeTab === 'internal-clinical-data') {
-      return (
-        <InternalClinicalDataPanel
-          jobId={`cer-${Date.now()}`}
-          deviceName={deviceName}
-          manufacturer={manufacturer}
-          onAddToCER={(internalClinicalData) => {
-            const existingIndex = sections.findIndex(
-              section => section.type === 'internal-clinical-data' || 
-              (section.title && section.title.toLowerCase().includes('internal clinical data'))
-            );
-            
-            if (existingIndex >= 0) {
-              const updatedSections = [...sections];
-              updatedSections[existingIndex] = {
-                ...updatedSections[existingIndex],
-                content: internalClinicalData.content,
-                lastUpdated: new Date().toISOString()
-              };
-              setSections(updatedSections);
-              
-              toast({
-                title: "Internal Clinical Data Updated",
-                description: "Your CER now includes the latest internal clinical evidence.",
-                variant: "success"
-              });
-            } else {
-              setSections([...sections, internalClinicalData]);
-              
-              toast({
-                title: "Internal Clinical Data Added",
-                description: "Internal clinical evidence has been added to your CER.",
-                variant: "success"
-              });
-            }
-          }}
-        />
-      );
-    }
-    
-    if (activeTab === 'documents') {
-      return (
-        <DocumentVaultPanel 
-          jobId={`cer-${Date.now()}`} 
-        />
-      );
-    }
-    
-    if (activeTab === 'data-retrieval') {
-      return (
-        <>
-          {!isFetchingFaers && faers.length === 0 && (
-            <NotificationBanner
-              title="Essential: Retrieve FAERS Data First"
-              description="For optimal CER quality, start by retrieving real-world adverse event data and literature evidence."
-              actionText="Start Retrieval"
-              onActionClick={() => setActiveTab('data-retrieval')}
-              onDismiss={() => setShowEvidenceReminder(false)}
-              variant="info"
-              visible={showEvidenceReminder}
-              showInfoIcon={true}
-              infoTooltip="Pull in real-world adverse event data (FAERS) and key published studies—so your AI sections include actual safety and evidence."
-              additionalContent="Why run this? AI section drafts will cite and analyze FAERS + literature automatically."
-            />
-          )}
-          <CerDataRetrievalPanel
-            reportId={`cer-${Date.now()}`}
-            deviceName={deviceName}
-            onDataUpdated={(data) => {
-              if (data.type === 'faers' && data.data) {
-                setFaers(data.data.reports || []);
-                setComparators(data.data.comparators || []);
-                toast({
-                  title: "FAERS Data Retrieved",
-                  description: "Your FAERS data has been downloaded and imported.",
-                  variant: "success",
-                });
-              }
-            }}
-            setIsFetchingFaers={setIsFetchingFaers}
-          />
-        </>
-      );
-    }
-
-    if (activeTab === 'gspr-mapping') {
-      return (
-        <GSPRMappingPanel
-          deviceName={deviceName}
-          deviceType={deviceType}
-          manufacturer={manufacturer}
-          sections={sections}
-          faers={faers}
-          comparators={comparators}
-          onAddToReport={(gspr) => {
-            const existingIndex = sections.findIndex(
-              section => section.type === 'gspr' || 
-              (section.title && section.title.toLowerCase().includes('gspr'))
-            );
-            
-            if (existingIndex >= 0) {
-              const updatedSections = [...sections];
-              updatedSections[existingIndex] = {
-                ...updatedSections[existingIndex],
-                content: gspr.content,
-                lastUpdated: new Date().toISOString()
-              };
-              setSections(updatedSections);
-              
-              toast({
-                title: "GSPR Mapping Updated",
-                description: "Your CER now includes the latest GSPR mapping data.",
-                variant: "success"
-              });
-            } else {
-              setSections([...sections, gspr]);
-              
-              toast({
-                title: "GSPR Mapping Added",
-                description: "GSPR requirements mapping has been added to your CER.",
-                variant: "success"
-              });
-            }
-          }}
-        />
-      );
-    }
-    
-    if (activeTab === 'equivalence') {
-      return (
-        <EquivalenceBuilderPanel
-          onEquivalenceDataChange={(equivalenceData) => {
-            const existingIndex = sections.findIndex(
-              section => section.type === 'equivalence' || 
-              (section.title && section.title.toLowerCase().includes('equivalence'))
-            );
-            
-            if (existingIndex >= 0) {
-              const updatedSections = [...sections];
-              updatedSections[existingIndex] = {
-                ...updatedSections[existingIndex],
-                content: equivalenceData.content,
-                lastUpdated: new Date().toISOString()
-              };
-              setSections(updatedSections);
-              
-              toast({
-                title: "Equivalence Data Updated",
-                description: "Your CER now includes the latest device equivalence data.",
-                variant: "success"
-              });
-            } else {
-              setSections([...sections, equivalenceData]);
-              
-              toast({
-                title: "Equivalence Data Added",
-                description: "Device equivalence analysis has been added to your CER.",
-                variant: "success"
-              });
-            }
-          }}
-        />
-      );
-    }
-    
-    if (activeTab === 'compliance') {
-      return (
-        <ComplianceScorePanel
-          sections={sections}
-          title={`${deviceName || 'Device'} Clinical Evaluation Report`}
-          onComplianceChange={(complianceData) => {
-            const existingIndex = sections.findIndex(
-              section => section.type === 'compliance' || 
-              (section.title && section.title.toLowerCase().includes('compliance'))
-            );
-            
-            if (existingIndex >= 0) {
-              const updatedSections = [...sections];
-              updatedSections[existingIndex] = {
-                ...updatedSections[existingIndex],
-                content: JSON.stringify(complianceData),
-                type: 'compliance',
-                title: 'Regulatory Compliance Assessment',
-                lastUpdated: new Date().toISOString()
-              };
-              setSections(updatedSections);
-              
-              toast({
-                title: "Compliance Check Updated",
-                description: "Your CER now includes the latest compliance assessment.",
-                variant: "success"
-              });
-            } else {
-              setSections([...sections, {
-                type: 'compliance',
-                title: 'Regulatory Compliance Assessment',
-                content: JSON.stringify(complianceData),
-                lastUpdated: new Date().toISOString()
-              }]);
-              
-              toast({
-                title: "Compliance Check Added",
-                description: "Regulatory compliance assessment has been added to your CER.",
-                variant: "success"
-              });
-            }
-          }}
-          onStatusChange={(status) => {
-            if (status === 'ready-for-review') {
-              setDraftStatus('needs-review');
-            }
-          }}
-        />
-      );
-    }
-    
-    if (activeTab === 'assistant') {
-      return (
-        <CerAssistantPanel
-          deviceName={deviceName}
-          deviceType={deviceType}
-          manufacturer={manufacturer}
-          sections={sections}
-          onAddContent={(assistantContent) => {
-            setSections([...sections, assistantContent]);
-            
-            toast({
-              title: "Content Added",
-              description: "Assistant-generated content has been added to your CER.",
-              variant: "success"
-            });
-          }}
-        />
-      );
-    }
-
-    // Default fallback for other tabs
-    return (
-      <div className="p-6 text-center">
-        <h3 className="text-xl mb-4">Tab content for "{activeTab}" is loading</h3>
-        <p>This tab is under development.</p>
-      </div>
-    );
-  }
-
-  // For debugging purposes
-  useEffect(() => {
-    console.log("Current activeTab:", activeTab);
-  }, [activeTab]);
-
-  return (
-    <div className="max-w-[1200px] mx-auto">
-      {/* Direct 510(k) Automation Panel */}
-      <div className="bg-white mb-6 p-6 border border-blue-200 rounded-lg shadow-md">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-blue-700">510(k) Automation Pipeline</h2>
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-            FDA Submission
-          </Badge>
-        </div>
-        <p className="text-gray-600 mb-6">Complete automation pipeline for FDA 510(k) submissions with intelligent predicate discovery.</p>
-        <div className="p-4 bg-blue-50 rounded-md mb-6">
-          <div className="text-center p-6">
-            <Package className="h-12 w-12 mx-auto mb-4 text-blue-600" />
-            <h3 className="text-lg font-medium mb-2">510(k) Automation Pipeline</h3>
-            <p className="text-gray-600 mb-4">
-              Our integrated 510(k) submission workflow is available in the "510(k)" tab. 
-              Click the tab above to access complete automation tools.
-            </p>
-            <Button 
-              onClick={() => setActiveTab('510k')}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              Access 510(k) Tools
-            </Button>
-          </div>
-        </div>
-      </div>
-    
-      <div className="flex flex-col md:flex-row justify-between items-start p-6 pb-2 bg-gradient-to-r from-blue-50 to-white rounded-t-lg shadow-sm">
-        <div>
-          <h1 className="text-2xl font-semibold text-[#0F6CBD] mb-1">CER Builder</h1>
-          <p className="text-[#616161]">EU MDR compliant Clinical Evaluation Report generator</p>
-        </div>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="flex items-center gap-2 bg-blue-50 text-blue-700 hover:bg-blue-100 border-blue-200 shadow-sm transition-all hover:shadow"
-          onClick={() => window.location.href = '/cer-projects'}
-        >
-          <FolderOpen className="h-4 w-4" />
-          Manage CER Projects
-        </Button>
-        
-        <div className="flex gap-2 mt-2 md:mt-0">
-          <Button
-            onClick={() => setShowDeviceInfoDialog(true)}
-            className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white shadow-sm transition-all hover:shadow"
-          >
-            <ZapIcon className="h-4 w-4 mr-2" />
-            One-Click CER
-          </Button>
-          {draftStatus === 'in-progress' && (
-            <Badge variant="outline" className="ml-2 bg-[#FFF4CE] text-[#797673] border-[#F9E8A0] px-2 py-1 flex items-center shadow-sm">
-              <Clock className="h-3.5 w-3.5 mr-1.5 text-amber-500 animate-pulse" />
-              <span className="font-medium">Draft</span>
-            </Badge>
-          )}
-          {draftStatus === 'needs-review' && (
-            <Badge variant="outline" className="ml-2 bg-[#FCF4FF] text-[#8F7098] border-[#E6BEEE] px-2 py-1 flex items-center shadow-sm">
-              <AlertCircle className="h-3.5 w-3.5 mr-1.5 text-purple-500 animate-pulse" />
-              <span className="font-medium">Ready for Review</span>
-            </Badge>
-          )}
-          {draftStatus === 'approved' && (
-            <Badge variant="outline" className="ml-2 bg-[#DFF6DD] text-[#107C10] border-[#C3F1C2] px-2 py-1 flex items-center shadow-sm">
-              <CheckCircle className="h-3.5 w-3.5 mr-1.5 text-green-500" />
-              <span className="font-medium">Approved</span>
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      {/* Custom navigation without Radix UI dependencies */}
-      {renderNavigation()}
+  };
+  
+  // Load documents with filtering
+  const loadDocuments = async (filters = {}, page = 1) => {
+    setDocsLoading(true);
+    try {
+      // Set module to 'cer' by default if not specified to only show CER documents
+      const cerFilters = { 
+        ...filters,
+        module: filters.module || 'cer'
+      };
       
-      {/* Content container */}
-      <div className="w-full mt-0 rounded-md bg-white shadow-sm border border-gray-100">
-        <div className="p-1">
-          {renderContent()}
-        </div>
-      </div>
-
-      {/* Device Info Dialog */}
-      <Dialog open={showDeviceInfoDialog} onOpenChange={setShowDeviceInfoDialog}>
-        <DialogContent className="sm:max-w-[500px] shadow-lg border-blue-100">
-          <DialogHeader className="bg-gradient-to-r from-blue-50 to-white rounded-t-lg pb-2">
-            <DialogTitle className="text-blue-700 flex items-center">
-              <ShieldCheck className="h-5 w-5 mr-2 text-blue-600" />
-              Device Information
-            </DialogTitle>
-            <DialogDescription className="text-gray-600">
-              Please provide information about your medical device to generate personalized documentation.
+      const result = await fetchDocuments(cerFilters, page);
+      setDocuments(result.documents);
+      setDocsPagination({
+        page: result.pagination.page,
+        totalPages: result.pagination.totalPages
+      });
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+      // You could add toast notification here
+    } finally {
+      setDocsLoading(false);
+    }
+  };
+  
+  // Handle filter apply
+  const handleFilterApply = (filters) => {
+    setDocFilters(filters);
+    loadDocuments(filters, 1); // Reset to page 1 when filters change
+  };
+  
+  // Handle page change
+  const handlePageChange = (newPage) => {
+    loadDocuments(docFilters, newPage);
+  };
+  
+  // Handle document approval
+  const handleApproveDocument = async (doc) => {
+    try {
+      await approveDocument(doc.id);
+      // Refresh document list after approval
+      loadDocuments(docFilters, docsPagination.page);
+      // You could add toast notification here for success
+    } catch (error) {
+      console.error('Error approving document:', error);
+      // You could add toast notification here for error
+    }
+  };
+  
+  // Load documents when filter tab is selected
+  useEffect(() => {
+    if (activeTab === 'history') {
+      loadDocuments(docFilters, 1);
+    }
+  }, [activeTab]);
+  
+  // Generate CER report
+  const generateCERReport = () => {
+    if (!deviceName || !deviceType || !manufacturer || !selectedTemplate) {
+      return;
+    }
+    
+    setIsGenerating(true);
+    
+    // Simulate report generation with timeout
+    setTimeout(() => {
+      setReportStatus({
+        id: 'CER' + Date.now().toString().substring(7),
+        status: 'completed',
+        generatedAt: new Date().toISOString(),
+        templateUsed: templateOptions.find(t => t.value === selectedTemplate)?.label,
+        deviceName,
+        deviceType: deviceTypes.find(t => t.value === deviceType)?.label,
+        manufacturer,
+        includedArticles: selectedArticles.length,
+        includedFDAEvents: fdaData?.results.length || 0,
+        pageCount: Math.floor(Math.random() * 30) + 50, // Random between 50-80 pages
+        wordCount: Math.floor(Math.random() * 10000) + 20000 // Random between 20k-30k words
+      });
+      
+      setIsGenerating(false);
+      setActiveTab('report');
+    }, 3000);
+  };
+  
+  return (
+    <div className="cerv2-page p-6">
+      {/* Sample CER Modal */}
+      <Dialog open={sampleModalOpen} onOpenChange={setSampleModalOpen}>
+        <DialogContent className="sm:max-w-xl">
+          <DialogHeader>
+            <DialogTitle>Generate Sample CER</DialogTitle>
+            <DialogDescription>
+              Preview a sample Clinical Evaluation Report based on selected template
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 mt-4">
-            <div>
-              <Label htmlFor="documentType">Document Type</Label>
-              <Select value={documentType} onValueChange={setDocumentType}>
+          
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="sample-template">Select Template</Label>
+              <Select
+                value={selectedSampleTemplate}
+                onValueChange={setSelectedSampleTemplate}
+              >
                 <SelectTrigger>
-                  <SelectValue placeholder="Select document type" />
+                  <SelectValue placeholder="Select template" />
                 </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cer">Clinical Evaluation Report (CER)</SelectItem>
-                  <SelectItem value="510k">510(K) Submission</SelectItem>
+                <SelectContent id="sample-template">
+                  <SelectItem value="mdr-full">EU MDR 2017/745 Full Template</SelectItem>
+                  <SelectItem value="mdr-lite">EU MDR Simplified Template</SelectItem>
+                  <SelectItem value="meddev">MEDDEV 2.7/1 Rev 4 Template</SelectItem>
+                  <SelectItem value="fda-510k">FDA 510(k) Template</SelectItem>
+                  <SelectItem value="pmda">PMDA Template (Japan)</SelectItem>
                 </SelectContent>
               </Select>
-              <p className="text-xs text-gray-500 mt-1">
-                {documentType === 'cer' 
-                  ? 'CER documents are required for EU MDR compliance.' 
-                  : '510(K) submissions are required for FDA market clearance.'}
-              </p>
             </div>
             
-            <div>
-              <Label htmlFor="deviceName">Device Name</Label>
-              <Input
-                id="deviceName"
-                value={deviceName}
-                onChange={(e) => setDeviceName(e.target.value)}
-                placeholder="e.g. Arthrosurface Shoulder Arthroplasty System"
-              />
-            </div>
-            <div>
-              <Label htmlFor="deviceType">Device Type</Label>
-              <Select value={deviceType} onValueChange={setDeviceType}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select device type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Class I Medical Device">Class I Medical Device</SelectItem>
-                  <SelectItem value="Class II Medical Device">Class II Medical Device</SelectItem>
-                  <SelectItem value="Class III Medical Device">Class III Medical Device</SelectItem>
-                  <SelectItem value="In Vitro Diagnostic">In Vitro Diagnostic</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="manufacturer">Manufacturer</Label>
-              <Input
-                id="manufacturer"
-                value={manufacturer}
-                onChange={(e) => setManufacturer(e.target.value)}
-                placeholder="e.g. Medical Innovations Inc."
-              />
-            </div>
-            <div>
-              <Label htmlFor="intendedUse">Intended Use</Label>
-              <Input
-                id="intendedUse"
-                value={intendedUse}
-                onChange={(e) => setIntendedUse(e.target.value)}
-                placeholder="e.g. For treatment of..."
-              />
-            </div>
+            {sampleURL ? (
+              <div className="border rounded-md overflow-hidden h-[400px]">
+                <iframe 
+                  src={sampleURL} 
+                  className="w-full h-full"
+                  title="Sample CER Preview" 
+                />
+              </div>
+            ) : (
+              <div className="border rounded-md bg-gray-50 h-[400px] flex items-center justify-center">
+                <div className="text-center p-6">
+                  <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                  <p className="text-muted-foreground">
+                    Select a template and click "Generate Sample" to preview
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeviceInfoDialog(false)}>
-              Cancel
-            </Button>
-            <Button 
+          
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Button
+              disabled={loadingSample}
               onClick={() => {
-                setShowDeviceInfoDialog(false);
+                setLoadingSample(true);
+                setSampleURL(null);
                 
-                // Save device data including cerDocumentId to localStorage
-                localStorage.setItem('cerDeviceData', JSON.stringify({
-                  deviceName,
-                  manufacturer,
-                  deviceType,
-                  intendedUse,
-                  cerDocumentId
-                }));
-                
-                toast({
-                  title: "Device Info Saved",
-                  description: "Your device information has been saved and applied to the CER.",
-                  variant: "success"
-                });
+                // Call the API to get a sample CER
+                fetch('/api/cer/sample', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({ template: selectedSampleTemplate })
+                })
+                  .then(response => response.json())
+                  .then(data => {
+                    setSampleURL(data.url);
+                    setLoadingSample(false);
+                  })
+                  .catch(error => {
+                    console.error('Error fetching sample CER:', error);
+                    alert('Failed to generate sample CER.');
+                    setLoadingSample(false);
+                  });
               }}
+              className="flex items-center gap-2 sm:flex-1"
             >
-              Save & Continue
+              {loadingSample ? (
+                <>
+                  <div className="h-4 w-4 rounded-full border-2 border-white border-t-transparent animate-spin"></div>
+                  Generating...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4" />
+                  Generate Sample
+                </>
+              )}
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              onClick={() => setSampleModalOpen(false)}
+              className="sm:flex-1"
+            >
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Advanced CER Generator™</h1>
+          <p className="text-muted-foreground">Create EU MDR 2017/745 compliant Clinical Evaluation Reports with AI assistance</p>
+        </div>
+        <div className="flex gap-3 items-center">
+          <Button
+            variant="outline"
+            className="flex items-center gap-2"
+            onClick={() => setSampleModalOpen(true)}
+          >
+            <FileText className="h-4 w-4" />
+            Generate Sample CER
+          </Button>
+          
+          <Button 
+            className="flex items-center" 
+            size="lg"
+            disabled={!deviceName || !deviceType || !manufacturer || !selectedTemplate}
+            onClick={() => {
+              setActiveTab('generating');
+              // Call API: POST /api/cer/generate-full
+              setGenerationProgress(0);
+              setGenerationStep('Initializing template structure');
+              
+              // Set up a progress simulation
+              const progressInterval = setInterval(() => {
+                setGenerationProgress(prev => {
+                  const newProgress = prev + Math.random() * 5;
+                  
+                  // Update the generation step based on progress
+                  if (newProgress > 20 && newProgress <= 40) {
+                    setGenerationStep('Processing clinical literature data');
+                  } else if (newProgress > 40 && newProgress <= 60) {
+                    setGenerationStep('Analyzing FDA adverse events');
+                  } else if (newProgress > 60 && newProgress <= 80) {
+                    setGenerationStep('Generating risk-benefit analysis');
+                  } else if (newProgress > 80) {
+                    setGenerationStep('Compiling final document');
+                  }
+                  
+                  return newProgress > 95 ? 95 : newProgress;
+                });
+              }, 300);
+              
+              // Make the actual API call
+              fetch('/api/cer/generate-full', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  deviceInfo: {
+                    name: deviceName,
+                    type: deviceTypes.find(t => t.value === deviceType)?.label,
+                    manufacturer
+                  },
+                  literature: selectedArticles,
+                  fdaData: fdaData?.results || [],
+                  templateId: selectedTemplate
+                })
+              })
+                .then(response => response.json())
+                .then(data => {
+                  clearInterval(progressInterval);
+                  setGenerationProgress(100);
+                  setReportStatus({
+                    id: data.id,
+                    status: data.status,
+                    generatedAt: data.generatedAt,
+                    templateUsed: templateOptions.find(t => t.value === selectedTemplate)?.label,
+                    deviceName,
+                    deviceType: deviceTypes.find(t => t.value === deviceType)?.label,
+                    manufacturer,
+                    includedArticles: data.metadata.includedLiterature || selectedArticles.length,
+                    includedFDAEvents: data.metadata.includedAdverseEvents || (fdaData?.results?.length || 0),
+                    pageCount: data.metadata.pageCount,
+                    wordCount: data.metadata.wordCount,
+                    url: data.url
+                  });
+                  setTimeout(() => {
+                    setActiveTab('report');
+                  }, 500);
+                })
+                .catch(error => {
+                  clearInterval(progressInterval);
+                  console.error('Error generating report:', error);
+                  alert('Failed to generate report. Please try again.');
+                  setActiveTab('input');
+                });
+            }}
+          >
+            <FileText className="h-5 w-5 mr-2" />
+            Generate Full CER Report
+          </Button>
+        </div>
+      </div>
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
+        <TabsList className="grid w-full max-w-4xl mx-auto grid-cols-5">
+          <TabsTrigger value="input">
+            <Layers className="h-4 w-4 mr-2" />
+            Input Data
+          </TabsTrigger>
+          <TabsTrigger value="literature" disabled={!deviceName || !deviceType}>
+            <Book className="h-4 w-4 mr-2" />
+            Literature Review
+          </TabsTrigger>
+          <TabsTrigger value="report" disabled={!reportStatus}>
+            <FileText className="h-4 w-4 mr-2" />
+            Generated Report
+          </TabsTrigger>
+          <TabsTrigger value="library">
+            <FolderOpen className="h-4 w-4 mr-2" />
+            Report Library
+          </TabsTrigger>
+          <TabsTrigger value="history">
+            <Clock className="h-4 w-4 mr-2" />
+            History
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="generating" className="mt-6">
+          <Card className="max-w-2xl mx-auto">
+            <CardHeader>
+              <CardTitle>Generating Clinical Evaluation Report</CardTitle>
+              <CardDescription>
+                AI is processing data and generating your report
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Overall Progress</span>
+                  <span className="text-muted-foreground">{Math.round(generationProgress)}%</span>
+                </div>
+                <Progress value={generationProgress} className="h-2" />
+              </div>
+              
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium">Processing Steps</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <span className="text-sm">Initializing template structure</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                    <span className="text-sm">Retrieving device information</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="animate-pulse">
+                      <div className="h-4 w-4 rounded-full border-2 border-primary border-t-transparent animate-spin"></div>
+                    </span>
+                    <span className="text-sm font-medium">Processing clinical literature data</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="h-4 w-4 rounded-full border-2 border-muted"></span>
+                    <span className="text-sm text-muted-foreground">Analyzing FDA adverse events</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="h-4 w-4 rounded-full border-2 border-muted"></span>
+                    <span className="text-sm text-muted-foreground">Generating risk-benefit analysis</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <span className="h-4 w-4 rounded-full border-2 border-muted"></span>
+                    <span className="text-sm text-muted-foreground">Compiling final document</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3 p-3 mt-4 border rounded-md bg-blue-50">
+                <Database className="h-5 w-5 text-blue-600" />
+                <div className="text-sm text-blue-600">
+                  <p>Leveraging data from 12 clinical articles and 8 FDA reports</p>
+                  <p>Integrating regulatory updates from MDR 2017/745</p>
+                </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  setActiveTab('input');
+                }}
+              >
+                Cancel Generation
+              </Button>
+            </CardFooter>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="library" className="mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-1">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Report Library</CardTitle>
+                  <CardDescription>Browse past CER reports</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Search reports..." className="pl-8" />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-sm font-medium">Project Folders</h4>
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-1 pl-1">
+                      <div className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 cursor-pointer">
+                        <Folder className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm">PR-CV-2025 (Cardiovascular)</span>
+                      </div>
+                      <div className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 cursor-pointer">
+                        <Folder className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm">PR-IM-2025 (Implantables)</span>
+                      </div>
+                      <div className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 cursor-pointer">
+                        <Folder className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm">PR-DG-2025 (Diagnostics)</span>
+                      </div>
+                      <div className="flex items-center gap-2 p-2 rounded-md hover:bg-gray-100 cursor-pointer">
+                        <Folder className="h-4 w-4 text-blue-600" />
+                        <span className="text-sm">PR-SR-2024 (Surgical)</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-sm font-medium">Report Status</h4>
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-2 pl-1">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-4 w-4 items-center justify-center">
+                          <div className="h-3 w-3 rounded-sm border border-primary"></div>
+                        </div>
+                        <span className="text-sm">Draft (2)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-4 w-4 items-center justify-center">
+                          <div className="h-3 w-3 rounded-sm border border-primary bg-primary"></div>
+                        </div>
+                        <span className="text-sm">Final (3)</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <h4 className="text-sm font-medium">Template Type</h4>
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
+                    <div className="space-y-2 pl-1">
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-4 w-4 items-center justify-center">
+                          <div className="h-3 w-3 rounded-sm border border-primary"></div>
+                        </div>
+                        <span className="text-sm">EU MDR (2)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-4 w-4 items-center justify-center">
+                          <div className="h-3 w-3 rounded-sm border border-primary"></div>
+                        </div>
+                        <span className="text-sm">MEDDEV (1)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-4 w-4 items-center justify-center">
+                          <div className="h-3 w-3 rounded-sm border border-primary"></div>
+                        </div>
+                        <span className="text-sm">FDA 510(k) (1)</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex h-4 w-4 items-center justify-center">
+                          <div className="h-3 w-3 rounded-sm border border-primary"></div>
+                        </div>
+                        <span className="text-sm">PMDA (1)</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+                
+                <CardFooter>
+                  <Button className="w-full flex items-center gap-2">
+                    <FilePlus2 className="h-4 w-4" />
+                    Create New Report
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+            
+            <div className="lg:col-span-3 space-y-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Your CER Reports</h3>
+                <div className="flex items-center gap-2">
+                  <Select defaultValue="newest">
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder="Sort by" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="newest">Newest First</SelectItem>
+                      <SelectItem value="oldest">Oldest First</SelectItem>
+                      <SelectItem value="az">Name (A-Z)</SelectItem>
+                      <SelectItem value="za">Name (Z-A)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {pastReports.map(report => (
+                  <Card key={report.id} className="overflow-hidden">
+                    <div className="flex flex-col md:flex-row">
+                      <div className="md:w-3/4 p-4 space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-medium text-lg">{report.title}</h3>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                              <span>{report.id}</span>
+                              <span>•</span>
+                              <span>{new Date(report.generatedAt).toLocaleDateString()}</span>
+                              <span>•</span>
+                              <span>{report.deviceType}</span>
+                            </div>
+                          </div>
+                          <Badge variant={report.status === 'final' ? 'default' : 'outline'}>
+                            {report.status === 'final' ? 'Final' : 'Draft'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="flex flex-wrap gap-x-8 gap-y-2 text-sm mt-4">
+                          <div>
+                            <div className="text-muted-foreground">Manufacturer</div>
+                            <div>{report.manufacturer}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Template</div>
+                            <div>{report.templateUsed}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Project ID</div>
+                            <div>{report.projectId}</div>
+                          </div>
+                          <div>
+                            <div className="text-muted-foreground">Last Modified</div>
+                            <div>{new Date(report.lastModified).toLocaleDateString()}</div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="md:w-1/4 bg-gray-50 p-4 flex flex-col justify-between">
+                        <div className="space-y-2">
+                          <div className="grid grid-cols-2 gap-1 text-sm">
+                            <div className="text-muted-foreground">Pages:</div>
+                            <div className="text-right">{report.pageCount}</div>
+                            
+                            <div className="text-muted-foreground">Words:</div>
+                            <div className="text-right">{report.wordCount.toLocaleString()}</div>
+                            
+                            <div className="text-muted-foreground">Sections:</div>
+                            <div className="text-right">{report.sections}</div>
+                          </div>
+                        </div>
+                        
+                        <div className="mt-4 space-y-2">
+                          <Button className="w-full flex items-center justify-center" size="sm">
+                            <FileCog className="h-4 w-4 mr-2" />
+                            Open in Editor
+                          </Button>
+                          <Button variant="outline" className="w-full flex items-center justify-center" size="sm">
+                            <Download className="h-4 w-4 mr-2" />
+                            Download PDF
+                          </Button>
+                          <Button variant="ghost" className="w-full flex items-center justify-center" size="sm">
+                            <Copy className="h-4 w-4 mr-2" />
+                            Clone Report
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="input" className="mt-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Device Information</CardTitle>
+                <CardDescription>Enter details about the medical device</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="deviceName">Device Name</Label>
+                  <Input 
+                    id="deviceName" 
+                    placeholder="e.g., CardioMonitor Pro 3000"
+                    value={deviceName}
+                    onChange={(e) => setDeviceName(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="deviceType">Device Type</Label>
+                  <Select value={deviceType} onValueChange={setDeviceType}>
+                    <SelectTrigger id="deviceType">
+                      <SelectValue placeholder="Select device type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {deviceTypes.map(type => (
+                        <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="manufacturer">Manufacturer</Label>
+                  <Input 
+                    id="manufacturer" 
+                    placeholder="e.g., MedTech Innovations, Inc."
+                    value={manufacturer}
+                    onChange={(e) => setManufacturer(e.target.value)}
+                  />
+                </div>
+                
+                <div className="pt-2">
+                  <Button 
+                    variant="outline" 
+                    className="w-full flex items-center justify-center"
+                    onClick={() => {}}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Import Device Data
+                  </Button>
+                  <p className="text-xs text-muted-foreground mt-1 text-center">
+                    Upload existing device documentation to pre-fill fields
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle>CER Configuration</CardTitle>
+                <CardDescription>Customize the report generation process</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="template">Report Template</Label>
+                  <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
+                    <SelectTrigger id="template">
+                      <SelectValue placeholder="Select a template" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {templateOptions.map(template => (
+                        <SelectItem key={template.value} value={template.value}>{template.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="scope">Evaluation Scope</Label>
+                  <Textarea 
+                    id="scope" 
+                    placeholder="Describe the scope of this clinical evaluation..."
+                    rows={3}
+                  />
+                </div>
+                
+                <div className="pt-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Microscope className="h-5 w-5 text-blue-600" />
+                    <div className="text-sm">
+                      <p className="font-medium">AI-Enhanced Literature Review</p>
+                      <p className="text-muted-foreground">Automatic synthesis of published clinical data</p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Database className="h-5 w-5 text-amber-600" />
+                    <div className="text-sm">
+                      <p className="font-medium">FDA MAUDE Database Integration</p>
+                      <p className="text-muted-foreground">Incorporates post-market surveillance data</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button 
+                  onClick={() => setActiveTab('literature')} 
+                  className="w-full"
+                  disabled={!deviceName || !deviceType || !manufacturer || !selectedTemplate}
+                >
+                  Continue to Literature Review
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="literature" className="mt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="col-span-1 space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>PubMed Search</CardTitle>
+                  <CardDescription>Find relevant clinical literature</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                      placeholder="Search PubMed..."
+                      className="pl-8"
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handlePubMedSearch()}
+                    />
+                  </div>
+                  
+                  <Button 
+                    onClick={handlePubMedSearch} 
+                    disabled={isSearching || !searchTerm.trim()}
+                    className="w-full"
+                  >
+                    {isSearching ? (
+                      <>
+                        <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></span>
+                        Searching...
+                      </>
+                    ) : (
+                      <>
+                        <Book className="h-4 w-4 mr-2" />
+                        Search PubMed
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>FDA Adverse Events</CardTitle>
+                  <CardDescription>Retrieve safety data</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p className="text-sm">
+                    Fetch adverse event reports for {deviceName || "your device"} from the FDA MAUDE database.
+                  </p>
+                  
+                  <Button 
+                    onClick={fetchFDAData} 
+                    disabled={isSearching || !deviceName.trim()}
+                    className="w-full"
+                  >
+                    {isSearching ? (
+                      <>
+                        <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></span>
+                        Fetching...
+                      </>
+                    ) : (
+                      <>
+                        <Database className="h-4 w-4 mr-2" />
+                        Get FDA Data
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Selected Items</CardTitle>
+                  <CardDescription>
+                    {selectedArticles.length} articles and {fdaData?.results?.length || 0} FDA reports
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm mb-4">
+                    <p>{selectedArticles.length} clinical articles selected</p>
+                    <p>{fdaData?.results?.length || 0} FDA adverse events included</p>
+                    <p className="text-muted-foreground mt-2">
+                      Selected content will be synthesized in the generated report
+                    </p>
+                  </div>
+                  
+                  <Button 
+                    onClick={generateCERReport} 
+                    className="w-full"
+                    disabled={
+                      !deviceName || 
+                      !deviceType || 
+                      !manufacturer || 
+                      !selectedTemplate || 
+                      (selectedArticles.length === 0 && !fdaData) ||
+                      isGenerating
+                    }
+                  >
+                    {isGenerating ? (
+                      <>
+                        <span className="animate-spin h-4 w-4 mr-2 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></span>
+                        Generating Report...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Generate CER Report
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="col-span-1 lg:col-span-2 space-y-6">
+              <Tabs defaultValue="search_results" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="search_results">PubMed Results</TabsTrigger>
+                  <TabsTrigger value="fda_data" disabled={!fdaData}>FDA Data</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="search_results">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Literature Search Results</CardTitle>
+                      <CardDescription>
+                        {searchResults.length > 0 
+                          ? `${searchResults.length} articles found` 
+                          : "Search PubMed for relevant articles"}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="max-h-[600px] overflow-y-auto">
+                      {searchResults.length > 0 ? (
+                        <div className="space-y-4">
+                          {searchResults.map(article => (
+                            <div 
+                              key={article.id} 
+                              className={`p-4 border rounded-md ${
+                                selectedArticles.some(a => a.id === article.id) 
+                                  ? 'border-blue-300 bg-blue-50' 
+                                  : 'hover:bg-gray-50'
+                              }`}
+                            >
+                              <div className="flex justify-between">
+                                <h3 className="font-medium">{article.title}</h3>
+                                <Button 
+                                  variant={selectedArticles.some(a => a.id === article.id) ? "default" : "outline"} 
+                                  size="sm"
+                                  onClick={() => toggleArticleSelection(article)}
+                                >
+                                  {selectedArticles.some(a => a.id === article.id) ? "Selected" : "Select"}
+                                </Button>
+                              </div>
+                              <p className="text-sm text-muted-foreground mt-1">{article.authors} • {article.journal} • {article.year}</p>
+                              <p className="text-sm mt-2">{article.abstract}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="py-8 text-center text-muted-foreground">
+                          <Book className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                          <p>Enter search terms and click "Search PubMed" to find relevant articles</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+                
+                <TabsContent value="fda_data">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>FDA Adverse Events</CardTitle>
+                      <CardDescription>
+                        {fdaData ? `${fdaData.results.length} reports for "${fdaData.searchTerm}"` : 'No FDA data loaded'}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="max-h-[600px] overflow-y-auto">
+                      {fdaData ? (
+                        <div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <Card className="bg-red-50">
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-red-700">Severe Cases</CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="text-2xl font-bold text-red-700">{fdaData.summary.severeCases}</div>
+                              </CardContent>
+                            </Card>
+                            <Card className="bg-amber-50">
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-amber-700">Moderate Cases</CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="text-2xl font-bold text-amber-700">{fdaData.summary.moderateCases}</div>
+                              </CardContent>
+                            </Card>
+                            <Card className="bg-green-50">
+                              <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium text-green-700">Mild Cases</CardTitle>
+                              </CardHeader>
+                              <CardContent>
+                                <div className="text-2xl font-bold text-green-700">{fdaData.summary.mildCases}</div>
+                              </CardContent>
+                            </Card>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            {fdaData.results.map((event, index) => (
+                              <div key={index} className="p-4 border rounded-md hover:bg-gray-50">
+                                <div className="flex justify-between">
+                                  <h3 className="font-medium">{event.report_id}</h3>
+                                  <Badge 
+                                    variant="outline" 
+                                    className={
+                                      event.severity === 'Severe' 
+                                        ? 'bg-red-50 text-red-700 border-red-200' 
+                                        : event.severity === 'Moderate'
+                                          ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                          : 'bg-green-50 text-green-700 border-green-200'
+                                    }
+                                  >
+                                    {event.severity}
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-muted-foreground mt-1">
+                                  {event.event_date} • {event.manufacturer}
+                                </p>
+                                <p className="text-sm mt-2">{event.event_description}</p>
+                                <p className="text-sm font-medium mt-2">
+                                  Outcome: <span className="font-normal">{event.patient_outcome}</span>
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="py-8 text-center text-muted-foreground">
+                          <Database className="h-12 w-12 mx-auto mb-3 opacity-20" />
+                          <p>Click "Get FDA Data" to retrieve adverse event reports</p>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="report" className="mt-6">
+          {reportStatus && (
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card className="col-span-1">
+                <CardHeader>
+                  <CardTitle>Report Details</CardTitle>
+                  <CardDescription>Generated report information</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <div className="text-sm text-muted-foreground">Report ID</div>
+                    <div className="font-medium">{reportStatus.id}</div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm text-muted-foreground">Status</div>
+                    <div className="flex items-center">
+                      <CheckCircle2 className="h-4 w-4 mr-2 text-green-600" />
+                      <span className="font-medium">Complete</span>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm text-muted-foreground">Generated On</div>
+                    <div className="font-medium">
+                      {new Date(reportStatus.generatedAt).toLocaleString()}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm text-muted-foreground">Template</div>
+                    <div className="font-medium">{reportStatus.templateUsed}</div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm text-muted-foreground">Device Name</div>
+                    <div className="font-medium">{reportStatus.deviceName}</div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm text-muted-foreground">Device Type</div>
+                    <div className="font-medium">{reportStatus.deviceType}</div>
+                  </div>
+                  
+                  <div>
+                    <div className="text-sm text-muted-foreground">Manufacturer</div>
+                    <div className="font-medium">{reportStatus.manufacturer}</div>
+                  </div>
+                  
+                  <div className="p-4 border rounded-md">
+                    <h4 className="text-sm font-medium mb-2">Report Statistics</h4>
+                    <div className="grid grid-cols-2 gap-y-2 text-sm">
+                      <div className="text-muted-foreground">Page Count:</div>
+                      <div className="text-right">{reportStatus.pageCount} pages</div>
+                      
+                      <div className="text-muted-foreground">Word Count:</div>
+                      <div className="text-right">{reportStatus.wordCount.toLocaleString()} words</div>
+                      
+                      <div className="text-muted-foreground">Articles Referenced:</div>
+                      <div className="text-right">{reportStatus.includedArticles} articles</div>
+                      
+                      <div className="text-muted-foreground">FDA Events:</div>
+                      <div className="text-right">{reportStatus.includedFDAEvents} reports</div>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="flex gap-2">
+                  <Button className="flex-1 flex items-center">
+                    <Download className="h-4 w-4 mr-2" />
+                    Download PDF
+                  </Button>
+                  <Button variant="outline" className="flex items-center">
+                    <Settings className="h-4 w-4" />
+                    <span className="sr-only">Options</span>
+                  </Button>
+                </CardFooter>
+              </Card>
+              
+              <div className="col-span-1 lg:col-span-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>CER PDF Preview</CardTitle>
+                    <CardDescription>Generated Clinical Evaluation Report</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {reportStatus.url ? (
+                      <iframe 
+                        src={reportStatus.url} 
+                        className="border rounded-md w-full aspect-[1/1.4] min-h-[700px]"
+                        title={`Clinical Evaluation Report - ${reportStatus.deviceName}`}
+                      />
+                    ) : (
+                      <div className="border rounded-md bg-gray-50 aspect-[1/1.4] min-h-[700px] flex items-center justify-center">
+                        <div className="text-center p-6">
+                          <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
+                          <p className="font-medium">Clinical Evaluation Report</p>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {reportStatus.deviceName}
+                          </p>
+                          <p className="text-sm text-muted-foreground mt-4">
+                            PDF preview would be displayed here
+                          </p>
+                          <div className="flex justify-center gap-4 mt-6">
+                            <Button variant="outline" size="sm" className="flex items-center">
+                              <FileText className="h-4 w-4 mr-2" />
+                              View Full Report
+                            </Button>
+                            <Button variant="outline" size="sm" className="flex items-center">
+                              <BarChart4 className="h-4 w-4 mr-2" />
+                              View Analytics
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Compliance Status</CardTitle>
+                      <CardDescription>Regulatory checks completed</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-2">
+                        <li className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          <span>MDR 2017/745 Annex XIV, Part A compliant</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          <span>MEDDEV 2.7/1 Rev. 4 format adherence</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          <span>Literature search methodology validated</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          <span>Post-market surveillance data integrated</span>
+                        </li>
+                        <li className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          <span>Risk-benefit analysis completed</span>
+                        </li>
+                      </ul>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Schedule Review</CardTitle>
+                      <CardDescription>Recommended follow-up</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 p-3 border rounded-md bg-blue-50">
+                          <AlarmClock className="h-5 w-5 text-blue-600" />
+                          <div>
+                            <div className="font-medium">CER Update Required</div>
+                            <div className="text-sm text-blue-600">April 29, 2026</div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center gap-3 p-3 border rounded-md">
+                          <Clock className="h-5 w-5 text-muted-foreground" />
+                          <div>
+                            <div className="font-medium">Literature Review</div>
+                            <div className="text-sm text-muted-foreground">October 29, 2025</div>
+                          </div>
+                        </div>
+                        
+                        <Button variant="outline" className="w-full">
+                          Schedule Reminder
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
-}
+};
+
+export default CERV2Page;
