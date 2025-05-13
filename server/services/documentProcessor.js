@@ -7,93 +7,168 @@
 
 const fs = require('fs');
 const path = require('path');
-const util = require('util');
-const readFile = util.promisify(fs.readFile);
-const writeFile = util.promisify(fs.writeFile);
-const readdir = util.promisify(fs.readdir);
-const mkdir = util.promisify(fs.mkdir);
 const sqlite3 = require('sqlite3').verbose();
+const { PDFDocument } = require('pdf-lib');
 
-// Database setup
-const DB_PATH = path.join(__dirname, '../../data/knowledge_base.db');
+// Ensure required directories exist
+const DATA_DIR = path.join(__dirname, '../../data');
+const DB_PATH = path.join(DATA_DIR, 'knowledge_base.db');
+
+// Known regulatory authorities by region
+const REGULATORY_AUTHORITIES = {
+  FDA: ['fda', 'food and drug administration', 'cdrh', 'cber', 'cder', 'cfsan', 'usa', 'us', 'united states'],
+  EMA: ['ema', 'european medicines agency', 'eu', 'europe', 'european union', 'mdr', 'ivdr', 'meddev'],
+  PMDA: ['pmda', 'pharmaceuticals and medical devices agency', 'japan', 'japanese'],
+  NMPA: ['nmpa', 'national medical products administration', 'china', 'chinese'],
+  'Health Canada': ['health canada', 'canada', 'canadian'],
+  TGA: ['tga', 'therapeutic goods administration', 'australia', 'australian'],
+  ICH: ['ich', 'international council for harmonisation', 'international', 'harmonisation', 'harmonization'],
+  WHO: ['who', 'world health organization', 'global'],
+  ISO: ['iso', 'international organization for standardization'],
+  IMDRF: ['imdrf', 'international medical device regulators forum'],
+  MHRA: ['mhra', 'medicines and healthcare products regulatory agency', 'uk', 'united kingdom', 'great britain']
+};
+
+// Document type categories
+const DOCUMENT_TYPES = {
+  Guidance: ['guidance', 'guide', 'guideline', 'guiding', 'recommendation'],
+  Regulation: ['regulation', 'regulatory', 'law', 'legal', 'statute', 'directive', 'rule'],
+  Standard: ['standard', 'iso', 'en', 'astm', 'ansi', 'iec'],
+  Report: ['report', 'whitepaper', 'white paper', 'review', 'assessment'],
+  Template: ['template', 'form', 'checklist', 'submission'],
+  ClinicalStudy: ['clinical', 'study', 'trial', 'protocol', 'ich e6', 'ich e8', 'ich e9'],
+  Technical: ['technical', 'specification', 'requirement', 'documentation'],
+};
 
 /**
  * Initialize the SQLite database with the knowledge base schema
  */
 async function initializeDatabase() {
+  // Ensure data directory exists
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+  }
+  
   return new Promise((resolve, reject) => {
     const db = new sqlite3.Database(DB_PATH, (err) => {
       if (err) {
-        console.error('Error opening database:', err.message);
         reject(err);
         return;
       }
       
-      // Create the enhanced knowledge base table with more metadata
-      db.run(`
-        CREATE TABLE IF NOT EXISTS knowledge_base (
-          id INTEGER PRIMARY KEY,
-          source TEXT,  -- e.g., "ICH E6(R2)" or "FDA 510(k)"
-          section TEXT,  -- e.g., "5.2" or "Module 3"
-          content TEXT,  -- Extracted text
-          jurisdiction TEXT,  -- e.g., "Global", "USA", "EU", "Japan"
-          tags TEXT,  -- e.g., "GCP,clinical trials,efficacy"
-          doc_type TEXT, -- e.g., "Guideline", "Regulation", "Standard"
-          confidence REAL, -- Classification confidence score (0.0 to 1.0)
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )
-      `, (err) => {
-        if (err) {
-          console.error('Error creating knowledge_base table:', err.message);
-          reject(err);
-          return;
-        }
-        
-        // Create a search index for more efficient text lookups
+      db.serialize(() => {
+        // Main knowledge base table
         db.run(`
-          CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_search 
-          USING fts5(
-            content, 
-            source, 
-            section, 
-            tags,
-            jurisdiction,
-            doc_type,
-            content_rowid=id
+          CREATE TABLE IF NOT EXISTS knowledge_base (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            source TEXT NOT NULL,
+            section TEXT,
+            content TEXT NOT NULL,
+            jurisdiction TEXT,
+            tags TEXT,
+            doc_type TEXT,
+            last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `, (err) => {
           if (err) {
-            // If FTS5 is not supported, fall back to FTS4
-            console.warn('FTS5 not supported, falling back to FTS4:', err.message);
-            db.run(`
-              CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_search 
-              USING fts4(
-                content, 
-                source, 
-                section, 
-                tags,
-                jurisdiction,
-                doc_type,
-                content_rowid=id
-              )
-            `, (innerErr) => {
-              if (innerErr) {
-                // If FTS4 also fails, just continue without it
-                console.warn('FTS4 also not supported, proceeding without search optimization:', innerErr.message);
-                console.log('Database initialized with basic tables');
-                resolve();
-              } else {
-                console.log('Database initialized with FTS4 search index');
-                resolve();
-              }
-              db.close();
-            });
-          } else {
-            console.log('Database initialized with FTS5 search index');
-            resolve();
-            db.close();
+            reject(err);
+            return;
           }
+          
+          // Create full-text search table
+          db.run(`
+            CREATE VIRTUAL TABLE IF NOT EXISTS knowledge_search 
+            USING fts5(
+              id, source, section, content, jurisdiction, tags, doc_type,
+              content=knowledge_base
+            )
+          `, (err) => {
+            if (err) {
+              console.warn('FTS5 not available, falling back to standard search:', err.message);
+              
+              // Close the database connection
+              db.close((closeErr) => {
+                if (closeErr) {
+                  console.error('Error closing database:', closeErr);
+                }
+                resolve(true);
+              });
+              return;
+            }
+            
+            // Create trigger to keep FTS table updated on insert
+            db.run(`
+              CREATE TRIGGER IF NOT EXISTS knowledge_base_ai AFTER INSERT ON knowledge_base
+              BEGIN
+                INSERT INTO knowledge_search(
+                  id, source, section, content, jurisdiction, tags, doc_type
+                ) VALUES (
+                  new.id, new.source, new.section, new.content, new.jurisdiction, new.tags, new.doc_type
+                );
+              END
+            `, (err) => {
+              if (err) {
+                console.error('Error creating insert trigger:', err);
+              }
+              
+              // Create trigger to keep FTS table updated on delete
+              db.run(`
+                CREATE TRIGGER IF NOT EXISTS knowledge_base_ad AFTER DELETE ON knowledge_base
+                BEGIN
+                  DELETE FROM knowledge_search WHERE id = old.id;
+                END
+              `, (err) => {
+                if (err) {
+                  console.error('Error creating delete trigger:', err);
+                }
+                
+                // Create trigger to keep FTS table updated on update
+                db.run(`
+                  CREATE TRIGGER IF NOT EXISTS knowledge_base_au AFTER UPDATE ON knowledge_base
+                  BEGIN
+                    DELETE FROM knowledge_search WHERE id = old.id;
+                    INSERT INTO knowledge_search(
+                      id, source, section, content, jurisdiction, tags, doc_type
+                    ) VALUES (
+                      new.id, new.source, new.section, new.content, new.jurisdiction, new.tags, new.doc_type
+                    );
+                  END
+                `, (err) => {
+                  if (err) {
+                    console.error('Error creating update trigger:', err);
+                  }
+                  
+                  // Create index for jurisdiction
+                  db.run(`
+                    CREATE INDEX IF NOT EXISTS idx_knowledge_base_jurisdiction
+                    ON knowledge_base(jurisdiction)
+                  `, (err) => {
+                    if (err) {
+                      console.error('Error creating jurisdiction index:', err);
+                    }
+                    
+                    // Create index for doc_type
+                    db.run(`
+                      CREATE INDEX IF NOT EXISTS idx_knowledge_base_doc_type
+                      ON knowledge_base(doc_type)
+                    `, (err) => {
+                      if (err) {
+                        console.error('Error creating doc_type index:', err);
+                      }
+                      
+                      // Close the database connection
+                      db.close((closeErr) => {
+                        if (closeErr) {
+                          console.error('Error closing database:', closeErr);
+                        }
+                        resolve(true);
+                      });
+                    });
+                  });
+                });
+              });
+            });
+          });
         });
       });
     });
@@ -108,99 +183,45 @@ async function storeDocuments(docs) {
   return new Promise((resolve, reject) => {
     const db = new sqlite3.Database(DB_PATH, (err) => {
       if (err) {
-        console.error('Error opening database:', err.message);
         reject(err);
         return;
       }
       
-      // Updated statement to include the new fields
-      const stmt = db.prepare(`
-        INSERT INTO knowledge_base (
-          source, 
-          section, 
-          content, 
-          jurisdiction, 
-          tags, 
-          doc_type, 
-          confidence
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `);
-      
-      // Statement to insert into search index if it exists
-      const searchStmt = db.prepare(`
-        INSERT OR IGNORE INTO knowledge_search (
-          source,
-          section,
-          content,
-          tags,
-          jurisdiction,
-          doc_type
-        )
-        VALUES (?, ?, ?, ?, ?, ?)
-      `);
-      
       db.serialize(() => {
-        db.run('BEGIN TRANSACTION');
+        const stmt = db.prepare(`
+          INSERT INTO knowledge_base (
+            source, section, content, jurisdiction, tags, doc_type
+          ) VALUES (?, ?, ?, ?, ?, ?)
+        `);
         
-        let docsInserted = 0;
-        docs.forEach(doc => {
-          try {
-            // Insert into main table
-            stmt.run(
-              doc.filename || '',
-              doc.section || '',
-              doc.content || '',
-              doc.jurisdiction || 'Global',
-              doc.tags || '',
-              doc.docType || 'General',
-              doc.confidence || 0.5,
-              function(err) {
-                if (err) {
-                  console.error('Error inserting document:', err.message);
-                } else {
-                  docsInserted++;
-                  
-                  // Also try to insert into search index
-                  try {
-                    searchStmt.run(
-                      doc.filename || '',
-                      doc.section || '',
-                      doc.content || '',
-                      doc.tags || '',
-                      doc.jurisdiction || 'Global',
-                      doc.docType || 'General',
-                      (searchErr) => {
-                        if (searchErr) {
-                          // Just log the error but don't fail the whole transaction
-                          console.warn('Could not update search index:', searchErr.message);
-                        }
-                      }
-                    );
-                  } catch (searchErr) {
-                    // If search index operation fails, just log and continue
-                    console.warn('Search index not available:', searchErr.message);
-                  }
-                }
-              }
-            );
-          } catch (docErr) {
-            console.error('Error processing document for insertion:', docErr.message);
-          }
-        });
+        for (const doc of docs) {
+          stmt.run(
+            doc.source,
+            doc.section || null,
+            doc.content,
+            doc.jurisdiction || 'Unknown',
+            doc.tags ? JSON.stringify(doc.tags) : null,
+            doc.doc_type || 'Unknown'
+          );
+        }
         
-        stmt.finalize();
-        searchStmt.finalize();
-        
-        db.run('COMMIT', (err) => {
+        stmt.finalize((err) => {
           if (err) {
-            console.error('Error committing transaction:', err.message);
+            db.close();
             reject(err);
-          } else {
-            console.log(`${docsInserted} documents inserted successfully into knowledge base`);
-            resolve(docsInserted);
+            return;
           }
-          db.close();
+          
+          // Get the count of inserted documents
+          db.get('SELECT changes() as count', (err, row) => {
+            db.close();
+            
+            if (err) {
+              reject(err);
+            } else {
+              resolve({ count: row.count, documents: docs });
+            }
+          });
         });
       });
     });
@@ -209,56 +230,24 @@ async function storeDocuments(docs) {
 
 /**
  * Extract text from a PDF file
- * Use basic file reading for now, will be enhanced with pdf-parse later
+ * Basic extraction using pdf-lib for simple files
  * @param {string} pdfPath - Path to the PDF file
  * @returns {Promise<string>} - The extracted text
  */
 async function extractPdfText(pdfPath) {
-  console.log(`Extracting text from: ${pdfPath}`);
-  
   try {
-    // For now, extract basic file metadata as our "text"
-    const stats = await fs.promises.stat(pdfPath);
-    const fileName = path.basename(pdfPath);
-    const fileExt = path.extname(pdfPath);
-    const fileSize = stats.size;
-    const createDate = stats.birthtime;
-    const modifyDate = stats.mtime;
+    const pdfBuffer = fs.readFileSync(pdfPath);
+    const pdfDoc = await PDFDocument.load(pdfBuffer);
+    const numPages = pdfDoc.getPageCount();
     
-    // Get first few bytes as a sample (safely handling binary data)
-    let sampleContent = '';
-    try {
-      const fd = await fs.promises.open(pdfPath, 'r');
-      const buffer = Buffer.alloc(1024); // Read first 1KB
-      const { bytesRead } = await fd.read(buffer, 0, 1024, 0);
-      await fd.close();
-      
-      // Convert to string, filtering out non-printable characters
-      sampleContent = buffer
-        .slice(0, bytesRead)
-        .toString('utf8', 0, bytesRead)
-        .replace(/[^\x20-\x7E]/g, ' ')
-        .trim()
-        .substring(0, 200); // First 200 printable chars
-    } catch (err) {
-      console.log(`Could not read file sample: ${err.message}`);
-      sampleContent = '[Binary content]';
-    }
-    
-    // Create a simple text representation with file metadata
-    const extractedText = `
-FILENAME: ${fileName}
-FILE_TYPE: ${fileExt}
-FILE_SIZE: ${fileSize} bytes
-CREATED: ${createDate}
-MODIFIED: ${modifyDate}
-CONTENT_SAMPLE: ${sampleContent}
-    `;
-    
-    return extractedText;
+    // We can't extract text directly with pdf-lib, so we're returning basic metadata for now
+    // This should be enhanced with a more robust PDF text extractor like pdf-parse or pdfjs
+    return `PDF Document: ${path.basename(pdfPath)}\nPages: ${numPages}\n` +
+      `This is a placeholder for extracted text content. In a production implementation, ` +
+      `we would use a dedicated PDF text extraction library like pdf-parse.`;
   } catch (error) {
     console.error(`Error extracting text from ${pdfPath}:`, error);
-    return `Error processing file: ${path.basename(pdfPath)}. ${error.message}`;
+    return `Failed to extract text from ${path.basename(pdfPath)}: ${error.message}`;
   }
 }
 
@@ -268,59 +257,59 @@ CONTENT_SAMPLE: ${sampleContent}
  * @returns {Promise<Array>} - Array of document objects
  */
 async function processPdfs(folderPath) {
+  const processedDocs = [];
+  
   try {
-    const files = await readdir(folderPath);
+    // Get all PDF files in the directory
+    const files = fs.readdirSync(folderPath);
     const pdfFiles = files.filter(file => file.toLowerCase().endsWith('.pdf'));
     
-    console.log(`Found ${pdfFiles.length} PDF files in ${folderPath}`);
-    
-    const results = [];
-    for (const file of pdfFiles) {
-      const filePath = path.join(folderPath, file);
+    // Process each PDF
+    for (const pdfFile of pdfFiles) {
+      const pdfPath = path.join(folderPath, pdfFile);
+      const fileName = path.basename(pdfFile);
+      
       try {
-        const text = await extractPdfText(filePath);
-        const docMetadata = determineDocumentType(file, text);
+        // Extract text from the PDF
+        const text = await extractPdfText(pdfPath);
         
-        // Split content into sections if possible
+        // Determine document type and jurisdiction from filename and content
+        const docInfo = determineDocumentType(fileName, text);
+        
+        // Extract document sections for more granular knowledge
         const sections = extractDocumentSections(text);
         
-        if (sections.length > 0) {
-          // Process each section separately for more granular knowledge
-          for (const section of sections) {
-            results.push({
-              filename: file,
-              content: section.content,
-              section: section.id,
-              jurisdiction: docMetadata.jurisdiction,
-              tags: docMetadata.tags + (section.title ? `,${section.title.replace(/\s+/g, '_')}` : ''),
-              docType: docMetadata.docType,
-              confidence: docMetadata.confidence
-            });
-          }
-          console.log(`Processed ${sections.length} sections from: ${file}`);
-        } else {
-          // Process the whole document as one piece
-          results.push({
-            filename: file,
+        // If no sections were extracted, store the whole document
+        if (sections.length === 0) {
+          processedDocs.push({
+            source: fileName,
             content: text,
-            section: docMetadata.section || '',
-            jurisdiction: docMetadata.jurisdiction,
-            tags: docMetadata.tags,
-            docType: docMetadata.docType,
-            confidence: docMetadata.confidence
+            jurisdiction: docInfo.jurisdiction,
+            doc_type: docInfo.type,
+            tags: docInfo.tags
           });
-          console.log(`Processed: ${file} (no sections detected)`);
+        } else {
+          // Store each section separately for more granular retrieval
+          sections.forEach(section => {
+            processedDocs.push({
+              source: fileName,
+              section: section.title,
+              content: section.content,
+              jurisdiction: docInfo.jurisdiction,
+              doc_type: docInfo.type,
+              tags: docInfo.tags
+            });
+          });
         }
       } catch (error) {
-        console.error(`Error processing ${file}:`, error);
+        console.error(`Error processing PDF ${pdfFile}:`, error);
       }
     }
-    
-    return results;
   } catch (error) {
     console.error(`Error reading directory ${folderPath}:`, error);
-    return [];
   }
+  
+  return processedDocs;
 }
 
 /**
@@ -329,54 +318,49 @@ async function processPdfs(folderPath) {
  * @returns {Array} - Array of section objects
  */
 function extractDocumentSections(text) {
+  // This is a simple section extractor that looks for header patterns
+  // In a production implementation, this would use a more sophisticated approach
+  
   const sections = [];
   
-  // Look for section headers in the text
-  // Patterns like "Chapter X", "Section X", "X. Title", etc.
+  // Common section header patterns in regulatory documents
   const sectionPatterns = [
-    // Common numbered section formats
-    /\b(\d+\.?\d*)\s+([A-Z][A-Za-z0-9\s&;,\-–—]+?)(?=\n|\r|\.$)/g,
-    // Chapter headings
-    /\bCHAPTER\s+(\d+|[IVXLCDM]+)[\.\s:]+([A-Z][A-Za-z0-9\s&;,\-–—]+?)(?=\n|\r|\.$)/gi,
-    // Section headings
-    /\bSECTION\s+(\d+|[IVXLCDM]+)[\.\s:]+([A-Z][A-Za-z0-9\s&;,\-–—]+?)(?=\n|\r|\.$)/gi,
-    // Appendix headings
-    /\bAPPENDIX\s+([A-Z\d]+)[\.\s:]+([A-Z][A-Za-z0-9\s&;,\-–—]+?)(?=\n|\r|\.$)/gi,
-    // Simple headers in all caps
-    /^([A-Z][A-Z\s&;,\-–—]{4,})$/gm
+    /\n(\d+\.\s+[A-Z][A-Za-z\s]+)\n/g, // Numbered section headers: "1. Introduction"
+    /\n([A-Z][A-Z\s]+)(?:\n|\s*:)/g,   // ALL CAPS headers: "INTRODUCTION" or "SCOPE:"
+    /\n(Chapter\s+\d+[.:]\s+[A-Za-z\s]+)\n/gi, // Chapter headers: "Chapter 1: Introduction"
+    /\n(Appendix\s+[A-Z]\s*[.:]\s+[A-Za-z\s]+)\n/gi, // Appendix headers: "Appendix A: References"
+    /\n(Section\s+\d+[.:]\s+[A-Za-z\s]+)\n/gi, // Section headers: "Section 1: Scope"
   ];
   
-  // Extract sections based on matches
-  let sectionMatches = [];
-  for (const pattern of sectionPatterns) {
-    const matches = [...text.matchAll(pattern)];
-    if (matches.length > 0) {
-      sectionMatches = sectionMatches.concat(matches);
+  // Find potential section headers
+  const potentialSections = [];
+  
+  sectionPatterns.forEach(pattern => {
+    let match;
+    while ((match = pattern.exec(text)) !== null) {
+      potentialSections.push({
+        title: match[1].trim(),
+        index: match.index + 1 // +1 to skip the newline
+      });
     }
-  }
+  });
   
-  // Sort matches by their index in the text
-  sectionMatches.sort((a, b) => a.index - b.index);
+  // Sort sections by their position in the document
+  potentialSections.sort((a, b) => a.index - b.index);
   
-  // If we have too many matches (> 50), it's probably not a good section breakdown
-  if (sectionMatches.length > 50 || sectionMatches.length === 0) {
-    return [];
-  }
-  
-  // Convert matches to actual sections
-  for (let i = 0; i < sectionMatches.length; i++) {
-    const match = sectionMatches[i];
-    const startPos = match.index;
-    const endPos = i < sectionMatches.length - 1 ? sectionMatches[i+1].index : text.length;
-    const sectionId = match[1] || `section-${i + 1}`;
-    const sectionTitle = match[2] || `Section ${i + 1}`;
-    const sectionContent = text.substring(startPos, endPos).trim();
+  // Extract content between sections
+  for (let i = 0; i < potentialSections.length; i++) {
+    const sectionStart = potentialSections[i].index + potentialSections[i].title.length;
+    const sectionEnd = i < potentialSections.length - 1 
+      ? potentialSections[i + 1].index
+      : text.length;
     
-    // Only include sections with meaningful content
-    if (sectionContent.length > 100) {
+    const sectionContent = text.substring(sectionStart, sectionEnd).trim();
+    
+    // Only add if there's meaningful content (more than just a few characters)
+    if (sectionContent.length > 20) {
       sections.push({
-        id: sectionId,
-        title: sectionTitle,
+        title: potentialSections[i].title,
         content: sectionContent
       });
     }
@@ -394,135 +378,104 @@ function extractDocumentSections(text) {
  */
 function determineDocumentType(filename, content = '') {
   const lowerFilename = filename.toLowerCase();
-  const lowerContent = content.toLowerCase().substring(0, 5000); // Analyze first 5000 chars
+  const lowerContent = content.toLowerCase().substring(0, 2000); // Use just the first part for efficiency
   
-  // Document metadata
-  const result = {
-    jurisdiction: 'Global',
-    tags: 'regulatory',
-    docType: 'General',
-    section: '',
-    confidence: 0.5 // Default confidence level
+  // Determine jurisdiction
+  let jurisdiction = 'Unknown';
+  let highestMatch = 0;
+  
+  for (const [auth, keywords] of Object.entries(REGULATORY_AUTHORITIES)) {
+    let matchCount = 0;
+    
+    keywords.forEach(keyword => {
+      // Check filename for jurisdiction keywords
+      if (lowerFilename.includes(keyword)) {
+        matchCount += 3; // Filename matches are more important
+      }
+      
+      // Check content for jurisdiction keywords
+      const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+      const contentMatches = (lowerContent.match(regex) || []).length;
+      matchCount += contentMatches;
+    });
+    
+    if (matchCount > highestMatch) {
+      highestMatch = matchCount;
+      jurisdiction = auth;
+    }
+  }
+  
+  // Determine document type
+  let docType = 'Unknown';
+  highestMatch = 0;
+  
+  for (const [type, keywords] of Object.entries(DOCUMENT_TYPES)) {
+    let matchCount = 0;
+    
+    keywords.forEach(keyword => {
+      // Check filename for type keywords
+      if (lowerFilename.includes(keyword)) {
+        matchCount += 3; // Filename matches are more important
+      }
+      
+      // Check content for type keywords
+      const regex = new RegExp(`\\b${keyword}\\b`, 'gi');
+      const contentMatches = (lowerContent.match(regex) || []).length;
+      matchCount += contentMatches;
+    });
+    
+    if (matchCount > highestMatch) {
+      highestMatch = matchCount;
+      docType = type;
+    }
+  }
+  
+  // Extract potential tags
+  const tags = [];
+  
+  // Check for specific document identifiers
+  const ichGuidanceMatch = lowerContent.match(/\bich\s+([a-z]\d+[a-z]*)(?:\s*\(r\d+\))?/gi);
+  if (ichGuidanceMatch) {
+    ichGuidanceMatch.forEach(match => tags.push(match.toUpperCase()));
+    jurisdiction = 'ICH';
+    docType = 'Guidance';
+  }
+  
+  // Check for FDA guidance numbers
+  const fdaGuidanceMatch = lowerContent.match(/\bguidance\s+(?:for\s+industry\s+)?(?:no\.\s+)?(\d+-\d+)/gi);
+  if (fdaGuidanceMatch) {
+    fdaGuidanceMatch.forEach(match => tags.push(match));
+    jurisdiction = 'FDA';
+    docType = 'Guidance';
+  }
+  
+  // Check for EU MDR/IVDR references
+  if (lowerContent.includes('2017/745') || lowerContent.includes('mdr')) {
+    tags.push('MDR');
+    tags.push('2017/745');
+    jurisdiction = 'EMA';
+    docType = 'Regulation';
+  }
+  
+  if (lowerContent.includes('2017/746') || lowerContent.includes('ivdr')) {
+    tags.push('IVDR');
+    tags.push('2017/746');
+    jurisdiction = 'EMA';
+    docType = 'Regulation';
+  }
+  
+  // ISO standards
+  const isoMatch = lowerContent.match(/\biso\s+(\d+(?:-\d+)*(?::\d+)?)/gi);
+  if (isoMatch) {
+    isoMatch.forEach(match => tags.push(match.toUpperCase()));
+    docType = 'Standard';
+  }
+  
+  return {
+    jurisdiction,
+    type: docType,
+    tags: tags.length > 0 ? [...new Set(tags)] : undefined // Deduplicate tags
   };
-  
-  // Regulatory jurisdictions
-  const jurisdictionPatterns = [
-    // FDA (USA)
-    {pattern: /\bfda\b|\bu\.?s\.? food and drug\b|\bcfr\b|\bcode of federal regulations\b|\b21 cfr\b/g, jurisdiction: 'USA', tags: 'FDA', confidence: 0.8},
-    {pattern: /\b510\(?k\)?|\bpremarket notification\b|\bsubstantial equivalence\b/g, jurisdiction: 'USA', tags: 'FDA,510k,premarket', confidence: 0.9},
-    {pattern: /\bpma\b|\bpremarket approval\b/g, jurisdiction: 'USA', tags: 'FDA,PMA,premarket', confidence: 0.9},
-    {pattern: /\bde novo\b|\bde novo classification\b/g, jurisdiction: 'USA', tags: 'FDA,De Novo,classification', confidence: 0.9},
-    {pattern: /\bhde\b|\bhumanitarian device\b/g, jurisdiction: 'USA', tags: 'FDA,HDE', confidence: 0.9},
-    
-    // EMA (EU)
-    {pattern: /\bema\b|\beu\b|\bemea\b|\beuropean medicines agency\b/g, jurisdiction: 'EU', tags: 'EMA,EU', confidence: 0.8},
-    {pattern: /\bmdr\b|\bmedical device regulation\b|\b2017\/745\b/g, jurisdiction: 'EU', tags: 'EU,MDR,regulation', confidence: 0.9},
-    {pattern: /\bivdr\b|\bin vitro diagnostic\b|\b2017\/746\b/g, jurisdiction: 'EU', tags: 'EU,IVDR,regulation', confidence: 0.9},
-    {pattern: /\bmeddev\b|\beu directive\b/g, jurisdiction: 'EU', tags: 'EU,MEDDEV,guidance', confidence: 0.8},
-    {pattern: /\beudamed\b/g, jurisdiction: 'EU', tags: 'EU,EUDAMED,database', confidence: 0.9},
-    
-    // PMDA (Japan)
-    {pattern: /\bpmda\b|\bjapan\b|\bjapanese\b/g, jurisdiction: 'Japan', tags: 'PMDA,Japan', confidence: 0.8},
-    {pattern: /\bj-mhlw\b|\bmhlw\b|\bjapanese ministry\b/g, jurisdiction: 'Japan', tags: 'PMDA,MHLW,Japan', confidence: 0.9},
-    
-    // NMPA (China)
-    {pattern: /\bnmpa\b|\bchina\b|\bchinese\b/g, jurisdiction: 'China', tags: 'NMPA,China', confidence: 0.8},
-    {pattern: /\bcfda\b|\bchina food and drug\b/g, jurisdiction: 'China', tags: 'NMPA,CFDA,China', confidence: 0.9},
-    
-    // Health Canada
-    {pattern: /\bhealth canada\b|\bcanada\b|\bcanadian\b/g, jurisdiction: 'Canada', tags: 'Health Canada', confidence: 0.8},
-    {pattern: /\bcmdcas\b|\bmdel\b|\bcanadian medical device\b/g, jurisdiction: 'Canada', tags: 'Health Canada,CMDCAS,medical device', confidence: 0.9},
-    
-    // TGA (Australia)
-    {pattern: /\btga\b|\baustralia\b|\baustralian\b|\btherapeutic goods\b/g, jurisdiction: 'Australia', tags: 'TGA,Australia', confidence: 0.8},
-    
-    // ICH (Global)
-    {pattern: /\bich\b|\binternational council for harmonisation\b/g, jurisdiction: 'Global', tags: 'ICH,harmonisation', confidence: 0.9},
-    
-    // ISO (Global)
-    {pattern: /\biso\b|\binternational organization for standardization\b/g, jurisdiction: 'Global', tags: 'ISO,standard', confidence: 0.8},
-    {pattern: /\biso 13485\b/g, jurisdiction: 'Global', tags: 'ISO,13485,quality management', confidence: 0.9},
-    {pattern: /\biso 14971\b/g, jurisdiction: 'Global', tags: 'ISO,14971,risk management', confidence: 0.9},
-    {pattern: /\biso 10993\b/g, jurisdiction: 'Global', tags: 'ISO,10993,biocompatibility', confidence: 0.9}
-  ];
-  
-  // ICH guideline patterns
-  const ichGuidelinePatterns = [
-    // Efficacy guidelines
-    {pattern: /\bich e1\b/, tags: 'ICH,E1,population exposure', section: 'E1', confidence: 0.95},
-    {pattern: /\bich e2\b/, tags: 'ICH,E2,pharmacovigilance', section: 'E2', confidence: 0.95},
-    {pattern: /\bich e3\b/, tags: 'ICH,E3,study reports', section: 'E3', confidence: 0.95},
-    {pattern: /\bich e4\b/, tags: 'ICH,E4,dose response', section: 'E4', confidence: 0.95},
-    {pattern: /\bich e5\b/, tags: 'ICH,E5,ethnic factors', section: 'E5', confidence: 0.95},
-    {pattern: /\bich e6\b|gcp/, tags: 'ICH,E6,GCP,good clinical practice', section: 'E6', confidence: 0.95},
-    {pattern: /\bich e7\b/, tags: 'ICH,E7,geriatric studies', section: 'E7', confidence: 0.95},
-    {pattern: /\bich e8\b/, tags: 'ICH,E8,general considerations', section: 'E8', confidence: 0.95},
-    {pattern: /\bich e9\b/, tags: 'ICH,E9,statistical principles', section: 'E9', confidence: 0.95},
-    {pattern: /\bich e10\b/, tags: 'ICH,E10,control groups', section: 'E10', confidence: 0.95},
-    {pattern: /\bich e11\b/, tags: 'ICH,E11,pediatric populations', section: 'E11', confidence: 0.95},
-    {pattern: /\bich e12\b/, tags: 'ICH,E12,clinical evaluation', section: 'E12', confidence: 0.95},
-    {pattern: /\bich e14\b/, tags: 'ICH,E14,QT interval', section: 'E14', confidence: 0.95},
-    {pattern: /\bich e15\b/, tags: 'ICH,E15,genomic biomarkers', section: 'E15', confidence: 0.95},
-    {pattern: /\bich e16\b/, tags: 'ICH,E16,biomarkers', section: 'E16', confidence: 0.95},
-    {pattern: /\bich e17\b/, tags: 'ICH,E17,multi-regional trials', section: 'E17', confidence: 0.95},
-    {pattern: /\bich e18\b/, tags: 'ICH,E18,genomic sampling', section: 'E18', confidence: 0.95},
-    {pattern: /\bich e19\b/, tags: 'ICH,E19,safety data collection', section: 'E19', confidence: 0.95},
-    {pattern: /\bich e20\b/, tags: 'ICH,E20,adaptive trials', section: 'E20', confidence: 0.95}
-  ];
-  
-  // Document type patterns
-  const documentTypePatterns = [
-    {pattern: /\bguidance\b|\bguideline\b|\bguide\b/, docType: 'Guidance', confidence: 0.7},
-    {pattern: /\bregulation\b|\bdirective\b|\blaw\b/, docType: 'Regulation', confidence: 0.8},
-    {pattern: /\bstandard\b|\biso\b|\bastm\b/, docType: 'Standard', confidence: 0.8},
-    {pattern: /\breport\b|\bstudy\b|\btrial\b/, docType: 'Report', confidence: 0.7},
-    {pattern: /\bform\b|\btemplate\b|\bapplication\b/, docType: 'Form', confidence: 0.7},
-    {pattern: /\bclinical evaluation report\b|\bcer\b/, docType: 'Clinical Evaluation Report', confidence: 0.9},
-    {pattern: /\btechnical\s+file\b|\btechnical\s+documentation\b/, docType: 'Technical Documentation', confidence: 0.8},
-    {pattern: /\brisk\s+management\b|\brisk\s+analysis\b/, docType: 'Risk Management', confidence: 0.8},
-    {pattern: /\bpost[- ]market surveillance\b|\bpms\b|\bpmsur\b/, docType: 'Post-Market Surveillance', confidence: 0.9},
-    {pattern: /\bmanufacturer\b|\bquality system\b|\bqms\b/, docType: 'Quality System', confidence: 0.7},
-    {pattern: /\blabeling\b|\blabelling\b|\bpackage insert\b/, docType: 'Labeling', confidence: 0.8}
-  ];
-  
-  // Check for jurisdiction matches
-  for (const jp of jurisdictionPatterns) {
-    const matches = (lowerFilename.match(jp.pattern) || []).concat(lowerContent.match(jp.pattern) || []);
-    if (matches.length > 0) {
-      result.jurisdiction = jp.jurisdiction;
-      result.tags = jp.tags;
-      result.confidence = Math.max(result.confidence, jp.confidence);
-      break;
-    }
-  }
-  
-  // Special handling for ICH guidelines
-  for (const ich of ichGuidelinePatterns) {
-    if (lowerFilename.match(ich.pattern) || lowerContent.match(ich.pattern)) {
-      result.jurisdiction = 'Global';
-      result.tags = ich.tags;
-      result.section = ich.section;
-      result.confidence = Math.max(result.confidence, ich.confidence);
-      result.docType = 'ICH Guideline';
-      break;
-    }
-  }
-  
-  // Check for document type
-  for (const dt of documentTypePatterns) {
-    if (lowerFilename.match(dt.pattern) || lowerContent.match(dt.pattern)) {
-      result.docType = dt.docType;
-      result.confidence = Math.max(result.confidence, dt.confidence);
-      break;
-    }
-  }
-  
-  // Convert tags to proper tag format if they're not already
-  if (!result.tags.includes(',')) {
-    result.tags = result.tags.split(' ').filter(Boolean).join(',');
-  }
-  
-  return result;
 }
 
 /**
@@ -530,16 +483,7 @@ function determineDocumentType(filename, content = '') {
  */
 async function setupKnowledgeBase() {
   try {
-    // Ensure data directory exists
-    const dataDir = path.join(__dirname, '../../data');
-    if (!fs.existsSync(dataDir)) {
-      await mkdir(dataDir, { recursive: true });
-    }
-    
-    // Initialize database
     await initializeDatabase();
-    
-    console.log('Knowledge base setup complete');
     return true;
   } catch (error) {
     console.error('Error setting up knowledge base:', error);
@@ -553,25 +497,36 @@ async function setupKnowledgeBase() {
  */
 async function importDocuments(folderPath) {
   try {
-    const docs = await processPdfs(folderPath);
-    if (docs.length > 0) {
-      const insertedCount = await storeDocuments(docs);
-      return {
-        success: true,
-        count: insertedCount,
-        message: `Imported ${insertedCount} documents from ${folderPath}`
-      };
-    } else {
+    // Process PDFs in the directory
+    const processedDocs = await processPdfs(folderPath);
+    
+    if (processedDocs.length === 0) {
       return {
         success: false,
-        count: 0,
-        message: `No documents found in ${folderPath}`
+        message: 'No documents found or processed',
+        processedCount: 0
       };
     }
+    
+    // Store the processed documents in the knowledge base
+    const result = await storeDocuments(processedDocs);
+    
+    return {
+      success: true,
+      message: `Successfully processed ${result.count} document sections`,
+      processedCount: processedDocs.length,
+      documents: processedDocs.map(doc => ({
+        source: doc.source,
+        section: doc.section,
+        jurisdiction: doc.jurisdiction,
+        doc_type: doc.doc_type
+      }))
+    };
   } catch (error) {
     console.error('Error importing documents:', error);
     return {
       success: false,
+      message: `Error importing documents: ${error.message}`,
       error: error.message
     };
   }
@@ -579,8 +534,11 @@ async function importDocuments(folderPath) {
 
 module.exports = {
   setupKnowledgeBase,
-  initializeDatabase,
+  importDocuments,
+  extractPdfText,
   processPdfs,
+  initializeDatabase,
   storeDocuments,
-  importDocuments
+  determineDocumentType,
+  extractDocumentSections
 };
