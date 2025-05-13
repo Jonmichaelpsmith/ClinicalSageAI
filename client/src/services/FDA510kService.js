@@ -181,23 +181,19 @@ class FDA510kService {
   }
   
   /**
-   * Generate an NLP summary of a predicate device or literature
+   * Summarize text using NLP
    * 
-   * @param {Object} item - The predicate device or literature item to summarize
-   * @param {string} type - The type of item ('predicate' or 'literature')
-   * @param {number} organizationId - The organization ID
-   * @returns {Promise<Object>} - Generated summary
+   * @param {string} text - The text to summarize
+   * @returns {Promise<string>} - Generated summary
    */
-  async generateNlpSummary(item, type = 'predicate', organizationId) {
+  async summarizeText(text) {
     try {
-      const response = await axios.post('/api/fda510k/nlp-summary', {
-        item,
-        type,
-        organizationId
+      const response = await axios.post('/api/fda510k/summarize', {
+        text
       });
-      return response.data;
+      return response.data.summary;
     } catch (error) {
-      console.error('Error generating NLP summary:', error);
+      console.error('Error summarizing text:', error);
       throw new Error(error.response?.data?.message || 'Failed to generate summary');
     }
   }
