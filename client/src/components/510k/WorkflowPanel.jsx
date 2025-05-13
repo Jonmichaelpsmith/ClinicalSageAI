@@ -36,19 +36,29 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
 
   // Handle predicate finder
   const handlePredicateFinder = async () => {
+    if (!selectedDeviceProfile) {
+      toast({
+        title: "Device Profile Required",
+        description: "Please select a device profile before running the predicate finder",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading({ ...isLoading, predicateFinder: true });
     
     try {
-      // Use the service for predictate device search
-      const result = await FDA510kService.getPredicateDevices(projectId || "demo-project-id");
+      // We'll use the enhanced findPredicatesAndLiterature method that searches for both
+      // predicate devices and literature references in one call
+      const result = await FDA510kService.findPredicatesAndLiterature(selectedDeviceProfile, organizationId || 1);
       
       toast({
-        title: "Predicate Search Complete",
-        description: `Found ${result.devices?.length || 0} potential predicate devices`,
+        title: "Search Complete",
+        description: `Found ${result.predicateDevices?.length || 0} potential predicate devices and ${result.literatureReferences?.length || 0} literature references`,
       });
       
       // Navigate to predicate analysis tab
-      navigate('/client-portal/510k?tab=predicateAnalysis');
+      setActiveTab('predicateAnalysis');
     } catch (error) {
       console.error('Error in predicate finder:', error);
       toast({
@@ -151,6 +161,10 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
           <TabsTrigger value="deviceProfile">
             <Database className="h-4 w-4 mr-2" />
             Device Profiles
+          </TabsTrigger>
+          <TabsTrigger value="predicateAnalysis">
+            <SearchCode className="h-4 w-4 mr-2" />
+            Predicate Finder
           </TabsTrigger>
           <TabsTrigger value="ai-tools">
             <Beaker className="h-4 w-4 mr-2" />
@@ -380,6 +394,55 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
                 </CardContent>
               </Card>
             )}
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="predicateAnalysis">
+          <div className="space-y-6">
+            {/* Selected Profile Summary */}
+            {selectedDeviceProfile ? (
+              <div className="bg-blue-50 border border-blue-100 rounded-md p-4 mb-6">
+                <div className="flex items-center">
+                  <div className="rounded-full bg-blue-100 p-2 mr-3">
+                    <CheckCircle className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium">Selected Device: {selectedDeviceProfile.deviceName}</h3>
+                    <p className="text-sm text-gray-600">
+                      Class {selectedDeviceProfile.deviceClass} • {selectedDeviceProfile.manufacturer || 'No manufacturer specified'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-amber-50 border border-amber-100 rounded-md p-4 mb-6">
+                <div className="flex items-start">
+                  <div className="rounded-full bg-amber-100 p-2 mr-3 mt-0.5">
+                    <LineChart className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-amber-800">No Device Profile Selected</h3>
+                    <p className="text-sm text-amber-700 mb-2">
+                      Please select or create a device profile before running the predicate finder.
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-amber-200 text-amber-700 hover:bg-amber-50"
+                      onClick={() => setActiveTab('deviceProfile')}
+                    >
+                      Go to Device Profiles
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Predicate Finder Panel */}
+            <PredicateFinderPanel 
+              deviceProfile={selectedDeviceProfile}
+              organizationId={organizationId}
+            />
           </div>
         </TabsContent>
         
