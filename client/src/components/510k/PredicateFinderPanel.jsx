@@ -665,12 +665,18 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [] }
                 
                 {/* AI Summary Section */}
                 {summaries[device.kNumber] && (
-                  <div className="mb-4 bg-blue-50 p-3 rounded-md border border-blue-100">
+                  <div className="mb-4 bg-gradient-to-r from-blue-50 to-white p-4 rounded-md border border-blue-100 shadow-sm">
                     <h4 className="font-medium mb-2 flex items-center text-blue-700">
                       <Lightbulb className="h-4 w-4 mr-2 text-blue-600" />
-                      AI-Generated Summary
+                      AI-Generated NLP Summary
                     </h4>
-                    <p className="text-sm text-gray-700">{summaries[device.kNumber]}</p>
+                    <div className="text-sm text-gray-700 bg-white p-3 rounded border border-blue-50">
+                      {summaries[device.kNumber]}
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500 flex items-center">
+                      <Check className="h-3 w-3 mr-1 text-green-500" />
+                      Generated with OpenAI GPT-4o
+                    </div>
                   </div>
                 )}
                 
@@ -848,10 +854,17 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [] }
                 
                 {/* Display the AI-generated summary if available */}
                 {summaries[reference.id || reference.doi] && (
-                  <div className="mb-4">
-                    <h4 className="font-medium mb-1">AI-Generated Summary</h4>
-                    <div className="bg-green-50 border border-green-100 p-3 rounded-md text-sm text-green-800">
+                  <div className="mb-4 bg-gradient-to-r from-green-50 to-white p-4 rounded-md border border-green-100 shadow-sm">
+                    <h4 className="font-medium mb-2 flex items-center text-green-700">
+                      <Lightbulb className="h-4 w-4 mr-2 text-green-600" />
+                      AI-Generated NLP Summary
+                    </h4>
+                    <div className="text-sm text-gray-700 bg-white p-3 rounded border border-green-50">
                       {summaries[reference.id || reference.doi]}
+                    </div>
+                    <div className="mt-2 text-xs text-gray-500 flex items-center">
+                      <Check className="h-3 w-3 mr-1 text-green-500" />
+                      Generated with OpenAI GPT-4o
                     </div>
                   </div>
                 )}
