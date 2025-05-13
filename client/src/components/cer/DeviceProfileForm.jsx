@@ -83,7 +83,7 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
               <FormControl>
                 <Input placeholder="e.g. CardioMonitor 3000" {...field} />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
                 The commercial name of the device
               </FormDescription>
               <FormMessage />
@@ -132,17 +132,17 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
                 defaultValue={field.value}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Select device class" />
                   </SelectTrigger>
                 </FormControl>
-                <SelectContent>
-                  <SelectItem value="I">Class I</SelectItem>
-                  <SelectItem value="II">Class II</SelectItem>
-                  <SelectItem value="III">Class III</SelectItem>
+                <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                  <SelectItem value="I" className="hover:bg-blue-50">Class I</SelectItem>
+                  <SelectItem value="II" className="hover:bg-blue-50">Class II</SelectItem>
+                  <SelectItem value="III" className="hover:bg-blue-50">Class III</SelectItem>
                 </SelectContent>
               </Select>
-              <FormDescription>
+              <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
                 FDA regulatory classification of the device
               </FormDescription>
               <FormMessage />
@@ -163,7 +163,7 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
                   {...field} 
                 />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
                 Statement of the device's intended use or indication for use
               </FormDescription>
               <FormMessage />
@@ -180,7 +180,7 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
               <FormControl>
                 <Input placeholder="e.g. Electrocardiogram, Bluetooth, AI" {...field} />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
                 Primary technology used in the device
               </FormDescription>
               <FormMessage />
@@ -197,7 +197,7 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
               <FormControl>
                 <Input placeholder="e.g. HeartTrack 2.0 (K123456)" {...field} />
               </FormControl>
-              <FormDescription>
+              <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
                 If known, a legally marketed device to which substantial equivalence will be claimed
               </FormDescription>
               <FormMessage />

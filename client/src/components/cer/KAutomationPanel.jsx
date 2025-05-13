@@ -464,7 +464,7 @@ export default function KAutomationPanel() {
             {workflowSubTab === 'pipeline' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-white pb-2">
+                  <CardHeader className="bg-white border-b border-blue-100 pb-2">
                     <CardTitle className="flex items-center text-blue-700">
                       <Upload className="mr-2 h-5 w-5 text-blue-600" />
                       1. Device Intake
@@ -509,7 +509,7 @@ export default function KAutomationPanel() {
                 </Card>
 
                 <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
-                  <CardHeader className="bg-gradient-to-r from-green-50 to-white pb-2">
+                  <CardHeader className="bg-white border-b border-green-100 pb-2">
                     <CardTitle className="flex items-center text-green-700">
                       <Search className="mr-2 h-5 w-5 text-green-600" />
                       2. Predicate & Literature Discovery
