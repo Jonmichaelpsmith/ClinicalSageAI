@@ -535,94 +535,28 @@ router.post('/compliance-check', validateDeviceData, async (req, res) => {
   }
 });
 
-// Helper function to generate pathway rationale
-function generatePathwayRationale(deviceData) {
-  switch (deviceData.deviceClass) {
-    case 'I':
-      return `Class I devices like ${deviceData.deviceName} typically follow the Traditional 510(k) pathway with fewer regulatory requirements compared to higher classes.`;
-    case 'II':
-      return `Based on ${deviceData.deviceName}'s classification as a Class II device, the Traditional 510(k) pathway is recommended. Class II devices require demonstration of substantial equivalence to a legally marketed predicate device.`;
-    case 'III':
-      return `As a Class III device, ${deviceData.deviceName} may be eligible for the De Novo pathway if no suitable predicate device exists. Otherwise, a Traditional 510(k) may be possible if substantial equivalence can be demonstrated to an existing Class III predicate.`;
-    default:
-      return `Regulatory pathway recommendation is based on the device classification and intended use for ${deviceData.deviceName}.`;
-  }
-}
-
-// Helper function to generate special requirements based on device class
-function generateSpecialRequirements(deviceData) {
-  const baseRequirements = [
-    `Complete device description for ${deviceData.deviceName}`,
-    'Substantial equivalence comparison to predicate device',
-    'Draft labeling materials'
-  ];
-  
-  // Add class-specific requirements
-  switch (deviceData.deviceClass) {
-    case 'I':
-      return baseRequirements;
-    case 'II':
-      return [
-        ...baseRequirements,
-        'Performance testing data',
-        'Biocompatibility evaluation (if patient-contacting)',
-        'Software validation documentation (if applicable)'
-      ];
-    case 'III':
-      return [
-        ...baseRequirements,
-        'Clinical study data',
-        'Performance testing data',
-        'Biocompatibility evaluation (if patient-contacting)',
-        'Software validation documentation (if applicable)',
-        'Manufacturing process information'
-      ];
-    default:
-      return baseRequirements;
-  }
-}
-
-// Helper function to generate detailed compliance checks
-function generateDetailedChecks(deviceData, totalChecks, passedChecks) {
-  const checks = [];
-  
-  // Sample check categories based on device class
-  const checkCategories = {
-    I: ['General', 'Labeling', 'Substantial Equivalence'],
-    II: ['General', 'Labeling', 'Substantial Equivalence', 'Performance Testing', 'Software', 'Biocompatibility'],
-    III: ['General', 'Labeling', 'Substantial Equivalence', 'Performance Testing', 'Software', 'Biocompatibility', 'Clinical Data', 'Manufacturing']
-  };
-  
-  const categories = checkCategories[deviceData.deviceClass] || checkCategories.II;
-  
-  // Populate checks for each category
-  const checksPerCategory = Math.ceil(totalChecks / categories.length);
-  
-  categories.forEach((category, index) => {
-    for (let i = 0; i < checksPerCategory; i++) {
-      const checkNumber = checks.length + 1;
-      // For demo purposes, make a few checks fail
-      const isPassing = checks.length < passedChecks;
+// Utility function to initialize OpenAI
+const initializeOpenAI = async () => {
+  if (!openai) {
+    try {
+      if (!process.env.OPENAI_API_KEY) {
+        console.error('OpenAI API key not available');
+        throw new Error('OpenAI API key is required for FDA 510(k) automation');
+      }
       
-      checks.push({
-        id: `check_${checkNumber}`,
-        category,
-        description: `${category} compliance check #${i+1}`,
-        passed: isPassing,
-        severity: isPassing ? 'info' : checks.length % 5 === 0 ? 'error' : 'warning',
-        recommendation: isPassing ? 
-          null : 
-          `Add additional information to address ${category.toLowerCase()} requirements for check #${i+1}`,
+      const { OpenAI } = require('openai');
+      openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY
       });
-      
-      if (checks.length >= totalChecks) break;
+      console.log('OpenAI client initialized for FDA 510(k) automation');
+      return openai;
+    } catch (err) {
+      console.error('Failed to initialize OpenAI client:', err);
+      throw new Error('Failed to initialize AI services for FDA 510(k) automation');
     }
-    
-    if (checks.length >= totalChecks) return;
-  });
-  
-  return checks;
-}
+  }
+  return openai;
+};
 
 // Export the router
 export default router;
