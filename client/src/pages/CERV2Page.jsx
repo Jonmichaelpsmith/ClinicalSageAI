@@ -1569,22 +1569,60 @@ export default function CERV2Page() {
     }
     
     if (activeTab === 'assistant') {
+      // Set context for the AI assistant and open it
+      useEffect(() => {
+        if (activeTab === 'assistant') {
+          // Prepare comprehensive context for the AI
+          const context = {
+            documentType,
+            deviceName,
+            deviceType,
+            manufacturer,
+            sections: sections.map(s => ({ title: s.title, content: s.content })),
+            predicate: selectedPredicate ? {
+              name: selectedPredicate.name,
+              manufacturer: selectedPredicate.manufacturer,
+              id: selectedPredicate.id
+            } : null,
+            progress: documentType === '510k' ? 65 : 40 // Example progress percentage
+          };
+          
+          // Set the context and open the AI assistant
+          setModuleContext('regulatory', context);
+          openAssistant();
+        }
+      }, [activeTab, setModuleContext, openAssistant, documentType, deviceName, deviceType, manufacturer, sections, selectedPredicate]);
+      
+      // Return a panel explaining that the assistant has been opened
       return (
-        <CerAssistantPanel
-          deviceName={deviceName}
-          deviceType={deviceType}
-          manufacturer={manufacturer}
-          sections={sections}
-          onAddContent={(assistantContent) => {
-            setSections([...sections, assistantContent]);
-            
-            toast({
-              title: "Content Added",
-              description: "Assistant-generated content has been added to your CER.",
-              variant: "success"
-            });
-          }}
-        />
+        <div className="p-6 bg-gradient-to-b from-blue-50 to-white rounded-md">
+          <div className="flex items-center justify-center flex-col text-center p-8">
+            <Lightbulb className="h-12 w-12 text-amber-500 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
+              {documentType === 'cer' ? 'CER AI Assistant' : '510(k) AI Assistant'}
+            </h2>
+            <p className="text-gray-600 max-w-lg">
+              The AI assistant has been opened to help you with your {documentType === 'cer' ? 'Clinical Evaluation Report' : '510(k) Submission'}.
+              You can ask questions, request content generation, or get guidance on regulatory requirements.
+            </p>
+            <Button 
+              className="mt-6" 
+              onClick={() => {
+                setModuleContext('regulatory', {
+                  documentType,
+                  deviceName,
+                  deviceType,
+                  manufacturer,
+                  sections: sections.map(s => ({ title: s.title, content: s.content })),
+                });
+                openAssistant();
+              }}
+            >
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Reopen Assistant
+            </Button>
+          </div>
+        </div>
       );
     }
 
