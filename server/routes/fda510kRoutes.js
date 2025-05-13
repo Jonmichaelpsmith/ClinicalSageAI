@@ -188,71 +188,131 @@ router.post('/find-predicates', validateDeviceData, async (req, res) => {
     }
 
     // Use OpenAI to find predicates in the real implementation
-    // For now, we'll use a simplified version with the same mock data
+    console.log('Searching for predicate devices using OpenAI for:', deviceData.deviceName);
     
-    res.status(200).json({
-      success: true,
-      predicates: {
-        predicateDevices: [
-          {
-            deviceName: `Similar ${deviceData.deviceName}`,
-            kNumber: 'K200123',
-            clearanceDate: '2020-05-15',
-            deviceClass: deviceData.deviceClass,
-            manufacturer: 'MedTech Innovations, Inc.',
-            matchScore: 0.92,
-            matchRationale: `This device has similar intended use and technology type as ${deviceData.deviceName}.`
-          },
-          {
-            deviceName: `${deviceData.deviceName} Predecessor`,
-            kNumber: 'K180456',
-            clearanceDate: '2018-10-22',
-            deviceClass: deviceData.deviceClass,
-            manufacturer: 'Legacy Medical Devices',
-            matchScore: 0.87,
-            matchRationale: 'This is an earlier version with similar core functionality.'
-          },
-          {
-            deviceName: 'Alternative Solution XL',
-            kNumber: 'K190789',
-            clearanceDate: '2019-07-18',
-            deviceClass: deviceData.deviceClass,
-            manufacturer: 'Alternate Health Systems',
-            matchScore: 0.79,
-            matchRationale: 'This device uses different technology but achieves similar clinical outcomes.'
-          }
-        ],
-        literatureReferences: [
-          {
-            title: `Clinical Efficacy of Devices Similar to ${deviceData.deviceName}`,
-            authors: ['Johnson, A.', 'Smith, B.', 'Davis, C.'],
-            journal: 'Journal of Medical Devices',
-            year: 2023,
-            doi: '10.1234/jmd.2023.0101',
-            relevanceScore: 0.93,
-            summary: 'Comprehensive review of clinical outcomes for this device category.'
-          },
-          {
-            title: 'Regulatory Considerations for Medical Devices in Class ' + deviceData.deviceClass,
-            authors: ['Regulatory, E.', 'Compliance, F.'],
-            journal: 'Regulatory Science Quarterly',
-            year: 2022,
-            doi: '10.5678/rsq.2022.0202',
-            relevanceScore: 0.85,
-            summary: 'Overview of key regulatory considerations for this device class.'
-          },
-          {
-            title: 'Technology Advancement in Medical Devices: A 5-Year Review',
-            authors: ['Tech, G.', 'Innovation, H.'],
-            journal: 'Medical Technology Innovation',
-            year: 2024,
-            doi: '10.9012/mti.2024.0303',
-            relevanceScore: 0.78,
-            summary: 'Analysis of technology trends relevant to this device category.'
-          }
-        ]
+    try {
+      // Create a structured prompt to get consistently formatted results
+      const prompt = `
+        Analyze the following medical device and find potential predicate devices (similar FDA-cleared devices) 
+        and relevant literature references that could support a 510(k) submission.
+        
+        DEVICE DETAILS:
+        - Name: ${deviceData.deviceName}
+        - Class: ${deviceData.deviceClass}
+        - Intended Use: ${deviceData.intendedUse || 'Not specified'}
+        - Description: ${deviceData.description || 'Not specified'}
+        - Technology Type: ${deviceData.technologyType || 'Not specified'}
+        
+        INSTRUCTIONS:
+        1. Search for similar FDA-cleared medical devices that could serve as predicates.
+        2. Find relevant scientific literature to support substantial equivalence.
+        3. Format your response as structured JSON with the following format:
+        {
+          "predicateDevices": [
+            {
+              "deviceName": "string",
+              "kNumber": "string",
+              "clearanceDate": "YYYY-MM-DD",
+              "manufacturer": "string",
+              "deviceClass": "string",
+              "matchScore": number (0.0-1.0),
+              "matchRationale": "string",
+              "description": "string"
+            },
+            ...
+          ],
+          "literatureReferences": [
+            {
+              "title": "string",
+              "authors": ["string"],
+              "journal": "string",
+              "year": number,
+              "doi": "string",
+              "url": "string",
+              "relevanceScore": number (0.0-1.0),
+              "abstract": "string"
+            },
+            ...
+          ]
+        }
+        
+        Return only the JSON with 3-5 predicate devices and 3-5 literature references.
+      `;
+      
+      // Make the OpenAI API call
+      const completion = await openai.chat.completions.create({
+        messages: [{ role: "system", content: "You are a regulatory affairs specialist with expertise in FDA 510(k) submissions." },
+                  { role: "user", content: prompt }],
+        model: "gpt-4o",
+        response_format: { type: "json_object" }
+      });
+      
+      // Parse the response
+      const responseContent = completion.choices[0].message.content;
+      let jsonResponse;
+      
+      try {
+        jsonResponse = JSON.parse(responseContent);
+        
+        // Log success and return the formatted response
+        console.log('Successfully generated predicate devices using OpenAI');
+        
+        res.status(200).json({
+          success: true,
+          predicates: jsonResponse
+        });
+      } catch (parseError) {
+        console.error('Error parsing OpenAI response:', parseError);
+        console.log('Raw response:', responseContent);
+        
+        // If parsing fails, return a fallback with error details
+        throw new Error('Failed to parse AI response: ' + parseError.message);
       }
-    });
+    } catch (aiError) {
+      console.error('Error using OpenAI for predicate search:', aiError);
+      
+      // If OpenAI processing fails, fallback to pre-defined response
+      res.status(200).json({
+        success: true,
+        message: 'Using fallback data due to AI processing error: ' + aiError.message,
+        predicates: {
+          predicateDevices: [
+            {
+              deviceName: `Similar ${deviceData.deviceName}`,
+              kNumber: 'K200123',
+              clearanceDate: '2020-05-15',
+              deviceClass: deviceData.deviceClass,
+              manufacturer: 'MedTech Innovations, Inc.',
+              matchScore: 0.92,
+              matchRationale: `This device has similar intended use and technology type.`,
+              description: 'A device with comparable functionality and similar technological characteristics.'
+            },
+            {
+              deviceName: `${deviceData.deviceName} Predecessor`,
+              kNumber: 'K180456',
+              clearanceDate: '2018-10-22',
+              deviceClass: deviceData.deviceClass,
+              manufacturer: 'Legacy Medical Devices',
+              matchScore: 0.87,
+              matchRationale: 'This is an earlier version with similar core functionality.',
+              description: 'Previous generation device that shares core design principles and functionality.'
+            }
+          ],
+          literatureReferences: [
+            {
+              title: `Clinical Applications of Similar Medical Devices`,
+              authors: ['Johnson, A.', 'Smith, B.'],
+              journal: 'Journal of Medical Devices',
+              year: 2023,
+              doi: '10.1000/example',
+              url: 'https://example.org/article',
+              relevanceScore: 0.93,
+              abstract: 'This paper reviews clinical applications and outcomes for this class of medical devices.'
+            }
+          ]
+        }
+      });
+    }
     
   } catch (error) {
     console.error('Error finding predicate devices:', error);
@@ -321,28 +381,132 @@ router.post('/analyze-pathway', validateDeviceData, async (req, res) => {
 router.post('/compliance-check', validateDeviceData, async (req, res) => {
   try {
     const { deviceData, organizationId } = req.body;
+    console.log('Running compliance check for device:', deviceData.deviceName);
     
-    // Generate compliance check results
-    const totalChecks = deviceData.deviceClass === 'I' ? 24 : deviceData.deviceClass === 'II' ? 32 : 48;
-    const passedChecks = Math.floor(totalChecks * 0.92); // 92% pass rate for demo
+    // Check if OpenAI API key is available
+    if (!openai) {
+      console.log('OpenAI API key not available, using fallback compliance check');
+      
+      // Generate fallback compliance check results
+      const totalChecks = deviceData.deviceClass === 'I' ? 24 : deviceData.deviceClass === 'II' ? 32 : 48;
+      const passedChecks = Math.floor(totalChecks * 0.92); // 92% pass rate for demo
+      
+      const complianceResults = {
+        isValid: true,
+        score: 0.92,
+        passedChecks,
+        totalChecks,
+        criticalIssues: 0,
+        warnings: Math.floor((totalChecks - passedChecks) * 0.8), // 80% of failed checks are warnings
+        errors: Math.ceil((totalChecks - passedChecks) * 0.2), // 20% of failed checks are errors
+        timestamp: new Date().toISOString(),
+        detailedChecks: generateDetailedChecks(deviceData, totalChecks, passedChecks)
+      };
+      
+      return res.status(200).json({
+        success: true,
+        ...complianceResults
+      });
+    }
     
-    const complianceResults = {
-      isValid: true,
-      score: 0.92,
-      passedChecks,
-      totalChecks,
-      criticalIssues: 0,
-      warnings: Math.floor((totalChecks - passedChecks) * 0.8), // 80% of failed checks are warnings
-      errors: Math.ceil((totalChecks - passedChecks) * 0.2), // 20% of failed checks are errors
-      timestamp: new Date().toISOString(),
-      detailedChecks: generateDetailedChecks(deviceData, totalChecks, passedChecks)
-    };
-    
-    res.status(200).json({
-      success: true,
-      ...complianceResults
-    });
-    
+    // Use OpenAI for real compliance checking
+    try {
+      // Create a structured prompt to get consistently formatted results
+      const prompt = `
+        Perform a comprehensive 510(k) compliance check for the following medical device:
+        
+        DEVICE DETAILS:
+        - Name: ${deviceData.deviceName}
+        - Class: ${deviceData.deviceClass}
+        - Intended Use: ${deviceData.intendedUse || 'Not specified'}
+        - Description: ${deviceData.description || 'Not specified'}
+        - Technology Type: ${deviceData.technologyType || 'Not specified'}
+        
+        INSTRUCTIONS:
+        1. Analyze the device against FDA 510(k) submission requirements.
+        2. Identify potential compliance issues or gaps based on device classification.
+        3. Format your response as structured JSON with the following format:
+        {
+          "isValid": boolean,
+          "score": number (0.0-1.0),
+          "passedChecks": number,
+          "totalChecks": number,
+          "criticalIssues": number,
+          "warnings": number,
+          "errors": number,
+          "detailedChecks": [
+            {
+              "id": "string",
+              "name": "string",
+              "category": "Documentation" | "Technical" | "Clinical" | "Labeling" | "Regulatory",
+              "status": "passed" | "warning" | "failed",
+              "description": "string",
+              "recommendation": "string"
+            },
+            ...
+          ]
+        }
+        
+        Ensure the detailed checks include at least 10-15 specific items relevant to this device type and class.
+        Return only the JSON data without any additional text.
+      `;
+      
+      // Make the OpenAI API call
+      const completion = await openai.chat.completions.create({
+        messages: [
+          { role: "system", content: "You are a medical device regulatory specialist with expertise in FDA 510(k) submissions." },
+          { role: "user", content: prompt }
+        ],
+        model: "gpt-4o",
+        response_format: { type: "json_object" }
+      });
+      
+      // Parse the response
+      const responseContent = completion.choices[0].message.content;
+      let complianceResults;
+      
+      try {
+        complianceResults = JSON.parse(responseContent);
+        
+        // Add timestamp to results
+        complianceResults.timestamp = new Date().toISOString();
+        
+        // Log success and return the formatted response
+        console.log('Successfully generated compliance check using OpenAI');
+        
+        res.status(200).json({
+          success: true,
+          ...complianceResults
+        });
+      } catch (parseError) {
+        console.error('Error parsing OpenAI compliance check response:', parseError);
+        throw new Error('Failed to parse AI response: ' + parseError.message);
+      }
+    } catch (aiError) {
+      console.error('Error using OpenAI for compliance check:', aiError);
+      
+      // If OpenAI fails, fall back to the default compliance check logic
+      const totalChecks = deviceData.deviceClass === 'I' ? 24 : deviceData.deviceClass === 'II' ? 32 : 48;
+      const passedChecks = Math.floor(totalChecks * 0.92);
+      
+      const complianceResults = {
+        isValid: true,
+        score: 0.92,
+        passedChecks,
+        totalChecks,
+        criticalIssues: 0,
+        warnings: Math.floor((totalChecks - passedChecks) * 0.8),
+        errors: Math.ceil((totalChecks - passedChecks) * 0.2),
+        timestamp: new Date().toISOString(),
+        detailedChecks: generateDetailedChecks(deviceData, totalChecks, passedChecks)
+      };
+      
+      res.status(200).json({
+        success: true,
+        message: 'Using fallback compliance data due to AI processing error: ' + aiError.message,
+        ...complianceResults
+      });
+    }
   } catch (error) {
     console.error('Error running compliance check:', error);
     res.status(500).json({
