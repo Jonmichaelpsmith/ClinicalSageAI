@@ -5,7 +5,6 @@ import {
   CardHeader,
   CardTitle,
   CardDescription,
-  CardFooter,
 } from '@/components/ui/card';
 import {
   Alert,
@@ -136,10 +135,12 @@ const PackagePreview = ({ projectId = "demo-project-id" }) => {
   
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center p-6">
-        <Loader2 className="h-12 w-12 animate-spin mb-4" />
-        <p className="text-muted-foreground">Loading eSTAR package preview...</p>
-      </div>
+      <Card className="w-full">
+        <CardContent className="pt-6 text-center">
+          <Loader2 className="h-10 w-10 animate-spin mx-auto mb-4" />
+          <p>Loading eSTAR package preview...</p>
+        </CardContent>
+      </Card>
     );
   }
   
@@ -163,21 +164,23 @@ const PackagePreview = ({ projectId = "demo-project-id" }) => {
         for 510(k) clearance.
       </p>
       
-      <div className="flex flex-col space-y-6">
+      <div className="space-y-6">
         {/* AI Compliance Report Section */}
         <Card>
-          <CardHeader className="flex justify-between items-center">
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>AI Compliance Check</CardTitle>
-            <Badge className="px-2 py-1 bg-green-100 text-green-800 flex items-center gap-1">
-              <CheckCircle className="h-4 w-4" />
-              <span>Validated</span>
+            <Badge className="ml-2 py-1">
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 mr-1" />
+                <span>Validated</span>
+              </div>
             </Badge>
           </CardHeader>
           <CardContent>
             {preview?.aiComplianceReport ? (
               <p>{preview.aiComplianceReport}</p>
             ) : (
-              <p className="text-muted-foreground italic">Compliance report not available</p>
+              <p className="italic text-muted-foreground">Compliance report not available</p>
             )}
           </CardContent>
         </Card>
@@ -188,20 +191,16 @@ const PackagePreview = ({ projectId = "demo-project-id" }) => {
             <CardTitle>Package Contents</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col space-y-2">
+            <div className="space-y-2">
               {preview?.files?.map((file, index) => (
-                <div 
-                  key={index} 
-                  className={`flex justify-between items-center p-2 ${
-                    index % 2 === 0 ? 'bg-muted/50' : 'bg-background'
-                  }`}
-                >
-                  <div className="flex items-center gap-2">
-                    <FileIcon className="h-4 w-4" />
+                <div key={index} className="flex justify-between p-2" 
+                  style={{backgroundColor: index % 2 === 0 ? 'var(--muted)' : 'transparent'}}>
+                  <div className="flex items-center">
+                    <FileText className="h-4 w-4 mr-2" />
                     <span className="font-medium">{file.name}</span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">
+                  <div className="flex items-center">
+                    <span className="text-sm text-muted-foreground mr-2">
                       {(file.size / 1024).toFixed(1)} KB
                     </span>
                     <Badge variant="outline">
@@ -212,7 +211,7 @@ const PackagePreview = ({ projectId = "demo-project-id" }) => {
               ))}
               
               {(!preview?.files || preview.files.length === 0) && (
-                <p className="text-muted-foreground italic">No files available for preview</p>
+                <p className="italic text-muted-foreground">No files available for preview</p>
               )}
             </div>
           </CardContent>
@@ -221,17 +220,16 @@ const PackagePreview = ({ projectId = "demo-project-id" }) => {
         {/* Signature Verification Section */}
         {verification && (
           <Card>
-            <CardHeader className="flex justify-between items-center">
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Digital Signature Verification</CardTitle>
-              <Badge 
-                className={`px-2 py-1 flex items-center gap-1 ${
-                  verification.valid 
-                    ? 'bg-green-100 text-green-800' 
-                    : 'bg-red-100 text-red-800'
-                }`}
-              >
-                {verification.valid ? <CheckCircle className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
-                <span>{verification.valid ? 'Valid' : 'Invalid'}</span>
+              <Badge variant={verification.valid ? "success" : "destructive"} className="ml-2 py-1">
+                <div className="flex items-center">
+                  {verification.valid ? 
+                    <CheckCircle className="h-4 w-4 mr-1" /> : 
+                    <AlertTriangle className="h-4 w-4 mr-1" />
+                  }
+                  <span>{verification.valid ? 'Valid' : 'Invalid'}</span>
+                </div>
               </Badge>
             </CardHeader>
             <CardContent>
@@ -244,56 +242,55 @@ const PackagePreview = ({ projectId = "demo-project-id" }) => {
         
         {/* Actions Section */}
         <div>
-          <h3 className="text-lg font-semibold mb-4">
+          <h3 className="text-xl font-semibold mb-4">
             Actions
           </h3>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <Button 
-              className="flex items-center gap-2" 
-              variant="default" 
-              onClick={handleBuildPackage} 
+              className="flex items-center"
               disabled={building}
+              onClick={handleBuildPackage} 
             >
               {building ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Building package...</span>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Building package...
                 </>
               ) : (
                 <>
-                  <Download className="h-4 w-4" />
-                  <span>Build & Download Package</span>
+                  <Download className="h-4 w-4 mr-2" />
+                  Build & Download Package
                 </>
               )}
             </Button>
             
             <Button 
-              className="flex items-center gap-2"
-              variant="outline" 
-              onClick={handleVerifySignature}
+              variant="outline"
+              className="flex items-center"
               disabled={verifying}
+              onClick={handleVerifySignature}
             >
               {verifying ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span>Verifying...</span>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Verifying...
                 </>
               ) : (
                 <>
-                  <FileCheck className="h-4 w-4" />
-                  <span>Verify Digital Signature</span>
+                  <FileCheck className="h-4 w-4 mr-2" />
+                  Verify Digital Signature
                 </>
               )}
             </Button>
             
             <Button 
-              className="flex items-center gap-2"
-              variant="secondary" 
-              onClick={handleSubmitToFDA}
+              variant="secondary"
+              className="flex items-center"
               disabled={true}
+              onClick={handleSubmitToFDA}
             >
-              <Upload className="h-4 w-4" />
-              <span>Submit to FDA ESG</span>
+              <Upload className="h-4 w-4 mr-2" />
+              Submit to FDA ESG
             </Button>
           </div>
         </div>

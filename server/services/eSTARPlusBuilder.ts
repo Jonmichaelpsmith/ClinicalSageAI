@@ -350,6 +350,10 @@ export class eSTARPlusBuilder {
     submissionDate: string;
   }> {
     try {
+      if (!db) {
+        throw new Error('Database connection not initialized');
+      }
+      
       // Query the database for project metadata using the FDA510kProject type
       const project = await db.query.fda510kProjects.findFirst({
         where: (projects, { eq }) => eq(projects.id, projectId)
