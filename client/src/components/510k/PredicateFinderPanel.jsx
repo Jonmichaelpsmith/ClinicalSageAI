@@ -663,6 +663,17 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
                 <h4 className="font-medium mb-2">Match Rationale</h4>
                 <p className="text-sm text-gray-700 mb-4">{device.matchRationale}</p>
                 
+                {/* AI Summary Section */}
+                {summaries[device.kNumber] && (
+                  <div className="mb-4 bg-blue-50 p-3 rounded-md border border-blue-100">
+                    <h4 className="font-medium mb-2 flex items-center text-blue-700">
+                      <Lightbulb className="h-4 w-4 mr-2 text-blue-600" />
+                      AI-Generated Summary
+                    </h4>
+                    <p className="text-sm text-gray-700">{summaries[device.kNumber]}</p>
+                  </div>
+                )}
+                
                 <h4 className="font-medium mb-2">Device Description</h4>
                 <p className="text-sm text-gray-700 mb-4">{device.description}</p>
                 
