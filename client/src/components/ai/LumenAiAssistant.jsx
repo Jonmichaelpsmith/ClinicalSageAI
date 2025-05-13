@@ -26,6 +26,7 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
   const [files, setFiles] = useState([]);
   const [uploadProgress, setUploadProgress] = useState({});
   const [isUploading, setIsUploading] = useState(false);
@@ -51,6 +52,53 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
       ]);
     }
   }, [isOpen, module]);
+  
+  // Function to initialize knowledge base
+  const initializeKnowledgeBase = async () => {
+    try {
+      setIsInitializing(true);
+      
+      const response = await fetch('/api/regulatory-ai/init-knowledge-base', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      const data = await response.json();
+      
+      if (data.status === 'success' || data.status === 'warning') {
+        toast({
+          title: 'Knowledge Base Initialized',
+          description: data.message,
+        });
+        
+        // Add system message to indicate initialization
+        setMessages(prev => [
+          ...prev, 
+          {
+            role: 'system',
+            content: `${data.message} The AI will now use document-based knowledge where available.`
+          }
+        ]);
+      } else {
+        toast({
+          title: 'Initialization Failed',
+          description: data.message || 'Failed to initialize knowledge base',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      console.error('Error initializing knowledge base:', error);
+      toast({
+        title: 'Initialization Error',
+        description: 'An error occurred while initializing the knowledge base.',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsInitializing(false);
+    }
+  };
 
   // Handle file selection
   const handleFileSelect = (e) => {
