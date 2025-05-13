@@ -120,71 +120,29 @@ router.post('/find-predicates', validateDeviceData, async (req, res) => {
     const { deviceData, organizationId } = req.body;
     
     // Check if OpenAI API key is available
-    if (!openai) {
-      return res.status(200).json({
-        success: true,
-        message: 'Simulated predicate devices returned (no API key)',
-        predicates: {
-          predicateDevices: [
-            {
-              deviceName: `Similar ${deviceData.deviceName}`,
-              kNumber: 'K200123',
-              clearanceDate: '2020-05-15',
-              deviceClass: deviceData.deviceClass,
-              manufacturer: 'MedTech Innovations, Inc.',
-              matchScore: 0.92,
-              matchRationale: `This device has similar intended use and technology type as ${deviceData.deviceName}.`
-            },
-            {
-              deviceName: `${deviceData.deviceName} Predecessor`,
-              kNumber: 'K180456',
-              clearanceDate: '2018-10-22',
-              deviceClass: deviceData.deviceClass,
-              manufacturer: 'Legacy Medical Devices',
-              matchScore: 0.87,
-              matchRationale: 'This is an earlier version with similar core functionality.'
-            },
-            {
-              deviceName: 'Alternative Solution XL',
-              kNumber: 'K190789',
-              clearanceDate: '2019-07-18',
-              deviceClass: deviceData.deviceClass,
-              manufacturer: 'Alternate Health Systems',
-              matchScore: 0.79,
-              matchRationale: 'This device uses different technology but achieves similar clinical outcomes.'
-            }
-          ],
-          literatureReferences: [
-            {
-              title: `Clinical Efficacy of Devices Similar to ${deviceData.deviceName}`,
-              authors: ['Johnson, A.', 'Smith, B.', 'Davis, C.'],
-              journal: 'Journal of Medical Devices',
-              year: 2023,
-              doi: '10.1234/jmd.2023.0101',
-              relevanceScore: 0.93,
-              summary: 'Comprehensive review of clinical outcomes for this device category.'
-            },
-            {
-              title: 'Regulatory Considerations for Medical Devices in Class ' + deviceData.deviceClass,
-              authors: ['Regulatory, E.', 'Compliance, F.'],
-              journal: 'Regulatory Science Quarterly',
-              year: 2022,
-              doi: '10.5678/rsq.2022.0202',
-              relevanceScore: 0.85,
-              summary: 'Overview of key regulatory considerations for this device class.'
-            },
-            {
-              title: 'Technology Advancement in Medical Devices: A 5-Year Review',
-              authors: ['Tech, G.', 'Innovation, H.'],
-              journal: 'Medical Technology Innovation',
-              year: 2024,
-              doi: '10.9012/mti.2024.0303',
-              relevanceScore: 0.78,
-              summary: 'Analysis of technology trends relevant to this device category.'
-            }
-          ]
-        }
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key not available. Cannot perform predicate device search.');
+      return res.status(500).json({
+        success: false,
+        message: 'OpenAI API key is required for predicate device discovery. Please provide a valid API key.'
       });
+    }
+    
+    // Initialize OpenAI if not already done
+    if (!openai) {
+      try {
+        const { OpenAI } = require('openai');
+        openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY
+        });
+        console.log('OpenAI client initialized for predicate device search');
+      } catch (err) {
+        console.error('Failed to initialize OpenAI client:', err);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to initialize AI services for predicate device search'
+        });
+      }
     }
 
     // Use OpenAI to find predicates in the real implementation
@@ -384,29 +342,29 @@ router.post('/compliance-check', validateDeviceData, async (req, res) => {
     console.log('Running compliance check for device:', deviceData.deviceName);
     
     // Check if OpenAI API key is available
-    if (!openai) {
-      console.log('OpenAI API key not available, using fallback compliance check');
-      
-      // Generate fallback compliance check results
-      const totalChecks = deviceData.deviceClass === 'I' ? 24 : deviceData.deviceClass === 'II' ? 32 : 48;
-      const passedChecks = Math.floor(totalChecks * 0.92); // 92% pass rate for demo
-      
-      const complianceResults = {
-        isValid: true,
-        score: 0.92,
-        passedChecks,
-        totalChecks,
-        criticalIssues: 0,
-        warnings: Math.floor((totalChecks - passedChecks) * 0.8), // 80% of failed checks are warnings
-        errors: Math.ceil((totalChecks - passedChecks) * 0.2), // 20% of failed checks are errors
-        timestamp: new Date().toISOString(),
-        detailedChecks: generateDetailedChecks(deviceData, totalChecks, passedChecks)
-      };
-      
-      return res.status(200).json({
-        success: true,
-        ...complianceResults
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key not available. Cannot perform compliance check.');
+      return res.status(500).json({
+        success: false,
+        message: 'OpenAI API key is required for compliance checking. Please provide a valid API key.'
       });
+    }
+    
+    // Initialize OpenAI if not already done
+    if (!openai) {
+      try {
+        const { OpenAI } = require('openai');
+        openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY
+        });
+        console.log('OpenAI client initialized for compliance check');
+      } catch (err) {
+        console.error('Failed to initialize OpenAI client:', err);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to initialize AI services for compliance checking'
+        });
+      }
     }
     
     // Use OpenAI for real compliance checking
