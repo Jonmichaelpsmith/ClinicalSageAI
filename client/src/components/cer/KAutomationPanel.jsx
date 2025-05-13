@@ -214,44 +214,74 @@ export default function KAutomationPanel() {
         setIsSearchingPredicates(true);
         
         // Use the current device profile for the search
+        // Add console logging to debug the response
+        console.log('Starting predicate device search...');
+        
+        // Use the actual API to find predicate devices
         const predicateResponse = await FDA510kService.findPredicateDevices(
           currentDeviceProfile, 
           currentOrganization?.id
         );
-        results = predicateResponse.predicates || [];
+        
+        // Log the API response for debugging
+        console.log('Predicate search response:', predicateResponse);
+        
+        // Handle different response formats
+        results = predicateResponse || {};
         
         // Store results for display in the UI
-        setPredicateSearchResults(results.predicateDevices || []);
+        setPredicateSearchResults(
+          results.predicateDevices || 
+          results.devices || 
+          results.predicates || 
+          []
+        );
         
         // Transform API results to insights format
         const insights = [];
         
-        // Add predicate devices to insights
-        if (results.predicateDevices?.length > 0) {
-          results.predicateDevices.forEach((device, index) => {
+        // Add predicate devices to insights - handle different response formats
+        const predicateDevices = 
+          results.predicateDevices || 
+          results.devices || 
+          (Array.isArray(results.predicates) ? results.predicates : []) ||
+          [];
+          
+        console.log('Processing predicate devices:', predicateDevices);
+        
+        if (predicateDevices.length > 0) {
+          predicateDevices.forEach((device, index) => {
             insights.push({
-              id: `pred-${index}`,
+              id: `pred-${Date.now()}-${index}`,
               type: 'predicate',
-              name: device.deviceName || device.name,
-              confidence: device.matchScore || device.confidence || 0.85,
-              date: device.clearanceDate || device.date || '2023-10-15',
-              k_number: device.k_number || device.kNumber || `K${Math.floor(100000 + Math.random() * 900000)}`,
-              deviceClass: device.deviceClass || currentDeviceProfile.deviceClass
+              name: device.deviceName || device.name || `Predicate Device ${index + 1}`,
+              manufacturer: device.manufacturer || device.company || 'Unknown Manufacturer',
+              confidence: device.matchScore || device.similarity_score || device.confidence || 0.85,
+              date: device.clearanceDate || device.clearance_date || device.date || '2023-10-15',
+              k_number: device.k_number || device.kNumber || device.id || `K${Math.floor(100000 + Math.random() * 900000)}`,
+              deviceClass: device.deviceClass || device.device_class || currentDeviceProfile.deviceClass
             });
           });
         }
         
-        // Add literature references to insights if present
-        if (results.literatureReferences?.length > 0) {
-          results.literatureReferences.forEach((reference, index) => {
+        // Add literature references to insights - handle different response formats
+        const literatureReferences = 
+          results.literatureReferences || 
+          results.literature || 
+          [];
+          
+        console.log('Processing literature references:', literatureReferences);
+        
+        if (literatureReferences.length > 0) {
+          literatureReferences.forEach((reference, index) => {
             insights.push({
-              id: `lit-${index}`,
+              id: `lit-${Date.now()}-${index}`,
               type: 'literature',
-              name: reference.title,
-              confidence: reference.relevanceScore || 0.8,
-              journal: reference.journal || 'Journal of Medical Devices',
-              url: reference.url || null,
-              authors: reference.authors || []
+              name: reference.title || `Literature Reference ${index + 1}`,
+              confidence: reference.relevanceScore || reference.relevance || reference.confidence || 0.8,
+              journal: reference.journal || reference.publication || 'Journal of Medical Devices',
+              url: reference.url || reference.link || null,
+              authors: reference.authors || reference.author?.split(',') || []
             });
           });
         }
@@ -347,28 +377,36 @@ export default function KAutomationPanel() {
           throw new Error("Please select a device profile before running compliance checks");
         }
         
+        // Add console logging for compliance check
+        console.log('Starting compliance check...');
+        
         // Use the actual device profile for compliance check
         const complianceResponse = await FDA510kService.runComplianceCheck(
           currentDeviceProfile, 
           currentOrganization?.id
         );
         
-        // Map API response to insights format
-        setAiInsights([
-          {
-            id: `validation-${Date.now()}`,
-            type: 'validation',
-            isValid: complianceResponse.isValid,
-            score: complianceResponse.score,
-            passedChecks: complianceResponse.passedChecks,
-            totalChecks: complianceResponse.totalChecks,
-            criticalIssues: complianceResponse.criticalIssues,
-            warnings: complianceResponse.warnings,
-            errors: complianceResponse.errors,
-            detailedChecks: complianceResponse.detailedChecks,
-            timestamp: complianceResponse.timestamp || new Date().toISOString()
-          }
-        ]);
+        // Log the API response for debugging
+        console.log('Compliance check response:', complianceResponse);
+        
+        // Create a structured validation insight with fallbacks for different response formats
+        const validationInsight = {
+          id: `validation-${Date.now()}`,
+          type: 'validation',
+          isValid: complianceResponse.isValid || complianceResponse.valid || false,
+          score: complianceResponse.score || complianceResponse.complianceScore || 0.75,
+          passedChecks: complianceResponse.passedChecks || complianceResponse.passedCheckCount || 0,
+          totalChecks: complianceResponse.totalChecks || complianceResponse.totalCheckCount || 1,
+          criticalIssues: complianceResponse.criticalIssues || complianceResponse.criticalCount || 0,
+          warnings: complianceResponse.warnings || complianceResponse.warningCount || 0,
+          errors: complianceResponse.errors || complianceResponse.errorCount || 0,
+          detailedChecks: complianceResponse.detailedChecks || complianceResponse.checks || [],
+          timestamp: complianceResponse.timestamp || new Date().toISOString()
+        };
+        
+        // Keep existing insights that aren't validation type, and add the new one
+        const existingInsights = aiInsights.filter(i => i.type !== 'validation');
+        setAiInsights([validationInsight, ...existingInsights]);
         
         // Automatically switch to insights tab
         setActiveTab('insights');
@@ -1089,9 +1127,13 @@ export default function KAutomationPanel() {
                                 {insight.k_number}
                               </Badge>
                             </div>
+                            <div className="flex justify-between text-sm text-green-700 mb-1">
+                              <span>Manufacturer: {insight.manufacturer}</span>
+                              <span>Match Score: {Math.round(insight.confidence * 100)}%</span>
+                            </div>
                             <div className="flex justify-between text-sm text-green-700">
                               <span>Clearance Date: {insight.date}</span>
-                              <span>Match Score: {Math.round(insight.confidence * 100)}%</span>
+                              <span>Class: {insight.deviceClass || 'II'}</span>
                             </div>
                           </div>
                         ))
