@@ -307,6 +307,30 @@ class FDA510kService {
       throw new Error(error.response?.data?.message || 'Failed to perform semantic search');
     }
   }
+  
+  /**
+   * Perform literature review based on query and date range
+   * 
+   * @param {string} query - Search query for literature review
+   * @param {string} fromDate - Start date in YYYY-MM-DD format
+   * @param {string} toDate - End date in YYYY-MM-DD format
+   * @returns {Promise<Array>} - Literature review results with AI-generated summaries
+   */
+  async literatureReview(query, fromDate, toDate) {
+    try {
+      const response = await fetch('/api/fda510k/literature-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, fromDate, toDate })
+      });
+      
+      const { results } = await response.json();
+      return results; // [{ title, date, abstract, summary, link }]
+    } catch (error) {
+      console.error('Error performing literature review:', error);
+      throw new Error(error.response?.data?.message || 'Failed to perform literature review');
+    }
+  }
 }
 
 // Create and export a singleton instance

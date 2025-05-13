@@ -1,0 +1,201 @@
+Below is a **hand-holding, step-by-step guide** you can drop directly into your Replit agent prompt. **Every edit** lives under:
+
+* **`client/src/pages/CERV2Page.jsx`**
+* **`client/src/components/cer/…`**
+
+**No files** outside of those directories. **No standalone pages**—everything must plug into your existing CER2V page.
+
+---
+
+# Sprint 1 · Step 4: Automated Literature Review (All inside your CER2V module)
+
+## 1. Create a new Panel component under `client/src/components/cer/`
+
+1. **Path:**
+   `client/src/components/cer/LiteratureReviewPanel.jsx`
+
+2. **Contents:**
+
+   ```jsx
+   import { useState } from 'react';
+   import FDA510kService from '@/services/FDA510kService';
+   import { Input, Button, Card, Spinner } from '@/components/ui';
+   import { useToast } from '@/components/ui/use-toast';
+
+   export default function LiteratureReviewPanel() {
+     const [litQuery, setLitQuery] = useState('');
+     const [fromDate, setFromDate] = useState('2018-01-01');
+     const [toDate, setToDate] = useState(new Date().toISOString().slice(0,10));
+     const [reviews, setReviews] = useState([]);
+     const [loading, setLoading] = useState(false);
+     const { toast } = useToast();
+
+     const runLiteratureReview = async () => {
+       if (!litQuery.trim()) return;
+       setLoading(true);
+       try {
+         const results = await FDA510kService.instance.literatureReview(litQuery, fromDate, toDate);
+         setReviews(results);
+         toast({ title: 'Review complete', description: `${results.length} papers summarized` });
+       } catch (err) {
+         console.error(err);
+         toast({ variant: 'destructive', title: 'Error', description: 'Failed to fetch literature' });
+       } finally {
+         setLoading(false);
+       }
+     };
+
+     return (
+       <div className="my-6">
+         <h3 className="text-lg font-semibold">📚 Automated Literature Review</h3>
+         <div className="flex flex-wrap gap-2 mt-3">
+           <Input
+             className="flex-1 min-w-[200px]"
+             value={litQuery}
+             onChange={e => setLitQuery(e.target.value)}
+             placeholder="Enter keywords or questions…"
+           />
+           <Input type="date" value={fromDate} onChange={e => setFromDate(e.target.value)} />
+           <Input type="date" value={toDate} onChange={e => setToDate(e.target.value)} />
+           <Button onClick={runLiteratureReview} disabled={loading}>
+             {loading ? <Spinner /> : 'Review'}
+           </Button>
+         </div>
+         <div className="mt-4 space-y-4 max-h-[50vh] overflow-auto">
+           {reviews.map((paper, i) => (
+             <Card key={i} className="p-4">
+               <div className="flex justify-between">
+                 <h4 className="font-medium">{paper.title}</h4>
+                 <span className="text-xs text-gray-500">{paper.date}</span>
+               </div>
+               <p className="mt-2 text-sm text-gray-700">{paper.summary}</p>
+               <a
+                 href={paper.link}
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 className="text-blue-600 underline mt-1 block"
+               >
+                 View Full Article
+               </a>
+             </Card>
+           ))}
+         </div>
+       </div>
+     );
+   }
+   ```
+
+## 2. Wire up the `/literature-review` backend endpoint
+
+> **Only edit** `server/routes/fda510kRoutes.js`—we’re assuming pgvector and other setup is done.
+
+1. **Open** `server/routes/fda510kRoutes.js`
+2. **Below** your other `router.post('/…')` routes, **insert**:
+
+   ```js
+   import { fetchPubMed, fetchFAERS, fetchScholar } from '../config/literatureSources';
+   import OpenAI from 'openai';
+   const openai = new OpenAI();
+
+   router.post('/literature-review', async (req, res) => {
+     try {
+       const { query, fromDate, toDate } = req.body;
+       const [pubmed, faers, scholar] = await Promise.all([
+         fetchPubMed(query, fromDate, toDate),
+         fetchFAERS(query, fromDate, toDate),
+         fetchScholar(query, fromDate, toDate),
+       ]);
+       const combined = [...pubmed, ...faers, ...scholar]
+         .sort((a,b)=> new Date(b.date) - new Date(a.date))
+         .slice(0,100);
+
+       const summaries = await Promise.all(combined.map(async item => {
+         const prompt = `
+   ```
+
+Summarize this abstract in 2–3 sentences (outcomes, population & safety):
+\${item.abstract}
+\`.trim();
+const chat = await openai.chat.completions.create({
+model: 'gpt-4o-mini',
+messages: \[{ role:'user', content: prompt }],
+});
+return { ...item, summary: chat.choices\[0].message.content.trim() };
+}));
+
+```
+   res.json({ results: summaries });
+ } catch(err) {
+   console.error('Literature review error:', err);
+   res.status(500).json({ error:'Literature review failed' });
+ }
+```
+
+});
+
+````
+
+3. **Save** and **restart** your server.
+
+## 3. Add the client service method
+
+> **Open** `client/src/services/FDA510kService.js` **inside** your singleton:
+
+```js
+// anywhere among your existing methods:
+async literatureReview(query, fromDate, toDate) {
+const resp = await fetch('/api/fda510k/literature-review', {
+ method: 'POST',
+ headers: { 'Content-Type': 'application/json' },
+ body: JSON.stringify({ query, fromDate, toDate })
+});
+const { results } = await resp.json();
+return results; // [{ title, date, abstract, summary, link }]
+}
+````
+
+## 4. Plug your new panel into `CERV2Page.jsx`
+
+1. **Open** `client/src/pages/CERV2Page.jsx`
+
+2. **At the top** of the file, **add**:
+
+   ```jsx
+   import LiteratureReviewPanel from '@/components/cer/LiteratureReviewPanel';
+   ```
+
+3. **Locate** the 510(k) tab’s render block—somewhere you have:
+
+   ```jsx
+   {activeTab === '510k' && (
+     <div className="…">
+       {/* existing panels */}
+     </div>
+   )}
+   ```
+
+4. **Inside** that `<div>…</div>`, **append** at the bottom:
+
+   ```jsx
+   {/* ──────────────────────────────── */}
+   {/* Step 4: Automated Literature Review */}
+   <LiteratureReviewPanel />
+   ```
+
+5. **Save** and let your editor auto-compile.
+
+## 5. Smoke-test end-to-end
+
+1. **Rebuild & restart** all services in Replit.
+2. In **Client Portal → Med Device & Diagnostics → 510(k)** tab, scroll to “📚 Automated Literature Review”.
+3. **Enter** e.g.
+
+   * Query: `“handheld ECG monitor safety outcomes”`
+   * From: `2019-01-01`
+   * To: today’s date
+4. **Click** **Review**.
+5. You should see \~50–100 AI-summarized cards with title, date, summary, and a “View Full Article” link—**no errors**.
+
+---
+
+Once that’s rock-solid and living **only** under your CER2V page/components, confirm success and we’ll move on to **Step 5: Advanced Ranking & Relevance Tuning**.
