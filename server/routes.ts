@@ -284,6 +284,16 @@ export default function registerRoutes(app: Express): void {
   const DeviceProfileService = require('./services/DeviceProfileService').default;
   const deviceProfileService = DeviceProfileService.getInstance();
   
+  // Add debug logs to see registered routes
+  console.log('REGISTERING DEVICE PROFILE ROUTES...');
+  console.log('Current app routes:', app._router?.stack?.filter(r => r.route)?.map(r => ({ path: r.route?.path, methods: r.route?.methods })));
+  
+  // Add a simple test route
+  app.get('/api/test', (req, res) => {
+    console.log('Test route hit!');
+    res.json({ success: true, message: 'Test route works!' });
+  });
+  
   // Create direct routes for device profiles
   app.post('/api/cer/device-profile', async (req, res) => {
     try {
