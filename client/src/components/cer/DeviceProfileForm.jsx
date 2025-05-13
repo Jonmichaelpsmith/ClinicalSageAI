@@ -1,175 +1,140 @@
-import React, { useState, useEffect } from 'react';
-import { validateDeviceProfile } from '../../utils/schemaValidator';
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { 
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from '@/components/ui/select';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
+import { toast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle, CheckCircle } from 'lucide-react';
+import deviceProfileSchema from './schemas/deviceProfile.json';
+
+// We'll use a separate validator rather than directly importing ajv
+// This gives us more flexibility in how we handle validation
+const validateDeviceProfile = (data) => {
+  const errors = {};
+  
+  // Required fields
+  if (!data.deviceName || data.deviceName.length < 3) {
+    errors.deviceName = 'Device name must be at least 3 characters';
+  }
+  
+  if (!data.deviceClass || !['I', 'II', 'III'].includes(data.deviceClass)) {
+    errors.deviceClass = 'Please select a valid device class';
+  }
+  
+  if (!data.intendedUse) {
+    errors.intendedUse = 'Intended use is required';
+  }
+  
+  return {
+    isValid: Object.keys(errors).length === 0,
+    errors
+  };
+};
 
 /**
- * Device Profile Form Component
- * This form captures medical device information for 510(k) submissions
+ * DeviceProfileForm Component
+ * 
+ * This component provides a form for collecting detailed information about a medical device
+ * for use in 510(k) submissions and regulatory pathway determination.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.initialData - Initial form data (optional)
+ * @param {Function} props.onSave - Function called when form is submitted
+ * @param {boolean} props.isEditing - Whether the form is in editing mode
  */
-const DeviceProfileForm = ({ initialData = {}, onSave, onValidationError }) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    model: '',
-    version: '',
-    manufacturer: '',
-    productCode: '',
-    deviceClass: '',
-    intendedUse: '',
-    indicationsForUse: '',
-    medicalSpecialty: '',
-    predicates: [],
-    regulatoryHistory: [],
-    technologicalCharacteristics: [],
-    attachments: [],
-    keywords: [],
-    ...initialData
+const DeviceProfileForm = ({ initialData = {}, onSave, isEditing = false }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [serverErrors, setServerErrors] = useState(null);
+  const [submitSuccess, setSubmitSuccess] = useState(false);
+  
+  // Initialize the form with react-hook-form
+  const form = useForm({
+    defaultValues: {
+      deviceName: initialData.deviceName || '',
+      modelNumber: initialData.modelNumber || '',
+      manufacturer: initialData.manufacturer || '',
+      deviceClass: initialData.deviceClass || 'II',
+      intendedUse: initialData.intendedUse || '',
+      technologyType: initialData.technologyType || '',
+      predicateDevice: initialData.predicateDevice || ''
+    }
   });
   
-  const [formErrors, setFormErrors] = useState({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Handle form input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevData => ({
-      ...prevData,
-      [name]: value
-    }));
-  };
-  
-  // Handle predicate device changes
-  const handlePredicateChange = (index, field, value) => {
-    const updatedPredicates = [...formData.predicates];
-    if (!updatedPredicates[index]) {
-      updatedPredicates[index] = {};
-    }
-    updatedPredicates[index][field] = value;
-    
-    setFormData(prevData => ({
-      ...prevData,
-      predicates: updatedPredicates
-    }));
-  };
-  
-  // Add a new predicate device entry
-  const addPredicate = () => {
-    setFormData(prevData => ({
-      ...prevData,
-      predicates: [...prevData.predicates, { id: '', name: '', manufacturer: '', clearanceDate: '' }]
-    }));
-  };
-  
-  // Remove a predicate device entry
-  const removePredicate = (index) => {
-    const updatedPredicates = [...formData.predicates];
-    updatedPredicates.splice(index, 1);
-    
-    setFormData(prevData => ({
-      ...prevData,
-      predicates: updatedPredicates
-    }));
-  };
-  
-  // Handle regulatory history changes
-  const handleRegulatoryHistoryChange = (index, field, value) => {
-    const updatedHistory = [...formData.regulatoryHistory];
-    if (!updatedHistory[index]) {
-      updatedHistory[index] = {};
-    }
-    updatedHistory[index][field] = value;
-    
-    setFormData(prevData => ({
-      ...prevData,
-      regulatoryHistory: updatedHistory
-    }));
-  };
-  
-  // Add a new regulatory history entry
-  const addRegulatoryHistory = () => {
-    setFormData(prevData => ({
-      ...prevData,
-      regulatoryHistory: [...prevData.regulatoryHistory, { type: '', number: '', date: '', description: '' }]
-    }));
-  };
-  
-  // Remove a regulatory history entry
-  const removeRegulatoryHistory = (index) => {
-    const updatedHistory = [...formData.regulatoryHistory];
-    updatedHistory.splice(index, 1);
-    
-    setFormData(prevData => ({
-      ...prevData,
-      regulatoryHistory: updatedHistory
-    }));
-  };
-  
-  // Handle technological characteristics changes
-  const handleCharacteristicChange = (index, field, value) => {
-    const updatedCharacteristics = [...formData.technologicalCharacteristics];
-    if (!updatedCharacteristics[index]) {
-      updatedCharacteristics[index] = {};
-    }
-    updatedCharacteristics[index][field] = value;
-    
-    setFormData(prevData => ({
-      ...prevData,
-      technologicalCharacteristics: updatedCharacteristics
-    }));
-  };
-  
-  // Add a new technological characteristic entry
-  const addCharacteristic = () => {
-    setFormData(prevData => ({
-      ...prevData,
-      technologicalCharacteristics: [...prevData.technologicalCharacteristics, { name: '', description: '', value: '' }]
-    }));
-  };
-  
-  // Remove a technological characteristic entry
-  const removeCharacteristic = (index) => {
-    const updatedCharacteristics = [...formData.technologicalCharacteristics];
-    updatedCharacteristics.splice(index, 1);
-    
-    setFormData(prevData => ({
-      ...prevData,
-      technologicalCharacteristics: updatedCharacteristics
-    }));
-  };
-  
   // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async (data) => {
+    // Reset states
     setIsSubmitting(true);
+    setServerErrors(null);
+    setSubmitSuccess(false);
+    
+    // Validate client-side
+    const validation = validateDeviceProfile(data);
+    
+    if (!validation.isValid) {
+      // Set form errors
+      Object.entries(validation.errors).forEach(([field, message]) => {
+        form.setError(field, {
+          type: 'manual',
+          message
+        });
+      });
+      
+      setIsSubmitting(false);
+      return;
+    }
     
     try {
-      // Validate form data against schema
-      const validationResult = await validateDeviceProfile(formData);
-      
-      if (!validationResult.isValid) {
-        // Convert validation errors to field-specific error messages
-        const errorMap = {};
-        validationResult.errors.forEach(error => {
-          errorMap[error.field] = error.message;
+      // Call the API
+      if (onSave) {
+        const result = await onSave(data);
+        
+        // Show success
+        setSubmitSuccess(true);
+        toast({
+          title: "Device Profile Saved",
+          description: "Your device profile has been successfully saved.",
+          variant: "success"
         });
-        
-        setFormErrors(errorMap);
-        
-        if (onValidationError) {
-          onValidationError(validationResult.errors);
-        }
-      } else {
-        // Clear any previous errors
-        setFormErrors({});
-        
-        // Call the save callback with validated data
-        if (onSave) {
-          onSave(formData);
-        }
       }
     } catch (error) {
-      console.error('Form submission error:', error);
+      // Handle server-side errors
+      console.error('Error saving device profile:', error);
       
-      setFormErrors({
-        form: 'An unexpected error occurred. Please try again.'
+      // Set server errors
+      setServerErrors(
+        error.response?.data?.errors || 
+        { general: 'Failed to save device profile. Please try again.' }
+      );
+      
+      toast({
+        title: "Error",
+        description: "Failed to save device profile. Please check the form for errors.",
+        variant: "destructive"
       });
     } finally {
       setIsSubmitting(false);
@@ -177,418 +142,186 @@ const DeviceProfileForm = ({ initialData = {}, onSave, onValidationError }) => {
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
-      <h2 className="text-2xl font-semibold mb-6">Device Profile</h2>
-      
-      {formErrors.form && (
-        <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-4">
-          {formErrors.form}
-        </div>
-      )}
-      
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {/* Basic Device Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Basic Information</h3>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Device Name <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${formErrors.name ? 'border-red-500' : 'border-gray-300'}`}
-                placeholder="Device commercial name"
-              />
-              {formErrors.name && (
-                <p className="mt-1 text-sm text-red-600">{formErrors.name}</p>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Model
-                </label>
-                <input
-                  type="text"
-                  name="model"
-                  value={formData.model}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="Model number"
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>{isEditing ? 'Edit Device Profile' : 'New Device Profile'}</CardTitle>
+          <CardDescription>
+            Enter detailed information about your medical device for 510(k) submission and regulatory pathway determination.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {serverErrors && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                {typeof serverErrors === 'object' 
+                  ? Object.values(serverErrors).join(', ')
+                  : serverErrors}
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {submitSuccess && (
+            <Alert variant="success" className="mb-6 bg-green-50 text-green-800 border-green-200">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertTitle>Success</AlertTitle>
+              <AlertDescription>
+                Device profile has been successfully saved.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+              {/* Basic Device Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Device Information</h3>
+                
+                <FormField
+                  control={form.control}
+                  name="deviceName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Device Name *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., CardioFlow ECG Monitor" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        The commercial name of your device
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="modelNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Model Number</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., CF-200" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
+                    name="manufacturer"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Manufacturer</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Medical Devices Inc." {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                
+                <FormField
+                  control={form.control}
+                  name="deviceClass"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Device Class *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select device class" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="I">Class I</SelectItem>
+                          <SelectItem value="II">Class II</SelectItem>
+                          <SelectItem value="III">Class III</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        FDA device classification based on risk level
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
               
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Version
-                </label>
-                <input
-                  type="text"
-                  name="version"
-                  value={formData.version}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  placeholder="Version"
+              {/* Device Use and Technology */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Use and Technology</h3>
+                
+                <FormField
+                  control={form.control}
+                  name="intendedUse"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Intended Use *</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Describe the indications for use, including the specific conditions or diseases the device is intended to diagnose, treat, prevent, or mitigate."
+                          className="min-h-[120px]" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="technologyType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Technology Type</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Electrocardiography" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        The primary technology used by the device
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="predicateDevice"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Predicate Device</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., CardioSense ECG (K123456)" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Similar device with existing 510(k) clearance (if known)
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
               </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Manufacturer <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="manufacturer"
-                value={formData.manufacturer}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${formErrors.manufacturer ? 'border-red-500' : 'border-gray-300'}`}
-                placeholder="Legal manufacturer name"
-              />
-              {formErrors.manufacturer && (
-                <p className="mt-1 text-sm text-red-600">{formErrors.manufacturer}</p>
-              )}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Product Code
-              </label>
-              <input
-                type="text"
-                name="productCode"
-                value={formData.productCode}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="FDA product code"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Device Class <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="deviceClass"
-                value={formData.deviceClass}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-md ${formErrors.deviceClass ? 'border-red-500' : 'border-gray-300'}`}
-              >
-                <option value="">Select device class</option>
-                <option value="I">Class I</option>
-                <option value="II">Class II</option>
-                <option value="III">Class III</option>
-              </select>
-              {formErrors.deviceClass && (
-                <p className="mt-1 text-sm text-red-600">{formErrors.deviceClass}</p>
-              )}
-            </div>
-          </div>
-          
-          {/* Intended Use Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">Intended Use & Indications</h3>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Intended Use <span className="text-red-500">*</span>
-              </label>
-              <textarea
-                name="intendedUse"
-                value={formData.intendedUse}
-                onChange={handleChange}
-                rows={3}
-                className={`w-full px-3 py-2 border rounded-md ${formErrors.intendedUse ? 'border-red-500' : 'border-gray-300'}`}
-                placeholder="General purpose of the device"
-              />
-              {formErrors.intendedUse && (
-                <p className="mt-1 text-sm text-red-600">{formErrors.intendedUse}</p>
-              )}
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Indications for Use
-              </label>
-              <textarea
-                name="indicationsForUse"
-                value={formData.indicationsForUse}
-                onChange={handleChange}
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="Specific conditions, purposes, or uses for which the device is intended"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Medical Specialty
-              </label>
-              <input
-                type="text"
-                name="medicalSpecialty"
-                value={formData.medicalSpecialty}
-                onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="E.g., Cardiology, Orthopedics, etc."
-              />
-            </div>
-          </div>
-        </div>
-        
-        {/* Predicate Devices */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg font-medium">Predicate Devices</h3>
-            <button
-              type="button"
-              onClick={addPredicate}
-              className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-            >
-              Add Predicate
-            </button>
-          </div>
-          
-          {formData.predicates.length === 0 ? (
-            <p className="text-gray-500 italic text-sm mb-2">No predicate devices added yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {formData.predicates.map((predicate, index) => (
-                <div key={index} className="flex flex-col sm:flex-row sm:space-x-3 p-3 border border-gray-200 rounded-md">
-                  <div className="flex-1 mb-2 sm:mb-0">
-                    <input
-                      type="text"
-                      value={predicate.id || ''}
-                      onChange={(e) => handlePredicateChange(index, 'id', e.target.value)}
-                      placeholder="510(k) Number"
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                    />
-                  </div>
-                  <div className="flex-1 mb-2 sm:mb-0">
-                    <input
-                      type="text"
-                      value={predicate.name || ''}
-                      onChange={(e) => handlePredicateChange(index, 'name', e.target.value)}
-                      placeholder="Device Name"
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                    />
-                  </div>
-                  <div className="flex-1 mb-2 sm:mb-0">
-                    <input
-                      type="text"
-                      value={predicate.manufacturer || ''}
-                      onChange={(e) => handlePredicateChange(index, 'manufacturer', e.target.value)}
-                      placeholder="Manufacturer"
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                    />
-                  </div>
-                  <div className="flex-1 mb-2 sm:mb-0">
-                    <input
-                      type="date"
-                      value={predicate.clearanceDate || ''}
-                      onChange={(e) => handlePredicateChange(index, 'clearanceDate', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                    />
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => removePredicate(index)}
-                      className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-400 bg-gray-50 hover:bg-gray-100"
-                    >
-                      <span className="sr-only">Remove</span>
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {/* Regulatory History */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg font-medium">Regulatory History</h3>
-            <button
-              type="button"
-              onClick={addRegulatoryHistory}
-              className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-            >
-              Add Entry
-            </button>
-          </div>
-          
-          {formData.regulatoryHistory.length === 0 ? (
-            <p className="text-gray-500 italic text-sm mb-2">No regulatory history added yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {formData.regulatoryHistory.map((history, index) => (
-                <div key={index} className="flex flex-col sm:flex-row sm:space-x-3 p-3 border border-gray-200 rounded-md">
-                  <div className="flex-1 mb-2 sm:mb-0">
-                    <select
-                      value={history.type || ''}
-                      onChange={(e) => handleRegulatoryHistoryChange(index, 'type', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                    >
-                      <option value="">Select type</option>
-                      <option value="510k">510(k)</option>
-                      <option value="PMA">PMA</option>
-                      <option value="DeNovo">De Novo</option>
-                      <option value="IDE">IDE</option>
-                    </select>
-                  </div>
-                  <div className="flex-1 mb-2 sm:mb-0">
-                    <input
-                      type="text"
-                      value={history.number || ''}
-                      onChange={(e) => handleRegulatoryHistoryChange(index, 'number', e.target.value)}
-                      placeholder="Submission Number"
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                    />
-                  </div>
-                  <div className="flex-1 mb-2 sm:mb-0">
-                    <input
-                      type="date"
-                      value={history.date || ''}
-                      onChange={(e) => handleRegulatoryHistoryChange(index, 'date', e.target.value)}
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                    />
-                  </div>
-                  <div className="flex-1 mb-2 sm:mb-0">
-                    <input
-                      type="text"
-                      value={history.description || ''}
-                      onChange={(e) => handleRegulatoryHistoryChange(index, 'description', e.target.value)}
-                      placeholder="Description"
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                    />
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => removeRegulatoryHistory(index)}
-                      className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-400 bg-gray-50 hover:bg-gray-100"
-                    >
-                      <span className="sr-only">Remove</span>
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {/* Technological Characteristics */}
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-lg font-medium">Technological Characteristics</h3>
-            <button
-              type="button"
-              onClick={addCharacteristic}
-              className="inline-flex items-center px-3 py-1 border border-transparent text-sm leading-4 font-medium rounded-md text-indigo-700 bg-indigo-100 hover:bg-indigo-200"
-            >
-              Add Characteristic
-            </button>
-          </div>
-          
-          {formData.technologicalCharacteristics.length === 0 ? (
-            <p className="text-gray-500 italic text-sm mb-2">No technological characteristics added yet.</p>
-          ) : (
-            <div className="space-y-3">
-              {formData.technologicalCharacteristics.map((characteristic, index) => (
-                <div key={index} className="flex flex-col sm:flex-row sm:space-x-3 p-3 border border-gray-200 rounded-md">
-                  <div className="flex-1 mb-2 sm:mb-0">
-                    <input
-                      type="text"
-                      value={characteristic.name || ''}
-                      onChange={(e) => handleCharacteristicChange(index, 'name', e.target.value)}
-                      placeholder="Name"
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                    />
-                  </div>
-                  <div className="flex-2 mb-2 sm:mb-0">
-                    <input
-                      type="text"
-                      value={characteristic.description || ''}
-                      onChange={(e) => handleCharacteristicChange(index, 'description', e.target.value)}
-                      placeholder="Description"
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                    />
-                  </div>
-                  <div className="flex-1 mb-2 sm:mb-0">
-                    <input
-                      type="text"
-                      value={characteristic.value || ''}
-                      onChange={(e) => handleCharacteristicChange(index, 'value', e.target.value)}
-                      placeholder="Value/Specification"
-                      className="w-full px-2 py-1 border border-gray-300 rounded-md text-sm"
-                    />
-                  </div>
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => removeCharacteristic(index)}
-                      className="inline-flex items-center justify-center h-8 w-8 rounded-md text-gray-400 bg-gray-50 hover:bg-gray-100"
-                    >
-                      <span className="sr-only">Remove</span>
-                      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-        
-        {/* Form Actions */}
-        <div className="flex justify-end space-x-3">
-          <button
-            type="button"
-            onClick={() => setFormData({
-              name: '',
-              model: '',
-              version: '',
-              manufacturer: '',
-              productCode: '',
-              deviceClass: '',
-              intendedUse: '',
-              indicationsForUse: '',
-              medicalSpecialty: '',
-              predicates: [],
-              regulatoryHistory: [],
-              technologicalCharacteristics: [],
-              attachments: [],
-              keywords: []
-            })}
-            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Reset
-          </button>
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className={`px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${
-              isSubmitting ? 'bg-indigo-400' : 'bg-indigo-600 hover:bg-indigo-700'
-            }`}
-          >
-            {isSubmitting ? 'Saving...' : 'Save Device Profile'}
-          </button>
-        </div>
-      </form>
+              
+              <div className="flex justify-end space-x-4">
+                <Button type="button" variant="outline">
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Saving...' : (isEditing ? 'Update' : 'Save')}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
