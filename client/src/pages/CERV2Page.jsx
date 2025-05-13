@@ -34,7 +34,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import KAutomationPanel from '@/components/cer/KAutomationPanel';
+// KAutomationPanel removed - functionality integrated directly into CERV2Page
 
 export default function CERV2Page() {
   const [title, setTitle] = useState('Clinical Evaluation Report');
@@ -1325,7 +1325,20 @@ export default function CERV2Page() {
         </div>
         <p className="text-gray-600 mb-6">Complete automation pipeline for FDA 510(k) submissions with intelligent predicate discovery.</p>
         <div className="p-4 bg-blue-50 rounded-md mb-6">
-          <KAutomationPanel />
+          <div className="text-center p-6">
+            <Package className="h-12 w-12 mx-auto mb-4 text-blue-600" />
+            <h3 className="text-lg font-medium mb-2">510(k) Automation Pipeline</h3>
+            <p className="text-gray-600 mb-4">
+              Our integrated 510(k) submission workflow is available in the "510(k)" tab. 
+              Click the tab above to access complete automation tools.
+            </p>
+            <Button 
+              onClick={() => setActiveTab('510k')}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
+              Access 510(k) Tools
+            </Button>
+          </div>
         </div>
       </div>
     
