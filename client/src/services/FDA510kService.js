@@ -181,6 +181,28 @@ class FDA510kService {
   }
   
   /**
+   * Generate an NLP summary of a predicate device or literature
+   * 
+   * @param {Object} item - The predicate device or literature item to summarize
+   * @param {string} type - The type of item ('predicate' or 'literature')
+   * @param {number} organizationId - The organization ID
+   * @returns {Promise<Object>} - Generated summary
+   */
+  async generateNlpSummary(item, type = 'predicate', organizationId) {
+    try {
+      const response = await axios.post('/api/fda510k/nlp-summary', {
+        item,
+        type,
+        organizationId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error generating NLP summary:', error);
+      throw new Error(error.response?.data?.message || 'Failed to generate summary');
+    }
+  }
+  
+  /**
    * Find predicate devices and literature references (alias method)
    * 
    * This method is an alias for findPredicateDevices to ensure both naming
