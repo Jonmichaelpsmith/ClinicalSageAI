@@ -1,267 +1,174 @@
 /**
- * eSTAR Package Builder Service
- * 
- * This service handles the construction and validation of FDA eSTAR submission packages
- * for 510(k) clearance applications. It provides utilities for assembling documents,
- * creating XML manifests, and validating package completeness.
+ * ESTARPackageBuilder Service
+ *
+ * This service handles the creation, validation, and management of FDA eSTAR packages
+ * for 510(k) submissions. It provides methods for assembling documents, validating content,
+ * generating proper XML structure, and creating submission-ready packages.
  */
 
-// Simple UUID v4 generation function for browser environments
-function uuidv4() {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
+import apiRequest from '../lib/queryClient';
 
+/**
+ * Main ESTARPackageBuilder class implementing the singleton pattern
+ */
 class ESTARPackageBuilder {
-  /**
-   * Create a properly formatted XML manifest for an eSTAR package
-   * 
-   * @param {Object} metadata - Package metadata
-   * @param {string} metadata.submissionId - The submission ID
-   * @param {string} metadata.manufacturerName - Name of the manufacturer
-   * @param {string} metadata.deviceName - Name of the device
-   * @param {Array} files - List of files in the package
-   * @returns {string} - XML manifest
-   */
-  generateXMLManifest(metadata, files) {
-    const { submissionId, manufacturerName, deviceName } = metadata;
-    const submissionDate = new Date().toISOString().split('T')[0];
-    const manifestId = uuidv4();
-    
-    let fileEntries = '';
-    files.forEach(file => {
-      const fileId = uuidv4();
-      fileEntries += `
-        <file id="${fileId}">
-          <fileName>${file.name}</fileName>
-          <fileType>${file.type}</fileType>
-          <fileSize>${file.size}</fileSize>
-          <filePath>${file.path || ''}</filePath>
-          <sectionReference>${file.section || ''}</sectionReference>
-        </file>
-      `;
-    });
-    
-    const manifest = `<?xml version="1.0" encoding="UTF-8"?>
-<estarSubmission xmlns="http://www.fda.gov/estar/schema/1.0">
-  <manifestMetadata>
-    <manifestId>${manifestId}</manifestId>
-    <submissionId>${submissionId}</submissionId>
-    <submissionType>Traditional 510(k)</submissionType>
-    <submissionDate>${submissionDate}</submissionDate>
-    <manufacturerName>${manufacturerName}</manufacturerName>
-    <deviceName>${deviceName}</deviceName>
-    <version>1.0</version>
-  </manifestMetadata>
-  <files>
-    ${fileEntries}
-  </files>
-  <digitalSignature>
-    <signatureId>${uuidv4()}</signatureId>
-    <signatureMethod>RSA-SHA256</signatureMethod>
-    <certificate>Base64EncodedCertificateWouldGoHere</certificate>
-    <signedInfo>
-      <canonicalizationMethod>http://www.w3.org/2001/10/xml-exc-c14n#</canonicalizationMethod>
-      <signatureMethod>http://www.w3.org/2001/04/xmldsig-more#rsa-sha256</signatureMethod>
-      <reference>
-        <digestMethod>http://www.w3.org/2001/04/xmlenc#sha256</digestMethod>
-        <digestValue>DigestValueWouldGoHere</digestValue>
-      </reference>
-    </signedInfo>
-    <signatureValue>Base64EncodedSignatureWouldGoHere</signatureValue>
-  </digitalSignature>
-</estarSubmission>`;
-    
-    return manifest;
-  }
-  
-  /**
-   * Validate an eSTAR package for completeness
-   * 
-   * @param {Object} pkgData - The eSTAR package object
-   * @returns {Object} - Validation result with issues list
-   */
-  validatePackage(pkgData) {
-    const requiredSections = [
-      'Administrative Information',
-      'Device Description',
-      'Substantial Equivalence',
-      'Performance Testing',
-      'Sterilization/Shelf-life',
-      'Biocompatibility',
-      'Software',
-      'Declarations and Certifications'
-    ];
-    
-    const issues = [];
-    const presentSections = new Set();
-    
-    // Check which sections are present in the package
-    pkgData.files.forEach(file => {
-      const section = file.section || '';
-      presentSections.add(section);
-    });
-    
-    // Find missing required sections
-    requiredSections.forEach(section => {
-      if (!presentSections.has(section)) {
-        issues.push({
-          severity: 'critical',
-          message: `Required section "${section}" is missing from the package`,
-          recommendation: `Add documentation for the "${section}" section`
-        });
-      }
-    });
-    
-    // Check for digital signature
-    if (!pkgData.manifest.includes('<digitalSignature>')) {
-      issues.push({
-        severity: 'critical',
-        message: 'Digital signature is missing',
-        recommendation: 'Digitally sign the package before submission'
-      });
+  constructor() {
+    if (ESTARPackageBuilder.instance) {
+      return ESTARPackageBuilder.instance;
     }
     
-    // Check file sizes
-    let totalSize = 0;
-    pkgData.files.forEach(file => {
-      totalSize += file.size;
-      if (file.size > 100 * 1024 * 1024) { // 100 MB
-        issues.push({
-          severity: 'warning',
-          message: `File "${file.name}" exceeds 100 MB`,
-          recommendation: 'Consider optimizing file size or splitting into multiple files'
-        });
-      }
-    });
-    
-    // Check total package size
-    if (totalSize > 1 * 1024 * 1024 * 1024) { // 1 GB
-      issues.push({
-        severity: 'warning',
-        message: 'Total package size exceeds 1 GB',
-        recommendation: 'Consider optimizing file sizes to improve submission processing'
+    ESTARPackageBuilder.instance = this;
+  }
+
+  /**
+   * Get available templates for eSTAR packages
+   * @returns {Promise<Array>} Available eSTAR templates
+   */
+  async getTemplates() {
+    try {
+      const response = await apiRequest('/api/510k/estar-templates');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching eSTAR templates:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get required documents for an eSTAR package based on device type
+   * @param {string} deviceType - The type of medical device
+   * @param {string} submissionType - The type of 510(k) submission (Traditional, Abbreviated, Special)
+   * @returns {Promise<Array>} Required documents list
+   */
+  async getRequiredDocuments(deviceType, submissionType) {
+    try {
+      const response = await apiRequest('/api/510k/estar-required-documents', {
+        method: 'POST',
+        data: { deviceType, submissionType }
       });
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching required documents:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Validate an eSTAR package for completeness and compliance
+   * @param {Object} packageData - The package data to validate
+   * @returns {Promise<Object>} Validation results with issues if any
+   */
+  async validatePackage(packageData) {
+    try {
+      const response = await apiRequest('/api/510k/estar-validate', {
+        method: 'POST',
+        data: packageData
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error validating eSTAR package:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate an eSTAR package in the correct XML format
+   * @param {Object} packageData - The package data to build
+   * @returns {Promise<Object>} Generated package details
+   */
+  async buildPackage(packageData) {
+    try {
+      const response = await apiRequest('/api/510k/estar-build', {
+        method: 'POST',
+        data: packageData
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error building eSTAR package:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get details about a specific eSTAR package
+   * @param {string} packageId - The ID of the package to get
+   * @returns {Promise<Object>} Package details
+   */
+  async getPackageDetails(packageId) {
+    try {
+      const response = await apiRequest(`/api/510k/estar-package/${packageId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching package details:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Submit an eSTAR package to the FDA ESG
+   * @param {string} packageId - The ID of the package to submit
+   * @param {Object} submissionDetails - Additional submission details
+   * @returns {Promise<Object>} Submission result
+   */
+  async submitPackage(packageId, submissionDetails) {
+    try {
+      const response = await apiRequest('/api/510k/estar-submit', {
+        method: 'POST',
+        data: { packageId, ...submissionDetails }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error submitting eSTAR package:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Generate an XML structure from document metadata
+   * @param {Object} metadata - Document metadata
+   * @returns {string} XML structure
+   */
+  generateXmlStructure(metadata) {
+    // In a real implementation, this would create proper XML
+    // This is a simplified example that would be replaced with a real XML builder
+    const header = `<?xml version="1.0" encoding="UTF-8"?>
+<eSTAR-Submission xmlns="http://www.fda.gov/eSTAR" 
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+                xsi:schemaLocation="http://www.fda.gov/eSTAR eSTAR_510k_Schema.xsd" 
+                submissionType="${metadata.submissionType || 'Traditional'}">`;
+    
+    const footer = '</eSTAR-Submission>';
+    
+    // Build sections based on metadata
+    const sections = Object.entries(metadata.sections || {}).map(([key, value]) => {
+      return `  <${key}>\n    ${this._buildXmlContent(value)}\n  </${key}>`;
+    }).join('\n  \n');
+    
+    return `${header}\n${sections}\n${footer}`;
+  }
+  
+  /**
+   * Internal helper to build XML content
+   * @private
+   */
+  _buildXmlContent(data) {
+    if (typeof data === 'string') {
+      return data;
     }
     
-    return {
-      valid: issues.filter(issue => issue.severity === 'critical').length === 0,
-      issues,
-      totalIssues: issues.length,
-      criticalIssues: issues.filter(issue => issue.severity === 'critical').length,
-      warnings: issues.filter(issue => issue.severity === 'warning').length
-    };
-  }
-  
-  /**
-   * Generate a cover letter for an eSTAR package
-   * 
-   * @param {Object} metadata - Metadata for the cover letter
-   * @param {string} metadata.manufacturerName - Name of the manufacturer
-   * @param {string} metadata.deviceName - Name of the device
-   * @param {string} metadata.contactName - Name of the contact person
-   * @param {string} metadata.contactEmail - Email of the contact person
-   * @param {string} metadata.contactPhone - Phone number of the contact person
-   * @returns {string} - Cover letter content
-   */
-  generateCoverLetter(metadata) {
-    const { 
-      manufacturerName, 
-      deviceName, 
-      contactName, 
-      contactEmail, 
-      contactPhone 
-    } = metadata;
+    if (Array.isArray(data)) {
+      return data.map(item => this._buildXmlContent(item)).join('\n    ');
+    }
     
-    const date = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    if (typeof data === 'object' && data !== null) {
+      return Object.entries(data).map(([key, value]) => {
+        return `<${key}>${this._buildXmlContent(value)}</${key}>`;
+      }).join('\n    ');
+    }
     
-    const coverLetter = `
-${date}
-
-Food and Drug Administration
-Center for Devices and Radiological Health
-Document Control Center - WO66-G609
-10903 New Hampshire Avenue
-Silver Spring, MD 20993-0002
-
-Re: 510(k) Submission for ${deviceName}
-
-To whom it may concern:
-
-On behalf of ${manufacturerName}, I am pleased to submit this 510(k) premarket notification for ${deviceName}. This submission has been prepared in accordance with the FDA's eSTAR program requirements.
-
-The attached eSTAR package contains all the required documentation to demonstrate substantial equivalence to legally marketed predicate devices. We believe that the information provided in this submission is sufficient to support FDA clearance of the ${deviceName}.
-
-If you have any questions or require additional information during the review of this submission, please do not hesitate to contact me:
-
-${contactName}
-${manufacturerName}
-Email: ${contactEmail}
-Phone: ${contactPhone}
-
-Sincerely,
-
-${contactName}
-${manufacturerName}
-    `;
-    
-    return coverLetter;
-  }
-  
-  /**
-   * Create a declaration of conformity document
-   * 
-   * @param {Object} metadata - Metadata for the declaration
-   * @param {string} metadata.manufacturerName - Name of the manufacturer
-   * @param {string} metadata.deviceName - Name of the device
-   * @param {Array} standards - List of standards the device conforms to
-   * @returns {string} - Declaration of conformity content
-   */
-  generateDeclarationOfConformity(metadata, standards) {
-    const { manufacturerName, deviceName } = metadata;
-    
-    const date = new Date().toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-    
-    let standardsList = '';
-    standards.forEach(standard => {
-      standardsList += `• ${standard}\n`;
-    });
-    
-    const declaration = `
-DECLARATION OF CONFORMITY
-
-Manufacturer: ${manufacturerName}
-Device Name: ${deviceName}
-Date: ${date}
-
-We hereby declare that the above-referenced medical device conforms to the following standards:
-
-${standardsList}
-
-This declaration of conformity is issued under the sole responsibility of the manufacturer.
-
-Signed on behalf of ${manufacturerName}:
-
-______________________________
-Authorized Representative
-${manufacturerName}
-    `;
-    
-    return declaration;
+    return String(data);
   }
 }
 
-// Create and export a singleton instance
-const estarPackageBuilder = new ESTARPackageBuilder();
-export default estarPackageBuilder;
+// Export a singleton instance
+export default new ESTARPackageBuilder();

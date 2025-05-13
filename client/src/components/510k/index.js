@@ -1,15 +1,8 @@
-// Export all FDA 510(k) automation components
+// Export all 510k components from a central index file
 export { default as DeviceProfileForm } from './DeviceProfileForm';
-export { default as PredicateSearch } from './PredicateSearch';
-export { default as EquivalenceTable } from './EquivalenceTable';
-export { default as PredicateAnalysis } from './PredicateAnalysis';
-export { default as PathwayAdvisorCard } from './PathwayAdvisorCard';
-export { default as EquivalenceDraft } from './EquivalenceDraft';
-export { default as EnhancedLiteratureDiscovery } from './EnhancedLiteratureDiscovery';
-export { default as EnhancedLiteratureSearch } from './EnhancedLiteratureSearch';
-export { default as CitationManager } from './CitationManager';
-export { default as LiteratureSummaryGenerator } from './LiteratureSummaryGenerator';
-export { default as ComplianceChecker } from './ComplianceChecker';
+export { default as PredicateFinderPanel } from './PredicateFinderPanel';
+export { default as RegPathwayAnalyzer } from './RegPathwayAnalyzer';
+export { default as SubstantialEquivalenceEditor } from './SubstantialEquivalenceEditor';
 export { default as ComplianceCheckerPanel } from './ComplianceCheckerPanel';
-export { default as PackagePreview } from './PackagePreview';
 export { default as ESTARPackageBuilder } from './ESTARPackageBuilder';
+export { default as PackagePreview } from './PackagePreview';
