@@ -59,7 +59,7 @@ router.get('/:id', async (req, res) => {
     console.error('Error getting device profile:', error);
     res.status(500).json({ 
       error: 'Failed to get device profile',
-      message: error.message 
+      message: error instanceof Error ? error.message : 'Unknown error occurred' 
     });
   }
 });
@@ -85,7 +85,7 @@ router.get('/organization/:organizationId', async (req, res) => {
     console.error('Error getting device profiles for organization:', error);
     res.status(500).json({ 
       error: 'Failed to get device profiles',
-      message: error.message 
+      message: error instanceof Error ? error.message : 'Unknown error occurred' 
     });
   }
 });
@@ -113,7 +113,7 @@ router.put('/:id', validateDeviceProfile, async (req, res) => {
     console.error('Error updating device profile:', error);
     res.status(500).json({ 
       error: 'Failed to update device profile',
-      message: error.message 
+      message: error instanceof Error ? error.message : 'Unknown error occurred' 
     });
   }
 });
@@ -136,7 +136,7 @@ router.delete('/:id', async (req, res) => {
     console.error('Error deleting device profile:', error);
     res.status(500).json({ 
       error: 'Failed to delete device profile',
-      message: error.message 
+      message: error instanceof Error ? error.message : 'Unknown error occurred' 
     });
   }
 });
