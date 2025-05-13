@@ -215,7 +215,7 @@ export default function KAutomationPanel() {
     setAiProcessing(true);
     setProgress(0);
     
-    // Simulate progress animation
+    // Simulate progress animation with timeout safety
     const interval = setInterval(() => {
       setProgress(prev => {
         if (prev >= 98) {
@@ -225,6 +225,20 @@ export default function KAutomationPanel() {
         return prev + (98 - prev) * 0.1;
       });
     }, 150);
+    
+    // Safety timeout to prevent progress getting stuck indefinitely
+    const safetyTimeout = setTimeout(() => {
+      clearInterval(interval);
+      // If we're still at 98% after 20 seconds, complete the progress
+      setProgress(current => {
+        if (current >= 98 && current < 100) {
+          console.log('Safety timeout triggered to complete progress');
+          return 100;
+        }
+        return current;
+      });
+      setAiProcessing(false);
+    }, 20000);
     
     try {
       let results;
@@ -670,8 +684,9 @@ export default function KAutomationPanel() {
         }
       }
       
-      // Complete progress and clear interval
+      // Complete progress and clear interval and timeout
       clearInterval(interval);
+      clearTimeout(safetyTimeout);
       setProgress(100);
       
       // Display success notification
@@ -682,8 +697,9 @@ export default function KAutomationPanel() {
       console.error(`Error in 510(k) pipeline step ${step}:`, error);
       setErrorMessage(error.message || 'An error occurred while processing your request');
       
-      // Clear interval and reset progress
+      // Clear interval, timeout and reset progress
       clearInterval(interval);
+      clearTimeout(safetyTimeout);
       setProgress(0);
     } finally {
       // Always reset processing state
