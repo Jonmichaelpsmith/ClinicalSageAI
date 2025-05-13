@@ -523,7 +523,10 @@ async function generateRagResponse(query, context = '') {
       fs.existsSync(METADATA_PATH) &&
       fs.readdirSync(KNOWLEDGE_DIR).length > 1; // More than just metadata.json
     
-    // If no internal knowledge is found, try external search
+    // If no internal knowledge is found or context is empty, try external search
+    let responseContext = context;
+    let responseSource = 'knowledge-base';
+    
     if (!hasKnowledgeBase || !context || context.trim() === '') {
       console.log('No internal knowledge found, performing external search');
       
@@ -531,66 +534,79 @@ async function generateRagResponse(query, context = '') {
       const searchResults = await performExternalSearch(query);
       
       if (searchResults && searchResults.length > 0) {
-        // If we found external information, return a conversational response
-        // This would integrate with OpenAI API in production
-        return { 
-          response: `I don't have this information in my internal database, but I've searched external sources for you. Here's what I found:\n\n` +
-                   `Based on the latest information available, this would require integrating with a real search API and the OpenAI API to provide fully conversational responses with citations. In a complete implementation, I would:\n\n` +
-                   `1. Search across multiple external sources including PubMed, regulatory databases, and scientific journals\n` +
-                   `2. Analyze and synthesize information from multiple sources\n` +
-                   `3. Format responses in a conversational style with proper citations\n` +
-                   `4. Maintain context across multiple turns in the conversation\n\n` +
-                   `This would provide superior results to generic AI assistants by combining specialized regulatory knowledge with up-to-date external information.`,
-          source: 'external_search'
-        };
+        // Format external search results to use as context
+        responseContext = "Information from external sources:\n\n";
+        searchResults.forEach(result => {
+          responseContext += `Source: ${result.source}\nTitle: ${result.title}\nDate: ${result.date}\n${result.content}\n\n`;
+        });
+        responseSource = 'external_search';
       } else {
-        // If external search also fails
-        return { 
-          response: "I couldn't find specific information on that topic in my knowledge base or through external search. Please try a different query or upload relevant regulatory documents to enhance my responses."
-        };
+        // No external information found
+        responseContext = "No specific information found in knowledge base or external sources.";
       }
     }
     
-    // Generate a response that combines internal knowledge with conversational capabilities
-    const regulatoryTerms = extractRegulatoryTerms(query);
-    const hasRegulatoryTerms = regulatoryTerms.length > 0;
+    // Generate a response using OpenAI with the appropriate context
+    console.log('Using OpenAI to generate response with context');
     
-    // Generate a response based on retrieved documents
+    try {
+      // Import and initialize OpenAI
+      const OpenAI = await import('openai');
+      const openai = new OpenAI.default({
+        apiKey: process.env.OPENAI_API_KEY
+      });
+      
+      // Prepare system message with context
+      const systemMessage = `You are Lumen, an expert AI assistant specializing in regulatory affairs for medical devices, pharmaceuticals, and clinical trials. 
+You provide comprehensive, accurate information about global regulatory frameworks including FDA, EMA, PMDA, NMPA, Health Canada, TGA, and ICH guidelines.
+
+Use the following context to answer the query:
+${responseContext}
+
+When responding:
+- Provide evidence-based information with citations when available
+- Use markdown formatting for clear, structured responses
+- Include relevant section headers, bullet points, and numbered lists
+- Be conversational but precise and authoritative`;
+      
+      // Call the OpenAI API
+      const openAIResponse = await openai.chat.completions.create({
+        model: "gpt-4o", // Using the newest OpenAI model
+        messages: [
+          { role: "system", content: systemMessage },
+          { role: "user", content: query }
+        ],
+        temperature: 0.2, // Lower temperature for more accurate, deterministic responses
+        max_tokens: 1500 // Allow for comprehensive answers
+      });
+      
+      if (openAIResponse.choices && openAIResponse.choices.length > 0) {
+        return {
+          response: openAIResponse.choices[0].message.content,
+          source: responseSource,
+          context: regulatoryContext
+        };
+      }
+    } catch (openaiError) {
+      console.error(`Error calling OpenAI API for RAG: ${openaiError.message}`);
+      // Fall back to a basic response based on context
+    }
+    
+    // Generate a fallback response if OpenAI fails
+    const regulatoryTerms = extractRegulatoryTerms(query);
     let responseText = '';
     
-    if (hasRegulatoryTerms) {
-      responseText = `Based on my analysis of regulatory documents and external sources, I can provide the following information about ${regulatoryTerms.join(', ')}:\n\n`;
-      
-      // Include relevant excerpts from the context
-      const contextLines = context.split('\n').filter(line => line.trim() !== '');
-      const relevantLines = contextLines.filter(line => 
-        regulatoryTerms.some(term => line.toLowerCase().includes(term.toLowerCase()))
-      );
-      
-      if (relevantLines.length > 0) {
-        responseText += relevantLines.slice(0, 5).join('\n\n');
-        
-        // Add note about external research capability
-        responseText += `\n\nIn a full implementation, I would also supplement this information with real-time research from regulatory databases, PubMed, scientific journals, and the latest guidances to provide you with comprehensive, up-to-date information that exceeds what general AI assistants can offer.`;
-      } else {
-        // Try external search as fallback
-        responseText += "I don't have detailed information about this in my internal knowledge base, but I can perform an external search to find the most current information for you. In a complete implementation, this would connect to regulatory databases, PubMed, and other specialized sources to provide more comprehensive answers than general AI systems.";
-      }
+    if (regulatoryTerms.length > 0) {
+      responseText = `Based on my analysis of regulatory documents, I can provide the following information about ${regulatoryTerms.join(', ')}:\n\n${responseContext}`;
     } else {
-      responseText = `I've analyzed my regulatory knowledge base and would perform external research to answer your query thoroughly. Here's what I found:\n\n`;
-      
-      // Include a summary based on the context
-      if (context.length > 200) {
-        responseText += context.substring(0, 500) + "...";
-        
-        // Add note about external research capability
-        responseText += `\n\nIn the full implementation, I would also combine this with real-time external research to provide you with the most current information available.`;
-      } else {
-        responseText += context;
-      }
+      responseText = `Based on my analysis, here's what I found:\n\n${responseContext}`;
     }
     
-    return { response: responseText };
+    return {
+      response: responseText,
+      source: responseSource,
+      context: regulatoryContext
+    };
   } catch (error) {
     console.error('Error generating response:', error);
     return { 
