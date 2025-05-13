@@ -31,7 +31,7 @@ import { router as googleDocsRoutes } from './routes/googleDocs.js';
 import deviceProfileRouter from './routes/cerDeviceProfileRoutes';
 // FDA 510(k) routes
 // @ts-ignore
-import { router as fda510kRouter } from './routes/fda510kRoutes.js';
+import { router as fda510kRouter } from './routes/fda510kRoutes';
 
 export default function registerRoutes(app: Express): void {
   // Create a router for basic CER routes
