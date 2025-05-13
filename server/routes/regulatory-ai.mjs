@@ -124,10 +124,9 @@ router.get('/health', (req, res) => {
  * and fallback to hardcoded responses when needed
  */
 
-// We'll implement RAG in a future update
-// For now, we'll use hardcoded responses as a fallback
-let regulatoryAIService = null;
-console.log('Using hardcoded responses for regulatory AI queries');
+// Import the RAG-based regulatoryAIService
+import * as regulatoryAIService from '../services/regulatoryAIService.js';
+console.log('Using document-based RAG for regulatory AI queries');
 
 /**
  * Process an AI query using Retrieval-Augmented Generation (RAG)
@@ -146,13 +145,23 @@ router.post('/query', rateLimiter, async (req, res) => {
       });
     }
     
-    // HARDCODED RESPONSES FOR PRODUCTION READINESS
-    // This ensures consistent behavior during testing and demonstrations
+    // Using RAG (Retrieval-Augmented Generation) for more dynamic responses
     
     console.log(`Regulatory AI query received: "${query}" (context: ${context})`);
     
-    // Define hardcoded responses based on common queries and context
-    // Enhanced with comprehensive regulatory knowledge across global jurisdictions
+    // Process the query through the document-based regulatory AI service
+    try {
+      const ragResponse = await regulatoryAIService.processQuery(query, context);
+      if (ragResponse && ragResponse.response) {
+        console.log(`Using RAG-based response for query: "${query}"`);
+        return res.json(ragResponse);
+      }
+    } catch (error) {
+      console.error(`Error processing RAG query: ${error.message}`);
+      // Continue to fallback methods
+    }
+    
+    // Legacy hardcoded responses as fallback, will be deprecated
     const hardcodedResponses = {
       // US FDA medical device responses
       '510k': {

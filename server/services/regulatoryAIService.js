@@ -8,9 +8,15 @@
  * to avoid dependency issues.
  */
 
-const fs = require('fs');
-const path = require('path');
-const documentProcessor = require('./documentProcessor');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import * as documentProcessor from './documentProcessor.js';
+
+// Get __dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Path to the knowledge base
 const DATA_DIR = path.join(__dirname, '../../data');
@@ -315,7 +321,8 @@ async function processQuery(query, contextFilter = 'general') {
   }
 }
 
-module.exports = {
+// Export functions
+export {
   processQuery,
   retrieveDocuments,
   extractRegulatoryTerms,

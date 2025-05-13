@@ -8,8 +8,14 @@
  * to avoid dependency issues.
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Get __dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Ensure required directories exist
 const DATA_DIR = path.join(__dirname, '../../data');
@@ -731,8 +737,9 @@ async function getKnowledgeBaseStats() {
   }
 }
 
-module.exports = {
-  setupKnowledgeBase: initializeDatabase, // Alias for backward compatibility
+// Export functions
+export {
+  initializeDatabase as setupKnowledgeBase, // Alias for backward compatibility
   importDocuments,
   extractPdfText,
   processPdfs,
@@ -743,5 +750,5 @@ module.exports = {
   searchKnowledgeBase,
   getKnowledgeBaseStats,
   processDocument, // Add the new document processing function
-  retrieveDocuments: searchKnowledgeBase // Alias for compatibility with regulatoryAIService
+  searchKnowledgeBase as retrieveDocuments // Alias for compatibility with regulatoryAIService
 };
