@@ -1998,6 +1998,17 @@ export default function CERV2Page() {
                   cerDocumentId
                 }));
                 
+                // Create or update deviceProfile for 510k integration
+                setDeviceProfile({
+                  deviceName: deviceName,
+                  manufacturer: manufacturer,
+                  deviceClass: deviceType.includes('II') ? 'II' : deviceType.includes('III') ? 'III' : 'I',
+                  intendedUse: intendedUse,
+                  documentType: documentType,
+                  id: documentType === 'cer' ? cerDocumentId : k510DocumentId,
+                  description: `${deviceName} ${deviceType} device for ${intendedUse ? intendedUse : 'medical use'}`
+                });
+                
                 toast({
                   title: "Device Info Saved",
                   description: "Your device information has been saved and applied to the CER.",
