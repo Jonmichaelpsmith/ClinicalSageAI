@@ -539,9 +539,20 @@ For best results, upload documents related to your specific regulatory needs suc
                       <p>Generating response...</p>
                     </div>
                   ) : (
-                    <div className="whitespace-pre-wrap markdown-content prose prose-sm max-w-none">
-                      {message.content}
-                    </div>
+                    <div 
+                      className="whitespace-pre-wrap markdown-content prose prose-sm max-w-none" 
+                      dangerouslySetInnerHTML={{ 
+                        __html: message.content
+                          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+                          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+                          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+                          .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+                          .replace(/\*(.*)\*/gim, '<em>$1</em>')
+                          .replace(/`([^`]+)`/gim, '<code>$1</code>')
+                          .replace(/```([^`]+)```/gim, '<pre><code>$1</code></pre>')
+                          .replace(/\n/gim, '<br />')
+                      }} 
+                    />
                   )}
                 </div>
               </div>
