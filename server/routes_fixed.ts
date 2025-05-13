@@ -32,6 +32,7 @@ import deviceProfileRouter from './routes/cerDeviceProfileRoutes';
 // FDA 510(k) routes
 // @ts-ignore
 import { router as fda510kRouter } from './routes/fda510kRoutes.js';
+// Regulatory-ai router will be imported directly in server/index.ts
 
 export default function registerRoutes(app: Express): void {
   // Create a router for basic CER routes
@@ -358,6 +359,8 @@ export default function registerRoutes(app: Express): void {
   // Register FDA 510(k) routes
   app.use('/api/fda510k', fda510kRouter);
   console.log('FDA 510(k) routes registered');
+  
+  // Regulatory AI routes are now registered directly in server/index.ts
   
   // Error handler for API routes
   app.use('/api', (err: any, req: any, res: any, next: any) => {

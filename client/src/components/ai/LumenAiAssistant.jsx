@@ -181,7 +181,7 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
         throw new Error('Network error occurred during upload. Please check your connection and try again.');
       };
       
-      xhr.open('POST', '/api/regulatory-ai/upload', true);
+      xhr.open('POST', window.location.origin + '/api/regulatory-ai/upload', true);
       xhr.send(formData);
       
     } catch (error) {
@@ -231,8 +231,8 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
     setIsLoading(true);
 
     try {
-      // Call the AI API
-      const response = await fetch('/api/regulatory-ai/query', {
+      // Call the AI API - full absolute path
+      const response = await fetch(window.location.origin + '/api/regulatory-ai/query', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
