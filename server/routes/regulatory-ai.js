@@ -77,22 +77,32 @@ router.use(rateLimiter);
  * POST /api/regulatory-ai/query
  */
 router.post('/query', async (req, res) => {
+  console.log('Received AI query request:', JSON.stringify({
+    messageLength: req.body.message ? req.body.message.length : 0,
+    module: req.body.module,
+    hasContext: !!req.body.context,
+    historyLength: req.body.history ? req.body.history.length : 0
+  }));
+  
   try {
     const { message, module, context, history } = req.body;
 
     // Validate inputs
     if (!message) {
+      console.log('Message is required but was not provided');
       return res.status(400).json({ error: 'Message is required' });
     }
 
     // Check if OpenAI is available
     if (!openai) {
-      console.error('OpenAI API key not configured');
+      console.error('OpenAI API key not configured or OpenAI client initialization failed');
       return res.status(503).json({
         error: 'AI service is not available. Please contact your administrator.',
         response: 'I apologize, but my AI service is currently unavailable. Please try again later or contact your system administrator.',
       });
     }
+    
+    console.log('OpenAI client is available, proceeding with request');
 
     // Create system prompt based on the module and context
     let systemPrompt = `You are Lumen Regulatory Affairs AI, a helpful assistant specializing in medical device and pharmaceutical regulatory affairs knowledge.
@@ -145,25 +155,37 @@ router.post('/query', async (req, res) => {
 
     // Call OpenAI API
     console.log('Sending request to OpenAI API...');
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: messages,
-      temperature: 0.7,
-      max_tokens: 2048,
-    });
+    let completion;
+    try {
+      completion = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 2048,
+      });
+      console.log('OpenAI API response received successfully');
+    } catch (error) {
+      console.error('Error from OpenAI API:', error.message);
+      console.error('Error details:', JSON.stringify(error, null, 2));
+      throw new Error(`OpenAI API error: ${error.message}`);
+    }
 
     // Extract the response
     const aiResponse = completion.choices[0].message.content;
-    console.log('Received response from OpenAI API');
+    console.log('Successfully extracted response content from OpenAI API');
 
     // Return the AI response
     return res.status(200).json({ response: aiResponse });
   } catch (error) {
     console.error('Error in regulatory AI query:', error);
+    console.error('Full error stack:', error.stack);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     
     return res.status(500).json({
-      error: 'Failed to process your request',
-      response: 'I apologize, but I encountered an error processing your request. Please try again or contact support if the issue persists.',
+      error: error.message || 'Failed to process your request',
+      errorCode: error.code || 'UNKNOWN_ERROR',
+      errorType: error.type || 'server_error',
+      response: 'I apologize, but I encountered an error processing your request. The error has been logged for investigation. Please try again or contact support if the issue persists.',
     });
   }
 });
@@ -286,10 +308,14 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
     
   } catch (error) {
     console.error('Error processing file upload:', error);
+    console.error('Full error stack:', error.stack);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     
     return res.status(500).json({
-      error: 'Failed to process your files',
-      response: 'I apologize, but I encountered an error processing your uploaded files. Please try again or contact support if the issue persists.',
+      error: error.message || 'Failed to process your files',
+      errorCode: error.code || 'UNKNOWN_ERROR',
+      errorType: error.type || 'server_error',
+      response: 'I apologize, but I encountered an error processing your uploaded files. The error has been logged for investigation. Please try again or contact support if the issue persists.',
     });
   }
 });
