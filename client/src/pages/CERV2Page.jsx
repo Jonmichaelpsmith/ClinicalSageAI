@@ -283,7 +283,30 @@ export default function CERV2Page() {
   };
   
   // Render content based on active tab
+  // Import 510k tab content component
+  const FDA510kTabContent = React.lazy(() => import('@/components/510k/FDA510kTabContent'));
+  
   const renderContent = () => {
+    // If 510k document type is selected, show FDA510k content
+    if (documentType === '510k') {
+      return (
+        <React.Suspense fallback={<div className="p-4">Loading 510(k) submission tools...</div>}>
+          <FDA510kTabContent 
+            deviceProfile={deviceProfile}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            onComplianceChange={setCompliance}
+            onComplianceStatusChange={setDraftStatus}
+            isComplianceRunning={isComplianceRunning}
+            setIsComplianceRunning={setIsComplianceRunning}
+            compliance={compliance}
+            sections={sections}
+          />
+        </React.Suspense>
+      );
+    }
+    
+    // Otherwise, show the regular CER content
     if (activeTab === 'builder') {
       return (
         <div className="bg-gradient-to-b from-blue-50 to-white py-4 rounded-md">
