@@ -8,6 +8,7 @@ import {
   ChevronDown, ExternalLink, Bug, AlertCircle, BookmarkPlus, Calendar,
   ChevronUp, ListPlus
 } from 'lucide-react';
+import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -758,6 +759,10 @@ export default function KAutomationPanel() {
                     <Database className="h-4 w-4 mr-2" />
                     Device Profiles
                   </TabsTrigger>
+                  <TabsTrigger value="predicates" className="flex-1">
+                    <Search className="h-4 w-4 mr-2" />
+                    Predicate Finder
+                  </TabsTrigger>
                   <TabsTrigger value="status" className="flex-1">
                     <Activity className="h-4 w-4 mr-2" />
                     Workflow Status
@@ -998,6 +1003,34 @@ export default function KAutomationPanel() {
                     onSelectProfile={handleSelectDeviceProfile} 
                   />
                 )}
+              </div>
+            )}
+            
+            {workflowSubTab === 'predicates' && (
+              <div className="space-y-4">
+                <div className="bg-white rounded-md p-4">
+                  {currentDeviceProfile ? (
+                    <PredicateFinderPanel deviceProfile={currentDeviceProfile} />
+                  ) : (
+                    <Alert className="bg-amber-50 border-amber-200">
+                      <AlertTriangle className="h-4 w-4 text-amber-600" />
+                      <AlertTitle>Device Profile Required</AlertTitle>
+                      <AlertDescription>
+                        Please select or create a device profile first to enable predicate search functionality.
+                      </AlertDescription>
+                      <div className="mt-4">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setWorkflowSubTab('devices')}
+                          className="text-sm"
+                        >
+                          <Database className="h-3.5 w-3.5 mr-1.5" />
+                          Go to Device Profiles
+                        </Button>
+                      </div>
+                    </Alert>
+                  )}
+                </div>
               </div>
             )}
             
