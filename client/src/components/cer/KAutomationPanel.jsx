@@ -2004,69 +2004,118 @@ export default function KAutomationPanel() {
             </div>
             
             <Collapsible className="mt-4">
-              <CollapsibleTrigger className="flex items-center text-sm font-medium text-yellow-700 hover:text-yellow-900">
-                <span>Show aiInsights Data</span>
-                <ChevronDown className="h-4 w-4 ml-1" />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-2">
-                <div className="bg-gray-50 p-2 rounded border border-gray-200 overflow-auto max-h-[200px]">
-                  <pre className="text-xs text-gray-800 whitespace-pre-wrap">
-                    {JSON.stringify(aiInsights, null, 2)}
-                  </pre>
+              <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-amber-50 hover:bg-amber-100 text-sm font-medium text-amber-800 rounded-md border border-amber-200">
+                <div className="flex items-center">
+                  <Bug className="h-4 w-4 mr-1.5 text-amber-600" />
+                  <span>Developer Debug Panel</span>
                 </div>
+                <ChevronDown className="h-4 w-4 text-amber-600" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-2 space-y-2">
+                {/* Insights summary table */}
+                <div className="p-3 bg-amber-50 rounded-md border border-amber-100">
+                  <h4 className="text-sm font-medium text-amber-800 mb-2">AI Insights Overview</h4>
+                  <div className="grid grid-cols-4 gap-3">
+                    <div className="bg-white p-2 rounded border border-amber-100">
+                      <span className="text-xs text-amber-800">Predicate Devices</span>
+                      <div className="flex items-center mt-1">
+                        <span className="text-xl font-bold text-amber-700">{aiInsights.filter(i => i.type === 'predicate').length}</span>
+                        {aiInsights.some(i => i.type === 'predicate') ? (
+                          <CheckCircle2 className="h-3 w-3 ml-2 text-green-500" />
+                        ) : (
+                          <AlertCircle className="h-3 w-3 ml-2 text-red-500" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="bg-white p-2 rounded border border-amber-100">
+                      <span className="text-xs text-amber-800">Literature</span>
+                      <div className="flex items-center mt-1">
+                        <span className="text-xl font-bold text-amber-700">{aiInsights.filter(i => i.type === 'literature').length}</span>
+                        {aiInsights.some(i => i.type === 'literature') ? (
+                          <CheckCircle2 className="h-3 w-3 ml-2 text-green-500" />
+                        ) : (
+                          <AlertCircle className="h-3 w-3 ml-2 text-red-500" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="bg-white p-2 rounded border border-amber-100">
+                      <span className="text-xs text-amber-800">Regulatory</span>
+                      <div className="flex items-center mt-1">
+                        <span className="text-xl font-bold text-amber-700">{aiInsights.filter(i => i.type === 'regulatory').length}</span>
+                        {aiInsights.some(i => i.type === 'regulatory') ? (
+                          <CheckCircle2 className="h-3 w-3 ml-2 text-green-500" />
+                        ) : (
+                          <AlertCircle className="h-3 w-3 ml-2 text-red-500" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="bg-white p-2 rounded border border-amber-100">
+                      <span className="text-xs text-amber-800">Total Insights</span>
+                      <div className="flex items-center mt-1">
+                        <span className="text-xl font-bold text-amber-700">{aiInsights.length}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Tab view for raw data */}
+                <Tabs defaultValue="insights" className="w-full">
+                  <TabsList className="grid w-full grid-cols-3">
+                    <TabsTrigger value="insights">AI Insights</TabsTrigger>
+                    <TabsTrigger value="device_profile">Device Profile</TabsTrigger>
+                    <TabsTrigger value="actions">Actions</TabsTrigger>
+                  </TabsList>
+                  <TabsContent value="insights" className="border border-amber-100 rounded-md p-2 bg-white">
+                    <div className="overflow-auto max-h-[300px]">
+                      <pre className="text-xs text-gray-800 whitespace-pre-wrap">
+                        {JSON.stringify(aiInsights, null, 2)}
+                      </pre>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="device_profile" className="border border-amber-100 rounded-md p-2 bg-white">
+                    <div className="overflow-auto max-h-[300px]">
+                      <pre className="text-xs text-gray-800 whitespace-pre-wrap">
+                        {JSON.stringify(currentDeviceProfile, null, 2)}
+                      </pre>
+                    </div>
+                  </TabsContent>
+                  <TabsContent value="actions" className="border border-amber-100 rounded-md p-2 bg-white">
+                    <div className="flex flex-wrap gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-xs"
+                        onClick={() => console.log('Current aiInsights:', aiInsights)}
+                      >
+                        Log Insights
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="text-xs"
+                        onClick={() => {
+                          setActiveTab('insights');
+                          console.log('Manually switched to insights tab');
+                        }}
+                      >
+                        Switch to Insights Tab
+                      </Button>
+                      <Button 
+                        size="sm"
+                        variant="outline"
+                        className="text-xs"
+                        onClick={() => {
+                          setAiInsights([]);
+                          console.log('Cleared aiInsights state');
+                        }}
+                      >
+                        Clear Insights
+                      </Button>
+                    </div>
+                  </TabsContent>
+                </Tabs>
               </CollapsibleContent>
             </Collapsible>
-            
-            <div className="mt-4 flex space-x-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="text-xs"
-                onClick={() => console.log('Current aiInsights:', aiInsights)}
-              >
-                Log Insights
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="text-xs"
-                onClick={() => {
-                  setActiveTab('insights');
-                  console.log('Manually switched to insights tab');
-                }}
-              >
-                Switch to Insights Tab
-              </Button>
-              <Button 
-                size="sm"
-                variant="outline"
-                className="text-xs"
-                onClick={() => {
-                  // Test if the predicate cards would render with existing data
-                  const hasType = (type) => aiInsights.some(i => i.type === type);
-                  console.log('Debug check - Would render predicate card:', hasType('predicate'));
-                  console.log('Debug check - Would render literature card:', hasType('literature'));
-                  console.log('Debug check - Would render regulatory card:', hasType('regulatory'));
-                  console.log('Debug check - Would render validation card:', hasType('validation'));
-                }}
-              >
-                Test Conditions
-              </Button>
-              <Button 
-                size="sm" 
-                variant="destructive" 
-                className="text-xs"
-                onClick={() => {
-                  const confirmReset = window.confirm('Are you sure you want to reset all insights data?');
-                  if (confirmReset) {
-                    setAiInsights([]);
-                    console.log('All insights have been reset');
-                  }
-                }}
-              >
-                Reset Insights
-              </Button>
-            </div>
           </CardContent>
         </Card>
       )}
