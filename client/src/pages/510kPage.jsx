@@ -122,9 +122,13 @@ const FDA510kPage = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <Button variant="outline" onClick={() => setLocation('/510k-dashboard')}>
+          <Button variant="outline" onClick={() => setLocation('/510k-dashboard')} className="mr-2">
             <Route className="h-4 w-4 mr-2" />
             Dashboard View
+          </Button>
+          <Button variant="outline" onClick={() => setLocation('/estar-package')}>
+            <FileText className="h-4 w-4 mr-2" />
+            eSTAR Builder
           </Button>
         </div>
         <h1 className="text-2xl font-bold">FDA 510(k) Automation</h1>
