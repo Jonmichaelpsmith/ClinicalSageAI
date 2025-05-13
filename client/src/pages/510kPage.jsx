@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, Settings, FileText, Clipboard, Database, BookOpen, Search, Route } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTenant } from '@/contexts/TenantContext';
-import { useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import FDA510kService from '../services/FDA510kService';
 import { isFeatureEnabled } from '../flags/featureFlags';
 
@@ -35,7 +35,7 @@ const FDA510kPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { currentOrganization } = useTenant();
-  const [_, navigate] = useNavigate();
+  const [_, setLocation] = useLocation();
 
   // Check if features are enabled
   const isPredicateAnalysisEnabled = isFeatureEnabled('ENABLE_PREDICATE_SEARCH', currentOrganization?.id);
@@ -111,7 +111,7 @@ const FDA510kPage = () => {
 
   // Navigation handler
   const handleBack = () => {
-    navigate('/client-portal');
+    setLocation('/client-portal');
   };
 
   return (
@@ -122,7 +122,7 @@ const FDA510kPage = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <Button variant="outline" onClick={() => navigate('/510k-dashboard')}>
+          <Button variant="outline" onClick={() => setLocation('/510k-dashboard')}>
             <Route className="h-4 w-4 mr-2" />
             Dashboard View
           </Button>

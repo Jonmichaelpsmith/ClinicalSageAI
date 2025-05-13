@@ -75,7 +75,7 @@ const FDA510kDashboard = () => {
   return (
     <div className="container mx-auto py-6">
       <div className="flex justify-between items-center mb-2">
-        <Button variant="ghost" onClick={() => navigate('/510k')} className="mb-2">
+        <Button variant="ghost" onClick={() => setLocation('/510k')} className="mb-2">
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back to 510(k) Workflow
         </Button>
