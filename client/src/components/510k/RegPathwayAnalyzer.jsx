@@ -80,7 +80,33 @@ const RegPathwayAnalyzer = ({ deviceProfile, organizationId }) => {
       handleAnalyzePathway();
     }
   }, [deviceProfile?.id]);
+  
+  // Fetch pathway comparisons when component mounts
+  useEffect(() => {
+    if (isFeatureEnabled('ENABLE_PATHWAY_ADVISOR')) {
+      fetchPathwayComparisons();
+    }
+  }, []);
 
+  // Fetch detailed pathway comparisons
+  const fetchPathwayComparisons = async () => {
+    setIsLoadingComparisons(true);
+    try {
+      const results = await FDA510kService.compareRegulatoryPathways();
+      setPathwayComparisons(results);
+      console.log('Fetched pathway comparisons:', results);
+    } catch (error) {
+      console.error('Error fetching regulatory pathway comparisons:', error);
+      toast({
+        title: "Data Fetch Error",
+        description: error.message || "Could not fetch regulatory pathway comparison data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingComparisons(false);
+    }
+  };
+  
   // Analyze regulatory pathway for the current device
   const handleAnalyzePathway = async () => {
     if (!deviceProfile) {
@@ -236,7 +262,7 @@ const RegPathwayAnalyzer = ({ deviceProfile, organizationId }) => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="recommendation" className="flex items-center gap-1.5">
               <Route className="h-4 w-4" />
               <span>Recommendation</span>
@@ -248,6 +274,10 @@ const RegPathwayAnalyzer = ({ deviceProfile, organizationId }) => {
             <TabsTrigger value="timeline" className="flex items-center gap-1.5">
               <Clock className="h-4 w-4" />
               <span>Timeline</span>
+            </TabsTrigger>
+            <TabsTrigger value="comparison" className="flex items-center gap-1.5">
+              <BarChart4 className="h-4 w-4" />
+              <span>Compare All</span>
             </TabsTrigger>
           </TabsList>
           
@@ -674,6 +704,145 @@ const RegPathwayAnalyzer = ({ deviceProfile, organizationId }) => {
                     </div>
                   </div>
                 </div>
+              </ScrollArea>
+            </TabsContent>
+            
+            {/* Pathway Comparison Tab Content */}
+            <TabsContent value="comparison" className="m-0">
+              <ScrollArea className="h-[500px] pr-3">
+                {isLoadingComparisons ? (
+                  <div className="flex justify-center items-center h-64">
+                    <div className="animate-spin h-8 w-8 border-t-2 border-b-2 border-blue-500 rounded-full"></div>
+                  </div>
+                ) : !pathwayComparisons ? (
+                  <div className="text-center p-8">
+                    <div className="mx-auto h-12 w-12 text-gray-400 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                      <BarChart4 className="h-6 w-6" />
+                    </div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-1">No Comparison Data Available</h3>
+                    <p className="text-sm text-gray-500 mb-4 max-w-md mx-auto">
+                      Unable to fetch pathway comparison data. Please try again.
+                    </p>
+                    <Button onClick={fetchPathwayComparisons} size="sm">
+                      Retry
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-8">
+                    <div>
+                      <h3 className="font-medium text-md mb-4">Regulatory Pathway Comparisons</h3>
+                      <p className="text-sm text-gray-600 mb-6">
+                        Compare all available regulatory pathways to determine the most appropriate option for your device.
+                      </p>
+                      
+                      {pathwayComparisons.pathways?.map((pathway, index) => (
+                        <div key={index} className="mb-8 border-b pb-8 last:border-0">
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h4 className="font-semibold text-lg">{pathway.name}</h4>
+                              <p className="text-gray-600">{pathway.description}</p>
+                            </div>
+                            <Button 
+                              variant={selectedPath === pathway.name ? "default" : "outline"}
+                              size="sm"
+                              onClick={() => setSelectedPath(pathway.name)}
+                            >
+                              {selectedPath === pathway.name ? 'Selected' : 'Select'}
+                            </Button>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div className="space-y-4">
+                              <h5 className="font-medium text-sm uppercase tracking-wide text-gray-500">Timeline</h5>
+                              <div className="rounded-md bg-blue-50 border border-blue-100 p-4">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-sm font-medium text-blue-700">Total Review Time</span>
+                                  <Badge variant="outline" className="bg-blue-100 text-blue-700">
+                                    {pathway.timeline.totalDays} days
+                                  </Badge>
+                                </div>
+                                <p className="text-sm text-blue-600 mt-1">{pathway.timeline.reviewClock}</p>
+                                
+                                <div className="mt-4 space-y-2">
+                                  {pathway.timeline.milestones.slice(0, 3).map((milestone, i) => (
+                                    <div key={i} className="flex justify-between items-center">
+                                      <div className="flex items-center">
+                                        <div className={`w-1.5 h-1.5 rounded-full ${milestone.days <= 0 ? 'bg-green-500' : 'bg-blue-500'} mr-2`}></div>
+                                        <span className="text-xs text-gray-600">{milestone.name}</span>
+                                      </div>
+                                      <span className="text-xs font-medium">
+                                        {milestone.days > 0 ? `+${milestone.days}` : milestone.days} days
+                                      </span>
+                                    </div>
+                                  ))}
+                                  {pathway.timeline.milestones.length > 3 && (
+                                    <div className="text-xs text-blue-600 mt-1 cursor-pointer hover:underline">
+                                      + {pathway.timeline.milestones.length - 3} more milestones
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-4">
+                              <h5 className="font-medium text-sm uppercase tracking-wide text-gray-500">Key Requirements</h5>
+                              <div className="space-y-2">
+                                {pathway.requirements.slice(0, 5).map((req, i) => (
+                                  <div key={i} className="flex items-start">
+                                    <Check className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                                    <span className="text-sm">{req}</span>
+                                  </div>
+                                ))}
+                                {pathway.requirements.length > 5 && (
+                                  <div className="text-xs text-blue-600 mt-1 pl-6 cursor-pointer hover:underline">
+                                    + {pathway.requirements.length - 5} more requirements
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                            <div className="space-y-4">
+                              <h5 className="font-medium text-sm uppercase tracking-wide text-gray-500">Advantages</h5>
+                              <div className="space-y-2">
+                                {pathway.advantages.map((adv, i) => (
+                                  <div key={i} className="flex items-start">
+                                    <Check className="h-4 w-4 text-green-500 mt-0.5 mr-2 flex-shrink-0" />
+                                    <span className="text-sm">{adv}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-4">
+                              <h5 className="font-medium text-sm uppercase tracking-wide text-gray-500">Disadvantages</h5>
+                              <div className="space-y-2">
+                                {pathway.disadvantages.map((disadv, i) => (
+                                  <div key={i} className="flex items-start">
+                                    <X className="h-4 w-4 text-red-500 mt-0.5 mr-2 flex-shrink-0" />
+                                    <span className="text-sm">{disadv}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-6">
+                            <h5 className="font-medium text-sm uppercase tracking-wide text-gray-500 mb-3">Best For</h5>
+                            <div className="flex flex-wrap gap-2">
+                              {pathway.bestFor.map((item, i) => (
+                                <Badge key={i} variant="outline" className="bg-gray-50">
+                                  {item}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </ScrollArea>
             </TabsContent>
           </div>
