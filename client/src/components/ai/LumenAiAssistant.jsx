@@ -110,12 +110,12 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
 
   return (
     <Sheet open={isOpen} onOpenChange={open => !open && onClose()}>
-      <SheetContent side="right" className="w-[400px] sm:w-[540px] p-0 flex flex-col">
-        <SheetHeader className="p-4 border-b border-gray-100">
+      <SheetContent side="right" className="w-[400px] sm:w-[540px] p-0 flex flex-col bg-white text-black">
+        <SheetHeader className="p-4 border-b border-gray-100 bg-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-indigo-600" />
-              <SheetTitle className="text-xl">Lumen Regulatory Affairs AI</SheetTitle>
+              <SheetTitle className="text-xl text-gray-900">Lumen Regulatory Affairs AI</SheetTitle>
             </div>
             <Button 
               variant="ghost" 
@@ -126,12 +126,12 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <SheetDescription>
+          <SheetDescription className="text-gray-600">
             Ask me about regulatory guidance, compliance requirements, or document preparation.
           </SheetDescription>
         </SheetHeader>
 
-        <ScrollArea className="flex-1 p-4 pb-0">
+        <ScrollArea className="flex-1 p-4 pb-0 bg-white">
           <div className="flex flex-col gap-4">
             {messages.map((message, index) => (
               <div
@@ -165,14 +165,14 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
           </div>
         </ScrollArea>
 
-        <SheetFooter className="p-4 border-t border-gray-100">
+        <SheetFooter className="p-4 border-t border-gray-100 bg-white">
           <div className="flex gap-2 w-full">
             <Textarea
               placeholder="Type your question here..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="resize-none"
+              className="resize-none bg-white text-gray-900"
               rows={2}
             />
             <Button
