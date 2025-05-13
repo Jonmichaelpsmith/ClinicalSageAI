@@ -12,7 +12,7 @@ function generateUUID(): string {
 
 // Define interfaces for device profile data
 export interface DeviceProfile {
-  id: string;
+  id: number;
   deviceName: string;
   modelNumber?: string;
   manufacturer?: string;
@@ -106,18 +106,18 @@ class DeviceProfileService {
       
       const createTableQuery = `
         CREATE TABLE IF NOT EXISTS device_profiles (
-          id UUID PRIMARY KEY,
-          device_name VARCHAR(200) NOT NULL,
-          model_number VARCHAR(100),
-          manufacturer VARCHAR(200),
-          device_class VARCHAR(5) NOT NULL CHECK (device_class IN ('I', 'II', 'III')),
+          id SERIAL PRIMARY KEY,
+          device_name VARCHAR(255) NOT NULL,
+          model_number VARCHAR(255),
+          manufacturer VARCHAR(255),
+          device_class VARCHAR(10) NOT NULL CHECK (device_class IN ('I', 'II', 'III')),
           intended_use TEXT NOT NULL,
-          technology_type VARCHAR(200),
-          predicate_device VARCHAR(200),
-          organization_id VARCHAR(100),
-          client_workspace_id VARCHAR(100),
-          created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+          technology_type VARCHAR(255),
+          predicate_device VARCHAR(255),
+          organization_id VARCHAR(255),
+          client_workspace_id VARCHAR(255),
+          created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
         );
         
         -- Add index for organization-based queries
@@ -145,20 +145,18 @@ class DeviceProfileService {
         throw new Error('Database pool not initialized');
       }
       
-      const id = generateUUID();
       const now = new Date();
       
       const query = `
         INSERT INTO device_profiles (
-          id, device_name, model_number, manufacturer, device_class, 
+          device_name, model_number, manufacturer, device_class, 
           intended_use, technology_type, predicate_device, 
           organization_id, client_workspace_id, created_at, updated_at
-        ) VALUES ($1::uuid, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
         RETURNING *;
       `;
       
       const values = [
-        id,
         data.deviceName,
         data.modelNumber || null,
         data.manufacturer || null,
@@ -190,8 +188,8 @@ class DeviceProfileService {
         throw new Error('Database pool not initialized');
       }
       
-      const query = 'SELECT * FROM device_profiles WHERE id = $1::uuid;';
-      const result = await this.pool.query(query, [id]);
+      const query = 'SELECT * FROM device_profiles WHERE id = $1;';
+      const result = await this.pool.query(query, [parseInt(id, 10)]);
       
       if (result.rows.length === 0) {
         return null;
@@ -287,7 +285,7 @@ class DeviceProfileService {
       values.push(new Date());
       
       // Add the ID for the WHERE clause
-      values.push(id);
+      values.push(parseInt(id, 10));
       
       if (updateFields.length === 0) {
         throw new Error('No fields provided for update');
@@ -323,7 +321,7 @@ class DeviceProfileService {
       }
       
       const query = 'DELETE FROM device_profiles WHERE id = $1 RETURNING id;';
-      const result = await this.pool.query(query, [id]);
+      const result = await this.pool.query(query, [parseInt(id, 10)]);
       
       return result.rows.length > 0;
     } catch (error) {
