@@ -27,11 +27,11 @@ import { useQuery } from '@tanstack/react-query';
 // Import ESTARPackageBuilder component directly
 import ESTARPackageBuilder from '../510k/ESTARPackageBuilder';
 
-export default function KAutomationPanel() {
+export default function KAutomationPanel({ showEstarTab = false }) {
   const [activeTab, setActiveTab] = useState('workflow');
-  const [workflowSubTab, setWorkflowSubTab] = useState('pipeline');
+  const [workflowSubTab, setWorkflowSubTab] = useState(showEstarTab ? 'estar' : 'pipeline');
   // Add estar tab to properly integrate eSTAR functionality within the KAutomationPanel
-  const [showEstarBuilder, setShowEstarBuilder] = useState(false);
+  const [showEstarBuilder, setShowEstarBuilder] = useState(showEstarTab);
   const [aiProcessing, setAiProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [aiInsights, setAiInsights] = useState([]);
@@ -774,6 +774,22 @@ export default function KAutomationPanel() {
               </Tabs>
             </div>
           
+            {workflowSubTab === 'estar' && (
+              <div className="bg-white p-6 rounded-md shadow-sm border border-blue-100">
+                <h3 className="text-lg font-semibold text-blue-700 mb-4 flex items-center">
+                  <Package className="h-5 w-5 mr-2 text-blue-600" />
+                  eSTAR Package Builder
+                </h3>
+                <p className="text-sm text-gray-600 mb-6">
+                  Build, validate, and generate eSTAR packages for your FDA 510(k) submission. This tool assembles all required documents and creates an FDA-ready eSTAR package.
+                </p>
+                
+                <ESTARPackageBuilder 
+                  projectId={currentDeviceProfile?.id || "default"} 
+                />
+              </div>
+            )}
+            
             {workflowSubTab === 'pipeline' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
