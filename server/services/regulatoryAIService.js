@@ -300,6 +300,12 @@ async function generateRagResponse(query, context = '') {
  */
 async function processQuery(query, contextFilter = 'general') {
   try {
+    // Check if the knowledge base directory exists
+    if (!fs.existsSync(KNOWLEDGE_DIR) || !fs.existsSync(METADATA_PATH)) {
+      console.warn('Knowledge base not initialized, using default responses');
+      return await generateRagResponse(query, '');
+    }
+    
     // Retrieve relevant documents from the knowledge base
     let documents = [];
     

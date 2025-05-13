@@ -123,8 +123,8 @@ router.get('/search', async (req, res) => {
       });
     }
     
-    // Check if the database exists
-    if (!fs.existsSync(DB_PATH)) {
+    // Check if the knowledge base exists
+    if (!fs.existsSync(KNOWLEDGE_DIR) || !fs.existsSync(METADATA_PATH)) {
       return res.json({
         success: false,
         message: 'Knowledge base has not been initialized',
@@ -132,50 +132,31 @@ router.get('/search', async (req, res) => {
       });
     }
     
-    const db = new sqlite3.Database(DB_PATH, sqlite3.OPEN_READONLY);
+    // Use document processor to search the knowledge base
+    const results = await documentProcessor.searchKnowledgeBase(
+      query,
+      jurisdiction || null,
+      docType || null,
+      parseInt(limit, 10)
+    );
     
-    let queryParams = [];
-    let queryConditions = [];
-    
-    // Basic content search
-    queryConditions.push('content LIKE ?');
-    queryParams.push(`%${query}%`);
-    
-    // Add jurisdiction filter if provided
-    if (jurisdiction) {
-      queryConditions.push('jurisdiction = ?');
-      queryParams.push(jurisdiction);
-    }
-    
-    // Add document type filter if provided
-    if (docType) {
-      queryConditions.push('doc_type = ?');
-      queryParams.push(docType);
-    }
-    
-    const whereClause = queryConditions.join(' AND ');
-    
-    const results = await new Promise((resolve, reject) => {
-      db.all(`
-        SELECT id, source, section, content, jurisdiction, tags, doc_type, last_updated
-        FROM knowledge_base
-        WHERE ${whereClause}
-        LIMIT ?
-      `, [...queryParams, parseInt(limit)], (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows);
-        }
-      });
+    // Truncate content for response to avoid large payloads
+    const processedResults = results.map(result => {
+      // Limit content to 500 characters for the response
+      const truncatedContent = result.content && result.content.length > 500 
+        ? result.content.substring(0, 500) + '...' 
+        : result.content;
+        
+      return {
+        ...result,
+        content: truncatedContent
+      };
     });
-    
-    db.close();
     
     res.json({
       success: true,
-      count: results.length,
-      results
+      count: processedResults.length,
+      results: processedResults
     });
   } catch (error) {
     console.error('Error searching knowledge base:', error);
