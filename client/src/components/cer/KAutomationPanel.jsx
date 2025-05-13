@@ -2003,6 +2003,89 @@ export default function KAutomationPanel() {
               </div>
             </div>
             
+            {/* Review Timeline Card */}
+            <Card className="mt-4">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base flex items-center">
+                  <Calendar className="h-4 w-4 mr-2 text-blue-600" />
+                  510(k) Review Timeline
+                </CardTitle>
+                <CardDescription>
+                  Estimated timeframes for each stage of your submission
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="relative">
+                    {/* Timeline line */}
+                    <div className="absolute left-4 top-0 h-full w-0.5 bg-blue-100"></div>
+                    
+                    {/* Timeline events */}
+                    <div className="space-y-6">
+                      <div className="flex">
+                        <div className="relative flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white text-xs z-10">
+                          1
+                        </div>
+                        <div className="ml-4 -mt-1">
+                          <h4 className="text-sm font-medium text-blue-700">Initial Submission</h4>
+                          <p className="text-xs text-gray-500">Day 0: Submission received by the FDA</p>
+                          <div className="mt-1 p-2 bg-blue-50 border border-blue-100 rounded-md">
+                            <span className="text-xs text-blue-700">Documents undergo administrative review for completeness</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex">
+                        <div className="relative flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white text-xs z-10">
+                          2
+                        </div>
+                        <div className="ml-4 -mt-1">
+                          <h4 className="text-sm font-medium text-blue-700">Acceptance Review</h4>
+                          <p className="text-xs text-gray-500">Days 1-15: Administrative screening</p>
+                          <div className="mt-1 p-2 bg-blue-50 border border-blue-100 rounded-md">
+                            <span className="text-xs text-blue-700">RTA checklist verification and submission validation</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex">
+                        <div className="relative flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white text-xs z-10">
+                          3
+                        </div>
+                        <div className="ml-4 -mt-1">
+                          <h4 className="text-sm font-medium text-blue-700">Substantive Review</h4>
+                          <p className="text-xs text-gray-500">Days 16-90: Technical and scientific review</p>
+                          <div className="mt-1 p-2 bg-blue-50 border border-blue-100 rounded-md">
+                            <span className="text-xs text-blue-700">In-depth evaluation of substantial equivalence claims</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex">
+                        <div className="relative flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-green-500 text-white text-xs z-10">
+                          ✓
+                        </div>
+                        <div className="ml-4 -mt-1">
+                          <h4 className="text-sm font-medium text-green-700">Final Decision</h4>
+                          <p className="text-xs text-gray-500">By Day 90: FDA determination</p>
+                          <div className="mt-1 p-2 bg-green-50 border border-green-100 rounded-md">
+                            <span className="text-xs text-green-700">Traditional 510(k) standard timeline: 90 days</span>
+                            <br />
+                            <span className="text-xs text-amber-600">Special 510(k) expedited timeline: 30 days</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="text-xs text-gray-500 italic mt-2">
+                    Note: Actual review times may vary based on FDA workload and Additional Information requests.
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Debug panel */}
             <Collapsible className="mt-4">
               <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-amber-50 hover:bg-amber-100 text-sm font-medium text-amber-800 rounded-md border border-amber-200">
                 <div className="flex items-center">
