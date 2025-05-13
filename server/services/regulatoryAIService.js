@@ -223,35 +223,12 @@ async function generateRagResponse(query, context = '') {
       fs.existsSync(METADATA_PATH) &&
       fs.readdirSync(KNOWLEDGE_DIR).length > 1; // More than just metadata.json
     
-    // Use hard-coded responses when knowledge is empty
+    // If knowledge base is empty, provide clear feedback instead of hardcoded responses
     if (!hasKnowledgeBase || !context || context.trim() === '') {
-      // Fall back to hardcoded knowledge
-      const fallbackContext = DEFAULT_REGULATORY_KNOWLEDGE[regulatoryContext] || DEFAULT_REGULATORY_KNOWLEDGE.General;
-      
-      // Find the most relevant key in the fallback context
-      let bestMatch = null;
-      let bestMatchScore = 0;
-      
-      for (const [key, value] of Object.entries(fallbackContext)) {
-        if (lowerQuery.includes(key.toLowerCase())) {
-          const score = key.length; // Longer matches are better
-          if (score > bestMatchScore) {
-            bestMatchScore = score;
-            bestMatch = value;
-          }
-        }
-      }
-      
-      // Use the best match or a generic response
-      if (bestMatch) {
-        return {
-          response: bestMatch + "\n\n(This response is based on built-in knowledge as the regulatory knowledge base has not been fully populated yet. Process regulatory documents to enhance responses.)"
-        };
-      } else {
-        return { 
-          response: "I don't have specific information on that in my knowledge base yet. Please process relevant regulatory documents to enhance my responses, or try asking a more general regulatory question." 
-        };
-      }
+      console.log('No knowledge base found or empty context, informing user to add documents');
+      return { 
+        response: "I don't have specific information on that in my knowledge base yet. Please upload regulatory documents using the document processing feature to enhance my responses. I'll analyze the PDFs and use their content to provide more accurate answers to your regulatory questions." 
+      };
     }
     
     // For now, we'll create a simulated response that acknowledges the knowledge we've retrieved
