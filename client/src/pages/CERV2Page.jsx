@@ -381,8 +381,22 @@ export default function CERV2Page() {
   // Direct action for 510(k) Automation
   const show510kPanel = () => {
     console.log("Attempting to show 510k panel");
-    setActiveTab('510k');
-    console.log("Active tab set to:", '510k');
+    // Switch document type to 510k if not already
+    if (documentType !== '510k') {
+      setDocumentType('510k');
+      // When switching document types, set appropriate initial tab
+      setActiveTab('predicates');
+      // Show toast notification for document type change
+      toast({
+        title: "Switched to 510(k) Submission",
+        description: "Now viewing FDA 510(k) submission tools",
+        variant: "default"
+      });
+    } else {
+      // If already on 510k document type, just set active tab
+      setActiveTab('predicates');
+    }
+    console.log("Document type set to 510k, active tab set to: predicates");
   };
   
   // Render content based on active tab
