@@ -7,9 +7,74 @@
 
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const regulatoryAIService = require('../services/regulatoryAIService');
+const documentProcessor = require('../services/documentProcessor');
 
-console.log('Using hardcoded responses for regulatory AI queries');
+// Initialize required directories
+const DATA_DIR = path.join(__dirname, '../../data');
+const KNOWLEDGE_DIR = path.join(DATA_DIR, 'knowledge_base');
+const UPLOADS_DIR = path.join(__dirname, '../../uploads');
+
+// Ensure directories exist
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+if (!fs.existsSync(KNOWLEDGE_DIR)) {
+  fs.mkdirSync(KNOWLEDGE_DIR, { recursive: true });
+}
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+
+// Initialize knowledge base if needed
+const initializeKnowledgeBase = async () => {
+  try {
+    await documentProcessor.initializeDatabase();
+    console.log('Knowledge base initialized');
+  } catch (error) {
+    console.error('Error initializing knowledge base:', error);
+  }
+};
+
+// Run initialization
+initializeKnowledgeBase();
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '../../uploads');
+    
+    // Ensure the upload directory exists
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // Create a unique filename
+    const uniqueName = `${Date.now()}-${file.originalname}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    // Accept PDF files
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'), false);
+    }
+  },
+  limits: {
+    fileSize: 10 * 1024 * 1024 // 10MB limit
+  }
+});
 
 /**
  * @route POST /api/regulatory-ai/query
