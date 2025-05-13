@@ -89,19 +89,34 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
   
   // Handle compliance check
   const handleComplianceCheck = async () => {
+    if (!selectedDeviceProfile) {
+      toast({
+        title: "Device Profile Required",
+        description: "Please select a device profile before running compliance check",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading({ ...isLoading, complianceChecker: true });
     
     try {
-      // Use the service for compliance checking
-      const result = await FDA510kService.checkCompliance(projectId || "demo-project-id");
+      // Use the service for compliance checking against the profile
+      const result = await FDA510kService.runComplianceCheck(selectedDeviceProfile, organizationId || 1);
+      
+      // Store result in localStorage for display in insights tab
+      localStorage.setItem('complianceResults', JSON.stringify(result));
       
       toast({
         title: "Compliance Check Complete",
-        description: `Found ${result.issues?.length || 0} potential compliance issues`,
+        description: `Compliance score: ${Math.round(result.score * 100)}%. ${result.detailedChecks?.length || 0} checks performed.`,
       });
       
-      // Navigate to compliance checker tab
-      navigate('/client-portal/510k?tab=complianceChecker');
+      // Navigate to insights tab and show compliance results
+      navigate('/client-portal/510k?tab=insights');
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 100);
     } catch (error) {
       console.error('Error in compliance checker:', error);
       toast({
@@ -347,20 +362,126 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
         </TabsContent>
         
         <TabsContent value="insights">
-          <Card>
-            <CardHeader>
-              <CardTitle>Submission Insights</CardTitle>
-              <CardDescription>
-                Analytics and insights for your 510(k) submission process
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-500 italic text-sm mb-4">No insights available yet. Complete more pipeline steps to generate insights.</p>
-              <Button onClick={() => setActiveTab('workflow')} variant="outline">
-                Return to Workflow
-              </Button>
-            </CardContent>
-          </Card>
+          {(() => {
+            // Get compliance results from localStorage if available
+            const complianceResultsStr = localStorage.getItem('complianceResults');
+            const complianceResults = complianceResultsStr ? JSON.parse(complianceResultsStr) : null;
+            
+            return (
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Submission Insights</CardTitle>
+                    <CardDescription>
+                      Analytics and insights for your 510(k) submission process
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {!complianceResults && (
+                      <>
+                        <p className="text-gray-500 italic text-sm mb-4">No insights available yet. Complete more pipeline steps to generate insights.</p>
+                        <Button onClick={() => setActiveTab('workflow')} variant="outline">
+                          Return to Workflow
+                        </Button>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+                
+                {complianceResults && (
+                  <Card className="shadow-md">
+                    <CardHeader className="bg-gradient-to-r from-blue-50 to-white">
+                      <CardTitle className="flex items-center">
+                        <FileText className="mr-2 h-5 w-5 text-blue-600" />
+                        Compliance Check Results
+                      </CardTitle>
+                      <CardDescription>
+                        Summary of 510(k) submission compliance check
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <h3 className="text-sm font-semibold mb-1">Compliance Score</h3>
+                          <div className="text-2xl font-bold text-blue-700">
+                            {Math.round(complianceResults.score * 100)}%
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Overall submission readiness
+                          </p>
+                        </div>
+                        
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <h3 className="text-sm font-semibold mb-1">Checks Passed</h3>
+                          <div className="text-2xl font-bold text-green-600">
+                            {complianceResults.passedChecks} / {complianceResults.totalChecks}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Compliance criteria met
+                          </p>
+                        </div>
+                        
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <h3 className="text-sm font-semibold mb-1">Issues Found</h3>
+                          <div className="text-2xl font-bold text-amber-600">
+                            {complianceResults.warnings + complianceResults.errors}
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">
+                            {complianceResults.errors} critical, {complianceResults.warnings} warnings
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <h3 className="font-semibold text-lg mb-4">Detailed Compliance Checks</h3>
+                      
+                      <div className="border rounded-md overflow-hidden">
+                        <table className="w-full">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">Check</th>
+                              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">Category</th>
+                              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">Status</th>
+                              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600">Recommendation</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {complianceResults.detailedChecks.map((check, index) => (
+                              <tr key={check.id || index} className="hover:bg-gray-50">
+                                <td className="px-4 py-3 text-sm">{check.name}</td>
+                                <td className="px-4 py-3 text-sm">{check.category}</td>
+                                <td className="px-4 py-3 text-sm">
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    ${check.status === 'passed' ? 'bg-green-100 text-green-800' : 
+                                      check.status === 'warning' ? 'bg-yellow-100 text-yellow-800' : 
+                                      'bg-red-100 text-red-800'}`
+                                  }>
+                                    {check.status === 'passed' ? 'Passed' : 
+                                      check.status === 'warning' ? 'Warning' : 'Failed'}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-700">
+                                  {check.status !== 'passed' ? check.recommendation : '—'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                      <div className="flex justify-between mt-6">
+                        <Button onClick={() => setActiveTab('workflow')} variant="outline">
+                          Return to Workflow
+                        </Button>
+                        <Button className="bg-blue-600" onClick={() => window.print()}>
+                          Export Report
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            );
+          })()}
         </TabsContent>
       </Tabs>
     </div>
