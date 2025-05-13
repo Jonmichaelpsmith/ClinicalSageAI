@@ -135,9 +135,82 @@ class FDA510kService {
       throw new Error(error.response?.data?.message || 'Failed to add predicate device');
     }
   }
+  
+  /**
+   * Find predicate devices based on device characteristics
+   * 
+   * @param {Object} deviceData - Device characteristics to match against
+   * @param {number} organizationId - The organization ID
+   * @returns {Promise<Object>} - Found predicate devices and literature references
+   */
+  async findPredicateDevices(deviceData, organizationId) {
+    try {
+      const response = await axios.post('/api/fda510k/find-predicates', {
+        deviceData,
+        organizationId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error finding predicate devices:', error);
+      throw new Error(error.response?.data?.message || 'Failed to find predicate devices');
+    }
+  }
+  
+  /**
+   * Analyze and recommend regulatory pathway for a device
+   * 
+   * @param {Object} deviceData - Device characteristics to analyze
+   * @param {number} organizationId - The organization ID
+   * @returns {Promise<Object>} - Regulatory pathway analysis
+   */
+  async analyzeRegulatoryPathway(deviceData, organizationId) {
+    try {
+      const response = await axios.post('/api/fda510k/analyze-pathway', {
+        deviceData,
+        organizationId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error analyzing regulatory pathway:', error);
+      throw new Error(error.response?.data?.message || 'Failed to analyze regulatory pathway');
+    }
+  }
+  
+  /**
+   * Get 510(k) submission requirements for a device class
+   * 
+   * @param {string} deviceClass - Device classification (I, II, III)
+   * @returns {Promise<Object>} - Submission requirements
+   */
+  async getRequirements(deviceClass) {
+    try {
+      const response = await axios.get(`/api/fda510k/requirements/${deviceClass}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching 510(k) requirements:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch requirements');
+    }
+  }
+  
+  /**
+   * Get analysis for a specific submission requirement
+   * 
+   * @param {string} requirementId - The requirement ID
+   * @param {string} projectId - The 510(k) project ID
+   * @returns {Promise<Object>} - Requirement analysis
+   */
+  async getRequirementAnalysis(requirementId, projectId) {
+    try {
+      const response = await axios.get(`/api/fda510k/requirement-analysis/${requirementId}/${projectId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching requirement analysis:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch requirement analysis');
+    }
+  }
 }
 
 // Create and export a singleton instance
 const fda510kService = new FDA510kService();
 export default fda510kService;
-export { fda510kService as FDA510kService };
+export { FDA510kService };
