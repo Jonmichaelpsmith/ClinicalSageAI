@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Beaker, BarChart3, Database, FileText, SearchCode, Plus } from 'lucide-react';
+import { Beaker, BarChart3, Database, FileText, SearchCode, Plus, CheckCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useLocation } from 'wouter';
 import FDA510kService from '../../services/FDA510kService';
@@ -234,14 +234,67 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
               </CardHeader>
               <CardContent className="pt-4">
                 <p className="text-sm text-gray-600 mb-4">
-                  Provide basic device information or upload existing documentation to jump-start your 510(k) submission.
+                  Creating a thorough device profile is the critical first step in your 510(k) submission process. This information will be used to find predicates and analyze the regulatory pathway.
                 </p>
-                <Button
-                  onClick={() => setActiveTab('deviceProfile')}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Manage Device Profiles
-                </Button>
+
+                <div className="flex flex-col space-y-3">
+                  {!selectedDeviceProfile ? (
+                    <DeviceProfileDialog
+                      buttonText="Create New Device Profile"
+                      buttonVariant="default"
+                      dialogTitle="Create 510(k) Device Profile"
+                      dialogDescription="Enter the details of your medical device to begin the 510(k) submission process."
+                      onSuccessfulSubmit={(profile) => {
+                        setSelectedDeviceProfile(profile);
+                        toast({
+                          title: 'Device Profile Ready',
+                          description: `${profile.deviceName} has been created and selected for your 510(k) submission.`,
+                        });
+                      }}
+                      isStartingPoint={true}
+                    />
+                  ) : (
+                    <>
+                      <div className="flex items-center space-x-2 p-3 bg-green-50 border border-green-100 rounded-md">
+                        <div className="flex-shrink-0 bg-green-100 p-2 rounded-full">
+                          <CheckCircle className="h-5 w-5 text-green-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-green-800">Selected Device: {selectedDeviceProfile.deviceName}</h4>
+                          <p className="text-xs text-green-700">
+                            Class {selectedDeviceProfile.deviceClass} • {selectedDeviceProfile.manufacturer || 'No manufacturer specified'}
+                          </p>
+                        </div>
+                        <Button variant="outline" size="sm" className="flex-shrink-0" onClick={() => setSelectedDeviceProfile(null)}>
+                          Change
+                        </Button>
+                      </div>
+                      
+                      <DeviceProfileDialog
+                        buttonText="Edit Device Profile"
+                        buttonVariant="outline"
+                        dialogTitle="Edit 510(k) Device Profile"
+                        dialogDescription="Update the details of your medical device for the 510(k) submission."
+                        existingData={selectedDeviceProfile}
+                        onSuccessfulSubmit={(profile) => {
+                          setSelectedDeviceProfile(profile);
+                          toast({
+                            title: 'Device Profile Updated',
+                            description: `${profile.deviceName} has been updated for your 510(k) submission.`,
+                          });
+                        }}
+                      />
+                    </>
+                  )}
+                  
+                  <Button
+                    onClick={() => setActiveTab('deviceProfile')}
+                    variant="link"
+                    className="text-blue-600 hover:text-blue-800 -mt-1"
+                  >
+                    View All Device Profiles
+                  </Button>
+                </div>
               </CardContent>
             </Card>
             
