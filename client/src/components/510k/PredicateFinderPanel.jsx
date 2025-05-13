@@ -241,25 +241,191 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
   
   // Render an empty state
   const renderEmptyState = () => (
-    <div className="text-center p-8">
-      <div className="mx-auto h-12 w-12 text-gray-400 rounded-full bg-gray-100 flex items-center justify-center mb-4">
-        <Search className="h-6 w-6" />
+    <div>
+      {/* Customization Panel */}
+      <div className="mb-6">
+        <div className="flex justify-between items-center mb-2">
+          <h3 className="text-sm font-medium flex items-center">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="p-0 h-auto" 
+                    onClick={() => setShowCustomization(!showCustomization)}
+                  >
+                    <div className="flex items-center">
+                      <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />
+                      <span>Relevance Criteria</span>
+                      {showCustomization ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
+                    </div>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Customize how devices and literature are matched to your profile</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </h3>
+        </div>
+        
+        {showCustomization && (
+          <Card className="bg-slate-50 mb-4">
+            <CardContent className="pt-4">
+              <div>
+                <h3 className="text-sm font-medium mb-2">Customize Relevance Criteria</h3>
+                <p className="text-xs text-gray-500 mb-4">
+                  Adjust the importance of different factors when matching predicates and literature to your device
+                </p>
+                
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm">Intended Use</span>
+                      <span className="text-sm font-medium">{relevanceCriteria.intendedUseWeight}%</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="100" 
+                      value={relevanceCriteria.intendedUseWeight} 
+                      onChange={(e) => {
+                        const newValue = parseInt(e.target.value);
+                        setRelevanceCriteria((prev) => ({
+                          ...prev,
+                          intendedUseWeight: newValue,
+                          // Adjust other weights to keep total at 100%
+                          deviceClassWeight: Math.max(5, Math.floor((100 - newValue) * (prev.deviceClassWeight / (100 - prev.intendedUseWeight)))),
+                          technologyTypeWeight: Math.max(5, Math.floor((100 - newValue) * (prev.technologyTypeWeight / (100 - prev.intendedUseWeight)))),
+                          manufacturerWeight: Math.max(5, 100 - newValue - Math.floor((100 - newValue) * (prev.deviceClassWeight / (100 - prev.intendedUseWeight))) - Math.floor((100 - newValue) * (prev.technologyTypeWeight / (100 - prev.intendedUseWeight))))
+                        }));
+                      }}
+                      className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm">Device Classification</span>
+                      <span className="text-sm font-medium">{relevanceCriteria.deviceClassWeight}%</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="100" 
+                      value={relevanceCriteria.deviceClassWeight} 
+                      onChange={(e) => {
+                        const newValue = parseInt(e.target.value);
+                        setRelevanceCriteria((prev) => ({
+                          ...prev,
+                          deviceClassWeight: newValue,
+                          // Adjust other weights to keep total at 100%
+                          intendedUseWeight: Math.max(5, Math.floor((100 - newValue) * (prev.intendedUseWeight / (100 - prev.deviceClassWeight)))),
+                          technologyTypeWeight: Math.max(5, Math.floor((100 - newValue) * (prev.technologyTypeWeight / (100 - prev.deviceClassWeight)))),
+                          manufacturerWeight: Math.max(5, 100 - newValue - Math.floor((100 - newValue) * (prev.intendedUseWeight / (100 - prev.deviceClassWeight))) - Math.floor((100 - newValue) * (prev.technologyTypeWeight / (100 - prev.deviceClassWeight))))
+                        }));
+                      }}
+                      className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm">Technology Type</span>
+                      <span className="text-sm font-medium">{relevanceCriteria.technologyTypeWeight}%</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="100" 
+                      value={relevanceCriteria.technologyTypeWeight} 
+                      onChange={(e) => {
+                        const newValue = parseInt(e.target.value);
+                        setRelevanceCriteria((prev) => ({
+                          ...prev,
+                          technologyTypeWeight: newValue,
+                          // Adjust other weights to keep total at 100%
+                          intendedUseWeight: Math.max(5, Math.floor((100 - newValue) * (prev.intendedUseWeight / (100 - prev.technologyTypeWeight)))),
+                          deviceClassWeight: Math.max(5, Math.floor((100 - newValue) * (prev.deviceClassWeight / (100 - prev.technologyTypeWeight)))),
+                          manufacturerWeight: Math.max(5, 100 - newValue - Math.floor((100 - newValue) * (prev.intendedUseWeight / (100 - prev.technologyTypeWeight))) - Math.floor((100 - newValue) * (prev.deviceClassWeight / (100 - prev.technologyTypeWeight))))
+                        }));
+                      }}
+                      className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm">Manufacturer</span>
+                      <span className="text-sm font-medium">{relevanceCriteria.manufacturerWeight}%</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="0" 
+                      max="100" 
+                      value={relevanceCriteria.manufacturerWeight} 
+                      onChange={(e) => {
+                        const newValue = parseInt(e.target.value);
+                        setRelevanceCriteria((prev) => ({
+                          ...prev,
+                          manufacturerWeight: newValue,
+                          // Adjust other weights to keep total at 100%
+                          intendedUseWeight: Math.max(5, Math.floor((100 - newValue) * (prev.intendedUseWeight / (100 - prev.manufacturerWeight)))),
+                          deviceClassWeight: Math.max(5, Math.floor((100 - newValue) * (prev.deviceClassWeight / (100 - prev.manufacturerWeight)))),
+                          technologyTypeWeight: Math.max(5, 100 - newValue - Math.floor((100 - newValue) * (prev.intendedUseWeight / (100 - prev.manufacturerWeight))) - Math.floor((100 - newValue) * (prev.deviceClassWeight / (100 - prev.manufacturerWeight))))
+                        }));
+                      }}
+                      className="w-full h-2 bg-blue-100 rounded-lg appearance-none cursor-pointer"
+                    />
+                  </div>
+                </div>
+                
+                <div className="flex justify-between mt-4">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setRelevanceCriteria({
+                        intendedUseWeight: 40,
+                        deviceClassWeight: 20,
+                        technologyTypeWeight: 25,
+                        manufacturerWeight: 15
+                      });
+                      toast({
+                        title: "Criteria Reset",
+                        description: "Relevance criteria have been reset to default values",
+                      });
+                    }}
+                  >
+                    Reset to Default
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
-      <h3 className="text-lg font-medium text-gray-900 mb-1">No Search Results Yet</h3>
-      <p className="text-sm text-gray-500 mb-4 max-w-md mx-auto">
-        Run the search to find potential predicate devices and relevant literature references for your 510(k) submission.
-      </p>
-      <Button onClick={handleSearch} disabled={isLoading}>
-        {isLoading ? (
-          <>
-            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Searching...
-          </>
-        ) : "Find Predicates & Literature"}
-      </Button>
+
+      <div className="text-center p-8">
+        <div className="mx-auto h-12 w-12 text-gray-400 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+          <Search className="h-6 w-6" />
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-1">No Search Results Yet</h3>
+        <p className="text-sm text-gray-500 mb-4 max-w-md mx-auto">
+          Run the search to find potential predicate devices and relevant literature references for your 510(k) submission.
+        </p>
+        <Button onClick={handleSearch} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Searching...
+            </>
+          ) : "Find Predicates & Literature"}
+        </Button>
+      </div>
     </div>
   );
 
