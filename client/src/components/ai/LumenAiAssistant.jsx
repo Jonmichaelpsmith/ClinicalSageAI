@@ -140,30 +140,45 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
       
       xhr.onload = async () => {
         if (xhr.status >= 200 && xhr.status < 300) {
-          const data = JSON.parse(xhr.responseText);
-          
-          // Add AI response to chat
-          setMessages((prev) => [...prev, { 
-            role: 'assistant', 
-            content: data.response || 'Files received. I\'ll analyze these documents.'
-          }]);
-          
-          // Clear the files after successful upload
-          setFiles([]);
-          setUploadProgress({});
-          
-          toast({
-            title: 'Files Uploaded',
-            description: 'Files have been successfully uploaded and are being analyzed.',
-          });
+          try {
+            const data = JSON.parse(xhr.responseText);
+            
+            // Add AI response to chat
+            setMessages((prev) => [...prev, { 
+              role: 'assistant', 
+              content: data.response || 'Files received. I\'ll analyze these documents.'
+            }]);
+            
+            // Clear the files after successful upload
+            setFiles([]);
+            setUploadProgress({});
+            
+            toast({
+              title: 'Files Uploaded',
+              description: 'Files have been successfully uploaded and are being analyzed.',
+            });
+          } catch (parseError) {
+            console.error('Error parsing server response:', parseError);
+            throw new Error('Failed to parse server response: ' + parseError.message);
+          }
         } else {
-          throw new Error('Upload failed with status: ' + xhr.status);
+          // Try to parse error response
+          let errorMessage = 'Upload failed with status: ' + xhr.status;
+          try {
+            const errorData = JSON.parse(xhr.responseText);
+            errorMessage = errorData.error || errorMessage;
+            console.error('Server error response:', errorData);
+          } catch (e) {
+            // If parsing fails, use the default error message
+          }
+          throw new Error(errorMessage);
         }
         setIsUploading(false);
       };
       
       xhr.onerror = () => {
-        throw new Error('Network error occurred during upload');
+        console.error('Network error during file upload');
+        throw new Error('Network error occurred during upload. Please check your connection and try again.');
       };
       
       xhr.open('POST', '/api/regulatory-ai/upload', true);
@@ -231,7 +246,9 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get response from AI assistant');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Error response from server:', errorData);
+        throw new Error(errorData.error || 'Failed to get response from AI assistant');
       }
 
       const data = await response.json();
@@ -240,9 +257,12 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
       setMessages((prev) => [...prev, { role: 'assistant', content: data.response }]);
     } catch (error) {
       console.error('Error communicating with AI assistant:', error);
+      console.error('Error details:', error.stack);
+      
+      // Show more detailed error toast
       toast({
         title: 'AI Assistant Error',
-        description: 'Sorry, I encountered an issue processing your request. Please try again.',
+        description: error.message || 'Sorry, I encountered an issue processing your request. Please try again.',
         variant: 'destructive',
       });
       
