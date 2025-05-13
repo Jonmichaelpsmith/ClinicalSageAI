@@ -2,7 +2,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { Configuration, OpenAIApi } = require('openai');
+const OpenAI = require('openai');
 const { rateLimiter } = require('./rate-limiter');
 const multer = require('multer');
 const path = require('path');
@@ -51,12 +51,23 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-// Check if OpenAI API key is available
+// Check if OpenAI API key is available and initialize client
 const openaiApiKey = process.env.OPENAI_API_KEY;
-const configuration = openaiApiKey
-  ? new Configuration({ apiKey: openaiApiKey })
-  : null;
-const openai = configuration ? new OpenAIApi(configuration) : null;
+console.log('OpenAI API Key available:', !!openaiApiKey); // Log if key is available, not the key itself
+
+// Initialize OpenAI client
+let openai = null;
+if (openaiApiKey) {
+  try {
+    // Using the newer OpenAI SDK initialization pattern
+    openai = new OpenAI({
+      apiKey: openaiApiKey
+    });
+    console.log('OpenAI client initialized successfully');
+  } catch (error) {
+    console.error('Error initializing OpenAI client:', error.message);
+  }
+}
 
 // Apply rate limiting to all routes
 router.use(rateLimiter);
@@ -134,15 +145,15 @@ router.post('/query', async (req, res) => {
 
     // Call OpenAI API
     console.log('Sending request to OpenAI API...');
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4-turbo", // Use GPT-4 for best results
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: messages,
       temperature: 0.7,
       max_tokens: 2048,
     });
 
     // Extract the response
-    const aiResponse = completion.data.choices[0].message.content;
+    const aiResponse = completion.choices[0].message.content;
     console.log('Received response from OpenAI API');
 
     // Return the AI response
@@ -251,15 +262,15 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
     
     // Send to OpenAI for analysis
     console.log('Sending document analysis request to OpenAI API...');
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4-turbo",
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: messages,
       temperature: 0.7,
       max_tokens: 2048,
     });
     
     // Extract the response
-    const aiResponse = completion.data.choices[0].message.content;
+    const aiResponse = completion.choices[0].message.content;
     console.log('Received document analysis from OpenAI API');
     
     // Return the AI response
