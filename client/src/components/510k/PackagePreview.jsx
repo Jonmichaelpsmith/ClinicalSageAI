@@ -27,7 +27,12 @@ const PackagePreview = ({ projectId = "demo-project-id" }) => {
     );
   }
   
-  return <ESTARPackageBuilder projectId={projectId} />;
+  return (
+    <div className="space-y-6">
+      <ESTARPackageBuilder projectId={projectId} />
+      <ESTARPackageBuilder.FAQ />
+    </div>
+  );
 };
 
 export default PackagePreview;
