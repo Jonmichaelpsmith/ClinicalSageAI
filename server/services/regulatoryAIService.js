@@ -17,6 +17,14 @@ const DATA_DIR = path.join(__dirname, '../../data');
 const KNOWLEDGE_DIR = path.join(DATA_DIR, 'knowledge_base');
 const METADATA_PATH = path.join(KNOWLEDGE_DIR, 'metadata.json');
 
+// Create directories if they don't exist
+if (!fs.existsSync(DATA_DIR)) {
+  fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+if (!fs.existsSync(KNOWLEDGE_DIR)) {
+  fs.mkdirSync(KNOWLEDGE_DIR, { recursive: true });
+}
+
 // Hardcoded knowledge for key regulatory concepts
 // This will be used as a fallback when the knowledge base is not yet populated
 const DEFAULT_REGULATORY_KNOWLEDGE = {
