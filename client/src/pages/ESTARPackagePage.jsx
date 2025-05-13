@@ -22,7 +22,13 @@ const ESTARPackagePage = () => {
 
   // Navigation handler
   const handleBack = () => {
-    setLocation('/510k');
+    // Check if we're in the client portal context
+    const isClientPortal = window.location.pathname.includes('/client-portal');
+    if (isClientPortal) {
+      setLocation('/client-portal/510k');
+    } else {
+      setLocation('/510k');
+    }
   };
   
   // Navigate to 510k dashboard
