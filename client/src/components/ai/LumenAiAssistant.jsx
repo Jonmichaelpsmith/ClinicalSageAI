@@ -1,7 +1,7 @@
 // /client/src/components/ai/LumenAiAssistant.jsx
 
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Sparkles, Loader2 } from 'lucide-react';
+import { X, Send, Sparkles, Loader2, Paperclip, FileText, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -14,6 +14,8 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function LumenAiAssistant({ isOpen, onClose, module, context }) {
   const [input, setInput] = useState('');
@@ -24,6 +26,10 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [files, setFiles] = useState([]);
+  const [uploadProgress, setUploadProgress] = useState({});
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef(null);
   const messagesEndRef = useRef(null);
   const { toast } = useToast();
 
@@ -46,11 +52,164 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
     }
   }, [isOpen, module]);
 
+  // Handle file selection
+  const handleFileSelect = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    
+    if (selectedFiles.length > 0) {
+      // Initialize progress for each file
+      const newProgress = {};
+      selectedFiles.forEach(file => {
+        newProgress[file.name] = 0;
+      });
+      
+      setUploadProgress(newProgress);
+      setFiles((prev) => [...prev, ...selectedFiles]);
+      
+      // Add a message about the files
+      if (selectedFiles.length === 1) {
+        setMessages((prev) => [
+          ...prev, 
+          { 
+            role: 'user', 
+            content: `I've attached a file for analysis: ${selectedFiles[0].name}`,
+            files: selectedFiles.map(file => ({
+              name: file.name,
+              size: file.size,
+              type: file.type
+            }))
+          }
+        ]);
+      } else {
+        setMessages((prev) => [
+          ...prev, 
+          { 
+            role: 'user', 
+            content: `I've attached ${selectedFiles.length} files for analysis`,
+            files: selectedFiles.map(file => ({
+              name: file.name,
+              size: file.size,
+              type: file.type
+            }))
+          }
+        ]);
+      }
+    }
+    
+    // Reset the file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+  
+  // Handle file upload
+  const uploadFiles = async () => {
+    if (files.length === 0) return;
+    
+    setIsUploading(true);
+    
+    // Create a FormData object to send files
+    const formData = new FormData();
+    
+    // Add each file to formData
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    
+    // Add module and context info
+    formData.append('module', module || '');
+    formData.append('context', JSON.stringify(context || {}));
+    
+    try {
+      // Upload the files with progress tracking
+      const xhr = new XMLHttpRequest();
+      
+      xhr.upload.addEventListener('progress', (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          
+          // Update progress for all files (simplification)
+          const newProgress = {};
+          files.forEach(file => {
+            newProgress[file.name] = percentComplete;
+          });
+          
+          setUploadProgress(newProgress);
+        }
+      });
+      
+      xhr.onload = async () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const data = JSON.parse(xhr.responseText);
+          
+          // Add AI response to chat
+          setMessages((prev) => [...prev, { 
+            role: 'assistant', 
+            content: data.response || 'Files received. I\'ll analyze these documents.'
+          }]);
+          
+          // Clear the files after successful upload
+          setFiles([]);
+          setUploadProgress({});
+          
+          toast({
+            title: 'Files Uploaded',
+            description: 'Files have been successfully uploaded and are being analyzed.',
+          });
+        } else {
+          throw new Error('Upload failed with status: ' + xhr.status);
+        }
+        setIsUploading(false);
+      };
+      
+      xhr.onerror = () => {
+        throw new Error('Network error occurred during upload');
+      };
+      
+      xhr.open('POST', '/api/regulatory-ai/upload', true);
+      xhr.send(formData);
+      
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      toast({
+        title: 'Upload Error',
+        description: 'Failed to upload files. Please try again.',
+        variant: 'destructive',
+      });
+      
+      // Add error message to chat
+      setMessages((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'Sorry, I encountered an issue processing your files. Please try again.',
+        },
+      ]);
+      setIsUploading(false);
+    }
+  };
+  
+  // Handle file removal
+  const removeFile = (fileName) => {
+    setFiles(prev => prev.filter(file => file.name !== fileName));
+    setUploadProgress(prev => {
+      const newProgress = { ...prev };
+      delete newProgress[fileName];
+      return newProgress;
+    });
+  };
+
   // Handle sending a message
   const handleSendMessage = async () => {
-    if (!input.trim()) return;
+    if (!input.trim() && files.length === 0) return;
+    
+    // If there are files to upload, handle that first
+    if (files.length > 0) {
+      await uploadFiles();
+      return;
+    }
 
-    // Add user message to chat
+    // Otherwise, send a regular text message
     const userMessage = { role: 'user', content: input };
     setMessages((prev) => [...prev, userMessage]);
     setInput('');
@@ -165,27 +324,99 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
           </div>
         </ScrollArea>
 
+        {/* Display attached files with progress */}
+        {files.length > 0 && (
+          <div className="px-4 py-2 border-t border-gray-100 bg-white">
+            <div className="text-sm font-medium mb-2 text-gray-700">Files to analyze:</div>
+            <div className="space-y-2">
+              {files.map((file, index) => (
+                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                  <div className="flex items-center">
+                    <FileText className="h-4 w-4 mr-2 text-indigo-600" />
+                    <div>
+                      <div className="text-sm font-medium">{file.name}</div>
+                      <div className="text-xs text-gray-500">
+                        {(file.size / 1024).toFixed(1)} KB
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center">
+                    {uploadProgress[file.name] > 0 && uploadProgress[file.name] < 100 ? (
+                      <div className="w-20 mr-2">
+                        <Progress value={uploadProgress[file.name]} className="h-2" />
+                      </div>
+                    ) : uploadProgress[file.name] === 100 ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
+                    ) : null}
+                    <Button 
+                      variant="ghost" 
+                      size="sm"
+                      className="h-6 w-6 p-0 rounded-full"
+                      onClick={() => removeFile(file.name)}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <SheetFooter className="p-4 border-t border-gray-100 bg-white">
-          <div className="flex gap-2 w-full">
-            <Textarea
-              placeholder="Type your question here..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              className="resize-none bg-white text-gray-900"
-              rows={2}
+          <div className="flex flex-col gap-2 w-full">
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
+              accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx,.csv,.md,.json,.xml"
             />
-            <Button
-              onClick={handleSendMessage}
-              disabled={isLoading || !input.trim()}
-              className="h-full"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
+            
+            <div className="flex gap-2 w-full">
+              <Textarea
+                placeholder="Type your question here..."
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="resize-none bg-white text-gray-900"
+                rows={2}
+              />
+              <div className="flex flex-col gap-1">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isLoading || isUploading}
+                        className="h-8 w-8 bg-white"
+                      >
+                        <Paperclip className="h-4 w-4 text-gray-600" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      Attach files for AI analysis
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={isLoading || isUploading || (!input.trim() && files.length === 0)}
+                  className="h-full"
+                >
+                  {isLoading || isUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
           </div>
         </SheetFooter>
       </SheetContent>
