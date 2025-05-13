@@ -463,7 +463,7 @@ export default function KAutomationPanel() {
             <Card className="shadow-sm border-indigo-100 hover:shadow-md transition-shadow">
               <CardHeader className="bg-gradient-to-r from-indigo-50 to-white pb-2">
                 <CardTitle className="flex items-center text-indigo-700">
-                  <BrainCircuit className="mr-2 h-5 w-5 text-indigo-600" />
+                  <Brain className="mr-2 h-5 w-5 text-indigo-600" />
                   Smart Predicate Finder
                 </CardTitle>
                 <CardDescription>

@@ -1,5 +1,7 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
@@ -9,6 +11,35 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { DialogFooter } from '@/components/ui/dialog';
 import deviceProfileSchema from './schemas/deviceProfile.json';
 import { useTenant } from '@/contexts/TenantContext';
+
+// Create Zod schema from our JSON schema for validation
+const deviceProfileZodSchema = z.object({
+  deviceName: z.string().min(2, {
+    message: "Device name must be at least 2 characters."
+  }).max(200, {
+    message: "Device name must not exceed 200 characters."
+  }),
+  modelNumber: z.string().max(100, {
+    message: "Model number must not exceed 100 characters."
+  }).optional(),
+  manufacturer: z.string().max(200, {
+    message: "Manufacturer must not exceed 200 characters."
+  }).optional(),
+  deviceClass: z.enum(["I", "II", "III"], {
+    message: "Please select a valid device class."
+  }),
+  intendedUse: z.string().min(10, {
+    message: "Intended use must be at least 10 characters."
+  }).max(2000, {
+    message: "Intended use must not exceed 2000 characters."
+  }),
+  technologyType: z.string().max(200, {
+    message: "Technology type must not exceed 200 characters."
+  }).optional(),
+  predicateDevice: z.string().max(200, {
+    message: "Predicate device must not exceed 200 characters."
+  }).optional()
+});
 
 const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
   const { currentOrganization, currentClientWorkspace } = useTenant();
