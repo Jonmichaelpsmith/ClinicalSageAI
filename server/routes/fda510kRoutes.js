@@ -10,6 +10,7 @@ import express from 'express';
 const router = express.Router();
 import { OpenAI } from 'openai';
 import { Pool } from 'pg';
+import { fetchPubMed, fetchFAERS, fetchScholar } from '../config/literatureSources';
 
 // Initialize OpenAI with environment API key
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({
@@ -391,6 +392,136 @@ router.post('/analyze-pathway', validateDeviceData, async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Failed to analyze regulatory pathway'
+    });
+  }
+});
+
+/**
+ * Literature Review API Endpoint
+ * Retrieves relevant scientific literature based on search query and date range
+ */
+router.post('/literature-review', async (req, res) => {
+  try {
+    const { query, fromDate, toDate } = req.body;
+    
+    // Basic validation
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        message: 'Search query is required'
+      });
+    }
+    
+    console.log(`Performing literature review for query: "${query}" from ${fromDate || 'any time'} to ${toDate || 'present'}`);
+    
+    // Check if OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key not available. Cannot perform literature review.');
+      return res.status(500).json({
+        success: false,
+        message: 'OpenAI API key is required for literature review. Please provide a valid API key.'
+      });
+    }
+    
+    try {
+      // Fetch literature from multiple sources (PubMed, Google Scholar, etc.)
+      // This would call actual APIs in production
+      const dateParams = {
+        fromDate: fromDate || '2015-01-01',
+        toDate: toDate || new Date().toISOString().split('T')[0]
+      };
+      
+      // Fetch results from multiple sources
+      const literatureResults = await Promise.allSettled([
+        // These would be actual API calls in production
+        fetchPubMed(query, dateParams),
+        fetchScholar(query, dateParams),
+        fetchFAERS(query, dateParams)
+      ]);
+      
+      // Extract successful results
+      const allResults = literatureResults
+        .filter(result => result.status === 'fulfilled')
+        .flatMap(result => result.value)
+        .slice(0, 15); // Limit to top 15 results across all sources
+      
+      // Use OpenAI to enhance and summarize each result
+      const enhancedResults = await Promise.all(
+        allResults.map(async (item) => {
+          try {
+            // Create a prompt for the AI to generate a summary and extract key points
+            const prompt = `
+              Please review this scientific literature and extract key information relevant to FDA 510(k) medical device submissions:
+              
+              Title: ${item.title}
+              Date: ${item.date}
+              Authors: ${item.authors}
+              Abstract: ${item.abstract}
+              
+              Create a concise summary that highlights:
+              1. The key findings or conclusions
+              2. Relevance to medical device regulatory submissions
+              3. Any safety or efficacy data that could support substantial equivalence claims
+              4. Any novel methods or technologies described
+              
+              Format your response in 3-5 sentences that would be most useful for a regulatory affairs professional preparing a 510(k) submission.
+            `;
+            
+            // Call OpenAI to generate the summary
+            const completion = await openai.chat.completions.create({
+              messages: [
+                { role: "system", content: "You are a regulatory affairs specialist with expertise in medical device literature reviews for FDA submissions." },
+                { role: "user", content: prompt }
+              ],
+              model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+              temperature: 0.2,
+              max_tokens: 250
+            });
+            
+            const summary = completion.choices[0].message.content.trim();
+            
+            // Return enhanced item with AI-generated summary
+            return {
+              ...item,
+              summary,
+              id: `lit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+            };
+          } catch (error) {
+            console.error(`Error enhancing literature item: ${error.message}`);
+            // Return the original item without enhancement if AI processing fails
+            return {
+              ...item,
+              summary: "Summary generation failed. Please try again later.",
+              id: `lit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+            };
+          }
+        })
+      );
+      
+      // Return the enhanced results
+      return res.status(200).json({
+        success: true,
+        results: enhancedResults,
+        query,
+        dateRange: {
+          fromDate: dateParams.fromDate,
+          toDate: dateParams.toDate
+        }
+      });
+      
+    } catch (processingError) {
+      console.error('Error processing literature review:', processingError);
+      return res.status(500).json({
+        success: false,
+        message: `Failed to process literature review: ${processingError.message}`
+      });
+    }
+    
+  } catch (error) {
+    console.error('Error in literature review endpoint:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to perform literature review'
     });
   }
 });
