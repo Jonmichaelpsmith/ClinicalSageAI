@@ -289,6 +289,11 @@ export default function registerRoutes(app: Express): void {
   // Register Regulatory AI Assistant routes
   app.use('/api/regulatory-ai', regulatoryAiRouter);
   
+  // Register Regulatory Knowledge routes
+  // @ts-ignore - Module might not have TypeScript definitions
+  const regulatoryKnowledgeRouter = require('./routes/regulatory-knowledge');
+  app.use('/api/regulatory-knowledge', regulatoryKnowledgeRouter);
+  
   // Register Device Profile API routes directly
   const DeviceProfileService = require('./services/DeviceProfileService').default;
   const deviceProfileService = DeviceProfileService.getInstance();
