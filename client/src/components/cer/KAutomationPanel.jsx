@@ -907,6 +907,128 @@ export default function KAutomationPanel() {
             </Card>
           ) : (
             <div className="space-y-6">
+              {/* Validation & Compliance Insights */}
+              {aiInsights.some(i => i.type === 'validation') && (
+                <Card className="shadow-sm border-amber-100">
+                  <CardHeader className="bg-gradient-to-r from-amber-50 to-white">
+                    <CardTitle className="flex items-center text-amber-700">
+                      <FileCheck className="mr-2 h-5 w-5 text-amber-600" />
+                      Compliance Analysis
+                    </CardTitle>
+                    <CardDescription>
+                      Compliance check results for your 510(k) submission
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <div className="space-y-4">
+                      {aiInsights
+                        .filter(i => i.type === 'validation')
+                        .map((insight, index) => (
+                          <div key={insight.id} className="space-y-4">
+                            <div className="bg-amber-50 rounded-md p-4 border border-amber-100">
+                              <div className="flex items-center justify-between mb-2">
+                                <h3 className="font-medium text-amber-800">Compliance Score</h3>
+                                <Badge 
+                                  variant="outline" 
+                                  className={
+                                    insight.score > 0.9 
+                                      ? "bg-green-100 text-green-700 border-green-200"
+                                      : insight.score > 0.7
+                                        ? "bg-amber-100 text-amber-700 border-amber-200"
+                                        : "bg-red-100 text-red-700 border-red-200"
+                                  }
+                                >
+                                  {Math.round(insight.score * 100)}%
+                                </Badge>
+                              </div>
+                              <div className="flex flex-col gap-2">
+                                <div className="flex justify-between text-sm text-amber-700">
+                                  <span>Total checks completed:</span>
+                                  <span className="font-medium">{insight.passedChecks} / {insight.totalChecks}</span>
+                                </div>
+                                
+                                <div className="flex justify-between text-sm text-amber-700">
+                                  <span>Critical issues:</span>
+                                  <span className={insight.criticalIssues > 0 ? "font-medium text-red-600" : "font-medium text-green-600"}>
+                                    {insight.criticalIssues}
+                                  </span>
+                                </div>
+                                
+                                <div className="flex justify-between text-sm text-amber-700">
+                                  <span>Warnings:</span>
+                                  <span className={insight.warnings > 0 ? "font-medium text-amber-600" : "font-medium text-green-600"}>
+                                    {insight.warnings}
+                                  </span>
+                                </div>
+                                
+                                {insight.errors > 0 && (
+                                  <div className="flex justify-between text-sm text-amber-700">
+                                    <span>Errors:</span>
+                                    <span className="font-medium text-red-600">
+                                      {insight.errors}
+                                    </span>
+                                  </div>
+                                )}
+                                
+                                <div className="mt-2">
+                                  <Progress 
+                                    value={(insight.passedChecks / insight.totalChecks) * 100} 
+                                    className="h-2"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {insight.detailedChecks && insight.detailedChecks.length > 0 && (
+                              <div className="bg-white rounded-md border shadow-sm">
+                                <div className="p-3 border-b bg-gray-50">
+                                  <h4 className="font-medium">Detailed Check Results</h4>
+                                </div>
+                                <ScrollArea className="h-[300px]">
+                                  <div className="p-4 space-y-3">
+                                    {insight.detailedChecks
+                                      .filter(check => !check.passed)
+                                      .map((check, checkIndex) => (
+                                        <div 
+                                          key={checkIndex} 
+                                          className={`p-3 rounded-md ${
+                                            check.severity === 'error' 
+                                              ? 'bg-red-50 border border-red-100' 
+                                              : 'bg-amber-50 border border-amber-100'
+                                          }`}
+                                        >
+                                          <div className="flex items-start gap-3">
+                                            {check.severity === 'error' ? (
+                                              <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
+                                            ) : (
+                                              <Info className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                                            )}
+                                            <div>
+                                              <div className="font-medium">
+                                                {check.category}: {check.description}
+                                              </div>
+                                              {check.recommendation && (
+                                                <div className="text-sm mt-1">
+                                                  {check.recommendation}
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))
+                                    }
+                                  </div>
+                                </ScrollArea>
+                              </div>
+                            )}
+                          </div>
+                        ))
+                      }
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+              
               {/* Device Profile Insights */}
               {aiInsights.some(i => i.type === 'device') && (
                 <Card className="shadow-sm border-blue-100">
