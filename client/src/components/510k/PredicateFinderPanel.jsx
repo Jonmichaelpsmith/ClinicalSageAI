@@ -47,9 +47,9 @@ import FDA510kService from '../../services/FDA510kService';
 
 const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [results, setResults] = useState(null);
-  const [activeTab, setActiveTab] = useState("predicates");
   const [isSearching, setIsSearching] = useState(false);
+  const [results, setResults] = useState(null);
+  const [activeTab, setActiveTab] = useState('predicates');
   const [showCustomization, setShowCustomization] = useState(false);
   const [relevanceCriteria, setRelevanceCriteria] = useState({
     intendedUseWeight: 40,
