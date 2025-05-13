@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Beaker, BarChart3, Database, FileText, SearchCode } from 'lucide-react';
+import { Beaker, BarChart3, Database, FileText, SearchCode, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'wouter';
+import { useNavigate, useLocation } from 'wouter';
 import FDA510kService from '../../services/FDA510kService';
+import DeviceProfileList from '../cer/DeviceProfileList';
+import DeviceProfileDialog from '../cer/DeviceProfileDialog';
 
 /**
  * 510(k) Workflow Panel
@@ -14,7 +16,15 @@ import FDA510kService from '../../services/FDA510kService';
  * including AI tools, workflow steps, and insights.
  */
 const WorkflowPanel = ({ projectId, organizationId }) => {
-  const [activeTab, setActiveTab] = useState('workflow');
+  // Get the current location and URL parameters
+  const [location] = useLocation();
+  const params = new URLSearchParams(location.split('?')[1] || '');
+  
+  // If there's a tab parameter, use it as the initial tab
+  const initialTab = params.get('tab') || 'workflow';
+  
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [selectedDeviceProfile, setSelectedDeviceProfile] = useState(null);
   const [isLoading, setIsLoading] = useState({
     predicateFinder: false,
     contentAssistant: false,
@@ -104,6 +114,16 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
     }
   };
 
+  // Handler for device profile selection
+  const handleDeviceProfileSelect = (profile) => {
+    setSelectedDeviceProfile(profile);
+    // Here you can add logic to use the selected profile for the 510(k) process
+    toast({
+      title: 'Device Profile Selected',
+      description: `${profile.deviceName} has been selected for your 510(k) submission.`,
+    });
+  };
+
   return (
     <div className="mb-8">
       <Tabs defaultValue="workflow" value={activeTab} onValueChange={setActiveTab}>
@@ -111,6 +131,10 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
           <TabsTrigger value="workflow">
             <FileText className="h-4 w-4 mr-2" />
             Workflow
+          </TabsTrigger>
+          <TabsTrigger value="deviceProfile">
+            <Database className="h-4 w-4 mr-2" />
+            Device Profiles
           </TabsTrigger>
           <TabsTrigger value="ai-tools">
             <Beaker className="h-4 w-4 mr-2" />
@@ -139,10 +163,10 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
                   Provide basic device information or upload existing documentation to jump-start your 510(k) submission.
                 </p>
                 <Button
-                  onClick={() => navigate('/client-portal/510k?tab=deviceProfile')}
+                  onClick={() => setActiveTab('deviceProfile')}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
-                  Upload Device Profile
+                  Manage Device Profiles
                 </Button>
               </CardContent>
             </Card>
@@ -164,7 +188,7 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
                 <Button
                   onClick={handlePredicateFinder}
                   className="bg-green-600 hover:bg-green-700"
-                  disabled={isLoading.predicateFinder}
+                  disabled={isLoading.predicateFinder || !selectedDeviceProfile}
                 >
                   {isLoading.predicateFinder ? (
                     <>
@@ -175,8 +199,59 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
                     "Run Predicate Finder"
                   )}
                 </Button>
+                {!selectedDeviceProfile && (
+                  <p className="text-xs text-amber-600 mt-2">
+                    Please select a device profile first
+                  </p>
+                )}
               </CardContent>
             </Card>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="deviceProfile">
+          <div className="space-y-6">
+            <DeviceProfileList 
+              onSelectProfile={handleDeviceProfileSelect} 
+            />
+            
+            {selectedDeviceProfile && (
+              <Card className="bg-gradient-to-r from-blue-50 to-white">
+                <CardHeader>
+                  <CardTitle>Selected Device: {selectedDeviceProfile.deviceName}</CardTitle>
+                  <CardDescription>
+                    This device profile will be used for your 510(k) submission workflow
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <h4 className="font-semibold text-sm">Device Class</h4>
+                      <p className="text-sm">{selectedDeviceProfile.deviceClass}</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-sm">Manufacturer</h4>
+                      <p className="text-sm">{selectedDeviceProfile.manufacturer || 'Not specified'}</p>
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <h4 className="font-semibold text-sm">Intended Use</h4>
+                    <p className="text-sm">{selectedDeviceProfile.intendedUse}</p>
+                  </div>
+                  <div className="mt-4">
+                    <Button onClick={() => setActiveTab('workflow')} className="mr-2">
+                      Continue to Workflow
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setSelectedDeviceProfile(null)}
+                    >
+                      Deselect
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </TabsContent>
         
@@ -199,10 +274,15 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
                 <Button
                   onClick={handlePredicateFinder}
                   className="w-full bg-indigo-600 hover:bg-indigo-700"
-                  disabled={isLoading.predicateFinder}
+                  disabled={isLoading.predicateFinder || !selectedDeviceProfile}
                 >
                   {isLoading.predicateFinder ? "Processing..." : "Run AI Analysis"}
                 </Button>
+                {!selectedDeviceProfile && (
+                  <p className="text-xs text-amber-600 mt-2">
+                    Please select a device profile first
+                  </p>
+                )}
               </CardContent>
             </Card>
             
@@ -223,10 +303,15 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
                 <Button
                   onClick={handleContentAssistant}
                   className="w-full bg-teal-600 hover:bg-teal-700"
-                  disabled={isLoading.contentAssistant}
+                  disabled={isLoading.contentAssistant || !selectedDeviceProfile}
                 >
                   {isLoading.contentAssistant ? "Processing..." : "Launch Content Assistant"}
                 </Button>
+                {!selectedDeviceProfile && (
+                  <p className="text-xs text-amber-600 mt-2">
+                    Please select a device profile first
+                  </p>
+                )}
               </CardContent>
             </Card>
             
@@ -247,10 +332,15 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
                 <Button
                   onClick={handleComplianceCheck}
                   className="w-full bg-red-600 hover:bg-red-700"
-                  disabled={isLoading.complianceChecker}
+                  disabled={isLoading.complianceChecker || !selectedDeviceProfile}
                 >
                   {isLoading.complianceChecker ? "Processing..." : "Check Compliance"}
                 </Button>
+                {!selectedDeviceProfile && (
+                  <p className="text-xs text-amber-600 mt-2">
+                    Please select a device profile first
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>

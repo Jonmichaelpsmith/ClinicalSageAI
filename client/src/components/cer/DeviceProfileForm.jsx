@@ -44,8 +44,9 @@ const deviceProfileZodSchema = z.object({
 const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
   const { currentOrganization, currentClientWorkspace } = useTenant();
   
-  // Configure form with react-hook-form
+  // Configure form with react-hook-form and Zod validation
   const form = useForm({
+    resolver: zodResolver(deviceProfileZodSchema),
     defaultValues: initialData || {
       deviceName: '',
       modelNumber: '',
