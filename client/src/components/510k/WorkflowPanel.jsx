@@ -162,6 +162,65 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
         </TabsList>
         
         <TabsContent value="workflow">
+          {/* Workflow Progress Indicator */}
+          <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+            <div className="flex justify-between mb-4 items-center">
+              <h3 className="text-md font-medium">510(k) Workflow Progress</h3>
+              
+              <div className="flex items-center">
+                <span className="text-sm text-gray-500 mr-2">Your progress:</span>
+                <div className="bg-gray-200 rounded-full h-2 w-32">
+                  <div 
+                    className="bg-blue-600 h-2 rounded-full" 
+                    style={{ width: `${selectedDeviceProfile ? 20 : 0}%` }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-5 gap-1">
+              <div className={`p-2 rounded-lg text-center ${selectedDeviceProfile ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}>
+                <div className={`rounded-full h-6 w-6 flex items-center justify-center mx-auto mb-1 ${selectedDeviceProfile ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'}`}>
+                  1
+                </div>
+                <div className="text-xs">Device Profile</div>
+                {selectedDeviceProfile && (
+                  <div className="text-xs mt-1 truncate max-w-full">
+                    {selectedDeviceProfile.deviceName}
+                  </div>
+                )}
+              </div>
+              
+              <div className="p-2 rounded-lg text-center bg-gray-100 text-gray-600">
+                <div className="rounded-full h-6 w-6 flex items-center justify-center mx-auto mb-1 bg-gray-300 text-gray-600">
+                  2
+                </div>
+                <div className="text-xs">Predicate Search</div>
+              </div>
+              
+              <div className="p-2 rounded-lg text-center bg-gray-100 text-gray-600">
+                <div className="rounded-full h-6 w-6 flex items-center justify-center mx-auto mb-1 bg-gray-300 text-gray-600">
+                  3
+                </div>
+                <div className="text-xs">Pathway Analysis</div>
+              </div>
+              
+              <div className="p-2 rounded-lg text-center bg-gray-100 text-gray-600">
+                <div className="rounded-full h-6 w-6 flex items-center justify-center mx-auto mb-1 bg-gray-300 text-gray-600">
+                  4
+                </div>
+                <div className="text-xs">Draft Generation</div>
+              </div>
+              
+              <div className="p-2 rounded-lg text-center bg-gray-100 text-gray-600">
+                <div className="rounded-full h-6 w-6 flex items-center justify-center mx-auto mb-1 bg-gray-300 text-gray-600">
+                  5
+                </div>
+                <div className="text-xs">Compliance Check</div>
+              </div>
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="bg-gradient-to-r from-blue-50 to-white pb-2">

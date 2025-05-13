@@ -88,13 +88,15 @@ class FDA510kService {
   }
 
   /**
-   * Check compliance for a 510(k) submission
+   * Check compliance for a 510(k) submission using a project ID
    * 
    * @param {string} projectId - The ID of the 510(k) project
    * @returns {Promise<Object>} - Compliance report
    */
   async checkCompliance(projectId) {
     try {
+      // Get the project details first to get the device data
+      console.log('Checking compliance for project:', projectId);
       const response = await axios.get(`/api/fda510k/compliance-check/${projectId}`);
       return response.data;
     } catch (error) {
