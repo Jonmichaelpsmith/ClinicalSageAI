@@ -39,6 +39,8 @@ export default function KAutomationPanel() {
   const [currentDeviceProfile, setCurrentDeviceProfile] = useState(null);
   const [predicateSearchResults, setPredicateSearchResults] = useState([]);
   const [isSearchingPredicates, setIsSearchingPredicates] = useState(false);
+  const [recommendedPredicates, setRecommendedPredicates] = useState([]);
+  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const { currentOrganization } = useTenant();
   const { toast } = useToast();
   
