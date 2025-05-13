@@ -3,6 +3,9 @@
  * 
  * These routes provide the API for managing the regulatory knowledge base,
  * including document processing and initialization.
+ * 
+ * NOTE: This version uses the file system for storage rather than SQLite
+ * to avoid dependency issues.
  */
 
 const express = require('express');
@@ -10,10 +13,11 @@ const router = express.Router();
 const documentProcessor = require('../services/documentProcessor');
 const path = require('path');
 const fs = require('fs');
-const sqlite3 = require('sqlite3').verbose();
 
 // Path to the knowledge base
-const DB_PATH = path.join(__dirname, '../../data/knowledge_base.db');
+const DATA_DIR = path.join(__dirname, '../../data');
+const KNOWLEDGE_DIR = path.join(DATA_DIR, 'knowledge_base');
+const METADATA_PATH = path.join(KNOWLEDGE_DIR, 'metadata.json');
 
 /**
  * @route POST /api/regulatory-knowledge/initialize
@@ -90,61 +94,10 @@ router.post('/process-documents', async (req, res) => {
  */
 router.get('/status', async (req, res) => {
   try {
-    // Check if the database exists
-    const databaseExists = fs.existsSync(DB_PATH);
+    // Get knowledge base stats using the document processor
+    const stats = await documentProcessor.getKnowledgeBaseStats();
     
-    if (!databaseExists) {
-      return res.json({
-        initialized: false,
-        documentCount: 0,
-        lastUpdated: null
-      });
-    }
-    
-    // Query the database for statistics
-    const db = new sqlite3.Database(DB_PATH, sqlite3.OPEN_READONLY);
-    
-    const stats = await new Promise((resolve, reject) => {
-      db.get('SELECT COUNT(*) as count, MAX(last_updated) as lastUpdated FROM knowledge_base', (err, row) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(row);
-        }
-      });
-    });
-    
-    // Get jurisdiction breakdown
-    const jurisdictions = await new Promise((resolve, reject) => {
-      db.all('SELECT jurisdiction, COUNT(*) as count FROM knowledge_base GROUP BY jurisdiction', (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows);
-        }
-      });
-    });
-    
-    // Get document type breakdown
-    const docTypes = await new Promise((resolve, reject) => {
-      db.all('SELECT doc_type, COUNT(*) as count FROM knowledge_base GROUP BY doc_type', (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows);
-        }
-      });
-    });
-    
-    db.close();
-    
-    res.json({
-      initialized: true,
-      documentCount: stats.count,
-      lastUpdated: stats.lastUpdated,
-      jurisdictions,
-      documentTypes: docTypes
-    });
+    res.json(stats);
   } catch (error) {
     console.error('Error getting knowledge base status:', error);
     res.status(500).json({
