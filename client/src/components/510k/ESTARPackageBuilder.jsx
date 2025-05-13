@@ -482,4 +482,58 @@ ESTARPackageBuilder.FAQ = () => (
   </Card>
 );
 
+/**
+ * FAQ Component for eSTAR Package Builder
+ * Displays common questions and answers about the eSTAR process
+ */
+const FAQ = () => {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Frequently Asked Questions</CardTitle>
+        <CardDescription>
+          Common questions about the eSTAR submission process
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="item-1">
+            <AccordionTrigger>What is an eSTAR package?</AccordionTrigger>
+            <AccordionContent>
+              The eSTAR (electronic Submission Template And Resource) is the FDA's standardized format for 510(k) submissions. It provides a guided, automated approach to organizing your submission in a format that streamlines the FDA review process.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-2">
+            <AccordionTrigger>What documents are required for an eSTAR submission?</AccordionTrigger>
+            <AccordionContent>
+              Required documents typically include your device description, intended use, substantial equivalence statement, performance testing data, biocompatibility reports (if applicable), and any other documentation specific to your device classification. The system automatically identifies which documents are required based on your device profile.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-3">
+            <AccordionTrigger>How long does the FDA review take for eSTAR submissions?</AccordionTrigger>
+            <AccordionContent>
+              While the FDA's standard review timeline is 90 days for 510(k) submissions, eSTAR submissions often experience more efficient reviews due to their standardized format. However, the exact timeline depends on the complexity of your device and the completeness of your submission.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-4">
+            <AccordionTrigger>What happens if my eSTAR validation shows errors?</AccordionTrigger>
+            <AccordionContent>
+              If validation errors are found, you'll need to address them before proceeding. Critical errors must be fixed as they may lead to rejection by the FDA. Warnings should be carefully considered, while suggestions are recommendations to improve your submission's quality but aren't required for acceptance.
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="item-5">
+            <AccordionTrigger>Can I update my eSTAR package after submission?</AccordionTrigger>
+            <AccordionContent>
+              Once submitted to the FDA, you cannot directly update your eSTAR package. However, if the FDA requests additional information during their review, you can provide supplementary documents through their official channels. It's best to ensure your package is complete and accurate before submission.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Attach the FAQ component to the main component
+ESTARPackageBuilder.FAQ = FAQ;
+
 export default ESTARPackageBuilder;
