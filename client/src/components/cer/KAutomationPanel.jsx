@@ -60,34 +60,33 @@ export default function KAutomationPanel() {
     }
   });
 
-  // Mock device data for demo purposes
-  const deviceData = {
-    id: 'device-001',
-    deviceName: 'CardioTrack ECG Monitor',
-    deviceType: 'Electrocardiograph',
-    productCode: 'DPS',
-    deviceClass: 'II',
-    medicalSpecialty: 'Cardiovascular',
-    intendedUse: 'Continuous monitoring of ECG for adult patients in clinical settings',
-    keywords: ['ECG', 'cardiac', 'monitor', 'continuous monitoring']
-  };
+  // Default device class for requirements when no device is selected
+  const defaultDeviceClass = 'II';
 
-  // Load submission requirements on component mount
+  // Load submission requirements based on device class
   useEffect(() => {
     const loadRequirements = async () => {
       try {
-        const response = await FDA510kService.getRequirements(
-          deviceData.deviceClass
-        );
+        // Use the current device profile's class if available, otherwise use default
+        const deviceClass = currentDeviceProfile?.deviceClass || defaultDeviceClass;
+        
+        console.log(`Loading requirements for device class: ${deviceClass}`);
+        
+        const response = await FDA510kService.getRequirements(deviceClass);
         const requirementData = response.requirements;
         setRequirements(requirementData);
       } catch (error) {
         console.error('Error loading 510(k) requirements:', error);
+        toast({
+          title: "Failed to Load Requirements",
+          description: "Could not retrieve FDA requirements. Please try again.",
+          variant: "destructive",
+        });
       }
     };
 
     loadRequirements();
-  }, [currentOrganization]);
+  }, [currentDeviceProfile, currentOrganization, defaultDeviceClass]);
 
   // Handle device profile form submission
   const handleSubmitDeviceProfile = async (data) => {
