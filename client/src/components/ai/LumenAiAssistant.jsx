@@ -346,14 +346,63 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
               <Sparkles className="h-5 w-5 text-indigo-600" />
               <SheetTitle className="text-xl text-gray-900">Lumen Regulatory Affairs AI</SheetTitle>
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-8 w-8 rounded-full" 
-              onClick={onClose}
-            >
-              <X className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3 text-xs"
+                      onClick={() => {
+                        setMessages(prev => [
+                          ...prev,
+                          {
+                            role: 'user',
+                            content: 'Tell me about your capabilities.'
+                          },
+                          {
+                            role: 'assistant',
+                            content: `# LUMEN Regulatory Affairs Assistant
+
+I'm your specialized regulatory affairs assistant with expertise across global regulatory frameworks, including:
+
+## Capabilities:
+1. **Document-Based Knowledge**: I provide responses based on regulatory documents uploaded to my knowledge base
+2. **Regulatory Domain Coverage**: FDA, EMA, PMDA, NMPA, Health Canada, TGA, ICH guidelines
+3. **Contextual Understanding**: I analyze regulatory terms in your questions to find the most relevant information
+4. **Document Processing**: I can analyze regulatory PDFs you upload to enhance my knowledge base
+5. **Transparent Citations**: All my responses are based on actual regulatory documents, not pre-written answers
+
+## Using Me Effectively:
+1. **Upload Documents**: Use the paper clip icon to upload regulatory PDFs that will enhance my knowledge
+2. **Ask Specific Questions**: Be specific about the regulation, jurisdiction, or requirement you're asking about
+3. **Provide Context**: Mention the specific jurisdiction (FDA, EMA, etc.) when relevant to get more targeted answers
+4. **Verify Information**: I aim to provide accurate information based on documents, but always verify critical regulatory details
+5. **Missing Information**: If I don't have specific information, I'll let you know instead of providing potentially incorrect answers
+
+For best results, upload documents related to your specific regulatory needs such as guidance documents, regulations, and standards.`
+                          }
+                        ]);
+                      }}
+                    >
+                      ABOUT ME
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Learn about my capabilities and how to use me</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-8 w-8 rounded-full" 
+                onClick={onClose}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
           <SheetDescription className="text-gray-600">
             Ask me about regulatory guidance, compliance requirements, or document preparation.
