@@ -49,6 +49,14 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState(null);
   const [activeTab, setActiveTab] = useState("predicates");
+  const [isSearching, setIsSearching] = useState(false);
+  const [showCustomization, setShowCustomization] = useState(false);
+  const [relevanceCriteria, setRelevanceCriteria] = useState({
+    intendedUseWeight: 40,
+    deviceClassWeight: 20,
+    technologyTypeWeight: 25,
+    manufacturerWeight: 15
+  });
   const { toast } = useToast();
 
   // Run the predicate and literature search
@@ -63,9 +71,14 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
     }
 
     setIsLoading(true);
+    setIsSearching(true);
     try {
-      // Use the service for finding predicates and literature
-      const result = await FDA510kService.findPredicatesAndLiterature(deviceProfile, organizationId || 1);
+      // Use the service for finding predicates and literature with custom relevance criteria
+      const result = await FDA510kService.findPredicatesAndLiterature(
+        deviceProfile, 
+        organizationId || 1,
+        relevanceCriteria // Pass the custom relevance criteria
+      );
       
       // Set the results
       setResults(result);
@@ -83,6 +96,7 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
       });
     } finally {
       setIsLoading(false);
+      setIsSearching(false);
     }
   };
   
@@ -390,28 +404,40 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
                 
                 <div className="flex justify-end space-x-2 mt-4">
                   {device.kNumber && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex items-center"
-                      onClick={() => {
-                        window.open(`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfpmn/pmn.cfm?ID=${device.kNumber}`, '_blank');
-                        toast({
-                          title: "Opened FDA Website",
-                          description: `Viewing details for ${device.kNumber} in a new tab`,
-                        });
-                      }}
-                    >
-                      <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                      View on FDA Website
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center"
+                            onClick={() => {
+                              window.open(`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfpmn/pmn.cfm?ID=${device.kNumber}`, '_blank');
+                              toast({
+                                title: "Opened FDA Website",
+                                description: `Viewing details for ${device.kNumber} in a new tab`,
+                              });
+                            }}
+                          >
+                            <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                            View on FDA Website
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>View the official FDA details for this device</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="flex items-center text-indigo-600 border-indigo-200 hover:bg-indigo-50"
-                    onClick={() => {
-                      const comparisonText = `Comparison Summary: ${deviceProfile.deviceName} vs ${device.deviceName}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="flex items-center text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                          onClick={() => {
+                            const comparisonText = `Comparison Summary: ${deviceProfile.deviceName} vs ${device.deviceName}
 
 Device Class: ${deviceProfile.deviceClass || 'Not specified'} vs ${device.deviceClass || 'Not specified'}
 Technology Type: ${deviceProfile.technologyType || 'Not specified'} vs ${device.technologyType || 'Not specified'}
@@ -419,33 +445,48 @@ Intended Use: ${deviceProfile.intendedUse || 'Not specified'} vs ${device.intend
 Match Score: ${Math.round(device.matchScore * 100)}%
 Match Rationale: ${device.matchRationale || 'Not available'}
 `;
-                      navigator.clipboard.writeText(comparisonText);
-                      toast({
-                        title: "Comparison Copied",
-                        description: "The device comparison has been copied to clipboard",
-                      });
-                    }}
-                  >
-                    <FileText className="h-3.5 w-3.5 mr-1" />
-                    Copy Comparison
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex items-center text-green-600 border-green-200 hover:bg-green-50"
-                    onClick={() => {
-                      // In a real implementation, this would save the predicate to the project
-                      localStorage.setItem('selectedPredicate', JSON.stringify(device));
-                      toast({
-                        title: "Predicate Device Saved",
-                        description: `${device.deviceName} has been added as a predicate device for your 510(k) submission`,
-                        variant: "success",
-                      });
-                    }}
-                  >
-                    <Scissors className="h-3.5 w-3.5 mr-1" />
-                    Use as Predicate
-                  </Button>
+                            navigator.clipboard.writeText(comparisonText);
+                            toast({
+                              title: "Comparison Copied",
+                              description: "The device comparison has been copied to clipboard",
+                            });
+                          }}
+                        >
+                          <FileText className="h-3.5 w-3.5 mr-1" />
+                          Copy Comparison
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Copy a text summary of the device comparison to clipboard</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex items-center text-green-600 border-green-200 hover:bg-green-50"
+                          onClick={() => {
+                            // In a real implementation, this would save the predicate to the project
+                            localStorage.setItem('selectedPredicate', JSON.stringify(device));
+                            toast({
+                              title: "Predicate Device Saved",
+                              description: `${device.deviceName} has been added as a predicate device for your 510(k) submission`,
+                              variant: "success",
+                            });
+                          }}
+                        >
+                          <Scissors className="h-3.5 w-3.5 mr-1" />
+                          Use as Predicate
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Select this device as your predicate for the 510(k) submission</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             </CollapsibleContent>
