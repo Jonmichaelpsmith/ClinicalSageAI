@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Device Profile",
+  "type": "object",
+  "required": ["deviceName", "deviceClass", "intendedUse"],
+  "properties": {
+    "deviceName": { "type": "string", "minLength": 3 },
+    "modelNumber": { "type": "string" },
+    "manufacturer": { "type": "string" },
+    "deviceClass": { "type": "string", "enum": ["I", "II", "III"] },
+    "intendedUse": { "type": "string" },
+    "technologyType": { "type": "string" },
+    "predicateDevice": { "type": "string" }
+  }
+}

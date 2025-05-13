@@ -1,0 +1,148 @@
+### Keeping the Replit Agent “Honest”
+
+1. **Small, Verifiable PRs**
+
+   * Break each feature into narrow pull requests (e.g. “Add DeviceProfileForm component” only).
+   * After each PR, review the diff to confirm only the intended files changed.
+
+2. **Automated Tests**
+
+   * For every new component or API endpoint, add a unit test that fails before implementation and passes once it’s done.
+   * This prevents “phantom” code from slipping through untested.
+
+3. **Code Ownership & Reviews**
+
+   * Assign clear owners for each module (UI, API, integration).
+   * Require at least one human approval on every PR before merging.
+
+4. **Continuous Integration Checks**
+
+   * Linting / formatting checks to lock down file patterns (e.g. no new files outside of `client/src/components/cer` or `client/src/schemas`).
+   * Enforce coverage thresholds so “empty” or stub files don’t count as “implemented.”
+
+5. **Feature-Flag Validation**
+
+   * Gate each new UI/API feature behind a feature flag.
+   * Add sanity checks in your CI that `ENABLE_DEVICE_PROFILE` must be `true` once Step A is merged, and that toggling it `false` removes all traces.
+
+---
+
+## Step A: Device Profile Intake
+
+We’ll build a JSON-schema-driven form inside your **CER2V** module that captures key device metadata and validates both client- and server-side.
+
+### 1. JSON Schema
+
+**File:** `client/src/components/cer/schemas/deviceProfile.json`
+
+```jsonc
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Device Profile",
+  "type": "object",
+  "required": ["deviceName", "deviceClass", "intendedUse"],
+  "properties": {
+    "deviceName": { "type": "string", "minLength": 3 },
+    "modelNumber": { "type": "string" },
+    "manufacturer": { "type": "string" },
+    "deviceClass": { "type": "string", "enum": ["I", "II", "III"] },
+    "intendedUse": { "type": "string" },
+    "technologyType": { "type": "string" },
+    "predicateDevice": { "type": "string" }
+  }
+}
+```
+
+### 2. React Form Component
+
+**File:** `client/src/components/cer/DeviceProfileForm.jsx`
+
+* **Imports**: React, AJV, the schema above, your existing form/UI controls
+* **State**: `formData`, `errors`
+* **Behavior**:
+
+  1. Render one input per schema property
+  2. On “Save,” run AJV validation
+  3. If valid → POST to `/api/cer/device-profile`
+  4. If invalid → display field-level errors
+
+### 3. Server-Side Schema Validation
+
+**File:** `server/middleware/validateDeviceProfile.ts`
+
+```ts
+import { NextFunction, Request, Response } from 'express';
+import Ajv from 'ajv';
+import deviceProfileSchema from '../components/cer/schemas/deviceProfile.json';
+
+const ajv = new Ajv();
+const validate = ajv.compile(deviceProfileSchema);
+
+export function validateDeviceProfile(req: Request, res: Response, next: NextFunction) {
+  if (!validate(req.body)) {
+    return res.status(400).json({ errors: validate.errors });
+  }
+  next();
+}
+```
+
+### 4. API Route
+
+**File:** `server/routes/cerRoutes.ts` (add to your existing CER router)
+
+```ts
+import { Router } from 'express';
+import { validateDeviceProfile } from '../middleware/validateDeviceProfile';
+import { saveDeviceProfile } from '../services/DeviceProfileService';
+
+const router = Router();
+
+router.post(
+  '/device-profile',
+  validateDeviceProfile,
+  async (req, res) => {
+    const record = await saveDeviceProfile(req.body);
+    res.status(201).json(record);
+  }
+);
+
+export default router;
+```
+
+### 5. Persistence Service
+
+**File:** `server/services/DeviceProfileService.ts`
+
+```ts
+import { db } from '../db'; // however you access your database
+
+export async function saveDeviceProfile(data: any) {
+  // Example with a generic ORM
+  return db.deviceProfiles.create({ data });
+}
+```
+
+### 6. Front-End Integration
+
+1. **Import** `DeviceProfileForm` into `CERV2Page.jsx` (under your “510(k) Automation” tab).
+2. **Prop-hook** its `onSave` to call your API client:
+
+   ```js
+   import { postDeviceProfile } from '../api/cer';
+   ...
+   <DeviceProfileForm onSave={postDeviceProfile} />
+   ```
+3. **Feature Flag**
+
+   * Gate the form behind `FEATURE_DEVICE_PROFILE` in `client/src/flags/featureFlags.ts`
+   * Toggle it off to verify the form disappears.
+
+---
+
+### Verification
+
+* Write a **unit test** for `validateDeviceProfile` middleware.
+* Write a **component test** for `DeviceProfileForm` that simulates invalid input and expects error messages.
+* Add a **simple E2E test**: load the 510(k) tab, fill in the form, hit Save, and assert a `201` response.
+
+Once these are passing, you’ll have a solid foundation (“Step A”) on which to layer the next tasks. Let me know when you’re ready to roll this out—then we’ll move on to **Task 2: Predicate Finder & Literature Discovery**.
