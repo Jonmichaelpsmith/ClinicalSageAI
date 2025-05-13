@@ -16,6 +16,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import DeviceProfileForm from './DeviceProfileForm';
 import DeviceProfileList from './DeviceProfileList';
 import { postDeviceProfile, getDeviceProfiles } from '../../api/cer';
+// Import the service directly
 import FDA510kService from '../../services/FDA510kService';
 import { useTenant } from '@/contexts/TenantContext';
 import { useToast } from '@/hooks/use-toast';
