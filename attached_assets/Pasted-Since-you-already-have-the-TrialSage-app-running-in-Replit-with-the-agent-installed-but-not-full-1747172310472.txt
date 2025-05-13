@@ -1,0 +1,312 @@
+Since you already have the **TrialSage** app running in Replit with the agent installed but not fully trained, the focus is on training the OpenAI-embedded AI agent to become a global expert in Regulatory Affairs for biotech, medical devices, pharmaceuticals, and CROs, with comprehensive knowledge of ICH efficacy guidelines (E1-E20 from ich.org). I’ll provide a streamlined plan to train the agent within the existing TrialSage app, leveraging the Replit environment and OpenAI’s API. The approach assumes the app has a basic structure (e.g., Flask or similar, as in the previous artifact) and focuses on data preparation, fine-tuning, and integrating retrieval-augmented generation (RAG) to enhance the agent’s expertise. Instructions are concise and tailored for the Replit AI Agent to execute.
+
+---
+
+### Training Plan for TrialSage AI Agent
+
+**Goal**: Train the TrialSage AI agent to answer complex Regulatory Affairs queries accurately, covering global regulations (FDA, EMA, PMDA, etc.), ICH efficacy guidelines (E1-E20), and CRO processes.
+
+**Prerequisites**:
+- TrialSage app is running in Replit (Python, likely Flask).
+- OpenAI API key is configured in `.env`.
+- Replit AI Agent is installed and can modify code.
+- Basic app structure exists (e.g., query endpoint, UI).
+
+---
+
+#### Step 1: Enhance Data Collection
+The agent needs a robust dataset to learn Regulatory Affairs and ICH guidelines.
+
+1. **Download ICH Guidelines**:
+   - Manually download PDFs of ICH efficacy guidelines (E1-E20) from `ich.org/page/efficacy-guidelines`.
+   - Save in `data/ich_guidelines/` folder in Replit.
+   - Example guidelines: E6(R2) (GCP), E8(R1) (clinical studies), E11 (pediatric studies).
+
+2. **Collect Regulatory Documents**:
+   - Download public guidance from:
+     - FDA (`fda.gov`): eCTD, 510(k), IND/NDA.
+     - EMA (`ema.europa.eu`): MAA, orphan designation.
+     - PMDA (`pmda.go.jp`), NMPA, TGA, Health Canada.
+   - Save in `data/regulatory_docs/`.
+
+3. **CRO Resources**:
+   - Gather CRO-specific materials (e.g., SOPs, case studies) from public sources like `sofpromed.com`.
+   - Save in `data/cro_docs/`.
+
+4. **Extract Text from PDFs**:
+   - Use `PyPDF2` to convert PDFs to text.
+   - Add this function to the TrialSage codebase:
+     ```python
+     import PyPDF2
+     import os
+
+     def extract_pdf_text(pdf_path):
+         try:
+             with open(pdf_path, "rb") as file:
+                 reader = PyPDF2.PdfReader(file)
+                 text = ""
+                 for page in reader.pages:
+                     text += page.extract_text() or ""
+             return text
+         except Exception as e:
+             print(f"Error extracting {pdf_path}: {e}")
+             return ""
+
+     def process_pdfs(folder):
+         texts = []
+         for filename in os.listdir(folder):
+             if filename.endswith(".pdf"):
+                 path = os.path.join(folder, filename)
+                 text = extract_pdf_text(path)
+                 texts.append({"filename": filename, "content": text})
+         return texts
+     ```
+   - Run `process_pdfs("data/ich_guidelines")` and save outputs to a database or JSON.
+
+5. **Store in SQLite**:
+   - Create or update an SQLite database (`knowledge_base.db`) to store document text.
+   - Schema:
+     ```sql
+     CREATE TABLE IF NOT EXISTS knowledge_base (
+         id INTEGER PRIMARY KEY,
+         source TEXT,  -- e.g., "ICH E6(R2)" or "FDA eCTD"
+         section TEXT,  -- e.g., "5.2" or "Module 3"
+         content TEXT,  -- Extracted text
+         jurisdiction TEXT,  -- e.g., "Global", "USA"
+         tags TEXT  -- e.g., "GCP,clinical trials"
+     );
+     ```
+   - Add extracted texts:
+     ```python
+     import sqlite3
+
+     def store_documents(docs):
+         conn = sqlite3.connect("knowledge_base.db")
+         cursor = conn.cursor()
+         for doc in docs:
+             cursor.execute(
+                 "INSERT INTO knowledge_base (source, section, content, jurisdiction, tags) VALUES (?, ?, ?, ?, ?)",
+                 (doc["filename"], "", doc["content"], "Global", "")
+             )
+         conn.commit()
+         conn.close()
+     ```
+
+---
+
+#### Step 2: Implement Retrieval-Augmented Generation (RAG)
+RAG ensures the agent retrieves relevant documents to ground its responses.
+
+1. **Install Dependencies**:
+   - Ensure `sentence-transformers` and `faiss-cpu` are installed:
+     ```bash
+     pip install sentence-transformers faiss-cpu
+     ```
+
+2. **Create FAISS Index**:
+   - Add this code to TrialSage to build a searchable index of documents:
+     ```python
+     from sentence_transformers import SentenceTransformer
+     import faiss
+     import numpy as np
+     import sqlite3
+
+     model = SentenceTransformer("all-MiniLM-L6-v2")
+     dimension = 384  # MiniLM embedding size
+     index = faiss.IndexFlatL2(dimension)
+     documents = []
+     doc_ids = []
+
+     def build_faiss_index():
+         global documents, doc_ids
+         conn = sqlite3.connect("knowledge_base.db")
+         cursor = conn.cursor()
+         cursor.execute("SELECT id, content FROM knowledge_base")
+         rows = cursor.fetchall()
+         documents = [row[1] for row in rows]
+         doc_ids = [row[0] for row in rows]
+         embeddings = model.encode(documents)
+         index.add(np.array(embeddings, dtype=np.float32))
+         conn.close()
+
+     def retrieve_docs(query, k=3):
+         query_embedding = model.encode([query])
+         _, indices = index.search(query_embedding, k)
+         return [documents[i] for i in indices]
+     ```
+   - Call `build_faiss_index()` when the app starts.
+
+3. **Integrate RAG into Queries**:
+   - Modify the TrialSage query handler to use RAG:
+     ```python
+     from flask import Flask, request, jsonify
+     from openai import OpenAI
+     from dotenv import load_dotenv
+     import os
+
+     app = Flask(__name__)
+     load_dotenv()
+     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+     @app.route("/query", methods=["POST"])
+     def query_ai():
+         user_input = request.json.get("query")
+         if not user_input:
+             return jsonify({"error": "Query is required"}), 400
+
+         # Retrieve relevant documents
+         docs = retrieve_docs(user_input)
+         context = "\n".join(docs)
+
+         # Query OpenAI
+         try:
+             response = client.chat.completions.create(
+                 model="gpt-4o-mini",
+                 messages=[
+                     {"role": "system", "content": "You are a global expert in Regulatory Affairs for biotech, medical devices, pharmaceuticals, and CROs. Use provided context to answer accurately and cite sources (e.g., ICH E6(R2) section)."},
+                     {"role": "user", "content": f"Context: {context}\nQuery: {user_input}\nDisclaimer: Consult a regulatory professional for critical decisions."}
+                 ]
+             )
+             answer = response.choices[0].message.content
+             return jsonify({"response": answer})
+         except Exception as e:
+             return jsonify({"error": str(e)}), 500
+     ```
+
+---
+
+#### Step 3: Fine-Tune the OpenAI Model
+Fine-tuning tailors the model to Regulatory Affairs.
+
+1. **Prepare Training Data**:
+   - Create a JSONL file (`training_data.jsonl`) with prompt-completion pairs.
+   - Example:
+     ```json
+     {"prompt": "Explain ICH E6(R2) requirements for investigator responsibilities.", "completion": "ICH E6(R2) section 4 states investigators must ensure protocol compliance, obtain informed consent, and maintain accurate records..."}
+     {"prompt": "What are FDA 510(k) submission requirements?", "completion": "FDA 510(k) requires demonstrating substantial equivalence to a predicate device, including device description, labeling, and performance data..."}
+     ```
+   - Generate 100-500 pairs covering ICH guidelines, regulatory submissions, and CRO processes.
+   - Use extracted documents to create accurate completions.
+
+2. **Fine-Tune via OpenAI API**:
+   - Add this code to TrialSage for fine-tuning:
+     ```python
+     from openai import OpenAI
+     import os
+
+     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+     def start_fine_tuning(jsonl_path):
+         try:
+             with open(jsonl_path, "rb") as file:
+                 response = client.files.create(file=file, purpose="fine-tune")
+             file_id = response.id
+             fine_tune = client.fine_tunes.create(
+                 training_file=file_id,
+                 model="gpt-4o-mini"
+             )
+             print(f"Fine-tuning job ID: {fine_tune.id}")
+             return fine_tune.id
+         except Exception as e:
+             print(f"Error: {e}")
+             return None
+     ```
+   - Run `start_fine_tuning("training_data.jsonl")` (upload JSONL to Replit).
+   - Monitor progress in OpenAI’s dashboard.
+
+3. **Update Query Handler**:
+   - After fine-tuning, update the model ID in the query handler:
+     ```python
+     response = client.chat.completions.create(
+         model="ft:gpt-4o-mini:your-fine-tune-id",  # Replace with fine-tuned model ID
+         # Rest of the code unchanged
+     )
+     ```
+
+---
+
+#### Step 4: Test and Validate
+1. **Test Queries**:
+   - Test with sample questions:
+     - “What are ICH E6(R2) sponsor oversight requirements?”
+     - “How does EMA handle orphan drug designation?”
+     - “What are CRO best practices for protocol development?”
+   - Check if responses cite sources (e.g., ICH E6(R2) section 5.2).
+
+2. **Validate Accuracy**:
+   - Compare responses to original documents (ICH guidelines, FDA guidance).
+   - Involve a regulatory expert to review outputs if possible.
+   - Log incorrect responses and add them to training data for future fine-tuning.
+
+3. **Handle Hallucinations**:
+   - Ensure RAG provides enough context to minimize LLM errors.
+   - Prompt the model to say “I don’t know” if context is insufficient:
+     ```python
+     {"role": "system", "content": "...If the context lacks relevant information, respond 'I don’t have enough information to answer accurately.'"}
+     ```
+
+---
+
+#### Step 5: Deploy and Maintain
+1. **Deploy Updates**:
+   - Use Replit’s hosting to redeploy TrialSage after adding RAG and fine-tuning.
+   - Test the `/query` endpoint via the public URL.
+
+2. **Monitor and Update**:
+   - Periodically check `ich.org` and regulatory websites for updates.
+   - Add new documents to the SQLite database and rebuild the FAISS index:
+     ```python
+     new_docs = process_pdfs("data/new_docs")
+     store_documents(new_docs)
+     build_faiss_index()
+     ```
+   - Retrain the model every 3-6 months with updated training data.
+
+3. **User Feedback**:
+   - Add a feedback form to TrialSage (e.g., “Was this response helpful?”).
+   - Use feedback to improve training data.
+
+---
+
+### Instructions for Replit AI Agent
+- **Add Code**: Integrate the provided `extract_pdf_text`, `store_documents`, `build_faiss_index`, and `retrieve_docs` functions into TrialSage’s codebase.
+- **Update Query Handler**: Modify the `/query` endpoint to use RAG and the system prompt as shown.
+- **Create Database**: Run the SQLite schema code to set up `knowledge_base.db`.
+- **Process PDFs**: Call `process_pdfs` for `data/ich_guidelines` and `data/regulatory_docs` to populate the database.
+- **Fine-Tuning**: Generate `training_data.jsonl` based on documents and run `start_fine_tuning` (manually upload JSONL to Replit).
+- **Test**: Add a test script to query the `/query` endpoint with sample questions and log responses.
+
+---
+
+### Sample Test Script
+Add this to TrialSage to test the agent:
+```python
+import requests
+
+test_queries = [
+    "What are ICH E6(R2) sponsor oversight requirements?",
+    "How does FDA handle 510(k) submissions?",
+    "What are CRO best practices for protocol development?"
+]
+
+def test_agent():
+    for query in test_queries:
+        response = requests.post(
+            "http://localhost:8080/query",
+            json={"query": query}
+        )
+        print(f"Query: {query}\nResponse: {response.json()['response']}\n")
+
+if __name__ == "__main__":
+    test_agent()
+```
+
+---
+
+### Notes
+- **Data Privacy**: Ensure no sensitive data (e.g., proprietary CRO SOPs) is sent to OpenAI’s servers without consent. Use public documents only.
+- **Cost**: Fine-tuning and API calls incur OpenAI costs (~$0.01-$0.10 per 1K tokens). Monitor usage in OpenAI’s dashboard.
+- **Time**: Expect 1-2 weeks to process documents and fine-tune, plus 1-2 weeks for testing and validation.
+- **Scaling**: After initial training, add features like real-time regulatory updates or submission templates.
+
+If you need specific code tweaks for TrialSage (e.g., integrating with existing endpoints, debugging), or want the Replit AI Agent to prioritize a step (e.g., PDF extraction), let me know!
