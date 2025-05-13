@@ -397,6 +397,10 @@ export class eSTARPlusBuilder {
     pdf?: string;
   }>> {
     try {
+      if (!db) {
+        throw new Error('Database connection not initialized');
+      }
+      
       // Query the database for completed sections using the FDA510kSection type
       const sections = await db.query.fda510kSections.findMany({
         where: (sections, { eq, and }) => and(
@@ -508,6 +512,10 @@ export class eSTARPlusBuilder {
     ];
     
     try {
+      if (!db) {
+        throw new Error('Database connection not initialized');
+      }
+      
       const createdSections = [];
       
       for (const section of defaultSections) {
@@ -662,9 +670,13 @@ ${meta.manufacturer}
       
       return root.end({ prettyPrint: true });
       
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error building manifest:', error);
-      throw new Error(`Failed to build manifest: ${error.message}`);
+      if (error instanceof Error) {
+        throw new Error(`Failed to build manifest: ${error.message}`);
+      } else {
+        throw new Error('Failed to build manifest: Unknown error occurred');
+      }
     }
   }
   
@@ -701,9 +713,13 @@ ${meta.manufacturer}
         console.warn('Manifest validation errors:', validate.errors);
         // In production, this should throw an error
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error validating manifest:', error);
-      throw new Error(`Manifest validation failed: ${error.message}`);
+      if (error instanceof Error) {
+        throw new Error(`Manifest validation failed: ${error.message}`);
+      } else {
+        throw new Error('Manifest validation failed: Unknown error occurred');
+      }
     }
   }
   
