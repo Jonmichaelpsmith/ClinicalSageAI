@@ -155,7 +155,7 @@ async function storeDocuments(docs) {
 
 /**
  * Extract text from a PDF file
- * Simple implementation that just returns file info, since we don't have pdf-lib
+ * Enhanced implementation for better text extraction from PDFs
  * @param {string} pdfPath - Path to the PDF file
  * @returns {Promise<string>} - The extracted text
  */
@@ -164,15 +164,171 @@ async function extractPdfText(pdfPath) {
     const stats = fs.statSync(pdfPath);
     const fileSizeInMB = stats.size / (1024 * 1024);
     
-    // Since we don't have pdf-lib, we'll return basic file info
-    return `PDF Document: ${path.basename(pdfPath)}\nSize: ${fileSizeInMB.toFixed(2)} MB\n` +
-      `Mock Content: This is a placeholder for ${path.basename(pdfPath)} content.\n` +
-      `In a production implementation, we would use a dedicated PDF text extraction library.\n\n` +
-      `Mock Regulatory Content: This document appears to be related to regulatory requirements ` +
-      `for medical devices and discusses important safety and performance considerations.`;
+    // Read file as buffer
+    const fileBuffer = fs.readFileSync(pdfPath);
+    
+    // Check PDF header
+    const isPdf = fileBuffer.slice(0, 5).toString() === '%PDF-';
+    if (!isPdf) {
+      console.warn(`File ${pdfPath} does not appear to be a valid PDF`);
+    }
+    
+    // Convert buffer to string and extract text using a simple regex approach
+    // This is a simplified approach and not as robust as a dedicated PDF library
+    const fileStr = fileBuffer.toString('utf8', 0, Math.min(fileBuffer.length, 5000000)); // Limit to first 5MB
+    
+    // Extract text between PDF text markers (simplified approach)
+    const textRegex = /\(([^\)\\]+|\\\\|\\\)|\\[0-9]{3})*\)/g;
+    const matches = fileStr.match(textRegex) || [];
+    
+    let extractedText = '';
+    
+    // Process matches to extract readable text
+    for (const match of matches) {
+      let text = match.substring(1, match.length - 1); // Remove parentheses
+      text = text.replace(/\\\(/g, '(').replace(/\\\)/g, ')').replace(/\\\\/g, '\\');
+      
+      // Only add if it contains actual text (not just control chars)
+      if (text.match(/[a-zA-Z]{3,}/)) {
+        extractedText += text + ' ';
+      }
+    }
+    
+    // Clean up text
+    extractedText = extractedText
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    // If we didn't extract much text, add file info
+    if (extractedText.length < 100) {
+      extractedText = `PDF Document: ${path.basename(pdfPath)}\nSize: ${fileSizeInMB.toFixed(2)} MB\n\n` + 
+        (extractedText || 'No extractable text found in this PDF. The document may be scanned or image-based.');
+      
+      // Try to extract regulatory terms
+      const regulatoryTerms = [
+        'FDA', 'EMA', 'PMDA', 'ICH', 'ISO', 'NMPA', 'Health Canada', 'TGA',
+        'medical device', 'regulatory', 'guidance', 'regulation', 'compliance',
+        'safety', 'effectiveness', 'clinical', 'evaluation', 'report', 'quality'
+      ];
+      
+      const foundTerms = [];
+      for (const term of regulatoryTerms) {
+        if (fileStr.includes(term)) {
+          foundTerms.push(term);
+        }
+      }
+      
+      if (foundTerms.length > 0) {
+        extractedText += `\n\nDocument contains references to: ${foundTerms.join(', ')}`;
+      }
+    } else {
+      // Add document info to the beginning
+      extractedText = `PDF Document: ${path.basename(pdfPath)}\nSize: ${fileSizeInMB.toFixed(2)} MB\n\n` + extractedText;
+    }
+    
+    return extractedText;
   } catch (error) {
     console.error(`Error extracting text from ${pdfPath}:`, error);
     return `Failed to extract text from ${path.basename(pdfPath)}: ${error.message}`;
+  }
+}
+
+/**
+ * Process a document file and add it to the knowledge base
+ * @param {string} filePath - Path to the file
+ * @param {Object} metadata - Document metadata
+ * @returns {Promise<Object>} - Processing result
+ */
+async function processDocument(filePath, metadata = {}) {
+  try {
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return { 
+        success: false, 
+        error: 'File not found' 
+      };
+    }
+    
+    // Extract text from PDF
+    console.log(`Extracting text from ${filePath}...`);
+    let documentText = await extractPdfText(filePath);
+    
+    if (!documentText || documentText.trim() === '') {
+      return {
+        success: false,
+        error: 'No text content could be extracted from the document'
+      };
+    }
+    
+    // Count words and estimate read time
+    const wordCount = documentText.split(/\s+/).length;
+    const readTimeMinutes = Math.ceil(wordCount / 200); // Assuming 200 words per minute
+    
+    // Generate a unique ID for the document
+    const documentId = `doc_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+    
+    // Add word count and read time to metadata
+    const enrichedMetadata = {
+      ...metadata,
+      documentId,
+      wordCount,
+      readTimeMinutes,
+      processingDate: new Date().toISOString()
+    };
+    
+    // Determine jurisdiction if not provided
+    if (!enrichedMetadata.jurisdiction || enrichedMetadata.jurisdiction === 'General') {
+      // Try to extract jurisdiction from content
+      const lowerText = documentText.toLowerCase();
+      
+      if (lowerText.includes('fda') || lowerText.includes('food and drug administration')) {
+        enrichedMetadata.jurisdiction = 'FDA';
+      } else if (lowerText.includes('ema') || lowerText.includes('european medicines agency')) {
+        enrichedMetadata.jurisdiction = 'EMA';
+      } else if (lowerText.includes('ich') || lowerText.includes('international council for harmonisation')) {
+        enrichedMetadata.jurisdiction = 'ICH';
+      } else if (lowerText.includes('who') || lowerText.includes('world health organization')) {
+        enrichedMetadata.jurisdiction = 'WHO';
+      }
+    }
+    
+    // Create document object
+    const documentObject = {
+      id: documentId,
+      title: enrichedMetadata.title || path.basename(filePath),
+      content: documentText,
+      metadata: enrichedMetadata,
+      wordCount,
+      readTimeMinutes,
+      jurisdiction: enrichedMetadata.jurisdiction || 'General',
+      documentType: enrichedMetadata.documentType || 'Regulatory',
+      source: enrichedMetadata.source || 'User Upload',
+      uploadDate: enrichedMetadata.uploadDate || new Date().toISOString()
+    };
+    
+    console.log(`Storing document ${documentId} in knowledge base...`);
+    
+    // Store document in knowledge base
+    await storeDocuments([documentObject]);
+    
+    console.log(`Document ${documentId} processed successfully`);
+    
+    return {
+      success: true,
+      documentId,
+      stats: {
+        wordCount,
+        readTimeMinutes,
+        jurisdiction: documentObject.jurisdiction,
+        documentType: documentObject.documentType
+      }
+    };
+  } catch (error) {
+    console.error('Error processing document:', error);
+    return {
+      success: false,
+      error: error.message
+    };
   }
 }
 
@@ -585,5 +741,7 @@ module.exports = {
   determineDocumentType,
   extractDocumentSections,
   searchKnowledgeBase,
-  getKnowledgeBaseStats
+  getKnowledgeBaseStats,
+  processDocument, // Add the new document processing function
+  retrieveDocuments: searchKnowledgeBase // Alias for compatibility with regulatoryAIService
 };
