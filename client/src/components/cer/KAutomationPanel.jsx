@@ -3,18 +3,25 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Upload, Search, FilePlus, BarChart, ArrowRight, Shield, Zap, 
   FileCheck, CheckCircle2, AlertTriangle, Lightbulb, Bot, Star, ListChecks, BookOpen, 
-  Clock, Info, Check, Brain } from 'lucide-react';
+  Clock, Info, Check, Brain, Activity, FileText, Undo2, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import DeviceProfileForm from './DeviceProfileForm';
-import { postDeviceProfile } from '../../api/cer';
+import DeviceProfileList from './DeviceProfileList';
+import { postDeviceProfile, getDeviceProfiles } from '../../api/cer';
 import FDA510kService from '../../services/FDA510kService';
 import { useTenant } from '@/contexts/TenantContext';
+import { useToast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
 
 export default function KAutomationPanel() {
   const [activeTab, setActiveTab] = useState('workflow');
+  const [workflowSubTab, setWorkflowSubTab] = useState('pipeline');
   const [aiProcessing, setAiProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [aiInsights, setAiInsights] = useState([]);
@@ -23,7 +30,30 @@ export default function KAutomationPanel() {
   const [deviceProfileDialogOpen, setDeviceProfileDialogOpen] = useState(false);
   const [deviceProfileSubmitted, setDeviceProfileSubmitted] = useState(false);
   const [currentDeviceProfile, setCurrentDeviceProfile] = useState(null);
+  const [predicateSearchResults, setPredicateSearchResults] = useState([]);
+  const [isSearchingPredicates, setIsSearchingPredicates] = useState(false);
   const { currentOrganization } = useTenant();
+  const { toast } = useToast();
+  
+  // Query to fetch device profiles
+  const { 
+    data: deviceProfiles, 
+    isLoading: isLoadingProfiles, 
+    isError: isProfileError, 
+    refetch: refetchProfiles 
+  } = useQuery({
+    queryKey: ['/api/cer/device-profile/organization', currentOrganization?.id],
+    queryFn: () => getDeviceProfiles(currentOrganization?.id),
+    enabled: !!currentOrganization?.id,
+    staleTime: 30000, // 30 seconds
+    onSuccess: (data) => {
+      // If there's a current device and it's in the returned data, update it
+      if (currentDeviceProfile && data.some(profile => profile.id === currentDeviceProfile.id)) {
+        const updated = data.find(profile => profile.id === currentDeviceProfile.id);
+        setCurrentDeviceProfile(updated);
+      }
+    }
+  });
 
   // Mock device data for demo purposes
   const deviceData = {
