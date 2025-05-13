@@ -322,6 +322,182 @@ const RegulatoryAITestPage = () => {
                 </CardContent>
               </Card>
             </TabsContent>
+            
+            <TabsContent value="knowledge">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Regulatory Knowledge Base</CardTitle>
+                  <CardDescription>
+                    Process regulatory documents to enhance the AI's knowledge base.
+                  </CardDescription>
+                </CardHeader>
+                
+                <CardContent>
+                  <div className="space-y-6">
+                    {/* Knowledge Base Status */}
+                    <div className="bg-gray-50 p-4 rounded-md">
+                      <h3 className="text-lg font-medium mb-2 flex items-center">
+                        <Database className="mr-2 h-5 w-5" /> Knowledge Base Status
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="ml-2"
+                          onClick={fetchKnowledgeBaseStatus}
+                          disabled={loading}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                      </h3>
+                      
+                      {knowledgeBaseStatus ? (
+                        <div className="space-y-2">
+                          <div className="flex items-center">
+                            <Badge variant={knowledgeBaseStatus.initialized ? "success" : "destructive"} className="mr-2">
+                              {knowledgeBaseStatus.initialized ? "Initialized" : "Not Initialized"}
+                            </Badge>
+                            
+                            {!knowledgeBaseStatus.initialized && (
+                              <Button 
+                                size="sm" 
+                                onClick={initializeKnowledgeBase}
+                                disabled={loading}
+                              >
+                                {loading ? (
+                                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Initializing...</>
+                                ) : (
+                                  "Initialize Database"
+                                )}
+                              </Button>
+                            )}
+                          </div>
+                          
+                          {knowledgeBaseStatus.initialized && (
+                            <>
+                              <div className="text-sm">
+                                <span className="font-medium">Documents:</span> {knowledgeBaseStatus.documentCount}
+                              </div>
+                              
+                              {knowledgeBaseStatus.documentCount > 0 && (
+                                <div>
+                                  <div className="text-sm font-medium mb-1">Jurisdictions:</div>
+                                  <div className="flex flex-wrap gap-2">
+                                    {Object.entries(knowledgeBaseStatus.jurisdictions || {}).map(([jurisdiction, count]) => (
+                                      <Badge key={jurisdiction} variant="outline" className="flex items-center gap-1">
+                                        {jurisdiction}
+                                        <span className="bg-gray-200 px-1.5 py-0.5 rounded-full text-xs">
+                                          {count}
+                                        </span>
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              {knowledgeBaseStatus.lastUpdated && (
+                                <div className="text-sm">
+                                  <span className="font-medium">Last Updated:</span>{' '}
+                                  {new Date(knowledgeBaseStatus.lastUpdated).toLocaleString()}
+                                </div>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="text-gray-500 italic">Loading status...</div>
+                      )}
+                    </div>
+                    
+                    {/* Document Folders */}
+                    <div>
+                      <h3 className="text-lg font-medium mb-3 flex items-center">
+                        <FileText className="mr-2 h-5 w-5" /> Available Document Folders
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="ml-2"
+                          onClick={fetchDocumentFolders}
+                          disabled={loading}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                      </h3>
+                      
+                      {documentFolders.length > 0 ? (
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead className="w-[300px]">Folder</TableHead>
+                              <TableHead>Document Count</TableHead>
+                              <TableHead className="text-right">Actions</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {documentFolders.map((folder) => (
+                              <TableRow key={folder.path}>
+                                <TableCell className="font-medium">{folder.name}</TableCell>
+                                <TableCell>{folder.docCount}</TableCell>
+                                <TableCell className="text-right">
+                                  <Button
+                                    size="sm"
+                                    onClick={() => processDocuments(folder.path)}
+                                    disabled={processingFolder || folder.docCount === 0}
+                                    className="gap-1"
+                                  >
+                                    {processingFolder && selectedFolder === folder.path ? (
+                                      <><Loader2 className="h-4 w-4 animate-spin" /> Processing...</>
+                                    ) : (
+                                      <><Zap className="h-4 w-4" /> Process</>
+                                    )}
+                                  </Button>
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      ) : (
+                        <div className="text-gray-500 italic py-4 text-center border rounded-md">
+                          No document folders found in attached_assets directory.
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Processing Results */}
+                    {processingResult && (
+                      <Alert className={processingResult.error ? "border-red-300" : "border-green-300"}>
+                        <AlertTitle className="flex items-center">
+                          {processingResult.error ? (
+                            "Error Processing Documents"
+                          ) : (
+                            "Documents Processed Successfully"
+                          )}
+                        </AlertTitle>
+                        <AlertDescription>
+                          {processingResult.error ? (
+                            processingResult.error
+                          ) : (
+                            <div>
+                              <p>Processed {processingResult.processedCount || 0} documents.</p>
+                              {processingResult.documents && (
+                                <div className="mt-2">
+                                  <details>
+                                    <summary className="cursor-pointer text-sm">Show Details</summary>
+                                    <ul className="mt-2 text-sm list-disc list-inside">
+                                      {processingResult.documents.map((doc, index) => (
+                                        <li key={index}>{doc.source || doc}</li>
+                                      ))}
+                                    </ul>
+                                  </details>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
         </div>
 
