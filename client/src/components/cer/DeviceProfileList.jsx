@@ -22,11 +22,26 @@ import { Pencil, Trash2, ChevronRight, PlusCircle } from 'lucide-react';
 import { useTenant } from '@/contexts/TenantContext';
 import { formatDistanceToNow } from 'date-fns';
 import DeviceProfileDialog from './DeviceProfileDialog';
-import { getDeviceProfiles } from '@/api/cer';
+import { getDeviceProfiles, deleteDeviceProfile } from '@/api/cer';
+import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 const DeviceProfileList = ({ onSelectProfile }) => {
   const { currentOrganization } = useTenant();
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [profileToDelete, setProfileToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const { toast } = useToast();
   
   // Fetch device profiles
   const { data: deviceProfiles, isLoading, isError, refetch } = useQuery({
@@ -44,6 +59,44 @@ const DeviceProfileList = ({ onSelectProfile }) => {
     setSelectedProfile(profile);
     if (onSelectProfile) {
       onSelectProfile(profile);
+    }
+  };
+  
+  const handleDeleteClick = (profile) => {
+    setProfileToDelete(profile);
+    setDeleteDialogOpen(true);
+  };
+  
+  const handleDeleteConfirm = async () => {
+    if (!profileToDelete) return;
+    
+    setIsDeleting(true);
+    try {
+      await deleteDeviceProfile(profileToDelete.id);
+      toast({
+        title: 'Device profile deleted',
+        description: `${profileToDelete.deviceName} has been successfully deleted.`,
+      });
+      
+      // If we deleted the currently selected profile, deselect it
+      if (selectedProfile?.id === profileToDelete.id) {
+        setSelectedProfile(null);
+        if (onSelectProfile) {
+          onSelectProfile(null);
+        }
+      }
+      
+      refetch();
+    } catch (error) {
+      toast({
+        title: 'Error deleting profile',
+        description: error.message || 'An error occurred while deleting the device profile.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsDeleting(false);
+      setDeleteDialogOpen(false);
+      setProfileToDelete(null);
     }
   };
   
@@ -155,6 +208,13 @@ const DeviceProfileList = ({ onSelectProfile }) => {
                         dialogDescription="Update the details for your medical device."
                         onSuccessfulSubmit={handleEditSuccess}
                       />
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => handleDeleteClick(profile)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -170,6 +230,37 @@ const DeviceProfileList = ({ onSelectProfile }) => {
           </p>
         </CardFooter>
       )}
+      
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the device profile
+              {profileToDelete && <strong> "{profileToDelete.deviceName}"</strong>} and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              disabled={isDeleting} 
+              onClick={(e) => {
+                e.preventDefault();
+                handleDeleteConfirm();
+              }}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {isDeleting ? (
+                <>
+                  <span className="animate-spin mr-2">⟳</span>
+                  Deleting...
+                </>
+              ) : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

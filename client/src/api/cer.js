@@ -72,3 +72,19 @@ export const updateDeviceProfile = async (id, data) => {
     throw error;
   }
 };
+
+/**
+ * Delete a device profile
+ * 
+ * @param {number} id - The device profile ID to delete
+ * @returns {Promise<boolean>} - True if successful
+ */
+export const deleteDeviceProfile = async (id) => {
+  try {
+    const response = await axios.delete(`${API_BASE_URL}/device-profile/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting device profile ID ${id}:`, error);
+    throw error;
+  }
+};
