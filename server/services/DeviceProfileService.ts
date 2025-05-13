@@ -153,7 +153,7 @@ class DeviceProfileService {
           id, device_name, model_number, manufacturer, device_class, 
           intended_use, technology_type, predicate_device, 
           organization_id, client_workspace_id, created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        ) VALUES ($1::uuid, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
         RETURNING *;
       `;
       
@@ -190,7 +190,7 @@ class DeviceProfileService {
         throw new Error('Database pool not initialized');
       }
       
-      const query = 'SELECT * FROM device_profiles WHERE id = $1;';
+      const query = 'SELECT * FROM device_profiles WHERE id = $1::uuid;';
       const result = await this.pool.query(query, [id]);
       
       if (result.rows.length === 0) {
