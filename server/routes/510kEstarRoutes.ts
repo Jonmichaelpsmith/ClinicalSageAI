@@ -31,11 +31,12 @@ router.post('/preview-estar-plus/:projectId', async (req, res) => {
       files: previewData.files,
       aiComplianceReport: previewData.aiComplianceReport
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error previewing eSTAR package:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to preview eSTAR package';
     res.status(500).json({ 
       success: false, 
-      message: error.message || 'Failed to preview eSTAR package' 
+      message: errorMessage
     });
   }
 });
@@ -72,11 +73,12 @@ router.post('/build-estar-plus/:projectId', async (req, res) => {
       downloadUrl: `/api/fda510k/download/${path.basename(result.zipPath)}`,
       esgStatus: result.esgStatus
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error building eSTAR package:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to build eSTAR package';
     res.status(500).json({ 
       success: false, 
-      message: error.message || 'Failed to build eSTAR package' 
+      message: errorMessage
     });
   }
 });
@@ -99,11 +101,12 @@ router.get('/verify-signature/:projectId', async (req, res) => {
       success: true,
       verification
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error verifying digital signature:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: error.message || 'Failed to verify digital signature' 
+    const errorMessage = error instanceof Error ? error.message : 'Failed to verify digital signature';
+    res.status(500).json({
+      success: false,
+      message: errorMessage
     });
   }
 });
@@ -140,11 +143,12 @@ router.post('/create-default-sections/:projectId', async (req, res) => {
       message: `Created ${sections.length} default sections`,
       sections
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error creating default sections:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: error.message || 'Failed to create default sections' 
+    const errorMessage = error instanceof Error ? error.message : 'Failed to create default sections';
+    res.status(500).json({
+      success: false,
+      message: errorMessage
     });
   }
 });
@@ -175,11 +179,12 @@ router.get('/download/:filename', async (req, res) => {
     // Stream the file
     const fileStream = require('fs').createReadStream(filePath);
     fileStream.pipe(res);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error downloading file:', error);
-    res.status(500).json({ 
-      success: false, 
-      message: error.message || 'Failed to download file' 
+    const errorMessage = error instanceof Error ? error.message : 'Failed to download file';
+    res.status(500).json({
+      success: false,
+      message: errorMessage
     });
   }
 });
