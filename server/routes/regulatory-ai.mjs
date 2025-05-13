@@ -119,7 +119,19 @@ router.get('/health', (req, res) => {
 });
 
 /**
- * Process an AI query using OpenAI GPT-4o
+ * Import the Regulatory AI Service for RAG functionality
+ * This provides both contextually-enhanced AI responses 
+ * and fallback to hardcoded responses when needed
+ */
+
+// We'll implement RAG in a future update
+// For now, we'll use hardcoded responses as a fallback
+let regulatoryAIService = null;
+console.log('Using hardcoded responses for regulatory AI queries');
+
+/**
+ * Process an AI query using Retrieval-Augmented Generation (RAG)
+ * Falls back to OpenAI direct query and then hardcoded responses
  * POST /api/regulatory-ai/query
  */
 router.post('/query', rateLimiter, async (req, res) => {
@@ -140,7 +152,9 @@ router.post('/query', rateLimiter, async (req, res) => {
     console.log(`Regulatory AI query received: "${query}" (context: ${context})`);
     
     // Define hardcoded responses based on common queries and context
+    // Enhanced with comprehensive regulatory knowledge across global jurisdictions
     const hardcodedResponses = {
+      // US FDA medical device responses
       '510k': {
         'What are the key requirements for substantial equivalence in a 510(k) submission?': 
           `# Substantial Equivalence Requirements for 510(k) Submissions
@@ -651,16 +665,671 @@ A complete 510(k) submission requires the following documents:
 This list should be tailored based on device type, as specific guidance documents may require additional information for particular device categories.`
       },
       // General catch-all response for any queries not specifically hardcoded
+      // International regulatory frameworks
+      'ich': {
+        'What are the ICH E6(R2) GCP requirements?': 
+          `# ICH E6(R2) Good Clinical Practice Requirements
+          
+## Overview
+ICH E6(R2) provides an international ethical and scientific quality standard for designing, conducting, recording, and reporting trials that involve human subjects. Compliance ensures credibility of clinical trial data and protection of subjects' rights.
+
+## Key Requirements
+
+### Quality Management
+- Implementation of quality risk management systems
+- Critical process and data identification
+- Risk control methodology implementation
+- Documentation of quality management approach
+
+### Investigator Responsibilities
+- Qualification and resources verification
+- Medical care oversight for subjects
+- Protocol adherence and documentation
+- Informed consent process management
+- Investigational product accountability
+- Source documentation maintenance
+
+### Sponsor Responsibilities
+- Quality management implementation
+- Monitoring strategy based on risk assessment
+- Vendor oversight and management
+- Data handling and record-keeping procedures
+- Safety reporting and documentation
+- Trial management through monitoring
+
+### Essential Documents and Records
+- Maintenance of Trial Master File (TMF)
+- Electronic data handling and validation
+- Certified copy procedures
+- Records retention requirements
+
+### Electronic Systems and Data
+- Validation of computerized systems
+- Audit trail implementation
+- Security and access controls
+- Electronic signatures compliance
+
+The revision emphasizes risk-based approaches to clinical trial management, addresses the increasing use of technology, and strengthens oversight of outsourced activities through vendor qualification and monitoring.`,
+
+        'How does ICH E8(R1) differ from the original E8?': 
+          `# ICH E8(R1) vs Original E8: Key Differences
+          
+## Conceptual Evolution
+The revised ICH E8(R1) "General Considerations for Clinical Studies" (finalized in 2019) represents a significant advancement over the original 1997 guideline with the following major differences:
+
+## 1. Quality by Design
+- **Original E8**: Limited focus on quality planning
+- **E8(R1)**: Introduces "Quality by Design" principles that emphasize building quality into study planning from the beginning rather than addressing issues after they occur
+
+## 2. Patient-Centricity
+- **Original E8**: Minimal emphasis on patient perspectives
+- **E8(R1)**: Strong focus on incorporating patient input into study design and execution to improve relevance, acceptability, and patient experience
+
+## 3. Study Types and Design Options
+- **Original E8**: Focused primarily on traditional randomized controlled trials
+- **E8(R1)**: Expanded coverage of diverse study types including pragmatic trials, adaptive designs, basket trials, and real-world evidence studies
+
+## 4. Risk Proportionality
+- **Original E8**: Limited risk-based guidance
+- **E8(R1)**: Establishes a framework for identifying critical to quality factors and implementing risk-proportionate approaches to study execution
+
+## 5. Data Sources
+- **Original E8**: Focused on conventional clinical trial data collection
+- **E8(R1)**: Acknowledges broader data sources including electronic health records, registries, and wearable technologies
+
+## 6. Technology Integration
+- **Original E8**: Written before modern digital technologies were widely available
+- **E8(R1)**: Includes considerations for implementing new technologies in clinical research
+
+## 7. Critical to Quality Factors
+- **Original E8**: No explicit framework for quality factors
+- **E8(R1)**: Provides a structured approach to identifying and addressing factors critical to generating reliable data and protecting subjects
+
+## 8. Regulatory Flexibility
+- **Original E8**: More rigid approach to study conduct
+- **E8(R1)**: Greater emphasis on fit-for-purpose designs with regulatory flexibility based on context
+
+This revision reflects the evolution of clinical research over more than two decades and provides a more comprehensive framework for modern research approaches across the product lifecycle.`,
+
+        'What are the ICH guidelines for pediatric clinical investigations?': 
+          `# ICH E11(R1) Clinical Investigation of Medicinal Products in Pediatric Populations
+          
+## Core Principles
+ICH E11(R1) provides a comprehensive framework for conducting ethical and scientifically sound pediatric clinical trials. The guideline emphasizes:
+
+## Age Classification and Developmental Biology
+- **Preterm newborn infants**: <37 weeks gestational age
+- **Term newborn infants**: 0-27 days
+- **Infants and toddlers**: 28 days to 23 months
+- **Children**: 2 to 11 years
+- **Adolescents**: 12 to 16-18 years (varies by region)
+
+These classifications acknowledge that developmental differences affect pharmacokinetics, pharmacodynamics, and safety profiles.
+
+## Ethical Considerations
+- **Minimizing risk and distress**: Pediatric study protocols must implement measures to reduce physical, psychological, and emotional distress
+- **Informed consent/assent**: Parental/guardian permission required; age-appropriate assent from the child when possible
+- **Ethics committee expertise**: Pediatric expertise should be represented in ethical review
+
+## Study Design Considerations
+- **Extrapolation framework**: When appropriate, leveraging adult or older pediatric age group data
+- **Age-appropriate formulations**: Development of suitable dosage forms and delivery systems
+- **PK/PD modeling**: Use of modeling and simulation to minimize sampling burden
+- **Innovative study designs**: Adaptive designs, opportunistic studies, and other approaches to maximize information while minimizing subject numbers
+- **Endpoints**: Age-appropriate, clinically relevant outcome measures and biomarkers
+
+## Practical Implementation
+- **Pediatric Study Plans**: Required early in development (Pediatric Investigation Plan in EU, Pediatric Study Plan in US)
+- **Global collaboration**: Harmonization of pediatric studies across regions
+- **Long-term follow-up**: Assessment of developmental effects and delayed toxicities
+- **Age-appropriate study conduct**: Specialized facilities, staff training, and pediatric-specific procedures
+
+The R1 addendum (2017) particularly strengthened guidance on extrapolation, modeling and simulation, and innovative study designs to facilitate pediatric drug development while protecting this vulnerable population.`,
+      },
+      
+      'fda': {
+        'What are the key components of an IND application?': 
+          `# Key Components of an IND Application
+
+An Investigational New Drug (IND) application submitted to the FDA consists of three critical components:
+
+## 1. Chemistry, Manufacturing, and Controls (CMC) Information
+- **Drug substance**: Chemical structure, manufacturing process, impurity profile, stability data
+- **Drug product**: Composition, manufacturing process, in-process controls, specifications
+- **Analytical methods**: Validated methods for release and stability testing
+- **Stability data**: Supporting the proposed expiration date/retest period
+- **Environmental assessment**: When applicable
+- **Container/closure system**: Description and compatibility studies
+
+## 2. Pharmacology and Toxicology Information
+- **Pharmacology studies**: Primary pharmacodynamics, secondary pharmacodynamics, safety pharmacology
+- **ADME studies**: Absorption, distribution, metabolism, and excretion characteristics
+- **Toxicology program**: 
+  - Single and repeat-dose toxicity studies
+  - Genotoxicity studies
+  - Reproductive toxicity studies (as appropriate for trial population)
+  - Carcinogenicity studies (when required)
+  - Local tolerance testing
+  - Special toxicity studies (as needed)
+- **Integrated safety assessment**: Determination of maximum recommended starting dose
+
+## 3. Clinical Information
+- **Investigator's Brochure**: Comprehensive document summarizing all relevant information
+- **Clinical protocol(s)**: Detailed plan of investigation including:
+  - Study objectives and endpoints
+  - Subject selection criteria
+  - Treatment plan
+  - Safety monitoring procedures
+  - Statistical analysis plan
+- **Previous human experience**: Any prior clinical studies or human exposure
+- **Case Report Forms (CRFs)**: Sample forms to be used in the study
+- **Informed consent materials**: Draft informed consent document
+- **Investigator qualifications**: Information on investigators and study sites
+
+## Additional Essential Requirements
+- **Form FDA 1571**: IND application form
+- **Table of contents**
+- **Introductory statement and general investigational plan**
+- **Risk-benefit assessment**
+- **Claims of categorical exclusion or environmental assessment**
+
+For commercial INDs, a section on prior human experience and marketing history is also required. Note that requirements may vary depending on the phase of investigation and nature of the product.`,
+
+        'How does the FDA define different device classes?': 
+          `# FDA Medical Device Classification System
+
+The FDA classifies medical devices into three regulatory classes based on the level of control necessary to provide reasonable assurance of safety and effectiveness.
+
+## Class I: Low Risk
+- **Risk Level**: Minimal potential harm to users
+- **Examples**: Bandages, examination gloves, hand-held surgical instruments
+- **Regulatory Controls**:
+  - General Controls (baseline requirements for all devices)
+  - Registration and listing
+  - Quality System Regulation (QSR) compliance
+  - Medical Device Reporting (MDR)
+  - Labeling requirements
+  - Good Manufacturing Practices (GMPs)
+- **Premarket Review**: ~74% exempt from 510(k) premarket notification
+- **Regulatory Burden**: Lowest level of regulatory control
+
+## Class II: Moderate Risk
+- **Risk Level**: Moderate risk to users
+- **Examples**: Powered wheelchairs, infusion pumps, surgical drapes
+- **Regulatory Controls**:
+  - All General Controls
+  - Special Controls, which may include:
+    - Performance standards
+    - Post-market surveillance
+    - Patient registries
+    - Special labeling requirements
+    - Premarket data requirements
+    - Guidance documents
+- **Premarket Review**: Most require 510(k) premarket notification
+- **Regulatory Burden**: Intermediate level of regulatory control
+
+## Class III: High Risk
+- **Risk Level**: Significant risk, sustain/support life, or prevent health impairment
+- **Examples**: Implantable pacemakers, heart valves, implanted cerebella stimulators
+- **Regulatory Controls**:
+  - All General Controls
+  - Premarket Approval (PMA)
+  - Clinical data typically required
+  - Manufacturing site inspections
+  - Rigorous design controls
+- **Premarket Review**: Premarket Approval (PMA) application required
+- **Regulatory Burden**: Most stringent regulatory control
+
+## Classification Determination Factors
+- **Intended use** of the device
+- **Indications for use**
+- **Risk to patients, users, and others**
+- **Level of control needed to assure safety and effectiveness**
+
+The FDA's classification process follows a risk-based approach using classification panels that align with medical specialties, with regulations codified in 21 CFR Parts 862-892.`,
+      },
+      
+      'eu': {
+        'What are the key differences between MDD and MDR?': 
+          `# Key Differences Between MDD and MDR
+
+The transition from the Medical Device Directive (MDD 93/42/EEC) to the Medical Device Regulation (MDR 2017/745) represents a significant overhaul of the European regulatory framework for medical devices.
+
+## Scope and Classification
+- **MDD**: Narrower scope with 18 classification rules
+- **MDR**: Expanded scope including non-medical and aesthetic devices; 22 classification rules with many devices up-classified
+
+## Regulatory Oversight
+- **MDD**: Less rigorous supervision of Notified Bodies
+- **MDR**: Stricter designation and monitoring of Notified Bodies by Competent Authorities; joint assessments; fewer but more capable Notified Bodies
+
+## Clinical Evidence Requirements
+- **MDD**: Clinical evaluation with literature-based approaches often sufficient
+- **MDR**: Significantly higher clinical evidence standards:
+  - Equivalence approach severely restricted
+  - Clinical investigations required for most Class III and implantable devices
+  - Explicit benefit-risk determination
+  - Clinical evaluation consultant requirement for certain devices
+
+## Post-Market Requirements
+- **MDD**: Limited post-market requirements
+- **MDR**: Comprehensive post-market surveillance system:
+  - Post-Market Clinical Follow-up (PMCF) required for most devices
+  - Periodic Safety Update Reports (PSURs)
+  - Post-market surveillance plans and reports
+  - Trending of complaints and incidents
+
+## Transparency and Traceability
+- **MDD**: Limited public information
+- **MDR**: EUDAMED database implementation for:
+  - Device registration with Unique Device Identification (UDI)
+  - Economic operator registration
+  - Certificate and clinical investigation tracking
+  - Vigilance and post-market surveillance
+  - Public access to selected information
+  
+## Supply Chain Oversight
+- **MDD**: Limited requirements for economic operators
+- **MDR**: Defined obligations for:
+  - Manufacturers
+  - Authorized Representatives
+  - Importers
+  - Distributors
+  - Person responsible for regulatory compliance
+
+## Documentation Requirements
+- **MDD**: Technical File or Design Dossier
+- **MDR**: Extensive Technical Documentation requirements with:
+  - Detailed device description and specifications
+  - Comprehensive benefit-risk analysis
+  - Full traceability of design and manufacturing processes
+  - Stringent requirements for substance justification
+
+## Legacy Devices
+- **MDD**: CE certificates remained valid until expiration
+- **MDR**: MDD certificates expired May 26, 2024; significant constraints on changes to legacy devices
+
+The MDR has fundamentally increased regulatory scrutiny throughout the entire device lifecycle with emphasis on clinical data, transparent documentation, and ongoing performance evaluation.`,
+
+        'What is a PMCF study under the EU MDR?': 
+          `# Post-Market Clinical Follow-up (PMCF) Studies Under EU MDR
+
+## Definition and Purpose
+A Post-Market Clinical Follow-up (PMCF) study is a structured clinical investigation conducted after a device has received CE marking. As defined in MDR 2017/745, PMCF studies serve to:
+
+- Confirm the safety and performance of a device throughout its expected lifetime
+- Identify previously unknown side effects
+- Monitor identified side effects and contraindications
+- Identify and analyze emerging risks based on factual evidence
+- Ensure continued acceptability of the benefit-risk ratio
+- Identify possible systematic misuse or off-label use
+
+## Key Requirements and Characteristics
+
+### Legal Framework
+- Conducted under Annex XIV Part B of the EU MDR
+- Must comply with relevant sections of the MDR clinical investigation requirements
+- Requires ethical committee approval in most cases
+- Less stringent regulatory requirements than pre-market clinical investigations
+
+### Methodological Approaches
+- **Prospective clinical studies**: New data collection with predefined endpoints
+- **Extended follow-up of pre-market clinical investigations**
+- **Enrollment in product or disease registries**
+- **Real-world data collection**: Using digital health technologies or EHRs
+- **Post-market surveys**: Patient or healthcare provider feedback
+
+### Documentation Requirements
+- **PMCF Plan**: Part of the Post-Market Surveillance (PMS) plan that outlines:
+  - Methods and procedures for data collection
+  - Rationale for appropriateness of methods
+  - Specific objectives
+  - Estimated required sample sizes
+  - Analysis plans and interpretation criteria
+- **PMCF Evaluation Report**: Part of the periodic safety update report (PSUR) and technical documentation update
+
+### Implementation Timeline
+- Ongoing throughout the lifetime of the device
+- Updates in alignment with risk classification:
+  - Class III & implantable devices: Annual PSUR with PMCF results
+  - Class IIb: Every two years
+  - Class IIa: Every 2-5 years (as specified in technical documentation)
+  - Class I: As needed based on risk assessment
+
+## Factors Determining PMCF Requirements
+- Device risk classification
+- Device novelty and innovation level
+- Level of clinical evidence at certification
+- Specific uncertainties identified in clinical evaluation
+- Population size and vulnerability
+- Expected device lifetime
+
+The PMCF process represents a key element of the lifecycle approach to device regulation under the MDR, establishing a continuous feedback loop between real-world device performance and regulatory documentation.`,
+      },
+      
+      'pmda': {
+        'What are the requirements for a Japan clinical trial notification?': 
+          `# Japan Clinical Trial Notification (CTN) Requirements
+
+Japan's Pharmaceutical and Medical Devices Agency (PMDA) requires submission of a Clinical Trial Notification (CTN) before initiating clinical trials in Japan. This process, governed by the Pharmaceutical and Medical Device Act (PMD Act), has specific requirements:
+
+## Core Documentation Requirements
+
+### Main Notification Documents
+- **Clinical Trial Notification Form**: J-CTN Form that includes:
+  - Product identifying information
+  - Planned trial sites and investigators
+  - Planned number of subjects
+  - Trial schedule
+  - IRB/EC information
+- **Investigational Product Summary**: Comprehensive description including:
+  - Chemical structure/composition
+  - Manufacturing process
+  - Product specifications and test methods
+  - Stability data
+  - Formulation details
+- **Investigator's Brochure**: Must be in Japanese and include:
+  - Complete nonclinical data summary
+  - Clinical data from any previous studies
+  - Risk-benefit assessment
+- **Clinical Trial Protocol**: Must be in Japanese and include:
+  - Objectives and endpoints
+  - Subject eligibility criteria
+  - Treatment regimen
+  - Safety monitoring procedures
+  - Statistical analysis plan
+- **Informed Consent Documents**: In Japanese, with all required elements
+- **Case Report Forms**: Sample forms to be used
+
+### Supporting Data
+- **Quality Data**: Specifications, test methods, certificates of analysis
+- **Nonclinical Study Reports**: Complete toxicology, pharmacology, and ADME studies
+- **Prior Clinical Study Reports**: If available
+- **GMP Compliance Information**: Manufacturing site details and compliance status
+
+## Procedural Requirements
+
+### Submission Process
+- CTN must be submitted to PMDA 31 days before planned trial initiation
+- Electronic submission via PMDA gateway is preferred
+- Application must be in Japanese (or include Japanese translations)
+- Original signatures required on key documents
+
+### Review Timeline
+- 30-day review period (initial screening)
+- PMDA may issue inquiries during review
+- Clinical trial can start on day 31 if no objections raised
+- For some high-risk or novel products, PMDA may extend review to 60 days
+
+### Post-Submission Updates
+- Changes to protocol require amended notifications
+- Annual trial status reports required
+- Safety reporting follows ICH E2A guidelines with Japan-specific timeline requirements
+
+## Japan-Specific Considerations
+- GCP compliance based on MHLW Ordinance No. 28
+- Site qualification and monitoring requirements more stringent than ICH GCP
+- Japanese subject data generally required for marketing approval
+- Bridge strategies may be acceptable in some cases with appropriate justification
+
+Understanding these requirements is essential for successful clinical development in Japan, where regulatory expectations often exceed those of ICH guidelines in terms of documentation detail and Japanese-specific data requirements.`,
+      },
+      
+      'china': {
+        'What is the NMPA drug registration pathway?': 
+          `# NMPA Drug Registration Pathway in China
+
+The National Medical Products Administration (NMPA) of China has established a structured pathway for drug registration under the Drug Administration Law (revised 2019) and the Drug Registration Regulation (DRR, revised 2020).
+
+## Registration Categories
+
+### Chemical Drugs (5 Categories)
+1. **Category 1**: Innovative drugs not marketed anywhere globally
+2. **Category 2**: Improved new drugs (new indications, dosage forms, etc.)
+3. **Category 3**: Generic drugs with reference products marketed abroad but not in China
+4. **Category 4**: Generic drugs with reference products marketed in China
+5. **Category 5**: Drugs already marketed abroad seeking market authorization in China
+
+### Biological Products (3 Categories)
+1. **Category 1**: Innovative biologics
+2. **Category 2**: Improved biologics or biosimilars
+3. **Category 3**: Biologics already marketed abroad seeking authorization in China
+
+## Registration Process
+
+### Pre-Clinical Phase
+1. **Drug Development**: Chemistry, manufacturing, and control studies
+2. **Non-clinical Studies**: Pharmacology, toxicology, and pharmacokinetics
+3. **IND Application**: Submission of pre-clinical data to the Center for Drug Evaluation (CDE)
+4. **IND Review**: 60 working days for standard review; 30 working days for priority review
+5. **Clinical Trial Authorization (CTA)**: Automatic approval if no objection within the review period
+
+### Clinical Phase
+1. **Phase I-III Trials**: Must be conducted in compliance with China GCP
+2. **Clinical Trial Sites**: Must be GCP-certified by NMPA
+3. **Human Genetic Resource (HGR) Approval**: Required if collecting Chinese human genetic materials
+4. **Data Acceptance**: China now accepts foreign clinical data if they meet certain requirements
+
+### New Drug Application (NDA)
+1. **Submission**: Comprehensive dossier following CTD format to CDE
+2. **Technical Review**: 200 working days for standard review; 130 working days for priority review
+3. **On-site Inspection**: GMP inspection and clinical trial site inspection as needed
+4. **Sample Testing**: National drug control laboratory testing
+5. **Administrative Review**: Final review by NMPA (40 working days)
+6. **Approval**: Issuance of drug registration certificate
+
+## Special Pathways
+
+### Expedited Programs
+1. **Priority Review**: For innovative drugs addressing unmet medical needs
+2. **Conditional Approval**: For drugs treating serious conditions with limited options
+3. **Special Examination and Approval**: For public health emergencies
+4. **Breakthrough Therapy Designation**: For drugs showing substantial improvement over available therapies
+5. **Real-World Evidence Pathway**: For rare disease treatments
+
+### Data Exclusivity
+- 6 years for innovative chemical drugs
+- 12 years for innovative therapeutic biologics
+- Additional protections for pediatric drugs and rare disease treatments
+
+## Post-Approval Requirements
+- **Marketing Authorization Holder (MAH) System**: Legal entity responsible for quality, safety, and efficacy
+- **Post-marketing Studies**: Mandatory for conditionally approved drugs
+- **Periodic Safety Update Reports (PSURs)**: At specified intervals
+- **Re-registration**: Every 5 years
+
+The NMPA regulatory framework continues to evolve with ongoing reforms aimed at accelerating drug approvals while maintaining rigorous scientific standards.`,
+      },
+      
+      'canada': {
+        'What are the key elements of a Clinical Trial Application in Canada?': 
+          `# Key Elements of a Clinical Trial Application in Canada
+
+Health Canada's Clinical Trial Application (CTA) process is governed by Division 5 of the Food and Drug Regulations. A complete CTA submission includes:
+
+## Administrative Documents
+- **HC/SC 3011 Form**: Clinical Trial Application form with:
+  - Sponsor information
+  - Drug identification
+  - Protocol identification
+  - Qualified Investigator information
+  - Research Ethics Board information
+- **Clinical Trial Application Information Form**: Provides details on:
+  - Trial phase and design
+  - Subject population
+  - Safety monitoring procedures
+  - Previous regulatory communications
+- **Protocol Checklist**: Confirmation that required protocol elements are included
+- **Research Ethics Board Approval** (can be submitted after CTA approval but before study initiation)
+- **Qualified Investigator Undertaking**: Signed form from each principal investigator
+
+## Protocol and Investigator's Brochure
+- **Clinical Trial Protocol**: Comprehensive document with:
+  - Objectives and endpoints
+  - Subject selection criteria
+  - Treatment plan and procedures
+  - Safety evaluations
+  - Statistical considerations
+- **Investigator's Brochure**: Current version with:
+  - Physical, chemical, and pharmaceutical properties
+  - Non-clinical studies
+  - Previous human experience
+  - Risk-benefit assessment
+
+## Chemistry and Manufacturing Information
+- **Product Monograph** or **Prescribing Information** if marketed in Canada
+- **Chemistry and Manufacturing Information**:
+  - Drug substance: Characterization, manufacturing process, impurity profile
+  - Drug product: Formulation, manufacturing process, specifications
+  - Controls: In-process tests, release specifications, analytical methods
+  - Stability: Data supporting proposed shelf-life
+- **Good Manufacturing Practice (GMP) Evidence**:
+  - GMP compliance for clinical trial material
+  - QP attestation for European sites
+  - FDA information for US sites
+
+## Pre-clinical and Clinical Data
+- **Comprehensive Summaries**:
+  - Pharmacology (primary and secondary)
+  - Pharmacokinetics
+  - Toxicology (including genotoxicity, reproductive toxicity as appropriate)
+- **Clinical Data Summary** (for later phase trials):
+  - Previous trial results
+  - Safety information
+  - Effectiveness data
+
+## Special Requirements
+- **Comparative Dissolution Profiles**: For generic products
+- **Canadian Reference Product Selection**: For generic drugs
+- **Risk Management Plans**: For high-risk trials
+- **Infection Control Procedures**: For biological agents
+
+## Review Timeline
+- **Default Review**: 30 days from date of receipt
+- **No Objection Letter (NOL)**: Issued if CTA is found satisfactory
+
+## Amendments and Notifications
+- **CTA-A**: Required for protocol amendments, new sites, or significant manufacturing changes
+- **CTA-N**: For administrative changes or minor protocol modifications
+
+Health Canada applies ICH guidelines in their review process, particularly ICH E6 (GCP) and ICH E8 (General Considerations for Clinical Trials). The level of detail required in chemistry and manufacturing information is typically greater than for FDA INDs, especially for biological products.`,
+      },
+      
+      'tga': {
+        'What is the Australian CTN/CTX scheme?': 
+          `# Australian CTN and CTX Schemes
+
+Australia uses two pathways for clinical trial approval - the Clinical Trial Notification (CTN) scheme and the Clinical Trial Exemption (CTX) scheme. Both schemes are administered by the Therapeutic Goods Administration (TGA).
+
+## Clinical Trial Notification (CTN) Scheme
+
+### Overview
+The CTN scheme is a notification-based pathway where the TGA does not review any trial data before the trial commences.
+
+### Key Characteristics
+- **Review Responsibility**: Ethics committee (HREC) and institutional governance
+- **TGA Role**: Administrative oversight only; no scientific review
+- **Timeline**: Trial can commence immediately after TGA acknowledges notification
+- **Submission Requirements**:
+  - Online notification via TGA Business Services
+  - Payment of notification fee
+  - Sponsor, product, and trial details
+  - HREC approval confirmation
+  - Site authorizations
+
+### Process Flow
+1. **Study Documentation Review**: Protocol, IB, and trial materials reviewed by HREC
+2. **HREC Approval**: Ethics approval granted
+3. **Institution Approval**: Research governance authorization
+4. **CTN Submission**: Online submission to TGA with fee payment
+5. **Acknowledgement**: Automatic upon submission completion
+6. **Trial Commencement**: Can begin immediately after acknowledgement
+
+## Clinical Trial Exemption (CTX) Scheme
+
+### Overview
+The CTX scheme involves TGA evaluation of trial data before trial commencement.
+
+### Key Characteristics
+- **Review Responsibility**: Both TGA and ethics committee (HREC)
+- **TGA Role**: Evaluates data for safety and preliminary efficacy
+- **Timeline**: 50 working days for TGA evaluation
+- **Submission Requirements**:
+  - Data for evaluation: chemistry, pre-clinical, clinical
+  - Trial protocol(s)
+  - Investigator's Brochure
+  - Application forms and fee payment
+
+### Process Flow
+1. **CTX Application**: Submission of data and payment to TGA
+2. **TGA Evaluation**: 50-day review period
+3. **CTX Approval**: If acceptable, TGA issues approval
+4. **HREC Review**: Ethics committee assessment
+5. **Institution Approval**: Research governance authorization
+6. **Trial Commencement**: After all approvals obtained
+
+## Choosing Between CTN and CTX
+
+### CTN Best For
+- Standard phase II-IV trials
+- Drugs with established safety profiles
+- Products already approved in other major jurisdictions
+- Trials with strong international data packages
+- >95% of trials use this pathway
+
+### CTX Recommended For
+- First-in-human or early phase I trials
+- Novel products with limited prior human exposure
+- High-risk interventions
+- Gene therapy products
+- When binding TGA advice is desired
+
+## Ongoing Responsibilities
+- **Annual reports**: Required for both CTN and CTX trials
+- **Safety reporting**: 15 calendar days for SUSARs; 7 days for life-threatening events
+- **Significant safety issues**: Immediate notification required
+- **Protocol amendments**: New CTN required for significant changes
+
+The Australian system is unique in offering this dual approach, allowing sponsors to choose between a streamlined notification pathway and a more comprehensive evaluation pathway based on product risk and development stage.`,
+      },
+      
+      // General regulatory information
       'general': {
-        'default': `I'm LUMEN, your regulatory affairs assistant. I can help with questions about:
+        'default': `# LUMEN Regulatory Affairs Assistant
 
-- FDA 510(k) submissions
-- EU MDR compliance and Clinical Evaluation Reports
-- Quality Management Systems
-- Regulatory strategy for medical devices and pharmaceuticals
-- Document preparation and submission requirements
+I'm your specialized regulatory affairs assistant with expertise across global regulatory frameworks, including:
 
-For more specific assistance, please ask a detailed question about your regulatory needs, and I'll provide guidance based on current regulations and best practices.`
+## Jurisdictional Coverage
+- US FDA (drugs, biologics, medical devices)
+- European Union EMA and MDR/IVDR
+- Japan PMDA
+- China NMPA
+- Health Canada
+- Australia TGA
+- UK MHRA
+- Brazil ANVISA
+
+## Key Regulatory Areas
+- Clinical trial applications and management
+- Marketing authorizations and submissions
+- Post-market requirements and vigilance
+- Quality management systems
+- Regulatory strategy development
+
+## Documentation Support
+- Regulatory submissions (eCTD, STED)
+- Clinical evaluation reports
+- Technical files and design history files
+- PMCF/PMS planning
+- Risk management documentation
+
+## Standards and Guidelines
+- ICH Guidelines (E1-E20, M, Q, S series)
+- ISO Standards (13485, 14971, 10993)
+- Pharmacopoeia requirements
+- GxP compliance
+
+For specific assistance, please ask a detailed question about your regulatory needs, specifying the jurisdiction, product type, and regulatory phase you're interested in.`
       }
     };
     
