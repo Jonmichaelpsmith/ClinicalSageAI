@@ -1,0 +1,219 @@
+Below is a **single, ordered project plan** you can drop into your Replit AI agent.  It covers **all UI/UX enhancements**, **core Predicate Finder features**, and **AI-powered capabilities**—**no mocks**, production-grade code and data, all living under your **CER2V** module.
+
+---
+
+# 📋 Predicate Finder + AI Enhancements: Step-by-Step
+
+### 0. Prep & Feature Flags
+
+1. **Add feature flags** in `client/src/flags/featureFlags.ts`:
+
+   ```ts
+   export const FEATURE_PREDICATE_FINDER   = process.env.REACT_APP_ENABLE_PREDICATE_FINDER === 'true';
+   export const FEATURE_NLP_SUMMARIZATION  = process.env.REACT_APP_ENABLE_NLP_SUMMARIZATION === 'true';
+   export const FEATURE_AI_RECOMMENDATIONS = process.env.REACT_APP_ENABLE_AI_RECOMMENDATIONS === 'true';
+   export const FEATURE_SEMANTIC_SEARCH    = process.env.REACT_APP_ENABLE_SEMANTIC_SEARCH === 'true';
+   export const FEATURE_PREDICTIVE_ANALYSIS = process.env.REACT_APP_ENABLE_PREDICTIVE_ANALYSIS === 'true';
+   export const FEATURE_CHATBOT_ASSIST     = process.env.REACT_APP_ENABLE_CHATBOT_ASSIST === 'true';
+   export const FEATURE_UI_FEEDBACK        = process.env.REACT_APP_ENABLE_UI_FEEDBACK === 'true';
+   export const FEATURE_COMPARISONS        = process.env.REACT_APP_ENABLE_COMPARISONS === 'true';
+   export const FEATURE_SAVED_REFERENCES   = process.env.REACT_APP_ENABLE_SAVED_REFERENCES === 'true';
+   export const FEATURE_CITATION_FORMATS   = process.env.REACT_APP_ENABLE_CITATION_FORMATS === 'true';
+   export const FEATURE_USER_GUIDANCE      = process.env.REACT_APP_ENABLE_USER_GUIDANCE === 'true';
+   export const FEATURE_CUSTOM_RELEVANCE   = process.env.REACT_APP_ENABLE_CUSTOM_RELEVANCE === 'true';
+   ```
+
+2. **Install dependencies**:
+
+   ```bash
+   npm install ajv node-fetch xmlbuilder2 archiver @openai/openai react-joyride react-toastify react-query pgvector
+   ```
+
+---
+
+### 1️⃣ Core Predicate Finder
+
+1. **Service**
+
+   * Create `server/services/PredicateFinderService.ts` using **OpenFDA** real API.
+2. **Route**
+
+   * Add `GET /api/cer/predicates?q=…` to `server/routes/cerRoutes.ts`.
+3. **API Client**
+
+   * In `client/src/api/cer.ts`, implement `fetchPredicates(q: string)`.
+4. **Component**
+
+   * Create `client/src/components/cer/PredicateFinder.jsx` behind `FEATURE_PREDICATE_FINDER`.
+   * Renders search box, “Search” button, listing (`<PredicateCard>`), “Select” callbacks.
+5. **Integration**
+
+   * In `KAutomationPanel.jsx`, render `<PredicateFinder onSelect={setPredicate}/>`.
+6. **Feedback**
+
+   * Behind `FEATURE_UI_FEEDBACK`, add toast notifications (`react-toastify`) on:
+
+     * Search errors
+     * Successful selection
+
+---
+
+### 2️⃣ Detailed Comparisons
+
+1. **Component**
+
+   * Create `client/src/components/cer/PredicateComparison.jsx` behind `FEATURE_COMPARISONS`.
+   * Side-by-side table: device vs. predicate (intended use, tech, class).
+2. **Data Flow**
+
+   * After `onSelect`, fetch full predicate details from `/api/cer/predicates/:id`.
+3. **UI**
+
+   * Highlight similarities/differences in green/red.
+
+---
+
+### 3️⃣ Saved References & Citations
+
+1. **DB & Service**
+
+   * `server/services/ReferenceService.ts`: CRUD for saved literature references.
+   * Routes in `cerRoutes.ts`:
+
+     * `POST /api/cer/references`
+     * `GET  /api/cer/references`
+2. **Component**
+
+   * `client/src/components/cer/SavedReferences.jsx` behind `FEATURE_SAVED_REFERENCES`.
+   * List saved refs, with “Remove” button.
+3. **Citation Formats**
+
+   * In that component, under `FEATURE_CITATION_FORMATS`, offer APA/MLA toggles and “Copy to Clipboard.”
+
+---
+
+### 4️⃣ AI-Powered NLP Summaries
+
+1. **Service**
+
+   * `server/services/LiteratureSummarizerService.ts`: calls OpenAI to summarize abstracts.
+2. **Routes**
+
+   * `POST /api/cer/literature/summarize`
+3. **Component**
+
+   * In your literature search panel, add “Summarize” buttons behind `FEATURE_NLP_SUMMARIZATION`.
+   * Display AI-generated two-sentence summaries.
+
+---
+
+### 5️⃣ AI-Powered Recommendations
+
+1. **Service**
+
+   * `server/services/RecommendationService.ts`:
+
+     * Ingest deviceProfile + predicate + literature metadata
+     * Call OpenAI or custom model to rank relevance.
+2. **Routes**
+
+   * `GET /api/cer/recommendations?projectId=…`
+3. **Component**
+
+   * `client/src/components/cer/Recommendations.jsx` behind `FEATURE_AI_RECOMMENDATIONS`.
+   * Show top 5 recommended predicates & papers.
+
+---
+
+### 6️⃣ Semantic Search
+
+1. **Embedding Store**
+
+   * Add pgvector table `literature_embeddings`.
+2. **Service**
+
+   * Embed abstracts/devices via OpenAI embeddings.
+   * `server/services/SemanticSearchService.ts` to run `ORDER BY vector <-> query_vector`.
+3. **Component**
+
+   * In `PredicateFinder.jsx` & literature panel, behind `FEATURE_SEMANTIC_SEARCH`, add “Semantic” toggle.
+
+---
+
+### 7️⃣ Automated Literature Review
+
+1. **Service**
+
+   * `server/services/LiteratureAggregatorService.ts`: aggregate PubMed/ClinicalTrials.gov, then summarize via OpenAI.
+2. **Routes**
+
+   * `GET /api/cer/literature?source=…`
+3. **Component**
+
+   * `EnhancedLiteratureSearch.jsx` behind `FEATURE_SEMANTIC_SEARCH`.
+   * Bulk “Summarize Selected” using `/summarize`.
+
+---
+
+### 8️⃣ Predictive Analysis
+
+1. **Service**
+
+   * `server/services/PredictiveService.ts`: train or infer success likelihood via historical data + AI.
+2. **Route**
+
+   * `GET /api/cer/predictive/:projectId`
+3. **Component**
+
+   * `client/src/components/cer/PredictiveAnalysis.jsx` behind `FEATURE_PREDICTIVE_ANALYSIS`.
+   * Gauge chart showing submission success %.
+
+---
+
+### 9️⃣ Interactive Chatbot
+
+1. **Component**
+
+   * Install `react-chat-ui`; build `ChatbotAssist.jsx` behind `FEATURE_CHATBOT_ASSIST`.
+2. **Service**
+
+   * `server/routes/aiChat.ts` → proxy to OpenAI’s chat endpoint with “You are a MedTech RA expert.”
+3. **Integration**
+
+   * Floating help bubble in `ClientContextBar.jsx`.
+
+---
+
+### 🔟 User Guidance & Tooltips
+
+1. **Tooltips**
+
+   * Wrap key form fields, buttons in `react-tooltip` behind `FEATURE_USER_GUIDANCE`.
+2. **Guided Tour**
+
+   * Use `react-joyride` in `GuidedTour.jsx` behind `ENABLE_ONBOARDING_TOUR`.
+
+---
+
+### 1️⃣1️⃣ Custom Relevance Criteria
+
+1. **Component**
+
+   * Add settings panel `RelevanceSettings.jsx` behind `FEATURE_CUSTOM_RELEVANCE`.
+   * Controls for weighting intended use vs. technology vs. literature recency.
+2. **Service**
+
+   * Pass those weights into `RecommendationService` as part of AI prompt.
+
+---
+
+## ✔️ Final Steps
+
+* **Wire into** `client/src/components/cer/CERV2Page.jsx` (or `KAutomationPanel.jsx`), adding each new card/UI under its feature flag.
+* **Protect** all new `/api/cer/*` routes with your existing authentication middleware.
+* **Write tests** (unit, RTL, e2e) for each feature before merging.
+* **Deploy** and verify by toggling each flag in Replit Secrets (e.g. `REACT_APP_ENABLE_AI_RECOMMENDATIONS=true`).
+
+---
+
+**Drop this plan into your Replit AI agent** as the master to-do list.  It will scaffold production-ready code—no mocks—delivering a fully AI-enhanced Predicate Finder that your MedTech RA clients can use in the real world.
