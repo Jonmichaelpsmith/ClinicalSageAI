@@ -123,7 +123,6 @@ import fda510kRouter from './routes/fda510k-routes';
 import fda510kComplianceRouter from './routes/510k-compliance-routes';
 import fda510kEstarRouter from './routes/510kEstarRoutes';
 import { router as fda510kApiRouter } from './routes/510k-api-routes';
-import deviceProfileRouter from './routes/cerDeviceProfileRoutes';
 // Import existing router or create empty one
 import express from 'express';
 import * as fs from 'fs';
@@ -281,8 +280,32 @@ export default function registerRoutes(app: Express): void {
   app.use('/api/fda510k', fda510kEstarRouter);
   app.use('/api/fda510k', fda510kApiRouter);
   
-  // Register Device Profile API routes
-  app.use('/api/cer/device-profile', deviceProfileRouter);
+  // Register Device Profile API routes directly
+  const DeviceProfileService = require('./services/DeviceProfileService').default;
+  const deviceProfileService = DeviceProfileService.getInstance();
+  
+  // Create direct routes for device profiles
+  app.post('/api/cer/device-profile', async (req, res) => {
+    try {
+      console.log('Direct device profile route hit!', req.body);
+      const deviceProfileData = req.body;
+      
+      // Add creation timestamp if not provided
+      if (!deviceProfileData.createdAt) {
+        deviceProfileData.createdAt = new Date();
+      }
+      
+      const deviceProfile = await deviceProfileService.createDeviceProfile(deviceProfileData);
+      
+      res.status(201).json(deviceProfile);
+    } catch (error) {
+      console.error('Error creating device profile:', error);
+      res.status(500).json({ 
+        error: 'Failed to create device profile',
+        message: error instanceof Error ? error.message : 'Unknown error occurred' 
+      });
+    }
+  });
   
   // Register Authentication routes
   app.use('/auth', authRouter);

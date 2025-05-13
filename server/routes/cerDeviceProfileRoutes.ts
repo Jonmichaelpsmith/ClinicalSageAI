@@ -11,7 +11,7 @@ const deviceProfileService = DeviceProfileService.getInstance();
  */
 // Add a debug middleware to trace request
 router.use((req, res, next) => {
-  console.log('Device Profile Route accessed:', req.method, req.originalUrl);
+  console.log('Device Profile Route accessed:', req.method, req.originalUrl, req.baseUrl, req.path);
   next();
 });
 
