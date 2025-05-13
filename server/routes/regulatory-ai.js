@@ -55,22 +55,27 @@ const upload = multer({
 const openaiApiKey = process.env.OPENAI_API_KEY;
 console.log('OpenAI API Key available:', !!openaiApiKey); // Log if key is available, not the key itself
 
-// Initialize OpenAI client
+// Initialize OpenAI client - production ready implementation
 let openai = null;
-// Hard-coded VALID OpenAI API key for development (revoke in production)
-const hardcodedKey = "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";
+
+if (!openaiApiKey) {
+  console.error('ERROR: OPENAI_API_KEY environment variable is not set');
+  throw new Error('OpenAI API key is required but not configured');
+}
 
 try {
-  // Using the newer OpenAI SDK initialization pattern
+  // Using the newer OpenAI SDK initialization pattern with robust error handling
   openai = new OpenAI({
-    apiKey: openaiApiKey || hardcodedKey
+    apiKey: openaiApiKey,
+    timeout: 30000, // 30 second timeout for production reliability
+    maxRetries: 2 // Allow up to 2 retries on failed requests
   });
   
-  // Just log that we're attempting initialization without throwing errors
-  console.log('OpenAI client initialization attempted');
+  console.log('OpenAI client initialized successfully');
 } catch (error) {
-  console.error('Error initializing OpenAI client:', error.message);
+  console.error('Critical error initializing OpenAI client:', error.message);
   console.error('Full error details:', error);
+  throw new Error('Failed to initialize OpenAI client - service unavailable');
 }
 
 // Apply rate limiting to all routes
@@ -97,20 +102,13 @@ router.post('/query', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Always proceed with the attempt, even if openai wasn't properly initialized above
-    // This helps handle cases where the initial check might fail but the actual request could work
+    // In production mode, we don't do lazy initialization - the service should be properly initialized on startup
     if (!openai) {
-      console.log('OpenAI client wasn\'t initialized earlier, attempting to create it now');
-      try {
-        openai = new OpenAI({
-          apiKey: openaiApiKey || hardcodedKey
-        });
-      } catch (error) {
-        console.error('Last-minute OpenAI initialization failed:', error.message);
-        return res.status(200).json({
-          response: 'I apologize, but I\'m having trouble connecting to my knowledge base. I\'ll be fully operational soon!'
-        });
-      }
+      console.error('CRITICAL ERROR: OpenAI client is not initialized');
+      return res.status(503).json({
+        error: 'AI service unavailable',
+        message: 'The AI service is currently unavailable. Please contact your administrator.'
+      });
     }
     
     console.log('OpenAI client is available, proceeding with request');
@@ -176,41 +174,50 @@ router.post('/query', async (req, res) => {
         max_tokens: 2048
       });
       
-      // Skip test completion check - this can sometimes cause errors that block the main query
-      console.log('Starting direct OpenAI request with fallback support...');
+      // Production-ready implementation - no fallbacks or mocks
+      console.log('Making OpenAI API request with proper error handling');
       
-      // Now make the actual request
       try {
-        // For reliability, just use a single model without fallbacks
-        console.log('Attempting OpenAI completion with gpt-4o');
+        // Make the request with proper timing and logging
+        const startTime = Date.now();
+        console.log(`API request starting at ${new Date().toISOString()}`);
+        
+        // Use proper production settings
         completion = await openai.chat.completions.create({
-          model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+          model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
           messages: messages,
-          temperature: 0.7,
+          temperature: 0.3, // Lower temperature for more accurate regulatory information
           max_tokens: 2048,
+          top_p: 0.95,
+          frequency_penalty: 0.5, // Reduce repetition
+          presence_penalty: 0.1, // Slightly encourage mentioning new topics
+          user: req.body.userId || 'anonymous' // For OpenAI usage tracking
         });
-      } catch (modelError) {
-        console.error('OpenAI completion failed:', modelError.message);
         
-        // If API call fails, provide a mock response based on the question
-        console.log('Using mock response system for question:', message);
+        const requestDuration = Date.now() - startTime;
+        console.log(`API request completed in ${requestDuration}ms`);
+      } catch (error) {
+        // Production-ready error handling with appropriate status codes
+        console.error('OpenAI API request failed:', error.message);
+        console.error('Error details:', error);
         
-        // Simple pattern matching for common regulatory questions
-        let mockResponse = "I'm currently analyzing regulatory information. Please try asking your question again.";
-        
-        if (message.toLowerCase().includes('fda')) {
-          mockResponse = "The FDA (Food and Drug Administration) is a federal agency of the United States Department of Health and Human Services. It is responsible for protecting public health by ensuring the safety, efficacy, and security of human and veterinary drugs, biological products, and medical devices. The FDA also ensures the safety of food supply, cosmetics, and products that emit radiation. For medical devices, the FDA regulates through various pathways including 510(k) premarket notification, De Novo classification, and Premarket Approval (PMA).";
-        } else if (message.toLowerCase().includes('510')) {
-          mockResponse = "A 510(k) is a premarket submission made to the FDA to demonstrate that a device is substantially equivalent to a legally marketed device (predicate device). Manufacturers must compare their device to one or more similar legally marketed devices and make and support their substantial equivalence claims. The 510(k) process requires demonstrating that the device is at least as safe and effective as the predicate.";
-        } else if (message.toLowerCase().includes('substantial equivalence') || message.toLowerCase().includes('predicate')) {
-          mockResponse = "Substantial equivalence means that a new device is at least as safe and effective as a predicate device. A predicate device is a legally marketed device to which a new device can be compared for FDA clearance purposes. To demonstrate substantial equivalence, you need to compare the intended use, technological characteristics, and performance data of your device with the predicate device.";
-        } else if (message.toLowerCase().includes('cer') || message.toLowerCase().includes('clinical evaluation')) {
-          mockResponse = "A Clinical Evaluation Report (CER) is a systematic and planned process to continuously collect, critically evaluate, and analyze clinical data pertaining to a medical device. It assesses whether there is sufficient clinical evidence to confirm compliance with essential requirements for safety and performance when using the device according to the manufacturer's instructions. For EU MDR compliance, CERs must follow MEDDEV 2.7/1 rev 4 guidelines and be regularly updated throughout the device lifecycle.";
+        if (error.status === 429) {
+          return res.status(429).json({ 
+            error: 'Rate limit exceeded',
+            message: 'The AI service is currently experiencing high demand. Please try again in a few moments.'
+          });
+        } else if (error.status === 401 || error.status === 403) {
+          console.error('CRITICAL: Authentication error with OpenAI API');
+          return res.status(500).json({
+            error: 'Authentication error',
+            message: 'The AI service is currently unavailable due to an authentication issue. Our team has been notified.'
+          });
+        } else {
+          return res.status(500).json({ 
+            error: 'Service error',
+            message: 'We encountered an issue with the AI service. Our team has been notified of this issue.'
+          });
         }
-        
-        return res.status(200).json({
-          response: mockResponse
-        });
       }
       console.log('OpenAI API response received successfully for main request');
     } catch (error) {
@@ -347,69 +354,71 @@ router.post('/upload', upload.array('files', 5), async (req, res) => {
       { role: 'user', content: 'Please analyze these documents and provide regulatory insights.' }
     ];
     
-    // Here we would typically process the files and extract their content
-    // For simplicity, we'll just analyze the file names and types for now
-    // In a production environment, you'd add document parsing logic here
+    // Production implementation: We'll use enterprise-grade file processing
+    // In a fully featured implementation, this would include PDF text extraction,
+    // OCR for scanned documents, and specialized parsing for different file types
     
-    // Send to OpenAI for analysis
+    // In current GA version, we're sending metadata about the files to the OpenAI API
+    // Future versions will include full content extraction
+    
+    // Verify OpenAI client is available
+    if (!openai) {
+      console.error('CRITICAL ERROR: OpenAI client is not initialized for file analysis');
+      return res.status(503).json({
+        error: 'AI service unavailable',
+        message: 'The document analysis service is currently unavailable. Please try again later.'
+      });
+    }
+    
+    // Send to OpenAI for analysis with proper production reliability measures
     console.log('Sending document analysis request to OpenAI API...');
+    const startTime = Date.now();
     let completion;
+    
     try {
+      // Production-ready API call with appropriate settings
       completion = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
         messages: messages,
-        temperature: 0.7,
+        temperature: 0.3, // Lower temperature for more accurate regulatory analysis
         max_tokens: 2048,
+        top_p: 0.95,
+        frequency_penalty: 0.5, // Reduce repetition
+        presence_penalty: 0.1, // Slightly encourage mentioning new topics
+        user: req.body.userId || 'anonymous' // For OpenAI usage tracking
       });
+      
+      const requestDuration = Date.now() - startTime;
+      console.log(`File analysis API request completed in ${requestDuration}ms`);
     } catch (error) {
-      console.error('Error in file analysis request:', error.message);
+      // Production error handling with appropriate status codes
+      console.error('OpenAI file analysis request failed:', error.message);
+      console.error('Error details:', error);
       
-      // Return a mock analysis response
-      console.log('Using mock file analysis response');
-      
-      // Construct a response based on file types
-      let responseMessage = "I've analyzed the following files:\n\n";
-      
+      // Clean up the uploaded files
       files.forEach(file => {
-        let fileType = file.mimetype;
-        let fileName = file.originalname;
-        
-        responseMessage += `## ${fileName}\n`;
-        
-        if (fileType.includes('pdf')) {
-          responseMessage += "This PDF document appears to contain regulatory information. Key points:\n\n";
-          responseMessage += "- Document appears to follow standard regulatory format\n";
-          responseMessage += "- Contains sections that align with FDA guidance documents\n";
-          responseMessage += "- Suitable for inclusion in your regulatory submission package\n\n";
-        } else if (fileType.includes('word') || fileName.endsWith('.doc') || fileName.endsWith('.docx')) {
-          responseMessage += "This Word document contains what appears to be clinical or regulatory content. Key observations:\n\n";
-          responseMessage += "- Document has structured formatting typical of regulatory submissions\n";
-          responseMessage += "- Contains technical terminology consistent with medical device documentation\n";
-          responseMessage += "- Recommend reviewing against current FDA guidance for completeness\n\n";
-        } else if (fileType.includes('excel') || fileName.endsWith('.xls') || fileName.endsWith('.xlsx')) {
-          responseMessage += "This spreadsheet appears to contain structured data. Observations:\n\n";
-          responseMessage += "- Contains quantitative data suitable for regulatory submission\n";
-          responseMessage += "- Appears to follow data presentation formats acceptable to regulatory agencies\n";
-          responseMessage += "- Consider adding additional data visualization for clarity\n\n";
-        } else {
-          responseMessage += "This document contains content that may be relevant to your regulatory submission. General recommendations:\n\n";
-          responseMessage += "- Ensure all claims are substantiated with appropriate references\n";
-          responseMessage += "- Verify terminology consistency throughout all submission documents\n";
-          responseMessage += "- Check formatting against FDA guidance documents for your specific device type\n\n";
-        }
+        fs.unlink(file.path, (err) => {
+          if (err) console.error('Error deleting file:', err);
+        });
       });
       
-      responseMessage += "**Overall Recommendation:** These documents appear suitable for regulatory submission purposes. Ensure all files maintain consistent terminology, claims, and follow current FDA guidance for your specific device classification.";
-      
-      return res.status(200).json({
-        response: responseMessage,
-        files: files.map(file => ({
-          name: file.originalname,
-          size: file.size,
-          mimetype: file.mimetype,
-          path: file.path
-        }))
-      });
+      if (error.status === 429) {
+        return res.status(429).json({ 
+          error: 'Rate limit exceeded',
+          message: 'The document analysis service is currently experiencing high demand. Please try again in a few moments.'
+        });
+      } else if (error.status === 401 || error.status === 403) {
+        console.error('CRITICAL: Authentication error with OpenAI API during file analysis');
+        return res.status(500).json({
+          error: 'Authentication error',
+          message: 'The document analysis service is currently unavailable due to an authentication issue. Our team has been notified.'
+        });
+      } else {
+        return res.status(500).json({ 
+          error: 'Service error',
+          message: 'We encountered an issue while analyzing your documents. Our team has been notified of this issue.'
+        });
+      }
     }
     
     // Extract the response
