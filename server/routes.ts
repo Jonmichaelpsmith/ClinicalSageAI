@@ -121,6 +121,7 @@ import fda510kRouter from './routes/fda510k-routes';
 import fda510kComplianceRouter from './routes/510k-compliance-routes';
 import fda510kEstarRouter from './routes/510kEstarRoutes';
 import { router as fda510kApiRouter } from './routes/510k-api-routes';
+import deviceProfileRouter from './routes/cerDeviceProfileRoutes';
 // Import existing router or create empty one
 import express from 'express';
 import * as fs from 'fs';
@@ -277,6 +278,9 @@ export default function registerRoutes(app: Express): void {
   app.use('/api/fda510k', fda510kComplianceRouter);
   app.use('/api/fda510k', fda510kEstarRouter);
   app.use('/api/fda510k', fda510kApiRouter);
+  
+  // Register Device Profile API routes
+  app.use('/api/cer/device-profile', deviceProfileRouter);
   
   // Register Authentication routes
   app.use('/auth', authRouter);
