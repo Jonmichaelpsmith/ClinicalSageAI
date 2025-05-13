@@ -115,6 +115,41 @@ export const featureFlags: Record<string, FeatureFlag> = {
     defaultValue: true,
     enabled: true
   },
+  ENABLE_COMPARISONS: {
+    id: 'ENABLE_COMPARISONS',
+    name: 'Detailed Comparisons',
+    description: 'Enables detailed side-by-side comparison between device profiles and predicate devices',
+    defaultValue: true,
+    enabled: true
+  },
+  ENABLE_SAVED_REFERENCES: {
+    id: 'ENABLE_SAVED_REFERENCES',
+    name: 'Saved References',
+    description: 'Enables saving and management of literature references',
+    defaultValue: true,
+    enabled: true
+  },
+  ENABLE_CITATION_FORMATS: {
+    id: 'ENABLE_CITATION_FORMATS',
+    name: 'Citation Formats',
+    description: 'Enables multiple citation format options for references',
+    defaultValue: true,
+    enabled: true
+  },
+  ENABLE_NLP_SUMMARIZATION: {
+    id: 'ENABLE_NLP_SUMMARIZATION',
+    name: 'NLP Summarization',
+    description: 'Enables AI-powered summarization of literature and abstracts',
+    defaultValue: true,
+    enabled: true
+  },
+  ENABLE_CUSTOM_RELEVANCE: {
+    id: 'ENABLE_CUSTOM_RELEVANCE',
+    name: 'Custom Relevance Criteria',
+    description: 'Enables customization of relevance criteria for predicate device matching',
+    defaultValue: true,
+    enabled: true
+  },
   
   // Onboarding and assistance
   ENABLE_ONBOARDING_TOUR: {
