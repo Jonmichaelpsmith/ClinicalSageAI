@@ -19,13 +19,20 @@ export const postDeviceProfile = async (data) => {
 };
 
 /**
- * Get all device profiles
+ * Get all device profiles, optionally filtered by organization
  * 
+ * @param {string} organizationId - Optional organization ID filter
  * @returns {Promise<Array>} - Array of device profiles
  */
-export const getDeviceProfiles = async () => {
+export const getDeviceProfiles = async (organizationId) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/device-profiles`);
+    let url = `${API_BASE_URL}/device-profile`;
+    
+    if (organizationId) {
+      url = `${API_BASE_URL}/device-profile/organization/${organizationId}`;
+    }
+    
+    const response = await axios.get(url);
     return response.data;
   } catch (error) {
     console.error('Error getting device profiles:', error);
