@@ -1,174 +1,154 @@
 /**
- * ESTARPackageBuilder Service
- *
- * This service handles the creation, validation, and management of FDA eSTAR packages
- * for 510(k) submissions. It provides methods for assembling documents, validating content,
- * generating proper XML structure, and creating submission-ready packages.
+ * eSTAR Package Builder Service
+ * 
+ * This service provides specialized methods for building, validating,
+ * and generating eSTAR packages for FDA 510(k) submissions.
  */
 
-import apiRequest from '../lib/queryClient';
+import axios from 'axios';
 
-/**
- * Main ESTARPackageBuilder class implementing the singleton pattern
- */
 class ESTARPackageBuilder {
-  constructor() {
-    if (ESTARPackageBuilder.instance) {
-      return ESTARPackageBuilder.instance;
-    }
-    
-    ESTARPackageBuilder.instance = this;
-  }
-
   /**
-   * Get available templates for eSTAR packages
-   * @returns {Promise<Array>} Available eSTAR templates
+   * Generate a normalized XML structure for the eSTAR package
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @returns {Promise<Object>} - XML structure data
    */
-  async getTemplates() {
+  async generateXMLStructure(projectId) {
     try {
-      const response = await apiRequest('/api/510k/estar-templates');
+      const response = await axios.post(`/api/fda510k/generate-xml/${projectId}`);
       return response.data;
     } catch (error) {
-      console.error('Error fetching eSTAR templates:', error);
-      throw error;
+      console.error('Error generating XML structure:', error);
+      throw new Error(error.response?.data?.message || 'Failed to generate XML structure');
     }
   }
 
   /**
-   * Get required documents for an eSTAR package based on device type
-   * @param {string} deviceType - The type of medical device
-   * @param {string} submissionType - The type of 510(k) submission (Traditional, Abbreviated, Special)
-   * @returns {Promise<Array>} Required documents list
+   * Validate the eSTAR package and check for missing required information
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @returns {Promise<Object>} - Validation results with issues categorized by severity
    */
-  async getRequiredDocuments(deviceType, submissionType) {
+  async validatePackage(projectId) {
     try {
-      const response = await apiRequest('/api/510k/estar-required-documents', {
-        method: 'POST',
-        data: { deviceType, submissionType }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching required documents:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Validate an eSTAR package for completeness and compliance
-   * @param {Object} packageData - The package data to validate
-   * @returns {Promise<Object>} Validation results with issues if any
-   */
-  async validatePackage(packageData) {
-    try {
-      const response = await apiRequest('/api/510k/estar-validate', {
-        method: 'POST',
-        data: packageData
-      });
+      const response = await axios.post(`/api/fda510k/validate-package/${projectId}`);
       return response.data;
     } catch (error) {
       console.error('Error validating eSTAR package:', error);
-      throw error;
+      throw new Error(error.response?.data?.message || 'Failed to validate eSTAR package');
     }
   }
 
   /**
-   * Generate an eSTAR package in the correct XML format
-   * @param {Object} packageData - The package data to build
-   * @returns {Promise<Object>} Generated package details
+   * Get the list of documents for a project that can be included in the eSTAR package
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @returns {Promise<Array>} - Array of document objects with metadata
    */
-  async buildPackage(packageData) {
+  async getProjectDocuments(projectId) {
     try {
-      const response = await apiRequest('/api/510k/estar-build', {
-        method: 'POST',
-        data: packageData
+      const response = await axios.get(`/api/fda510k/project-documents/${projectId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching project documents:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch project documents');
+    }
+  }
+
+  /**
+   * Update document selection for an eSTAR package
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {Array<string>} documentIds - Array of document IDs to include
+   * @returns {Promise<Object>} - Update result
+   */
+  async updateDocumentSelection(projectId, documentIds) {
+    try {
+      const response = await axios.post(`/api/fda510k/update-document-selection/${projectId}`, {
+        documentIds
       });
       return response.data;
     } catch (error) {
-      console.error('Error building eSTAR package:', error);
-      throw error;
+      console.error('Error updating document selection:', error);
+      throw new Error(error.response?.data?.message || 'Failed to update document selection');
     }
   }
 
   /**
-   * Get details about a specific eSTAR package
-   * @param {string} packageId - The ID of the package to get
-   * @returns {Promise<Object>} Package details
+   * Generate a cover letter for the eSTAR package submission
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {Object} additionalInfo - Additional information for the cover letter
+   * @returns {Promise<Object>} - Generated cover letter data
    */
-  async getPackageDetails(packageId) {
+  async generateCoverLetter(projectId, additionalInfo = {}) {
     try {
-      const response = await apiRequest(`/api/510k/estar-package/${packageId}`);
+      const response = await axios.post(`/api/fda510k/generate-cover-letter/${projectId}`, additionalInfo);
       return response.data;
     } catch (error) {
-      console.error('Error fetching package details:', error);
-      throw error;
+      console.error('Error generating cover letter:', error);
+      throw new Error(error.response?.data?.message || 'Failed to generate cover letter');
     }
   }
 
   /**
-   * Submit an eSTAR package to the FDA ESG
-   * @param {string} packageId - The ID of the package to submit
-   * @param {Object} submissionDetails - Additional submission details
-   * @returns {Promise<Object>} Submission result
+   * Build and generate the final eSTAR package
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {Object} options - Build options
+   * @param {boolean} options.includeCoverLetter - Whether to include a cover letter
+   * @param {boolean} options.includeDigitalSignature - Whether to include a digital signature
+   * @returns {Promise<Object>} - Build result with download URL
    */
-  async submitPackage(packageId, submissionDetails) {
+  async buildFinalPackage(projectId, { includeCoverLetter = true, includeDigitalSignature = true } = {}) {
     try {
-      const response = await apiRequest('/api/510k/estar-submit', {
-        method: 'POST',
-        data: { packageId, ...submissionDetails }
+      const response = await axios.post(`/api/fda510k/build-final-package/${projectId}`, {
+        includeCoverLetter,
+        includeDigitalSignature
       });
       return response.data;
     } catch (error) {
-      console.error('Error submitting eSTAR package:', error);
-      throw error;
+      console.error('Error building final eSTAR package:', error);
+      throw new Error(error.response?.data?.message || 'Failed to build final eSTAR package');
     }
   }
 
   /**
-   * Generate an XML structure from document metadata
-   * @param {Object} metadata - Document metadata
-   * @returns {string} XML structure
+   * Submit the eSTAR package to the FDA ESG (Electronic Submissions Gateway)
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {Object} submissionInfo - Submission metadata
+   * @returns {Promise<Object>} - Submission result with ESG tracking number
    */
-  generateXmlStructure(metadata) {
-    // In a real implementation, this would create proper XML
-    // This is a simplified example that would be replaced with a real XML builder
-    const header = `<?xml version="1.0" encoding="UTF-8"?>
-<eSTAR-Submission xmlns="http://www.fda.gov/eSTAR" 
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                xsi:schemaLocation="http://www.fda.gov/eSTAR eSTAR_510k_Schema.xsd" 
-                submissionType="${metadata.submissionType || 'Traditional'}">`;
-    
-    const footer = '</eSTAR-Submission>';
-    
-    // Build sections based on metadata
-    const sections = Object.entries(metadata.sections || {}).map(([key, value]) => {
-      return `  <${key}>\n    ${this._buildXmlContent(value)}\n  </${key}>`;
-    }).join('\n  \n');
-    
-    return `${header}\n${sections}\n${footer}`;
+  async submitToFdaEsg(projectId, submissionInfo = {}) {
+    try {
+      const response = await axios.post(`/api/fda510k/submit-to-esg/${projectId}`, submissionInfo);
+      return response.data;
+    } catch (error) {
+      console.error('Error submitting to FDA ESG:', error);
+      throw new Error(error.response?.data?.message || 'Failed to submit to FDA ESG');
+    }
   }
-  
+
   /**
-   * Internal helper to build XML content
-   * @private
+   * Get submission history for a project
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @returns {Promise<Array>} - Array of submission history entries
    */
-  _buildXmlContent(data) {
-    if (typeof data === 'string') {
-      return data;
+  async getSubmissionHistory(projectId) {
+    try {
+      const response = await axios.get(`/api/fda510k/submission-history/${projectId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching submission history:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch submission history');
     }
-    
-    if (Array.isArray(data)) {
-      return data.map(item => this._buildXmlContent(item)).join('\n    ');
-    }
-    
-    if (typeof data === 'object' && data !== null) {
-      return Object.entries(data).map(([key, value]) => {
-        return `<${key}>${this._buildXmlContent(value)}</${key}>`;
-      }).join('\n    ');
-    }
-    
-    return String(data);
   }
 }
 
-// Export a singleton instance
-export default new ESTARPackageBuilder();
+// Create and export a singleton instance
+const estarPackageBuilder = new ESTARPackageBuilder();
+export default estarPackageBuilder;
+export { ESTARPackageBuilder };

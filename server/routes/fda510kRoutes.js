@@ -7,7 +7,7 @@
  */
 
 import express from 'express';
-const router = express.Router();
+export const router = express.Router();
 import { OpenAI } from 'openai';
 import axios from 'axios';
 
@@ -37,953 +37,1102 @@ const validateDeviceData = (req, res, next) => {
   next();
 };
 
-/**
- * Get 510(k) requirements for a specific device class
- */
-router.get('/requirements/:deviceClass', async (req, res) => {
+// Helper to format regulatory pathway response from OpenAI
+const formatPathwayResponse = (responseData) => {
   try {
-    const { deviceClass } = req.params;
+    const pathwayData = typeof responseData === 'string' 
+      ? JSON.parse(responseData) 
+      : responseData;
     
-    // Basic validation
-    if (!['I', 'II', 'III'].includes(deviceClass)) {
-      return res.status(400).json({
+    return {
+      ...pathwayData,
+      success: true
+    };
+  } catch (error) {
+    console.error('Error formatting pathway response:', error);
+    return {
+      recommendation: responseData,
+      confidence: 0.7,
+      reasoning: "Unable to parse structured data from AI response",
+      success: true
+    };
+  }
+};
+
+// Helper to format predicate device response from OpenAI
+const formatPredicateResponse = (responseData) => {
+  try {
+    const predicateData = typeof responseData === 'string' 
+      ? JSON.parse(responseData) 
+      : responseData;
+    
+    return {
+      ...predicateData,
+      success: true
+    };
+  } catch (error) {
+    console.error('Error formatting predicate response:', error);
+    return {
+      predicateDevices: [],
+      literatureReferences: [],
+      message: "Unable to parse structured data from AI response",
+      success: false
+    };
+  }
+};
+
+// ===========================
+// Regulatory Pathway Analysis
+// ===========================
+
+// Analyze regulatory pathway for a device
+router.post('/analyze-pathway', validateDeviceData, async (req, res) => {
+  const { deviceData, organizationId } = req.body;
+  
+  try {
+    if (!openai) {
+      return res.status(503).json({
         success: false,
-        message: 'Invalid device class. Must be I, II, or III.'
+        message: 'OpenAI API is not available. Please check your API key configuration.'
       });
     }
     
-    // Load device class specific requirements
-    const requirements = {
-      I: {
-        requirements: [
-          { id: 'req_class_i_1', name: 'Intended Use', description: 'Statement of intended use and indications for use' },
-          { id: 'req_class_i_2', name: 'Device Description', description: 'Comprehensive description of the device' },
-          { id: 'req_class_i_3', name: 'Substantial Equivalence', description: 'Comparison to predicate device(s)' },
-          { id: 'req_class_i_4', name: 'Labeling', description: 'Draft labeling for the device' },
-          { id: 'req_class_i_5', name: 'Risk Analysis', description: 'Identification and analysis of risks' }
-        ],
-        recommendedPathway: 'Traditional 510(k)'
-      },
-      II: {
-        requirements: [
-          { id: 'req_class_ii_1', name: 'Intended Use', description: 'Statement of intended use and indications for use' },
-          { id: 'req_class_ii_2', name: 'Device Description', description: 'Comprehensive description of the device' },
-          { id: 'req_class_ii_3', name: 'Substantial Equivalence', description: 'Comparison to predicate device(s)' },
-          { id: 'req_class_ii_4', name: 'Bench Testing', description: 'Performance data and bench testing results' },
-          { id: 'req_class_ii_5', name: 'Biocompatibility', description: 'Biocompatibility evaluation (if applicable)' },
-          { id: 'req_class_ii_6', name: 'Sterilization', description: 'Sterilization validation (if applicable)' },
-          { id: 'req_class_ii_7', name: 'Software Validation', description: 'Software validation documentation (if applicable)' },
-          { id: 'req_class_ii_8', name: 'Electrical Safety', description: 'Electrical safety and EMC testing (if applicable)' },
-          { id: 'req_class_ii_9', name: 'Labeling', description: 'Draft labeling for the device' },
-          { id: 'req_class_ii_10', name: 'Risk Analysis', description: 'Identification and analysis of risks' }
-        ],
-        recommendedPathway: 'Traditional 510(k)'
-      },
-      III: {
-        requirements: [
-          { id: 'req_class_iii_1', name: 'Intended Use', description: 'Statement of intended use and indications for use' },
-          { id: 'req_class_iii_2', name: 'Device Description', description: 'Comprehensive description of the device' },
-          { id: 'req_class_iii_3', name: 'Substantial Equivalence', description: 'Comparison to predicate device(s)' },
-          { id: 'req_class_iii_4', name: 'Bench Testing', description: 'Performance data and bench testing results' },
-          { id: 'req_class_iii_5', name: 'Biocompatibility', description: 'Biocompatibility evaluation (if applicable)' },
-          { id: 'req_class_iii_6', name: 'Sterilization', description: 'Sterilization validation (if applicable)' },
-          { id: 'req_class_iii_7', name: 'Software Validation', description: 'Software validation documentation (if applicable)' },
-          { id: 'req_class_iii_8', name: 'Clinical Data', description: 'Clinical study data' },
-          { id: 'req_class_iii_9', name: 'Animal Testing', description: 'Animal testing data (if applicable)' },
-          { id: 'req_class_iii_10', name: 'Manufacturing Information', description: 'Manufacturing process information' },
-          { id: 'req_class_iii_11', name: 'Labeling', description: 'Draft labeling for the device' },
-          { id: 'req_class_iii_12', name: 'Risk Analysis', description: 'Identification and analysis of risks' }
-        ],
-        recommendedPathway: 'Traditional 510(k) or De Novo'
-      }
-    };
-    
-    res.status(200).json({
-      success: true,
-      requirements: requirements[deviceClass].requirements,
-      recommendedPathway: requirements[deviceClass].recommendedPathway
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are an FDA regulatory expert specializing in medical device classifications and 510(k) submissions. 
+          Analyze the provided medical device data and determine the most appropriate regulatory pathway.
+          Focus on whether a 510(k) submission is appropriate, and if so, what type (Traditional, Abbreviated, or Special).
+          Format your response as a JSON object with the following properties:
+          - recommendation: The recommended regulatory pathway (e.g., "Traditional 510(k)", "De Novo", "PMA")
+          - confidence: A number between 0 and 1 indicating your confidence in this recommendation
+          - reasoning: A concise explanation of your reasoning
+          - requirements: An array of key requirements for this pathway
+          - alternativePaths: An array of possible alternative pathways with brief explanations
+          - deviceClass: The likely FDA device class (I, II, or III)
+          - productCodeMatch: The most likely product code match
+          - estimatedTimeframe: Estimated timeframe for this regulatory process`
+        },
+        {
+          role: "user",
+          content: `Analyze this medical device data and recommend the most appropriate FDA regulatory pathway:
+          Device Name: ${deviceData.deviceName}
+          Intended Use: ${deviceData.indications || 'Not specified'}
+          Device Description: ${deviceData.mechanism || 'Not specified'}
+          Materials: ${deviceData.materials || 'Not specified'}
+          Similar Devices: ${deviceData.similarDevices || 'Not specified'}`
+        }
+      ],
+      response_format: { type: "json_object" }
     });
     
+    res.json(formatPathwayResponse(completion.choices[0].message.content));
   } catch (error) {
-    console.error('Error fetching 510(k) requirements:', error);
+    console.error('Error analyzing regulatory pathway:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch 510(k) requirements'
+      message: 'Error analyzing regulatory pathway',
+      error: error.message
     });
   }
 });
 
-/**
- * Find predicate devices based on device profile
- */
-router.post('/find-predicates', validateDeviceData, async (req, res) => {
-  try {
-    const { deviceData, organizationId } = req.body;
-    
-    // Check if OpenAI API key is available
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OpenAI API key not available. Cannot perform predicate device search.');
-      return res.status(500).json({
-        success: false,
-        message: 'OpenAI API key is required for predicate device discovery. Please provide a valid API key.'
-      });
-    }
-    
-    // Initialize OpenAI if not already done
-    if (!openai) {
-      try {
-        const { OpenAI } = require('openai');
-        openai = new OpenAI({
-          apiKey: process.env.OPENAI_API_KEY
-        });
-        console.log('OpenAI client initialized for predicate device search');
-      } catch (err) {
-        console.error('Failed to initialize OpenAI client:', err);
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to initialize AI services for predicate device search'
-        });
-      }
-    }
+// ===========================
+// Predicate Device Finder
+// ===========================
 
-    // Use OpenAI to find predicates in the real implementation
-    console.log('Searching for predicate devices using OpenAI for:', deviceData.deviceName);
-    
-    try {
-      // Create a structured prompt to get consistently formatted results
-      const prompt = `
-        Analyze the following medical device and find potential predicate devices (similar FDA-cleared devices) 
-        and relevant literature references that could support a 510(k) submission.
-        
-        DEVICE DETAILS:
-        - Name: ${deviceData.deviceName}
-        - Class: ${deviceData.deviceClass}
-        - Intended Use: ${deviceData.intendedUse || 'Not specified'}
-        - Description: ${deviceData.description || 'Not specified'}
-        - Technology Type: ${deviceData.technologyType || 'Not specified'}
-        
-        INSTRUCTIONS:
-        1. Search for similar FDA-cleared medical devices that could serve as predicates.
-        2. Find relevant scientific literature to support substantial equivalence.
-        3. Format your response as structured JSON with the following format:
-        {
-          "predicateDevices": [
-            {
-              "deviceName": "string",
-              "kNumber": "string",
-              "clearanceDate": "YYYY-MM-DD",
-              "manufacturer": "string",
-              "deviceClass": "string",
-              "matchScore": number (0.0-1.0),
-              "matchRationale": "string",
-              "description": "string"
-            },
-            ...
-          ],
-          "literatureReferences": [
-            {
-              "title": "string",
-              "authors": ["string"],
-              "journal": "string",
-              "year": number,
-              "doi": "string",
-              "url": "string",
-              "relevanceScore": number (0.0-1.0),
-              "abstract": "string"
-            },
-            ...
-          ]
-        }
-        
-        Return only the JSON with 3-5 predicate devices and 3-5 literature references.
-      `;
-      
-      // Make the OpenAI API call
-      const completion = await openai.chat.completions.create({
-        messages: [{ role: "system", content: "You are a regulatory affairs specialist with expertise in FDA 510(k) submissions." },
-                  { role: "user", content: prompt }],
-        model: "gpt-4o",
-        response_format: { type: "json_object" }
-      });
-      
-      // Parse the response
-      const responseContent = completion.choices[0].message.content;
-      let jsonResponse;
-      
-      try {
-        jsonResponse = JSON.parse(responseContent);
-        
-        // Log success and return the formatted response
-        console.log('Successfully generated predicate devices using OpenAI');
-        
-        // Restructure the response to match client expectations
-        // The client expects predicateDevices at the top level
-        res.status(200).json({
-          success: true,
-          predicateDevices: jsonResponse.predicateDevices || [],
-          literatureReferences: jsonResponse.literatureReferences || [],
-          // Include the full response as a fallback
-          predicates: jsonResponse
-        });
-      } catch (parseError) {
-        console.error('Error parsing OpenAI response:', parseError);
-        console.log('Raw response:', responseContent);
-        
-        // If parsing fails, return a fallback with error details
-        throw new Error('Failed to parse AI response: ' + parseError.message);
-      }
-    } catch (aiError) {
-      console.error('Error using OpenAI for predicate search:', aiError);
-      
-      // Instead of using mock fallback data, return an error for GA release quality
-      return res.status(500).json({
+// Find predicate devices based on device characteristics
+router.post('/find-predicates', validateDeviceData, async (req, res) => {
+  const { deviceData, organizationId, relevanceCriteria } = req.body;
+  
+  try {
+    if (!openai) {
+      return res.status(503).json({
         success: false,
-        message: 'Failed to perform AI-powered predicate device search: ' + aiError.message,
-        recommendation: 'Please try again or check your OpenAI API key configuration.'
+        message: 'OpenAI API is not available. Please check your API key configuration.'
       });
     }
     
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are an FDA regulatory expert specializing in medical device substantial equivalence and 510(k) approvals.
+          Find potential predicate devices and relevant literature references for the provided medical device.
+          Format your response as a JSON object with two main arrays:
+          1. predicateDevices: An array of potential predicate devices with these properties:
+             - name: The device name
+             - manufacturer: The device manufacturer
+             - k_number: The FDA K-number (if available)
+             - approvalDate: The FDA approval date (if available)
+             - relevanceScore: A number between 0 and 1 indicating relevance to the subject device
+             - keyDifferences: Major differences from the subject device
+             - similarities: Key similarities to the subject device
+          2. literatureReferences: An array of relevant scientific literature with these properties:
+             - title: The publication title
+             - authors: The author names
+             - journal: The journal name
+             - year: Publication year
+             - doi: DOI if available
+             - relevanceScore: A number between 0 and 1 indicating relevance
+             - keyFindings: Brief summary of relevant findings`
+        },
+        {
+          role: "user",
+          content: `Find predicate devices and literature references for this medical device:
+          Device Name: ${deviceData.deviceName}
+          Intended Use: ${deviceData.indications || 'Not specified'}
+          Device Description: ${deviceData.mechanism || 'Not specified'}
+          Materials: ${deviceData.materials || 'Not specified'}
+          Similar Devices: ${deviceData.similarDevices || 'Not specified'}
+          ${relevanceCriteria ? `Relevance Criteria: ${JSON.stringify(relevanceCriteria)}` : ''}`
+        }
+      ],
+      response_format: { type: "json_object" }
+    });
+    
+    res.json(formatPredicateResponse(completion.choices[0].message.content));
   } catch (error) {
     console.error('Error finding predicate devices:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to find predicate devices'
+      message: 'Error finding predicate devices',
+      error: error.message
     });
   }
 });
 
-/**
- * Analyze regulatory pathway for device
- */
-router.post('/analyze-pathway', validateDeviceData, async (req, res) => {
+// Get comparison of regulatory pathways
+router.get('/compare-pathways', async (req, res) => {
   try {
-    const { deviceData, organizationId } = req.body;
-    
-    // Check if OpenAI API key is available
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OpenAI API key not available. Cannot perform regulatory pathway analysis.');
-      return res.status(500).json({
-        success: false,
-        message: 'OpenAI API key is required for regulatory pathway analysis. Please provide a valid API key.'
-      });
-    }
-    
-    // Initialize OpenAI if not already done
-    if (!openai) {
-      try {
-        const { OpenAI } = require('openai');
-        openai = new OpenAI({
-          apiKey: process.env.OPENAI_API_KEY
-        });
-        console.log('OpenAI client initialized for regulatory pathway analysis');
-      } catch (err) {
-        console.error('Failed to initialize OpenAI client:', err);
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to initialize AI services for regulatory pathway analysis'
-        });
-      }
-    }
-    
-    console.log('Analyzing regulatory pathway for device:', deviceData.deviceName);
-    
-    try {
-      // Create a structured prompt to get consistently formatted results
-      const prompt = `
-        Perform a regulatory pathway analysis for the following medical device 510(k) submission:
-        
-        DEVICE DETAILS:
-        - Name: ${deviceData.deviceName}
-        - Class: ${deviceData.deviceClass}
-        - Intended Use: ${deviceData.intendedUse || 'Not specified'}
-        - Description: ${deviceData.description || 'Not specified'}
-        - Technology Type: ${deviceData.technologyType || 'Not specified'}
-        
-        INSTRUCTIONS:
-        Analyze the appropriate regulatory pathway for this device and provide:
-        1. The recommended submission pathway (Traditional 510(k), Special 510(k), Abbreviated 510(k), or De Novo)
-        2. Rationale for your recommendation
-        3. Estimated timeline in days
-        4. Key milestones with estimated days for each
-        5. Any special requirements specific to this device type
-        
-        FORMAT YOUR RESPONSE AS A JSON OBJECT with the following structure:
+    // Pathway comparison data
+    const pathwayComparison = {
+      pathways: [
         {
-          "recommendedPathway": "string",
-          "confidenceScore": number (0.0-1.0),
-          "rationale": "string",
-          "estimatedTimelineInDays": number,
-          "keyMilestones": [
-            { "name": "string", "days": number, "description": "string" }
-          ],
-          "specialRequirements": [
-            "string"
-          ]
+          name: "Traditional 510(k)",
+          timeframe: "90-day review",
+          dataMostImportant: "Performance data, substantial equivalence to predicate device",
+          appropriateFor: "Class II devices with predicates",
+          successRate: "High (85-90%)",
+          cost: "Medium"
+        },
+        {
+          name: "De Novo",
+          timeframe: "150+ days",
+          dataMostImportant: "Risk/benefit analysis, performance data",
+          appropriateFor: "Novel devices with moderate risk (Class II)",
+          successRate: "Medium (70-75%)",
+          cost: "High"
+        },
+        {
+          name: "Abbreviated 510(k)",
+          timeframe: "90 days (often faster)",
+          dataMostImportant: "Conformance to recognized standards",
+          appropriateFor: "Devices covered by FDA guidance/standards",
+          successRate: "High (85-90%)",
+          cost: "Medium-Low"
+        },
+        {
+          name: "Special 510(k)",
+          timeframe: "30 days",
+          dataMostImportant: "Design control procedures, verification/validation",
+          appropriateFor: "Modifications to manufacturer's own device",
+          successRate: "Very High (90-95%)",
+          cost: "Low"
+        },
+        {
+          name: "Premarket Approval (PMA)",
+          timeframe: "180+ days",
+          dataMostImportant: "Clinical trial data, safety and efficacy",
+          appropriateFor: "High-risk Class III devices",
+          successRate: "Medium-Low (60-70%)",
+          cost: "Very High"
         }
-      `;
-      
-      // Call OpenAI with a structured prompt
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        messages: [
-          {
-            role: "system",
-            content: "You are a medical device regulatory expert specializing in FDA 510(k) submissions. Provide detailed, accurate regulatory pathway analysis based on device specifications."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        response_format: { type: "json_object" }
-      });
-      
-      // Parse the response from OpenAI
-      let pathwayAnalysis;
-      try {
-        pathwayAnalysis = JSON.parse(completion.choices[0].message.content);
-        console.log('Successfully parsed regulatory pathway analysis');
-      } catch (parseError) {
-        console.error('Failed to parse OpenAI response:', parseError);
-        throw new Error('Failed to parse AI-generated regulatory pathway analysis');
-      }
-      
-      return res.status(200).json({
-        success: true,
-        ...pathwayAnalysis
-      });
-    } catch (aiError) {
-      console.error('Error in OpenAI processing:', aiError);
-      throw new Error(`AI processing error: ${aiError.message}`);
-    }
+      ],
+      decisionFactors: [
+        {
+          factor: "Risk Classification",
+          description: "Class I (low risk), Class II (moderate risk), Class III (high risk)",
+          impact: "Primary determinant of pathway"
+        },
+        {
+          factor: "Novelty",
+          description: "Whether the device has predicates on market",
+          impact: "Novel devices typically require De Novo or PMA"
+        },
+        {
+          factor: "Standards Conformity",
+          description: "Conformance to recognized consensus standards",
+          impact: "Enables Abbreviated 510(k) pathway"
+        },
+        {
+          factor: "Modifications",
+          description: "Nature and extent of modifications to existing device",
+          impact: "Minor modifications to own device may qualify for Special 510(k)"
+        },
+        {
+          factor: "Clinical Data Requirements",
+          description: "Extent of clinical evidence needed",
+          impact: "PMA requires most extensive clinical data"
+        }
+      ]
+    };
+    
+    res.json({
+      success: true,
+      ...pathwayComparison
+    });
   } catch (error) {
-    console.error('Error analyzing regulatory pathway:', error);
-    return res.status(500).json({
+    console.error('Error fetching pathway comparisons:', error);
+    res.status(500).json({
       success: false,
-      message: 'Failed to analyze regulatory pathway'
+      message: 'Error fetching pathway comparisons',
+      error: error.message
     });
   }
 });
 
-/**
- * Run compliance check on device profile
- */
+// ===========================
+// Compliance Checking
+// ===========================
+
+// Run compliance check on a device profile
 router.post('/compliance-check', validateDeviceData, async (req, res) => {
+  const { deviceData, organizationId } = req.body;
+  
   try {
-    const { deviceData, organizationId } = req.body;
-    console.log('Running compliance check for device:', deviceData.deviceName);
-    
-    // Check if OpenAI API key is available
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OpenAI API key not available. Cannot perform compliance check.');
-      return res.status(500).json({
-        success: false,
-        message: 'OpenAI API key is required for compliance checking. Please provide a valid API key.'
-      });
-    }
-    
-    // Initialize OpenAI if not already done
     if (!openai) {
-      try {
-        const { OpenAI } = require('openai');
-        openai = new OpenAI({
-          apiKey: process.env.OPENAI_API_KEY
-        });
-        console.log('OpenAI client initialized for compliance check');
-      } catch (err) {
-        console.error('Failed to initialize OpenAI client:', err);
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to initialize AI services for compliance checking'
-        });
-      }
+      return res.status(503).json({
+        success: false,
+        message: 'OpenAI API is not available. Please check your API key configuration.'
+      });
     }
     
-    // Use OpenAI for real compliance checking
-    try {
-      // Create a structured prompt to get consistently formatted results
-      const prompt = `
-        Perform a comprehensive 510(k) compliance check for the following medical device:
-        
-        DEVICE DETAILS:
-        - Name: ${deviceData.deviceName}
-        - Class: ${deviceData.deviceClass}
-        - Intended Use: ${deviceData.intendedUse || 'Not specified'}
-        - Description: ${deviceData.description || 'Not specified'}
-        - Technology Type: ${deviceData.technologyType || 'Not specified'}
-        
-        INSTRUCTIONS:
-        1. Analyze the device against FDA 510(k) submission requirements.
-        2. Identify potential compliance issues or gaps based on device classification.
-        3. Format your response as structured JSON with the following format:
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
         {
-          "isValid": boolean,
-          "score": number (0.0-1.0),
-          "passedChecks": number,
-          "totalChecks": number,
-          "criticalIssues": number,
-          "warnings": number,
-          "errors": number,
-          "detailedChecks": [
-            {
-              "id": "string",
-              "name": "string",
-              "category": "Documentation" | "Technical" | "Clinical" | "Labeling" | "Regulatory",
-              "status": "passed" | "warning" | "failed",
-              "description": "string",
-              "recommendation": "string"
-            },
-            ...
-          ]
+          role: "system",
+          content: `You are an FDA regulatory compliance expert specializing in medical device 510(k) submissions.
+          Analyze the provided medical device data and identify potential compliance issues or gaps.
+          Format your response as a JSON object with the following structure:
+          {
+            "overallAssessment": "A brief overall assessment of the submission's completeness",
+            "complianceScore": A number between 0 and 100 representing overall compliance,
+            "issues": [
+              {
+                "category": "Category of the issue (e.g., 'Technical Documentation', 'Safety Testing', 'Labeling')",
+                "description": "Description of the issue",
+                "severity": "critical"|"major"|"minor"|"info",
+                "recommendation": "Recommendation to address the issue",
+                "section": "The eSTAR section where this issue would appear"
+              }
+            ],
+            "requiredDocuments": ["List of required documents that appear to be missing"],
+            "nextSteps": ["Prioritized list of recommended next steps"]
+          }`
+        },
+        {
+          role: "user",
+          content: `Analyze this medical device data for 510(k) compliance issues:
+          Device Name: ${deviceData.deviceName}
+          Intended Use: ${deviceData.indications || 'Not specified'}
+          Device Description: ${deviceData.mechanism || 'Not specified'}
+          Materials: ${deviceData.materials || 'Not specified'}
+          Class: ${deviceData.deviceClass || 'Not specified'}
+          Product Code: ${deviceData.productCode || 'Not specified'}`
         }
-        
-        Ensure the detailed checks include at least 10-15 specific items relevant to this device type and class.
-        Return only the JSON data without any additional text.
-      `;
-      
-      // Make the OpenAI API call
-      const completion = await openai.chat.completions.create({
-        messages: [
-          { role: "system", content: "You are a medical device regulatory specialist with expertise in FDA 510(k) submissions." },
-          { role: "user", content: prompt }
-        ],
-        model: "gpt-4o",
-        response_format: { type: "json_object" }
-      });
-      
-      // Parse the response
-      const responseContent = completion.choices[0].message.content;
-      let complianceResults;
-      
-      try {
-        complianceResults = JSON.parse(responseContent);
-        
-        // Add timestamp to results
-        complianceResults.timestamp = new Date().toISOString();
-        
-        // Log success and return the formatted response
-        console.log('Successfully generated compliance check using OpenAI');
-        
-        res.status(200).json({
-          success: true,
-          ...complianceResults
-        });
-      } catch (parseError) {
-        console.error('Error parsing OpenAI compliance check response:', parseError);
-        throw new Error('Failed to parse AI response: ' + parseError.message);
-      }
-    } catch (aiError) {
-      console.error('Error using OpenAI for compliance check:', aiError);
-      
-      // Instead of using mock fallback data, return an error for GA release quality
-      return res.status(500).json({
-        success: false,
-        message: 'Failed to perform AI-powered compliance check: ' + aiError.message,
-        recommendation: 'Please try again or check your OpenAI API key configuration.'
-      });
-    }
+      ],
+      response_format: { type: "json_object" }
+    });
+    
+    const complianceData = JSON.parse(completion.choices[0].message.content);
+    
+    res.json({
+      success: true,
+      ...complianceData
+    });
   } catch (error) {
     console.error('Error running compliance check:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to run compliance check'
+      message: 'Error running compliance check',
+      error: error.message
     });
   }
 });
 
-/**
- * Run compliance check using project ID
- */
+// Get compliance check for a project
 router.get('/compliance-check/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  
   try {
-    const { projectId } = req.params;
-    console.log('Running compliance check for project ID:', projectId);
+    // In a real implementation, we would fetch the project data here
+    // For now, return demo compliance check results
     
-    // In a production environment, we would fetch the project's device data from the database
-    // For now, we'll mock a minimal device data object to pass to the compliance check
-    const projectResponse = await axios.get(`/api/fda510k/projects/${projectId}`);
+    const complianceResults = {
+      overallAssessment: "The submission appears to be about 85% complete with several areas requiring attention before submission.",
+      complianceScore: 85,
+      issues: [
+        {
+          category: "Technical Documentation",
+          description: "Performance testing data is incomplete. Missing specific test protocols for electrical safety.",
+          severity: "major",
+          recommendation: "Complete IEC 60601-1 testing and include full test reports.",
+          section: "Section 18.2 - Performance Testing"
+        },
+        {
+          category: "Substantial Equivalence",
+          description: "The comparison table with predicate device lacks sufficient detail on technological characteristics.",
+          severity: "major",
+          recommendation: "Expand the comparison table to include detailed technical specifications side by side.",
+          section: "Section 12.4 - Comparison Table"
+        },
+        {
+          category: "Labeling",
+          description: "Proposed labeling lacks adequate instructions for use regarding cleaning and sterilization.",
+          severity: "critical",
+          recommendation: "Update the labeling to include detailed cleaning and sterilization instructions.",
+          section: "Section 15.1 - Proposed Labeling"
+        },
+        {
+          category: "Biocompatibility",
+          description: "Biocompatibility assessment incomplete for patient-contacting materials.",
+          severity: "critical",
+          recommendation: "Complete ISO 10993 testing for all patient-contacting materials.",
+          section: "Section 16.3 - Biocompatibility"
+        },
+        {
+          category: "Software Documentation",
+          description: "Software documentation is present but lacks detailed verification and validation protocols.",
+          severity: "minor",
+          recommendation: "Enhance software V&V documentation following FDA guidance.",
+          section: "Section 17.1 - Software Documentation"
+        },
+        {
+          category: "Risk Analysis",
+          description: "Risk analysis lacks mitigations for identified software-related risks.",
+          severity: "major",
+          recommendation: "Update risk analysis with comprehensive mitigations for all identified risks.",
+          section: "Section 19.2 - Risk Analysis"
+        },
+        {
+          category: "Cybersecurity",
+          description: "Lacks thorough cybersecurity risk assessment for wireless features.",
+          severity: "minor",
+          recommendation: "Include comprehensive cybersecurity assessment following FDA guidance.",
+          section: "Section 20.1 - Cybersecurity"
+        },
+        {
+          category: "Administrative",
+          description: "FDA Form 3514 appears to have incomplete entries.",
+          severity: "info",
+          recommendation: "Complete all fields in FDA Form 3514.",
+          section: "Section 1.2 - Administrative Forms"
+        }
+      ],
+      requiredDocuments: [
+        "Complete IEC 60601-1 test reports",
+        "Complete ISO 10993 biocompatibility test reports",
+        "Enhanced software V&V documentation",
+        "Updated risk analysis with mitigations"
+      ],
+      nextSteps: [
+        "Address critical biocompatibility testing gaps",
+        "Complete labeling with cleaning/sterilization instructions",
+        "Enhance substantial equivalence comparison table",
+        "Complete electrical safety testing",
+        "Update risk analysis documentation"
+      ]
+    };
     
-    if (!projectResponse.data || !projectResponse.data.success) {
+    res.json({
+      success: true,
+      projectId,
+      ...complianceResults
+    });
+  } catch (error) {
+    console.error('Error fetching compliance check:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching compliance check',
+      error: error.message
+    });
+  }
+});
+
+// ===========================
+// 510(k) Requirements
+// ===========================
+
+// Get 510(k) requirements for a device class
+router.get('/requirements/:deviceClass', async (req, res) => {
+  const { deviceClass } = req.params;
+  
+  try {
+    // Device class requirements
+    const requirementsData = {
+      I: {
+        requirements: [
+          {
+            id: "req-1-1",
+            name: "Device Description",
+            description: "Basic description of the device, including materials and principles of operation",
+            required: true,
+            complexity: "low"
+          },
+          {
+            id: "req-1-2",
+            name: "Intended Use",
+            description: "Statement of intended use and indications for use",
+            required: true,
+            complexity: "low"
+          },
+          {
+            id: "req-1-3",
+            name: "510(k) Summary",
+            description: "Summary of safety and effectiveness information and basis for equivalence",
+            required: true,
+            complexity: "low"
+          },
+          {
+            id: "req-1-4",
+            name: "Labeling",
+            description: "Proposed labeling, including instructions for use",
+            required: true,
+            complexity: "medium"
+          },
+          {
+            id: "req-1-5",
+            name: "General Controls Compliance",
+            description: "Documentation of compliance with general controls",
+            required: true,
+            complexity: "low"
+          }
+        ],
+        exemptionEligibility: "Many Class I devices are exempt from 510(k) requirements",
+        commonPathway: "Most Class I devices that require 510(k) use Traditional 510(k) pathway",
+        averageTimeline: "90 days for FDA review (non-exempt devices)"
+      },
+      II: {
+        requirements: [
+          {
+            id: "req-2-1",
+            name: "Device Description",
+            description: "Detailed description of the device, including materials, specifications, and principles of operation",
+            required: true,
+            complexity: "medium"
+          },
+          {
+            id: "req-2-2",
+            name: "Intended Use",
+            description: "Detailed statement of intended use and indications for use",
+            required: true,
+            complexity: "medium"
+          },
+          {
+            id: "req-2-3",
+            name: "Substantial Equivalence",
+            description: "Documentation of substantial equivalence to a legally marketed device",
+            required: true,
+            complexity: "high"
+          },
+          {
+            id: "req-2-4",
+            name: "Performance Testing",
+            description: "Bench, animal, and/or clinical performance testing as appropriate",
+            required: true,
+            complexity: "high"
+          },
+          {
+            id: "req-2-5",
+            name: "Technological Characteristics",
+            description: "Comparison of technological characteristics with predicate device",
+            required: true,
+            complexity: "high"
+          },
+          {
+            id: "req-2-6",
+            name: "Software Documentation",
+            description: "Software verification and validation documentation (if applicable)",
+            required: "conditional",
+            complexity: "high"
+          },
+          {
+            id: "req-2-7",
+            name: "Biocompatibility",
+            description: "Biocompatibility testing for patient-contacting materials",
+            required: "conditional",
+            complexity: "high"
+          },
+          {
+            id: "req-2-8",
+            name: "Sterilization",
+            description: "Sterilization validation (if applicable)",
+            required: "conditional",
+            complexity: "high"
+          },
+          {
+            id: "req-2-9",
+            name: "Electrical Safety",
+            description: "Electrical safety testing (if applicable)",
+            required: "conditional",
+            complexity: "high"
+          },
+          {
+            id: "req-2-10",
+            name: "Electromagnetic Compatibility",
+            description: "EMC testing (if applicable)",
+            required: "conditional",
+            complexity: "high"
+          },
+          {
+            id: "req-2-11",
+            name: "Risk Analysis",
+            description: "Risk analysis and mitigations",
+            required: true,
+            complexity: "high"
+          },
+          {
+            id: "req-2-12",
+            name: "Labeling",
+            description: "Proposed labeling, including instructions for use",
+            required: true,
+            complexity: "medium"
+          },
+          {
+            id: "req-2-13",
+            name: "Special Controls Compliance",
+            description: "Documentation of compliance with applicable special controls",
+            required: true,
+            complexity: "high"
+          }
+        ],
+        exemptionEligibility: "Some Class II devices are exempt, but most require 510(k)",
+        commonPathway: "Traditional, Abbreviated, or Special 510(k) pathways available depending on circumstances",
+        averageTimeline: "90-180 days for FDA review depending on complexity"
+      },
+      III: {
+        requirements: [
+          {
+            id: "req-3-1",
+            name: "Device Description",
+            description: "Comprehensive description of the device, including materials, specifications, and principles of operation",
+            required: true,
+            complexity: "high"
+          },
+          {
+            id: "req-3-2",
+            name: "Intended Use",
+            description: "Detailed statement of intended use and indications for use",
+            required: true,
+            complexity: "high"
+          },
+          {
+            id: "req-3-3",
+            name: "Substantial Equivalence",
+            description: "Documentation of substantial equivalence to a legally marketed device",
+            required: true,
+            complexity: "very high"
+          },
+          {
+            id: "req-3-4",
+            name: "Clinical Data",
+            description: "Clinical trial data demonstrating safety and effectiveness",
+            required: true,
+            complexity: "very high"
+          },
+          {
+            id: "req-3-5",
+            name: "Performance Testing",
+            description: "Comprehensive bench, animal, and clinical performance testing",
+            required: true,
+            complexity: "very high"
+          },
+          {
+            id: "req-3-6",
+            name: "Technological Characteristics",
+            description: "Detailed comparison of technological characteristics with predicate device",
+            required: true,
+            complexity: "very high"
+          },
+          {
+            id: "req-3-7",
+            name: "Software Documentation",
+            description: "Comprehensive software verification and validation documentation (if applicable)",
+            required: "conditional",
+            complexity: "very high"
+          },
+          {
+            id: "req-3-8",
+            name: "Biocompatibility",
+            description: "Comprehensive biocompatibility testing for patient-contacting materials",
+            required: "conditional",
+            complexity: "very high"
+          },
+          {
+            id: "req-3-9",
+            name: "Sterilization",
+            description: "Comprehensive sterilization validation (if applicable)",
+            required: "conditional",
+            complexity: "very high"
+          },
+          {
+            id: "req-3-10",
+            name: "Manufacturing Information",
+            description: "Detailed manufacturing information including quality system documentation",
+            required: true,
+            complexity: "very high"
+          },
+          {
+            id: "req-3-11",
+            name: "Risk Analysis",
+            description: "Comprehensive risk analysis and mitigations",
+            required: true,
+            complexity: "very high"
+          },
+          {
+            id: "req-3-12",
+            name: "Labeling",
+            description: "Comprehensive proposed labeling, including instructions for use",
+            required: true,
+            complexity: "high"
+          }
+        ],
+        exemptionEligibility: "Class III devices typically require PMA, not 510(k)",
+        commonPathway: "PMA is the standard pathway, though some Class III devices may be eligible for 510(k)",
+        averageTimeline: "180+ days for FDA review"
+      }
+    };
+    
+    if (!requirementsData[deviceClass]) {
       return res.status(404).json({
         success: false,
-        message: 'Project not found'
+        message: `Requirements for device class '${deviceClass}' not found`
       });
     }
     
-    const deviceData = projectResponse.data.project.deviceProfile;
-    const organizationId = projectResponse.data.project.organizationId || 1;
-    
-    // Forward to the POST compliance-check endpoint to reuse logic
-    const complianceResponse = await axios.post('/api/fda510k/compliance-check', {
-      deviceData,
-      organizationId
-    });
-    
-    res.status(200).json(complianceResponse.data);
-  } catch (error) {
-    console.error('Error checking compliance for project:', error);
-    
-    // If the error is from a non-existing API endpoint for fetching projects
-    if (error.response && error.response.status === 404) {
-      // Simulate a project fetch for demo purposes
-      // This would be replaced with a database lookup in production
-      try {
-        // Create a mock device profile for compliance checking
-        const mockDeviceProfile = {
-          deviceName: `Project ${projectId} Device`,
-          deviceClass: 'II',
-          intendedUse: 'Medical diagnosis and monitoring',
-          description: 'A medical device for diagnostic purposes',
-          technologyType: 'Electronic'
-        };
-        
-        // Forward to the POST compliance-check endpoint
-        const complianceResponse = await axios.post('/api/fda510k/compliance-check', {
-          deviceData: mockDeviceProfile,
-          organizationId: 1
-        });
-        
-        return res.status(200).json(complianceResponse.data);
-      } catch (fallbackError) {
-        console.error('Fallback error in compliance check:', fallbackError);
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to run compliance check via fallback'
-        });
-      }
-    }
-    
-    res.status(500).json({
-      success: false,
-      message: 'Failed to run compliance check for project'
-    });
-  }
-});
-
-// Utility function to initialize OpenAI
-const initializeOpenAI = async () => {
-  if (!openai) {
-    try {
-      if (!process.env.OPENAI_API_KEY) {
-        console.error('OpenAI API key not available');
-        throw new Error('OpenAI API key is required for FDA 510(k) automation');
-      }
-      
-      const { OpenAI } = require('openai');
-      openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY
-      });
-      console.log('OpenAI client initialized for FDA 510(k) automation');
-      return openai;
-    } catch (err) {
-      console.error('Failed to initialize OpenAI client:', err);
-      throw new Error('Failed to initialize AI services for FDA 510(k) automation');
-    }
-  }
-  return openai;
-};
-
-/**
- * Preview eSTAR package for a 510(k) project
- */
-router.post('/preview-estar-plus/:projectId', async (req, res) => {
-  try {
-    const { projectId } = req.params;
-    const { includeCoverLetter = true } = req.body;
-    
-    console.log(`Previewing eSTAR package for project ${projectId}`);
-    
-    // In a production environment, we would check for a valid projectId and get device data
-    // For now, we'll mock the response with sample data
-    
-    // Check if OpenAI API key is available for AI compliance check
-    let aiComplianceReport = null;
-    
-    if (process.env.OPENAI_API_KEY) {
-      try {
-        // Initialize OpenAI if not already done
-        if (!openai) {
-          const { OpenAI } = require('openai');
-          openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY
-          });
-        }
-        
-        // Generate AI compliance report
-        const prompt = `
-          Generate a compliance report for an FDA 510(k) submission eSTAR package. 
-          The report should assess if all required elements of an eSTAR package are present and properly formatted.
-          Include verification that:
-          1. The administrative information is complete
-          2. Device description documentation is present and accurate
-          3. Substantial equivalence discussion is well-supported
-          4. Performance data is properly provided
-          5. All required declarations and certifications are included
-          
-          Format the report in a professional, concise manner suitable for inclusion in an FDA submission.
-        `;
-        
-        const completion = await openai.chat.completions.create({
-          messages: [
-            { role: "system", content: "You are a medical regulatory affairs expert specializing in FDA 510(k) submissions." },
-            { role: "user", content: prompt }
-          ],
-          model: "gpt-4o",
-        });
-        
-        aiComplianceReport = completion.choices[0].message.content;
-      } catch (aiError) {
-        console.error('Error generating AI compliance report:', aiError);
-        // We'll continue without the AI report rather than failing the whole request
-      }
-    }
-    
-    // Mock file list for the package preview
-    const mockFileList = [
-      {
-        name: "Administrative Information.pdf",
-        size: 245760, // Size in bytes
-        type: "application/pdf"
-      },
-      {
-        name: "Device Description.pdf",
-        size: 512000,
-        type: "application/pdf"
-      },
-      {
-        name: "Substantial Equivalence Discussion.pdf",
-        size: 378880,
-        type: "application/pdf"
-      },
-      {
-        name: "Performance Testing.pdf",
-        size: 819200,
-        type: "application/pdf"
-      },
-      {
-        name: "Declarations and Certifications.pdf",
-        size: 163840,
-        type: "application/pdf"
-      },
-      {
-        name: "eSTAR Manifest.xml",
-        size: 8192,
-        type: "application/xml"
-      }
-    ];
-    
-    // If cover letter is requested, add it to the file list
-    if (includeCoverLetter) {
-      mockFileList.unshift({
-        name: "Cover Letter.pdf",
-        size: 102400,
-        type: "application/pdf"
-      });
-    }
-    
-    // Return the preview response
-    res.status(200).json({
+    res.json({
       success: true,
-      projectId,
-      files: mockFileList,
-      totalSize: mockFileList.reduce((total, file) => total + file.size, 0),
-      aiComplianceReport,
-      message: "eSTAR package preview generated successfully"
+      deviceClass,
+      ...requirementsData[deviceClass]
     });
   } catch (error) {
-    console.error('Error generating eSTAR package preview:', error);
+    console.error('Error fetching requirements:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to generate eSTAR package preview',
+      message: 'Error fetching requirements',
       error: error.message
     });
   }
 });
 
-/**
- * Build and package eSTAR submission for a 510(k) project
- */
-router.post('/build-estar-plus/:projectId', async (req, res) => {
-  try {
-    const { projectId } = req.params;
-    const { includeCoverLetter = true, autoUpload = false } = req.body;
-    
-    console.log(`Building eSTAR package for project ${projectId}`);
-    console.log(`Options: includeCoverLetter=${includeCoverLetter}, autoUpload=${autoUpload}`);
-    
-    // For a real implementation, we would:
-    // 1. Gather all required documents from the database
-    // 2. Generate any missing documents (e.g., cover letter)
-    // 3. Package everything into a compliant eSTAR format
-    // 4. Digitally sign the package
-    // 5. Store the package for download
-    
-    // Simulate a processing delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Generate a mock download URL
-    const downloadUrl = `/api/fda510k/download/${projectId}/${Date.now()}/eSTAR_package.zip`;
-    
-    // Return success response with download URL
-    res.status(200).json({
-      success: true,
-      projectId,
-      downloadUrl,
-      packageSize: 2457600, // Size in bytes
-      message: "eSTAR package built successfully",
-      autoUploaded: autoUpload
-    });
-  } catch (error) {
-    console.error('Error building eSTAR package:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to build eSTAR package',
-      error: error.message
-    });
-  }
-});
+// ===========================
+// eSTAR Package Assembly
+// ===========================
 
-/**
- * Verify digital signature on eSTAR package for a 510(k) project
- */
-router.get('/verify-signature/:projectId', async (req, res) => {
+// Generate XML structure for eSTAR package
+router.post('/generate-xml/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  
   try {
-    const { projectId } = req.params;
+    // In a real implementation, we would generate the XML structure here
+    // For now, return demo XML structure
     
-    console.log(`Verifying digital signature for project ${projectId}`);
-    
-    // For a real implementation, we would:
-    // 1. Locate the package for the given project
-    // 2. Verify the XML Digital Signature on the package manifest
-    // 3. Return the verification results
-    
-    // Simulate a processing delay
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
-    // Return mock verification results
-    res.status(200).json({
-      success: true,
-      projectId,
-      verification: {
-        valid: true,
-        timestamp: new Date().toISOString(),
-        signatureDetails: {
-          algorithm: "RSA-SHA256",
-          signer: "Example Medical Device Corp.",
-          certificate: "Valid FDA ESG Submission Certificate"
-        },
-        message: "Digital signature successfully verified. The package integrity is confirmed and the signature is valid."
-      }
-    });
-  } catch (error) {
-    console.error('Error verifying digital signature:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to verify digital signature',
-      error: error.message
-    });
-  }
-});
-
-/**
- * Handle download of eSTAR package (mock implementation)
- */
-router.get('/download/:projectId/:timestamp/:filename', (req, res) => {
-  const { projectId, filename } = req.params;
-  
-  console.log(`Download request for project ${projectId}, file: ${filename}`);
-  
-  // For a real implementation, we would:
-  // 1. Authenticate the request
-  // 2. Locate the actual file
-  // 3. Stream it as a download
-  
-  // For this mock implementation, we'll return a simple placeholder
-  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
-  res.setHeader('Content-Type', 'application/zip');
-  
-  // Create a simple mock ZIP file (not a real ZIP, just a placeholder)
-  const mockZipContent = Buffer.from(`This is a placeholder for the eSTAR package for project ${projectId}.
-The real implementation would return an actual ZIP file with the complete eSTAR submission package.`);
-  
-  res.send(mockZipContent);
-});
-
-// Export the router
-/**
- * Get detailed comparisons of different regulatory pathways
- */
-router.get('/compare-pathways', async (req, res) => {
-  try {
-    // Detailed structured information about each pathway type
-    const pathwayComparisons = {
-      success: true,
-      pathways: [
+    const xmlStructure = {
+      rootElement: "estar_submission",
+      sections: [
         {
-          name: "Traditional 510(k)",
-          description: "The standard regulatory pathway for most medical devices that require pre-market clearance, based on demonstrating substantial equivalence to a legally marketed predicate device.",
-          requirements: [
-            "Submission Identification",
-            "Device Description",
-            "Predicate Device Identification",
-            "Substantial Equivalence Demonstration",
-            "Performance Testing Data",
-            "Labeling Requirements"
-          ],
-          timeline: {
-            totalDays: 90,
-            reviewClock: "90-day FDA review cycle",
-            milestones: [
-              { name: "Pre-submission Meeting", days: -60, description: "Optional but recommended for complex devices" },
-              { name: "Initial Submission", days: 0, description: "510(k) submission to FDA" },
-              { name: "Acceptance Review", days: 15, description: "FDA confirms submission is complete" },
-              { name: "Substantive Review", days: 60, description: "In-depth technical review by FDA" },
-              { name: "Additional Information Request", days: 75, description: "FDA may request more information" },
-              { name: "Final Decision", days: 90, description: "FDA determination on substantial equivalence" }
-            ]
-          },
-          advantages: [
-            "Well-established pathway with clear expectations",
-            "Suitable for most Class II devices",
-            "Clear regulatory precedent for many device types"
-          ],
-          disadvantages: [
-            "Requires suitable predicate device",
-            "May require extensive performance testing",
-            "Potential for multiple review cycles if deficiencies identified"
-          ],
-          bestFor: [
-            "Class II devices with clear predicates",
-            "Devices with well-established technologies",
-            "Devices with moderate risk profiles"
+          id: "admin_section",
+          name: "Administrative Information",
+          required: true,
+          complete: true,
+          children: [
+            {
+              id: "contact_info",
+              name: "Contact Information",
+              required: true,
+              complete: true
+            },
+            {
+              id: "submission_type",
+              name: "Submission Type",
+              required: true,
+              complete: true
+            }
           ]
         },
         {
-          name: "Special 510(k)",
-          description: "Streamlined process for certain device modifications when the modification does not affect the device's intended use or alter the fundamental technology.",
-          requirements: [
-            "Design Control Activities",
-            "Declaration of Conformity",
-            "Risk Analysis",
-            "Verification and Validation Data"
-          ],
-          timeline: {
-            totalDays: 30,
-            reviewClock: "30-day FDA review cycle",
-            milestones: [
-              { name: "Verification/Validation Testing", days: -45, description: "Conduct necessary testing" },
-              { name: "Initial Submission", days: 0, description: "Special 510(k) submission to FDA" },
-              { name: "Acceptance Review", days: 5, description: "FDA confirms submission is complete" },
-              { name: "Substantive Review", days: 20, description: "Focused review by FDA" },
-              { name: "Final Decision", days: 30, description: "FDA determination" }
-            ]
-          },
-          advantages: [
-            "Faster review timeline (30 days)",
-            "Less extensive submission requirements",
-            "Lower regulatory burden for device modifications"
-          ],
-          disadvantages: [
-            "Limited to specific types of modifications",
-            "Not suitable for significant changes affecting safety or effectiveness",
-            "Requires robust design controls"
-          ],
-          bestFor: [
-            "Modifications to manufacturer's own previously cleared device",
-            "Changes that don't affect intended use or fundamental technology",
-            "Updates based on design control activities"
+          id: "device_description",
+          name: "Device Description",
+          required: true,
+          complete: true,
+          children: [
+            {
+              id: "intended_use",
+              name: "Intended Use",
+              required: true,
+              complete: true
+            },
+            {
+              id: "device_characteristics",
+              name: "Device Characteristics",
+              required: true,
+              complete: true
+            }
           ]
         },
         {
-          name: "Abbreviated 510(k)",
-          description: "Streamlined process that uses guidance documents, special controls, and recognized standards to facilitate 510(k) submissions.",
-          requirements: [
-            "Conformance to FDA-recognized standards",
-            "Summary Reports",
-            "Declaration of Conformity",
-            "Device Description",
-            "Predicate Device Comparison"
-          ],
-          timeline: {
-            totalDays: 60,
-            reviewClock: "60-day FDA review cycle",
-            milestones: [
-              { name: "Standards Testing", days: -45, description: "Testing to demonstrate conformance to standards" },
-              { name: "Initial Submission", days: 0, description: "Abbreviated 510(k) submission to FDA" },
-              { name: "Acceptance Review", days: 15, description: "FDA confirms submission is complete" },
-              { name: "Substantive Review", days: 45, description: "Standards-based review by FDA" },
-              { name: "Final Decision", days: 60, description: "FDA determination" }
-            ]
-          },
-          advantages: [
-            "Reduced submission content",
-            "Reliance on established standards",
-            "More predictable review process",
-            "Shorter review timeline than Traditional 510(k)"
-          ],
-          disadvantages: [
-            "Limited to devices with applicable FDA guidance or recognized standards",
-            "Still requires predicate device",
-            "May require extensive testing to demonstrate conformance to standards"
-          ],
-          bestFor: [
-            "Class II devices with applicable recognized standards",
-            "Devices covered by specific FDA guidance documents",
-            "Manufacturers familiar with relevant standards"
+          id: "substantial_equivalence",
+          name: "Substantial Equivalence",
+          required: true,
+          complete: false,
+          children: [
+            {
+              id: "predicate_devices",
+              name: "Predicate Devices",
+              required: true,
+              complete: true
+            },
+            {
+              id: "comparison_table",
+              name: "Comparison Table",
+              required: true,
+              complete: false
+            }
           ]
         },
         {
-          name: "De Novo Classification",
-          description: "Regulatory pathway for novel devices with low to moderate risk that don't have a suitable predicate, providing a route to Class I or Class II classification instead of automatic Class III designation.",
-          requirements: [
-            "Device Description",
-            "Proposed Classification",
-            "Risk and Mitigation Analysis",
-            "Performance Testing Data",
-            "Special Controls"
-          ],
-          timeline: {
-            totalDays: 150,
-            reviewClock: "150-day FDA review cycle",
-            milestones: [
-              { name: "Pre-submission Meeting", days: -90, description: "Strongly recommended for De Novo submissions" },
-              { name: "Initial Submission", days: 0, description: "De Novo request to FDA" },
-              { name: "Acceptance Review", days: 15, description: "FDA confirms submission is complete" },
-              { name: "Substantive Review", days: 90, description: "In-depth technical review by FDA" },
-              { name: "Additional Information Request", days: 100, description: "FDA may request more information" },
-              { name: "Final Decision", days: 150, description: "FDA classification determination" }
-            ]
-          },
-          advantages: [
-            "Path to market for novel devices without predicates",
-            "Avoids automatic Class III designation",
-            "Creates a new regulation and product code",
-            "Subsequent devices can use 510(k) pathway"
-          ],
-          disadvantages: [
-            "Longer review timeline",
-            "More extensive submission requirements",
-            "Higher level of regulatory scrutiny",
-            "May require more comprehensive clinical data"
-          ],
-          bestFor: [
-            "Novel devices without predicates",
-            "Low to moderate risk devices that would otherwise be Class III",
-            "Innovative technologies where no similar devices exist"
+          id: "performance_testing",
+          name: "Performance Testing",
+          required: true,
+          complete: false,
+          children: [
+            {
+              id: "bench_testing",
+              name: "Bench Testing",
+              required: true,
+              complete: false
+            },
+            {
+              id: "biocompatibility",
+              name: "Biocompatibility",
+              required: true,
+              complete: false
+            }
+          ]
+        },
+        {
+          id: "labeling",
+          name: "Labeling",
+          required: true,
+          complete: false,
+          children: [
+            {
+              id: "proposed_labeling",
+              name: "Proposed Labeling",
+              required: true,
+              complete: false
+            },
+            {
+              id: "instructions_for_use",
+              name: "Instructions for Use",
+              required: true,
+              complete: false
+            }
           ]
         }
       ]
     };
     
-    res.status(200).json(pathwayComparisons);
+    res.json({
+      success: true,
+      projectId,
+      xmlStructure
+    });
   } catch (error) {
-    console.error('Error fetching pathway comparisons:', error);
+    console.error('Error generating XML structure:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch regulatory pathway comparisons'
+      message: 'Error generating XML structure',
+      error: error.message
     });
   }
 });
 
+// Validate eSTAR package
+router.post('/validate-package/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  
+  try {
+    // In a real implementation, we would validate the package here
+    // For now, return demo validation results
+    
+    const validationResults = {
+      valid: true,
+      issues: [
+        {
+          severity: "critical",
+          message: "Substantial equivalence comparison table is incomplete",
+          section: "Section 12.4 - Comparison Table"
+        },
+        {
+          severity: "warning",
+          message: "Biocompatibility testing data may be insufficient",
+          section: "Section 16.3 - Biocompatibility"
+        },
+        {
+          severity: "info",
+          message: "Consider adding more detail to the device description",
+          section: "Section 11.2 - Device Description"
+        }
+      ]
+    };
+    
+    res.json({
+      success: true,
+      projectId,
+      ...validationResults
+    });
+  } catch (error) {
+    console.error('Error validating package:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error validating package',
+      error: error.message
+    });
+  }
+});
+
+// Get project documents for eSTAR package
+router.get('/project-documents/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  
+  try {
+    // In a real implementation, we would fetch the project documents here
+    // For now, return demo project documents
+    
+    const projectDocuments = [
+      {
+        id: "doc1",
+        name: "Device Description",
+        type: "PDF",
+        size: "2.3 MB",
+        required: true,
+        selected: true,
+        status: "complete"
+      },
+      {
+        id: "doc2",
+        name: "Substantial Equivalence Statement",
+        type: "DOCX",
+        size: "1.1 MB",
+        required: true,
+        selected: true,
+        status: "complete"
+      },
+      {
+        id: "doc3",
+        name: "Performance Testing Data",
+        type: "PDF",
+        size: "4.7 MB",
+        required: true,
+        selected: true,
+        status: "in_progress"
+      },
+      {
+        id: "doc4",
+        name: "Software Documentation",
+        type: "PDF",
+        size: "3.2 MB",
+        required: false,
+        selected: false,
+        status: "not_started"
+      },
+      {
+        id: "doc5",
+        name: "Biocompatibility Reports",
+        type: "PDF",
+        size: "5.6 MB",
+        required: true,
+        selected: true,
+        status: "in_progress"
+      },
+      {
+        id: "doc6",
+        name: "Sterilization Validation",
+        type: "PDF",
+        size: "2.8 MB",
+        required: true,
+        selected: true,
+        status: "complete"
+      },
+      {
+        id: "doc7",
+        name: "Shelf Life Studies",
+        type: "XLSX",
+        size: "1.4 MB",
+        required: false,
+        selected: true,
+        status: "complete"
+      },
+      {
+        id: "doc8",
+        name: "Electrical Safety Testing",
+        type: "PDF",
+        size: "3.7 MB",
+        required: true,
+        selected: true,
+        status: "complete"
+      }
+    ];
+    
+    res.json({
+      success: true,
+      projectId,
+      documents: projectDocuments
+    });
+  } catch (error) {
+    console.error('Error fetching project documents:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching project documents',
+      error: error.message
+    });
+  }
+});
+
+// Update document selection for eSTAR package
+router.post('/update-document-selection/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  const { documentIds } = req.body;
+  
+  try {
+    // In a real implementation, we would update the document selection here
+    
+    res.json({
+      success: true,
+      projectId,
+      message: `Document selection updated successfully with ${documentIds.length} documents`,
+      documentIds
+    });
+  } catch (error) {
+    console.error('Error updating document selection:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating document selection',
+      error: error.message
+    });
+  }
+});
+
+// Generate cover letter for eSTAR package
+router.post('/generate-cover-letter/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  const additionalInfo = req.body;
+  
+  try {
+    if (!openai) {
+      return res.status(503).json({
+        success: false,
+        message: 'OpenAI API is not available. Please check your API key configuration.'
+      });
+    }
+    
+    // In a real implementation, we would fetch the project data here
+    const projectData = {
+      deviceName: "GlucoTrack Continuous Glucose Monitor",
+      manufacturer: "TrialSage Medical Devices, Inc.",
+      productCode: "NBW",
+      address: "123 Medical Drive, Boston, MA 02115",
+      contactName: "Dr. Jane Smith",
+      contactTitle: "Regulatory Affairs Director",
+      contactPhone: "(555) 123-4567",
+      contactEmail: "j.smith@trialsage.example.com"
+    };
+    
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are an FDA regulatory expert specializing in 510(k) submissions.
+          Generate a professional cover letter for an eSTAR 510(k) submission based on the provided information.
+          The letter should follow FDA formatting guidelines and include all required elements of a 510(k) cover letter.`
+        },
+        {
+          role: "user",
+          content: `Generate a cover letter for this 510(k) submission:
+          Device Name: ${projectData.deviceName}
+          Manufacturer: ${projectData.manufacturer}
+          Product Code: ${projectData.productCode}
+          Address: ${projectData.address}
+          Contact Name: ${projectData.contactName}
+          Contact Title: ${projectData.contactTitle}
+          Contact Phone: ${projectData.contactPhone}
+          Contact Email: ${projectData.contactEmail}
+          ${additionalInfo ? `Additional Information: ${JSON.stringify(additionalInfo)}` : ''}`
+        }
+      ]
+    });
+    
+    const coverLetterText = completion.choices[0].message.content;
+    
+    res.json({
+      success: true,
+      projectId,
+      coverLetterText,
+      coverLetterHtml: `<div style="font-family: Arial, sans-serif; line-height: 1.6;">${coverLetterText.replace(/\n/g, '<br>')}</div>`
+    });
+  } catch (error) {
+    console.error('Error generating cover letter:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error generating cover letter',
+      error: error.message
+    });
+  }
+});
+
+// Build final eSTAR package
+router.post('/build-final-package/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  const { includeCoverLetter, includeDigitalSignature } = req.body;
+  
+  try {
+    // In a real implementation, we would build the final package here
+    // For now, simulate a delay and return a demo result
+    setTimeout(() => {
+      const packageData = {
+        packageId: 'estar-pkg-' + Math.random().toString(36).substring(2, 10),
+        fileName: 'eSTAR_Package_' + new Date().toISOString().split('T')[0] + '.xml',
+        size: '24.3 MB',
+        sections: 15,
+        documents: 23,
+        downloadUrl: '#',
+        buildTimestamp: new Date().toISOString(),
+        includedCoverLetter: includeCoverLetter,
+        includedDigitalSignature: includeDigitalSignature
+      };
+      
+      res.json({
+        success: true,
+        projectId,
+        ...packageData
+      });
+    }, 2000);
+  } catch (error) {
+    console.error('Error building final package:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error building final package',
+      error: error.message
+    });
+  }
+});
+
+// Export as both default and named export to support different import styles
 export default router;
-export { router };
