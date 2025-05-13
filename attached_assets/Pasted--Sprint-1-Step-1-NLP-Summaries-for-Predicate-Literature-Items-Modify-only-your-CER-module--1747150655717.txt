@@ -1,0 +1,63 @@
+**Sprint 1 · Step 1: NLP Summaries for Predicate & Literature Items**
+*Modify only your CER-module code (everything lives under `client/src/pages/CERV2Page.jsx` or its imported sub-components). No mocks—real OpenAI calls, real UI feedback.*
+
+---
+
+1. **Backend: expose a summary endpoint**
+
+   * In `server/routes/fda510kRoutes.js`, add under your `/api/fda510k/...` router:
+
+     ```js
+     // POST /api/fda510k/summarize
+     // Body: { text: string }
+     router.post('/summarize', async (req, res) => {
+       const { text } = req.body;
+       const summary = await openai.chat.completions.create({
+         model: 'gpt-4o-mini',
+         messages: [
+           { role: 'system', content: 'You are a regulatory affairs assistant.' },
+           { role: 'user', content: `Please summarize this text in 2–3 sentences:\n\n${text}` }
+         ]
+       });
+       res.json({ summary: summary.choices[0].message.content.trim() });
+     });
+     ```
+   * Restart your server; verify `curl -X POST http://localhost:5000/api/fda510k/summarize -d '{"text":"…"}'` returns a JSON summary.
+
+2. **Client Service: add `summarizeText()`**
+
+   * In `client/src/services/FDA510kService.js`, add:
+
+     ```js
+     async summarizeText(text) {
+       const resp = await fetch('/api/fda510k/summarize', {
+         method: 'POST',
+         headers: { 'Content-Type': 'application/json' },
+         body: JSON.stringify({ text })
+       });
+       const { summary } = await resp.json();
+       return summary;
+     }
+     ```
+   * Export it from the singleton.
+
+3. **UI: “📄 Summarize” button**
+
+   * In `PredicateFinderPanel.jsx` (or equivalent), for each predicate & literature card, render a small “📄 Summarize” button.
+   * On click:
+
+     ```js
+     const summary = await FDA510kService.instance.summarizeText(item.fullDescription);
+     setLocalState({ [item.id]: summary });
+     toast({ title: 'Summary generated' });
+     ```
+   * Beneath the card title, display the returned summary (conditionally, if present in state).
+
+4. **Smoke-test**
+
+   * Rebuild & restart full stack in Replit.
+   * Navigate to **Client Portal → Medical Device & Diagnostics → 510(k) Predicate** tab.
+   * Select a device, hit “Search Predicates,” then click its new “📄 Summarize” button.
+   * Confirm a concise 2–3-sentence summary appears and no console errors.
+
+Once you verify this end-to-end flow works (real OpenAI call, saved UI state, toast feedback), report back and we’ll move to “AI-Powered Recommendations.”

@@ -1,0 +1,101 @@
+Here’s a granular, sprint-based plan you can drop straight into your Replit AI agent — **everything lives inside your single `CERV2Page.jsx` / CER-module workflow**, no outside pages, no mocks, just production-grade end-to-end features.
+
+---
+
+## Sprint 1: AI-Powered Predicate & Literature Discovery Enhancements
+
+1. **NLP Summaries**
+
+   * **Task:** Integrate an OpenAI call in your `FDA510kService.js` to summarize predicate device descriptions and literature abstracts.
+   * **UI:** In your `PredicateFinderPanel` add a “📄 Summarize” button on each item. Show the returned 2–3-sentence summary beneath the title.
+
+2. **AI-Powered Recommendations**
+
+   * **Task:** Add an API method `getRecommendedPredicates(profileId)` that sends the full device profile to OpenAI, returning top-5 similar devices.
+   * **UI:** On panel load, automatically fetch & pre-populate “Recommended Predicates” before the user hits Search.
+
+3. **Intelligent Semantic Search**
+
+   * **Task:** Replace your current text search in `findPredicatesAndLiterature` with an embedding-based call: send the user’s query to OpenAI embeddings and use a nearest-neighbor search over your predicate index.
+   * **UI:** Keep the same search box—results will now be semantically ranked.
+
+4. **Automated Literature Review**
+
+   * **Task:** Create a new service method `autoReviewLiterature(profileId)` that pulls in PubMed abstracts via your integration, sends them to OpenAI in batches, and returns key findings & relevance scores.
+   * **UI:** Under “Literature” tab, add a “⚡ Auto-Review” button that kicks this off and then displays bullet-point key findings.
+
+---
+
+## Sprint 2: Workflow & Collaboration
+
+1. **Feedback & Confirmation**
+
+   * **Task:** Everywhere you save (predicate, citation, summary), return a success/fail and bubble a `<Toast>` (shadcn’s `useToast`) confirming the action.
+   * **UI:** Hook into your existing save-handlers in `PredicateFinderPanel` and `ComplianceScorePanel`.
+
+2. **Detailed Side-by-Side Comparisons**
+
+   * **Task:** In `PredicateComparison.jsx`, fetch full specs for both devices and build a two-column table of all key attributes (intended use, tech, classification, testing data).
+   * **UI:** On “Compare” click, render that component in a modal or an inline expander.
+
+3. **Saved References Section**
+
+   * **Task:** In your panel state, maintain a `savedReferences[]` model; back it with a real DB table via a new route `/api/510k/references`.
+   * **UI:** Add a 3rd tab “Saved References” that lists them, with copy-citation buttons and Remove actions.
+
+---
+
+## Sprint 3: Team Collaboration & Sign-Offs
+
+1. **In-App Commenting & Tasks**
+
+   * **Task:** Add a lightweight comments endpoint (`POST /api/510k/:projectId/comments`) and DB table.
+   * **UI:** In each tab—especially “Regulatory Pathway”—render a comments panel where users can tag teammates with “@” and resolve threads.
+
+2. **Approval Workflows**
+
+   * **Task:** Extend your project model with `approvals` states; add endpoints to “request approval” and “grant approval” per section.
+   * **UI:** Show an “Approve” button on each major section; display status badges (“🟢 Approved”, “⌛ Pending”, “❌ Rejected”).
+
+3. **Document Versioning**
+
+   * **Task:** Every time a report is exported or a substantial section is edited, snapshot it in a `versions` table with timestamp and user.
+   * **UI:** Add a “History” dropdown on the CER toolbar to view and “Revert to” any prior version.
+
+---
+
+## Sprint 4: Guided UX & Chatbot
+
+1. **Tooltips & Inline Guidance**
+
+   * **Task:** For every major button or input (Predicate Search, Summarize, Compare, Compliance Check), add `title` tooltips and an optional “?” info icon that expands a brief how-to.
+   * **UI:** Use your `Tooltip` component from shadcn/ui for consistency.
+
+2. **AI-Powered Chat Assistant**
+
+   * **Task:** Embed a small chat widget in the lower corner that uses OpenAI’s conversational API, primed on your domain (device regulations).
+   * **UI:** Clicking “Need help?” opens the widget; users can ask “How do I choose a predicate?” and get contextual guidance.
+
+---
+
+## Sprint 5: Customization & Responsive
+
+1. **Relevance Criteria Customization**
+
+   * **Task:** Persist custom weight sliders (useContext or Redux state) for “Intended Use”, “Tech”, “Classification”, “Performance Data”.
+   * **UI:** Place these sliders in a “⚙️ Settings” icon top-right of the Predicate tab; store preferences per user/organization.
+
+2. **Responsive Layout**
+
+   * **Task:** Audit all your panels with browser-width tests; ensure tables collapse into stacked cards on mobile.
+   * **UI:** Use CSS grid with `grid-cols-1 sm:grid-cols-2` etc. and verify in Chrome DevTools.
+
+---
+
+> **How to feed this to the Replit agent**
+>
+> 1. **One task per message**: e.g. “Sprint 1, Step 1: implement NLP Summaries…”
+> 2. **Specify “modify only `client/src/pages/CERV2Page.jsx` and its imported components”**
+> 3. **Require a smoke-test after each sprint**: agent must launch and verify `/cerv2` loads with no errors.
+
+That structure will keep the agent honest, ensure **all** code lives inside your CER2V page (and its genuine sub-components), and deliver real, production-grade AI-driven enhancements.

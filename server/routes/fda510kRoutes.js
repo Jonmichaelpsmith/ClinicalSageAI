@@ -3,7 +3,7 @@
  * 
  * This module provides API routes for FDA 510(k) Automation,
  * including predicate discovery, regulatory pathway analysis,
- * and compliance checking.
+ * compliance checking, and NLP summaries.
  */
 
 import express from 'express';
@@ -30,6 +30,36 @@ const validateDeviceData = (req, res, next) => {
     return res.status(400).json({
       success: false,
       message: 'Device name is required'
+    });
+  }
+  
+  next();
+};
+
+// Middleware to validate item data for NLP summarization
+const validateItemData = (req, res, next) => {
+  const { item, type } = req.body;
+  
+  if (!item) {
+    return res.status(400).json({
+      success: false,
+      message: 'Item data is required'
+    });
+  }
+  
+  // For predicate devices, ensure we have name and description
+  if (type === 'predicate' && (!item.deviceName || !item.description)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Device name and description are required for predicate summary'
+    });
+  }
+  
+  // For literature, ensure we have title and abstract
+  if (type === 'literature' && (!item.title || !item.abstract)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Title and abstract are required for literature summary'
     });
   }
   
@@ -486,6 +516,108 @@ router.post('/compliance-check', validateDeviceData, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to run compliance check'
+    });
+  }
+});
+
+/**
+ * Generate NLP summary for predicate devices or literature references
+ */
+router.post('/nlp-summary', validateItemData, async (req, res) => {
+  try {
+    const { item, type, organizationId } = req.body;
+    
+    // Check if OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key not available. Cannot generate NLP summary.');
+      return res.status(500).json({
+        success: false,
+        message: 'OpenAI API key is required for NLP summary generation. Please provide a valid API key.'
+      });
+    }
+    
+    // Initialize OpenAI if not already done
+    try {
+      await initializeOpenAI();
+    } catch (initError) {
+      return res.status(500).json({
+        success: false,
+        message: initError.message
+      });
+    }
+    
+    console.log(`Generating NLP summary for ${type}:`, type === 'predicate' ? item.deviceName : item.title);
+    
+    try {
+      // Create a structured prompt based on item type
+      let prompt;
+      
+      if (type === 'predicate') {
+        prompt = `
+          Please create a concise 2-3 sentence summary of the following medical device that could serve as a predicate device in a 510(k) submission:
+          
+          DEVICE DETAILS:
+          - Name: ${item.deviceName}
+          - Manufacturer: ${item.manufacturer || 'Not specified'}
+          - Description: ${item.description || 'Not specified'}
+          - K Number: ${item.kNumber || 'Not specified'}
+          - Clearance Date: ${item.clearanceDate || 'Not specified'}
+          - Device Class: ${item.deviceClass || 'Not specified'}
+          
+          Focus on its key features, intended use, and technological characteristics that would be relevant for substantial equivalence comparisons.
+          Return only the summary text without any additional formatting or explanations.
+        `;
+      } else if (type === 'literature') {
+        prompt = `
+          Please create a concise 2-3 sentence summary of the following scientific literature reference:
+          
+          LITERATURE DETAILS:
+          - Title: ${item.title}
+          - Authors: ${Array.isArray(item.authors) ? item.authors.join(', ') : (item.authors || 'Not specified')}
+          - Journal: ${item.journal || 'Not specified'}
+          - Year: ${item.year || 'Not specified'}
+          - Abstract: ${item.abstract || 'Not specified'}
+          
+          Focus on the key findings, methodology, and relevance to medical device regulatory submissions.
+          Return only the summary text without any additional formatting or explanations.
+        `;
+      } else {
+        throw new Error(`Unsupported item type: ${type}`);
+      }
+      
+      // Call OpenAI
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+        messages: [
+          {
+            role: "system",
+            content: "You are a medical device regulatory expert specializing in creating concise, accurate summaries of device descriptions and scientific literature for 510(k) submissions."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ]
+      });
+      
+      const summary = completion.choices[0].message.content.trim();
+      console.log('Successfully generated NLP summary');
+      
+      return res.status(200).json({
+        success: true,
+        summary,
+        itemId: type === 'predicate' ? item.kNumber : (item.doi || item.id),
+        type
+      });
+    } catch (aiError) {
+      console.error('Error in OpenAI processing:', aiError);
+      throw new Error(`AI processing error: ${aiError.message}`);
+    }
+  } catch (error) {
+    console.error('Error generating NLP summary:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to generate NLP summary: ' + error.message
     });
   }
 });
