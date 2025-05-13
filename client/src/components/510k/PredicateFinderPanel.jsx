@@ -49,7 +49,7 @@ import FDA510kService from '../../services/FDA510kService';
 import PredicateComparison from './PredicateComparison';
 import { isFeatureEnabled } from '@/flags/featureFlags';
 
-const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [] }) => {
+const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], recommendations = [] }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [results, setResults] = useState(predicates.length > 0 ? { predicateDevices: predicates } : null);
@@ -1319,7 +1319,7 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [] }
             {renderStatsDashboard()}
             
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="predicates" className="flex items-center gap-1.5">
                   <Database className="h-4 w-4" />
                   <span>Predicate Devices</span>
@@ -1328,6 +1328,15 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [] }
                       {predicateStats.total}
                     </Badge>
                   ) : null}
+                </TabsTrigger>
+                <TabsTrigger value="recommendations" className="flex items-center gap-1.5">
+                  <Lightbulb className="h-4 w-4" />
+                  <span>AI Recommendations</span>
+                  {recommendations.length > 0 && (
+                    <Badge className="ml-auto bg-yellow-100 border-yellow-200 text-yellow-800 h-5 px-1.5">
+                      {recommendations.length}
+                    </Badge>
+                  )}
                 </TabsTrigger>
                 <TabsTrigger value="literature" className="flex items-center gap-1.5">
                   <Book className="h-4 w-4" />
