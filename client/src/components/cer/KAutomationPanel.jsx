@@ -6,7 +6,7 @@ import {
   FileCheck, CheckCircle2, AlertTriangle, Lightbulb, Bot, Star, ListChecks, BookOpen, 
   Clock, Info, Check, Brain, Activity, FileText, Undo2, Users, Plus, Database,
   ChevronDown, ExternalLink, Bug, AlertCircle, BookmarkPlus, Calendar,
-  ChevronUp, ListPlus
+  ChevronUp, ListPlus, Package
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -24,10 +24,14 @@ import FDA510kService from '../../services/FDA510kService';
 import { useTenant } from '@/contexts/TenantContext';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+// Import ESTARPackageBuilder component directly
+import ESTARPackageBuilder from '../510k/ESTARPackageBuilder';
 
 export default function KAutomationPanel() {
   const [activeTab, setActiveTab] = useState('workflow');
   const [workflowSubTab, setWorkflowSubTab] = useState('pipeline');
+  // Add estar tab to properly integrate eSTAR functionality within the KAutomationPanel
+  const [showEstarBuilder, setShowEstarBuilder] = useState(false);
   const [aiProcessing, setAiProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [aiInsights, setAiInsights] = useState([]);
@@ -761,6 +765,10 @@ export default function KAutomationPanel() {
                   <TabsTrigger value="status" className="flex-1">
                     <Activity className="h-4 w-4 mr-2" />
                     Workflow Status
+                  </TabsTrigger>
+                  <TabsTrigger value="estar" className="flex-1">
+                    <Package className="h-4 w-4 mr-2" />
+                    eSTAR Package
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
