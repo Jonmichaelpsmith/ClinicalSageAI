@@ -160,4 +160,105 @@ router.get('/frameworks', (req, res) => {
   });
 });
 
+/**
+ * @route POST /api/regulatory-ai/upload-document
+ * @description Upload a regulatory document PDF for processing and knowledge base enhancement
+ */
+router.post('/upload-document', upload.single('document'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    // Get file path and metadata from request
+    const filePath = req.file.path;
+    const jurisdiction = req.body.jurisdiction || 'General';
+    const documentType = req.body.documentType || 'Regulatory';
+    const documentTitle = req.body.title || req.file.originalname;
+    
+    console.log(`Processing document: ${documentTitle}, Jurisdiction: ${jurisdiction}, Type: ${documentType}`);
+    
+    // Process the document and add to knowledge base
+    const result = await documentProcessor.processDocument(
+      filePath, 
+      {
+        title: documentTitle,
+        jurisdiction,
+        documentType,
+        source: req.body.source || 'User Upload',
+        uploadedBy: req.body.uploadedBy || 'System User',
+        uploadDate: new Date().toISOString()
+      }
+    );
+    
+    if (result.success) {
+      res.json({
+        message: 'Document processed successfully',
+        documentId: result.documentId,
+        documentStats: result.stats
+      });
+    } else {
+      res.status(500).json({
+        error: 'Failed to process document',
+        details: result.error
+      });
+    }
+  } catch (error) {
+    console.error('Error uploading document:', error);
+    res.status(500).json({
+      error: 'An error occurred while processing the document',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * @route GET /api/regulatory-ai/knowledge-stats
+ * @description Get statistics about the regulatory knowledge base
+ */
+router.get('/knowledge-stats', async (req, res) => {
+  try {
+    // Get stats on the knowledge base
+    const stats = await documentProcessor.getKnowledgeBaseStats();
+    
+    res.json({
+      stats,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error('Error getting knowledge base stats:', error);
+    res.status(500).json({
+      error: 'An error occurred while retrieving knowledge base statistics',
+      details: error.message
+    });
+  }
+});
+
+/**
+ * @route GET /api/regulatory-ai/initialize-knowledge-base
+ * @description Initialize or reset the regulatory knowledge base
+ */
+router.get('/initialize-knowledge-base', async (req, res) => {
+  try {
+    const result = await documentProcessor.initializeDatabase();
+    
+    if (result) {
+      res.json({
+        message: 'Knowledge base initialized successfully',
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(500).json({
+        error: 'Failed to initialize knowledge base'
+      });
+    }
+  } catch (error) {
+    console.error('Error initializing knowledge base:', error);
+    res.status(500).json({
+      error: 'An error occurred while initializing the knowledge base',
+      details: error.message
+    });
+  }
+});
+
 module.exports = router;
