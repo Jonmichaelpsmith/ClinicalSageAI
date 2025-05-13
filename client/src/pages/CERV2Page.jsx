@@ -24,12 +24,14 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import KAutomationPanel from '@/components/cer/KAutomationPanel';
 
 export default function CERV2Page() {
@@ -55,7 +57,6 @@ export default function CERV2Page() {
   const [isFetchingFaers, setIsFetchingFaers] = useState(false);
   const [isFetchingLiterature, setIsFetchingLiterature] = useState(false);
   const [activeTab, setActiveTab] = useState('builder');
-  console.log('Active Tab:', activeTab); // Debug helper
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
   const [exportTimestamp, setExportTimestamp] = useState(null);
@@ -65,6 +66,14 @@ export default function CERV2Page() {
   const [selectedTemplate, setSelectedTemplate] = useState('eu-mdr');
   const [showWizard, setShowWizard] = useState(false);
   const [showEvidenceReminder, setShowEvidenceReminder] = useState(true);
+  const [showSystemHealth, setShowSystemHealth] = useState(false);
+  const [systemInfo, setSystemInfo] = useState({
+    memory: { used: 0, total: 0, percentage: 0 },
+    api: { status: 'unknown', latency: 0 },
+    uptime: 0,
+    errorCount: 0,
+    lastChecked: null
+  });
   const { toast } = useToast();
   
   // Helper function to format CtQ factors for a specific objective
@@ -1100,20 +1109,382 @@ export default function CERV2Page() {
     );
   }
 
-  // For debugging purposes
+  // System Health monitoring function
+  const refreshSystemHealth = useCallback(async () => {
+    try {
+      // Get memory info
+      const memoryInfo = window.performance?.memory || { 
+        usedJSHeapSize: 0, 
+        totalJSHeapSize: 2000000000 
+      };
+      
+      // Check API health with a timeout
+      const apiStartTime = Date.now();
+      let apiStatus = 'unknown';
+      let apiLatency = 0;
+      
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        
+        const response = await fetch('/api/health', { 
+          signal: controller.signal 
+        });
+        
+        clearTimeout(timeoutId);
+        apiStatus = response.ok ? 'healthy' : 'unhealthy';
+        apiLatency = Date.now() - apiStartTime;
+      } catch (err) {
+        console.error('API health check failed:', err);
+        apiStatus = 'error';
+        apiLatency = Date.now() - apiStartTime;
+      }
+      
+      // Get error logs count from localStorage
+      const errorLogs = JSON.parse(localStorage.getItem('errorLogs') || '[]');
+      
+      // Calculate uptime (based on when page was loaded)
+      const uptime = Math.floor(performance.now() / 1000);
+      
+      // Update state
+      setSystemInfo({
+        memory: {
+          used: Math.round(memoryInfo.usedJSHeapSize / 1000000),
+          total: Math.round(memoryInfo.totalJSHeapSize / 1000000),
+          percentage: Math.round((memoryInfo.usedJSHeapSize / memoryInfo.totalJSHeapSize) * 100)
+        },
+        api: {
+          status: apiStatus,
+          latency: apiLatency
+        },
+        uptime,
+        errorCount: errorLogs.length,
+        lastChecked: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error refreshing system health:', error);
+    }
+  }, []);
+  
+  // Collect system info when panel is opened
   useEffect(() => {
-    console.log("Current activeTab:", activeTab);
-  }, [activeTab]);
+    if (showSystemHealth) {
+      refreshSystemHealth();
+    }
+  }, [showSystemHealth, refreshSystemHealth]);
 
   return (
     <div className="max-w-[1200px] mx-auto">
+      {/* System Health Dialog */}
+      <Dialog open={showSystemHealth} onOpenChange={setShowSystemHealth}>
+        <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              System Health Dashboard
+              <Badge variant="outline" className={systemInfo.memory.percentage > 80 ? 'bg-red-100 text-red-800 border-red-200' : 
+                systemInfo.memory.percentage > 60 ? 'bg-amber-100 text-amber-800 border-amber-200' : 
+                'bg-green-100 text-green-800 border-green-200'}>
+                {systemInfo.memory.percentage > 80 ? 'Attention Needed' : 
+                 systemInfo.memory.percentage > 60 ? 'Fair' : 
+                 'Good'}
+              </Badge>
+            </DialogTitle>
+            <DialogDescription>
+              System performance metrics and diagnostics information
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Tabs defaultValue="overview" className="flex-1 overflow-hidden flex flex-col">
+            <TabsList className="mb-4">
+              <TabsTrigger value="overview" className="flex items-center gap-1.5">
+                <Activity className="h-4 w-4" />
+                <span>Overview</span>
+              </TabsTrigger>
+              <TabsTrigger value="resources" className="flex items-center gap-1.5">
+                <Cpu className="h-4 w-4" />
+                <span>Resources</span>
+              </TabsTrigger>
+              <TabsTrigger value="connectivity" className="flex items-center gap-1.5">
+                <Network className="h-4 w-4" />
+                <span>Connectivity</span>
+              </TabsTrigger>
+              <TabsTrigger value="errors" className="flex items-center gap-1.5">
+                <AlertCircle className="h-4 w-4" />
+                <span>Issues</span>
+                {systemInfo.errorCount > 0 && (
+                  <Badge className="ml-1 bg-red-100 text-red-800 border-red-200 h-5 px-1.5">
+                    {systemInfo.errorCount}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+            
+            <ScrollArea className="flex-1">
+              <TabsContent value="overview" className="mt-0 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">Memory Usage</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        <div className="text-2xl font-bold">{systemInfo.memory.percentage}%</div>
+                        <div className="text-sm text-muted-foreground">
+                          {systemInfo.memory.used} MB / {systemInfo.memory.total} MB
+                        </div>
+                      </div>
+                      <div className="mt-2 h-2 w-full bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full ${
+                            systemInfo.memory.percentage > 80 ? 'bg-red-500' : 
+                            systemInfo.memory.percentage > 60 ? 'bg-amber-500' : 'bg-green-500'
+                          }`}
+                          style={{ width: `${systemInfo.memory.percentage}%` }}
+                        />
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">API Health</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {systemInfo.api.status === 'healthy' ? (
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                          ) : (
+                            <XCircle className="h-5 w-5 text-red-500" />
+                          )}
+                          <span className="text-lg font-medium capitalize">
+                            {systemInfo.api.status}
+                          </span>
+                        </div>
+                        <div className="text-sm text-muted-foreground">
+                          {systemInfo.api.latency}ms latency
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">System Uptime</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {Math.floor(systemInfo.uptime / 60)} minutes
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Session started at {new Date(Date.now() - systemInfo.uptime * 1000).toLocaleTimeString()}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base">System Info</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-sm space-y-1">
+                        <div className="flex justify-between">
+                          <span>Last checked:</span>
+                          <span>{systemInfo.lastChecked ? new Date(systemInfo.lastChecked).toLocaleTimeString() : 'Never'}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Browser:</span>
+                          <span>{navigator.userAgent.split(' ').slice(-1)[0]}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Issues detected:</span>
+                          <span>{systemInfo.errorCount}</span>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="resources" className="mt-0 space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Memory Details</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Heap Memory Used:</span>
+                        <span>{systemInfo.memory.used} MB</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Total Heap Allocated:</span>
+                        <span>{systemInfo.memory.total} MB</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Available Memory:</span>
+                        <span>{systemInfo.memory.total - systemInfo.memory.used} MB</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Usage Percentage:</span>
+                        <span>{systemInfo.memory.percentage}%</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Storage</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>LocalStorage:</span>
+                        <span>{Object.keys(localStorage).length} items</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>SessionStorage:</span>
+                        <span>{Object.keys(sessionStorage).length} items</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>IndexedDB Status:</span>
+                        <span>
+                          {window.indexedDB ? 'Available' : 'Not Available'}
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="connectivity" className="mt-0 space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-base">Network Status</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Connection:</span>
+                        <span className="capitalize">
+                          {navigator.onLine ? 'Online' : 'Offline'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>API Endpoint Status:</span>
+                        <span className="capitalize flex items-center gap-1">
+                          {systemInfo.api.status === 'healthy' ? (
+                            <>
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                              Healthy
+                            </>
+                          ) : (
+                            <>
+                              <XCircle className="h-4 w-4 text-red-500" />
+                              {systemInfo.api.status}
+                            </>
+                          )}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>API Response Time:</span>
+                        <span>{systemInfo.api.latency} ms</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="errors" className="mt-0 space-y-4">
+                {systemInfo.errorCount > 0 ? (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <AlertCircle className="h-4 w-4 text-red-500" />
+                        Errors Detected
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-gray-600">
+                        {systemInfo.errorCount} errors have been detected in this session. Please contact support if you're experiencing issues.
+                      </p>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-6 text-center">
+                    <CheckCircle className="h-16 w-16 text-green-100 mb-4" />
+                    <h3 className="text-lg font-medium">No Issues Detected</h3>
+                    <p className="text-sm text-muted-foreground max-w-md mt-1">
+                      The system is currently running smoothly without any detected errors or issues.
+                    </p>
+                  </div>
+                )}
+              </TabsContent>
+            </ScrollArea>
+          </Tabs>
+          
+          <DialogFooter className="flex items-center justify-between mt-4 sm:justify-between">
+            <div>
+              <Button
+                onClick={refreshSystemHealth}
+                variant="outline"
+                size="sm"
+                className="mr-2"
+              >
+                <RefreshCw className="h-4 w-4 mr-1" />
+                Refresh
+              </Button>
+              <Button 
+                onClick={() => {
+                  const report = {
+                    systemInfo,
+                    userAgent: navigator.userAgent,
+                    timestamp: new Date().toISOString()
+                  };
+                  
+                  const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+                  const url = URL.createObjectURL(blob);
+                  
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `system-health-report-${new Date().toISOString().split('T')[0]}.json`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  URL.revokeObjectURL(url);
+                }}
+                variant="outline" 
+                size="sm"
+              >
+                <DownloadCloud className="h-4 w-4 mr-1" />
+                Export Report
+              </Button>
+            </div>
+            <Button variant="secondary" size="sm" onClick={() => setShowSystemHealth(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
       {/* Direct 510(k) Automation Panel */}
       <div className="bg-white mb-6 p-6 border border-blue-200 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-blue-700">510(k) Automation Pipeline</h2>
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-            FDA Submission
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="flex items-center gap-1.5"
+              onClick={() => setShowSystemHealth(true)}
+            >
+              <Activity className="h-4 w-4" />
+              <span>System Health</span>
+            </Button>
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+              FDA Submission
+            </Badge>
+          </div>
         </div>
         <p className="text-gray-600 mb-6">Complete automation pipeline for FDA 510(k) submissions with intelligent predicate discovery.</p>
         <div className="p-4 bg-blue-50 rounded-md mb-6">
