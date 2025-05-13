@@ -228,34 +228,64 @@ export default function KAutomationPanel() {
       if (step === 'findPredicatesAndLiterature') {
         // Verify we have a device profile selected
         if (!currentDeviceProfile) {
+          toast({
+            title: "Missing Device Profile",
+            description: "Please select a device profile before searching for predicates",
+            variant: "destructive"
+          });
           throw new Error("Please select a device profile before searching for predicates");
         }
       
         setIsSearchingPredicates(true);
         
-        // Use the current device profile for the search
-        // Add console logging to debug the response
-        console.log('Starting predicate device search...');
+        // Detailed logging for debugging
+        console.log('Starting predicate device search...', {
+          deviceProfile: {
+            id: currentDeviceProfile.id,
+            name: currentDeviceProfile.deviceName,
+            class: currentDeviceProfile.deviceClass,
+            indication: currentDeviceProfile.indication
+          },
+          organization: currentOrganization
+        });
         
-        // Use the actual API to find predicate devices
-        const predicateResponse = await FDA510kService.findPredicateDevices(
-          currentDeviceProfile, 
-          currentOrganization?.id
-        );
+        // Show toast notification for better UX
+        toast({
+          title: "Searching Predicate Devices",
+          description: `Finding similar devices for ${currentDeviceProfile.deviceName}...`,
+        });
         
-        // Log the API response for debugging
-        console.log('Predicate search response:', predicateResponse);
-        
-        // Handle different response formats
-        results = predicateResponse || {};
-        
-        // Store results for display in the UI
-        setPredicateSearchResults(
-          results.predicateDevices || 
-          results.devices || 
-          results.predicates || 
-          []
-        );
+        try {
+          // Use the actual API to find predicate devices
+          const predicateResponse = await FDA510kService.findPredicateDevices(
+            currentDeviceProfile, 
+            currentOrganization?.id
+          );
+          
+          // Log the API response for debugging
+          console.log('Predicate search response:', predicateResponse);
+          
+          if (!predicateResponse || !predicateResponse.success) {
+            throw new Error(predicateResponse?.message || "Failed to find predicate devices");
+          }
+          
+          // Handle different response formats
+          results = predicateResponse || {};
+          
+          // Store results for display in the UI
+          const foundDevices = results.predicateDevices || 
+            results.devices || 
+            results.predicates || 
+            [];
+            
+          setPredicateSearchResults(foundDevices);
+          
+          // Show toast notification with result count
+          toast({
+            title: "Search Complete",
+            description: `Found ${foundDevices.length} potential predicate devices`,
+            variant: foundDevices.length > 0 ? "default" : "warning"
+          });
         
         // Transform API results to insights format
         const insights = [];
@@ -394,42 +424,88 @@ export default function KAutomationPanel() {
       else if (step === 'runComplianceChecks') {
         // Verify we have a device profile selected
         if (!currentDeviceProfile) {
+          toast({
+            title: "Missing Device Profile",
+            description: "Please select a device profile before running compliance checks",
+            variant: "destructive"
+          });
           throw new Error("Please select a device profile before running compliance checks");
         }
         
-        // Add console logging for compliance check
-        console.log('Starting compliance check...');
+        // Add detailed console logging for compliance check
+        console.log('Starting compliance check...', {
+          deviceProfile: {
+            id: currentDeviceProfile.id,
+            name: currentDeviceProfile.deviceName,
+            class: currentDeviceProfile.deviceClass
+          },
+          organization: currentOrganization
+        });
         
-        // Use the actual device profile for compliance check
-        const complianceResponse = await FDA510kService.runComplianceCheck(
-          currentDeviceProfile, 
-          currentOrganization?.id
-        );
+        toast({
+          title: "Running Compliance Check",
+          description: `Analyzing ${currentDeviceProfile.deviceName} for regulatory compliance`,
+        });
         
-        // Log the API response for debugging
-        console.log('Compliance check response:', complianceResponse);
-        
-        // Create a structured validation insight with fallbacks for different response formats
-        const validationInsight = {
-          id: `validation-${Date.now()}`,
-          type: 'validation',
-          isValid: complianceResponse.isValid || complianceResponse.valid || false,
-          score: complianceResponse.score || complianceResponse.complianceScore || 0.75,
-          passedChecks: complianceResponse.passedChecks || complianceResponse.passedCheckCount || 0,
-          totalChecks: complianceResponse.totalChecks || complianceResponse.totalCheckCount || 1,
-          criticalIssues: complianceResponse.criticalIssues || complianceResponse.criticalCount || 0,
-          warnings: complianceResponse.warnings || complianceResponse.warningCount || 0,
-          errors: complianceResponse.errors || complianceResponse.errorCount || 0,
-          detailedChecks: complianceResponse.detailedChecks || complianceResponse.checks || [],
-          timestamp: complianceResponse.timestamp || new Date().toISOString()
-        };
-        
-        // Keep existing insights that aren't validation type, and add the new one
-        const existingInsights = aiInsights.filter(i => i.type !== 'validation');
-        setAiInsights([validationInsight, ...existingInsights]);
-        
-        // Automatically switch to insights tab
-        setActiveTab('insights');
+        try {
+          // Use the actual device profile for compliance check
+          const complianceResponse = await FDA510kService.runComplianceCheck(
+            currentDeviceProfile, 
+            currentOrganization?.id
+          );
+          
+          // Log the API response for debugging
+          console.log('Compliance check response:', complianceResponse);
+          
+          if (!complianceResponse || !complianceResponse.success) {
+            throw new Error(complianceResponse?.message || "Failed to complete compliance check");
+          }
+          
+          // Create a structured validation insight with fallbacks for different response formats
+          const validationInsight = {
+            id: `validation-${Date.now()}`,
+            type: 'validation',
+            isValid: complianceResponse.isValid || complianceResponse.valid || false,
+            score: complianceResponse.score || complianceResponse.complianceScore || 0.75,
+            passedChecks: complianceResponse.passedChecks || complianceResponse.passedCheckCount || 0,
+            totalChecks: complianceResponse.totalChecks || complianceResponse.totalCheckCount || 1,
+            criticalIssues: complianceResponse.criticalIssues || complianceResponse.criticalCount || 0,
+            warnings: complianceResponse.warnings || complianceResponse.warningCount || 0,
+            errors: complianceResponse.errors || complianceResponse.errorCount || 0,
+            detailedChecks: Array.isArray(complianceResponse.detailedChecks) 
+              ? complianceResponse.detailedChecks 
+              : Array.isArray(complianceResponse.checks) 
+                ? complianceResponse.checks 
+                : [],
+            timestamp: complianceResponse.timestamp || new Date().toISOString(),
+            device: currentDeviceProfile.deviceName
+          };
+          
+          // Keep existing insights that aren't validation type, and add the new one
+          const existingInsights = aiInsights.filter(i => i.type !== 'validation');
+          setAiInsights([validationInsight, ...existingInsights]);
+          
+          // Show success toast
+          toast({
+            title: "Compliance Check Complete",
+            description: `Score: ${Math.round(validationInsight.score * 100)}% with ${validationInsight.warnings} warnings and ${validationInsight.errors} errors`,
+            variant: validationInsight.score > 0.8 ? "default" : "warning"
+          });
+          
+          // Automatically switch to insights tab
+          setActiveTab('insights');
+          
+          // Log successful completion
+          console.log('Compliance check completed successfully:', validationInsight);
+        } catch (error) {
+          console.error('Compliance check failed:', error);
+          toast({
+            title: "Compliance Check Failed",
+            description: error.message || "An error occurred during compliance check",
+            variant: "destructive"
+          });
+          throw error;
+        }
       }
       
       // Complete progress and clear interval
