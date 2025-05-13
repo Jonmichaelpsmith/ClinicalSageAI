@@ -405,9 +405,9 @@ export default function LumenAiAssistant({
                   
                   <div className="prose prose-sm max-w-none">
                     {message.role === 'assistant' && isLatestAssistantMessage && isTyping ? (
-                      <ReactMarkdown>{displayedContent}</ReactMarkdown>
+                      <div className="whitespace-pre-wrap">{displayedContent}</div>
                     ) : (
-                      <ReactMarkdown>{message.content}</ReactMarkdown>
+                      <div className="whitespace-pre-wrap">{message.content}</div>
                     )}
                   </div>
                   
