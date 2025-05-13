@@ -161,8 +161,11 @@ function App() {
                          location === '/canvas' ||
                          location === '/timeline';
   const isDashboardPage = location === '/dashboard';
+  // Ensure CERV2 pages are NOT excluded from the navigation
+  const isCERV2Page = location === '/cerv2' || location.startsWith('/cerv2/');
 
-  const shouldShowNav = !isLandingPage && !isRegulatoryHub && !isCoAuthorPage && !isDashboardPage;
+  // Always show navigation for CERV2 pages
+  const shouldShowNav = isCERV2Page || (!isLandingPage && !isRegulatoryHub && !isCoAuthorPage && !isDashboardPage);
 
   useEffect(() => {
     console.log('✅ Application stability measures initialized');
