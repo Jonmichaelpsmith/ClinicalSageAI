@@ -119,6 +119,53 @@ router.get('/health', (req, res) => {
 });
 
 /**
+ * Initialize the knowledge base with documents from attached_assets directory
+ * This endpoint processes and imports regulatory PDFs into the knowledge base
+ */
+router.post('/init-knowledge-base', async (req, res) => {
+  try {
+    console.log('Initializing regulatory knowledge base...');
+    
+    // Initialize the document database structure
+    await regulatoryAIService.initializeDatabase();
+    
+    // Path to the attached_assets directory
+    const attachedAssetsPath = path.join(process.cwd(), 'attached_assets');
+    console.log(`Looking for documents in: ${attachedAssetsPath}`);
+    
+    // Process PDFs in the attached_assets directory
+    const processedDocs = await documentProcessor.processPdfs(attachedAssetsPath);
+    
+    if (processedDocs && processedDocs.length > 0) {
+      console.log(`Found ${processedDocs.length} documents to process`);
+      
+      // Store documents in the knowledge base
+      await documentProcessor.storeDocuments(processedDocs);
+      
+      return res.status(200).json({
+        status: 'success',
+        message: `Successfully initialized knowledge base with ${processedDocs.length} documents`,
+        documentCount: processedDocs.length
+      });
+    } else {
+      console.log('No documents found in attached_assets directory');
+      return res.status(200).json({
+        status: 'warning',
+        message: 'No documents found to initialize knowledge base',
+        documentCount: 0
+      });
+    }
+  } catch (error) {
+    console.error('Error initializing knowledge base:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Failed to initialize knowledge base',
+      error: error.message
+    });
+  }
+});
+
+/**
  * Import the Regulatory AI Service for RAG functionality
  * This provides both contextually-enhanced AI responses 
  * and fallback to hardcoded responses when needed
