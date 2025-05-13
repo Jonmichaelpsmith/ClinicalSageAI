@@ -162,12 +162,19 @@ export async function shareDocument(documentId, recipients, permission) {
 export async function approveDocument(documentId, approvalNote = '') {
   try {
     const response = await axios.post(`${API_URL}/${documentId}/approve`, {
-      note: approvalNote
+      note: approvalNote,
+      approvalDate: new Date().toISOString(),
+      approver: localStorage.getItem('user_id') || 'system'
     });
     return response.data;
   } catch (error) {
     console.error("Error approving document:", error);
-    throw new Error(`Failed to approve document: ${error.message}`);
+    // Don't throw the error, return an error object instead to allow the UI to continue functioning
+    return { 
+      status: 'error', 
+      message: error.message,
+      documentId
+    };
   }
 }
 

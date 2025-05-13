@@ -11,17 +11,22 @@
  * @returns {Promise<Array>} - List of all CER documents
  */
 export async function fetchAllCERs() {
-  const response = await fetch('/api/cer/documents', {
-    headers: {
-      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-    },
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Failed to fetch CER documents: ${response.statusText}`);
+  try {
+    const response = await fetch('/api/cer/documents', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+      },
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch CER documents: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching CERs:", error);
+    return [];
   }
-  
-  return await response.json();
 }
 
 /**
@@ -31,20 +36,25 @@ export async function fetchAllCERs() {
  * @returns {Promise<Object>} - The generated sample CER
  */
 export async function generateSampleCER(options = {}) {
-  const response = await fetch('/api/cer/sample', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-    },
-    body: JSON.stringify(options),
-  });
-  
-  if (!response.ok) {
-    throw new Error(`Failed to generate sample CER: ${response.statusText}`);
+  try {
+    const response = await fetch('/api/cer/sample', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+      },
+      body: JSON.stringify(options),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to generate sample CER: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Error generating sample CER:", error);
+    return { status: 'error', message: error.message };
   }
-  
-  return await response.json();
 }
 
 /**
