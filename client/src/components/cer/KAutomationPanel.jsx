@@ -874,15 +874,27 @@ export default function KAutomationPanel() {
                       )}
                     </Button>
                     
-                    {predicateSearchResults.length > 0 && (
+                    <div className="flex space-x-2">
+                      {predicateSearchResults.length > 0 && (
+                        <Button 
+                          variant="outline"
+                          onClick={() => setActiveTab('insights')}
+                          className="ml-2"
+                        >
+                          View Insights
+                        </Button>
+                      )}
+                      
                       <Button 
                         variant="outline"
-                        onClick={() => setActiveTab('insights')}
+                        onClick={() => setWorkflowSubTab('predicates')}
                         className="ml-2"
+                        disabled={!currentDeviceProfile}
                       >
-                        View Insights
+                        <FileText className="mr-1 h-4 w-4" />
+                        View NLP Summaries
                       </Button>
-                    )}
+                    </div>
                   </CardFooter>
                 </Card>
                 
@@ -1010,7 +1022,11 @@ export default function KAutomationPanel() {
               <div className="space-y-4">
                 <div className="bg-white rounded-md p-4">
                   {currentDeviceProfile ? (
-                    <PredicateFinderPanel deviceProfile={currentDeviceProfile} />
+                    <PredicateFinderPanel 
+                      deviceProfile={currentDeviceProfile}
+                      organizationId={currentOrganization?.id}
+                      predicates={predicateSearchResults}
+                    />
                   ) : (
                     <Alert className="bg-amber-50 border-amber-200">
                       <AlertTriangle className="h-4 w-4 text-amber-600" />

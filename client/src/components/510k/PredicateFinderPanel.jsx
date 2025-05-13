@@ -49,10 +49,10 @@ import FDA510kService from '../../services/FDA510kService';
 import PredicateComparison from './PredicateComparison';
 import { isFeatureEnabled } from '@/flags/featureFlags';
 
-const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
+const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [] }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [results, setResults] = useState(null);
+  const [results, setResults] = useState(predicates.length > 0 ? { predicateDevices: predicates } : null);
   const [activeTab, setActiveTab] = useState('predicates');
   const [showCustomization, setShowCustomization] = useState(false);
   const [selectedPredicate, setSelectedPredicate] = useState(null);
