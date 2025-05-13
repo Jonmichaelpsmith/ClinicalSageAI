@@ -360,7 +360,47 @@ export default function registerRoutes(app: Express): void {
   app.use('/api/fda510k', fda510kRouter);
   console.log('FDA 510(k) routes registered');
   
-  // Regulatory AI routes are now registered directly in server/index.ts
+  // Set up simple Regulatory AI routes right here
+const regulatoryAiRoute = Router();
+
+regulatoryAiRoute.post('/query', async (req, res) => {
+  try {
+    const { message } = req.body;
+    
+    if (!message) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+    
+    // Mock response until OpenAI integration is fixed
+    return res.status(200).json({ 
+      response: `I've received your question: "${message}". The OpenAI integration is currently being updated. Please check back soon.`
+    });
+  } catch (error) {
+    console.error('Error processing AI request:', error);
+    return res.status(500).json({ 
+      error: 'Server error processing AI request',
+      response: 'I apologize, but I encountered an error. Please try again later.'
+    });
+  }
+});
+
+regulatoryAiRoute.post('/upload', async (req, res) => {
+  try {
+    // Mock response for file upload
+    return res.status(200).json({ 
+      response: `I've received your files. The file processing system is currently being updated. Please check back soon.`
+    });
+  } catch (error) {
+    console.error('Error processing file upload:', error);
+    return res.status(500).json({ 
+      error: 'Server error processing file upload',
+      response: 'I apologize, but I encountered an error processing your files. Please try again later.'
+    });
+  }
+});
+
+app.use('/api/regulatory-ai', regulatoryAiRoute);
+console.log('Simple Regulatory AI routes registered');
   
   // Error handler for API routes
   app.use('/api', (err: any, req: any, res: any, next: any) => {
