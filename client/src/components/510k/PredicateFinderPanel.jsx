@@ -57,6 +57,7 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
   const [showCustomization, setShowCustomization] = useState(false);
   const [selectedPredicate, setSelectedPredicate] = useState(null);
   const [savedReferences, setSavedReferences] = useState([]);
+  const [summaries, setSummaries] = useState({});
   const [relevanceCriteria, setRelevanceCriteria] = useState({
     intendedUseWeight: 40,
     deviceClassWeight: 20,
@@ -138,6 +139,46 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
       title: "Predicate Selected",
       description: `${device.deviceName} selected for detailed comparison.`,
     });
+  };
+  
+  // Generate a summary for a device or literature item
+  const handleGenerateSummary = async (item, type = 'predicate') => {
+    try {
+      // Get the text to summarize
+      const textToSummarize = type === 'predicate' 
+        ? item.description
+        : item.abstract;
+      
+      if (!textToSummarize) {
+        toast({
+          title: "Cannot Generate Summary",
+          description: "No text available to summarize.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Generate the summary
+      const summary = await FDA510kService.summarizeText(textToSummarize);
+      
+      // Update state with the summary
+      setSummaries(prev => ({
+        ...prev,
+        [item.id || item.kNumber]: summary
+      }));
+      
+      toast({
+        title: "Summary Generated",
+        description: "The NLP summary has been generated successfully.",
+      });
+    } catch (error) {
+      console.error('Error generating summary:', error);
+      toast({
+        title: "Summary Error",
+        description: error.message || "Could not generate summary. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
   // Handler for saving a reference to the list
@@ -636,6 +677,16 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
                   </div>
                 </div>
                 
+                {/* Display the AI-generated summary if available */}
+                {summaries[device.kNumber || device.id] && (
+                  <div className="mt-3 mb-4">
+                    <h4 className="font-medium mb-2">AI-Generated Summary</h4>
+                    <div className="bg-blue-50 border border-blue-100 p-3 rounded-md text-sm text-blue-800">
+                      {summaries[device.kNumber || device.id]}
+                    </div>
+                  </div>
+                )}
+                
                 {/* Add detailed comparison when we have both device profile and a predicate */}
                 {deviceProfile && renderDeviceComparison(device)}
                 
@@ -687,6 +738,25 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
                       </Tooltip>
                     </TooltipProvider>
                   )}
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline"
+                          size="sm" 
+                          className="flex items-center"
+                          onClick={() => handleGenerateSummary(device, 'predicate')}
+                        >
+                          <FileText className="h-3.5 w-3.5 mr-1" />
+                          Summarize
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Generate an AI summary of this device</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                   
                   <TooltipProvider>
                     <Tooltip>
@@ -765,6 +835,16 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
                 <h4 className="font-medium mb-1">Abstract</h4>
                 <p className="text-sm text-gray-700 mb-4">{reference.abstract}</p>
                 
+                {/* Display the AI-generated summary if available */}
+                {summaries[reference.id || reference.doi] && (
+                  <div className="mb-4">
+                    <h4 className="font-medium mb-1">AI-Generated Summary</h4>
+                    <div className="bg-green-50 border border-green-100 p-3 rounded-md text-sm text-green-800">
+                      {summaries[reference.id || reference.doi]}
+                    </div>
+                  </div>
+                )}
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <h4 className="text-xs font-medium text-gray-500">DOI</h4>
@@ -803,6 +883,26 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
                       </Tooltip>
                     </TooltipProvider>
                   )}
+                  
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline"
+                          size="sm" 
+                          className="flex items-center"
+                          onClick={() => handleGenerateSummary(reference, 'literature')}
+                        >
+                          <FileText className="h-3.5 w-3.5 mr-1" />
+                          Summarize
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Generate an AI summary of this literature</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
