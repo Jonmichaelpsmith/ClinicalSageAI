@@ -1,0 +1,182 @@
+**Sprint 1 · Step 3: Intelligent Semantic Search**
+
+> *Reminder: Every change lives under `client/src/pages/CERV2Page.jsx` or its imported children in `client/src/components/cer/…`. No standalone pages—everything in your CER2V module.*
+
+---
+
+### 1. Set up vector storage in PostgreSQL
+
+1. **Install `pgvector` & enable extension**
+   In your server shell (Replit “Shell” tab):
+
+   ```bash
+   npm install pgvector
+   ```
+
+   In your database (psql shell or migration):
+
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS vector;
+   ALTER TABLE predicate_devices ADD COLUMN embedding vector(1536);
+   ```
+2. **Backfill embeddings**
+   Create a short script `scripts/backfill_embeddings.js`:
+
+   ```js
+   import { Pool } from 'pg';
+   import OpenAI from 'openai';
+   const openai = new OpenAI();
+   const db = new Pool({ connectionString: process.env.DATABASE_URL });
+
+   async function main() {
+     const devices = (await db.query(`SELECT id, description FROM predicate_devices WHERE embedding IS NULL`)).rows;
+     for (let { id, description } of devices) {
+       const embed = await openai.embeddings.create({ model: 'text-embedding-ada-002', input: description });
+       await db.query(`UPDATE predicate_devices SET embedding=$2 WHERE id=$1`, [id, embed.data[0].embedding]);
+     }
+   }
+   main();
+   ```
+
+   Run:
+
+   ```bash
+   node scripts/backfill_embeddings.js
+   ```
+
+---
+
+### 2. Backend: add `/semantic-search` endpoint
+
+In `server/routes/fda510kRoutes.js`, **below** your other `/api/fda510k` routes:
+
+```js
+import { Pool } from 'pg';
+import OpenAI from 'openai';
+
+const db = new Pool({ connectionString: process.env.DATABASE_URL });
+const openai = new OpenAI();
+
+router.post('/semantic-search', async (req, res) => {
+  try {
+    const { query } = req.body;
+    // 1) Get embedding for user query
+    const embedRes = await openai.embeddings.create({
+      model: 'text-embedding-ada-002',
+      input: query
+    });
+    const qVec = embedRes.data[0].embedding;
+
+    // 2) Find top-10 nearest predicate_devices by cosine distance
+    const sql = `
+      SELECT id, name, description,
+        1 - (embedding <=> $1) AS score
+      FROM predicate_devices
+      ORDER BY embedding <=> $1
+      LIMIT 10
+    `;
+    const { rows } = await db.query(sql, [qVec]);
+    res.json({ results: rows });
+  } catch (err) {
+    console.error('Semantic search error:', err);
+    res.status(500).json({ error: 'Semantic search failed' });
+  }
+});
+```
+
+> **Verify** in your shell:
+>
+> ```bash
+> curl -X POST http://localhost:5000/api/fda510k/semantic-search \
+>   -H 'Content-Type: application/json' \
+>   -d '{"query":"blood glucose monitoring handheld device"}'
+> ```
+
+---
+
+### 3. Client service method
+
+In `client/src/services/FDA510kService.js`, add:
+
+```js
+async semanticSearch(query) {
+  const resp = await fetch('/api/fda510k/semantic-search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query })
+  });
+  const { results } = await resp.json();
+  return results; // [{ id, name, description, score }, …]
+}
+```
+
+Export from your singleton.
+
+---
+
+### 4. UI: “🔍 Semantic Search” panel in CER2V
+
+In your 510(k) section of `CERV2Page.jsx` (or child component, e.g. `PredicateFinderPanel.jsx`):
+
+1. **Import** at top:
+
+   ```jsx
+   import { useState } from 'react';
+   import FDA510kService from '@/services/FDA510kService';
+   import { Input, Button, Card } from '@/components/ui'; // your UI lib
+   import { useToast } from '@/components/ui/use-toast';
+   ```
+2. **State & handler**:
+
+   ```jsx
+   const [semQuery, setSemQuery] = useState('');
+   const [semResults, setSemResults] = useState([]);
+   const { toast } = useToast();
+
+   const handleSemanticSearch = async () => {
+     if (!semQuery.trim()) return;
+     const results = await FDA510kService.instance.semanticSearch(semQuery);
+     setSemResults(results);
+     toast({ title: 'Semantic search complete', description: `${results.length} results found` });
+   };
+   ```
+3. **Render** (place under your existing search UI):
+
+   ```jsx
+   <div className="my-4">
+     <h3 className="text-lg font-semibold">🔍 Semantic Search</h3>
+     <div className="flex space-x-2 mt-2">
+       <Input
+         value={semQuery}
+         onChange={e => setSemQuery(e.target.value)}
+         placeholder="Describe what you're looking for…"
+       />
+       <Button onClick={handleSemanticSearch}>Search</Button>
+     </div>
+     <div className="mt-3 space-y-2">
+       {semResults.map(r => (
+         <Card key={r.id} className="p-3">
+           <div className="flex justify-between">
+             <span className="font-medium">{r.name}</span>
+             <span className="text-xs text-gray-500">{(r.score*100).toFixed(1)}%</span>
+           </div>
+           <p className="text-sm mt-1">{r.description}</p>
+         </Card>
+       ))}
+     </div>
+   </div>
+   ```
+
+---
+
+### 5. End-to-end smoke test
+
+* **Rebuild & restart** all services in Replit.
+* In **Client Portal → Med Device & Diagnostics → 510(k)** tab:
+
+  1. Enter a natural-language query in **Semantic Search** (e.g. “ergonomic insulin pen”).
+  2. Click **Search**.
+  3. Confirm you get \~10 predicate devices ranked by relevance (with score %) and no errors.
+* **Iterate**: adjust UI spacing, labels, or error messages as needed.
+
+When your live semantic search is rock-solid inside the CER2V page, report back and we’ll move on to **Step 4: Automated Literature Review**.
