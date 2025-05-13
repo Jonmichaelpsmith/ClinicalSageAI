@@ -40,10 +40,14 @@ import {
   Check,
   Database,
   Lightbulb,
-  BookOpen
+  BookOpen,
+  FilePlus,
+  Copy
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import FDA510kService from '../../services/FDA510kService';
+import PredicateComparison from './PredicateComparison';
+import { isFeatureEnabled } from '@/flags/featureFlags';
 
 const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -51,6 +55,8 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
   const [results, setResults] = useState(null);
   const [activeTab, setActiveTab] = useState('predicates');
   const [showCustomization, setShowCustomization] = useState(false);
+  const [selectedPredicate, setSelectedPredicate] = useState(null);
+  const [savedReferences, setSavedReferences] = useState([]);
   const [relevanceCriteria, setRelevanceCriteria] = useState({
     intendedUseWeight: 40,
     deviceClassWeight: 20,
@@ -128,6 +134,17 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
   const renderDeviceComparison = (predicateDevice) => {
     if (!deviceProfile || !predicateDevice) return null;
     
+    // Use our dedicated PredicateComparison component if the feature is enabled
+    if (isFeatureEnabled('ENABLE_COMPARISONS')) {
+      return (
+        <PredicateComparison 
+          deviceProfile={deviceProfile} 
+          predicateDevice={predicateDevice} 
+        />
+      );
+    }
+    
+    // Fallback to basic comparison if feature flag is disabled
     // Define key properties to compare
     const comparisonPoints = [
       { key: 'deviceClass', label: 'Device Class' },
