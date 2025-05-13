@@ -1,0 +1,82 @@
+You’ve got two levers here:
+
+---
+
+## 1. **Fix the Display in the UI**
+
+Even if your backend routes now return valid data, nothing will show up until the React panel actually reads and renders it. To unblock your “Predicate Finder” and “Compliance Insights” cards:
+
+* **Wire the Data Hooks**
+
+  * In **`KAutomationPanel.jsx`**, import your new API client methods (e.g. `fetchPredicates()`, `fetchComplianceReport()`), and call them in a `useEffect` whenever the user takes an action.
+* **Map to State → JSX**
+
+  * Store the results in component state (`const [preds, setPreds] = useState([])`) then render them in your panel as lists or tables.
+* **UX Feedback**
+
+  * Show a spinner while loading, and a “no results” message if the array is empty.
+* **Example Skeleton**
+
+  ```jsx
+  // inside KAutomationPanel.jsx
+  const [preds, setPreds] = useState([]);
+  const [loadingPreds, setLoadingPreds] = useState(false);
+
+  const runPredFinder = async () => {
+    setLoadingPreds(true);
+    try {
+      const results = await fetchPredicates(currentQuery);
+      setPreds(results);
+    } finally {
+      setLoadingPreds(false);
+    }
+  };
+
+  // In your JSX:
+  <button onClick={runPredFinder}>Run Predicate Finder</button>
+  {loadingPreds && <Spinner />}
+  {!loadingPreds && preds.length === 0 && <p>No predicates found.</p>}
+  {preds.map(p => <PredicateCard key={p.predicateId} data={p} />)}
+  ```
+
+---
+
+## 2. **Add Validation & Fallback**
+
+* If your routes aren’t wired up (you’re still seeing 404s or empty arrays), add console/log statements at both ends:
+
+  * **Server**: log incoming `req.query.q` and outgoing `results.length`.
+  * **Client**: log the response from `fetchPredicates()` before you call `setPreds()`.
+* This will tell you whether the break is in the route, the service, or the rendering.
+
+---
+
+## 3. **Create a Mini Smoke Test**
+
+Since you already have CI/tests, add one quick Jest or React Testing Library test for **`KAutomationPanel`** that:
+
+1. **Mocks** your `fetchPredicates` to return a known array.
+2. **Renders** the component, calls the search button.
+3. **Asserts** that a rendered `<PredicateCard>` appears with that array’s data.
+
+If that passes, you know your UI wiring is correct—any live “no show” is purely a data‐or‐route issue.
+
+---
+
+## 4. **Options to Move Forward**
+
+* **A) Debug & Surface**: Follow steps 1–3 above to get the existing code actually rendering.
+* **B) Code Review**: Do a diff of `KAutomationPanel.jsx` to confirm you didn’t accidentally remove the JSX that renders `preds`.
+* **C) Revert & Re-apply**: If the Replit agent has overwritten parts of your panel, roll back to last known good commit, then reapply your render logic in small, verifiable steps.
+* **D) Shift to Manual Proof**: Temporarily hard-code a sample predicate array in the panel to confirm the rendering path is healthy, then re-enable the real route once you’re confident.
+
+---
+
+### Which path would you like to take?
+
+1. **Immediate debug** (add logs + spinner + no-data UI)
+2. **Smoke-test via Jest/RTL**
+3. **Roll back & re-implement** in small PRs
+4. **Manual stub** first, then wire the real route
+
+Pick one, and I’ll give you the exact code/snippets needed.
