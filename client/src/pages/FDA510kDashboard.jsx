@@ -20,8 +20,10 @@ import {
   FileText, 
   ClipboardCheck, 
   Package, 
-  FileDown 
+  FileDown,
+  ArrowLeft
 } from 'lucide-react';
+import { useLocation } from 'wouter';
 import { useToast } from '@/hooks/use-toast';
 import DeviceProfileDialog from '@/components/cer/DeviceProfileDialog';
 import DeviceProfileList from '@/components/cer/DeviceProfileList';
@@ -40,6 +42,7 @@ const FDA510kDashboard = () => {
   const [isDeviceProfileDialogOpen, setIsDeviceProfileDialogOpen] = useState(false);
   const [refresh, setRefresh] = useState(0);
   const { toast } = useToast();
+  const [_, setLocation] = useLocation();
 
   // Force refresh of device profiles
   const handleRefresh = () => {
@@ -71,13 +74,11 @@ const FDA510kDashboard = () => {
 
   return (
     <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">510(k) Submission Dashboard</h1>
-          <p className="text-muted-foreground">
-            Streamline your 510(k) submission process with AI-powered regulatory tools.
-          </p>
-        </div>
+      <div className="flex justify-between items-center mb-2">
+        <Button variant="ghost" onClick={() => navigate('/510k')} className="mb-2">
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to 510(k) Workflow
+        </Button>
         
         <div className="flex items-center gap-2">
           <Button variant="outline" onClick={handleRefresh}>
@@ -87,6 +88,13 @@ const FDA510kDashboard = () => {
             New Device Profile
           </Button>
         </div>
+      </div>
+      
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">510(k) Submission Dashboard</h1>
+        <p className="text-muted-foreground">
+          Streamline your 510(k) submission process with AI-powered regulatory tools.
+        </p>
       </div>
       
       <DeviceProfileDialog 

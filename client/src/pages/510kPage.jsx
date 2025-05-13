@@ -116,11 +116,17 @@ const FDA510kPage = () => {
 
   return (
     <div className="container py-8 max-w-7xl mx-auto">
-      <div className="flex items-center mb-6">
-        <Button variant="ghost" onClick={handleBack} className="mr-2">
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex space-x-2">
+          <Button variant="ghost" onClick={handleBack}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+          <Button variant="outline" onClick={() => navigate('/510k-dashboard')}>
+            <Route className="h-4 w-4 mr-2" />
+            Dashboard View
+          </Button>
+        </div>
         <h1 className="text-2xl font-bold">FDA 510(k) Automation</h1>
       </div>
       
