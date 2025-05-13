@@ -87,8 +87,16 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
 
     setIsLoading(true);
     setIsSearching(true);
+    setResults(null);
     try {
       console.log('Starting predicate search with device profile:', deviceProfile.deviceName);
+      
+      // Show a searching message
+      toast({
+        title: "Searching for Predicate Devices",
+        description: "Analyzing your device profile to find potential predicate devices...",
+        duration: 5000,
+      });
       
       // Add timeout protection
       const searchPromise = FDA510kService.findPredicatesAndLiterature(
