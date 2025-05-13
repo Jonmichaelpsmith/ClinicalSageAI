@@ -679,28 +679,54 @@ router.post('/semantic-search', async (req, res) => {
       const db = new Pool({ connectionString: process.env.DATABASE_URL });
       
       // 3) Find top-10 nearest predicate_devices by cosine similarity
-      // Format the query vector as a PostgreSQL vector string
-      const formattedVector = `[${qVec.join(',')}]`;
+      // PostgreSQL vector embedding handling
+      // Ensure the vector is properly formatted for pgvector operations
+      let formattedVector;
       
-      const sql = `
-        SELECT id, name, description,
-          1 - (embedding <=> $1) AS score
-        FROM predicate_devices
-        WHERE embedding IS NOT NULL
-        ORDER BY embedding <=> $1
-        LIMIT 10
-      `;
-      
-      const { rows } = await db.query(sql, [formattedVector]);
-      
-      // Close the database connection when done
-      await db.end();
-      
-      // 4) Return results
-      res.json({ 
-        success: true,
-        results: rows 
-      });
+      // Check if the database supports passing arrays directly
+      try {
+        // First try with a direct array approach
+        const sql = `
+          SELECT id, name, description,
+            1 - (embedding <=> $1::vector) AS score
+          FROM predicate_devices
+          WHERE embedding IS NOT NULL
+          ORDER BY embedding <=> $1::vector
+          LIMIT 10
+        `;
+        
+        const { rows } = await db.query(sql, [qVec]);
+        
+        // If successful, return the results
+        console.log(`Semantic search successful with direct approach, found ${rows.length} results`);
+        return res.json({ success: true, results: rows });
+      } catch (directError) {
+        console.warn("Direct vector approach failed, falling back to string formatting:", directError.message);
+        
+        // Fall back to string formatting as a backup approach
+        formattedVector = `[${qVec.join(',')}]`;
+        
+        const sql = `
+          SELECT id, name, description,
+            1 - (embedding <=> $1) AS score
+          FROM predicate_devices
+          WHERE embedding IS NOT NULL
+          ORDER BY embedding <=> $1
+          LIMIT 10
+        `;
+        
+        const { rows } = await db.query(sql, [formattedVector]);
+        
+        // Close the database connection when done
+        await db.end();
+        
+        // 4) Return results from fallback approach
+        return res.json({ 
+          success: true,
+          results: rows 
+        });
+      }
+      // This code is now unreachable due to the early returns in both try and catch
     } catch (err) {
       console.error('Semantic search error:', err);
       res.status(500).json({ 
