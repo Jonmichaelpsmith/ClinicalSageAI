@@ -215,7 +215,26 @@ export default function CERV2Page() {
                           ? 'bg-blue-600 text-white hover:bg-blue-700'
                           : 'text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
                       }`}
-                      onClick={() => setActiveTab(tab.id)}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        // If this is the AI Assistant tab, open the assistant
+                        if (tab.id === "assistant") {
+                          // Set context information for the assistant (current document type and device info)
+                          setModuleContext(
+                            documentType === 'cer' ? 'Clinical Evaluation Report' : 'FDA 510(k) Submission', 
+                            {
+                              documentId: documentType === 'cer' ? cerDocumentId : k510DocumentId,
+                              deviceName: deviceName || (documentType === 'cer' ? 'Medical Device' : 'Subject Device'),
+                              deviceType: deviceType,
+                              manufacturer: manufacturer,
+                              intendedUse: intendedUse,
+                              documentType: documentType
+                            }
+                          );
+                          // Open the assistant
+                          openAssistant();
+                        }
+                      }}
                     >
                       <span className="flex items-center">
                         {tab.icon}
@@ -317,7 +336,26 @@ export default function CERV2Page() {
                 {group.tabs.map((tab) => (
                   <button
                     key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
+                    onClick={() => {
+                      setActiveTab(tab.id);
+                      // If this is the AI Assistant tab, open the assistant
+                      if (tab.id === "assistant") {
+                        // Set context information for the assistant
+                        setModuleContext(
+                          documentType === 'cer' ? 'Clinical Evaluation Report' : 'FDA 510(k) Submission', 
+                          {
+                            documentId: documentType === 'cer' ? cerDocumentId : k510DocumentId,
+                            deviceName: deviceName || (documentType === 'cer' ? 'Medical Device' : 'Subject Device'),
+                            deviceType: deviceType,
+                            manufacturer: manufacturer,
+                            intendedUse: intendedUse,
+                            documentType: documentType
+                          }
+                        );
+                        // Open the assistant
+                        openAssistant();
+                      }
+                    }}
                     className={`
                       flex-shrink-0 mx-1 rounded-none border-b-2 px-3 py-1.5
                       font-normal text-xs sm:text-sm flex items-center
