@@ -9,6 +9,12 @@ const deviceProfileService = DeviceProfileService.getInstance();
  * Create a new device profile
  * POST /api/cer/device-profile
  */
+// Add a debug middleware to trace request
+router.use((req, res, next) => {
+  console.log('Device Profile Route accessed:', req.method, req.originalUrl);
+  next();
+});
+
 router.post('/', validateDeviceProfile, async (req, res) => {
   try {
     const deviceProfileData = req.body;
@@ -30,7 +36,7 @@ router.post('/', validateDeviceProfile, async (req, res) => {
     console.error('Error creating device profile:', error);
     res.status(500).json({ 
       error: 'Failed to create device profile',
-      message: error.message 
+      message: error instanceof Error ? error.message : 'Unknown error occurred'
     });
   }
 });
