@@ -1,15 +1,49 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Device Profile",
+  "description": "Information about a medical device for regulatory submissions",
   "type": "object",
-  "required": ["deviceName", "deviceClass", "intendedUse"],
+  "required": [
+    "deviceName",
+    "deviceClass",
+    "intendedUse"
+  ],
   "properties": {
-    "deviceName": { "type": "string", "minLength": 3 },
-    "modelNumber": { "type": "string" },
-    "manufacturer": { "type": "string" },
-    "deviceClass": { "type": "string", "enum": ["I", "II", "III"] },
-    "intendedUse": { "type": "string" },
-    "technologyType": { "type": "string" },
-    "predicateDevice": { "type": "string" }
+    "deviceName": {
+      "type": "string",
+      "title": "Device Name",
+      "description": "Commercial name of the device"
+    },
+    "modelNumber": {
+      "type": "string",
+      "title": "Model Number",
+      "description": "Model number or version of the device"
+    },
+    "manufacturer": {
+      "type": "string",
+      "title": "Manufacturer",
+      "description": "Name of the manufacturer"
+    },
+    "deviceClass": {
+      "type": "string",
+      "title": "Device Class",
+      "description": "FDA regulatory classification of the device",
+      "enum": ["I", "II", "III"],
+      "enumNames": ["Class I", "Class II", "Class III"]
+    },
+    "intendedUse": {
+      "type": "string",
+      "title": "Intended Use",
+      "description": "Intended use or indication for use statement"
+    },
+    "technologyType": {
+      "type": "string",
+      "title": "Technology Type",
+      "description": "Primary technology used in the device"
+    },
+    "predicateDevice": {
+      "type": "string",
+      "title": "Predicate Device",
+      "description": "If known, the name of a legally marketed device to which substantial equivalence is claimed"
+    }
   }
 }
