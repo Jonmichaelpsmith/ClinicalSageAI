@@ -514,5 +514,180 @@ const initializeOpenAI = async () => {
 };
 
 // Export the router
+/**
+ * Get detailed comparisons of different regulatory pathways
+ */
+router.get('/compare-pathways', async (req, res) => {
+  try {
+    // Detailed structured information about each pathway type
+    const pathwayComparisons = {
+      success: true,
+      pathways: [
+        {
+          name: "Traditional 510(k)",
+          description: "The standard regulatory pathway for most medical devices that require pre-market clearance, based on demonstrating substantial equivalence to a legally marketed predicate device.",
+          requirements: [
+            "Submission Identification",
+            "Device Description",
+            "Predicate Device Identification",
+            "Substantial Equivalence Demonstration",
+            "Performance Testing Data",
+            "Labeling Requirements"
+          ],
+          timeline: {
+            totalDays: 90,
+            reviewClock: "90-day FDA review cycle",
+            milestones: [
+              { name: "Pre-submission Meeting", days: -60, description: "Optional but recommended for complex devices" },
+              { name: "Initial Submission", days: 0, description: "510(k) submission to FDA" },
+              { name: "Acceptance Review", days: 15, description: "FDA confirms submission is complete" },
+              { name: "Substantive Review", days: 60, description: "In-depth technical review by FDA" },
+              { name: "Additional Information Request", days: 75, description: "FDA may request more information" },
+              { name: "Final Decision", days: 90, description: "FDA determination on substantial equivalence" }
+            ]
+          },
+          advantages: [
+            "Well-established pathway with clear expectations",
+            "Suitable for most Class II devices",
+            "Clear regulatory precedent for many device types"
+          ],
+          disadvantages: [
+            "Requires suitable predicate device",
+            "May require extensive performance testing",
+            "Potential for multiple review cycles if deficiencies identified"
+          ],
+          bestFor: [
+            "Class II devices with clear predicates",
+            "Devices with well-established technologies",
+            "Devices with moderate risk profiles"
+          ]
+        },
+        {
+          name: "Special 510(k)",
+          description: "Streamlined process for certain device modifications when the modification does not affect the device's intended use or alter the fundamental technology.",
+          requirements: [
+            "Design Control Activities",
+            "Declaration of Conformity",
+            "Risk Analysis",
+            "Verification and Validation Data"
+          ],
+          timeline: {
+            totalDays: 30,
+            reviewClock: "30-day FDA review cycle",
+            milestones: [
+              { name: "Verification/Validation Testing", days: -45, description: "Conduct necessary testing" },
+              { name: "Initial Submission", days: 0, description: "Special 510(k) submission to FDA" },
+              { name: "Acceptance Review", days: 5, description: "FDA confirms submission is complete" },
+              { name: "Substantive Review", days: 20, description: "Focused review by FDA" },
+              { name: "Final Decision", days: 30, description: "FDA determination" }
+            ]
+          },
+          advantages: [
+            "Faster review timeline (30 days)",
+            "Less extensive submission requirements",
+            "Lower regulatory burden for device modifications"
+          ],
+          disadvantages: [
+            "Limited to specific types of modifications",
+            "Not suitable for significant changes affecting safety or effectiveness",
+            "Requires robust design controls"
+          ],
+          bestFor: [
+            "Modifications to manufacturer's own previously cleared device",
+            "Changes that don't affect intended use or fundamental technology",
+            "Updates based on design control activities"
+          ]
+        },
+        {
+          name: "Abbreviated 510(k)",
+          description: "Streamlined process that uses guidance documents, special controls, and recognized standards to facilitate 510(k) submissions.",
+          requirements: [
+            "Conformance to FDA-recognized standards",
+            "Summary Reports",
+            "Declaration of Conformity",
+            "Device Description",
+            "Predicate Device Comparison"
+          ],
+          timeline: {
+            totalDays: 60,
+            reviewClock: "60-day FDA review cycle",
+            milestones: [
+              { name: "Standards Testing", days: -45, description: "Testing to demonstrate conformance to standards" },
+              { name: "Initial Submission", days: 0, description: "Abbreviated 510(k) submission to FDA" },
+              { name: "Acceptance Review", days: 15, description: "FDA confirms submission is complete" },
+              { name: "Substantive Review", days: 45, description: "Standards-based review by FDA" },
+              { name: "Final Decision", days: 60, description: "FDA determination" }
+            ]
+          },
+          advantages: [
+            "Reduced submission content",
+            "Reliance on established standards",
+            "More predictable review process",
+            "Shorter review timeline than Traditional 510(k)"
+          ],
+          disadvantages: [
+            "Limited to devices with applicable FDA guidance or recognized standards",
+            "Still requires predicate device",
+            "May require extensive testing to demonstrate conformance to standards"
+          ],
+          bestFor: [
+            "Class II devices with applicable recognized standards",
+            "Devices covered by specific FDA guidance documents",
+            "Manufacturers familiar with relevant standards"
+          ]
+        },
+        {
+          name: "De Novo Classification",
+          description: "Regulatory pathway for novel devices with low to moderate risk that don't have a suitable predicate, providing a route to Class I or Class II classification instead of automatic Class III designation.",
+          requirements: [
+            "Device Description",
+            "Proposed Classification",
+            "Risk and Mitigation Analysis",
+            "Performance Testing Data",
+            "Special Controls"
+          ],
+          timeline: {
+            totalDays: 150,
+            reviewClock: "150-day FDA review cycle",
+            milestones: [
+              { name: "Pre-submission Meeting", days: -90, description: "Strongly recommended for De Novo submissions" },
+              { name: "Initial Submission", days: 0, description: "De Novo request to FDA" },
+              { name: "Acceptance Review", days: 15, description: "FDA confirms submission is complete" },
+              { name: "Substantive Review", days: 90, description: "In-depth technical review by FDA" },
+              { name: "Additional Information Request", days: 100, description: "FDA may request more information" },
+              { name: "Final Decision", days: 150, description: "FDA classification determination" }
+            ]
+          },
+          advantages: [
+            "Path to market for novel devices without predicates",
+            "Avoids automatic Class III designation",
+            "Creates a new regulation and product code",
+            "Subsequent devices can use 510(k) pathway"
+          ],
+          disadvantages: [
+            "Longer review timeline",
+            "More extensive submission requirements",
+            "Higher level of regulatory scrutiny",
+            "May require more comprehensive clinical data"
+          ],
+          bestFor: [
+            "Novel devices without predicates",
+            "Low to moderate risk devices that would otherwise be Class III",
+            "Innovative technologies where no similar devices exist"
+          ]
+        }
+      ]
+    };
+    
+    res.status(200).json(pathwayComparisons);
+  } catch (error) {
+    console.error('Error fetching pathway comparisons:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch regulatory pathway comparisons'
+    });
+  }
+});
+
 export default router;
 export { router };

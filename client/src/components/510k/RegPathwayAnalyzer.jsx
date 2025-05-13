@@ -70,6 +70,8 @@ const RegPathwayAnalyzer = ({ deviceProfile, organizationId }) => {
   const [pathwayAnalysis, setPathwayAnalysis] = useState(null);
   const [selectedPath, setSelectedPath] = useState(null);
   const [activeTab, setActiveTab] = useState('recommendation');
+  const [pathwayComparisons, setPathwayComparisons] = useState(null);
+  const [isLoadingComparisons, setIsLoadingComparisons] = useState(false);
   const { toast } = useToast();
 
   // Fetch pathway analysis when device profile changes

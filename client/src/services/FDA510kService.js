@@ -251,6 +251,21 @@ class FDA510kService {
       throw new Error(error.response?.data?.message || 'Failed to fetch requirement analysis');
     }
   }
+  
+  /**
+   * Get detailed comparison of different regulatory pathways
+   * 
+   * @returns {Promise<Object>} - Detailed comparison of regulatory pathways
+   */
+  async compareRegulatoryPathways() {
+    try {
+      const response = await axios.get('/api/fda510k/compare-pathways');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching regulatory pathway comparisons:', error);
+      throw new Error(error.response?.data?.message || 'Failed to fetch regulatory pathway comparisons');
+    }
+  }
 }
 
 // Create and export a singleton instance
