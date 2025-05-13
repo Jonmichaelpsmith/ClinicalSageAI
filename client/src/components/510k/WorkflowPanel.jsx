@@ -2,12 +2,13 @@ import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Beaker, BarChart3, Database, FileText, SearchCode, Plus, CheckCircle } from 'lucide-react';
+import { Beaker, BarChart3, Database, FileText, SearchCode, Plus, CheckCircle, LineChart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useLocation } from 'wouter';
 import FDA510kService from '../../services/FDA510kService';
 import DeviceProfileList from '../cer/DeviceProfileList';
 import DeviceProfileDialog from '../cer/DeviceProfileDialog';
+import PredicateFinderPanel from './PredicateFinderPanel';
 
 /**
  * 510(k) Workflow Panel
