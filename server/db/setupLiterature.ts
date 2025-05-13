@@ -43,7 +43,9 @@ export async function initializeLiteratureDatabase() {
       }
       
       // Read and execute the migration SQL file
-      const migrationFilePath = path.join(__dirname, '../../migrations/20250512_literature_entries.sql');
+      // Use import.meta.url instead of __dirname for ESM compatibility
+      const fileURL = new URL('../../migrations/20250512_literature_entries.sql', import.meta.url);
+      const migrationFilePath = fileURL.pathname;
       const migrationSql = fs.readFileSync(migrationFilePath, 'utf8');
       
       // Execute the migration

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
 import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
 import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
@@ -42,6 +43,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import KAutomationPanel from '@/components/cer/KAutomationPanel';
 
 export default function CERV2Page() {
+  // Hook into the Lumen AI Assistant context
+  const { openAssistant, setModuleContext } = useLumenAiAssistant();
+  
   const [title, setTitle] = useState('Clinical Evaluation Report');
   const [deviceType, setDeviceType] = useState('Class II Medical Device');
   const [documentType, setDocumentType] = useState('cer'); // Options: 'cer' or '510k'
