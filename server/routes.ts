@@ -1,6 +1,9 @@
 import { Express, Router } from 'express';
 import path from 'path';
 
+// Import device profile routes
+import deviceProfileRouter from './routes/cerDeviceProfileRoutes';
+
 // Document integration routes
 import googleDocsRoutes from './routes/googleDocs';
 
