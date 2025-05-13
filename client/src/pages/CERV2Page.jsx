@@ -161,7 +161,73 @@ export default function CERV2Page() {
 
   // Simple navigation tab rendering function
   const renderNavigation = () => {
-    // Define tab groups
+    // Define 510k specific tab groups if the document type is 510k
+    if (documentType === '510k') {
+      const k510TabGroups = [
+        {
+          label: "510(k) Submission:",
+          tabs: [
+            { id: "predicates", label: "Predicate Finder", icon: <Search className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
+            { id: "equivalence", label: <div className="flex flex-col items-center leading-tight">
+              <span>Substantial Equivalence</span>
+              <span className="text-[0.65rem] text-blue-600">FDA Requirements</span>
+            </div>, icon: <GitCompare className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
+            { id: "compliance", label: <div className="flex flex-col items-center leading-tight">
+              <span>FDA Compliance</span>
+              <span className="text-[0.65rem] text-blue-600">510(k) Requirements</span>
+            </div>, icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
+            { id: "submission", label: <div className="flex items-center">
+              <span>Final Submission</span>
+              <span className="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full shadow-sm">New</span>
+            </div>, icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
+          ]
+        },
+        {
+          label: "Resources:",
+          tabs: [
+            { id: "documents", label: "Document Vault", icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
+            { id: "fda-guidance", label: "FDA Guidance", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
+            { id: "assistant", label: "AI Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> }
+          ]
+        }
+      ];
+      
+      // Return 510k specific tabs
+      return (
+        <div className="mt-2 mb-4 border-b border-blue-100">
+          <div className="flex overflow-x-auto pb-2 px-6 space-x-6">
+            {k510TabGroups.map((group, groupIndex) => (
+              <div key={groupIndex} className="space-y-2 min-w-fit">
+                <div className="text-xs font-medium text-blue-800 flex items-center gap-1.5">
+                  {group.label}
+                </div>
+                <div className="flex space-x-1.5">
+                  {group.tabs.map((tab) => (
+                    <Button
+                      key={tab.id}
+                      variant={activeTab === tab.id ? 'default' : 'outline'}
+                      className={`h-9 px-3 text-xs font-medium rounded ${
+                        activeTab === tab.id
+                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          : 'text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
+                      }`}
+                      onClick={() => setActiveTab(tab.id)}
+                    >
+                      <span className="flex items-center">
+                        {tab.icon}
+                        {tab.label}
+                      </span>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+    
+    // Default CER tab groups
     const tabGroups = [
       {
         label: "Preparation:",
@@ -201,12 +267,7 @@ export default function CERV2Page() {
             <span>Regulatory Traceability</span>
             <span className="text-[0.65rem] text-purple-600">ICH E6(R3) & MDR</span>
           </div>, icon: <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
-          { id: "compliance", label: documentType === '510k' ? 
-            <div className="flex flex-col items-center leading-tight">
-              <span>FDA Compliance</span>
-              <span className="text-[0.65rem] text-purple-600">510(k) Requirements</span>
-            </div> : "Compliance", 
-            icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
+          { id: "compliance", label: "Compliance", icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5 text-purple-600" /> },
           { id: "maud", label: <div className="flex flex-col items-center leading-tight">
             <span>MAUD Integration</span>
             <span className="text-[0.65rem] text-purple-600">Algorithm Validation</span>
@@ -1879,8 +1940,14 @@ export default function CERV2Page() {
     
       <div className="flex flex-col md:flex-row justify-between items-start p-6 pb-2 bg-gradient-to-r from-blue-50 to-white rounded-t-lg shadow-sm">
         <div>
-          <h1 className="text-2xl font-semibold text-[#0F6CBD] mb-1">CER Builder</h1>
-          <p className="text-[#616161]">EU MDR compliant Clinical Evaluation Report generator</p>
+          <h1 className="text-2xl font-semibold text-[#0F6CBD] mb-1">
+            {documentType === '510k' ? 'FDA 510(k) Submission' : 'CER Builder'}
+          </h1>
+          <p className="text-[#616161]">
+            {documentType === '510k' 
+              ? 'FDA compliant 510(k) premarket notification submission generator' 
+              : 'EU MDR compliant Clinical Evaluation Report generator'}
+          </p>
         </div>
         <Button 
           variant="outline" 
@@ -1889,7 +1956,7 @@ export default function CERV2Page() {
           onClick={() => window.location.href = '/cer-projects'}
         >
           <FolderOpen className="h-4 w-4" />
-          Manage CER Projects
+          {documentType === '510k' ? 'Manage 510(k) Submissions' : 'Manage CER Projects'}
         </Button>
         
         <div className="flex gap-2 mt-2 md:mt-0">
@@ -1898,7 +1965,7 @@ export default function CERV2Page() {
             className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white shadow-sm transition-all hover:shadow"
           >
             <ZapIcon className="h-4 w-4 mr-2" />
-            One-Click CER
+            {documentType === '510k' ? 'One-Click 510(k)' : 'One-Click CER'}
           </Button>
           {draftStatus === 'in-progress' && (
             <Badge variant="outline" className="ml-2 bg-[#FFF4CE] text-[#797673] border-[#F9E8A0] px-2 py-1 flex items-center shadow-sm">
