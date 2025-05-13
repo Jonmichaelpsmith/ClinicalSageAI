@@ -296,14 +296,13 @@ ${rbmKnowledgeBase.bimoInspections.commonFindings.map(f => `- ${f}`).join('\n')}
 
     // First try to use OpenAI API directly
     try {
-      const { Configuration, OpenAIApi } = await import('openai');
-      const configuration = new Configuration({
-        apiKey: process.env.OPENAI_API_KEY,
+      const OpenAI = await import('openai');
+      const openai = new OpenAI.default({
+        apiKey: process.env.OPENAI_API_KEY
       });
-      const openai = new OpenAIApi(configuration);
       
-      const response = await openai.createChatCompletion({
-        model: "gpt-4",
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o",
         messages: [
           {
             role: "system", 
@@ -318,8 +317,8 @@ ${rbmKnowledgeBase.bimoInspections.commonFindings.map(f => `- ${f}`).join('\n')}
         max_tokens: 1000
       });
       
-      if (response.data.choices && response.data.choices.length > 0) {
-        return response.data.choices[0].message.content;
+      if (response.choices && response.choices.length > 0) {
+        return response.choices[0].message.content;
       }
     } catch (openaiError) {
       console.error('Error calling OpenAI API directly:', openaiError);
@@ -577,14 +576,13 @@ async function generateConversationalResponse(query, conversationHistory = []) {
   try {
     console.log('Generating conversational response with external research capabilities');
     
-    // Import the OpenAI client (dynamic import to avoid issues)
-    const { Configuration, OpenAIApi } = await import('openai');
+    // Import the OpenAI client (using the new API format)
+    const OpenAI = await import('openai');
     
-    // Configure the client
-    const configuration = new Configuration({
-      apiKey: process.env.OPENAI_API_KEY,
+    // Configure the client with the new API format
+    const openai = new OpenAI.default({
+      apiKey: process.env.OPENAI_API_KEY
     });
-    const openai = new OpenAIApi(configuration);
     
     // Build the messages array for OpenAI
     const messages = [];
@@ -627,16 +625,16 @@ When responding:
       content: query
     });
     
-    // Call the OpenAI API
-    const openAIResponse = await openai.createChatCompletion({
-      model: "gpt-4", // Use the latest available model
+    // Call the OpenAI API with new API format
+    const openAIResponse = await openai.chat.completions.create({
+      model: "gpt-4o", // Using the newest OpenAI model 
       messages: messages,
       temperature: 0.2, // Lower temperature for more accurate, deterministic responses
       max_tokens: 2000 // Allow for comprehensive answers
     });
     
-    if (openAIResponse.data.choices && openAIResponse.data.choices.length > 0) {
-      return openAIResponse.data.choices[0].message.content;
+    if (openAIResponse.choices && openAIResponse.choices.length > 0) {
+      return openAIResponse.choices[0].message.content;
     } else {
       throw new Error('No response generated from OpenAI');
     }
