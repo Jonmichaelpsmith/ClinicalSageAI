@@ -163,13 +163,15 @@ class FDA510kService {
    * 
    * @param {Object} deviceData - Device characteristics to match against
    * @param {number} organizationId - The organization ID
+   * @param {Object} relevanceCriteria - Optional criteria for weighting different device aspects
    * @returns {Promise<Object>} - Found predicate devices and literature references
    */
-  async findPredicateDevices(deviceData, organizationId) {
+  async findPredicateDevices(deviceData, organizationId, relevanceCriteria = null) {
     try {
       const response = await axios.post('/api/fda510k/find-predicates', {
         deviceData,
-        organizationId
+        organizationId,
+        relevanceCriteria
       });
       return response.data;
     } catch (error) {
@@ -186,11 +188,15 @@ class FDA510kService {
    * 
    * @param {Object} deviceData - Device characteristics to match against
    * @param {number} organizationId - The organization ID
+   * @param {Object} relevanceCriteria - Optional criteria for weighting different device aspects
    * @returns {Promise<Object>} - Found predicate devices and literature references
    */
-  async findPredicatesAndLiterature(deviceData, organizationId) {
+  async findPredicatesAndLiterature(deviceData, organizationId, relevanceCriteria = null) {
     console.log('Finding predicates and literature for device:', deviceData.deviceName);
-    return this.findPredicateDevices(deviceData, organizationId);
+    if (relevanceCriteria) {
+      console.log('Using custom relevance criteria:', relevanceCriteria);
+    }
+    return this.findPredicateDevices(deviceData, organizationId, relevanceCriteria);
   }
   
   /**
