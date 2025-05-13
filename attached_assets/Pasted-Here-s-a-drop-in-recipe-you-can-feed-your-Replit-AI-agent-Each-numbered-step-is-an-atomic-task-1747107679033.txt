@@ -1,0 +1,228 @@
+Here’s a **drop-in recipe** you can feed your Replit AI agent.  Each numbered step is an atomic task—no mocks, no placeholders—just production-grade code, wired end-to-end, living in your **CER2V** module under `client/src/components/cer` and `server/…`.  **Feature-flag** everything so you can turn bits on/off as you roll to GA.
+
+---
+
+## ⚙️  Preliminaries
+
+1. **Enable Feature Flags**
+
+   * In `client/src/flags/featureFlags.ts` add booleans for each new feature:
+
+     ```ts
+     export const ENABLE_ONBOARDING_TOUR      = process.env.REACT_APP_ENABLE_ONBOARDING_TOUR === 'true';
+     export const ENABLE_PREDICATE_FINDER     = process.env.REACT_APP_ENABLE_PREDICATE_FINDER === 'true';
+     export const ENABLE_LITERATURE_SEARCH    = process.env.REACT_APP_ENABLE_LITERATURE_SEARCH === 'true';
+     export const ENABLE_PATHWAY_ADVISOR      = process.env.REACT_APP_ENABLE_PATHWAY_ADVISOR === 'true';
+     export const ENABLE_SE_DRAFTING          = process.env.REACT_APP_ENABLE_SE_DRAFTING === 'true';
+     export const ENABLE_COMPLIANCE_CHECK     = process.env.REACT_APP_ENABLE_COMPLIANCE_CHECK === 'true';
+     export const ENABLE_ESTAR_ASSEMBLY       = process.env.REACT_APP_ENABLE_ESTAR_ASSEMBLY === 'true';
+     export const ENABLE_ONBOARDING_CHATBOT   = process.env.REACT_APP_ENABLE_ONBOARDING_CHATBOT === 'true';
+     ```
+2. **Install Dependencies**
+
+   ```bash
+   npm install ajv node-fetch archiver xmlbuilder2 pgvector react-joyride react-toastify react-query
+   ```
+
+   plus your AI client library (OpenAI, Ollama, etc.).
+
+---
+
+## 1️⃣  Device Profile Intake (Task A)
+
+1. **Schema**
+
+   * Create `client/src/components/cer/schemas/deviceProfile.json` (full JSON-Schema).
+
+2. **Form**
+
+   * Create `client/src/components/cer/DeviceProfileForm.jsx`
+
+     * Renders inputs via the schema, uses AJV for client-side validation.
+     * On valid submit → POST `/api/cer/device-profile`.
+
+3. **Middleware**
+
+   * Create `server/middleware/validateDeviceProfile.ts`
+
+     * Uses AJV + your same schema to reject invalid payloads.
+
+4. **API Route**
+
+   * In `server/routes/cerRoutes.ts`, add `POST /api/cer/device-profile`
+
+     * Validate → call `saveDeviceProfile` in `server/services/DeviceProfileService.ts`.
+
+5. **Persistence Service**
+
+   * In `server/services/DeviceProfileService.ts` implement a real ORM insert.
+
+6. **Wire Into UI**
+
+   * In `client/src/components/cer/CERV2Page.jsx` (or `KAutomationPanel.jsx`), under your “510(k) Automation” tab, import and render `<DeviceProfileForm onSave={postDeviceProfile} />` behind `ENABLE_DEVICE_PROFILE`.
+
+7. **Tests**
+
+   * Add Jest/RTL tests for invalid & valid form submissions and a small integration test hitting the real Express endpoint.
+
+---
+
+## 2️⃣  Predicate & Prior Art Discovery
+
+1. **Service**
+
+   * `server/services/PredicateFinderService.ts` → call **OpenFDA** `/device/510k.json` with real query string, parse out `results`.
+2. **Route**
+
+   * `GET /api/cer/predicates?q=` in `server/routes/cerRoutes.ts`.
+3. **Client API**
+
+   * In `client/src/api/cer.ts` implement `fetchPredicates(q)`.
+4. **Component**
+
+   * Create `client/src/components/cer/PredicateFinder.jsx` behind `ENABLE_PREDICATE_FINDER`:
+
+     * Search box → calls `fetchPredicates` → renders `<PredicateCard>` list.
+     * “Select” button passes result back via `onSelect`.
+5. **Integration**
+
+   * In `KAutomationPanel.jsx`, render `<PredicateFinder onSelect={setPredicate}/>` and show selected predicate.
+6. **Tests**
+
+   * Mock real HTTP with `msw` in Jest, assert UI behavior under success/failure.
+
+---
+
+## 3️⃣  Enhanced Literature Search & AI Summaries
+
+1. **Aggregator Service**
+
+   * `server/services/LiteratureAggregatorService.ts`: fetch from PubMed E-utilities, ClinicalTrials.gov, bioRxiv.
+   * Normalize to `{ id, title, abstract, source, year }`.
+2. **Semantic Index (Optional)**
+
+   * Create `literature_embeddings` in PG + pgvector, embed abstracts via AI to allow semantic ranking.
+3. **Routes**
+
+   * `GET /api/cer/literature?source=PubMed…`
+   * `POST /api/cer/literature/summarize` → calls your AI client to produce 2-sentence abstracts.
+4. **Component**
+
+   * Create `client/src/components/cer/EnhancedLiteratureSearch.jsx` behind `ENABLE_LITERATURE_SEARCH`:
+
+     * Tabs for sources, advanced filters, semantic toggle, results table, “Summarize Selected” bulk action
+     * “Add to Report” flows data into the draft.
+5. **Tests**
+
+   * API mocks + RTL for form, table, summarization flow.
+
+---
+
+## 4️⃣  Regulatory Pathway Advisor & SE Drafting
+
+1. **Pathway Advisor Service**
+
+   * `server/services/PathwayAdvisor.ts` → rule engine recommending Traditional/Special 510(k), De Novo, PMA.
+2. **Route**
+
+   * `GET /api/cer/pathway/:projectId`
+3. **Component**
+
+   * `client/src/components/cer/PathwayAdvisorCard.jsx` behind `ENABLE_PATHWAY_ADVISOR`
+
+     * Displays recommendation + rationale + “Confirm & Proceed”.
+4. **SE Draft Service**
+
+   * `server/services/EquivalenceDraftService.ts` → AI prompt using device+predicate → returns narrative.
+5. **Route**
+
+   * `POST /api/cer/draft-equivalence`
+6. **Component**
+
+   * `client/src/components/cer/EquivalenceDraft.jsx` behind `ENABLE_SE_DRAFTING`:
+
+     * “Generate SE Draft” button → renders editable rich-text editor → “Add to Report”.
+7. **Tests**
+
+   * Unit tests for advisor rules + compliance of AI prompt calls.
+   * RTL for card rendering.
+
+---
+
+## 5️⃣  Pre-Submission QA & Compliance Checks
+
+1. **Rules File**
+
+   * `server/config/complianceRules/510k.json` → required sections, RTA checklist.
+2. **ComplianceChecker Service**
+
+   * `server/services/ComplianceChecker.ts` → inspects DB for each section, applies rules.
+3. **Route**
+
+   * `GET /api/cer/compliance/:projectId`
+4. **Component**
+
+   * `client/src/components/cer/ComplianceReport.jsx` behind `ENABLE_COMPLIANCE_CHECK`:
+
+     * Renders section presence, errors, RTA items with pass/fail icons.
+5. **Integration**
+
+   * Add a “Compliance” card to `KAutomationPanel.jsx` that invokes this report on demand.
+6. **Tests**
+
+   * Mock DB state to simulate missing sections, verify report logic.
+
+---
+
+## 6️⃣  AI-Powered eSTAR Package Assembly
+
+1. **PlusBuilder Service**
+
+   * `server/services/eSTARPlusBuilder.ts`:
+
+     * DOCX→XHTML/PDF via `libreoffice-headless` or `unoconv`
+     * AI-validate each PDF (layout, fonts) via your AI client
+     * Generate manifest XML via `xmlbuilder2`, validate against JSON Schema in `server/config/schemas/estarManifest.json` with AJV
+     * Digitally sign manifest via Node’s WebCrypto or `jsonwebtoken`
+     * ZIP via `archiver`
+     * **Optionally** upload to FDA ESG API.
+2. **Routes**
+
+   * `POST /api/cer/estar/build/:projectId` → streams ZIP download
+   * `GET  /api/cer/estar/preview/:projectId` → returns file list + AI compliance summary + download URL
+3. **Component**
+
+   * `client/src/components/cer/PackagePreview.jsx` behind `ENABLE_ESTAR_ASSEMBLY`:
+
+     * Renders file tree, AI-compliance panel, “Download Signed Package” button, optional “Submit to ESG”.
+4. **Tests**
+
+   * Integration tests spinning up a headless LibreOffice in CI (or mock conversion) + AI client sandbox.
+
+---
+
+## 7️⃣  AI-Driven Onboarding & Chat Assist
+
+1. **Guided Tour**
+
+   * Install `react-joyride`, create `client/src/components/cer/GuidedTour.jsx` behind `ENABLE_ONBOARDING_TOUR`.
+   * Define steps for each panel in CERV2Page (Device Intake → … → eSTAR).
+2. **Embedded Chatbot**
+
+   * In `ClientContextBar.jsx`, behind `ENABLE_ONBOARDING_CHATBOT`, embed a floating “Help” bubble.
+   * On click, open a chat UI (e.g. `react-chat-ui`) that talks to your AI endpoint (`/api/ai/chat`), pre-prompted as “Regulatory Expert for Medical Devices.”
+3. **Tests**
+
+   * RTL + E2E for tour steps, chatbot input/output.
+
+---
+
+### 🧪  CI & Validation
+
+* **Lint/Prettier:** fail if any new files outside `client/src/components/cer` or `server/services`, etc.
+* **Unit & E2E:** each feature gets at least one test that fails before implementation and passes after.
+* **Manual Smoke:** after each feature-flagged merge, flip flag on Replit Secrets and verify in-browser.
+
+---
+
+**Drop this entire list into your Replit agent** as one multi-line instruction.  It’ll know exactly which files to create/update, what dependencies to install, and how to wire AI everywhere—**no mocks, only real-world, production-grade functionality** for your Medical Device & Diagnostics CER2V module.
