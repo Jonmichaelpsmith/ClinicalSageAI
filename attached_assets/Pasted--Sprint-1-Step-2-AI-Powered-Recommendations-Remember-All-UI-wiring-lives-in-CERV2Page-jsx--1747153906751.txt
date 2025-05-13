@@ -1,0 +1,83 @@
+**Sprint 1 · Step 2: AI-Powered Recommendations**
+*Remember: All UI wiring lives in `CERV2Page.jsx` (and its child components under `client/src/components/cer/…`). No standalone pages—everything under the CER2V module.*
+
+---
+
+1. **Backend: “recommend” endpoint**
+
+   * In `server/routes/fda510kRoutes.js`, add:
+
+     ```js
+     // POST /api/fda510k/recommend
+     // Body: { deviceProfile: {...} }
+     router.post('/recommend', async (req, res) => {
+       const profile = req.body.deviceProfile;
+       const prompt = `
+       You are a regulatory AI assistant. Given this device profile JSON:
+       ${JSON.stringify(profile, null, 2)}
+       Recommend the top 5 predicate devices (by name & ID) with a one-sentence rationale each.
+       Respond in JSON: [{ id: string, name: string, rationale: string }, …].
+       `;
+       const completion = await openai.chat.completions.create({
+         model: 'gpt-4o-mini',
+         messages: [{ role: 'user', content: prompt }]
+       });
+       const recs = JSON.parse(completion.choices[0].message.content);
+       res.json({ recommendations: recs });
+     });
+     ```
+   * **Verify** with:
+
+     ```bash
+     curl -X POST http://localhost:5000/api/fda510k/recommend \
+       -H 'Content-Type: application/json' \
+       -d '{"deviceProfile":{/* your JSON */}}'
+     ```
+
+2. **Client Service: `getRecommendations()`**
+
+   * In `client/src/services/FDA510kService.js`:
+
+     ```js
+     async getRecommendations(deviceProfile) {
+       const resp = await fetch('/api/fda510k/recommend', {
+         method: 'POST',
+         headers: { 'Content-Type':'application/json' },
+         body: JSON.stringify({ deviceProfile })
+       });
+       const { recommendations } = await resp.json();
+       return recommendations;
+     }
+     ```
+
+3. **UI: “💡 Recommend Predicates” panel**
+
+   * In your CER2V’s 510(k) tab component (e.g. inside `<PredicateFinderPanel />` or alongside it):
+
+     ```jsx
+     const [recs, setRecs] = useState([]);
+     const handleRecommend = async () => {
+       const profile = /* gather current deviceProfile state */;
+       const result = await FDA510kService.instance.getRecommendations(profile);
+       setRecs(result);
+       toast({ title: 'Recommendations ready' });
+     };
+     ```
+   * Render a “💡 Recommend Predicates” button near the top. When clicked, it shows a list:
+
+     ```jsx
+     {recs.map(r => (
+       <Card key={r.id}>
+         <h4>{r.name}</h4>
+         <p className="text-sm text-gray-600">{r.rationale}</p>
+       </Card>
+     ))}
+     ```
+
+4. **End-to-end test**
+
+   * Rebuild & restart.
+   * In **Client Portal → Med Device & Diagnostics → 510(k)** flow, fill or select a device profile.
+   * Click **💡 Recommend Predicates** and confirm you get a real list of 5 items with rationales (backed by GPT-4).
+
+When this is green—live AI recommendations within your CER2V page—we’ll advance to **Step 3: Intelligent Semantic Search**.

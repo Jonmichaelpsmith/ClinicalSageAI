@@ -269,6 +269,25 @@ class FDA510kService {
       throw new Error(error.response?.data?.message || 'Failed to fetch requirement analysis');
     }
   }
+  
+  /**
+   * Get AI-generated recommendations for predicate devices based on device profile
+   * 
+   * @param {Object} deviceProfile - Device profile data to generate recommendations for
+   * @returns {Promise<Array>} - List of recommended predicate devices
+   */
+  async getRecommendations(deviceProfile) {
+    try {
+      const response = await axios.post('/api/fda510k/recommend', {
+        deviceProfile
+      });
+      
+      return response.data.recommendations || [];
+    } catch (error) {
+      console.error('Error getting predicate recommendations:', error);
+      throw new Error(error.response?.data?.message || 'Failed to get recommendations');
+    }
+  }
 }
 
 // Create and export a singleton instance
