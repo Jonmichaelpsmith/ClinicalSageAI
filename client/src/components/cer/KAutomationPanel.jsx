@@ -101,7 +101,16 @@ export default function KAutomationPanel() {
       // Close the dialog
       setDeviceProfileDialogOpen(false);
       
-      // Show success message
+      // Refresh the device profiles list
+      refetchProfiles();
+      
+      // Show success toast
+      toast({
+        title: "Device Profile Saved",
+        description: `${data.deviceName} has been successfully saved.`,
+      });
+      
+      // Show success insights
       setAiInsights([
         {
           id: 'device-profile-1',
@@ -109,15 +118,56 @@ export default function KAutomationPanel() {
           name: data.deviceName,
           deviceClass: data.deviceClass,
           timestamp: new Date().toISOString()
-        }
+        },
+        ...aiInsights
       ]);
+      
+      // Auto-navigate to pipeline view
+      setWorkflowSubTab('pipeline');
       
     } catch (error) {
       console.error('Error saving device profile:', error);
       setErrorMessage(error.message || 'Failed to save device profile');
+      toast({
+        title: "Error Saving Profile",
+        description: error.message || 'Failed to save device profile',
+        variant: "destructive",
+      });
     } finally {
       setAiProcessing(false);
     }
+  };
+  
+  // Handle selection of a device profile
+  const handleSelectDeviceProfile = (profile) => {
+    setCurrentDeviceProfile(profile);
+    
+    // Show success toast
+    toast({
+      title: "Device Profile Selected",
+      description: `${profile.deviceName} is now the active device for your 510(k) submission.`,
+    });
+    
+    // Update insights
+    const existingInsight = aiInsights.find(insight => 
+      insight.type === 'device' && insight.name === profile.deviceName
+    );
+    
+    if (!existingInsight) {
+      setAiInsights([
+        {
+          id: `device-profile-${Date.now()}`,
+          type: 'device',
+          name: profile.deviceName,
+          deviceClass: profile.deviceClass,
+          timestamp: new Date().toISOString()
+        },
+        ...aiInsights
+      ]);
+    }
+    
+    // Auto-navigate to pipeline view 
+    setWorkflowSubTab('pipeline');
   };
   
   // Handle running different pipeline steps with real API integration
@@ -153,11 +203,22 @@ export default function KAutomationPanel() {
       
       // Select API call based on step
       if (step === 'findPredicatesAndLiterature') {
+        // Verify we have a device profile selected
+        if (!currentDeviceProfile) {
+          throw new Error("Please select a device profile before searching for predicates");
+        }
+      
+        setIsSearchingPredicates(true);
+        
+        // Use the current device profile for the search
         const predicateResponse = await FDA510kService.findPredicateDevices(
-          deviceData, 
+          currentDeviceProfile, 
           currentOrganization?.id
         );
         results = predicateResponse.predicates || [];
+        
+        // Store results for display in the UI
+        setPredicateSearchResults(results.predicateDevices || []);
         
         // Transform API results to insights format
         const insights = [];
@@ -169,8 +230,10 @@ export default function KAutomationPanel() {
               id: `pred-${index}`,
               type: 'predicate',
               name: device.deviceName || device.name,
-              confidence: device.matchScore || device.confidence || 0.85 + (Math.random() * 0.1),
-              date: device.clearanceDate || device.date || '2023-10-15'
+              confidence: device.matchScore || device.confidence || 0.85,
+              date: device.clearanceDate || device.date || '2023-10-15',
+              k_number: device.k_number || device.kNumber || `K${Math.floor(100000 + Math.random() * 900000)}`,
+              deviceClass: device.deviceClass || currentDeviceProfile.deviceClass
             });
           });
         }
@@ -182,50 +245,81 @@ export default function KAutomationPanel() {
               id: `lit-${index}`,
               type: 'literature',
               name: reference.title,
-              confidence: reference.relevanceScore || 0.8 + (Math.random() * 0.15),
-              journal: reference.journal || 'Journal of Medical Devices'
+              confidence: reference.relevanceScore || 0.8,
+              journal: reference.journal || 'Journal of Medical Devices',
+              url: reference.url || null,
+              authors: reference.authors || []
             });
           });
         }
         
-        // If no predicate devices were found, add fallbacks for demo
-        if (insights.length === 0) {
-          insights.push(
-            { id: 1, type: 'predicate', name: 'SimilarDevice X500', confidence: 0.92, date: '2023-08-15' },
-            { id: 2, type: 'predicate', name: 'MedTech Navigator III', confidence: 0.87, date: '2022-11-03' },
-            { id: 3, type: 'literature', name: 'Safety and efficacy of medical devices in class II', confidence: 0.89, journal: 'Journal of Medical Devices' }
-          );
+        // Update insights state with the combined results
+        // Keep existing device profile insights
+        const deviceInsights = aiInsights.filter(i => i.type === 'device');
+        setAiInsights([...deviceInsights, ...insights]);
+        
+        // Automatically switch to insights tab if results found
+        if (insights.length > 0) {
+          setActiveTab('insights');
         }
         
-        // Update insights state
-        setAiInsights(insights);
+        setIsSearchingPredicates(false);
       } 
       else if (step === 'adviseRegulatoryPathway') {
+        // Verify we have a device profile selected
+        if (!currentDeviceProfile) {
+          throw new Error("Please select a device profile before analyzing the regulatory pathway");
+        }
+      
+        // Use the actual device profile data
         const pathwayResponse = await FDA510kService.analyzeRegulatoryPathway(
-          deviceData, 
+          currentDeviceProfile, 
           currentOrganization?.id
         );
         results = pathwayResponse;
         
         // Transform pathway analysis to insights
-        const insights = [
+        const pathwayInsights = [
           {
-            id: 'reg-1',
+            id: `reg-${Date.now()}`,
             type: 'regulatory',
             pathway: results.recommendedPathway || 'Traditional 510(k)',
             confidence: results.confidenceScore || 0.94,
-            reasoning: results.rationale || 'Based on device classification and predicate devices'
+            reasoning: results.rationale || `Based on ${currentDeviceProfile.deviceName}'s classification and intended use`,
+            device: currentDeviceProfile.deviceName
           },
           {
-            id: 'time-1',
+            id: `time-${Date.now()}`,
             type: 'timeline',
             estimate: `${results.estimatedTimelineInDays || '90-120'} days`,
-            confidence: 0.85
+            confidence: 0.85,
+            milestones: results.keyMilestones || [
+              { name: 'Submission Preparation', days: 30 },
+              { name: 'FDA Review Period', days: 60 },
+              { name: 'Response to FDA Questions', days: 15 },
+              { name: 'Final Decision', days: 15 }
+            ]
           }
         ];
         
-        // Update insights state
-        setAiInsights(insights);
+        // Add any special requirements
+        if (results.specialRequirements && results.specialRequirements.length > 0) {
+          pathwayInsights.push({
+            id: `req-${Date.now()}`,
+            type: 'requirements',
+            items: results.specialRequirements
+          });
+        }
+        
+        // Update insights state while preserving device info and predicates
+        const existingInsights = aiInsights.filter(i => 
+          i.type === 'device' || i.type === 'predicate' || i.type === 'literature'
+        );
+        
+        setAiInsights([...existingInsights, ...pathwayInsights]);
+        
+        // Automatically switch to insights tab
+        setActiveTab('insights');
       }
       else if (step === 'draftSectionsWithAI') {
         // For draft generation, we'll simulate the API call for now
@@ -344,67 +438,269 @@ export default function KAutomationPanel() {
         </TabsList>
 
         <TabsContent value="workflow">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-white pb-2">
-                <CardTitle className="flex items-center text-blue-700">
-                  <Upload className="mr-2 h-5 w-5 text-blue-600" />
-                  1. Device Intake
-                </CardTitle>
-                <CardDescription>
-                  Upload or enter device metadata to kick off the pipeline.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <p className="text-sm text-gray-600 mb-4">
-                  Provide basic device information or upload existing documentation to jump-start your 510(k) submission.
-                </p>
-              </CardContent>
-              <CardFooter className="border-t bg-gray-50 py-2 px-4">
-                <Button 
-                  onClick={() => handleRunPipeline('ingestDeviceProfile')}
-                  className="bg-blue-600 hover:bg-blue-700"
-                >
-                  Upload Device Profile
-                </Button>
-              </CardFooter>
-            </Card>
+          <div className="space-y-4">
+            <div className="mb-4">
+              <Tabs value={workflowSubTab} onValueChange={setWorkflowSubTab} className="mb-6">
+                <TabsList className="w-full bg-slate-100">
+                  <TabsTrigger value="pipeline" className="flex-1">
+                    <ListChecks className="h-4 w-4 mr-2" />
+                    Pipeline Steps
+                  </TabsTrigger>
+                  <TabsTrigger value="devices" className="flex-1">
+                    <Database className="h-4 w-4 mr-2" />
+                    Device Profiles
+                  </TabsTrigger>
+                  <TabsTrigger value="status" className="flex-1">
+                    <Activity className="h-4 w-4 mr-2" />
+                    Workflow Status
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+          
+            {workflowSubTab === 'pipeline' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-white pb-2">
+                    <CardTitle className="flex items-center text-blue-700">
+                      <Upload className="mr-2 h-5 w-5 text-blue-600" />
+                      1. Device Intake
+                    </CardTitle>
+                    <CardDescription>
+                      Upload or enter device metadata to kick off the pipeline.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <p className="text-sm text-gray-600 mb-4">
+                      Provide basic device information or upload existing documentation to jump-start your 510(k) submission.
+                    </p>
+                    
+                    {currentDeviceProfile && (
+                      <div className="mt-4 p-3 bg-blue-50 rounded-md border border-blue-100">
+                        <div className="flex items-center">
+                          <Database className="h-4 w-4 text-blue-600 mr-2" />
+                          <span className="text-sm font-medium">Selected Device:</span>
+                        </div>
+                        <div className="mt-1 text-sm">{currentDeviceProfile.deviceName}</div>
+                        <div className="mt-1 flex gap-2">
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                            Class {currentDeviceProfile.deviceClass}
+                          </Badge>
+                          {currentDeviceProfile.modelNumber && (
+                            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
+                              {currentDeviceProfile.modelNumber}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter className="border-t bg-gray-50 py-2 px-4">
+                    <Button 
+                      onClick={() => handleRunPipeline('ingestDeviceProfile')}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {currentDeviceProfile ? "Change Device Profile" : "Upload Device Profile"}
+                    </Button>
+                  </CardFooter>
+                </Card>
 
-            <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-white pb-2">
-                <CardTitle className="flex items-center text-green-700">
-                  <Search className="mr-2 h-5 w-5 text-green-600" />
-                  2. Predicate & Literature Discovery
-                </CardTitle>
-                <CardDescription>
-                  Draft predicate list and literature search results.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <p className="text-sm text-gray-600 mb-4">
-                  Automatically discover potential predicate devices and relevant scientific literature for your submission.
-                </p>
-              </CardContent>
-              <CardFooter className="border-t bg-gray-50 py-2 px-4">
-                <Button 
-                  onClick={() => handleRunPipeline('findPredicatesAndLiterature')}
-                  className="bg-green-600 hover:bg-green-700"
-                  disabled={aiProcessing}
-                >
-                  {aiProcessing ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Processing...
-                    </>
-                  ) : (
-                    "Run Predicate Finder"
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
+                <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
+                  <CardHeader className="bg-gradient-to-r from-green-50 to-white pb-2">
+                    <CardTitle className="flex items-center text-green-700">
+                      <Search className="mr-2 h-5 w-5 text-green-600" />
+                      2. Predicate & Literature Discovery
+                    </CardTitle>
+                    <CardDescription>
+                      Draft predicate list and literature search results.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <p className="text-sm text-gray-600 mb-4">
+                      Automatically discover potential predicate devices and relevant scientific literature for your submission.
+                    </p>
+                    
+                    {!currentDeviceProfile && (
+                      <Alert variant="warning" className="mb-4 bg-amber-50 text-amber-800 border-amber-200">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Device profile required</AlertTitle>
+                        <AlertDescription>
+                          Please select or create a device profile before running the predicate finder.
+                        </AlertDescription>
+                      </Alert>
+                    )}
+                    
+                    {predicateSearchResults.length > 0 && (
+                      <div className="mt-4 bg-green-50 rounded-md border border-green-100 p-3">
+                        <div className="flex items-center mb-2">
+                          <Search className="h-4 w-4 text-green-600 mr-2" />
+                          <span className="text-sm font-medium text-green-800">Found {predicateSearchResults.length} potential predicates</span>
+                        </div>
+                        <div className="text-xs text-green-700">
+                          Click "View Insights" to see detailed results
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter className="border-t bg-gray-50 py-2 px-4 flex justify-between">
+                    <Button 
+                      onClick={() => handleRunPipeline('findPredicatesAndLiterature')}
+                      className="bg-green-600 hover:bg-green-700"
+                      disabled={aiProcessing || !currentDeviceProfile}
+                    >
+                      {isSearchingPredicates ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing...
+                        </>
+                      ) : (
+                        "Run Predicate Finder"
+                      )}
+                    </Button>
+                    
+                    {predicateSearchResults.length > 0 && (
+                      <Button 
+                        variant="outline"
+                        onClick={() => setActiveTab('insights')}
+                        className="ml-2"
+                      >
+                        View Insights
+                      </Button>
+                    )}
+                  </CardFooter>
+                </Card>
+              </div>
+            )}
+            
+            {workflowSubTab === 'devices' && (
+              <div className="space-y-4">
+                <div className="bg-blue-50 p-4 rounded-md mb-6 border border-blue-100">
+                  <h3 className="text-lg font-medium text-blue-800 mb-2 flex items-center">
+                    <Database className="h-5 w-5 mr-2" /> Device Profile Management
+                  </h3>
+                  <p className="text-sm text-blue-700 mb-4">
+                    Create and manage your medical device profiles for 510(k) submissions. Select a device to use in your automation workflow.
+                  </p>
+                  <div className="flex items-center">
+                    <Button
+                      onClick={() => handleRunPipeline('ingestDeviceProfile')}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add New Device Profile
+                    </Button>
+                  </div>
+                </div>
+                
+                {isLoadingProfiles ? (
+                  <div className="text-center p-8">
+                    <svg className="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p className="mt-4 text-gray-600">Loading device profiles...</p>
+                  </div>
+                ) : isProfileError ? (
+                  <Alert variant="destructive" className="mb-4">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Error loading profiles</AlertTitle>
+                    <AlertDescription>
+                      There was a problem loading your device profiles. Please try again.
+                    </AlertDescription>
+                  </Alert>
+                ) : (
+                  <DeviceProfileList 
+                    onSelectProfile={handleSelectDeviceProfile} 
+                  />
+                )}
+              </div>
+            )}
+            
+            {workflowSubTab === 'status' && (
+              <div className="space-y-4">
+                <div className="bg-slate-50 border border-slate-200 rounded-md p-4">
+                  <h3 className="text-lg font-medium text-slate-800 mb-2 flex items-center">
+                    <Activity className="h-5 w-5 mr-2" /> 510(k) Workflow Status
+                  </h3>
+                  <p className="text-sm text-slate-600 mb-4">
+                    Track the status of your submission through the FDA 510(k) process.
+                  </p>
+                  
+                  <div className="space-y-4 mt-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${currentDeviceProfile ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-400'}`}>
+                          <Check className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Device Profile</div>
+                          <div className="text-sm text-slate-500">
+                            {currentDeviceProfile ? currentDeviceProfile.deviceName : 'Not selected'}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge variant={currentDeviceProfile ? 'success' : 'outline'} className={currentDeviceProfile ? 'bg-green-100 text-green-800 border-green-200' : ''}>
+                        {currentDeviceProfile ? 'Complete' : 'Pending'}
+                      </Badge>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${predicateSearchResults.length > 0 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-400'}`}>
+                          <Search className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Predicate Discovery</div>
+                          <div className="text-sm text-slate-500">
+                            {predicateSearchResults.length > 0 
+                              ? `${predicateSearchResults.length} potential matches found` 
+                              : 'Not started'}
+                          </div>
+                        </div>
+                      </div>
+                      <Badge variant={predicateSearchResults.length > 0 ? 'success' : 'outline'} className={predicateSearchResults.length > 0 ? 'bg-green-100 text-green-800 border-green-200' : ''}>
+                        {predicateSearchResults.length > 0 ? 'Complete' : 'Pending'}
+                      </Badge>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mr-3">
+                          <FileText className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Draft Generation</div>
+                          <div className="text-sm text-slate-500">Not started</div>
+                        </div>
+                      </div>
+                      <Badge variant="outline">Pending</Badge>
+                    </div>
+                    
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mr-3">
+                          <Shield className="h-5 w-5" />
+                        </div>
+                        <div>
+                          <div className="font-medium">Compliance Check</div>
+                          <div className="text-sm text-slate-500">Not started</div>
+                        </div>
+                      </div>
+                      <Badge variant="outline">Pending</Badge>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
               <CardHeader className="bg-gradient-to-r from-purple-50 to-white pb-2">
