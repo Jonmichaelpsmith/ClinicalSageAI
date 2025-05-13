@@ -51,7 +51,6 @@ import {
   AlertCircle,
   BookOpen,
   Code,
-  Upload,
   File,
   PlusCircle,
   Trash2,
@@ -688,5 +687,92 @@ const ESTARPackageBuilderComponent = ({ projectId }) => {
     </Card>
   );
 };
+
+// FAQ Component
+const ESTARPackageBuilderFAQ = () => {
+  return (
+    <Card className="mt-6">
+      <CardHeader>
+        <CardTitle>Frequently Asked Questions</CardTitle>
+        <CardDescription>
+          Common questions about the eSTAR package builder and submission process
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="item-1">
+            <AccordionTrigger>What is an eSTAR package?</AccordionTrigger>
+            <AccordionContent>
+              eSTAR (electronic Submission Template And Resource) is the FDA's electronic submission format for 510(k) applications. 
+              It provides a standardized format that helps ensure your submission contains all required elements in a consistent structure.
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-2">
+            <AccordionTrigger>What documents are required for an eSTAR submission?</AccordionTrigger>
+            <AccordionContent>
+              <p>An eSTAR submission typically requires the following components:</p>
+              <ul className="list-disc pl-6 mt-2 space-y-1">
+                <li>Administrative Information (including contact details and device registration)</li>
+                <li>Device Description (detailed information about your device)</li>
+                <li>Substantial Equivalence Discussion (comparing your device to predicates)</li>
+                <li>Performance Testing (data demonstrating device safety and effectiveness)</li>
+                <li>Sterilization and Shelf-life Information (if applicable)</li>
+                <li>Biocompatibility Data (for devices contacting the body)</li>
+                <li>Software Documentation (for devices containing software)</li>
+                <li>Declarations and Certifications (compliance statements)</li>
+              </ul>
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-3">
+            <AccordionTrigger>What file formats are accepted in an eSTAR package?</AccordionTrigger>
+            <AccordionContent>
+              The FDA accepts the following file formats in eSTAR submissions:
+              <ul className="list-disc pl-6 mt-2 space-y-1">
+                <li>PDF (.pdf) - For most documentation</li>
+                <li>XML (.xml) - For structured data and the package manifest</li>
+                <li>XLSX (.xlsx) - For tabular data</li>
+                <li>JPEG/PNG (.jpg, .png) - For images</li>
+                <li>MP4 (.mp4) - For video demonstrations</li>
+              </ul>
+              All files should be readable, searchable (for text documents), and properly labeled.
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-4">
+            <AccordionTrigger>How does the digital signature verification work?</AccordionTrigger>
+            <AccordionContent>
+              The digital signature process verifies the authenticity and integrity of your eSTAR package:
+              <ol className="list-decimal pl-6 mt-2 space-y-1">
+                <li>An XML Digital Signature is applied to the package manifest</li>
+                <li>The signature uses cryptographic techniques to verify that the package hasn't been altered</li>
+                <li>It includes a timestamp to prove when the package was signed</li>
+                <li>The signature is verified using an FDA-recognized certificate authority</li>
+              </ol>
+              This ensures that the FDA receives exactly what you intended to submit.
+            </AccordionContent>
+          </AccordionItem>
+          
+          <AccordionItem value="item-5">
+            <AccordionTrigger>What are the size limitations for an eSTAR package?</AccordionTrigger>
+            <AccordionContent>
+              The FDA Electronic Submissions Gateway (ESG) has the following size limitations:
+              <ul className="list-disc pl-6 mt-2 space-y-1">
+                <li>Individual files should not exceed 100 MB when possible</li>
+                <li>The total package size should not exceed 1 GB</li>
+                <li>For larger submissions, the package can be split into multiple parts</li>
+              </ul>
+              Our eSTAR builder automatically checks for these limits and warns you if they're exceeded.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Add the FAQ component to the main component
+ESTARPackageBuilderComponent.FAQ = ESTARPackageBuilderFAQ;
 
 export default ESTARPackageBuilderComponent;

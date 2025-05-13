@@ -6,7 +6,14 @@
  * creating XML manifests, and validating package completeness.
  */
 
-import { v4 as uuidv4 } from 'crypto';
+// Simple UUID v4 generation function for browser environments
+function uuidv4() {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
 
 class ESTARPackageBuilder {
   /**
@@ -74,10 +81,10 @@ class ESTARPackageBuilder {
   /**
    * Validate an eSTAR package for completeness
    * 
-   * @param {Object} package - The eSTAR package object
+   * @param {Object} pkgData - The eSTAR package object
    * @returns {Object} - Validation result with issues list
    */
-  validatePackage(package) {
+  validatePackage(pkgData) {
     const requiredSections = [
       'Administrative Information',
       'Device Description',
@@ -93,7 +100,7 @@ class ESTARPackageBuilder {
     const presentSections = new Set();
     
     // Check which sections are present in the package
-    package.files.forEach(file => {
+    pkgData.files.forEach(file => {
       const section = file.section || '';
       presentSections.add(section);
     });
@@ -110,7 +117,7 @@ class ESTARPackageBuilder {
     });
     
     // Check for digital signature
-    if (!package.manifest.includes('<digitalSignature>')) {
+    if (!pkgData.manifest.includes('<digitalSignature>')) {
       issues.push({
         severity: 'critical',
         message: 'Digital signature is missing',
@@ -120,7 +127,7 @@ class ESTARPackageBuilder {
     
     // Check file sizes
     let totalSize = 0;
-    package.files.forEach(file => {
+    pkgData.files.forEach(file => {
       totalSize += file.size;
       if (file.size > 100 * 1024 * 1024) { // 100 MB
         issues.push({
