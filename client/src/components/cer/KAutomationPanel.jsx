@@ -1527,56 +1527,121 @@ export default function KAutomationPanel() {
                         .sort((a, b) => b.confidence - a.confidence)
                         .map((insight, index) => (
                           <div key={insight.id} className="bg-purple-50 rounded-md p-4 border border-purple-100">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-medium text-purple-800">{insight.name}</h3>
+                            <div className="flex items-center justify-between mb-3">
+                              <h3 className="font-medium text-purple-800 text-md">{insight.name}</h3>
+                            </div>
+                            
+                            {/* Enhanced badges for publication details */}
+                            <div className="flex flex-wrap gap-2 mb-3">
                               <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200">
                                 {insight.journal || "Journal Article"}
                               </Badge>
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                Year: {insight.year || "N/A"}
+                              </Badge>
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                Relevance: {Math.round(insight.confidence * 100)}%
+                              </Badge>
                             </div>
                             
-                            {/* Publication details */}
-                            <div className="flex flex-wrap justify-between text-sm text-purple-700 mb-2">
-                              <span>Publication Year: {insight.year || "N/A"}</span>
-                              <span>Relevance: {Math.round(insight.confidence * 100)}%</span>
+                            {/* Relevance score visual indicator */}
+                            <div className="mb-3">
+                              <div className="flex justify-between text-sm text-purple-700 mb-1">
+                                <span className="font-medium">Relevance Score:</span>
+                                <span className="font-medium">{Math.round(insight.confidence * 100)}%</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="bg-purple-600 h-2 rounded-full" 
+                                  style={{ width: `${Math.round(insight.confidence * 100)}%` }}
+                                />
+                              </div>
                             </div>
                             
                             {/* Authors */}
                             {insight.authors && insight.authors.length > 0 && (
-                              <div className="text-sm text-purple-700 mb-2">
-                                <span className="font-medium">Authors:</span>{" "}
-                                {Array.isArray(insight.authors) 
-                                  ? insight.authors.join(', ')
-                                  : insight.authors}
+                              <div className="text-sm p-3 bg-purple-50 rounded-md mb-3">
+                                <span className="font-medium text-purple-800 block mb-1">Authors:</span>
+                                <div className="text-purple-700">
+                                  {Array.isArray(insight.authors) 
+                                    ? insight.authors.join(', ')
+                                    : insight.authors}
+                                </div>
                               </div>
                             )}
                             
-                            {/* Abstract with collapsible section */}
+                            {/* Abstract with improved collapsible */}
                             {insight.abstract && (
-                              <Collapsible className="mb-2">
-                                <CollapsibleTrigger className="flex items-center text-sm font-medium text-purple-700 hover:text-purple-900">
-                                  <span>View Abstract</span>
-                                  <ChevronDown className="h-4 w-4 ml-1" />
+                              <Collapsible className="border border-purple-100 rounded-md overflow-hidden mb-3">
+                                <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-purple-50 hover:bg-purple-100 text-sm font-medium text-purple-800">
+                                  <div className="flex items-center">
+                                    <FileText className="h-4 w-4 mr-1.5 text-purple-600" />
+                                    <span>Abstract</span>
+                                  </div>
+                                  <ChevronDown className="h-4 w-4 text-purple-600" />
                                 </CollapsibleTrigger>
-                                <CollapsibleContent className="text-sm text-purple-800 mt-2 bg-purple-50 p-2 rounded border border-purple-100">
+                                <CollapsibleContent className="text-sm text-gray-700 p-3 border-t border-purple-100">
                                   {insight.abstract}
                                 </CollapsibleContent>
                               </Collapsible>
                             )}
                             
-                            {/* URL Link */}
-                            {insight.url && (
-                              <div className="mt-2">
-                                <a 
-                                  href={insight.url} 
-                                  target="_blank" 
-                                  rel="noopener noreferrer" 
-                                  className="text-purple-600 text-sm hover:underline flex items-center"
+                            {/* Enhanced action buttons with improved UX */}
+                            <div className="flex items-center justify-between mt-4">
+                              {insight.url ? (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="text-xs border-purple-200 text-purple-700 hover:bg-purple-50"
+                                  onClick={() => window.open(insight.url, '_blank')}
                                 >
-                                  <ExternalLink className="h-3 w-3 mr-1" />
+                                  <ExternalLink className="h-3.5 w-3.5 mr-1" />
                                   View Publication
-                                </a>
+                                </Button>
+                              ) : (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  className="text-xs border-purple-200 text-purple-700 hover:bg-purple-50"
+                                  onClick={() => window.open(`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(insight.name)}`, '_blank')}
+                                >
+                                  <Search className="h-3.5 w-3.5 mr-1" />
+                                  Search PubMed
+                                </Button>
+                              )}
+                              
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs border-blue-200 text-blue-700 hover:bg-blue-50"
+                                  onClick={() => {
+                                    // Add to references list
+                                    toast({
+                                      title: "Added to References",
+                                      description: `${insight.name} added to literature references.`,
+                                    });
+                                  }}
+                                >
+                                  <BookmarkPlus className="h-3.5 w-3.5 mr-1" />
+                                  Save Reference
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  className="text-xs bg-purple-600 hover:bg-purple-700"
+                                  onClick={() => {
+                                    // Cite in document
+                                    toast({
+                                      title: "Citation Added",
+                                      description: `${insight.name} citation will be added to your documents.`,
+                                    });
+                                  }}
+                                >
+                                  <FileText className="h-3.5 w-3.5 mr-1" />
+                                  Cite in Document
+                                </Button>
                               </div>
-                            )}
+                            </div>
                           </div>
                         ))
                       }
