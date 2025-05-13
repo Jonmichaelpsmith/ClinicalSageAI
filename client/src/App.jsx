@@ -113,6 +113,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 // FDA 510(k) Automation Pages
 const FDA510kPage = lazy(() => import('./pages/510kPage'));
 const FDA510kDashboard = lazy(() => import('./pages/FDA510kDashboard'));
+const ESTARPackagePage = lazy(() => import('./pages/ESTARPackagePage'));
 
 function App() {
   // Default tab for the UnifiedTopNavV3 component
@@ -201,6 +202,7 @@ function App() {
               <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
               <Route path="/client-portal/510k" component={FDA510kPage} />
               <Route path="/client-portal/510k-dashboard" component={FDA510kDashboard} />
+              <Route path="/client-portal/estar-package" component={ESTARPackagePage} />
               <Route path="/client-portal/client-management">
                 {() => (
                   <Suspense fallback={<LoadingPage />}>
@@ -243,6 +245,7 @@ function App() {
               <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
               <Route path="/510k" component={FDA510kPage} /> {/* FDA 510(k) Automation page route */}
               <Route path="/510k-dashboard" component={FDA510kDashboard} /> {/* Enhanced FDA 510(k) Dashboard page route */}
+              <Route path="/estar-package" component={ESTARPackagePage} /> {/* eSTAR Package Builder showcase page */}
               <Route path="/csr" component={CSRPage} /> {/* CSR Deep Intelligence page route */}
               <Route path="/csr-library" component={CSRLibraryPage} /> {/* CSR Library page route */}
               <Route path="/cmc" component={CMCPage} /> {/* CMC Module page route */}
