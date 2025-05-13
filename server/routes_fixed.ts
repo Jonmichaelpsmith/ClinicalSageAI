@@ -136,6 +136,10 @@ export default function registerRoutes(app: Express): void {
   app.use('/api/cer/qmp-integration', cerQmpIntegrationRouter);
   console.log('CER-QMP Integration routes registered');
   
+  // Register Device Profile API routes
+  app.use('/api/cer', deviceProfileRouter);
+  console.log('Device Profile API routes registered');
+  
   // Create a temporary CER AI Analysis router
   const cerAiAnalysisRouter = Router();
   

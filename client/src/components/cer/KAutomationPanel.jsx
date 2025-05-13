@@ -7,6 +7,9 @@ import { Upload, Search, FilePlus, BarChart, ArrowRight, Shield, BrainCircuit, Z
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import DeviceProfileForm from './DeviceProfileForm';
+import { postDeviceProfile } from '../../api/cer';
 import FDA510kService from '../../services/FDA510kService';
 import { useTenant } from '@/contexts/TenantContext';
 
