@@ -231,6 +231,20 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
     setIsLoading(true);
 
     try {
+      // Create an AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 60000); // 60-second timeout
+      
+      // Add thinking message immediately to improve perceived responsiveness
+      setMessages((prev) => [
+        ...prev, 
+        { 
+          role: 'assistant', 
+          content: 'Thinking...',
+          isLoading: true 
+        }
+      ]);
+      
       // Call the AI API - full absolute path
       const response = await fetch(window.location.origin + '/api/regulatory-ai/query', {
         method: 'POST',
@@ -244,7 +258,11 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
           additionalContext: context,
           history: messages.map(msg => ({ role: msg.role, content: msg.content })),
         }),
+        signal: controller.signal
       });
+      
+      // Clear the timeout since the request completed
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -254,8 +272,16 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
 
       const data = await response.json();
       
-      // Add AI response to chat
-      setMessages((prev) => [...prev, { role: 'assistant', content: data.response }]);
+      // Replace the "Thinking..." message with the actual response
+      setMessages((prev) => 
+        prev.map((msg, index) => {
+          // Find the last message with isLoading=true
+          if (msg.role === 'assistant' && msg.isLoading) {
+            return { role: 'assistant', content: data.response };
+          }
+          return msg;
+        })
+      );
     } catch (error) {
       console.error('Error communicating with AI assistant:', error);
       console.error('Error details:', error.stack);
@@ -267,11 +293,13 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
         variant: 'destructive',
       });
       
-      // Add a more informative error message to chat
+      // Create a more informative error message
       let errorMessage = 'Sorry, I encountered an issue processing your request. Please try again.';
       
       // Provide more specific error message based on error type
-      if (error.message.includes('API key')) {
+      if (error.name === 'AbortError') {
+        errorMessage = 'The request took too long to process. The AI service might be experiencing high demand. Please try again in a moment.';
+      } else if (error.message.includes('API key')) {
         errorMessage = 'I apologize, but there seems to be an issue with the AI service configuration. Please contact support for assistance.';
       } else if (error.message.includes('network') || error.message.includes('failed to fetch')) {
         errorMessage = 'I\'m having trouble connecting to the server. Please check your internet connection and try again.';
@@ -279,13 +307,23 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
         errorMessage = 'The request took too long to process. This might be due to high demand. Please try again in a moment.';
       }
       
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: errorMessage,
-        },
-      ]);
+      // Replace the "Thinking..." message with error message or add a new message
+      setMessages((prev) => {
+        const hasThinkingMessage = prev.some(msg => msg.role === 'assistant' && msg.isLoading);
+        
+        if (hasThinkingMessage) {
+          // Replace the "Thinking..." message
+          return prev.map(msg => {
+            if (msg.role === 'assistant' && msg.isLoading) {
+              return { role: 'assistant', content: errorMessage };
+            }
+            return msg;
+          });
+        } else {
+          // Add a new error message
+          return [...prev, { role: 'assistant', content: errorMessage }];
+        }
+      });
     } finally {
       setIsLoading(false);
     }
@@ -338,20 +376,18 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
                       : 'bg-gray-100 text-gray-800'
                   }`}
                 >
-                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  {message.isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <p>Thinking...</p>
+                    </div>
+                  ) : (
+                    <p className="whitespace-pre-wrap">{message.content}</p>
+                  )}
                 </div>
               </div>
             ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="rounded-lg px-4 py-2 bg-gray-100 text-gray-800">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <p>Thinking...</p>
-                  </div>
-                </div>
-              </div>
-            )}
+            {/* Loading indicator is now included inline with messages */}
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
