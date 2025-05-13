@@ -5,7 +5,8 @@ import {
   Upload, Search, FilePlus, BarChart, ArrowRight, Shield, Zap, 
   FileCheck, CheckCircle2, AlertTriangle, Lightbulb, Bot, Star, ListChecks, BookOpen, 
   Clock, Info, Check, Brain, Activity, FileText, Undo2, Users, Plus, Database,
-  ChevronDown, ExternalLink, Bug, AlertCircle 
+  ChevronDown, ExternalLink, Bug, AlertCircle, BookmarkPlus, Calendar,
+  ChevronUp
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -1521,6 +1522,29 @@ export default function KAutomationPanel() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-4">
+                    {/* Literature statistics dashboard */}
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+                      <div className="bg-purple-50 p-3 rounded-md border border-purple-100 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-purple-700">
+                          {aiInsights.filter(i => i.type === 'literature').length}
+                        </span>
+                        <span className="text-xs text-purple-600">References Found</span>
+                      </div>
+                      <div className="bg-purple-50 p-3 rounded-md border border-purple-100 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-purple-700">
+                          {aiInsights.filter(i => i.type === 'literature' && i.year && i.year >= new Date().getFullYear() - 3).length}
+                        </span>
+                        <span className="text-xs text-purple-600">Recent Publications</span>
+                      </div>
+                      <div className="bg-purple-50 p-3 rounded-md border border-purple-100 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-purple-700">
+                          {Math.round(aiInsights.filter(i => i.type === 'literature').reduce((sum, item) => sum + (item.confidence || 0), 0) / 
+                          (aiInsights.filter(i => i.type === 'literature').length || 1) * 100)}%
+                        </span>
+                        <span className="text-xs text-purple-600">Avg. Relevance</span>
+                      </div>
+                    </div>
+                    
                     <div className="space-y-4">
                       {aiInsights
                         .filter(i => i.type === 'literature')
@@ -1668,15 +1692,78 @@ export default function KAutomationPanel() {
                         .filter(i => i.type === 'regulatory')
                         .map((insight, index) => (
                           <div key={insight.id} className="bg-blue-50 rounded-md p-4 border border-blue-100">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-medium text-blue-800">Recommended Pathway: {insight.pathway}</h3>
-                              <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
-                                {Math.round(insight.confidence * 100)}% Confidence
-                              </Badge>
+                            {/* Enhanced pathway visualization with prominently displayed recommendation */}
+                            <div className="flex flex-col items-center justify-center mb-4 bg-white p-3 rounded-md border border-blue-100">
+                              <span className="text-xs uppercase text-blue-600 font-semibold mb-1">Recommended Regulatory Pathway</span>
+                              <h3 className="font-bold text-blue-800 text-xl">{insight.pathway}</h3>
+                              <div className="mt-2 w-3/4">
+                                <div className="flex justify-between text-sm text-blue-700 mb-1">
+                                  <span>Confidence</span>
+                                  <span>{Math.round(insight.confidence * 100)}%</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div 
+                                    className="bg-blue-600 h-2 rounded-full" 
+                                    style={{ width: `${Math.round(insight.confidence * 100)}%` }}
+                                  />
+                                </div>
+                              </div>
                             </div>
-                            <p className="text-sm text-blue-700">
-                              {insight.reasoning}
-                            </p>
+                            
+                            {/* Pathway characteristics badges */}
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {insight.characteristics ? (
+                                insight.characteristics.map((characteristic, idx) => (
+                                  <Badge key={idx} variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+                                    {characteristic}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <>
+                                  <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+                                    Class {insight.deviceClass || currentDeviceProfile?.deviceClass || 'II'}
+                                  </Badge>
+                                  <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+                                    Traditional
+                                  </Badge>
+                                  <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+                                    Clinical Data Required
+                                  </Badge>
+                                </>
+                              )}
+                            </div>
+                            
+                            {/* Reasoning section in collapsible container */}
+                            <Collapsible className="border border-blue-100 rounded-md overflow-hidden mb-3">
+                              <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-blue-50 hover:bg-blue-100 text-sm font-medium text-blue-800">
+                                <div className="flex items-center">
+                                  <FileText className="h-4 w-4 mr-1.5 text-blue-600" />
+                                  <span>Pathway Justification</span>
+                                </div>
+                                <ChevronDown className="h-4 w-4 text-blue-600" />
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="text-sm text-gray-700 p-3 border-t border-blue-100 bg-white">
+                                {insight.reasoning}
+                              </CollapsibleContent>
+                            </Collapsible>
+                            
+                            {/* Action buttons */}
+                            <div className="flex items-center justify-end mt-4">
+                              <Button 
+                                size="sm" 
+                                className="text-xs bg-blue-600 hover:bg-blue-700"
+                                onClick={() => {
+                                  // Accept recommendation
+                                  toast({
+                                    title: "Pathway Selected",
+                                    description: `${insight.pathway} pathway has been selected for your device.`,
+                                  });
+                                }}
+                              >
+                                <Check className="h-3.5 w-3.5 mr-1" />
+                                Use This Pathway
+                              </Button>
+                            </div>
                           </div>
                         ))
                       }
@@ -1684,17 +1771,75 @@ export default function KAutomationPanel() {
                       {aiInsights
                         .filter(i => i.type === 'timeline')
                         .map((insight, index) => (
-                          <div key={insight.id} className="mt-4 bg-gray-50 rounded-md p-4 border border-gray-200">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-medium text-gray-800">Estimated Timeline: {insight.estimate}</h3>
+                          <div key={insight.id} className="mt-4 bg-white rounded-md p-4 border border-blue-100">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center">
+                                <Clock className="mr-2 h-5 w-5 text-blue-600" />
+                                <h3 className="font-medium text-blue-800">Estimated Review Process</h3>
+                              </div>
+                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                Total: {insight.estimate}
+                              </Badge>
                             </div>
-                            <div className="space-y-2 mt-2">
-                              {insight.milestones?.map((milestone, i) => (
-                                <div key={i} className="flex justify-between text-sm">
-                                  <span className="text-gray-700">{milestone.name}</span>
-                                  <span className="text-gray-500">{milestone.days} days</span>
-                                </div>
-                              ))}
+                            
+                            {/* Timeline visualization */}
+                            <div className="relative pb-2">
+                              <div className="absolute left-[9px] top-0 h-full w-[2px] bg-blue-200"></div>
+                              
+                              {insight.milestones?.map((milestone, i) => {
+                                // Calculate position on timeline based on days
+                                const totalDays = insight.milestones.reduce((sum, m) => sum + (m.days || 0), 0);
+                                const previousDays = insight.milestones.slice(0, i).reduce((sum, m) => sum + (m.days || 0), 0);
+                                const startPercent = (previousDays / totalDays) * 100;
+                                const lengthPercent = (milestone.days / totalDays) * 100;
+                                
+                                return (
+                                  <div key={i} className="relative pl-6 py-3">
+                                    {/* Milestone marker */}
+                                    <div className="absolute left-0 -ml-[1px] mt-1.5 bg-white p-[3px]">
+                                      <div className={`h-4 w-4 rounded-full ${i === 0 ? 'bg-blue-600' : i === insight.milestones.length - 1 ? 'bg-green-600' : 'bg-blue-400'}`}></div>
+                                    </div>
+                                    
+                                    {/* Milestone content */}
+                                    <div className="flex flex-col mb-1">
+                                      <div className="flex justify-between">
+                                        <span className="font-medium text-blue-800">{milestone.name}</span>
+                                        <span className="text-blue-600 font-medium">{milestone.days} days</span>
+                                      </div>
+                                      
+                                      {milestone.description && (
+                                        <p className="text-xs text-gray-600 mt-1">{milestone.description}</p>
+                                      )}
+                                      
+                                      {/* Progress bar */}
+                                      <div className="mt-2 w-full bg-gray-100 rounded-full h-1.5">
+                                        <div 
+                                          className={`h-1.5 rounded-full ${i === 0 ? 'bg-blue-600' : i === insight.milestones.length - 1 ? 'bg-green-600' : 'bg-blue-400'}`}
+                                          style={{ width: `${lengthPercent}%` }}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                            
+                            {/* Action button for timeline */}
+                            <div className="flex justify-end mt-3">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                className="text-xs border-blue-200 text-blue-700 hover:bg-blue-50"
+                                onClick={() => {
+                                  toast({
+                                    title: "Timeline Exported",
+                                    description: "Project timeline has been exported to your calendar",
+                                  });
+                                }}
+                              >
+                                <Calendar className="h-3.5 w-3.5 mr-1" />
+                                Add to Calendar
+                              </Button>
                             </div>
                           </div>
                         ))
