@@ -19,12 +19,19 @@ import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPane
 import ExportModule from '@/components/cer/ExportModule';
 import CerComprehensiveReportsPanel from '@/components/cer/CerComprehensiveReportsPanel';
 import MAUDIntegrationPanel from '@/components/cer/MAUDIntegrationPanel';
+// 510k enhanced components
+import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
+import GuidedTooltip from '@/components/510k/GuidedTooltip';
+import InsightsDisplay from '@/components/510k/InsightsDisplay';
+import ProgressTracker from '@/components/510k/ProgressTracker';
+import SubmissionTimeline from '@/components/510k/SubmissionTimeline';
+import ReportGenerator from '@/components/510k/ReportGenerator';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -57,6 +64,9 @@ export default function CERV2Page() {
   const [isFetchingFaers, setIsFetchingFaers] = useState(false);
   const [isFetchingLiterature, setIsFetchingLiterature] = useState(false);
   const [activeTab, setActiveTab] = useState('builder');
+  
+  // Create a deviceProfile object for easier passing to 510k components
+  const [deviceProfile, setDeviceProfile] = useState(null);
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
   const [exportTimestamp, setExportTimestamp] = useState(null);
@@ -704,10 +714,362 @@ export default function CERV2Page() {
     }
     
     if (activeTab === '510k') {
-      console.log("Rendering 510k tab content");
+      console.log("Rendering enhanced 510k tab content");
       return (
         <div className="bg-white p-6 rounded-md shadow-sm border border-blue-100">
-          <KAutomationPanel />
+          <Tabs defaultValue="workflow" className="w-full">
+            <TabsList className="mb-4 bg-blue-50 w-full flex justify-start gap-2 p-1 border-b">
+              <TabsTrigger value="workflow" className="data-[state=active]:bg-blue-600">
+                <FileText className="h-4 w-4 mr-2" />
+                Workflow
+              </TabsTrigger>
+              <TabsTrigger value="discovery" className="data-[state=active]:bg-blue-600">
+                <Search className="h-4 w-4 mr-2" />
+                Predicate Discovery
+              </TabsTrigger>
+              <TabsTrigger value="insights" className="data-[state=active]:bg-blue-600">
+                <Lightbulb className="h-4 w-4 mr-2" />
+                Insights
+              </TabsTrigger>
+              <TabsTrigger value="timeline" className="data-[state=active]:bg-blue-600">
+                <Calendar className="h-4 w-4 mr-2" />
+                Timeline
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="data-[state=active]:bg-blue-600">
+                <FileText className="h-4 w-4 mr-2" />
+                Reports
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="workflow" className="mt-4">
+              <div className="grid grid-cols-1 gap-6">
+                <GuidedTooltip
+                  title="510(k) Submission Process"
+                  steps={[
+                    {
+                      content: (
+                        <p className="text-sm text-gray-600">
+                          Welcome to the 510(k) submission wizard! This guided process will help you prepare a complete submission for the FDA.
+                        </p>
+                      )
+                    },
+                    {
+                      content: (
+                        <p className="text-sm text-gray-600">
+                          Step 1: Begin by creating or selecting a device profile that contains essential information about your medical device.
+                        </p>
+                      )
+                    },
+                    {
+                      content: (
+                        <p className="text-sm text-gray-600">
+                          Step 2: Use the predicate discovery tool to find potential predicate devices for your submission.
+                        </p>
+                      )
+                    },
+                    {
+                      content: (
+                        <p className="text-sm text-gray-600">
+                          Step 3: Complete a compliance check to ensure your submission meets all regulatory requirements.
+                        </p>
+                      )
+                    },
+                    {
+                      content: (
+                        <p className="text-sm text-gray-600">
+                          Final Step: Generate a comprehensive report for your 510(k) submission.
+                        </p>
+                      )
+                    }
+                  ]}
+                  showDismissible={true}
+                  className="mb-4 p-2 bg-blue-50 border border-blue-100 rounded-md flex items-center text-sm text-blue-700"
+                >
+                  <Info className="h-4 w-4 mr-2" />
+                  <span>Click here for a guided walkthrough of the 510(k) submission process</span>
+                </GuidedTooltip>
+                
+                <KAutomationPanel />
+                
+                <ProgressTracker
+                  currentStep={2}
+                  totalSteps={5}
+                  progress={65}
+                  status="processing"
+                  steps={[
+                    {
+                      name: "Device Profile Creation",
+                      status: "complete",
+                      type: "file",
+                      description: "Define your device characteristics",
+                      timestamp: new Date(Date.now() - 3600000).toISOString()
+                    },
+                    {
+                      name: "Predicate Device Discovery",
+                      status: "processing",
+                      type: "search",
+                      description: "Find and select predicate devices",
+                      timestamp: new Date().toISOString(),
+                      progress: 65
+                    },
+                    {
+                      name: "Substantial Equivalence Analysis",
+                      status: "waiting",
+                      type: "analysis",
+                      description: "Compare your device to predicates"
+                    },
+                    {
+                      name: "Literature Review Integration",
+                      status: "waiting",
+                      type: "literature",
+                      description: "Integrate scientific literature"
+                    },
+                    {
+                      name: "Compliance Check",
+                      status: "waiting",
+                      type: "report",
+                      description: "Ensure regulatory compliance"
+                    }
+                  ]}
+                  logs={[
+                    { timestamp: new Date(Date.now() - 3600000).toISOString(), level: "info", message: "Device profile created successfully" },
+                    { timestamp: new Date(Date.now() - 1800000).toISOString(), level: "info", message: "Beginning predicate device search" },
+                    { timestamp: new Date(Date.now() - 900000).toISOString(), level: "info", message: "Found 12 potential predicate devices" },
+                    { timestamp: new Date(Date.now() - 600000).toISOString(), level: "info", message: "Analyzing device compatibility" },
+                    { timestamp: new Date().toISOString(), level: "info", message: "Processing predicate analysis (65% complete)" }
+                  ]}
+                  onRetry={() => {
+                    console.log("Retry processing");
+                    toast({
+                      title: "Processing Restarted",
+                      description: "The predicate discovery process has been restarted.",
+                      variant: "default"
+                    });
+                  }}
+                  onContinue={() => {
+                    console.log("Continue to next step");
+                    toast({
+                      title: "Moving to Next Step",
+                      description: "Proceeding to substantial equivalence analysis.",
+                      variant: "default"
+                    });
+                  }}
+                />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="discovery" className="mt-4">
+              <div className="grid grid-cols-1 gap-6">
+                <PredicateFinderPanel 
+                  deviceProfile={deviceProfile || {
+                    deviceName: deviceName,
+                    manufacturer: manufacturer,
+                    deviceClass: deviceType.includes('II') ? 'II' : deviceType.includes('III') ? 'III' : 'I',
+                    intendedUse: intendedUse
+                  }}
+                  organizationId={1}
+                />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="insights" className="mt-4">
+              <InsightsDisplay 
+                insights={[
+                  {
+                    id: "insight-1",
+                    title: "Predicate Device Match Found",
+                    description: "We've identified a potential predicate device with a 92% match to your device profile. The device was cleared in 2023 and shares similar technological characteristics.",
+                    category: "predicate",
+                    priority: "high",
+                    timestamp: new Date(Date.now() - 86400000).toISOString(),
+                    recommendation: "Review the K230421 device and consider using it as your primary predicate reference."
+                  },
+                  {
+                    id: "insight-2",
+                    title: "Missing Design Controls Documentation",
+                    description: "Your current profile lacks references to design controls documentation, which is required for Class II devices.",
+                    category: "regulatory",
+                    priority: "high",
+                    timestamp: new Date(Date.now() - 72000000).toISOString(),
+                    recommendation: "Complete the Design Controls section in your device profile to satisfy FDA requirements."
+                  },
+                  {
+                    id: "insight-3",
+                    title: "Relevant Literature Available",
+                    description: "5 recent publications were found that support the safety and efficacy claims for your device type.",
+                    category: "literature",
+                    priority: "medium",
+                    timestamp: new Date(Date.now() - 43200000).toISOString(),
+                    recommendation: "Review the literature findings and incorporate relevant citations into your submission."
+                  }
+                ]}
+                predicateDevices={[
+                  {
+                    id: "pred-1",
+                    deviceName: "CardioFlow X200",
+                    manufacturer: "MedTech Innovations",
+                    deviceClass: "II",
+                    kNumber: "K230421",
+                    matchScore: 0.92,
+                    decisionDate: new Date(Date.now() - 180 * 86400000).toISOString(),
+                    description: "CardioFlow X200 is a cardiovascular monitoring system cleared for use in clinical settings."
+                  },
+                  {
+                    id: "pred-2",
+                    deviceName: "VitalScan Pro",
+                    manufacturer: "HealthSystems Inc.",
+                    deviceClass: "II",
+                    kNumber: "K220189",
+                    matchScore: 0.78,
+                    decisionDate: new Date(Date.now() - 360 * 86400000).toISOString(),
+                    description: "VitalScan Pro is a patient monitoring system for continuous vital signs monitoring."
+                  }
+                ]}
+                literatureReferences={[
+                  {
+                    id: "lit-1",
+                    title: "Clinical Evaluation of Next-Generation Monitoring Systems",
+                    authors: "Johnson, M., et al.",
+                    journal: "Journal of Medical Devices",
+                    publicationDate: new Date(Date.now() - 120 * 86400000).toISOString(),
+                    relevanceScore: 0.89,
+                    abstract: "This study evaluates the efficacy and safety of new-generation patient monitoring systems in clinical settings."
+                  },
+                  {
+                    id: "lit-2",
+                    title: "Safety Assessment of Modern Patient Monitors",
+                    authors: "Williams, R. and Thompson, K.",
+                    journal: "International Journal of Biomedical Engineering",
+                    publicationDate: new Date(Date.now() - 180 * 86400000).toISOString(),
+                    relevanceScore: 0.76,
+                    abstract: "A comprehensive assessment of safety features in modern patient monitoring devices approved in the last five years."
+                  }
+                ]}
+                onGenerateReport={() => {
+                  toast({
+                    title: "Generating Insights Report",
+                    description: "Preparing a comprehensive report of all insights.",
+                    variant: "default"
+                  });
+                }}
+              />
+            </TabsContent>
+            
+            <TabsContent value="timeline" className="mt-4">
+              <SubmissionTimeline 
+                currentStep={2}
+                steps={[
+                  {
+                    id: 1,
+                    title: "Device Profile Creation",
+                    status: "complete",
+                    shortDescription: "Define device characteristics and intended use",
+                    dueDate: new Date(Date.now() - 7 * 86400000).toISOString(),
+                    substeps: [
+                      { name: "Enter device details", complete: true },
+                      { name: "Define intended use", complete: true },
+                      { name: "Upload device images", complete: true }
+                    ]
+                  },
+                  {
+                    id: 2,
+                    title: "Predicate Device Discovery",
+                    status: "in-progress",
+                    shortDescription: "Identify and select appropriate predicate devices",
+                    dueDate: new Date(Date.now() + 7 * 86400000).toISOString(),
+                    description: "This phase involves finding appropriate predicate devices that have already been cleared by the FDA. These devices will serve as a benchmark for your submission.",
+                    recommendation: "Focus on devices with similar technological characteristics and intended use. Prioritize more recent clearances (within the last 3-5 years) when possible.",
+                    substeps: [
+                      { name: "Run initial predicate search", complete: true },
+                      { name: "Review potential matches", complete: true },
+                      { name: "Select primary predicate", complete: false },
+                      { name: "Document substantial equivalence rationale", complete: false }
+                    ]
+                  },
+                  {
+                    id: 3,
+                    title: "Substantial Equivalence Analysis",
+                    status: "upcoming",
+                    shortDescription: "Compare your device to selected predicates",
+                    dueDate: new Date(Date.now() + 14 * 86400000).toISOString()
+                  },
+                  {
+                    id: 4,
+                    title: "Literature Review",
+                    status: "upcoming",
+                    shortDescription: "Find and analyze relevant scientific literature",
+                    dueDate: new Date(Date.now() + 21 * 86400000).toISOString()
+                  },
+                  {
+                    id: 5,
+                    title: "Compliance Check",
+                    status: "upcoming",
+                    shortDescription: "Ensure submission meets all regulatory requirements",
+                    dueDate: new Date(Date.now() + 28 * 86400000).toISOString()
+                  },
+                  {
+                    id: 6,
+                    title: "Final Submission Preparation",
+                    status: "upcoming",
+                    shortDescription: "Compile all documents and finalize submission",
+                    dueDate: new Date(Date.now() + 35 * 86400000).toISOString()
+                  }
+                ]}
+                onSelectStep={(stepId) => {
+                  console.log(`Selected step: ${stepId}`);
+                  toast({
+                    title: "Timeline Step Selected",
+                    description: `You selected step ${stepId} in the submission timeline.`,
+                    variant: "default"
+                  });
+                }}
+              />
+            </TabsContent>
+            
+            <TabsContent value="reports" className="mt-4">
+              <ReportGenerator 
+                deviceProfile={deviceProfile || {
+                  deviceName: deviceName,
+                  manufacturer: manufacturer,
+                  deviceClass: deviceType.includes('II') ? 'II' : deviceType.includes('III') ? 'III' : 'I',
+                  intendedUse: intendedUse
+                }}
+                predicates={[
+                  {
+                    deviceName: "CardioFlow X200",
+                    manufacturer: "MedTech Innovations",
+                    deviceClass: "II",
+                    kNumber: "K230421",
+                    matchScore: 0.92
+                  }
+                ]}
+                recentReports={[
+                  {
+                    name: "510k_Submission_Draft_20250512.pdf",
+                    type: "pdf",
+                    timestamp: new Date(Date.now() - 86400000).toISOString()
+                  }
+                ]}
+                onGenerateReport={(options) => {
+                  console.log("Generating report with options:", options);
+                  toast({
+                    title: "Report Generation Started",
+                    description: `Generating a ${options.type.toUpperCase()} report with selected sections.`,
+                    variant: "default"
+                  });
+                  
+                  // Simulate report generation completion after delay
+                  setTimeout(() => {
+                    toast({
+                      title: "Report Generated Successfully",
+                      description: "Your 510(k) submission report is ready to download.",
+                      variant: "success"
+                    });
+                  }, 3000);
+                }}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       );
     }
