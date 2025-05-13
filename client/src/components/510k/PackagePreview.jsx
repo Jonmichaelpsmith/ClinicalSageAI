@@ -1,228 +1,300 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from '@/components/ui/card';
+import {
+  Alert,
+  AlertTitle,
+  AlertDescription,
+} from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2, FileText, CheckCircle, AlertTriangle, Download, Upload, FileCheck } from 'lucide-react';
+import { isFeatureEnabled } from '../../flags/featureFlags';
+import FDA510kService from '../../services/FDA510kService';
 
 /**
- * PackagePreview Component
- * 
- * This component displays a preview of the eSTAR package structure with collapsible sections
- * showing the XML structure and included documents.
+ * eSTAR Plus Package Assembly and Preview component
+ * Displays file information, AI validation results, and provides options
+ * to build and download the full package or submit to FDA ESG.
  */
-const PackagePreview = ({ packageId }) => {
-  const [activeView, setActiveView] = useState('structure');
+const PackagePreview = ({ projectId = "demo-project-id" }) => {
+  const { toast } = useToast();
   
-  // Query to fetch package details
-  const { data: packageDetails, isLoading } = useQuery({
-    queryKey: ['/api/510k/package', packageId],
-    enabled: !!packageId,
-  });
+  const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState(null);
+  const [building, setBuilding] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [verification, setVerification] = useState(null);
+  const [error, setError] = useState(null);
   
-  // Mock data for demonstration
-  const mockPackageStructure = [
-    {
-      id: 'section-1',
-      title: 'Administrative Information',
-      subsections: [
-        { id: 'section-1-1', title: 'Submission Type Information' },
-        { id: 'section-1-2', title: 'Device Trade/Proprietary Name' },
-        { id: 'section-1-3', title: 'Device Common or Usual Name' },
-        { id: 'section-1-4', title: 'Device Classification' },
-      ]
-    },
-    {
-      id: 'section-2',
-      title: 'Device Information',
-      subsections: [
-        { id: 'section-2-1', title: 'Device Description' },
-        { id: 'section-2-2', title: 'Device Performance' },
-        { id: 'section-2-3', title: 'Engineering Drawings/Schematics' },
-      ]
-    },
-    {
-      id: 'section-3',
-      title: 'Substantial Equivalence',
-      subsections: [
-        { id: 'section-3-1', title: 'Predicate Device Comparison' },
-        { id: 'section-3-2', title: 'Substantial Equivalence Discussion' },
-      ]
-    },
-    {
-      id: 'section-4',
-      title: 'Proposed Labeling',
-      subsections: [
-        { id: 'section-4-1', title: 'Indications for Use' },
-        { id: 'section-4-2', title: 'Instructions for Use' },
-        { id: 'section-4-3', title: 'Device Labels' },
-      ]
-    },
-    {
-      id: 'section-5',
-      title: 'Sterilization and Shelf Life',
-      subsections: [
-        { id: 'section-5-1', title: 'Sterilization Method' },
-        { id: 'section-5-2', title: 'Shelf Life and Packaging' },
-      ]
-    },
-    {
-      id: 'section-6',
-      title: 'Biocompatibility',
-      subsections: [
-        { id: 'section-6-1', title: 'Biocompatibility Assessment' },
-        { id: 'section-6-2', title: 'Test Reports' },
-      ]
-    },
-    {
-      id: 'section-7',
-      title: 'Software',
-      subsections: [
-        { id: 'section-7-1', title: 'Software Description' },
-        { id: 'section-7-2', title: 'Hazard Analysis' },
-        { id: 'section-7-3', title: 'Software Verification and Validation' },
-      ]
-    },
-    {
-      id: 'section-8',
-      title: 'Performance Testing',
-      subsections: [
-        { id: 'section-8-1', title: 'Bench Testing' },
-        { id: 'section-8-2', title: 'Animal Testing' },
-        { id: 'section-8-3', title: 'Clinical Testing' },
-      ]
-    },
-  ];
+  // Load initial preview data
+  useEffect(() => {
+    if (!isFeatureEnabled('ENABLE_PACKAGE_ASSEMBLY')) return;
+    
+    const loadPreview = async () => {
+      try {
+        setLoading(true);
+        const result = await FDA510kService.previewESTARPackage(projectId);
+        setPreview(result);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error loading package preview:', err);
+        setError(err.message || 'Failed to load preview data');
+        setLoading(false);
+      }
+    };
+    
+    loadPreview();
+  }, [projectId]);
   
-  const mockXmlContent = `<?xml version="1.0" encoding="UTF-8"?>
-<eSTAR-Submission xmlns="http://www.fda.gov/eSTAR" 
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-                xsi:schemaLocation="http://www.fda.gov/eSTAR eSTAR_510k_Schema.xsd" 
-                submissionType="Traditional">
-  <AdministrativeInformation>
-    <SubmissionTypeInformation>
-      <SubmissionType>Traditional</SubmissionType>
-      <DeviceTradeProprietaryName>MedDevice XYZ-100</DeviceTradeProprietaryName>
-      <DeviceCommonName>Monitoring System</DeviceCommonName>
-      <DeviceClassification>
-        <Regulation>21 CFR 870.2300</Regulation>
-        <DeviceClass>II</DeviceClass>
-        <ProductCode>Primary>DPS</ProductCode>
-      </DeviceClassification>
-    </SubmissionTypeInformation>
-    <!-- Additional administrative information sections -->
-  </AdministrativeInformation>
+  // Build and download eSTAR package
+  const handleBuildPackage = async () => {
+    try {
+      setBuilding(true);
+      const result = await FDA510kService.buildESTARPackage(
+        projectId, 
+        { includeCoverLetter: true }
+      );
+      
+      if (result.success) {
+        toast({
+          title: 'Package built successfully',
+          description: 'Your eSTAR package is ready for download',
+          variant: 'success',
+        });
+        
+        // Trigger download automatically
+        window.location.href = result.downloadUrl;
+      }
+      
+      setBuilding(false);
+    } catch (err) {
+      console.error('Error building package:', err);
+      toast({
+        title: 'Error building package',
+        description: err.message || 'Failed to build eSTAR package',
+        variant: 'destructive',
+      });
+      setBuilding(false);
+    }
+  };
   
-  <DeviceInformation>
-    <DeviceDescription>
-      <GeneralDeviceDescription>
-        <!-- Device description content -->
-      </GeneralDeviceDescription>
-      <EngineeringDrawings>
-        <!-- Reference to engineering drawings document -->
-      </EngineeringDrawings>
-    </DeviceDescription>
-    <!-- Additional device information sections -->
-  </DeviceInformation>
+  // Verify digital signature on the manifest
+  const handleVerifySignature = async () => {
+    try {
+      setVerifying(true);
+      const result = await FDA510kService.verifySignature(projectId);
+      
+      if (result.success) {
+        setVerification(result.verification);
+        toast({
+          title: result.verification.valid ? 'Signature valid' : 'Signature invalid',
+          description: result.verification.message,
+          variant: result.verification.valid ? 'success' : 'warning',
+        });
+      }
+      
+      setVerifying(false);
+    } catch (err) {
+      console.error('Error verifying signature:', err);
+      toast({
+        title: 'Error verifying signature',
+        description: err.message || 'Failed to verify digital signature',
+        variant: 'destructive',
+      });
+      setVerifying(false);
+    }
+  };
   
-  <SubstantialEquivalence>
-    <PredicateDeviceComparison>
-      <!-- Comparison table content -->
-    </PredicateDeviceComparison>
-    <EquivalenceDiscussion>
-      <!-- Discussion of substantial equivalence -->
-    </EquivalenceDiscussion>
-  </SubstantialEquivalence>
+  // Submit package to FDA ESG
+  const handleSubmitToFDA = async () => {
+    toast({
+      title: 'Feature coming soon',
+      description: 'Direct FDA ESG submission will be available in a future update',
+      variant: 'default',
+    });
+  };
   
-  <!-- Additional top-level sections as required by eSTAR -->
-</eSTAR-Submission>`;
-
-  // Use either real data or mock data
-  const packageStructure = packageDetails?.structure || mockPackageStructure;
-  const xmlContent = packageDetails?.xmlContent || mockXmlContent;
+  if (!isFeatureEnabled('ENABLE_PACKAGE_ASSEMBLY')) {
+    return (
+      <Alert>
+        <AlertTitle>Feature Disabled</AlertTitle>
+        <AlertDescription>
+          eSTAR Package Assembly feature is currently disabled
+        </AlertDescription>
+      </Alert>
+    );
+  }
+  
+  if (loading) {
+    return (
+      <Card className="w-full">
+        <CardContent className="pt-6 text-center">
+          <Loader2 className="h-10 w-10 animate-spin mx-auto mb-4" />
+          <p>Loading eSTAR package preview...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
   
   return (
-    <div className="space-y-4">
-      <Tabs value={activeView} onValueChange={setActiveView} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="structure">Package Structure</TabsTrigger>
-          <TabsTrigger value="xml">XML Content</TabsTrigger>
-          <TabsTrigger value="documents">Included Documents</TabsTrigger>
-        </TabsList>
+    <div className="p-4">
+      <h2 className="text-2xl font-bold mb-4">
+        eSTAR Package Assembly
+      </h2>
+      
+      <p className="mb-4">
+        This tool helps you assemble, validate, and submit your FDA eSTAR package 
+        for 510(k) clearance.
+      </p>
+      
+      <div className="space-y-6">
+        {/* AI Compliance Report Section */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>AI Compliance Check</CardTitle>
+            <Badge className="ml-2 py-1">
+              <div className="flex items-center">
+                <CheckCircle className="h-4 w-4 mr-1" />
+                <span>Validated</span>
+              </div>
+            </Badge>
+          </CardHeader>
+          <CardContent>
+            {preview?.aiComplianceReport ? (
+              <p>{preview.aiComplianceReport}</p>
+            ) : (
+              <p className="italic text-muted-foreground">Compliance report not available</p>
+            )}
+          </CardContent>
+        </Card>
         
-        {/* Package Structure View */}
-        <TabsContent value="structure" className="py-4">
-          {isLoading ? (
-            <div className="flex items-center justify-center p-8">
-              <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
-            </div>
-          ) : (
+        {/* Files List Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Package Contents</CardTitle>
+          </CardHeader>
+          <CardContent>
             <div className="space-y-2">
-              <Accordion type="multiple" className="w-full">
-                {packageStructure.map((section) => (
-                  <AccordionItem key={section.id} value={section.id}>
-                    <AccordionTrigger className="hover:bg-muted/50 px-4">
-                      {section.title}
-                    </AccordionTrigger>
-                    <AccordionContent className="pl-6">
-                      <div className="space-y-2 py-2">
-                        {section.subsections.map((subsection) => (
-                          <div key={subsection.id} className="p-2 hover:bg-muted/30 rounded-md pl-4 border-l-2 border-l-muted">
-                            {subsection.title}
-                          </div>
-                        ))}
-                      </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
+              {preview?.files?.map((file, index) => (
+                <div key={index} className="flex justify-between p-2" 
+                  style={{backgroundColor: index % 2 === 0 ? 'var(--muted)' : 'transparent'}}>
+                  <div className="flex items-center">
+                    <FileText className="h-4 w-4 mr-2" />
+                    <span className="font-medium">{file.name}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <span className="text-sm text-muted-foreground mr-2">
+                      {(file.size / 1024).toFixed(1)} KB
+                    </span>
+                    <Badge variant="outline">
+                      {file.type.split('/')[1]}
+                    </Badge>
+                  </div>
+                </div>
+              ))}
+              
+              {(!preview?.files || preview.files.length === 0) && (
+                <p className="italic text-muted-foreground">No files available for preview</p>
+              )}
             </div>
-          )}
-        </TabsContent>
+          </CardContent>
+        </Card>
         
-        {/* XML Content View */}
-        <TabsContent value="xml" className="py-4">
-          <Card className="p-4">
-            <pre className="text-xs overflow-x-auto whitespace-pre-wrap bg-muted/30 p-4 rounded-md font-mono">
-              {xmlContent}
-            </pre>
+        {/* Signature Verification Section */}
+        {verification && (
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Digital Signature Verification</CardTitle>
+              <Badge variant={verification.valid ? "success" : "destructive"} className="ml-2 py-1">
+                <div className="flex items-center">
+                  {verification.valid ? 
+                    <CheckCircle className="h-4 w-4 mr-1" /> : 
+                    <AlertTriangle className="h-4 w-4 mr-1" />
+                  }
+                  <span>{verification.valid ? 'Valid' : 'Invalid'}</span>
+                </div>
+              </Badge>
+            </CardHeader>
+            <CardContent>
+              <p>{verification.message}</p>
+            </CardContent>
           </Card>
-        </TabsContent>
+        )}
         
-        {/* Included Documents View */}
-        <TabsContent value="documents" className="py-4">
-          <div className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <Card className="p-3 hover:bg-muted/10">
-                <div className="font-medium">Device Description.pdf</div>
-                <div className="text-xs text-muted-foreground">Section: Device Information</div>
-              </Card>
-              <Card className="p-3 hover:bg-muted/10">
-                <div className="font-medium">Substantial Equivalence Statement.docx</div>
-                <div className="text-xs text-muted-foreground">Section: Substantial Equivalence</div>
-              </Card>
-              <Card className="p-3 hover:bg-muted/10">
-                <div className="font-medium">Performance Testing Results.pdf</div>
-                <div className="text-xs text-muted-foreground">Section: Performance Testing</div>
-              </Card>
-              <Card className="p-3 hover:bg-muted/10">
-                <div className="font-medium">Software Documentation.pdf</div>
-                <div className="text-xs text-muted-foreground">Section: Software</div>
-              </Card>
-              <Card className="p-3 hover:bg-muted/10">
-                <div className="font-medium">Biocompatibility Reports.pdf</div>
-                <div className="text-xs text-muted-foreground">Section: Biocompatibility</div>
-              </Card>
-              <Card className="p-3 hover:bg-muted/10">
-                <div className="font-medium">Sterilization Validation.pdf</div>
-                <div className="text-xs text-muted-foreground">Section: Sterilization and Shelf Life</div>
-              </Card>
-            </div>
-            <div className="text-xs text-muted-foreground italic pt-2">
-              + 17 more documents included in package
-            </div>
+        <Separator />
+        
+        {/* Actions Section */}
+        <div>
+          <h3 className="text-xl font-semibold mb-4">
+            Actions
+          </h3>
+          <div className="flex flex-wrap gap-4">
+            <Button 
+              className="flex items-center"
+              disabled={building}
+              onClick={handleBuildPackage} 
+            >
+              {building ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Building package...
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4 mr-2" />
+                  Build & Download Package
+                </>
+              )}
+            </Button>
+            
+            <Button 
+              variant="outline"
+              className="flex items-center"
+              disabled={verifying}
+              onClick={handleVerifySignature}
+            >
+              {verifying ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Verifying...
+                </>
+              ) : (
+                <>
+                  <FileCheck className="h-4 w-4 mr-2" />
+                  Verify Digital Signature
+                </>
+              )}
+            </Button>
+            
+            <Button 
+              variant="secondary"
+              className="flex items-center"
+              disabled={true}
+              onClick={handleSubmitToFDA}
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Submit to FDA ESG
+            </Button>
           </div>
-        </TabsContent>
-      </Tabs>
+        </div>
+      </div>
     </div>
   );
 };
