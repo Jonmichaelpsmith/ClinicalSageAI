@@ -6,3 +6,9 @@ export { default as SubstantialEquivalenceEditor } from './SubstantialEquivalenc
 export { default as ComplianceCheckerPanel } from './ComplianceCheckerPanel';
 export { default as ESTARPackageBuilder } from './ESTARPackageBuilder';
 export { default as PackagePreview } from './PackagePreview';
+
+// Aliases for backward compatibility
+export { default as PredicateAnalysis } from './PredicateFinderPanel';
+export { default as EquivalenceDraft } from './SubstantialEquivalenceEditor';
+export { default as ComplianceChecker } from './ComplianceCheckerPanel';
+export { default as EnhancedLiteratureDiscovery } from './LiteratureDiscovery';
