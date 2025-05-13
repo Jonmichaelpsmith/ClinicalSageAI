@@ -238,9 +238,10 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: input,
+          query: input,
+          context: module?.toLowerCase() || 'general',
           module,
-          context,
+          additionalContext: context,
           history: messages.map(msg => ({ role: msg.role, content: msg.content })),
         }),
       });
@@ -266,12 +267,23 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
         variant: 'destructive',
       });
       
-      // Add error message to chat
+      // Add a more informative error message to chat
+      let errorMessage = 'Sorry, I encountered an issue processing your request. Please try again.';
+      
+      // Provide more specific error message based on error type
+      if (error.message.includes('API key')) {
+        errorMessage = 'I apologize, but there seems to be an issue with the AI service configuration. Please contact support for assistance.';
+      } else if (error.message.includes('network') || error.message.includes('failed to fetch')) {
+        errorMessage = 'I\'m having trouble connecting to the server. Please check your internet connection and try again.';
+      } else if (error.message.includes('timeout') || error.message.includes('timed out')) {
+        errorMessage = 'The request took too long to process. This might be due to high demand. Please try again in a moment.';
+      }
+      
       setMessages((prev) => [
         ...prev,
         {
           role: 'assistant',
-          content: 'Sorry, I encountered an issue processing your request. Please try again.',
+          content: errorMessage,
         },
       ]);
     } finally {
