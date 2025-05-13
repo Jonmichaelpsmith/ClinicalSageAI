@@ -437,23 +437,52 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
                           },
                           {
                             role: 'assistant',
-                            content: `# LUMEN Regulatory Affairs Assistant
+                            content: `# About Ask Lumen - Regulatory Affairs AI Assistant
 
-I'm your specialized regulatory affairs assistant with expertise across global regulatory frameworks, including:
+## Overview
+Lumen is an advanced AI assistant specialized in regulatory affairs for medical devices, pharmaceuticals, and clinical research. The system combines document intelligence with internet research capabilities to provide accurate, evidence-based guidance.
 
-## Capabilities:
-1. **Document-Based Knowledge**: I provide responses based on regulatory documents uploaded to my knowledge base
-2. **Regulatory Domain Coverage**: FDA, EMA, PMDA, NMPA, Health Canada, TGA, ICH guidelines
-3. **Contextual Understanding**: I analyze regulatory terms in your questions to find the most relevant information
-4. **Document Processing**: I can analyze regulatory PDFs you upload to enhance my knowledge base
-5. **Transparent Citations**: All my responses are based on actual regulatory documents, not pre-written answers
+## Capabilities
+1. **Regulatory Knowledge Base**: Expert guidance on FDA, EMA, PMDA, NMPA, Health Canada, TGA, and ICH guidelines
+2. **Document Intelligence**: Analysis of regulatory documents with specialized extraction of requirements and terms
+3. **Internet Research**: Real-time access to the latest regulatory information and updates
+4. **Academic Literature**: Integration with PubMed and other scientific databases to find relevant research papers
+5. **Clinical Trial Intelligence**: Access to trial data from global registries including ClinicalTrials.gov and Health Canada
+6. **Document Processing**: Parsing and extraction from uploaded PDFs and regulatory documents
+7. **Contextual Understanding**: Analysis of regulatory terms in queries to provide the most relevant information
+8. **Semantic Search**: Finding precise information across complex regulatory documents
 
-## Using Me Effectively:
-1. **Upload Documents**: Use the paper clip icon to upload regulatory PDFs that will enhance my knowledge
-2. **Ask Specific Questions**: Be specific about the regulation, jurisdiction, or requirement you're asking about
-3. **Provide Context**: Mention the specific jurisdiction (FDA, EMA, etc.) when relevant to get more targeted answers
-4. **Verify Information**: I aim to provide accurate information based on documents, but always verify critical regulatory details
-5. **Missing Information**: If I don't have specific information, I'll let you know instead of providing potentially incorrect answers
+## Best Practices
+1. **Be Specific**: Include the exact regulation, section, or jurisdiction you're inquiring about
+2. **Provide Context**: Mention your device classification, product type, or regulatory pathway
+3. **Upload Relevant Documents**: Use the paper clip icon to share relevant PDFs, which improves answer quality
+4. **Ask One Question at a Time**: Complex multi-part questions should be broken down for best results
+5. **Use Follow-up Questions**: The system remembers your conversation context for more detailed exploration
+6. **Request Citations**: Ask for specific sources if you need to verify information for submissions
+7. **Frame Market-Specific Queries**: Specify the target market (e.g., "for EU MDR submission" or "FDA 510(k)")
+
+## Frequently Asked Questions
+
+### What information sources does Ask Lumen use?
+Lumen uses a combination of regulatory documents in its knowledge base, real-time internet research capabilities, academic literature through PubMed integration, and clinical trial databases. It avoids using pre-written responses, prioritizing document-based knowledge.
+
+### How current is the regulatory information?
+The system can access the internet for the latest updates and guidance. Additionally, the knowledge base is regularly updated with new documents and regulatory changes.
+
+### Can I trust the information for regulatory submissions?
+Always verify critical information. Ask Lumen provides guidance and research assistance, but final regulatory decisions should be reviewed by qualified personnel. The system will cite sources whenever possible.
+
+### What documents can I upload?
+You can upload PDFs, Word documents, Excel files, presentations, and text files. These are processed to enhance the knowledge base for your specific questions.
+
+### Is my data secure and confidential?
+Yes, your uploaded documents and conversations are secured within your organization's tenant. The system uses enterprise-grade security and data isolation.
+
+### What if Ask Lumen doesn't know something?
+Instead of making up information, the system will clearly indicate knowledge gaps and suggest alternative approaches or sources to consult.
+
+### How can I get the best results?
+Provide clear context, be specific with questions, upload relevant documents, and use follow-up questions to explore topics in depth.
 
 For best results, upload documents related to your specific regulatory needs such as guidance documents, regulations, and standards.`
                           }
