@@ -99,7 +99,9 @@ console.log('Tenant Section Gating routes registered');
 
 // Import and register 510(k) automation routes
 import FDA510kRoutes from './routes/510kRoutes';
+import { router as FDA510kApiRoutes } from './routes/510k-api-routes';
 app.use('/api/510k', FDA510kRoutes);
+app.use('/api/fda510k', FDA510kApiRoutes);
 console.log('FDA 510(k) Automation routes registered');
 
 // Import and register health check routes

@@ -1,0 +1,99 @@
+## Summary: End-to-End 510(k) Automation Workflow (Steps 1–6)
+
+Below is a high-level recap of what you’ve built and how a regulatory user will flow through the system, plus the deliverables they’ll get at each stage.
+
+---
+
+### 🔧 Implementation Highlights
+
+1. **Device Profile Intake**
+
+   * **Build:** A JSON-schema-driven form captures all key metadata (device name, class, intended use, predicate info, specs).
+   * **Persist:** Server-side validation stores the profile in your database (`/api/510k/device-profile`).
+
+2. **Predicate & Literature Discovery**
+
+   * **Predicate Finder:** UI to search FDA’s 510(k) database, select a predicate, and view its key attributes.
+   * **Literature Search:** Multi-source (PubMed, ClinicalTrials.gov, preprints) search with AI-powered summarization and structured “insights” extraction.
+   * **Store:** Selected predicates and literature entries (with summaries/insights) are persisted for the project.
+
+3. **Regulatory Pathway Recommendation & SE Drafting**
+
+   * **Advisor:** A rules engine recommends Traditional 510(k), Special 510(k), De Novo, or PMA based on the device profile and predicate.
+   * **AI Drafting:** One-click generation of the “Substantial Equivalence” narrative, editable in a rich-text editor, then saved as a formal section.
+
+4. **Pre-Submission QA & Compliance Checks**
+
+   * **Compliance Rules:** JSON-configured checks enforce presence of all required sections, word-counts, key-term inclusion, and RTA checklist items.
+   * **Report UI:** A clean dashboard shows each section’s status (✔/✖) and detailed error messages to fix before packaging.
+
+5. **eSTAR Package Assembly (Classic)**
+
+   * **Converter:** Headless LibreOffice (or unoconv) turns your finalized DOCX sections into XHTML and PDF.
+   * **Manifest:** XML builder composes the eSTAR manifest listing each document.
+   * **Bundler:** A ZIP containing XHTML, PDFs, and manifest is generated and made available for download.
+
+6. **Enhanced eSTARPlus Package (Optional)**
+
+   * **AI-Validation:** An OpenAI check on each PDF for layout and compliance issues.
+   * **Cover Letter:** AI-drafted cover letter auto-injected.
+   * **Digital Signature:** Manifest is digitally signed and timestamped.
+   * **Direct ESG Upload:** Option to push the signed package straight to FDA’s ESG portal.
+   * **Live Preview:** A “Package Preview” panel shows file listings, AI compliance summary, and signature status before download or submission.
+
+---
+
+### 👩‍💼 User Workflow
+
+1. **Log In & Select Project**
+
+   * Enter the 510(k) module from the main CER Builder tabs.
+   * If required, switch to the appropriate client/org context.
+
+2. **Step 1: Device Intake**
+
+   * Complete the **Device Profile Form** with your device’s core facts.
+   * Click **Save** to validate and store.
+
+3. **Step 2: Predicate & Literature**
+
+   * Use the **Predicate Finder** to locate and select a cleared device.
+   * Switch to **Literature Search**, refine filters, run searches, then bulk-summarize chosen abstracts.
+   * Save your predicate and literature summaries into the project vault.
+
+4. **Step 3: Pathway & SE Draft**
+
+   * Review the system’s **Pathway Recommendation**. Confirm to lock in your route.
+   * Hit **Generate SE Draft** to have the AI produce a “Substantial Equivalence” section.
+   * Edit as needed, then click **Add to Report** to include it in your draft.
+
+5. **Step 4: Compliance Check**
+
+   * Navigate to the **Compliance Report** card. The system has automatically run all RTA and section-level checks.
+   * Review any **Warnings/Errors**, click suggested fixes or update your draft sections accordingly.
+
+6. **Step 5: Package Assembly & Preview**
+
+   * In the **Package Preview**, inspect the AI compliance summary and file tree of XHTML/PDFs plus cover letter.
+   * Verify the digital signature and, if desired, toggle **Auto-Upload to ESG**.
+
+7. **Step 6: Download/Submit**
+
+   * Click **Download Signed eSTAR Package** to get the final ZIP.
+   * If auto-upload was enabled, confirm the ESG submission status returned by the FDA API.
+
+---
+
+### 📦 Deliverables for Your Client
+
+At the end of this automated workflow, each 510(k) project yields:
+
+* **Completed Device Profile** record in the Vault
+* **Predicate Comparison** section and curated predicate metadata
+* **AI-Summarized Literature** entries with structured insights
+* **Substantial Equivalence** narrative, ready for inclusion in the submission
+* **Compliance Report** detailing any gaps and pass/fail status for every RTA item
+* **Digitally-Signed eSTAR Package** (ZIP containing XHTML, PDFs, manifest, cover letter)
+* **(Optional) Direct ESG Submission** confirmation and status logs
+
+This comprehensive pipeline transforms what was once a multi-week manual effort into a guided, largely one-click experience—empowering regulatory teams to produce error-free 510(k) submissions with confidence and speed.
