@@ -177,6 +177,21 @@ class FDA510kService {
   }
   
   /**
+   * Find predicate devices and literature references (alias method)
+   * 
+   * This method is an alias for findPredicateDevices to ensure both naming
+   * conventions work in the application.
+   * 
+   * @param {Object} deviceData - Device characteristics to match against
+   * @param {number} organizationId - The organization ID
+   * @returns {Promise<Object>} - Found predicate devices and literature references
+   */
+  async findPredicatesAndLiterature(deviceData, organizationId) {
+    console.log('Finding predicates and literature for device:', deviceData.deviceName);
+    return this.findPredicateDevices(deviceData, organizationId);
+  }
+  
+  /**
    * Analyze and recommend regulatory pathway for a device
    * 
    * @param {Object} deviceData - Device characteristics to analyze
