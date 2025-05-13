@@ -9,6 +9,7 @@
 import express from 'express';
 const router = express.Router();
 import { OpenAI } from 'openai';
+import { Pool } from 'pg';
 
 // Initialize OpenAI with environment API key
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({
@@ -678,6 +679,9 @@ router.post('/semantic-search', async (req, res) => {
       const db = new Pool({ connectionString: process.env.DATABASE_URL });
       
       // 3) Find top-10 nearest predicate_devices by cosine similarity
+      // Format the query vector as a PostgreSQL vector string
+      const formattedVector = `[${qVec.join(',')}]`;
+      
       const sql = `
         SELECT id, name, description,
           1 - (embedding <=> $1) AS score
@@ -687,7 +691,7 @@ router.post('/semantic-search', async (req, res) => {
         LIMIT 10
       `;
       
-      const { rows } = await db.query(sql, [qVec]);
+      const { rows } = await db.query(sql, [formattedVector]);
       
       // Close the database connection when done
       await db.end();
