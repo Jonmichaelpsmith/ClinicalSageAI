@@ -175,6 +175,14 @@ export default function KAutomationPanel() {
   
   // Handle running different pipeline steps with real API integration
   const handleRunPipeline = async (step) => {
+    // Set up friendly step names for toast messages
+    const stepNames = {
+      'ingestDeviceProfile': 'Device Profile Intake',
+      'findPredicatesAndLiterature': 'Predicate & Literature Discovery',
+      'adviseRegulatoryPathway': 'Regulatory Pathway Analysis',
+      'draftSectionsWithAI': 'Content Generation',
+      'runComplianceChecks': 'Compliance Check'
+    };
     console.log(`Running 510(k) pipeline step: ${step}`);
     
     // For device profile step, open the dialog instead of running the pipeline
@@ -185,6 +193,18 @@ export default function KAutomationPanel() {
     
     // Reset any previous errors
     setErrorMessage('');
+    
+    // Show status toast to provide immediate feedback
+    toast({
+      title: `Starting ${stepNames[step] || 'Process'}`,
+      description: `Initializing ${stepNames[step] || step} workflow...`,
+    });
+    
+    // Log information for debugging
+    console.log(`Processing step ${step}`, {
+      deviceProfile: currentDeviceProfile ? currentDeviceProfile.deviceName : 'None selected',
+      organization: currentOrganization?.id || 'None'
+    });
     
     // Start progress indicator
     setAiProcessing(true);
