@@ -103,6 +103,92 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
       </Badge>
     );
   };
+  
+  // Helper to show detailed comparison between selected device and the predicate
+  const renderDeviceComparison = (predicateDevice) => {
+    if (!deviceProfile || !predicateDevice) return null;
+    
+    // Define key properties to compare
+    const comparisonPoints = [
+      { key: 'deviceClass', label: 'Device Class' },
+      { key: 'technologyType', label: 'Technology Type' },
+      { key: 'deviceType', label: 'Device Type' },
+      { key: 'intendedUse', label: 'Intended Use' },
+      { key: 'indications', label: 'Indications' },
+      { key: 'description', label: 'Description' }
+    ];
+    
+    return (
+      <div className="mt-4 border rounded-md">
+        <div className="bg-indigo-50 p-3 border-b border-indigo-100">
+          <h3 className="font-medium text-indigo-700 flex items-center">
+            <FileText className="h-4 w-4 mr-2 text-indigo-600" />
+            Detailed Comparison
+          </h3>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-gray-50">
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/4">
+                  Property
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">
+                  Your Device
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/3">
+                  Predicate Device
+                </th>
+                <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-1/12">
+                  Match
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {comparisonPoints.map((point) => {
+                const yourValue = deviceProfile[point.key] || 'Not specified';
+                const predicateValue = predicateDevice[point.key] || 'Not specified';
+                
+                // Determine if values match (exact or partial)
+                let match = 'No Match';
+                let matchColor = 'text-red-600';
+                
+                if (yourValue.toLowerCase() === predicateValue.toLowerCase()) {
+                  match = 'Exact Match';
+                  matchColor = 'text-green-600';
+                } else if (
+                  yourValue && 
+                  predicateValue && 
+                  (yourValue.toLowerCase().includes(predicateValue.toLowerCase()) || 
+                   predicateValue.toLowerCase().includes(yourValue.toLowerCase()))
+                ) {
+                  match = 'Partial Match';
+                  matchColor = 'text-amber-600';
+                }
+                
+                return (
+                  <tr key={point.key} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                      {point.label}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      {yourValue}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-500">
+                      {predicateValue}
+                    </td>
+                    <td className={`px-4 py-3 text-sm font-medium ${matchColor}`}>
+                      {match}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
 
   // Helper to get predicate device count by match score ranges
   const getPredicateStatistics = () => {
@@ -293,14 +379,64 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
                   </div>
                 </div>
                 
-                <div className="flex justify-end space-x-2 mt-2">
+                {/* Add detailed comparison when we have both device profile and a predicate */}
+                {deviceProfile && renderDeviceComparison(device)}
+                
+                <div className="flex justify-end space-x-2 mt-4">
                   {device.kNumber && (
-                    <Button variant="outline" size="sm" className="flex items-center">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="flex items-center"
+                      onClick={() => {
+                        window.open(`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfpmn/pmn.cfm?ID=${device.kNumber}`, '_blank');
+                        toast({
+                          title: "Opened FDA Website",
+                          description: `Viewing details for ${device.kNumber} in a new tab`,
+                        });
+                      }}
+                    >
                       <ExternalLink className="h-3.5 w-3.5 mr-1" />
                       View on FDA Website
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" className="text-green-600 border-green-200 hover:bg-green-50">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center text-indigo-600 border-indigo-200 hover:bg-indigo-50"
+                    onClick={() => {
+                      const comparisonText = `Comparison Summary: ${deviceProfile.deviceName} vs ${device.deviceName}
+
+Device Class: ${deviceProfile.deviceClass || 'Not specified'} vs ${device.deviceClass || 'Not specified'}
+Technology Type: ${deviceProfile.technologyType || 'Not specified'} vs ${device.technologyType || 'Not specified'}
+Intended Use: ${deviceProfile.intendedUse || 'Not specified'} vs ${device.intendedUse || 'Not specified'}
+Match Score: ${Math.round(device.matchScore * 100)}%
+Match Rationale: ${device.matchRationale || 'Not available'}
+`;
+                      navigator.clipboard.writeText(comparisonText);
+                      toast({
+                        title: "Comparison Copied",
+                        description: "The device comparison has been copied to clipboard",
+                      });
+                    }}
+                  >
+                    <FileText className="h-3.5 w-3.5 mr-1" />
+                    Copy Comparison
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="flex items-center text-green-600 border-green-200 hover:bg-green-50"
+                    onClick={() => {
+                      // In a real implementation, this would save the predicate to the project
+                      localStorage.setItem('selectedPredicate', JSON.stringify(device));
+                      toast({
+                        title: "Predicate Device Saved",
+                        description: `${device.deviceName} has been added as a predicate device for your 510(k) submission`,
+                        variant: "success",
+                      });
+                    }}
+                  >
                     <Scissors className="h-3.5 w-3.5 mr-1" />
                     Use as Predicate
                   </Button>
@@ -372,13 +508,43 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
                       variant="outline" 
                       size="sm" 
                       className="flex items-center"
-                      onClick={() => window.open(reference.url, '_blank')}
+                      onClick={() => {
+                        window.open(reference.url, '_blank');
+                        toast({
+                          title: "Opened Publication",
+                          description: `Viewing "${reference.title}" in a new tab`,
+                        });
+                      }}
                     >
                       <ExternalLink className="h-3.5 w-3.5 mr-1" />
                       View Publication
                     </Button>
                   )}
-                  <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                    onClick={() => {
+                      // In a real implementation, this would add the citation to the 510(k) submission
+                      const citations = JSON.parse(localStorage.getItem('citations') || '[]');
+                      citations.push({
+                        id: new Date().getTime(),
+                        title: reference.title,
+                        authors: reference.authors,
+                        journal: reference.journal,
+                        year: reference.year,
+                        doi: reference.doi || '',
+                        addedAt: new Date().toISOString()
+                      });
+                      localStorage.setItem('citations', JSON.stringify(citations));
+                      
+                      toast({
+                        title: "Citation Added",
+                        description: `"${reference.title}" has been added to your 510(k) submission references`,
+                        variant: "success",
+                      });
+                    }}
+                  >
                     <FileText className="h-3.5 w-3.5 mr-1" />
                     Cite in Submission
                   </Button>
@@ -463,7 +629,7 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
             {renderStatsDashboard()}
             
             <Tabs defaultValue="predicates" value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full grid grid-cols-2">
+              <TabsList className="w-full grid grid-cols-3">
                 <TabsTrigger value="predicates" className="flex items-center">
                   <Database className="h-4 w-4 mr-2" />
                   Predicate Devices
@@ -471,6 +637,10 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
                 <TabsTrigger value="literature" className="flex items-center">
                   <Book className="h-4 w-4 mr-2" />
                   Literature References 
+                </TabsTrigger>
+                <TabsTrigger value="saved" className="flex items-center">
+                  <FileText className="h-4 w-4 mr-2" />
+                  Saved References
                 </TabsTrigger>
               </TabsList>
               
@@ -484,6 +654,159 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId }) => {
                 <TabsContent value="literature" className="m-0">
                   <ScrollArea className="h-[400px] pr-3">
                     {renderLiteratureReferences()}
+                  </ScrollArea>
+                </TabsContent>
+                
+                <TabsContent value="saved" className="m-0">
+                  <ScrollArea className="h-[400px] pr-3">
+                    {(() => {
+                      // Get saved predicates and citations from localStorage
+                      const savedPredicate = localStorage.getItem('selectedPredicate') 
+                        ? JSON.parse(localStorage.getItem('selectedPredicate')) 
+                        : null;
+                      const savedCitations = localStorage.getItem('citations') 
+                        ? JSON.parse(localStorage.getItem('citations')) 
+                        : [];
+                      
+                      if (!savedPredicate && savedCitations.length === 0) {
+                        return (
+                          <Alert className="bg-blue-50 border-blue-200 mb-4">
+                            <AlertTitle className="text-blue-800">No saved references yet</AlertTitle>
+                            <AlertDescription className="text-blue-700">
+                              Use the "Use as Predicate" and "Cite in Submission" buttons to save predicate devices and literature references for your 510(k) submission.
+                            </AlertDescription>
+                          </Alert>
+                        );
+                      }
+                      
+                      return (
+                        <div className="space-y-6">
+                          {/* Selected Predicate Device */}
+                          {savedPredicate && (
+                            <div>
+                              <h3 className="text-sm font-medium mb-3 flex items-center">
+                                <Database className="h-4 w-4 mr-2 text-blue-600" />
+                                Selected Predicate Device
+                              </h3>
+                              <Card className="bg-blue-50 border-blue-200">
+                                <CardContent className="p-4">
+                                  <div className="flex items-start justify-between">
+                                    <div>
+                                      <h4 className="font-medium">{savedPredicate.deviceName}</h4>
+                                      <p className="text-sm text-gray-600">
+                                        {savedPredicate.manufacturer} • {savedPredicate.kNumber || 'No K-number'} • 
+                                        Class {savedPredicate.deviceClass || 'II'}
+                                      </p>
+                                      <p className="text-sm mt-2">{savedPredicate.description}</p>
+                                    </div>
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm"
+                                      className="text-red-600 border-red-200 hover:bg-red-50"
+                                      onClick={() => {
+                                        localStorage.removeItem('selectedPredicate');
+                                        toast({
+                                          title: "Predicate Device Removed",
+                                          description: "The predicate device has been removed from your saved references",
+                                        });
+                                        // Force re-render
+                                        setActiveTab('predicates');
+                                        setTimeout(() => setActiveTab('saved'), 10);
+                                      }}
+                                    >
+                                      Remove
+                                    </Button>
+                                  </div>
+                                  
+                                  <div className="mt-3 pt-3 border-t border-blue-200">
+                                    <h4 className="text-xs font-medium text-gray-500 mb-1">Match Rationale</h4>
+                                    <p className="text-sm">{savedPredicate.matchRationale}</p>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </div>
+                          )}
+                          
+                          {/* Saved Citations */}
+                          {savedCitations.length > 0 && (
+                            <div>
+                              <h3 className="text-sm font-medium mb-3 flex items-center">
+                                <Book className="h-4 w-4 mr-2 text-emerald-600" />
+                                Saved Literature References
+                                <Badge className="ml-2 bg-emerald-100 text-emerald-800 border-emerald-200">
+                                  {savedCitations.length}
+                                </Badge>
+                              </h3>
+                              
+                              <div className="space-y-3">
+                                {savedCitations.map((citation, index) => (
+                                  <Card key={citation.id} className="bg-emerald-50 border-emerald-200">
+                                    <CardContent className="p-4">
+                                      <div className="flex items-start justify-between">
+                                        <div>
+                                          <h4 className="font-medium">{citation.title}</h4>
+                                          <p className="text-sm text-gray-600">
+                                            {citation.authors && citation.authors.length > 0 
+                                              ? citation.authors.slice(0, 2).join(', ') + (citation.authors.length > 2 ? ' et al.' : '')
+                                              : 'Unknown authors'
+                                            } • {citation.journal} • {citation.year}
+                                          </p>
+                                          {citation.doi && (
+                                            <p className="text-xs text-gray-500 mt-1">DOI: {citation.doi}</p>
+                                          )}
+                                        </div>
+                                        <div className="flex space-x-2">
+                                          <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            className="text-emerald-600 border-emerald-200 hover:bg-emerald-50"
+                                            onClick={() => {
+                                              // Generate APA-style citation
+                                              const apaCitation = `${citation.authors ? citation.authors.join(', ') : 'Unknown'} (${citation.year}). ${citation.title}. ${citation.journal}. ${citation.doi ? `https://doi.org/${citation.doi}` : ''}`;
+                                              
+                                              // Copy to clipboard
+                                              navigator.clipboard.writeText(apaCitation);
+                                              
+                                              toast({
+                                                title: "Citation Copied",
+                                                description: "The citation has been copied to your clipboard in APA format",
+                                              });
+                                            }}
+                                          >
+                                            Copy Citation
+                                          </Button>
+                                          <Button 
+                                            variant="outline" 
+                                            size="sm"
+                                            className="text-red-600 border-red-200 hover:bg-red-50"
+                                            onClick={() => {
+                                              // Remove this citation
+                                              const updatedCitations = savedCitations.filter(c => c.id !== citation.id);
+                                              localStorage.setItem('citations', JSON.stringify(updatedCitations));
+                                              
+                                              toast({
+                                                title: "Citation Removed",
+                                                description: "The citation has been removed from your saved references",
+                                              });
+                                              
+                                              // Force re-render
+                                              setActiveTab('literature');
+                                              setTimeout(() => setActiveTab('saved'), 10);
+                                            }}
+                                          >
+                                            Remove
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </ScrollArea>
                 </TabsContent>
               </div>
