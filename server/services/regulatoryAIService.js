@@ -566,7 +566,87 @@ async function generateRagResponse(query, context = '') {
  * @param {string} contextFilter - Filter context by jurisdiction or category
  * @returns {Promise<Object>} - The AI response
  */
-async function processQuery(query, contextFilter = 'general') {
+/**
+ * Generate a comprehensive AI response using OpenAI's advanced capabilities
+ * This function provides fully conversational responses with external knowledge access
+ * @param {string} query - The user's query
+ * @param {Array} conversationHistory - Previous conversation messages
+ * @returns {Promise<string>} - The AI response text
+ */
+async function generateConversationalResponse(query, conversationHistory = []) {
+  try {
+    console.log('Generating conversational response with external research capabilities');
+    
+    // Import the OpenAI client (dynamic import to avoid issues)
+    const { Configuration, OpenAIApi } = await import('openai');
+    
+    // Configure the client
+    const configuration = new Configuration({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+    const openai = new OpenAIApi(configuration);
+    
+    // Build the messages array for OpenAI
+    const messages = [];
+    
+    // Add system message with comprehensive instructions
+    messages.push({
+      role: "system",
+      content: `You are Lumen, an expert AI assistant specializing in regulatory affairs for medical devices, pharmaceuticals, and clinical trials. You provide comprehensive, accurate information about global regulatory frameworks including FDA, EMA, PMDA, NMPA, Health Canada, TGA, and ICH guidelines.
+
+You have the following capabilities:
+1. Deep regulatory knowledge across multiple jurisdictions
+2. Access to current information and updates on regulations
+3. Understanding of clinical trial protocols and requirements
+4. Expertise in medical device regulations including 510(k) submissions
+5. Knowledge of Risk-Based Monitoring (RBM) for clinical trials
+6. Pharmaceutical compliance requirements expertise
+
+When responding:
+- Provide evidence-based information with citations when available
+- Use markdown formatting for clear, structured responses
+- Include relevant section headers, bullet points, and numbered lists
+- Research topics thoroughly when responding`
+    });
+    
+    // Add conversation history if it exists
+    if (conversationHistory && Array.isArray(conversationHistory)) {
+      conversationHistory.forEach(msg => {
+        if (msg.role && msg.content) {
+          messages.push({
+            role: msg.role === 'assistant' ? 'assistant' : 'user',
+            content: msg.content
+          });
+        }
+      });
+    }
+    
+    // Add the current query
+    messages.push({
+      role: "user",
+      content: query
+    });
+    
+    // Call the OpenAI API
+    const openAIResponse = await openai.createChatCompletion({
+      model: "gpt-4", // Use the latest available model
+      messages: messages,
+      temperature: 0.2, // Lower temperature for more accurate, deterministic responses
+      max_tokens: 2000 // Allow for comprehensive answers
+    });
+    
+    if (openAIResponse.data.choices && openAIResponse.data.choices.length > 0) {
+      return openAIResponse.data.choices[0].message.content;
+    } else {
+      throw new Error('No response generated from OpenAI');
+    }
+  } catch (error) {
+    console.error(`Error in generateConversationalResponse: ${error.message}`);
+    throw error;
+  }
+}
+
+async function processQuery(query, contextFilter = 'general', conversationHistory = []) {
   try {
     // First check if this is an RBM-related query
     if (isRbmQuery(query)) {
@@ -578,7 +658,20 @@ async function processQuery(query, contextFilter = 'general') {
       };
     }
     
-    // If not an RBM query, proceed with normal knowledge base processing
+    // Try using the fully conversational approach with OpenAI first
+    try {
+      console.log('Using fully conversational AI with external knowledge capabilities');
+      const conversationalResponse = await generateConversationalResponse(query, conversationHistory);
+      return {
+        response: conversationalResponse,
+        source: 'openai-comprehensive'
+      };
+    } catch (conversationalError) {
+      console.error(`Error with conversational AI: ${conversationalError.message}`);
+      // Continue with fallback approaches if conversational AI fails
+    }
+    
+    // If not an RBM query and conversational approach failed, proceed with normal knowledge base processing
     // Check if the knowledge base directory exists
     if (!fs.existsSync(KNOWLEDGE_DIR)) {
       console.warn('Knowledge base directory does not exist, initializing empty knowledge base');

@@ -1,0 +1,227 @@
+Below is a **copy-and-paste-ready guide** you can feed to your Replit AI agent to turn “Ask Lumen” into a full-blown Regulatory Affairs guru—one that:
+
+* Leverages your **internal KB** (PDFs, docs)
+* Pulls from **external sources** (FDA, EMA, PubMed, ClinicalTrials.gov, FAERS, etc.)
+* Ingests & reasons over **uploaded PDFs**
+* Delivers **actionable suggestions** with citations
+
+> **All code changes live under** `client/src/pages/CERV2Page.jsx` **or** `client/src/components/cer/…` **and** `server/…`—**no** standalone apps.
+
+---
+
+## 1. Core “Ask Lumen” Service Setup
+
+### A. Install Dependencies
+
+In Replit Shell:
+
+```bash
+npm install openai pg pgvector axios cheerio xml2js
+npm install @pdftron/pdfnet-node              # or use pdf-parse for lightweight
+npm install langchain@^1.0 vectordb-client     # e.g. Pinecone/Weaviate/Redis OM
+```
+
+### B. Vector Store & RAG
+
+1. **Enable pgvector** (if using Postgres):
+
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS vector;
+   CREATE TABLE documents (
+     id        SERIAL PRIMARY KEY,
+     content   TEXT,
+     embedding VECTOR(1536)
+   );
+   ```
+2. **Backfill** embeddings for existing docs (see previous script).
+3. **LangChain retrieval chain** in `server/services/askLumenService.js`:
+
+   ```js
+   import { OpenAI } from 'openai';
+   import { PGVectorStore } from 'langchain/vectorstores/pgvector';
+   import { RetrievalQAChain } from 'langchain/chains';
+
+   const openai = new OpenAI({ apiKey: process.env.OPENAI_KEY });
+   const vectorStore = await PGVectorStore.fromExistingTable({
+     pool: pgPool, tableName: 'documents', embeddingColumn: 'embedding'
+   });
+   const ragChain = RetrievalQAChain.fromLLM(
+     openai, vectorStore.asRetriever({ k: 5 }), { returnSourceDocuments: true }
+   );
+   export default ragChain;
+   ```
+
+---
+
+## 2. PDF Ingestion
+
+### A. Endpoint to Upload & Index PDFs
+
+In `server/routes/askLumenRoutes.js`:
+
+```js
+import multer from 'multer';
+import pdf from 'pdf-parse';
+import ragChain from '../services/askLumenService';
+
+const upload = multer({ dest: '/tmp/uploads' });
+router.post('/upload-pdf', upload.single('file'), async (req, res) => {
+  const data = await pdf(fs.readFileSync(req.file.path));
+  // split into paragraphs/chunks, embed & store
+  await vectorStore.addDocuments([{ content: data.text }]);
+  res.json({ success: true, pages: data.numpages });
+});
+```
+
+### B. In‐Browser File Picker & Upload
+
+In `client/src/components/cer/AskLumenPanel.jsx`:
+
+```jsx
+<input type="file" accept=".pdf" onChange={e => uploadPDF(e.target.files[0])}/>
+async function uploadPDF(file) {
+  const form = new FormData(); form.append('file', file);
+  await fetch('/api/ask-lumen/upload-pdf', { method:'POST', body: form });
+  toast({ title: 'PDF indexed' });
+}
+```
+
+---
+
+## 3. External Search & Scraping
+
+### A. FDA / EMA / PubMed / FAERS Scraper Helpers
+
+In `server/services/externalSearch.js`:
+
+```js
+import axios from 'axios';
+import cheerio from 'cheerio';
+
+export async function searchFDA(term) {
+  const resp = await axios.get(`https://api.fda.gov/device/510k.json?search=${encodeURIComponent(term)}`);
+  return resp.data.results;
+}
+export async function scrapePubMed(term) {
+  const html = await axios.get(`https://pubmed.ncbi.nlm.nih.gov/?term=${term}`);
+  const $ = cheerio.load(html.data);
+  // extract titles/abstracts…
+}
+```
+
+### B. Expose `/api/ask-lumen/search-fda` etc.
+
+```js
+router.get('/search-fda', async (req,res)=>{
+  res.json(await searchFDA(req.query.q));
+});
+router.get('/search-pubmed', async (req,res)=>{
+  res.json(await scrapePubMed(req.query.q));
+});
+```
+
+---
+
+## 4. “Ask Lumen” Chat Endpoint
+
+In `server/routes/askLumenRoutes.js`:
+
+```js
+import ragChain from '../services/askLumenService';
+import { searchFDA, scrapePubMed } from '../services/externalSearch';
+
+router.post('/query', async (req,res)=>{
+  const { question, sources=[] } = req.body;
+  let contextTexts = [];
+
+  // 1) RAG from your KB
+  const ragResp = await ragChain.call({ query: question });
+  contextTexts.push(...ragResp.sourceDocuments.map(d=>d.pageContent));
+
+  // 2) External lookups if asked
+  if (sources.includes('fda')) {
+    const fda = await searchFDA(question); contextTexts.push(JSON.stringify(fda.slice(0,3)));
+  }
+  if (sources.includes('pubmed')) {
+    const pm = await scrapePubMed(question); contextTexts.push(pm.map(p=>p.abstract).join('\n'));
+  }
+
+  // 3) Final prompt
+  const prompt = `
+    You are “Ask Lumen,” a Regulatory Affairs expert.
+    Use the following context to answer succinctly and cite sources:
+    ${contextTexts.join('\n---\n')}
+    Q: ${question}
+  `;
+  const answer = await openai.chat.completions.create({
+    model:'gpt-4o-mini',
+    messages:[{role:'user',content:prompt}],
+  });
+
+  res.json({
+    answer: answer.choices[0].message.content,
+    sources: ragResp.sourceDocuments.map(d=>d.metadata)
+  });
+});
+```
+
+---
+
+## 5. Front-end Chat Interface
+
+In `client/src/components/cer/AskLumenPanel.jsx`:
+
+```jsx
+import { useState } from 'react';
+import { Input, Button, Card, Checkbox } from '@/components/ui';
+export function AskLumenPanel() {
+  const [q, setQ] = useState('');
+  const [ans, setAns] = useState('');
+  const [useFDA, setUseFDA] = useState(false);
+  const [usePubMed, setUsePubMed] = useState(false);
+
+  async function submit() {
+    const resp = await fetch('/api/ask-lumen/query',{method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        question:q,
+        sources:[
+          ...(useFDA?['fda']:[]),
+          ...(usePubMed?['pubmed']:[])
+        ]
+      })
+    });
+    const { answer } = await resp.json();
+    setAns(answer);
+  }
+
+  return (
+    <Card className="p-4">
+      <h3>🤖 Ask Lumen</h3>
+      <Input value={q} onChange={e=>setQ(e.target.value)} placeholder="Your question…" />
+      <div className="flex space-x-2 mt-2">
+        <Checkbox checked={useFDA} onCheckedChange={setUseFDA}>FDA</Checkbox>
+        <Checkbox checked={usePubMed} onCheckedChange={setUsePubMed}>PubMed</Checkbox>
+      </div>
+      <Button onClick={submit}>Ask</Button>
+      {ans && <Card className="mt-4 whitespace-pre-line">{ans}</Card>}
+    </Card>
+  );
+}
+```
+
+Finally, **import** `<AskLumenPanel/>` inside your `CERV2Page.jsx` under the 510(k) tab.
+
+---
+
+### ✅ End-to-End Smoke Test
+
+1. **Replit → Shell → Restart App**
+2. Upload a PDF via the new PDF widget → “PDF indexed” toast
+3. Ask “What’s the regulatory pathway for a new insulin pen?” → see RAG + external search citations
+4. Toggle on “FDA” “PubMed” → confirm live look-ups
+5. Confirm that **all** code changes live under `client/src/pages/CERV2Page.jsx` or `client/src/components/cer/…` and server under `server/…`.
+
+---
+
+With this, **Ask Lumen** will be a production-grade, fully operational Regulatory Affairs expert—PDF-savvy, context-aware, web-powered, and housed entirely inside your CER2V page.
