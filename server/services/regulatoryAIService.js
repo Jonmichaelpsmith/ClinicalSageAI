@@ -151,6 +151,172 @@ function extractRegulatoryTerms(query) {
 }
 
 /**
+ * RBM knowledge base - specialized content about Risk-Based Monitoring
+ * This information is derived from FDA's guidelines on bioresearch monitoring inspections
+ */
+const rbmKnowledgeBase = {
+  definition: `Risk-Based Monitoring (RBM) is a strategic approach to clinical trial oversight that focuses monitoring activities on the areas of highest risk to data quality and participant safety. Instead of traditional 100% source data verification, RBM uses risk assessment, centralized data review, and targeted on-site visits to enhance monitoring efficiency while maintaining or improving study quality.`,
+  
+  keyPrinciples: [
+    "Focus monitoring efforts on critical data and processes that impact participant safety and data integrity",
+    "Use risk assessment to identify key risk indicators and determine monitoring strategy",
+    "Implement centralized monitoring to review data remotely in real-time",
+    "Perform targeted site visits based on risk indicators rather than routine schedules",
+    "Establish quality tolerance limits for critical data and processes",
+    "Document the rationale for the monitoring approach in the monitoring plan"
+  ],
+  
+  components: {
+    riskAssessment: "Systematic evaluation of trial-specific risks to participant safety and data integrity, including identification of critical data and processes.",
+    monitoringPlan: "Study-specific document that outlines the monitoring strategy, including timing, methods, and responsibilities.",
+    centralizedMonitoring: "Remote review of aggregated data to identify trends, patterns, and outliers across sites.",
+    onSiteMonitoring: "Targeted visits to investigational sites based on risk indicators, focusing on critical activities.",
+    qualityToleranceLimits: "Predefined thresholds for critical data and processes that trigger additional monitoring or action when exceeded."
+  },
+  
+  benefits: [
+    "More efficient use of monitoring resources",
+    "Earlier detection of issues through real-time data review",
+    "Reduced burden on investigational sites",
+    "Focus on highest-impact areas for data quality and participant safety",
+    "Potential cost savings compared to traditional 100% monitoring"
+  ],
+  
+  regulatoryBackground: {
+    fda: "FDA guidance on Risk-Based Monitoring encourages innovative approaches to improve trial quality and efficiency, aligning with BIMO (Bioresearch Monitoring) inspection processes.",
+    ema: "EMA's Reflection Paper promotes risk-proportionate approaches to clinical trial monitoring, focusing on critical processes and data.",
+    ich: "ICH GCP E6(R2) includes provisions for risk-based approaches to monitoring, emphasizing quality by design principles."
+  },
+  
+  implementation: {
+    steps: [
+      "Identify critical data and processes",
+      "Conduct risk assessment",
+      "Develop monitoring plan based on risk assessment",
+      "Define key risk indicators and quality tolerance limits",
+      "Implement centralized monitoring capabilities",
+      "Train team on risk-based approach",
+      "Execute monitoring according to plan",
+      "Adapt monitoring strategy as risks evolve"
+    ],
+    challenges: [
+      "Determining appropriate risk indicators",
+      "Establishing meaningful quality tolerance limits",
+      "Integrating multiple data sources for centralized monitoring",
+      "Ensuring proper documentation of risk-based decisions",
+      "Training monitors on new methodologies",
+      "Managing the transition from traditional approaches"
+    ]
+  },
+  
+  bimoInspections: {
+    focus: "FDA's Bioresearch Monitoring Program (BIMO) inspections assess compliance with regulations and adherence to monitoring plans. For trials using RBM, inspectors evaluate whether the monitoring approach was appropriate for the risks identified and whether the sponsor implemented the monitoring plan effectively.",
+    documentation: "Sponsors should maintain documentation of risk assessments, monitoring plans, centralized monitoring activities, site visit reports, and actions taken in response to identified issues.",
+    commonFindings: [
+      "Inadequate risk assessment",
+      "Failure to implement monitoring plan as described",
+      "Insufficient documentation of monitoring activities",
+      "Lack of follow-up on identified issues",
+      "Inappropriate quality tolerance limits",
+      "Inadequate oversight of CROs or vendors"
+    ]
+  }
+};
+
+/**
+ * Check if a query is related to Risk-Based Monitoring (RBM)
+ * @param {string} query - The user's query
+ * @returns {boolean} - Whether the query is RBM-related
+ */
+function isRbmQuery(query) {
+  if (!query) return false;
+  
+  const lowerQuery = query.toLowerCase();
+  const rbmTerms = [
+    'rbm', 
+    'risk-based monitoring', 
+    'risk based monitoring',
+    'bioresearch monitoring',
+    'bimo',
+    'central monitoring',
+    'centralized monitoring',
+    'remote monitoring',
+    'risk indicators',
+    'quality tolerance limit',
+    'qtl',
+    'critical data',
+    'critical process'
+  ];
+  
+  return rbmTerms.some(term => lowerQuery.includes(term));
+}
+
+/**
+ * Generate a response to an RBM-related query
+ * @param {string} query - The user's query
+ * @returns {string} - The response
+ */
+function generateRbmResponse(query) {
+  const lowerQuery = query.toLowerCase();
+  let response = '';
+  
+  // Match query to most relevant information
+  if (lowerQuery.includes('what is') || lowerQuery.includes('definition')) {
+    response = `# Risk-Based Monitoring (RBM)\n\n${rbmKnowledgeBase.definition}\n\n## Key Principles\n\n`;
+    rbmKnowledgeBase.keyPrinciples.forEach(principle => {
+      response += `- ${principle}\n`;
+    });
+  } 
+  else if (lowerQuery.includes('benefit') || lowerQuery.includes('advantage')) {
+    response = `# Benefits of Risk-Based Monitoring\n\n`;
+    rbmKnowledgeBase.benefits.forEach(benefit => {
+      response += `- ${benefit}\n`;
+    });
+  }
+  else if (lowerQuery.includes('component') || lowerQuery.includes('element') || lowerQuery.includes('part')) {
+    response = `# Components of Risk-Based Monitoring\n\n`;
+    for (const [component, description] of Object.entries(rbmKnowledgeBase.components)) {
+      response += `## ${component.charAt(0).toUpperCase() + component.slice(1)}\n${description}\n\n`;
+    }
+  }
+  else if (lowerQuery.includes('implement') || lowerQuery.includes('how to') || lowerQuery.includes('setup')) {
+    response = `# Implementing Risk-Based Monitoring\n\n## Implementation Steps\n\n`;
+    rbmKnowledgeBase.implementation.steps.forEach((step, index) => {
+      response += `${index + 1}. ${step}\n`;
+    });
+    response += `\n## Implementation Challenges\n\n`;
+    rbmKnowledgeBase.implementation.challenges.forEach(challenge => {
+      response += `- ${challenge}\n`;
+    });
+  }
+  else if (lowerQuery.includes('inspect') || lowerQuery.includes('bimo') || lowerQuery.includes('fda')) {
+    response = `# FDA BIMO Inspections & Risk-Based Monitoring\n\n${rbmKnowledgeBase.bimoInspections.focus}\n\n## Documentation Requirements\n\n${rbmKnowledgeBase.bimoInspections.documentation}\n\n## Common Inspection Findings\n\n`;
+    rbmKnowledgeBase.bimoInspections.commonFindings.forEach(finding => {
+      response += `- ${finding}\n`;
+    });
+  }
+  else if (lowerQuery.includes('regulat') || lowerQuery.includes('guidance') || lowerQuery.includes('guideline')) {
+    response = `# Regulatory Background for Risk-Based Monitoring\n\n`;
+    for (const [authority, guidance] of Object.entries(rbmKnowledgeBase.regulatoryBackground)) {
+      response += `## ${authority.toUpperCase()}\n${guidance}\n\n`;
+    }
+  }
+  else {
+    // General overview for queries that don't match specific categories
+    response = `# Risk-Based Monitoring (RBM) Overview\n\n${rbmKnowledgeBase.definition}\n\n## Key Components\n\n`;
+    for (const [component, description] of Object.entries(rbmKnowledgeBase.components)) {
+      response += `- **${component.charAt(0).toUpperCase() + component.slice(1)}**: ${description}\n`;
+    }
+    response += `\n## Benefits\n\n`;
+    rbmKnowledgeBase.benefits.forEach(benefit => {
+      response += `- ${benefit}\n`;
+    });
+  }
+  
+  return response;
+}
+
+/**
  * Prepare context from retrieved documents
  * @param {Array} documents - The retrieved documents
  * @returns {string} - Formatted context for the AI
@@ -279,6 +445,17 @@ async function generateRagResponse(query, context = '') {
  */
 async function processQuery(query, contextFilter = 'general') {
   try {
+    // First check if this is an RBM-related query
+    if (isRbmQuery(query)) {
+      console.log('RBM-related query detected, using specialized RBM knowledge');
+      const rbmResponse = generateRbmResponse(query);
+      return { 
+        response: rbmResponse,
+        source: 'rbm-knowledge-base'
+      };
+    }
+    
+    // If not an RBM query, proceed with normal knowledge base processing
     // Check if the knowledge base directory exists
     if (!fs.existsSync(KNOWLEDGE_DIR)) {
       console.warn('Knowledge base directory does not exist, initializing empty knowledge base');
