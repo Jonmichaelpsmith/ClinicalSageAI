@@ -273,23 +273,31 @@ export default function KAutomationPanel() {
           // Handle different response formats
           results = predicateResponse || {};
           
-          // Log the full response for debugging
+          // ==== ENHANCED RESPONSE DEBUGGING ====
           console.log('Raw predicate search response:', results);
+          console.log('Response type:', typeof results);
+          console.log('Response keys:', Object.keys(results));
           
-          // Check if response has nested predicates structure from OpenAI response
-          if (results.predicates && typeof results.predicates === 'object') {
-            // If the server included the full OpenAI response under predicates key
-            console.log('Found nested predicates in response:', results.predicates);
+          // Handle the case where the entire response might be the nested structure
+          // (could happen with different API implementations)
+          if (!results.predicateDevices && !results.literatureReferences && results.success) {
+            console.warn('Response format different than expected - restructuring');
             
-            // Extract nested predicateDevices and literatureReferences if they exist
-            if (results.predicates.predicateDevices && !results.predicateDevices) {
-              results.predicateDevices = results.predicates.predicateDevices;
-              console.log('Extracted predicateDevices from nested structure:', results.predicateDevices);
-            }
-            
-            if (results.predicates.literatureReferences && !results.literatureReferences) {
-              results.literatureReferences = results.predicates.literatureReferences;
-              console.log('Extracted literatureReferences from nested structure:', results.literatureReferences);
+            // Common variations of response format
+            if (results.predicates && typeof results.predicates === 'object') {
+              console.log('Found predicates object:', results.predicates);
+              
+              // Extract predicateDevices from nested structure if they exist
+              if (results.predicates.predicateDevices) {
+                results.predicateDevices = results.predicates.predicateDevices;
+                console.log('Extracted predicateDevices from predicates object:', results.predicateDevices);
+              }
+              
+              // Extract literatureReferences from nested structure if they exist
+              if (results.predicates.literatureReferences) {
+                results.literatureReferences = results.predicates.literatureReferences;
+                console.log('Extracted literatureReferences from predicates object:', results.literatureReferences);
+              }
             }
           }
           
@@ -300,6 +308,9 @@ export default function KAutomationPanel() {
             [];
           
           console.log('Found devices after normalization:', foundDevices);
+          console.log('Number of predicate devices found:', foundDevices.length);
+          
+          // Always set the results even if empty
           setPredicateSearchResults(foundDevices);
           
           // Show toast notification with result count
@@ -316,13 +327,27 @@ export default function KAutomationPanel() {
           const predicateDevices = foundDevices; // Use already normalized devices
           console.log('Processing predicate devices:', predicateDevices);
           
-          if (predicateDevices && predicateDevices.length > 0) {
-            console.log(`Adding ${predicateDevices.length} predicate devices to insights`);
-            predicateDevices.forEach((device, index) => {
+          // Force predicateDevices to be an array
+          const devicesArray = Array.isArray(predicateDevices) ? predicateDevices : 
+                              (predicateDevices ? [predicateDevices] : []);
+                              
+          console.log('Devices array has length:', devicesArray.length);
+          
+          if (devicesArray.length > 0) {
+            console.log(`Adding ${devicesArray.length} predicate devices to insights`);
+            devicesArray.forEach((device, index) => {
+              // Skip null or undefined entries
+              if (!device) {
+                console.warn(`Skipping null/undefined device at index ${index}`);
+                return;
+              }
+              
+              console.log(`Processing device ${index}:`, device);
+              
               // Create the insight object with detailed logging
               const insight = {
                 id: `pred-${Date.now()}-${index}`,
-                type: 'predicate',
+                type: 'predicate', // This type MUST match the check in the insights section
                 name: device.deviceName || device.name || `Predicate Device ${index + 1}`,
                 manufacturer: device.manufacturer || device.company || 'Unknown Manufacturer',
                 confidence: device.matchScore || device.similarity_score || device.confidence || 0.85,
@@ -331,6 +356,11 @@ export default function KAutomationPanel() {
                 deviceClass: device.deviceClass || device.device_class || currentDeviceProfile.deviceClass,
                 description: device.description || device.matchRationale || ''
               };
+              
+              // Ensure confidence is a number between 0 and 1
+              if (typeof insight.confidence !== 'number' || isNaN(insight.confidence)) {
+                insight.confidence = 0.85; // Default if not a valid number
+              }
               
               console.log(`Adding predicate device insight: ${insight.name}`);
               insights.push(insight);
@@ -347,21 +377,40 @@ export default function KAutomationPanel() {
             
           console.log('Processing literature references:', literatureReferences);
           
-          if (literatureReferences && literatureReferences.length > 0) {
-            console.log(`Adding ${literatureReferences.length} literature references to insights`);
-            literatureReferences.forEach((reference, index) => {
-              // Create the insight object with detailed logging
+          // Force literatureReferences to be an array
+          const referencesArray = Array.isArray(literatureReferences) ? literatureReferences : 
+                                 (literatureReferences ? [literatureReferences] : []);
+                                 
+          console.log('References array has length:', referencesArray.length);
+          
+          if (referencesArray.length > 0) {
+            console.log(`Adding ${referencesArray.length} literature references to insights`);
+            referencesArray.forEach((reference, index) => {
+              // Skip null or undefined entries
+              if (!reference) {
+                console.warn(`Skipping null/undefined reference at index ${index}`);
+                return;
+              }
+              
+              console.log(`Processing reference ${index}:`, reference);
+              
+              // Create the insight object with detailed logging  
               const insight = {
                 id: `lit-${Date.now()}-${index}`,
-                type: 'literature',
+                type: 'literature', // This type MUST match the check in the insights section
                 name: reference.title || `Literature Reference ${index + 1}`,
                 confidence: reference.relevanceScore || reference.relevance || reference.confidence || 0.8,
                 journal: reference.journal || reference.publication || 'Journal of Medical Devices',
                 url: reference.url || reference.link || null,
-                authors: reference.authors || reference.author?.split(',') || [],
+                authors: reference.authors || (reference.author ? reference.author.split(',') : []),
                 year: reference.year || new Date().getFullYear(),
                 abstract: reference.abstract || ''
               };
+              
+              // Ensure confidence is a number between 0 and 1
+              if (typeof insight.confidence !== 'number' || isNaN(insight.confidence)) {
+                insight.confidence = 0.8; // Default if not a valid number
+              }
               
               console.log(`Adding literature reference insight: ${insight.name}`);
               insights.push(insight);
@@ -379,18 +428,33 @@ export default function KAutomationPanel() {
           console.log(`Current device insights: ${deviceInsights.length}`);
           console.log(`Total insights after update: ${deviceInsights.length + insights.length}`);
           
+          // Log the insights types being added
+          const typeBreakdown = {};
+          insights.forEach(insight => {
+            typeBreakdown[insight.type] = (typeBreakdown[insight.type] || 0) + 1;
+          });
+          console.log('Insights type breakdown:', typeBreakdown);
+          
+          // Verify that insights has the types expected by the rendering code
+          const hasPredicateInsights = insights.some(i => i.type === 'predicate');
+          const hasLiteratureInsights = insights.some(i => i.type === 'literature');
+          console.log('Contains predicate insights:', hasPredicateInsights);
+          console.log('Contains literature insights:', hasLiteratureInsights);
+          
           // Only update if we have insights to add
           if (insights.length > 0) {
             // Create a new array with all insights
             const updatedInsights = [...deviceInsights, ...insights];
             console.log('Setting aiInsights with:', updatedInsights);
             
-            // Set state with new insights
-            setAiInsights(updatedInsights);
+            // Force the state update with a new reference
+            setAiInsights(Array.from(updatedInsights));
             
-            // Automatically switch to insights tab when results found
-            console.log('Switching to insights tab');
-            setActiveTab('insights');
+            // Add a timeout before switching tabs to ensure state update completes
+            setTimeout(() => {
+              console.log('Switching to insights tab');
+              setActiveTab('insights');
+            }, 100);
           } else {
             console.warn('No insights were generated from the API response');
             
@@ -1571,8 +1635,8 @@ export default function KAutomationPanel() {
         </div>
       )}
       
-      {/* Debug Panel - only shows in development environment */}
-      {process.env.NODE_ENV !== 'production' && (
+      {/* Debug Panel - shows in development environment and when aiInsights > 0 */}
+      {true && (
         <Card className="mt-8 border-yellow-300 shadow-sm">
           <CardHeader className="bg-yellow-50">
             <CardTitle className="flex items-center text-yellow-800">
@@ -1580,7 +1644,7 @@ export default function KAutomationPanel() {
               Debug Panel
             </CardTitle>
             <CardDescription className="text-yellow-700">
-              This panel only appears in development mode to help troubleshoot issues
+              Troubleshooting panel for 510(k) insights module
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -1593,6 +1657,7 @@ export default function KAutomationPanel() {
                   <p><span className="font-medium">AI Processing:</span> {aiProcessing ? 'True' : 'False'}</p>
                   <p><span className="font-medium">Progress:</span> {progress}%</p>
                   <p><span className="font-medium">Device Profile:</span> {currentDeviceProfile ? currentDeviceProfile.deviceName : 'None'}</p>
+                  <p><span className="font-medium">Device Profile Class:</span> {currentDeviceProfile?.deviceClass || 'Not set'}</p>
                   <p><span className="font-medium">Total Insights:</span> {aiInsights.length}</p>
                 </div>
               </div>
@@ -1600,9 +1665,33 @@ export default function KAutomationPanel() {
                 <h3 className="text-sm font-medium mb-2">Insights Breakdown</h3>
                 <div className="space-y-1 text-xs">
                   <p><span className="font-medium">Device Insights:</span> {aiInsights.filter(i => i.type === 'device').length}</p>
-                  <p><span className="font-medium">Predicate Insights:</span> {aiInsights.filter(i => i.type === 'predicate').length}</p>
-                  <p><span className="font-medium">Literature Insights:</span> {aiInsights.filter(i => i.type === 'literature').length}</p>
-                  <p><span className="font-medium">Regulatory Insights:</span> {aiInsights.filter(i => i.type === 'regulatory').length}</p>
+                  <p className="flex items-center">
+                    <span className="font-medium mr-1">Predicate Insights:</span> 
+                    {aiInsights.filter(i => i.type === 'predicate').length}
+                    {aiInsights.some(i => i.type === 'predicate') ? (
+                      <CheckCircle2 className="h-3 w-3 ml-1 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-3 w-3 ml-1 text-red-500" />
+                    )}
+                  </p>
+                  <p className="flex items-center">
+                    <span className="font-medium mr-1">Literature Insights:</span> 
+                    {aiInsights.filter(i => i.type === 'literature').length}
+                    {aiInsights.some(i => i.type === 'literature') ? (
+                      <CheckCircle2 className="h-3 w-3 ml-1 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-3 w-3 ml-1 text-red-500" />
+                    )}
+                  </p>
+                  <p className="flex items-center">
+                    <span className="font-medium mr-1">Regulatory Insights:</span> 
+                    {aiInsights.filter(i => i.type === 'regulatory').length}
+                    {aiInsights.some(i => i.type === 'regulatory') ? (
+                      <CheckCircle2 className="h-3 w-3 ml-1 text-green-500" />
+                    ) : (
+                      <AlertCircle className="h-3 w-3 ml-1 text-red-500" />
+                    )}
+                  </p>
                   <p><span className="font-medium">Document Insights:</span> {aiInsights.filter(i => i.type === 'document').length}</p>
                   <p><span className="font-medium">Validation Insights:</span> {aiInsights.filter(i => i.type === 'validation').length}</p>
                 </div>
@@ -1611,7 +1700,7 @@ export default function KAutomationPanel() {
             
             <Collapsible className="mt-4">
               <CollapsibleTrigger className="flex items-center text-sm font-medium text-yellow-700 hover:text-yellow-900">
-                <span>Show aiInsights Raw Data</span>
+                <span>Show aiInsights Data</span>
                 <ChevronDown className="h-4 w-4 ml-1" />
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-2">
@@ -1636,9 +1725,27 @@ export default function KAutomationPanel() {
                 size="sm" 
                 variant="outline" 
                 className="text-xs"
-                onClick={() => setActiveTab('insights')}
+                onClick={() => {
+                  setActiveTab('insights');
+                  console.log('Manually switched to insights tab');
+                }}
               >
                 Switch to Insights Tab
+              </Button>
+              <Button 
+                size="sm"
+                variant="outline"
+                className="text-xs"
+                onClick={() => {
+                  // Test if the predicate cards would render with existing data
+                  const hasType = (type) => aiInsights.some(i => i.type === type);
+                  console.log('Debug check - Would render predicate card:', hasType('predicate'));
+                  console.log('Debug check - Would render literature card:', hasType('literature'));
+                  console.log('Debug check - Would render regulatory card:', hasType('regulatory'));
+                  console.log('Debug check - Would render validation card:', hasType('validation'));
+                }}
+              >
+                Test Conditions
               </Button>
               <Button 
                 size="sm" 
