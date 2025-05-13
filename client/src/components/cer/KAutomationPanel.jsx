@@ -416,21 +416,50 @@ export default function KAutomationPanel() {
         setActiveTab('insights');
       }
       else if (step === 'draftSectionsWithAI') {
-        // For draft generation, we'll simulate the API call for now
-        // In a real implementation, this would call FDA510kService.generateSectionDraft()
-        await new Promise(resolve => setTimeout(resolve, 2500));
+        // Verify we have a device profile selected
+        if (!currentDeviceProfile) {
+          throw new Error("Please select a device profile before generating a 510(k) draft");
+        }
         
-        // Show success message
-        setAiInsights([
-          {
-            id: 'draft-1',
-            type: 'document',
-            name: 'CardioTrack ECG Monitor 510(k) Draft',
-            sections: 15,
-            completeness: 0.85,
-            timestamp: new Date().toISOString()
-          }
-        ]);
+        try {
+          // Use the FDA510kService to create default sections for the 510(k) submission
+          const response = await FDA510kService.createDefaultSections(
+            currentDeviceProfile.id || "demo-project-id", 
+            currentOrganization?.id || 1
+          );
+          
+          console.log('Section generation response:', response);
+          
+          // Show success toast with more detailed information
+          toast({
+            title: "510(k) Draft Created",
+            description: `Generated draft with ${response.sections?.length || 'multiple'} sections for ${currentDeviceProfile.deviceName}`,
+          });
+          
+          // Add to insights
+          setAiInsights([
+            ...aiInsights.filter(i => i.type !== 'document'), // Remove previous document insights
+            {
+              id: `draft-${Date.now()}`,
+              type: 'document',
+              name: `${currentDeviceProfile.deviceName} 510(k) Draft`,
+              sections: response.sections?.length || 15,
+              completeness: response.completeness || 0.85,
+              timestamp: new Date().toISOString()
+            }
+          ]);
+          
+          // Navigate to the document tab to show the generated content
+          window.location.href = '/client-portal/510k?tab=documentEditor';
+        } catch (error) {
+          console.error('Error generating 510(k) draft:', error);
+          toast({
+            title: "Draft Generation Failed",
+            description: error.message || "Could not generate 510(k) draft sections",
+            variant: "destructive"
+          });
+          throw error;
+        }
       }
       else if (step === 'runComplianceChecks') {
         // Verify we have a device profile selected
