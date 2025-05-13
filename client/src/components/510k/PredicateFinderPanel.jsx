@@ -437,79 +437,80 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
               Vector Search
             </Badge>
           </div>
-        
-        <p className="text-sm text-gray-600 mb-3">
-          Describe what you're looking for in natural language and we'll find semantically similar predicate devices.
-        </p>
-        
-        <div className="flex space-x-2 mb-4">
-          <div className="flex-1">
-            <input
-              type="text"
-              value={semQuery}
-              onChange={e => setSemQuery(e.target.value)}
-              placeholder="Describe what you're looking for…"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              disabled={isSemanticSearching}
-            />
+          
+          <p className="text-sm text-gray-600 mb-3">
+            Describe what you're looking for in natural language and we'll find semantically similar predicate devices.
+          </p>
+          
+          <div className="flex space-x-2 mb-4">
+            <div className="flex-1">
+              <input
+                type="text"
+                value={semQuery}
+                onChange={e => setSemQuery(e.target.value)}
+                placeholder="Describe what you're looking for…"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                disabled={isSemanticSearching}
+              />
+            </div>
+            <Button 
+              onClick={handleSemanticSearch} 
+              disabled={isSemanticSearching || !semQuery.trim()}
+              className="flex items-center gap-2"
+            >
+              {isSemanticSearching ? (
+                <>
+                  <span className="animate-spin h-4 w-4 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></span>
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <Search className="h-4 w-4" />
+                  Search
+                </>
+              )}
+            </Button>
           </div>
-          <Button 
-            onClick={handleSemanticSearch} 
-            disabled={isSemanticSearching || !semQuery.trim()}
-            className="flex items-center gap-2"
-          >
-            {isSemanticSearching ? (
-              <>
-                <span className="animate-spin h-4 w-4 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></span>
-                Searching...
-              </>
-            ) : (
-              <>
-                <Search className="h-4 w-4" />
-                Search
-              </>
-            )}
-          </Button>
+          
+          {semanticResults.length > 0 ? (
+            <div className="mt-3 space-y-2">
+              <h4 className="text-sm font-medium mb-2 flex items-center">
+                <Database className="h-4 w-4 mr-1.5 text-blue-600" />
+                Semantic Search Results ({semanticResults.length})
+              </h4>
+              <ScrollArea className="h-[300px] rounded-md border p-2">
+                <div className="space-y-2">
+                  {semanticResults.map(result => (
+                    <Card key={result.id} className="p-3 bg-white">
+                      <div className="flex justify-between">
+                        <span className="font-medium">{result.name}</span>
+                        <span className="text-xs text-gray-500">{(result.score*100).toFixed(1)}% Match</span>
+                      </div>
+                      <p className="text-sm mt-1 text-gray-700">{result.description}</p>
+                      <div className="flex justify-end mt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          className="text-xs"
+                          onClick={() => handleSelectPredicate({
+                            deviceName: result.name,
+                            description: result.description,
+                            matchScore: result.score,
+                            id: result.id
+                          })}
+                        >
+                          <FileText className="h-3 w-3 mr-1" />
+                          Select
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          ) : null}
         </div>
-        
-        {semanticResults.length > 0 ? (
-          <div className="mt-3 space-y-2">
-            <h4 className="text-sm font-medium mb-2 flex items-center">
-              <Database className="h-4 w-4 mr-1.5 text-blue-600" />
-              Semantic Search Results ({semanticResults.length})
-            </h4>
-            <ScrollArea className="h-[300px] rounded-md border p-2">
-              <div className="space-y-2">
-                {semanticResults.map(result => (
-                  <Card key={result.id} className="p-3 bg-white">
-                    <div className="flex justify-between">
-                      <span className="font-medium">{result.name}</span>
-                      <span className="text-xs text-gray-500">{(result.score*100).toFixed(1)}% Match</span>
-                    </div>
-                    <p className="text-sm mt-1 text-gray-700">{result.description}</p>
-                    <div className="flex justify-end mt-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        className="text-xs"
-                        onClick={() => handleSelectPredicate({
-                          deviceName: result.name,
-                          description: result.description,
-                          matchScore: result.score,
-                          id: result.id
-                        })}
-                      >
-                        <FileText className="h-3 w-3 mr-1" />
-                        Select
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </ScrollArea>
-          </div>
-        ) : null}
-      </div>
+      )}
       
       {/* Customization Panel */}
       <div className="mb-6">
@@ -1633,6 +1634,139 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
                     )}
                   </ScrollArea>
                 </TabsContent>
+                
+                {isFeatureEnabled('ENABLE_SEMANTIC_SEARCH') && (
+                  <TabsContent value="semantic" className="m-0">
+                    <ScrollArea className="h-[400px] pr-3">
+                      {semanticResults.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-[300px] text-center">
+                          <Search className="h-12 w-12 text-indigo-500 mb-4" />
+                          <h3 className="text-lg font-medium mb-2">No Semantic Search Results</h3>
+                          <p className="text-sm text-gray-500 max-w-md mb-4">
+                            Use the search form to find semantically similar predicate devices using natural language.
+                          </p>
+                          <div className="w-full max-w-lg">
+                            <div className="flex space-x-2">
+                              <div className="flex-1">
+                                <input
+                                  type="text"
+                                  value={semQuery}
+                                  onChange={e => setSemQuery(e.target.value)}
+                                  placeholder="Describe what you're looking for…"
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                  disabled={isSemanticSearching}
+                                />
+                              </div>
+                              <Button 
+                                onClick={handleSemanticSearch} 
+                                disabled={isSemanticSearching || !semQuery.trim()}
+                                className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700"
+                              >
+                                {isSemanticSearching ? (
+                                  <>
+                                    <span className="animate-spin h-4 w-4 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></span>
+                                    Searching...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Search className="h-4 w-4" />
+                                    Search
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="bg-indigo-50 p-3 rounded-md border border-indigo-200 mb-4">
+                            <div className="flex items-center">
+                              <Search className="h-5 w-5 text-indigo-600 mr-2" />
+                              <span className="font-medium text-indigo-800">Semantic Search Results</span>
+                            </div>
+                            <p className="text-sm text-indigo-700 mt-1">
+                              These results are ranked by semantic similarity to your query: "{semQuery}"
+                            </p>
+                          </div>
+                          
+                          {semanticResults.map((result) => (
+                            <Card key={`sem-${result.id}`} className="border-indigo-100 hover:shadow-sm transition-shadow">
+                              <CardHeader className="py-3 px-4 bg-gradient-to-r from-indigo-50 to-white">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <CardTitle className="text-base font-medium">{result.name}</CardTitle>
+                                    <CardDescription className="text-xs">ID: {result.id}</CardDescription>
+                                  </div>
+                                  <Badge className="bg-indigo-100 text-indigo-800 border-indigo-200">
+                                    {(result.score*100).toFixed(1)}% Match
+                                  </Badge>
+                                </div>
+                              </CardHeader>
+                              <CardContent className="py-3 px-4">
+                                <div className="text-sm text-gray-700">
+                                  {result.description}
+                                </div>
+                                
+                                <div className="flex mt-3 pt-2 border-t border-gray-100 text-sm justify-end">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 mr-2"
+                                    onClick={() => handleSelectPredicate({
+                                      deviceName: result.name,
+                                      description: result.description,
+                                      matchScore: result.score,
+                                      id: result.id
+                                    })}
+                                  >
+                                    <FileText className="h-3.5 w-3.5 mr-1" />
+                                    Select
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="border-green-200 text-green-700 hover:bg-green-50"
+                                    onClick={() => {
+                                      if (savedReferences.find(ref => ref.id === result.id)) {
+                                        toast({
+                                          title: "Already Saved",
+                                          description: "This reference is already in your saved list",
+                                          variant: "default",
+                                        });
+                                        return;
+                                      }
+                                      
+                                      setSavedReferences([
+                                        ...savedReferences,
+                                        { 
+                                          id: result.id,
+                                          name: result.name,
+                                          description: result.description,
+                                          matchScore: result.score,
+                                          type: 'semantic', 
+                                          savedAt: new Date().toISOString() 
+                                        }
+                                      ]);
+                                      
+                                      toast({
+                                        title: "Predicate Device Saved",
+                                        description: "Added to your saved references",
+                                        variant: "default",
+                                      });
+                                    }}
+                                  >
+                                    <BookmarkPlus className="h-3.5 w-3.5 mr-1" />
+                                    Save
+                                  </Button>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      )}
+                    </ScrollArea>
+                  </TabsContent>
+                )}
                 
                 <TabsContent value="literature" className="m-0">
                   <ScrollArea className="h-[400px] pr-3">
