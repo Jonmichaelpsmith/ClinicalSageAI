@@ -6,6 +6,8 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import * as documentProcessor from '../services/documentProcessor.js';
+import * as regulatoryAIService from '../services/regulatoryAIService.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -171,8 +173,7 @@ router.post('/init-knowledge-base', async (req, res) => {
  * and fallback to hardcoded responses when needed
  */
 
-// Import the RAG-based regulatoryAIService
-import * as regulatoryAIService from '../services/regulatoryAIService.js';
+// Using document-based RAG for regulatory AI queries
 console.log('Using document-based RAG for regulatory AI queries');
 
 /**
