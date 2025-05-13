@@ -10,4 +10,5 @@ export { default as EnhancedLiteratureSearch } from './EnhancedLiteratureSearch'
 export { default as CitationManager } from './CitationManager';
 export { default as LiteratureSummaryGenerator } from './LiteratureSummaryGenerator';
 export { default as ComplianceChecker } from './ComplianceChecker';
+export { default as ComplianceCheckerPanel } from './ComplianceCheckerPanel';
 export { default as PackagePreview } from './PackagePreview';
