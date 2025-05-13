@@ -183,7 +183,7 @@ console.log('Using document-based RAG for regulatory AI queries');
  */
 router.post('/query', rateLimiter, async (req, res) => {
   try {
-    const { query, context = 'general' } = req.body;
+    const { query, context = 'general', history = [] } = req.body;
     
     if (!query || typeof query !== 'string' || query.trim() === '') {
       return res.status(400).json({
@@ -193,19 +193,23 @@ router.post('/query', rateLimiter, async (req, res) => {
       });
     }
     
+    // Log the query for debugging
+    console.log(`Regulatory AI query received: "${query}" with conversation history of ${history.length} messages`);
+    
     // Using RAG (Retrieval-Augmented Generation) for more dynamic responses
     
     console.log(`Regulatory AI query received: "${query}" (context: ${context})`);
     
     // Process the query through the document-based regulatory AI service
     try {
-      const ragResponse = await regulatoryAIService.processQuery(query, context);
+      // Pass the conversation history to enable fully conversational AI capabilities
+      const ragResponse = await regulatoryAIService.processQuery(query, context, history);
       if (ragResponse && ragResponse.response) {
-        console.log(`Using RAG-based response for query: "${query}"`);
+        console.log(`Using AI response for query: "${query}"`);
         return res.json(ragResponse);
       }
     } catch (error) {
-      console.error(`Error processing RAG query: ${error.message}`);
+      console.error(`Error processing AI query: ${error.message}`);
       // Continue to fallback methods
     }
     
