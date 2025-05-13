@@ -12,22 +12,19 @@ import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
 import ClinicalEvaluationPlanPanel from '@/components/cer/ClinicalEvaluationPlanPanel';
 import GSPRMappingPanel from '@/components/cer/GSPRMappingPanel';
 import LiteratureReviewWorkflow from '@/components/cer/LiteratureReviewWorkflow';
-import CerOnboardingGuide from '@/components/cer/CerOnboardingGuide';
-import WizardStepper from '@/components/cer/WizardStepper';
 import NotificationBanner from '@/components/cer/NotificationBanner';
 import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPanel';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import TabRow from '@/components/ui/TabRow';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Gantt, Layers, Trophy } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export default function CERV2Page() {
   const [title, setTitle] = useState('Clinical Evaluation Report');
@@ -108,6 +105,415 @@ export default function CERV2Page() {
     }
   };
 
+  // Simple navigation tab rendering function
+  const renderNavigation = () => {
+    // Define tab groups
+    const tabGroups = [
+      {
+        label: "Preparation:",
+        tabs: [
+          { id: "builder", label: "Builder", icon: <FileText className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "cep", label: "Evaluation Plan", icon: <ClipboardList className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "documents", label: "Documents", icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "data-retrieval", label: "Data Retrieval", icon: <Database className="h-3.5 w-3.5 mr-1.5" /> }
+        ]
+      },
+      {
+        label: "Evidence:",
+        tabs: [
+          { id: "literature", label: "Literature", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "literature-review", label: "Literature Review", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "internal-clinical-data", label: "Internal Clinical Data", icon: <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "sota", label: "State of Art", icon: <BookMarked className="h-3.5 w-3.5 mr-1.5" /> }
+        ]
+      },
+      {
+        label: "Analysis:",
+        tabs: [
+          { id: "equivalence", label: "Equivalence", icon: <GitCompare className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "gspr-mapping", label: "GSPR Mapping", icon: <BarChart className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "compliance", label: "Compliance", icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5" /> },
+          { id: "assistant", label: "Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5" /> }
+        ]
+      }
+    ];
+
+    return (
+      <nav className="w-full">
+        {tabGroups.map((group, groupIndex) => (
+          <div 
+            key={groupIndex} 
+            className={`overflow-x-auto whitespace-nowrap bg-white border-b border-[#E1DFDD] py-2 ${groupIndex === tabGroups.length - 1 ? 'mb-4' : ''}`}
+          >
+            <div className="flex items-center px-6">
+              <div className="flex items-center mr-4 flex-shrink-0">
+                <span className="text-xs font-medium text-[#605E5C]">{group.label}</span>
+              </div>
+              
+              <div className="inline-flex items-center">
+                {group.tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`
+                      flex-shrink-0 mx-1 rounded-none border-b-2 px-3 py-1 
+                      font-normal text-xs sm:text-sm flex items-center
+                      ${activeTab === tab.id 
+                        ? 'border-[#0F6CBD] text-[#0F6CBD]' 
+                        : 'border-transparent text-[#616161] hover:text-[#0F6CBD]'
+                      }
+                    `}
+                  >
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </nav>
+    );
+  };
+
+  // Render content based on active tab
+  const renderContent = () => {
+    if (activeTab === 'builder') {
+      return (
+        <div className="bg-[#F9F9F9] py-4">
+          <div className="flex flex-col md:flex-row items-start justify-between">
+            <div className="flex-1 px-4">
+              <h2 className="text-xl font-semibold text-[#323130]">Section Generator</h2>
+              <div className="mt-2 mb-4">
+                <div className="bg-[#EFF6FC] rounded-md px-3 py-1 text-sm inline-flex items-center gap-1 text-[#0F6CBD]">
+                  <span>AI-Powered</span>
+                </div>
+              </div>
+              <CerBuilderPanel
+                title={title}
+                faers={faers}
+                comparators={comparators}
+                sections={sections}
+                onTitleChange={setTitle}
+                onSectionsChange={setSections}
+                onFaersChange={setFaers}
+                onComparatorsChange={setComparators}
+              />
+            </div>
+            <div className="w-full md:w-auto md:min-w-[280px] md:max-w-[320px] px-4 mt-6 md:mt-0">
+              <h2 className="text-xl font-semibold text-[#323130]">Report Sections</h2>
+              <div className="mt-2 mb-4">
+                <div className="bg-[#F3F2F1] rounded px-3 py-1 text-sm inline-flex items-center gap-1">
+                  <span>{sections.length} sections</span>
+                </div>
+              </div>
+              
+              <div className="mb-4">
+                <h3 className="text-md font-medium mb-2 text-[#323130]">Report Title</h3>
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  className="w-full p-2 border border-[#E1DFDD] rounded"
+                  placeholder="Clinical Evaluation Report"
+                />
+              </div>
+              
+              {sections.length > 0 ? (
+                <div className="space-y-2">
+                  {sections.map((section, idx) => (
+                    <div key={idx} className="bg-[#F3F2F1] p-2 rounded text-sm">
+                      {section.title}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-gray-500 text-sm italic">
+                  No sections added yet. Generate sections from the tools on the left.
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="px-4 mt-4 text-center">
+            <Button 
+              onClick={() => handleExport('docx')} 
+              className="bg-transparent text-[#0F6CBD] hover:bg-[#EFF6FC] border-none" 
+              variant="outline"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+          </div>
+        </div>
+      );
+    }
+    
+    if (activeTab === 'cep') {
+      return (
+        <ClinicalEvaluationPlanPanel
+          onCEPGenerated={(cepData) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'cep' || 
+              (section.title && section.title.toLowerCase().includes('evaluation plan'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: cepData.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "CEP Updated",
+                description: "Clinical Evaluation Plan has been updated in your CER.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, cepData]);
+              
+              toast({
+                title: "CEP Added",
+                description: "Clinical Evaluation Plan has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+        />
+      );
+    }
+    
+    if (activeTab === 'literature') {
+      return (
+        <Tabs defaultValue="search" className="w-full">
+          <TabsList className="flex overflow-x-auto whitespace-nowrap bg-white border-b border-gray-200 rounded-none w-full justify-start gap-2">
+            <TabsTrigger value="search" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] flex-shrink-0">
+              Search & Analyze
+            </TabsTrigger>
+            <TabsTrigger value="methodology" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] flex-shrink-0">
+              Search Methodology
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="search" className="mt-4">
+            <LiteratureSearchPanel
+              onAddSection={(newSection) => {
+                setSections([...sections, newSection]);
+                toast({
+                  title: "Literature Review Added",
+                  description: "Added to your CER.",
+                  variant: "success",
+                });
+              }}
+              deviceName={deviceName}
+              manufacturer={manufacturer}
+              cerTitle={title}
+            />
+          </TabsContent>
+          
+          <TabsContent value="methodology" className="mt-4">
+            <LiteratureMethodologyPanel
+              onAddToCER={(newSection) => {
+                setSections([...sections, newSection]);
+                toast({
+                  title: "Literature Methodology Added",
+                  description: "Search methodology documentation added to your CER.",
+                  variant: "success",
+                });
+              }}
+              deviceName={deviceName}
+              deviceType={deviceType}
+              manufacturer={manufacturer}
+            />
+          </TabsContent>
+        </Tabs>
+      );
+    }
+    
+    // Add other tab content handlers for literature-review, internal-clinical-data, 
+    // documents, data-retrieval, equivalence, gspr-mapping, sota, compliance, assistant
+
+    if (activeTab === 'literature-review') {
+      return (
+        <LiteratureReviewWorkflow
+          deviceName={deviceName}
+          manufacturer={manufacturer}
+          onAddToCER={(reviewData) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'literature-review' || 
+              (section.title && section.title.toLowerCase().includes('literature review'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: reviewData.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "Literature Review Updated",
+                description: "Literature review has been updated in your CER.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, reviewData]);
+              
+              toast({
+                title: "Literature Review Added",
+                description: "Literature review has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+        />
+      );
+    }
+    
+    if (activeTab === 'internal-clinical-data') {
+      return (
+        <InternalClinicalDataPanel
+          jobId={`cer-${Date.now()}`}
+          deviceName={deviceName}
+          manufacturer={manufacturer}
+          onAddToCER={(internalClinicalData) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'internal-clinical-data' || 
+              (section.title && section.title.toLowerCase().includes('internal clinical data'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: internalClinicalData.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "Internal Clinical Data Updated",
+                description: "Your CER now includes the latest internal clinical evidence.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, internalClinicalData]);
+              
+              toast({
+                title: "Internal Clinical Data Added",
+                description: "Internal clinical evidence has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+        />
+      );
+    }
+    
+    if (activeTab === 'documents') {
+      return (
+        <DocumentVaultPanel 
+          jobId={`cer-${Date.now()}`} 
+        />
+      );
+    }
+    
+    if (activeTab === 'data-retrieval') {
+      return (
+        <>
+          {!isFetchingFaers && faers.length === 0 && (
+            <NotificationBanner
+              title="Essential: Retrieve FAERS Data First"
+              description="For optimal CER quality, start by retrieving real-world adverse event data and literature evidence."
+              actionText="Start Retrieval"
+              onActionClick={() => setActiveTab('data-retrieval')}
+              onDismiss={() => setShowEvidenceReminder(false)}
+              variant="info"
+              visible={showEvidenceReminder}
+              showInfoIcon={true}
+              infoTooltip="Pull in real-world adverse event data (FAERS) and key published studies—so your AI sections include actual safety and evidence."
+              additionalContent="Why run this? AI section drafts will cite and analyze FAERS + literature automatically."
+            />
+          )}
+          <CerDataRetrievalPanel
+            reportId={`cer-${Date.now()}`}
+            deviceName={deviceName}
+            onDataUpdated={(data) => {
+              if (data.type === 'faers' && data.data) {
+                setFaers(data.data.reports || []);
+                setComparators(data.data.comparators || []);
+                toast({
+                  title: "FAERS Data Retrieved",
+                  description: "Your FAERS data has been downloaded and imported.",
+                  variant: "success",
+                });
+              }
+            }}
+            setIsFetchingFaers={setIsFetchingFaers}
+          />
+        </>
+      );
+    }
+
+    if (activeTab === 'gspr-mapping') {
+      return (
+        <GSPRMappingPanel
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+          sections={sections}
+          faers={faers}
+          comparators={comparators}
+          onAddToReport={(gspr) => {
+            const existingIndex = sections.findIndex(
+              section => section.type === 'gspr' || 
+              (section.title && section.title.toLowerCase().includes('gspr'))
+            );
+            
+            if (existingIndex >= 0) {
+              const updatedSections = [...sections];
+              updatedSections[existingIndex] = {
+                ...updatedSections[existingIndex],
+                content: gspr.content,
+                lastUpdated: new Date().toISOString()
+              };
+              setSections(updatedSections);
+              
+              toast({
+                title: "GSPR Mapping Updated",
+                description: "Your CER now includes the latest GSPR mapping data.",
+                variant: "success"
+              });
+            } else {
+              setSections([...sections, gspr]);
+              
+              toast({
+                title: "GSPR Mapping Added",
+                description: "GSPR requirements mapping has been added to your CER.",
+                variant: "success"
+              });
+            }
+          }}
+        />
+      );
+    }
+
+    // Default fallback for other tabs
+    return (
+      <div className="p-6 text-center">
+        <h3 className="text-xl mb-4">Tab content for "{activeTab}" is loading</h3>
+        <p>This tab is under development.</p>
+      </div>
+    );
+  };
+
   return (
     <div className="max-w-[1200px] mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-start p-6 pb-2">
@@ -145,607 +551,13 @@ export default function CERV2Page() {
         </div>
       </div>
 
-      {/* Tab navigation using TabRow for scrollable, non-overlapping tabs */}
-      <Tabs defaultValue="builder" className="w-full" onValueChange={setActiveTab} value={activeTab}>
-        {/* First row - Preparation group */}
-        <TabRow label="Preparation:">
-          <TabsTrigger 
-            value="builder" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <FileText className="h-3.5 w-3.5 mr-1.5" />
-            <span>Builder</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="cep" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <ClipboardList className="h-3.5 w-3.5 mr-1.5" />
-            <span>Evaluation Plan</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="documents" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <FolderOpen className="h-3.5 w-3.5 mr-1.5" />
-            <span>Documents</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="data-retrieval" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <Database className="h-3.5 w-3.5 mr-1.5" />
-            <span>Data Retrieval</span>
-          </TabsTrigger>
-        </TabRow>
-
-        {/* Second row - Evidence group */}
-        <TabRow label="Evidence:">
-          <TabsTrigger 
-            value="literature" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-            <span>Literature</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="literature-review" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <BookOpen className="h-3.5 w-3.5 mr-1.5" />
-            <span>Literature Review</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="internal-clinical-data" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <FileSpreadsheet className="h-3.5 w-3.5 mr-1.5" />
-            <span>Internal Clinical Data</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="sota" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <BookMarked className="h-3.5 w-3.5 mr-1.5" />
-            <span>State of Art</span>
-          </TabsTrigger>
-        </TabRow>
-
-        {/* Third row - Analysis group */}
-        <TabRow label="Analysis:" className="mb-4">
-          <TabsTrigger 
-            value="equivalence" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <GitCompare className="h-3.5 w-3.5 mr-1.5" />
-            <span>Equivalence</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="gspr-mapping" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <FileCheck className="h-3.5 w-3.5 mr-1.5" />
-            <span>GSPR Mapping</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="compliance" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <CheckSquare className="h-3.5 w-3.5 mr-1.5" />
-            <span>Compliance</span>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="assistant" 
-            className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-1 font-normal text-[#616161] text-xs sm:text-sm"
-          >
-            <Lightbulb className="h-3.5 w-3.5 mr-1.5" />
-            <span>Assistant</span>
-          </TabsTrigger>
-        </TabRow>
-
-        {/* Tab Content */}
-        <TabsContent value="builder" className="mt-0">
-          <div className="bg-[#F9F9F9] py-4">
-            <div className="flex flex-col md:flex-row items-start justify-between">
-              <div className="flex-1 px-4">
-                <h2 className="text-xl font-semibold text-[#323130]">Section Generator</h2>
-                <div className="mt-2 mb-4">
-                  <div className="bg-[#EFF6FC] rounded-md px-3 py-1 text-sm inline-flex items-center gap-1 text-[#0F6CBD]">
-                    <span>AI-Powered</span>
-                  </div>
-                </div>
-                <CerBuilderPanel
-                  title={title}
-                  faers={faers}
-                  comparators={comparators}
-                  sections={sections}
-                  onTitleChange={setTitle}
-                  onSectionsChange={setSections}
-                  onFaersChange={setFaers}
-                  onComparatorsChange={setComparators}
-                />
-              </div>
-              <div className="w-full md:w-auto md:min-w-[280px] md:max-w-[320px] px-4 mt-6 md:mt-0">
-                <h2 className="text-xl font-semibold text-[#323130]">Report Sections</h2>
-                <div className="mt-2 mb-4">
-                  <div className="bg-[#F3F2F1] rounded px-3 py-1 text-sm inline-flex items-center gap-1">
-                    <span>{sections.length} sections</span>
-                  </div>
-                </div>
-                
-                <div className="mb-4">
-                  <h3 className="text-md font-medium mb-2 text-[#323130]">Report Title</h3>
-                  <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full p-2 border border-[#E1DFDD] rounded"
-                    placeholder="Clinical Evaluation Report"
-                  />
-                </div>
-                
-                {sections.length > 0 ? (
-                  <div className="space-y-2">
-                    {sections.map((section, idx) => (
-                      <div key={idx} className="bg-[#F3F2F1] p-2 rounded text-sm">
-                        {section.title}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-gray-500 text-sm italic">
-                    No sections added yet. Generate sections from the tools on the left.
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="px-4 mt-4 text-center">
-              <Button 
-                onClick={() => handleExport('docx')} 
-                className="bg-transparent text-[#0F6CBD] hover:bg-[#EFF6FC] border-none" 
-                variant="outline"
-              >
-                <Download className="h-4 w-4 mr-2" />
-                Export
-              </Button>
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="cep" className="mt-0">
-          <ClinicalEvaluationPlanPanel
-            onCEPGenerated={(cepData) => {
-              const existingIndex = sections.findIndex(
-                section => section.type === 'cep' || 
-                (section.title && section.title.toLowerCase().includes('evaluation plan'))
-              );
-              
-              if (existingIndex >= 0) {
-                const updatedSections = [...sections];
-                updatedSections[existingIndex] = {
-                  ...updatedSections[existingIndex],
-                  content: cepData.content,
-                  lastUpdated: new Date().toISOString()
-                };
-                setSections(updatedSections);
-                
-                toast({
-                  title: "CEP Updated",
-                  description: "Clinical Evaluation Plan has been updated in your CER.",
-                  variant: "success"
-                });
-              } else {
-                setSections([...sections, cepData]);
-                
-                toast({
-                  title: "CEP Added",
-                  description: "Clinical Evaluation Plan has been added to your CER.",
-                  variant: "success"
-                });
-              }
-            }}
-            deviceName={deviceName}
-            deviceType={deviceType}
-            manufacturer={manufacturer}
-          />
-        </TabsContent>
-
-        <TabsContent value="literature" className="mt-0">
-          {/* Nested tabs for Literature section */}
-          <Tabs defaultValue="search" className="w-full">
-            <TabsList className="flex overflow-x-auto whitespace-nowrap bg-white border-b border-gray-200 rounded-none w-full justify-start gap-2">
-              <TabsTrigger value="search" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] flex-shrink-0">
-                Search & Analyze
-              </TabsTrigger>
-              <TabsTrigger value="methodology" className="rounded-none border-b-2 border-transparent data-[state=active]:border-[#0F6CBD] data-[state=active]:text-[#0F6CBD] data-[state=active]:shadow-none bg-transparent px-3 py-2 font-normal text-[#616161] flex-shrink-0">
-                Search Methodology
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="search" className="mt-4">
-              <LiteratureSearchPanel
-                onAddSection={(newSection) => {
-                  setSections([...sections, newSection]);
-                  toast({
-                    title: "Literature Review Added",
-                    description: "Added to your CER.",
-                    variant: "success",
-                  });
-                }}
-                deviceName={deviceName}
-                manufacturer={manufacturer}
-                cerTitle={title}
-              />
-            </TabsContent>
-            
-            <TabsContent value="methodology" className="mt-4">
-              <LiteratureMethodologyPanel
-                onAddToCER={(newSection) => {
-                  setSections([...sections, newSection]);
-                  toast({
-                    title: "Literature Methodology Added",
-                    description: "Search methodology documentation added to your CER.",
-                    variant: "success",
-                  });
-                }}
-                deviceName={deviceName}
-                deviceType={deviceType}
-                manufacturer={manufacturer}
-              />
-            </TabsContent>
-          </Tabs>
-        </TabsContent>
-        
-        <TabsContent value="literature-review" className="mt-0">
-          <LiteratureReviewWorkflow
-            deviceName={deviceName}
-            manufacturer={manufacturer}
-            onAddToCER={(reviewData) => {
-              // Handle adding literature review to CER
-              const existingIndex = sections.findIndex(
-                section => section.type === 'literature-review' || 
-                (section.title && section.title.toLowerCase().includes('literature review'))
-              );
-              
-              if (existingIndex >= 0) {
-                const updatedSections = [...sections];
-                updatedSections[existingIndex] = {
-                  ...updatedSections[existingIndex],
-                  content: reviewData.content,
-                  lastUpdated: new Date().toISOString()
-                };
-                setSections(updatedSections);
-                
-                toast({
-                  title: "Literature Review Updated",
-                  description: "Literature review has been updated in your CER.",
-                  variant: "success"
-                });
-              } else {
-                setSections([...sections, reviewData]);
-                
-                toast({
-                  title: "Literature Review Added",
-                  description: "Literature review has been added to your CER.",
-                  variant: "success"
-                });
-              }
-            }}
-          />
-        </TabsContent>
-        
-        <TabsContent value="internal-clinical-data" className="mt-0">
-          <InternalClinicalDataPanel
-            jobId={`cer-${Date.now()}`}
-            deviceName={deviceName}
-            manufacturer={manufacturer}
-            onAddToCER={(internalClinicalData) => {
-              // Check if we already have an internal clinical data section
-              const existingIndex = sections.findIndex(
-                section => section.type === 'internal-clinical-data' || 
-                (section.title && section.title.toLowerCase().includes('internal clinical data'))
-              );
-              
-              if (existingIndex >= 0) {
-                // Update existing section
-                const updatedSections = [...sections];
-                updatedSections[existingIndex] = {
-                  ...updatedSections[existingIndex],
-                  content: internalClinicalData.content,
-                  lastUpdated: new Date().toISOString()
-                };
-                setSections(updatedSections);
-                
-                toast({
-                  title: "Internal Clinical Data Updated",
-                  description: "Your CER now includes the latest internal clinical evidence.",
-                  variant: "success"
-                });
-              } else {
-                // Add new section
-                setSections([...sections, internalClinicalData]);
-                
-                toast({
-                  title: "Internal Clinical Data Added",
-                  description: "Internal clinical evidence has been added to your CER.",
-                  variant: "success"
-                });
-              }
-            }}
-          />
-        </TabsContent>
-
-        <TabsContent value="documents" className="mt-0">
-          <DocumentVaultPanel 
-            jobId={`cer-${Date.now()}`} 
-          />
-        </TabsContent>
-        
-        <TabsContent value="data-retrieval" className="mt-0">
-          {/* Data Retrieval Reminder */}
-          {!isFetchingFaers && faers.length === 0 && (
-            <NotificationBanner
-              title="Essential: Retrieve FAERS Data First"
-              description="For optimal CER quality, start by retrieving real-world adverse event data and literature evidence."
-              actionText="Start Retrieval"
-              onActionClick={() => setActiveTab('data-retrieval')}
-              onDismiss={() => setShowEvidenceReminder(false)}
-              variant="info"
-              visible={showEvidenceReminder}
-              showInfoIcon={true}
-              infoTooltip="Pull in real-world adverse event data (FAERS) and key published studies—so your AI sections include actual safety and evidence."
-              additionalContent="Why run this? AI section drafts will cite and analyze FAERS + literature automatically."
-            />
-          )}
-          <CerDataRetrievalPanel
-            reportId={`cer-${Date.now()}`}
-            deviceName={deviceName}
-            onDataUpdated={(data) => {
-              if (data.type === 'faers' && data.data) {
-                setFaers(data.data.reports || []);
-                setComparators(data.data.comparators || []);
-                toast({
-                  title: "FAERS Data Retrieved",
-                  description: "Your FAERS data has been downloaded and imported.",
-                  variant: "success",
-                });
-              }
-            }}
-            setIsFetchingFaers={setIsFetchingFaers}
-          />
-        </TabsContent>
-        
-        <TabsContent value="equivalence" className="mt-0">
-          <EquivalenceBuilderPanel 
-            onEquivalenceGenerated={(data) => {
-              setEquivalenceData(data);
-              
-              // Create a CER section for the equivalence data
-              const cerSection = {
-                title: "Device Equivalence Analysis",
-                type: "equivalence",
-                content: data.content,
-                metadata: {
-                  equivalent_devices: data.equivalentDevices,
-                  clinical_equivalence: data.clinicalEquivalence,
-                  technical_equivalence: data.technicalEquivalence,
-                  biological_equivalence: data.biologicalEquivalence
-                },
-                timestamp: new Date().toISOString()
-              };
-              
-              // Check if we already have an equivalence section
-              const existingIndex = sections.findIndex(section => section.type === 'equivalence');
-              
-              if (existingIndex >= 0) {
-                // Update existing section
-                const updatedSections = [...sections];
-                updatedSections[existingIndex] = cerSection;
-                setSections(updatedSections);
-                
-                toast({
-                  title: "Equivalence Section Updated",
-                  description: "Your CER now includes the latest equivalence analysis.",
-                  variant: "success"
-                });
-              } else {
-                // Add new section
-                setSections([...sections, cerSection]);
-                
-                toast({
-                  title: "Equivalence Section Added",
-                  description: "Equivalence analysis has been added to your CER.",
-                  variant: "success"
-                });
-              }
-            }}
-            deviceName={deviceName}
-            deviceType={deviceType}
-            manufacturer={manufacturer}
-          />
-        </TabsContent>
-        
-        <TabsContent value="gspr-mapping" className="mt-0">
-          <GSPRMappingPanel
-            deviceName={deviceName}
-            faersData={faers}
-            literatureData={[]}
-            onAddToReport={(gspr) => {
-              // Create a CER section for GSPR mapping
-              const cerSection = {
-                title: "GSPR Clinical Evaluation Mapping",
-                type: "gspr-mapping",
-                content: gspr,
-                timestamp: new Date().toISOString()
-              };
-              
-              // Check if we already have a GSPR section
-              const existingIndex = sections.findIndex(section => section.type === 'gspr-mapping');
-              
-              if (existingIndex >= 0) {
-                // Update existing section
-                const updatedSections = [...sections];
-                updatedSections[existingIndex] = cerSection;
-                setSections(updatedSections);
-                
-                toast({
-                  title: "GSPR Section Updated",
-                  description: "Your CER now includes the latest GSPR mapping analysis.",
-                  variant: "success"
-                });
-              } else {
-                // Add new section
-                setSections([...sections, cerSection]);
-                
-                toast({
-                  title: "GSPR Section Added",
-                  description: "GSPR mapping analysis has been added to your CER.",
-                  variant: "success"
-                });
-              }
-            }}
-          />
-        </TabsContent>
-        
-        <TabsContent value="compliance" className="mt-0">
-          <ComplianceScorePanel
-            totalSections={sections.length}
-            onAssessCompliance={() => {
-              setIsComplianceRunning(true);
-              // Simulate compliance checking
-              setTimeout(() => {
-                setCompliance({
-                  score: 87,
-                  missing: ["Post-market surveillance data", "PMCF plan"],
-                  recommendations: [
-                    "Include a detailed risk analysis section",
-                    "Add data from at least one clinical investigation",
-                    "Add post-market surveillance data"
-                  ]
-                });
-                setIsComplianceRunning(false);
-              }, 1500);
-            }}
-            compliance={compliance}
-            isRunning={isComplianceRunning}
-            onAddRecommendations={(complianceData) => {
-              // Add compliance recommendations to the CER
-              const cerSection = {
-                title: "Regulatory Compliance Analysis",
-                type: "compliance",
-                content: `# Regulatory Compliance Analysis\n\n## Overview\nThe Clinical Evaluation Report has been analyzed for compliance with EU MDR 2017/745 requirements. The following analysis presents the compliance score, identified gaps, and recommendations for enhancing regulatory compliance.\n\n## Compliance Score\n**Overall Compliance**: ${complianceData.score}%\n\n## Identified Gaps\n${complianceData.missing.map(item => `- ${item}`).join('\n')}\n\n## Recommendations\n${complianceData.recommendations.map(item => `- ${item}`).join('\n')}`,
-                timestamp: new Date().toISOString()
-              };
-              
-              // Check if we already have a compliance section
-              const existingIndex = sections.findIndex(section => section.type === 'compliance');
-              
-              if (existingIndex >= 0) {
-                // Update existing section
-                const updatedSections = [...sections];
-                updatedSections[existingIndex] = cerSection;
-                setSections(updatedSections);
-                
-                toast({
-                  title: "Compliance Section Updated",
-                  description: "Your CER now includes the latest compliance analysis.",
-                  variant: "success"
-                });
-              } else {
-                // Add new section
-                setSections([...sections, cerSection]);
-                
-                toast({
-                  title: "Compliance Section Added",
-                  description: "Regulatory compliance analysis has been added to your CER.",
-                  variant: "success"
-                });
-              }
-            }}
-          />
-        </TabsContent>
-        
-        <TabsContent value="assistant" className="mt-0">
-          <CerAssistantPanel
-            sections={sections}
-            deviceName={deviceName}
-            manufacturer={manufacturer}
-            onGenerateSuggestion={(suggestion) => {
-              if (suggestion.type === 'add-section') {
-                // Add the suggested section
-                setSections([...sections, suggestion.section]);
-                
-                toast({
-                  title: "Section Added",
-                  description: `${suggestion.section.title} has been added to your CER.`,
-                  variant: "success"
-                });
-              } else if (suggestion.type === 'enhance-section') {
-                // Enhance an existing section
-                const sectionIndex = sections.findIndex(s => s.type === suggestion.targetSection);
-                
-                if (sectionIndex >= 0) {
-                  const updatedSections = [...sections];
-                  updatedSections[sectionIndex] = {
-                    ...updatedSections[sectionIndex],
-                    content: suggestion.enhancedContent,
-                    lastUpdated: new Date().toISOString()
-                  };
-                  
-                  setSections(updatedSections);
-                  
-                  toast({
-                    title: "Section Enhanced",
-                    description: `${sections[sectionIndex].title} has been enhanced.`,
-                    variant: "success"
-                  });
-                }
-              }
-            }}
-          />
-        </TabsContent>
-        
-        <TabsContent value="sota" className="mt-0">
-          <StateOfArtPanel
-            deviceName={deviceName}
-            deviceType={deviceType}
-            manufacturer={manufacturer}
-            onAddToCER={(sotaSection) => {
-              // Check if we already have a SOTA section
-              const existingIndex = sections.findIndex(
-                section => section.type === 'sota' || 
-                (section.title && section.title.toLowerCase().includes('state of the art'))
-              );
-              
-              if (existingIndex >= 0) {
-                // Update existing section
-                const updatedSections = [...sections];
-                updatedSections[existingIndex] = {
-                  ...updatedSections[existingIndex],
-                  content: sotaSection.content,
-                  lastUpdated: new Date().toISOString()
-                };
-                setSections(updatedSections);
-                
-                toast({
-                  title: "State of the Art Section Updated",
-                  description: "Your CER now includes the latest state of the art analysis.",
-                  variant: "success"
-                });
-              } else {
-                // Add new section
-                setSections([...sections, sotaSection]);
-                
-                toast({
-                  title: "State of the Art Section Added",
-                  description: "State of the art analysis has been added to your CER.",
-                  variant: "success"
-                });
-              }
-            }}
-          />
-        </TabsContent>
-      </Tabs>
+      {/* Custom navigation without Radix UI dependencies */}
+      {renderNavigation()}
+      
+      {/* Content container */}
+      <div className="w-full mt-0">
+        {renderContent()}
+      </div>
 
       {/* Device Info Dialog */}
       <Dialog open={showDeviceInfoDialog} onOpenChange={setShowDeviceInfoDialog}>
@@ -753,82 +565,67 @@ export default function CERV2Page() {
           <DialogHeader>
             <DialogTitle>Device Information</DialogTitle>
             <DialogDescription>
-              Enter your device details to generate a comprehensive CER
+              Please provide information about your medical device to generate a personalized CER.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="deviceName" className="text-right">
-                Device Name
-              </Label>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label htmlFor="deviceName">Device Name</Label>
               <Input
                 id="deviceName"
                 value={deviceName}
                 onChange={(e) => setDeviceName(e.target.value)}
-                className="col-span-3"
-                placeholder="e.g. CardioGuard EKG Monitor"
+                placeholder="e.g. Arthrosurface Shoulder Arthroplasty System"
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="manufacturer" className="text-right">
-                Manufacturer
-              </Label>
-              <Input
-                id="manufacturer"
-                value={manufacturer}
-                onChange={(e) => setManufacturer(e.target.value)}
-                className="col-span-3"
-                placeholder="e.g. MedTech Innovations Inc."
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="deviceType" className="text-right">
-                Device Class
-              </Label>
-              <Select 
-                value={deviceType} 
-                onValueChange={setDeviceType}
-              >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select device class" />
+            <div>
+              <Label htmlFor="deviceType">Device Type</Label>
+              <Select value={deviceType} onValueChange={setDeviceType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select device type" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="Class I Medical Device">Class I Medical Device</SelectItem>
                   <SelectItem value="Class II Medical Device">Class II Medical Device</SelectItem>
                   <SelectItem value="Class III Medical Device">Class III Medical Device</SelectItem>
-                  <SelectItem value="Active Implantable Medical Device">Active Implantable Medical Device</SelectItem>
-                  <SelectItem value="In Vitro Diagnostic Device">In Vitro Diagnostic Device</SelectItem>
+                  <SelectItem value="In Vitro Diagnostic">In Vitro Diagnostic</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="intendedUse" className="text-right">
-                Intended Use
-              </Label>
+            <div>
+              <Label htmlFor="manufacturer">Manufacturer</Label>
+              <Input
+                id="manufacturer"
+                value={manufacturer}
+                onChange={(e) => setManufacturer(e.target.value)}
+                placeholder="e.g. Medical Innovations Inc."
+              />
+            </div>
+            <div>
+              <Label htmlFor="intendedUse">Intended Use</Label>
               <Input
                 id="intendedUse"
                 value={intendedUse}
                 onChange={(e) => setIntendedUse(e.target.value)}
-                className="col-span-3"
-                placeholder="e.g. Continuous monitoring of cardiac activity"
+                placeholder="e.g. For treatment of..."
               />
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => setShowDeviceInfoDialog(false)} variant="outline">
+            <Button variant="outline" onClick={() => setShowDeviceInfoDialog(false)}>
               Cancel
             </Button>
             <Button 
               onClick={() => {
-                // Close dialog and enable wizard
                 setShowDeviceInfoDialog(false);
-                setShowWizard(true);
-                // Simulate generation process
-                generateFullCER();
-              }} 
-              className="bg-[#0F6CBD] hover:bg-[#115EA3] text-white"
+                toast({
+                  title: "Device Info Saved",
+                  description: "Your device information has been saved and applied to the CER.",
+                  variant: "success"
+                });
+              }}
             >
-              Generate CER
+              Save & Continue
             </Button>
           </DialogFooter>
         </DialogContent>
