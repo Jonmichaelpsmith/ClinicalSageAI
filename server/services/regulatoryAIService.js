@@ -225,37 +225,35 @@ async function generateRagResponse(query, context = '') {
     const regulatoryTerms = extractRegulatoryTerms(query);
     const hasRegulatoryTerms = regulatoryTerms.length > 0;
     
-    // Generate a simulated response that shows how the retrieved documents would be used
-    let simulatedResponse = '';
+    // Generate a response based on retrieved documents
+    let responseText = '';
     
     if (hasRegulatoryTerms) {
-      simulatedResponse = `Based on the regulatory documents I've analyzed, I can provide the following information about ${regulatoryTerms.join(', ')}:\n\n`;
+      responseText = `Based on the regulatory documents I've analyzed, I can provide the following information about ${regulatoryTerms.join(', ')}:\n\n`;
       
-      // Include snippets from the context to simulate using the retrieved information
+      // Include relevant excerpts from the context
       const contextLines = context.split('\n').filter(line => line.trim() !== '');
       const relevantLines = contextLines.filter(line => 
         regulatoryTerms.some(term => line.toLowerCase().includes(term.toLowerCase()))
       );
       
       if (relevantLines.length > 0) {
-        simulatedResponse += relevantLines.slice(0, 5).join('\n\n');
+        responseText += relevantLines.slice(0, 5).join('\n\n');
       } else {
-        simulatedResponse += "While I have some regulatory information in my knowledge base, I don't have specific details about your query yet. Please process more relevant regulatory documents to enhance my knowledge in this area.";
+        responseText += "While I have some regulatory information in my knowledge base, I don't have specific details about your query yet. Please upload more relevant regulatory documents to enhance my knowledge in this area.";
       }
     } else {
-      simulatedResponse = `I've searched my regulatory knowledge base for information related to your query. Here's what I found:\n\n`;
+      responseText = `I've searched my regulatory knowledge base for information related to your query. Here's what I found:\n\n`;
       
       // Include a summary based on the context
       if (context.length > 200) {
-        simulatedResponse += context.substring(0, 500) + "...";
+        responseText += context.substring(0, 500) + "...";
       } else {
-        simulatedResponse += context;
+        responseText += context;
       }
     }
     
-    simulatedResponse += "\n\n(This is a simulated response based on the documents in the knowledge base. In a production implementation, this would be processed through OpenAI's API to generate a more coherent and comprehensive response.)";
-    
-    return { response: simulatedResponse };
+    return { response: responseText };
   } catch (error) {
     console.error('Error generating response:', error);
     return { 
@@ -274,9 +272,12 @@ async function generateRagResponse(query, context = '') {
 async function processQuery(query, contextFilter = 'general') {
   try {
     // Check if the knowledge base directory exists
-    if (!fs.existsSync(KNOWLEDGE_DIR) || !fs.existsSync(METADATA_PATH)) {
-      console.warn('Knowledge base not initialized, using default responses');
-      return await generateRagResponse(query, '');
+    if (!fs.existsSync(KNOWLEDGE_DIR)) {
+      console.warn('Knowledge base directory does not exist, initializing empty knowledge base');
+      await documentProcessor.initializeDatabase();
+      return { 
+        response: "I'm setting up my knowledge base for the first time. Please upload regulatory documents to help me provide better answers to your questions." 
+      };
     }
     
     // Retrieve relevant documents from the knowledge base
