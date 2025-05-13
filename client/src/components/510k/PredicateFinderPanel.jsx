@@ -51,9 +51,13 @@ import PredicateComparison from './PredicateComparison';
 import { isFeatureEnabled } from '@/flags/featureFlags';
 
 const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], recommendations = [] }) => {
+  // Make sure we protect against null/undefined props
+  const safePredicates = Array.isArray(predicates) ? predicates : [];
+  const safeRecommendations = Array.isArray(recommendations) ? recommendations : [];
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
-  const [results, setResults] = useState(predicates.length > 0 ? { predicateDevices: predicates } : null);
+  const [results, setResults] = useState(safePredicates.length > 0 ? { predicateDevices: safePredicates } : null);
   const [activeTab, setActiveTab] = useState('predicates');
   const [showCustomization, setShowCustomization] = useState(false);
   const [selectedPredicate, setSelectedPredicate] = useState(null);
@@ -81,15 +85,37 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
     setIsLoading(true);
     setIsSearching(true);
     try {
-      // Use the service for finding predicates and literature with custom relevance criteria
-      const result = await FDA510kService.findPredicatesAndLiterature(
+      console.log('Starting predicate search with device profile:', deviceProfile.deviceName);
+      
+      // Add timeout protection
+      const searchPromise = FDA510kService.findPredicatesAndLiterature(
         deviceProfile, 
         organizationId || 1,
         relevanceCriteria // Pass the custom relevance criteria
       );
       
-      // Set the results
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Predicate search timed out after 30 seconds'));
+        }, 30000);
+      });
+      
+      // Race the search against the timeout
+      const result = await Promise.race([searchPromise, timeoutPromise]);
+      
+      // Validate the result
+      if (!result || (typeof result !== 'object')) {
+        throw new Error('Invalid response format from predicate search');
+      }
+      
+      // Set the results, ensuring it's a valid object
       setResults(result);
+      
+      console.log('Predicate search completed successfully:', {
+        predicateCount: result.predicateDevices?.length || 0,
+        literatureCount: result.literatureReferences?.length || 0
+      });
       
       toast({
         title: "Search Complete",
