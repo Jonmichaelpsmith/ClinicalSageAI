@@ -11,7 +11,7 @@ router.get('/requirements/:deviceClass', (req: express.Request, res: express.Res
   
   try {
     // Sample requirements data for different device classes
-    const requirementsMap = {
+    const requirementsMap: Record<string, { requirements: Array<{ id: string; name: string; required: boolean; category: string }> }> = {
       'I': {
         requirements: [
           { id: 'req-1-1', name: 'Device Description', required: true, category: 'general' },
@@ -54,7 +54,9 @@ router.get('/requirements/:deviceClass', (req: express.Request, res: express.Res
     };
     
     // Return requirements for the specified device class
-    const requirements = requirementsMap[deviceClass] || { requirements: [] };
+    // Use safe access with type checking
+    const validClass = deviceClass as keyof typeof requirementsMap;
+    const requirements = (validClass in requirementsMap) ? requirementsMap[validClass] : { requirements: [] };
     
     res.json(requirements);
   } catch (error) {
