@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, FileText, ExternalLink, PlusCircle } from 'lucide-react';
+import { ArrowLeft, FileText, ExternalLink, PlusCircle, Route } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useLocation } from 'wouter';
 import { isFeatureEnabled } from '../flags/featureFlags';
@@ -24,6 +24,11 @@ const ESTARPackagePage = () => {
   const handleBack = () => {
     setLocation('/510k');
   };
+  
+  // Navigate to 510k dashboard
+  const navigateToDashboard = () => {
+    setLocation('/510k-dashboard');
+  };
 
   const handleOpenFdaGuidance = () => {
     window.open('https://www.fda.gov/medical-devices/premarket-notification-510k/estar-program', '_blank');
@@ -37,6 +42,10 @@ const ESTARPackagePage = () => {
           <Button variant="ghost" onClick={handleBack} className="h-8 px-2">
             <ArrowLeft className="h-4 w-4 mr-1" />
             <span>Back to 510(k)</span>
+          </Button>
+          <Button variant="outline" onClick={navigateToDashboard} size="sm" className="h-8 px-2">
+            <Route className="h-4 w-4 mr-1" />
+            <span>View 510(k) Dashboard</span>
           </Button>
         </div>
         <h1 className="text-3xl font-bold text-center">eSTAR Package Builder</h1>

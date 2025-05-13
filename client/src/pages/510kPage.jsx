@@ -114,6 +114,16 @@ const FDA510kPage = () => {
   const handleBack = () => {
     setLocation('/client-portal');
   };
+  
+  // Navigate to eSTAR package builder
+  const navigateToESTAR = () => {
+    setLocation('/estar-package');
+  };
+  
+  // Navigate to dashboard view
+  const navigateToDashboard = () => {
+    setLocation('/510k-dashboard');
+  };
 
   return (
     <div className="container py-8 max-w-7xl mx-auto">
@@ -123,11 +133,11 @@ const FDA510kPage = () => {
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
           </Button>
-          <Button variant="outline" onClick={() => setLocation('/510k-dashboard')} className="mr-2">
+          <Button variant="outline" onClick={navigateToDashboard} className="mr-2">
             <Route className="h-4 w-4 mr-2" />
             Dashboard View
           </Button>
-          <Button variant="outline" onClick={() => setLocation('/estar-package')}>
+          <Button variant="outline" onClick={navigateToESTAR}>
             <FileText className="h-4 w-4 mr-2" />
             eSTAR Builder
           </Button>
@@ -356,7 +366,7 @@ const FDA510kPage = () => {
               />
               <div className="mt-8 flex justify-end">
                 <Button 
-                  onClick={() => setLocation('/estar-package')} 
+                  onClick={navigateToESTAR} 
                   variant="outline"
                   className="flex items-center gap-2"
                 >
