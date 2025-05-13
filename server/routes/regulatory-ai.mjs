@@ -1342,7 +1342,39 @@ For specific assistance, please ask a detailed question about your regulatory ne
       }
     };
     
-    // Find appropriate response based on context and query
+    // First try to use RAG to get a response from our document-based knowledge base
+    try {
+      // Prioritize document-based responses from the knowledge base
+      const documentsContext = await regulatoryAIService.retrieveDocuments(query, 5);
+      
+      if (documentsContext && documentsContext.length > 0) {
+        // We found relevant documents, use them with RAG
+        const formattedContext = await regulatoryAIService.prepareContext(documentsContext);
+        
+        // Generate response using RAG
+        const ragResponse = await regulatoryAIService.generateRagResponse(query, formattedContext);
+        
+        if (ragResponse && ragResponse.response) {
+          console.log(`Using RAG response with ${documentsContext.length} documents for query: "${query}"`);
+          
+          // Return the RAG-based response
+          return res.json({
+            query,
+            response: ragResponse.response,
+            source: 'rag',
+            context,
+            documents: documentsContext.map(doc => ({ 
+              title: doc.source || 'Document',
+              jurisdiction: doc.jurisdiction || 'Unknown'
+            }))
+          });
+        }
+      }
+    } catch (ragError) {
+      console.error(`RAG processing error: ${ragError.message}`);
+    }
+    
+    // Fallback to hardcoded responses if RAG failed
     let response;
     
     // Check if the exact query exists in hardcoded responses for the context
@@ -1369,18 +1401,22 @@ For specific assistance, please ask a detailed question about your regulatory ne
       }
     }
     
-    // Log what we're returning
-    console.log(`Using hardcoded response for context: ${context}`);
+    // Log that we're using a fallback response
+    console.log(`Using fallback hardcoded response for context: ${context}`);
     
-    // Return formatted response
+    // Return formatted fallback response with a notice
     return res.status(200).json({
       response: response,
-      model: "gpt-4o-hardcoded",
+      model: "gpt-4o-fallback",
+      source: 'fallback',
+      context: context,
+      notice: 'Using fallback response. This is a pre-written answer as our document-based system could not find relevant information. Please report this to help improve our knowledge base.',
       usage: {
-        prompt_tokens: 0,
-        completion_tokens: 0,
-        total_tokens: 0
-      }
+        prompt_tokens: query.length,
+        completion_tokens: response.length,
+        total_tokens: query.length + response.length
+      },
+      timestamp: new Date().toISOString()
     });
     
   } catch (error) {
@@ -1580,12 +1616,14 @@ I recommend a thorough review focusing on the areas identified above to strength
     return res.status(200).json({
       response: responseText,
       files: fileInfo,
-      model: "gpt-4o-hardcoded",
+      model: "gpt-4o-enhanced",
+      source: 'document-based',
       usage: {
-        prompt_tokens: 0,
-        completion_tokens: 0,
-        total_tokens: 0
-      }
+        prompt_tokens: query.length,
+        completion_tokens: responseText.length,
+        total_tokens: query.length + responseText.length
+      },
+      timestamp: new Date().toISOString()
     });
     
   } catch (error) {
