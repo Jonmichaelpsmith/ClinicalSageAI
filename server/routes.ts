@@ -97,6 +97,11 @@ declare module './routes/510kEstarRoutes' {
   export default router;
 }
 
+declare module './routes/regulatory-ai.js' {
+  const router: express.Router;
+  export default router;
+}
+
 // Import routes after declaring the modules
 import indWizardRouter from './routes/indWizardAPI.js';
 import cerRouter from './routes/cer-final.js';
@@ -123,6 +128,7 @@ import fda510kRouter from './routes/fda510k-routes';
 import fda510kComplianceRouter from './routes/510k-compliance-routes';
 import fda510kEstarRouter from './routes/510kEstarRoutes';
 import { router as fda510kApiRouter } from './routes/510k-api-routes';
+import regulatoryAiRouter from './routes/regulatory-ai.js';
 // Import existing router or create empty one
 import express from 'express';
 import * as fs from 'fs';
@@ -279,6 +285,9 @@ export default function registerRoutes(app: Express): void {
   app.use('/api/fda510k', fda510kComplianceRouter);
   app.use('/api/fda510k', fda510kEstarRouter);
   app.use('/api/fda510k', fda510kApiRouter);
+  
+  // Register Regulatory AI Assistant routes
+  app.use('/api/regulatory-ai', regulatoryAiRouter);
   
   // Register Device Profile API routes directly
   const DeviceProfileService = require('./services/DeviceProfileService').default;
