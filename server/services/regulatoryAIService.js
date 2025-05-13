@@ -3,14 +3,19 @@
  * 
  * This service implements a Retrieval-Augmented Generation (RAG) approach
  * to enhance the AI's responses with regulatory knowledge.
+ * 
+ * NOTE: This version uses the file system for storage rather than SQLite
+ * to avoid dependency issues.
  */
 
 const fs = require('fs');
 const path = require('path');
-const sqlite3 = require('sqlite3').verbose();
+const documentProcessor = require('./documentProcessor');
 
 // Path to the knowledge base
-const DB_PATH = path.join(__dirname, '../../data/knowledge_base.db');
+const DATA_DIR = path.join(__dirname, '../../data');
+const KNOWLEDGE_DIR = path.join(DATA_DIR, 'knowledge_base');
+const METADATA_PATH = path.join(KNOWLEDGE_DIR, 'metadata.json');
 
 // Hardcoded knowledge for key regulatory concepts
 // This will be used as a fallback when the knowledge base is not yet populated
@@ -43,79 +48,64 @@ const DEFAULT_REGULATORY_KNOWLEDGE = {
 
 /**
  * Enhanced semantic search to match user queries against knowledge base documents
- * This version uses a more sophisticated keyword matching with ranking
+ * This version uses a file-based approach with keyword matching and ranking
  * @param {string} query - The user's query
  * @param {number} limit - Number of documents to retrieve
  * @returns {Promise<Array>} - Array of relevant documents
  */
 async function retrieveDocuments(query, limit = 5) {
-  const db = new sqlite3.Database(DB_PATH, sqlite3.OPEN_READONLY);
-  
-  // Check if the database exists
-  if (!fs.existsSync(DB_PATH)) {
-    return [];
-  }
+  // Extract key regulatory terms to improve search relevance
+  const regulatoryTerms = extractRegulatoryTerms(query);
   
   try {
-    // Extract key regulatory terms to improve search relevance
-    const regulatoryTerms = extractRegulatoryTerms(query);
-    
-    // Build the search query with extracted terms
-    let searchQuery = query.toLowerCase();
-    
-    // Boost the search with extracted regulatory terms
-    if (regulatoryTerms.length > 0) {
-      const boostTerms = regulatoryTerms.join(' OR ');
-      searchQuery = `${searchQuery} ${boostTerms}`;
+    // Check if the knowledge base directory exists
+    if (!fs.existsSync(KNOWLEDGE_DIR)) {
+      return [];
     }
     
-    // Try using the FTS5 virtual table if available
-    try {
-      const ftsResults = await new Promise((resolve, reject) => {
-        db.all(`
-          SELECT id, source, section, content, jurisdiction, tags, doc_type
-          FROM knowledge_search
-          WHERE knowledge_search MATCH ?
-          LIMIT ?
-        `, [searchQuery, limit], (err, rows) => {
-          if (err) {
-            // If the FTS query fails, we'll fall back to LIKE search
-            resolve([]);
-          } else {
-            resolve(rows);
-          }
-        });
-      });
+    // Use the documentProcessor to search the knowledge base
+    const results = await documentProcessor.searchKnowledgeBase(
+      query, 
+      null, // No jurisdiction filter
+      null, // No document type filter
+      limit
+    );
+    
+    // Sort results by relevance (simple implementation that prioritizes documents
+    // that match regulatory terms)
+    return results.sort((a, b) => {
+      const aContent = a.content?.toLowerCase() || '';
+      const bContent = b.content?.toLowerCase() || '';
+      let aScore = 0;
+      let bScore = 0;
       
-      // If we got results from FTS, return them
-      if (ftsResults.length > 0) {
-        return ftsResults;
-      }
-    } catch (error) {
-      console.warn('FTS search error, falling back to LIKE search:', error.message);
-    }
-    
-    // Fall back to a LIKE search if FTS isn't working
-    const likeTerms = [query, ...regulatoryTerms];
-    let placeholders = likeTerms.map(() => 'content LIKE ?').join(' OR ');
-    let params = likeTerms.map(term => `%${term}%`);
-    
-    return new Promise((resolve, reject) => {
-      db.all(`
-        SELECT id, source, section, content, jurisdiction, tags, doc_type
-        FROM knowledge_base
-        WHERE ${placeholders}
-        LIMIT ?
-      `, [...params, limit], (err, rows) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(rows);
+      // Score based on matches to regulatory terms
+      regulatoryTerms.forEach(term => {
+        if (aContent.includes(term.toLowerCase())) {
+          aScore += 10; // Higher weight for regulatory term matches
+        }
+        if (bContent.includes(term.toLowerCase())) {
+          bScore += 10; // Higher weight for regulatory term matches
         }
       });
-    });
-  } finally {
-    db.close();
+      
+      // Also score based on match to the original query
+      if (aContent.includes(query.toLowerCase())) {
+        aScore += 5;
+      }
+      if (bContent.includes(query.toLowerCase())) {
+        bScore += 5;
+      }
+      
+      // Finally, prioritize shorter documents slightly (they tend to be more focused)
+      aScore -= aContent.length / 100000;
+      bScore -= bContent.length / 100000;
+      
+      return bScore - aScore; // Higher score first
+    }).slice(0, limit);
+  } catch (error) {
+    console.error('Error retrieving documents:', error);
+    return [];
   }
 }
 
@@ -221,7 +211,9 @@ async function generateRagResponse(query, context = '') {
     }
     
     // Check if we have a knowledge base yet
-    const hasKnowledgeBase = fs.existsSync(DB_PATH);
+    const hasKnowledgeBase = fs.existsSync(KNOWLEDGE_DIR) && 
+      fs.existsSync(METADATA_PATH) &&
+      fs.readdirSync(KNOWLEDGE_DIR).length > 1; // More than just metadata.json
     
     // Use hard-coded responses when knowledge is empty
     if (!hasKnowledgeBase || !context || context.trim() === '') {
