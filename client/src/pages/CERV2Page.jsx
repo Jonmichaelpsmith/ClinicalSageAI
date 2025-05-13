@@ -1700,7 +1700,18 @@ export default function CERV2Page() {
   }, [showSystemHealth, refreshSystemHealth]);
 
   return (
-    <div className="max-w-[1200px] mx-auto">
+    <div className="max-w-[1200px] mx-auto relative">
+      {/* Fixed position Ask Lumen AI button */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <Button
+          onClick={() => openAssistant()}
+          className="shadow-lg hover:shadow-xl transition-all bg-indigo-600 hover:bg-indigo-700 text-white"
+          size="lg"
+        >
+          <MessageSquare className="h-5 w-5 mr-2" />
+          Ask Lumen AI
+        </Button>
+      </div>
       {/* System Health Dialog */}
       <Dialog open={showSystemHealth} onOpenChange={setShowSystemHealth}>
         <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
