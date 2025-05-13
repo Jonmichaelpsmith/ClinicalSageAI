@@ -180,23 +180,14 @@ export const featureFlags: Record<string, FeatureFlag> = {
 /**
  * Check if a feature flag is enabled
  * @param flagId The ID of the feature flag to check
- * @param organizationId Optional organization ID for org-specific flag settings
  * @returns true if the feature flag is enabled, false otherwise
  */
-export function isFeatureEnabled(flagId: string, organizationId?: number | string | null): boolean {
+export function isFeatureEnabled(flagId: string): boolean {
   const flag = featureFlags[flagId];
   
   if (!flag) {
     console.warn(`Feature flag "${flagId}" does not exist`);
     return false;
-  }
-  
-  // In a production implementation, we would check organization-specific settings here
-  // For now, we'll enable all features regardless of organization ID
-  
-  // For demonstration purposes, always enable the eSTAR package assembly feature
-  if (flagId === 'ENABLE_PACKAGE_ASSEMBLY') {
-    return true;
   }
   
   return flag.enabled;

@@ -154,31 +154,6 @@ export async function shareDocument(documentId, recipients, permission) {
 }
 
 /**
- * Approve a document
- * @param {string} documentId - ID of the document to approve
- * @param {string} approvalNote - Optional approval note
- * @returns {Promise<Object>} Approval results
- */
-export async function approveDocument(documentId, approvalNote = '') {
-  try {
-    const response = await axios.post(`${API_URL}/${documentId}/approve`, {
-      note: approvalNote,
-      approvalDate: new Date().toISOString(),
-      approver: localStorage.getItem('user_id') || 'system'
-    });
-    return response.data;
-  } catch (error) {
-    console.error("Error approving document:", error);
-    // Don't throw the error, return an error object instead to allow the UI to continue functioning
-    return { 
-      status: 'error', 
-      message: error.message,
-      documentId
-    };
-  }
-}
-
-/**
  * Delete a document
  * @param {string} documentId - ID of the document to delete
  * @returns {Promise<Object>} Deletion results

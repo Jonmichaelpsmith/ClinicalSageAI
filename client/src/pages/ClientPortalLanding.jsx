@@ -90,9 +90,8 @@ const ClientPortalLanding = () => {
     // Find the module path without trying to set the current module
     const selectedModule = moduleCards.find(m => m.id === moduleId);
     if (selectedModule) {
-      // Use client-portal prefix for better navigation consistency
-      const path = `/client-portal${selectedModule.path}`;
-      setLocation(path);
+      const fullUrl = window.location.origin + selectedModule.path;
+      window.location.href = fullUrl;
     }
   };
   
