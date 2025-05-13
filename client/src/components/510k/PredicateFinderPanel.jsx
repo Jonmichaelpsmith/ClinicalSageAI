@@ -425,17 +425,18 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
   // Render an empty state
   const renderEmptyState = () => (
     <div>
-      {/* Semantic Search Panel */}
-      <div className="mb-6 p-4 border border-blue-100 rounded-lg bg-blue-50">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="text-md font-medium flex items-center">
-            <Search className="h-4 w-4 mr-2 text-blue-600" />
-            <span>🔍 Semantic Search</span>
-          </h3>
-          <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
-            Vector Search
-          </Badge>
-        </div>
+      {/* Semantic Search Panel - only shown if feature flag is enabled */}
+      {isFeatureEnabled('ENABLE_SEMANTIC_SEARCH') && (
+        <div className="mb-6 p-4 border border-blue-100 rounded-lg bg-blue-50">
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-md font-medium flex items-center">
+              <Search className="h-4 w-4 mr-2 text-blue-600" />
+              <span>🔍 Semantic Search</span>
+            </h3>
+            <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+              Vector Search
+            </Badge>
+          </div>
         
         <p className="text-sm text-gray-600 mb-3">
           Describe what you're looking for in natural language and we'll find semantically similar predicate devices.
@@ -1483,7 +1484,7 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
             {renderStatsDashboard()}
             
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-6">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className={`grid w-full ${isFeatureEnabled('ENABLE_SEMANTIC_SEARCH') ? 'grid-cols-5' : 'grid-cols-4'}`}>
                 <TabsTrigger value="predicates" className="flex items-center gap-1.5">
                   <Database className="h-4 w-4" />
                   <span>Predicate Devices</span>
@@ -1502,6 +1503,17 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
                     </Badge>
                   )}
                 </TabsTrigger>
+                {isFeatureEnabled('ENABLE_SEMANTIC_SEARCH') && (
+                  <TabsTrigger value="semantic" className="flex items-center gap-1.5">
+                    <Search className="h-4 w-4" />
+                    <span>Semantic Search</span>
+                    {semanticResults.length > 0 && (
+                      <Badge className="ml-auto bg-indigo-100 border-indigo-200 text-indigo-800 h-5 px-1.5">
+                        {semanticResults.length}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                )}
                 <TabsTrigger value="literature" className="flex items-center gap-1.5">
                   <Book className="h-4 w-4" />
                   <span>Literature</span>
