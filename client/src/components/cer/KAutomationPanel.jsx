@@ -273,12 +273,33 @@ export default function KAutomationPanel() {
           // Handle different response formats
           results = predicateResponse || {};
           
-          // Store results for display in the UI
+          // Log the full response for debugging
+          console.log('Raw predicate search response:', results);
+          
+          // Check if response has nested predicates structure from OpenAI response
+          if (results.predicates && typeof results.predicates === 'object') {
+            // If the server included the full OpenAI response under predicates key
+            console.log('Found nested predicates in response:', results.predicates);
+            
+            // Extract nested predicateDevices and literatureReferences if they exist
+            if (results.predicates.predicateDevices && !results.predicateDevices) {
+              results.predicateDevices = results.predicates.predicateDevices;
+              console.log('Extracted predicateDevices from nested structure:', results.predicateDevices);
+            }
+            
+            if (results.predicates.literatureReferences && !results.literatureReferences) {
+              results.literatureReferences = results.predicates.literatureReferences;
+              console.log('Extracted literatureReferences from nested structure:', results.literatureReferences);
+            }
+          }
+          
+          // Store results for display in the UI - use the most specific data first
           const foundDevices = results.predicateDevices || 
             results.devices || 
-            results.predicates || 
+            (Array.isArray(results.predicates) ? results.predicates : []) ||
             [];
-            
+          
+          console.log('Found devices after normalization:', foundDevices);
           setPredicateSearchResults(foundDevices);
           
           // Show toast notification with result count
@@ -288,21 +309,18 @@ export default function KAutomationPanel() {
             variant: foundDevices.length > 0 ? "default" : "warning"
           });
           
-          // Transform API results to insights format
+          // Transform API results to insights format with enhanced debugging
           const insights = [];
           
-          // Add predicate devices to insights - handle different response formats
-          const predicateDevices = 
-            results.predicateDevices || 
-            results.devices || 
-            (Array.isArray(results.predicates) ? results.predicates : []) ||
-            [];
-            
+          // Add predicate devices to insights - with detailed logging
+          const predicateDevices = foundDevices; // Use already normalized devices
           console.log('Processing predicate devices:', predicateDevices);
           
-          if (predicateDevices.length > 0) {
+          if (predicateDevices && predicateDevices.length > 0) {
+            console.log(`Adding ${predicateDevices.length} predicate devices to insights`);
             predicateDevices.forEach((device, index) => {
-              insights.push({
+              // Create the insight object with detailed logging
+              const insight = {
                 id: `pred-${Date.now()}-${index}`,
                 type: 'predicate',
                 name: device.deviceName || device.name || `Predicate Device ${index + 1}`,
@@ -310,12 +328,18 @@ export default function KAutomationPanel() {
                 confidence: device.matchScore || device.similarity_score || device.confidence || 0.85,
                 date: device.clearanceDate || device.clearance_date || device.date || '2023-10-15',
                 k_number: device.k_number || device.kNumber || device.id || `K${Math.floor(100000 + Math.random() * 900000)}`,
-                deviceClass: device.deviceClass || device.device_class || currentDeviceProfile.deviceClass
-              });
+                deviceClass: device.deviceClass || device.device_class || currentDeviceProfile.deviceClass,
+                description: device.description || device.matchRationale || ''
+              };
+              
+              console.log(`Adding predicate device insight: ${insight.name}`);
+              insights.push(insight);
             });
+          } else {
+            console.warn('No predicate devices found to add to insights');
           }
           
-          // Add literature references to insights - handle different response formats
+          // Add literature references to insights with enhanced error handling
           const literatureReferences = 
             results.literatureReferences || 
             results.literature || 
@@ -323,28 +347,59 @@ export default function KAutomationPanel() {
             
           console.log('Processing literature references:', literatureReferences);
           
-          if (literatureReferences.length > 0) {
+          if (literatureReferences && literatureReferences.length > 0) {
+            console.log(`Adding ${literatureReferences.length} literature references to insights`);
             literatureReferences.forEach((reference, index) => {
-              insights.push({
+              // Create the insight object with detailed logging
+              const insight = {
                 id: `lit-${Date.now()}-${index}`,
                 type: 'literature',
                 name: reference.title || `Literature Reference ${index + 1}`,
                 confidence: reference.relevanceScore || reference.relevance || reference.confidence || 0.8,
                 journal: reference.journal || reference.publication || 'Journal of Medical Devices',
                 url: reference.url || reference.link || null,
-                authors: reference.authors || reference.author?.split(',') || []
-              });
+                authors: reference.authors || reference.author?.split(',') || [],
+                year: reference.year || new Date().getFullYear(),
+                abstract: reference.abstract || ''
+              };
+              
+              console.log(`Adding literature reference insight: ${insight.name}`);
+              insights.push(insight);
             });
+          } else {
+            console.warn('No literature references found to add to insights');
           }
           
           // Update insights state with the combined results
           // Keep existing device profile insights
           const deviceInsights = aiInsights.filter(i => i.type === 'device');
-          setAiInsights([...deviceInsights, ...insights]);
           
-          // Automatically switch to insights tab if results found
+          // Add detailed logging for insights generation
+          console.log(`Total insights to add: ${insights.length}`);
+          console.log(`Current device insights: ${deviceInsights.length}`);
+          console.log(`Total insights after update: ${deviceInsights.length + insights.length}`);
+          
+          // Only update if we have insights to add
           if (insights.length > 0) {
+            // Create a new array with all insights
+            const updatedInsights = [...deviceInsights, ...insights];
+            console.log('Setting aiInsights with:', updatedInsights);
+            
+            // Set state with new insights
+            setAiInsights(updatedInsights);
+            
+            // Automatically switch to insights tab when results found
+            console.log('Switching to insights tab');
             setActiveTab('insights');
+          } else {
+            console.warn('No insights were generated from the API response');
+            
+            // Show toast to inform the user
+            toast({
+              title: "No insights generated",
+              description: "The search completed but no insights were generated. Try modifying your device profile for better results.",
+              variant: "warning"
+            });
           }
         } catch (error) {
           console.error('Predicate search failed:', error);
