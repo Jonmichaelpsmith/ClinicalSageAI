@@ -390,7 +390,7 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
 
   return (
     <Sheet open={isOpen} onOpenChange={open => !open && onClose()}>
-      <SheetContent side="right" className="w-[90%] sm:w-[600px] md:w-[750px] lg:w-[900px] p-0 flex flex-col bg-white text-black">
+      <SheetContent side="bottom" className="w-[95%] max-w-[1200px] h-[85vh] mx-auto rounded-t-xl p-0 flex flex-col bg-white text-black">
         <SheetHeader className="p-4 border-b border-gray-100 bg-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -515,22 +515,22 @@ For best results, upload documents related to your specific regulatory needs suc
           </SheetDescription>
         </SheetHeader>
 
-        <ScrollArea className="flex-1 p-4 pb-0 bg-white">
-          <div className="flex flex-col gap-4">
+        <ScrollArea className="flex-1 px-6 py-6 pb-0 bg-white">
+          <div className="flex flex-col gap-6 max-w-5xl mx-auto">
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex mb-4 ${
+                className={`flex mb-6 ${
                   message.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
                 <div
-                  className={`rounded-2xl px-5 py-4 max-w-[85%] ${
+                  className={`rounded-2xl px-6 py-5 max-w-[90%] ${
                     message.role === 'user'
-                      ? 'bg-indigo-600 text-white ml-auto shadow-md'
+                      ? 'bg-indigo-600 text-white ml-auto shadow-md text-base'
                       : message.role === 'system'
-                      ? 'bg-amber-50 border border-amber-200 text-amber-900 shadow-sm'
-                      : 'bg-white border border-gray-200 text-gray-800 shadow-sm'
+                      ? 'bg-amber-50 border border-amber-200 text-amber-900 shadow-sm text-base'
+                      : 'bg-white border border-gray-200 text-gray-800 shadow-sm text-base'
                   }`}
                 >
                   {message.isLoading ? (
