@@ -38,6 +38,7 @@ import {
   ExternalLink,
   Scissors,
   Check,
+  BookmarkPlus,
   Database,
   Lightbulb,
   BookOpen,
@@ -1362,6 +1363,99 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
                 <TabsContent value="predicates" className="m-0">
                   <ScrollArea className="h-[400px] pr-3">
                     {renderPredicateDevices()}
+                  </ScrollArea>
+                </TabsContent>
+                
+                <TabsContent value="recommendations" className="m-0">
+                  <ScrollArea className="h-[400px] pr-3">
+                    {recommendations.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-[300px] text-center">
+                        <Lightbulb className="h-12 w-12 text-yellow-500 mb-4" />
+                        <h3 className="text-lg font-medium mb-2">No AI Recommendations Yet</h3>
+                        <p className="text-sm text-gray-500 max-w-md mb-4">
+                          Use the "AI Recommendations" button in the Predicate & Literature Discovery section to get AI-powered predicate device suggestions.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="bg-yellow-50 p-3 rounded-md border border-yellow-200 mb-4">
+                          <div className="flex items-center">
+                            <Lightbulb className="h-5 w-5 text-yellow-600 mr-2" />
+                            <span className="font-medium text-yellow-800">AI-Recommended Predicate Devices</span>
+                          </div>
+                          <p className="text-sm text-yellow-700 mt-1">
+                            These recommendations are based on your device profile characteristics and similar regulatory submissions.
+                          </p>
+                        </div>
+                        
+                        {recommendations.map((recommendation, index) => (
+                          <Card key={`rec-${index}`} className="border-yellow-100 hover:shadow-sm transition-shadow">
+                            <CardHeader className="py-3 px-4 bg-gradient-to-r from-yellow-50 to-white">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <CardTitle className="text-base font-medium">{recommendation.name}</CardTitle>
+                                  <CardDescription className="text-xs">ID: {recommendation.id}</CardDescription>
+                                </div>
+                                <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                                  Recommendation #{index + 1}
+                                </Badge>
+                              </div>
+                            </CardHeader>
+                            <CardContent className="py-3 px-4">
+                              <div className="text-sm text-gray-700">
+                                <span className="font-medium">Rationale: </span>
+                                {recommendation.rationale}
+                              </div>
+                              
+                              <div className="flex mt-3 pt-2 border-t border-gray-100 text-sm justify-end">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="mr-2"
+                                  onClick={() => handleGenerateSummary(recommendation)}
+                                >
+                                  <FileText className="h-3.5 w-3.5 mr-1" />
+                                  Summarize
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-green-200 text-green-700 hover:bg-green-50"
+                                  onClick={() => {
+                                    if (savedReferences.find(ref => ref.id === recommendation.id)) {
+                                      toast({
+                                        title: "Already Saved",
+                                        description: "This reference is already in your saved list",
+                                        variant: "default",
+                                      });
+                                      return;
+                                    }
+                                    
+                                    setSavedReferences([
+                                      ...savedReferences,
+                                      { 
+                                        ...recommendation,
+                                        type: 'predicate', 
+                                        savedAt: new Date().toISOString() 
+                                      }
+                                    ]);
+                                    
+                                    toast({
+                                      title: "Predicate Device Saved",
+                                      description: "Added to your saved references",
+                                      variant: "default",
+                                    });
+                                  }}
+                                >
+                                  <BookmarkPlus className="h-3.5 w-3.5 mr-1" />
+                                  Save
+                                </Button>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    )}
                   </ScrollArea>
                 </TabsContent>
                 
