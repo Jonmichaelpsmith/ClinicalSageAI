@@ -73,7 +73,7 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 overflow-visible">
         <FormField
           control={form.control}
           name="deviceName"
@@ -205,7 +205,7 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
           )}
         />
         
-        <DialogFooter className="pt-4">
+        <DialogFooter className="pt-4 mt-4 border-t sticky bottom-0 bg-white py-3">
           <Button type="button" variant="outline" onClick={onCancel} className="mr-2">
             Cancel
           </Button>

@@ -68,18 +68,20 @@ const DeviceProfileDialog = ({
           {buttonText}
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="sticky top-0 z-10 bg-white pb-3">
           <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>
             {dialogDescription}
           </DialogDescription>
         </DialogHeader>
-        <DeviceProfileForm 
-          initialData={existingData} 
-          onSubmit={handleSubmit} 
-          onCancel={() => setOpen(false)}
-        />
+        <div className="overflow-y-auto flex-grow pr-1">
+          <DeviceProfileForm 
+            initialData={existingData} 
+            onSubmit={handleSubmit} 
+            onCancel={() => setOpen(false)}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );
