@@ -286,67 +286,76 @@ export default function KAutomationPanel() {
             description: `Found ${foundDevices.length} potential predicate devices`,
             variant: foundDevices.length > 0 ? "default" : "warning"
           });
-        
-        // Transform API results to insights format
-        const insights = [];
-        
-        // Add predicate devices to insights - handle different response formats
-        const predicateDevices = 
-          results.predicateDevices || 
-          results.devices || 
-          (Array.isArray(results.predicates) ? results.predicates : []) ||
-          [];
           
-        console.log('Processing predicate devices:', predicateDevices);
-        
-        if (predicateDevices.length > 0) {
-          predicateDevices.forEach((device, index) => {
-            insights.push({
-              id: `pred-${Date.now()}-${index}`,
-              type: 'predicate',
-              name: device.deviceName || device.name || `Predicate Device ${index + 1}`,
-              manufacturer: device.manufacturer || device.company || 'Unknown Manufacturer',
-              confidence: device.matchScore || device.similarity_score || device.confidence || 0.85,
-              date: device.clearanceDate || device.clearance_date || device.date || '2023-10-15',
-              k_number: device.k_number || device.kNumber || device.id || `K${Math.floor(100000 + Math.random() * 900000)}`,
-              deviceClass: device.deviceClass || device.device_class || currentDeviceProfile.deviceClass
-            });
-          });
-        }
-        
-        // Add literature references to insights - handle different response formats
-        const literatureReferences = 
-          results.literatureReferences || 
-          results.literature || 
-          [];
+          // Transform API results to insights format
+          const insights = [];
           
-        console.log('Processing literature references:', literatureReferences);
-        
-        if (literatureReferences.length > 0) {
-          literatureReferences.forEach((reference, index) => {
-            insights.push({
-              id: `lit-${Date.now()}-${index}`,
-              type: 'literature',
-              name: reference.title || `Literature Reference ${index + 1}`,
-              confidence: reference.relevanceScore || reference.relevance || reference.confidence || 0.8,
-              journal: reference.journal || reference.publication || 'Journal of Medical Devices',
-              url: reference.url || reference.link || null,
-              authors: reference.authors || reference.author?.split(',') || []
+          // Add predicate devices to insights - handle different response formats
+          const predicateDevices = 
+            results.predicateDevices || 
+            results.devices || 
+            (Array.isArray(results.predicates) ? results.predicates : []) ||
+            [];
+            
+          console.log('Processing predicate devices:', predicateDevices);
+          
+          if (predicateDevices.length > 0) {
+            predicateDevices.forEach((device, index) => {
+              insights.push({
+                id: `pred-${Date.now()}-${index}`,
+                type: 'predicate',
+                name: device.deviceName || device.name || `Predicate Device ${index + 1}`,
+                manufacturer: device.manufacturer || device.company || 'Unknown Manufacturer',
+                confidence: device.matchScore || device.similarity_score || device.confidence || 0.85,
+                date: device.clearanceDate || device.clearance_date || device.date || '2023-10-15',
+                k_number: device.k_number || device.kNumber || device.id || `K${Math.floor(100000 + Math.random() * 900000)}`,
+                deviceClass: device.deviceClass || device.device_class || currentDeviceProfile.deviceClass
+              });
             });
+          }
+          
+          // Add literature references to insights - handle different response formats
+          const literatureReferences = 
+            results.literatureReferences || 
+            results.literature || 
+            [];
+            
+          console.log('Processing literature references:', literatureReferences);
+          
+          if (literatureReferences.length > 0) {
+            literatureReferences.forEach((reference, index) => {
+              insights.push({
+                id: `lit-${Date.now()}-${index}`,
+                type: 'literature',
+                name: reference.title || `Literature Reference ${index + 1}`,
+                confidence: reference.relevanceScore || reference.relevance || reference.confidence || 0.8,
+                journal: reference.journal || reference.publication || 'Journal of Medical Devices',
+                url: reference.url || reference.link || null,
+                authors: reference.authors || reference.author?.split(',') || []
+              });
+            });
+          }
+          
+          // Update insights state with the combined results
+          // Keep existing device profile insights
+          const deviceInsights = aiInsights.filter(i => i.type === 'device');
+          setAiInsights([...deviceInsights, ...insights]);
+          
+          // Automatically switch to insights tab if results found
+          if (insights.length > 0) {
+            setActiveTab('insights');
+          }
+        } catch (error) {
+          console.error('Predicate search failed:', error);
+          toast({
+            title: "Predicate Search Failed",
+            description: error.message || "An error occurred during the search",
+            variant: "destructive"
           });
+          throw error;
+        } finally {
+          setIsSearchingPredicates(false);
         }
-        
-        // Update insights state with the combined results
-        // Keep existing device profile insights
-        const deviceInsights = aiInsights.filter(i => i.type === 'device');
-        setAiInsights([...deviceInsights, ...insights]);
-        
-        // Automatically switch to insights tab if results found
-        if (insights.length > 0) {
-          setActiveTab('insights');
-        }
-        
-        setIsSearchingPredicates(false);
       } 
       else if (step === 'adviseRegulatoryPathway') {
         // Verify we have a device profile selected
