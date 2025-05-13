@@ -570,7 +570,40 @@ function determineDocumentType(filename, content = '') {
  */
 async function setupKnowledgeBase() {
   try {
+    console.log('Setting up knowledge base and importing regulatory documents...');
     await initializeDatabase();
+    
+    // Process RBM document specifically from attached_assets
+    const rbmDocPath = path.join(process.cwd(), 'attached_assets', 'draftgfi_processesandpracticesapplicabletobioresearchmonitoringinspections-frdts2023-363op5-10-24_final.pdf');
+    
+    if (fs.existsSync(rbmDocPath)) {
+      console.log('Found RBM document, processing...');
+      
+      // Extract text from the PDF
+      const rbmText = await extractPdfText(rbmDocPath);
+      
+      if (rbmText) {
+        // Create document object with FDA jurisdiction since it's an FDA document
+        const rbmDoc = {
+          source: 'FDA Risk-Based Monitoring Guidance',
+          content: rbmText,
+          jurisdiction: 'FDA',
+          doc_type: 'Guidance',
+          tags: ['risk-based monitoring', 'RBM', 'clinical trials', 'monitoring', 'inspection']
+        };
+        
+        // Store the document
+        await storeDocuments([rbmDoc]);
+        console.log('Successfully imported RBM document into knowledge base');
+      }
+    } else {
+      console.log('RBM document not found at path:', rbmDocPath);
+    }
+    
+    // Check for any other PDF documents in attached_assets
+    const attachedAssetsPath = path.join(process.cwd(), 'attached_assets');
+    await importDocuments(attachedAssetsPath);
+    
     return true;
   } catch (error) {
     console.error('Error setting up knowledge base:', error);

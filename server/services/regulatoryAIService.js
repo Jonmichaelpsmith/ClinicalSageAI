@@ -212,6 +212,8 @@ async function generateRagResponse(query, context = '') {
       regulatoryContext = 'ICH';
     }
     
+    console.log('Using RAG-based response for query: ' + JSON.stringify(query));
+    
     // Check if we have a knowledge base yet
     const hasKnowledgeBase = fs.existsSync(KNOWLEDGE_DIR) && 
       fs.existsSync(METADATA_PATH) &&
