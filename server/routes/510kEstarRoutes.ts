@@ -2,13 +2,13 @@ import express from 'express';
 import path from 'path';
 import { eSTARPlusBuilder, DigitalSigner, ESGClient } from '../services/eSTARPlusBuilder';
 
-const router = express.Router();
+const estarRouter = express.Router();
 
 /**
  * Preview an eSTAR Plus package
  * POST /api/fda510k/preview-estar-plus/:projectId
  */
-router.post('/preview-estar-plus/:projectId', async (req, res) => {
+estarRouter.post('/preview-estar-plus/:projectId', async (req: express.Request, res: express.Response) => {
   const { projectId } = req.params;
   const { includeCoverLetter = true } = req.body;
   
@@ -42,14 +42,14 @@ router.post('/preview-estar-plus/:projectId', async (req, res) => {
 });
 
 /**
- * Build and download an eSTAR Plus package
+ * Build and download/upload an eSTAR Plus package
  * POST /api/fda510k/build-estar-plus/:projectId
  */
-router.post('/build-estar-plus/:projectId', async (req, res) => {
+estarRouter.post('/build-estar-plus/:projectId', async (req: express.Request, res: express.Response) => {
   const { projectId } = req.params;
   const { 
     includeCoverLetter = true,
-    autoUpload = false 
+    autoUpload = false
   } = req.body;
   
   try {
@@ -87,11 +87,11 @@ router.post('/build-estar-plus/:projectId', async (req, res) => {
  * Verify digital signature on an eSTAR package
  * GET /api/fda510k/verify-signature/:projectId
  */
-router.get('/verify-signature/:projectId', async (req, res) => {
+estarRouter.get('/verify-signature/:projectId', async (req: express.Request, res: express.Response) => {
   const { projectId } = req.params;
   
   try {
-    // Generate a test manifest for the project with real data
+    // Generate test manifest for demo
     const manifest = await eSTARPlusBuilder.generateTestManifest(projectId);
     
     // Verify the signature
@@ -115,12 +115,12 @@ router.get('/verify-signature/:projectId', async (req, res) => {
  * Create default sections for a 510(k) project
  * POST /api/fda510k/create-default-sections/:projectId
  */
-router.post('/create-default-sections/:projectId', async (req, res) => {
+estarRouter.post('/create-default-sections/:projectId', async (req: express.Request, res: express.Response) => {
   const { projectId } = req.params;
   const { organizationId } = req.body;
   
   try {
-    // Validate required params
+    // Validate inputs
     if (!projectId) {
       return res.status(400).json({ 
         success: false, 
@@ -157,16 +157,27 @@ router.post('/create-default-sections/:projectId', async (req, res) => {
  * Download an eSTAR package file
  * GET /api/fda510k/download/:filename
  */
-router.get('/download/:filename', async (req, res) => {
+estarRouter.get('/download/:filename', async (req: express.Request, res: express.Response) => {
   const { filename } = req.params;
   
   try {
-    // Get file path
-    const filePath = path.join('/tmp', filename);
+    // Validate filename
+    if (!filename) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Filename is required' 
+      });
+    }
+    
+    // Construct the file path (temp directory for now)
+    const filePath = path.join(__dirname, '../../temp', filename);
     
     // Check if file exists
-    if (!require('fs').existsSync(filePath)) {
-      return res.status(404).json({
+    const fs = await import('fs');
+    const fileExists = fs.existsSync(filePath);
+    
+    if (!fileExists) {
+      return res.status(404).json({ 
         success: false,
         message: 'File not found'
       });
@@ -177,7 +188,7 @@ router.get('/download/:filename', async (req, res) => {
     res.setHeader('Content-Type', 'application/zip');
     
     // Stream the file
-    const fileStream = require('fs').createReadStream(filePath);
+    const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);
   } catch (error: unknown) {
     console.error('Error downloading file:', error);
@@ -189,4 +200,4 @@ router.get('/download/:filename', async (req, res) => {
   }
 });
 
-export default router;
+export default estarRouter;
