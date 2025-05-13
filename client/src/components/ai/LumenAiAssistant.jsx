@@ -401,6 +401,32 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
                     <Button
                       variant="outline"
                       size="sm"
+                      className="h-8 px-3 mr-2 text-xs"
+                      onClick={initializeKnowledgeBase}
+                      disabled={isInitializing}
+                    >
+                      {isInitializing ? (
+                        <>
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                          Initializing...
+                        </>
+                      ) : (
+                        <>Initialize Knowledge Base</>
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p className="text-xs">Process regulatory documents in the attached_assets folder</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
                       className="h-8 px-3 text-xs"
                       onClick={() => {
                         setMessages(prev => [
