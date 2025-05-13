@@ -263,6 +263,15 @@ export default function CERV2Page() {
     console.log("Active tab set to:", '510k');
   };
   
+  // Navigate to eSTAR package builder tab directly
+  const navigateToESTARPackage = () => {
+    setDocumentType('510k'); // Set document type to 510k
+    setActiveTab('510k'); // Show 510k tab
+    // Notify the KAutomationPanel to show eSTAR package section
+    // We'll implement this via state or context if needed
+    console.log("Navigating to eSTAR package builder within Medical Device and Diagnostics module");
+  };
+  
   // Render content based on active tab
   const renderContent = () => {
     if (activeTab === 'builder') {
