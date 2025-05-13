@@ -1,11 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Loader2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '../components/ui/alert';
+import { Badge } from '../components/ui/badge';
+import { Loader2, FileText, Database, RefreshCw, Search, Zap } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 
 /**
  * Regulatory AI Test Page
@@ -14,12 +17,20 @@ import { Loader2 } from 'lucide-react';
  * with different queries and contexts.
  */
 const RegulatoryAITestPage = () => {
+  // Query state
   const [query, setQuery] = useState('');
   const [context, setContext] = useState('general');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [history, setHistory] = useState([]);
+  
+  // Knowledge base state
+  const [knowledgeBaseStatus, setKnowledgeBaseStatus] = useState(null);
+  const [documentFolders, setDocumentFolders] = useState([]);
+  const [selectedFolder, setSelectedFolder] = useState('');
+  const [processingFolder, setProcessingFolder] = useState(false);
+  const [processingResult, setProcessingResult] = useState(null);
 
   // Sample queries for different contexts
   const sampleQueries = {
@@ -101,6 +112,95 @@ const RegulatoryAITestPage = () => {
   const handleSampleQuery = (sampleQuery) => {
     setQuery(sampleQuery);
   };
+  
+  // Knowledge base functions
+  useEffect(() => {
+    fetchKnowledgeBaseStatus();
+    fetchDocumentFolders();
+  }, []);
+  
+  const fetchKnowledgeBaseStatus = async () => {
+    try {
+      const response = await fetch(`${window.location.origin}/api/regulatory-knowledge/status`);
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      setKnowledgeBaseStatus(data);
+    } catch (err) {
+      console.error('Error fetching knowledge base status:', err);
+    }
+  };
+  
+  const fetchDocumentFolders = async () => {
+    try {
+      const response = await fetch(`${window.location.origin}/api/regulatory-knowledge/document-folders`);
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      setDocumentFolders(data.folders || []);
+    } catch (err) {
+      console.error('Error fetching document folders:', err);
+    }
+  };
+  
+  const initializeKnowledgeBase = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`${window.location.origin}/api/regulatory-knowledge/initialize`, {
+        method: 'POST'
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      fetchKnowledgeBaseStatus(); // Refresh status
+      alert('Knowledge base initialized successfully');
+    } catch (err) {
+      console.error('Error initializing knowledge base:', err);
+      alert(`Error initializing knowledge base: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const processDocuments = async (folderPath) => {
+    if (processingFolder) return;
+    
+    try {
+      setProcessingFolder(true);
+      setProcessingResult(null);
+      setSelectedFolder(folderPath);
+      
+      const response = await fetch(`${window.location.origin}/api/regulatory-knowledge/process-documents`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ folderPath }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Error: ${response.status} ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      setProcessingResult(result);
+      fetchKnowledgeBaseStatus(); // Refresh status
+    } catch (err) {
+      console.error('Error processing documents:', err);
+      setProcessingResult({ error: err.message });
+    } finally {
+      setProcessingFolder(false);
+    }
+  };
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -115,6 +215,7 @@ const RegulatoryAITestPage = () => {
             <TabsList className="mb-4">
               <TabsTrigger value="query">Ask a Question</TabsTrigger>
               <TabsTrigger value="history">Query History</TabsTrigger>
+              <TabsTrigger value="knowledge">Knowledge Base</TabsTrigger>
             </TabsList>
             
             <TabsContent value="query">
