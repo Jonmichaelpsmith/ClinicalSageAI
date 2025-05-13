@@ -27,6 +27,8 @@ import qmpApiRouter from './routes/qmp-api.js';
 import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
 // @ts-ignore
 import { router as googleDocsRoutes } from './routes/googleDocs.js';
+// New device profile routes
+import deviceProfileRouter from './routes/cerDeviceProfileRoutes';
 
 export default function registerRoutes(app: Express): void {
   // Create a router for basic CER routes
