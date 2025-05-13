@@ -16,7 +16,8 @@ import {
   EnhancedLiteratureDiscovery,
   EquivalenceDraft,
   ComplianceChecker,
-  PackagePreview
+  PackagePreview,
+  ESTARPackageBuilder
 } from '../components/510k';
 import RegPathwayAnalyzer from '../components/510k/RegPathwayAnalyzer';
 import { DocumentSectionRecommender } from '../components/documentrecommender';
@@ -349,9 +350,21 @@ const FDA510kPage = () => {
 
         <TabsContent value="packageAssembly" className="space-y-4">
           {isFeatureEnabled('ENABLE_PACKAGE_ASSEMBLY') ? (
-            <PackagePreview 
-              projectId={deviceProfile?.id || "demo-project-id"} 
-            />
+            <>
+              <ESTARPackageBuilder
+                projectId={deviceProfile?.id || "demo-project-id"}
+              />
+              <div className="mt-8 flex justify-end">
+                <Button 
+                  onClick={() => setLocation('/estar-package')} 
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <FileText className="h-4 w-4" />
+                  Open Full eSTAR Builder
+                </Button>
+              </div>
+            </>
           ) : (
             <Card>
               <CardHeader>
