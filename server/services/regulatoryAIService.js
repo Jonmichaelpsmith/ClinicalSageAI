@@ -16,6 +16,8 @@ const documentProcessor = require('./documentProcessor');
 const DATA_DIR = path.join(__dirname, '../../data');
 const KNOWLEDGE_DIR = path.join(DATA_DIR, 'knowledge_base');
 const METADATA_PATH = path.join(KNOWLEDGE_DIR, 'metadata.json');
+const DOCUMENTS_DIR = path.join(KNOWLEDGE_DIR, 'documents');
+const JURISDICTIONS_DIR = path.join(KNOWLEDGE_DIR, 'jurisdictions');
 
 // Create directories if they don't exist
 if (!fs.existsSync(DATA_DIR)) {
@@ -24,35 +26,21 @@ if (!fs.existsSync(DATA_DIR)) {
 if (!fs.existsSync(KNOWLEDGE_DIR)) {
   fs.mkdirSync(KNOWLEDGE_DIR, { recursive: true });
 }
-
-// Hardcoded knowledge for key regulatory concepts
-// This will be used as a fallback when the knowledge base is not yet populated
-const DEFAULT_REGULATORY_KNOWLEDGE = {
-  "FDA": {
-    "510k": "A 510(k) is a premarket submission made to FDA to demonstrate that a device is as safe and effective (substantially equivalent) to a legally marketed device. Submitters must compare their device to one or more similar legally marketed devices.",
-    "PMA": "Premarket Approval (PMA) is the FDA process of scientific and regulatory review to evaluate the safety and effectiveness of Class III medical devices. Class III devices are those that support or sustain human life, are of substantial importance in preventing impairment of human health, or present a potential, unreasonable risk of illness or injury.",
-    "De Novo": "The De Novo process provides a pathway to classify novel medical devices for which general controls, or general and special controls, provide reasonable assurance of safety and effectiveness, but for which there is no legally marketed predicate device.",
-    "QSR": "The Quality System Regulation (QSR) is a regulation that requires manufacturers to establish quality systems to ensure their products consistently meet applicable requirements and specifications. The QSR for medical devices is described in 21 CFR Part 820."
-  },
-  "EMA": {
-    "MDR": "The Medical Device Regulation (MDR) 2017/745 is the European legislation governing the production and distribution of medical devices in Europe. It replaced the Medical Devices Directive (93/42/EEC) and Active Implantable Medical Devices Directive (90/385/EEC).",
-    "IVDR": "The In Vitro Diagnostic Regulation (IVDR) 2017/746 is the European legislation governing the production and distribution of in vitro diagnostic medical devices in Europe. It replaced the In Vitro Diagnostic Directive (98/79/EC).",
-    "CE Marking": "CE Marking is a certification mark that indicates conformity with health, safety, and environmental protection standards for products sold within the European Economic Area (EEA).",
-    "Clinical Evaluation Report": "A Clinical Evaluation Report (CER) is a document that systematically assesses the clinical data related to a medical device to verify its clinical safety and performance. Under the EU MDR, CERs are mandatory documentation for medical devices sold in the EU."
-  },
-  "ICH": {
-    "GCP": "Good Clinical Practice (GCP) is an international quality standard provided by ICH that ensures the rights, safety, and well-being of human subjects involved in clinical trials. It is defined in ICH E6.",
-    "E6": "ICH E6 provides guidance on Good Clinical Practice for clinical trials on medicinal products/devices.",
-    "E8": "ICH E8 provides general considerations for clinical trials, including the design, conduct, safety, and reporting.",
-    "E9": "ICH E9 provides statistical principles for clinical trials, offering guidance on the design, analysis, and evaluation of clinical trials of medicinal products/devices."
-  },
-  "General": {
-    "Clinical Evaluation Report": "A Clinical Evaluation Report (CER) is a document that systematically evaluates clinical data relevant to a medical device to determine its clinical safety and performance. It is a required component of regulatory submissions in many jurisdictions, particularly under the EU MDR.",
-    "Substantial Equivalence": "Substantial equivalence is a legal term used by the FDA to determine if a new device is similar enough to a legally marketed device (predicate device) so that the new device can be cleared through the 510(k) process rather than requiring PMA.",
-    "Risk Management": "Risk management in medical devices involves identifying, evaluating, and mitigating potential hazards throughout the lifecycle of a device. It is governed by standards like ISO 14971.",
-    "Post-Market Surveillance": "Post-market surveillance (PMS) is the active collection and evaluation of experience gained from devices that have been placed on the market. It is a regulatory requirement in most jurisdictions."
-  }
-};
+if (!fs.existsSync(DOCUMENTS_DIR)) {
+  fs.mkdirSync(DOCUMENTS_DIR, { recursive: true });
+}
+if (!fs.existsSync(JURISDICTIONS_DIR)) {
+  fs.mkdirSync(JURISDICTIONS_DIR, { recursive: true });
+  
+  // Create jurisdiction subdirectories
+  const jurisdictions = ['FDA', 'EMA', 'ICH', 'WHO', 'PMDA', 'NMPA', 'Health_Canada', 'TGA', 'General'];
+  jurisdictions.forEach(jurisdiction => {
+    const jurisdictionDir = path.join(JURISDICTIONS_DIR, jurisdiction);
+    if (!fs.existsSync(jurisdictionDir)) {
+      fs.mkdirSync(jurisdictionDir, { recursive: true });
+    }
+  });
+}
 
 /**
  * Enhanced semantic search to match user queries against knowledge base documents
