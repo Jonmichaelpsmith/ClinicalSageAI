@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Upload, Search, FilePlus, BarChart, ArrowRight, Shield, BrainCircuit, Zap, 
+import { Upload, Search, FilePlus, BarChart, ArrowRight, Shield, Zap, 
   FileCheck, CheckCircle2, AlertTriangle, Lightbulb, Bot, Star, ListChecks, BookOpen, 
-  Clock, Info, Check } from 'lucide-react';
+  Clock, Info, Check, Brain } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -20,6 +20,9 @@ export default function KAutomationPanel() {
   const [aiInsights, setAiInsights] = useState([]);
   const [requirements, setRequirements] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [deviceProfileDialogOpen, setDeviceProfileDialogOpen] = useState(false);
+  const [deviceProfileSubmitted, setDeviceProfileSubmitted] = useState(false);
+  const [currentDeviceProfile, setCurrentDeviceProfile] = useState(null);
   const { currentOrganization } = useTenant();
 
   // Mock device data for demo purposes
@@ -51,9 +54,51 @@ export default function KAutomationPanel() {
     loadRequirements();
   }, [currentOrganization]);
 
+  // Handle device profile form submission
+  const handleSubmitDeviceProfile = async (data) => {
+    try {
+      // Show progress and clear errors
+      setAiProcessing(true);
+      setErrorMessage('');
+      
+      // Call API to save the device profile
+      const response = await postDeviceProfile(data);
+      
+      // Update state with the new device profile
+      setCurrentDeviceProfile(response);
+      setDeviceProfileSubmitted(true);
+      
+      // Close the dialog
+      setDeviceProfileDialogOpen(false);
+      
+      // Show success message
+      setAiInsights([
+        {
+          id: 'device-profile-1',
+          type: 'device',
+          name: data.deviceName,
+          deviceClass: data.deviceClass,
+          timestamp: new Date().toISOString()
+        }
+      ]);
+      
+    } catch (error) {
+      console.error('Error saving device profile:', error);
+      setErrorMessage(error.message || 'Failed to save device profile');
+    } finally {
+      setAiProcessing(false);
+    }
+  };
+  
   // Handle running different pipeline steps with real API integration
   const handleRunPipeline = async (step) => {
     console.log(`Running 510(k) pipeline step: ${step}`);
+    
+    // For device profile step, open the dialog instead of running the pipeline
+    if (step === 'ingestDeviceProfile') {
+      setDeviceProfileDialogOpen(true);
+      return;
+    }
     
     // Reset any previous errors
     setErrorMessage('');
@@ -213,6 +258,24 @@ export default function KAutomationPanel() {
 
   return (
     <div className="space-y-6 p-6">
+      {/* Device Profile Dialog */}
+      <Dialog open={deviceProfileDialogOpen} onOpenChange={setDeviceProfileDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Create Device Profile</DialogTitle>
+            <DialogDescription>
+              Enter information about your medical device to start the 510(k) submission process.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <DeviceProfileForm
+            initialData={currentDeviceProfile}
+            onSubmit={handleSubmitDeviceProfile}
+            onCancel={() => setDeviceProfileDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 mb-2">
           <h2 className="text-2xl font-semibold text-blue-700">510(k) Automation</h2>
@@ -221,7 +284,7 @@ export default function KAutomationPanel() {
           </div>
         </div>
         <Badge variant="outline" className="bg-indigo-50 text-indigo-800 border-indigo-200">
-          <BrainCircuit className="h-3.5 w-3.5 mr-1" /> AI-Powered
+          <Brain className="h-3.5 w-3.5 mr-1" /> AI-Powered
         </Badge>
       </div>
       
