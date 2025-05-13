@@ -229,46 +229,11 @@ router.post('/find-predicates', validateDeviceData, async (req, res) => {
     } catch (aiError) {
       console.error('Error using OpenAI for predicate search:', aiError);
       
-      // If OpenAI processing fails, fallback to pre-defined response
-      res.status(200).json({
-        success: true,
-        message: 'Using fallback data due to AI processing error: ' + aiError.message,
-        predicates: {
-          predicateDevices: [
-            {
-              deviceName: `Similar ${deviceData.deviceName}`,
-              kNumber: 'K200123',
-              clearanceDate: '2020-05-15',
-              deviceClass: deviceData.deviceClass,
-              manufacturer: 'MedTech Innovations, Inc.',
-              matchScore: 0.92,
-              matchRationale: `This device has similar intended use and technology type.`,
-              description: 'A device with comparable functionality and similar technological characteristics.'
-            },
-            {
-              deviceName: `${deviceData.deviceName} Predecessor`,
-              kNumber: 'K180456',
-              clearanceDate: '2018-10-22',
-              deviceClass: deviceData.deviceClass,
-              manufacturer: 'Legacy Medical Devices',
-              matchScore: 0.87,
-              matchRationale: 'This is an earlier version with similar core functionality.',
-              description: 'Previous generation device that shares core design principles and functionality.'
-            }
-          ],
-          literatureReferences: [
-            {
-              title: `Clinical Applications of Similar Medical Devices`,
-              authors: ['Johnson, A.', 'Smith, B.'],
-              journal: 'Journal of Medical Devices',
-              year: 2023,
-              doi: '10.1000/example',
-              url: 'https://example.org/article',
-              relevanceScore: 0.93,
-              abstract: 'This paper reviews clinical applications and outcomes for this class of medical devices.'
-            }
-          ]
-        }
+      // Instead of using mock fallback data, return an error for GA release quality
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to perform AI-powered predicate device search: ' + aiError.message,
+        recommendation: 'Please try again or check your OpenAI API key configuration.'
       });
     }
     
