@@ -288,45 +288,106 @@ router.post('/analyze-pathway', validateDeviceData, async (req, res) => {
   try {
     const { deviceData, organizationId } = req.body;
     
-    // Add custom regulatory pathway analysis based on device class
-    const pathwayAnalysis = {
-      recommendedPathway: deviceData.deviceClass === 'III' ? 'De Novo' : 'Traditional 510(k)',
-      confidenceScore: deviceData.deviceClass === 'II' ? 0.94 : 0.85,
-      rationale: generatePathwayRationale(deviceData),
-      estimatedTimelineInDays: deviceData.deviceClass === 'I' ? '90' : deviceData.deviceClass === 'II' ? '120' : '180',
-      keyMilestones: [
-        { 
-          name: 'Submission Preparation', 
-          days: deviceData.deviceClass === 'I' ? 20 : deviceData.deviceClass === 'II' ? 30 : 45,
-          description: 'Prepare and compile all required documentation'
-        },
-        { 
-          name: 'FDA Review Period', 
-          days: deviceData.deviceClass === 'I' ? 45 : deviceData.deviceClass === 'II' ? 60 : 90,
-          description: 'Initial FDA review of submission'
-        },
-        { 
-          name: 'Response to FDA Questions', 
-          days: deviceData.deviceClass === 'I' ? 10 : deviceData.deviceClass === 'II' ? 15 : 25,
-          description: 'Address any deficiencies or additional requests from FDA'
-        },
-        { 
-          name: 'Final Decision', 
-          days: deviceData.deviceClass === 'I' ? 15 : deviceData.deviceClass === 'II' ? 15 : 20,
-          description: 'FDA issues final determination'
+    // Check if OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key not available. Cannot perform regulatory pathway analysis.');
+      return res.status(500).json({
+        success: false,
+        message: 'OpenAI API key is required for regulatory pathway analysis. Please provide a valid API key.'
+      });
+    }
+    
+    // Initialize OpenAI if not already done
+    if (!openai) {
+      try {
+        const { OpenAI } = require('openai');
+        openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY
+        });
+        console.log('OpenAI client initialized for regulatory pathway analysis');
+      } catch (err) {
+        console.error('Failed to initialize OpenAI client:', err);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to initialize AI services for regulatory pathway analysis'
+        });
+      }
+    }
+    
+    console.log('Analyzing regulatory pathway for device:', deviceData.deviceName);
+    
+    try {
+      // Create a structured prompt to get consistently formatted results
+      const prompt = `
+        Perform a regulatory pathway analysis for the following medical device 510(k) submission:
+        
+        DEVICE DETAILS:
+        - Name: ${deviceData.deviceName}
+        - Class: ${deviceData.deviceClass}
+        - Intended Use: ${deviceData.intendedUse || 'Not specified'}
+        - Description: ${deviceData.description || 'Not specified'}
+        - Technology Type: ${deviceData.technologyType || 'Not specified'}
+        
+        INSTRUCTIONS:
+        Analyze the appropriate regulatory pathway for this device and provide:
+        1. The recommended submission pathway (Traditional 510(k), Special 510(k), Abbreviated 510(k), or De Novo)
+        2. Rationale for your recommendation
+        3. Estimated timeline in days
+        4. Key milestones with estimated days for each
+        5. Any special requirements specific to this device type
+        
+        FORMAT YOUR RESPONSE AS A JSON OBJECT with the following structure:
+        {
+          "recommendedPathway": "string",
+          "confidenceScore": number (0.0-1.0),
+          "rationale": "string",
+          "estimatedTimelineInDays": number,
+          "keyMilestones": [
+            { "name": "string", "days": number, "description": "string" }
+          ],
+          "specialRequirements": [
+            "string"
+          ]
         }
-      ],
-      specialRequirements: generateSpecialRequirements(deviceData)
-    };
-    
-    res.status(200).json({
-      success: true,
-      ...pathwayAnalysis
-    });
-    
+      `;
+      
+      // Call OpenAI with a structured prompt
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+        messages: [
+          {
+            role: "system",
+            content: "You are a medical device regulatory expert specializing in FDA 510(k) submissions. Provide detailed, accurate regulatory pathway analysis based on device specifications."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        response_format: { type: "json_object" }
+      });
+      
+      // Parse the response from OpenAI
+      let pathwayAnalysis;
+      try {
+        pathwayAnalysis = JSON.parse(completion.choices[0].message.content);
+        console.log('Successfully parsed regulatory pathway analysis');
+      } catch (parseError) {
+        console.error('Failed to parse OpenAI response:', parseError);
+        throw new Error('Failed to parse AI-generated regulatory pathway analysis');
+      }
+      
+      return res.status(200).json({
+        success: true,
+        ...pathwayAnalysis
+      });
+    } catch (aiError) {
+      console.error('Error in OpenAI processing:', aiError);
+      throw new Error(`AI processing error: ${aiError.message}`);
+    }
   } catch (error) {
     console.error('Error analyzing regulatory pathway:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to analyze regulatory pathway'
     });
