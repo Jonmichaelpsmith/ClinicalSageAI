@@ -63,9 +63,17 @@ if (openaiApiKey) {
     openai = new OpenAI({
       apiKey: openaiApiKey
     });
-    console.log('OpenAI client initialized successfully');
+    
+    // Verify the client was created successfully
+    if (openai && typeof openai.chat?.completions?.create === 'function') {
+      console.log('OpenAI client initialized successfully with all expected methods');
+    } else {
+      console.error('OpenAI client initialized but missing expected methods:', openai);
+      throw new Error('OpenAI client missing expected methods');
+    }
   } catch (error) {
     console.error('Error initializing OpenAI client:', error.message);
+    console.error('Full error details:', error);
   }
 }
 
@@ -157,17 +165,74 @@ router.post('/query', async (req, res) => {
     console.log('Sending request to OpenAI API...');
     let completion;
     try {
-      completion = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-        messages: messages,
+      // Log the request being made
+      console.log('OpenAI API request parameters:', {
+        model: "gpt-4o",
+        messagesCount: messages.length,
         temperature: 0.7,
-        max_tokens: 2048,
+        max_tokens: 2048
       });
-      console.log('OpenAI API response received successfully');
+      
+      // Try with system info first to verify client works - use a more universally available model for testing
+      const testCompletion = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo", // Use a more stable model for testing connection
+        messages: [{ role: "user", content: "Just respond with OK to test the connection" }],
+        max_tokens: 10
+      });
+      
+      console.log('Connection test successful, response:', testCompletion.choices[0]?.message?.content);
+      
+      // Now make the actual request
+      try {
+        // First try with gpt-4o
+        completion = await openai.chat.completions.create({
+          model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+          messages: messages,
+          temperature: 0.7,
+          max_tokens: 2048,
+        });
+      } catch (modelError) {
+        console.log('Could not use gpt-4o model, falling back to gpt-4:', modelError.message);
+        
+        // If gpt-4o fails, try with gpt-4
+        try {
+          completion = await openai.chat.completions.create({
+            model: "gpt-4",
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: 2048,
+          });
+        } catch (fallbackError) {
+          console.log('Could not use gpt-4 model either, falling back to gpt-3.5-turbo:', fallbackError.message);
+          
+          // Last resort, use gpt-3.5-turbo
+          completion = await openai.chat.completions.create({
+            model: "gpt-3.5-turbo",
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: 2048,
+          });
+        }
+      }
+      console.log('OpenAI API response received successfully for main request');
     } catch (error) {
       console.error('Error from OpenAI API:', error.message);
+      console.error('Error type:', error.constructor.name);
+      console.error('Error code:', error.code);
+      console.error('Error status:', error.status);
       console.error('Error details:', JSON.stringify(error, null, 2));
-      throw new Error(`OpenAI API error: ${error.message}`);
+      
+      // More specific error message based on error type
+      let errorMessage = `OpenAI API error: ${error.message}`;
+      if (error.status === 401) {
+        errorMessage = "Authentication error with OpenAI API. Please check your API key.";
+      } else if (error.status === 429) {
+        errorMessage = "OpenAI API rate limit exceeded. Please try again later.";
+      } else if (error.status === 500) {
+        errorMessage = "OpenAI API server error. Please try again later.";
+      }
+      
+      throw new Error(errorMessage);
     }
 
     // Extract the response
