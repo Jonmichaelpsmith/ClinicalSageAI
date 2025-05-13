@@ -154,6 +154,24 @@ export async function shareDocument(documentId, recipients, permission) {
 }
 
 /**
+ * Approve a document
+ * @param {string} documentId - ID of the document to approve
+ * @param {string} approvalNote - Optional approval note
+ * @returns {Promise<Object>} Approval results
+ */
+export async function approveDocument(documentId, approvalNote = '') {
+  try {
+    const response = await axios.post(`${API_URL}/${documentId}/approve`, {
+      note: approvalNote
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error approving document:", error);
+    throw new Error(`Failed to approve document: ${error.message}`);
+  }
+}
+
+/**
  * Delete a document
  * @param {string} documentId - ID of the document to delete
  * @returns {Promise<Object>} Deletion results
