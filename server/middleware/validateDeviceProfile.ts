@@ -1,48 +1,69 @@
-import { NextFunction, Request, Response } from 'express';
-
-// Since we had issues with AJV, we'll implement a similar validation approach
-// that doesn't depend on the AJV package
+import { Request, Response, NextFunction } from 'express';
 import deviceProfileSchema from '../../client/src/components/cer/schemas/deviceProfile.json';
 
-function validateSchema(data: any, schema: any): { valid: boolean; errors: string[] } {
-  const errors: string[] = [];
+/**
+ * Simple validation for device profile
+ */
+function validateAgainstSchema(data: any, schema: any): { valid: boolean; errors: any[] } {
+  const errors: any[] = [];
   
   // Check required fields
-  if (schema.required) {
+  if (schema.required && Array.isArray(schema.required)) {
     for (const requiredField of schema.required) {
-      if (data[requiredField] === undefined || data[requiredField] === null || data[requiredField] === '') {
-        errors.push(`Field '${requiredField}' is required`);
+      if (data[requiredField] === undefined) {
+        errors.push({
+          path: `/${requiredField}`,
+          message: `Missing required property: ${requiredField}`,
+          params: { missingProperty: requiredField }
+        });
       }
     }
   }
   
-  // Validate properties
+  // Check property types and constraints
   if (schema.properties) {
-    for (const [field, rules] of Object.entries(schema.properties)) {
-      const value = data[field];
-      const typedRules = rules as any;
+    for (const [propName, propSchema] of Object.entries<any>(schema.properties)) {
+      const value = data[propName];
       
-      // Skip if field is not present and not required
-      if ((value === undefined || value === null) && 
-          (!schema.required || !schema.required.includes(field))) {
-        continue;
+      // Skip if property is not provided (we already checked required fields)
+      if (value === undefined) continue;
+      
+      // Check type
+      if (propSchema.type === 'string' && typeof value !== 'string') {
+        errors.push({
+          path: `/${propName}`,
+          message: `Expected string for property ${propName}, got ${typeof value}`,
+          params: { type: 'string' }
+        });
       }
       
-      // Type validation
-      if (value !== undefined && value !== null) {
-        if (typedRules.type === 'string' && typeof value !== 'string') {
-          errors.push(`Field '${field}' must be a string`);
+      // Check string constraints
+      if (propSchema.type === 'string' && typeof value === 'string') {
+        // Min length
+        if (propSchema.minLength !== undefined && value.length < propSchema.minLength) {
+          errors.push({
+            path: `/${propName}`,
+            message: `Property ${propName} must be at least ${propSchema.minLength} characters`,
+            params: { minLength: propSchema.minLength }
+          });
         }
         
-        // String minimum length
-        if (typedRules.type === 'string' && typedRules.minLength && 
-            typeof value === 'string' && value.length < typedRules.minLength) {
-          errors.push(`Field '${field}' must be at least ${typedRules.minLength} characters long`);
+        // Max length
+        if (propSchema.maxLength !== undefined && value.length > propSchema.maxLength) {
+          errors.push({
+            path: `/${propName}`,
+            message: `Property ${propName} must be at most ${propSchema.maxLength} characters`,
+            params: { maxLength: propSchema.maxLength }
+          });
         }
         
-        // Enum validation
-        if (typedRules.enum && !typedRules.enum.includes(value)) {
-          errors.push(`Field '${field}' must be one of: ${typedRules.enum.join(', ')}`);
+        // Enum values
+        if (propSchema.enum && !propSchema.enum.includes(value)) {
+          errors.push({
+            path: `/${propName}`,
+            message: `Property ${propName} must be one of: ${propSchema.enum.join(', ')}`,
+            params: { enum: propSchema.enum }
+          });
         }
       }
     }
@@ -54,12 +75,24 @@ function validateSchema(data: any, schema: any): { valid: boolean; errors: strin
   };
 }
 
+/**
+ * Middleware to validate device profile JSON against schema
+ */
 export function validateDeviceProfile(req: Request, res: Response, next: NextFunction) {
-  const validation = validateSchema(req.body, deviceProfileSchema);
+  // Get the request body
+  const deviceProfile = req.body;
   
-  if (!validation.valid) {
-    return res.status(400).json({ errors: validation.errors });
+  // Validate against the schema
+  const { valid, errors } = validateAgainstSchema(deviceProfile, deviceProfileSchema);
+  
+  if (!valid) {
+    // Return validation errors
+    return res.status(400).json({
+      error: 'Validation error',
+      details: errors
+    });
   }
   
+  // Validation passed, proceed to the next middleware/controller
   next();
 }
