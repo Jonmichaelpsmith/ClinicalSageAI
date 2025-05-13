@@ -4,7 +4,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { 
   Upload, Search, FilePlus, BarChart, ArrowRight, Shield, Zap, 
   FileCheck, CheckCircle2, AlertTriangle, Lightbulb, Bot, Star, ListChecks, BookOpen, 
-  Clock, Info, Check, Brain, Activity, FileText, Undo2, Users, Plus, Database 
+  Clock, Info, Check, Brain, Activity, FileText, Undo2, Users, Plus, Database,
+  ChevronDown, ExternalLink
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -13,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import DeviceProfileForm from './DeviceProfileForm';
 import DeviceProfileList from './DeviceProfileList';
 import { postDeviceProfile, getDeviceProfiles } from '../../api/cer';
@@ -1232,14 +1234,53 @@ export default function KAutomationPanel() {
                                 {insight.k_number}
                               </Badge>
                             </div>
-                            <div className="flex justify-between text-sm text-green-700 mb-1">
-                              <span>Manufacturer: {insight.manufacturer}</span>
-                              <span>Match Score: {Math.round(insight.confidence * 100)}%</span>
+                            
+                            {/* Match score with visual indicator */}
+                            <div className="mb-3">
+                              <div className="flex justify-between text-sm text-green-700 mb-1">
+                                <span className="font-medium">Match Score:</span>
+                                <span className="font-medium">{Math.round(insight.confidence * 100)}%</span>
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="bg-green-600 h-2 rounded-full" 
+                                  style={{ width: `${Math.round(insight.confidence * 100)}%` }}
+                                />
+                              </div>
                             </div>
-                            <div className="flex justify-between text-sm text-green-700">
-                              <span>Clearance Date: {insight.date}</span>
-                              <span>Class: {insight.deviceClass || 'II'}</span>
+                            
+                            {/* Key Information */}
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-green-700 mb-3">
+                              <div>
+                                <span className="font-medium block">Manufacturer:</span>
+                                {insight.manufacturer}
+                              </div>
+                              <div>
+                                <span className="font-medium block">Device Class:</span>
+                                {insight.deviceClass || 'II'}
+                              </div>
+                              <div>
+                                <span className="font-medium block">Clearance Date:</span>
+                                {insight.date}
+                              </div>
+                              <div>
+                                <span className="font-medium block">Product Code:</span>
+                                {insight.productCode || 'N/A'}
+                              </div>
                             </div>
+                            
+                            {/* Description if available */}
+                            {insight.description && (
+                              <Collapsible className="mt-2">
+                                <CollapsibleTrigger className="flex items-center text-sm font-medium text-green-700 hover:text-green-900">
+                                  <span>View Device Details</span>
+                                  <ChevronDown className="h-4 w-4 ml-1" />
+                                </CollapsibleTrigger>
+                                <CollapsibleContent className="text-sm text-green-800 mt-2 bg-green-50 p-2 rounded border border-green-100">
+                                  {insight.description}
+                                </CollapsibleContent>
+                              </Collapsible>
+                            )}
                           </div>
                         ))
                       }
@@ -1270,17 +1311,53 @@ export default function KAutomationPanel() {
                             <div className="flex items-center justify-between mb-2">
                               <h3 className="font-medium text-purple-800">{insight.name}</h3>
                               <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200">
-                                {insight.journal}
+                                {insight.journal || "Journal Article"}
                               </Badge>
                             </div>
-                            <div className="flex justify-between text-sm text-purple-700">
-                              <span>Relevance Score: {Math.round(insight.confidence * 100)}%</span>
-                              {insight.url && (
-                                <a href={insight.url} target="_blank" rel="noopener noreferrer" className="text-purple-600 hover:underline">
+                            
+                            {/* Publication details */}
+                            <div className="flex flex-wrap justify-between text-sm text-purple-700 mb-2">
+                              <span>Publication Year: {insight.year || "N/A"}</span>
+                              <span>Relevance: {Math.round(insight.confidence * 100)}%</span>
+                            </div>
+                            
+                            {/* Authors */}
+                            {insight.authors && insight.authors.length > 0 && (
+                              <div className="text-sm text-purple-700 mb-2">
+                                <span className="font-medium">Authors:</span>{" "}
+                                {Array.isArray(insight.authors) 
+                                  ? insight.authors.join(', ')
+                                  : insight.authors}
+                              </div>
+                            )}
+                            
+                            {/* Abstract with collapsible section */}
+                            {insight.abstract && (
+                              <Collapsible className="mb-2">
+                                <CollapsibleTrigger className="flex items-center text-sm font-medium text-purple-700 hover:text-purple-900">
+                                  <span>View Abstract</span>
+                                  <ChevronDown className="h-4 w-4 ml-1" />
+                                </CollapsibleTrigger>
+                                <CollapsibleContent className="text-sm text-purple-800 mt-2 bg-purple-50 p-2 rounded border border-purple-100">
+                                  {insight.abstract}
+                                </CollapsibleContent>
+                              </Collapsible>
+                            )}
+                            
+                            {/* URL Link */}
+                            {insight.url && (
+                              <div className="mt-2">
+                                <a 
+                                  href={insight.url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer" 
+                                  className="text-purple-600 text-sm hover:underline flex items-center"
+                                >
+                                  <ExternalLink className="h-3 w-3 mr-1" />
                                   View Publication
                                 </a>
-                              )}
-                            </div>
+                              </div>
+                            )}
                           </div>
                         ))
                       }
