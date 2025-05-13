@@ -215,8 +215,13 @@ router.post('/find-predicates', validateDeviceData, async (req, res) => {
         // Log success and return the formatted response
         console.log('Successfully generated predicate devices using OpenAI');
         
+        // Restructure the response to match client expectations
+        // The client expects predicateDevices at the top level
         res.status(200).json({
           success: true,
+          predicateDevices: jsonResponse.predicateDevices || [],
+          literatureReferences: jsonResponse.literatureReferences || [],
+          // Include the full response as a fallback
           predicates: jsonResponse
         });
       } catch (parseError) {
