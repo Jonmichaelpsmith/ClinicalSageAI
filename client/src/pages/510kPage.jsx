@@ -117,7 +117,13 @@ const FDA510kPage = () => {
   
   // Navigate to eSTAR package builder
   const navigateToESTAR = () => {
-    setLocation('/estar-package');
+    // Check if we're in the client portal context
+    const isClientPortal = window.location.pathname.includes('/client-portal');
+    if (isClientPortal) {
+      setLocation('/client-portal/estar-package');
+    } else {
+      setLocation('/estar-package');
+    }
   };
   
   // Navigate to dashboard view
