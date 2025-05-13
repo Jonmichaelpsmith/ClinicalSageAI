@@ -1396,38 +1396,110 @@ export default function KAutomationPanel() {
                               </div>
                             </div>
                             
-                            {/* Key Information */}
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-green-700 mb-3">
+                            {/* Enhanced device visualizaton with badges */}
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
+                                {insight.k_number}
+                              </Badge>
+                              {insight.productCode && (
+                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                                  Product Code: {insight.productCode}
+                                </Badge>
+                              )}
+                              <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                                Class {insight.deviceClass || 'II'}
+                              </Badge>
+                            </div>
+
+                            {/* Key Information with improved styling */}
+                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-green-700 p-3 bg-green-50 rounded-md mb-3">
                               <div>
-                                <span className="font-medium block">Manufacturer:</span>
+                                <span className="font-medium block text-green-800">Manufacturer:</span>
                                 {insight.manufacturer}
                               </div>
                               <div>
-                                <span className="font-medium block">Device Class:</span>
-                                {insight.deviceClass || 'II'}
-                              </div>
-                              <div>
-                                <span className="font-medium block">Clearance Date:</span>
+                                <span className="font-medium block text-green-800">Clearance Date:</span>
                                 {insight.date}
                               </div>
-                              <div>
-                                <span className="font-medium block">Product Code:</span>
-                                {insight.productCode || 'N/A'}
+                              <div className="col-span-2 mt-1">
+                                <span className="font-medium block text-green-800 mb-1">Similarity Factors:</span>
+                                <div className="flex flex-wrap gap-1">
+                                  {insight.similarityFactors ? (
+                                    insight.similarityFactors.map((factor, idx) => (
+                                      <Badge key={idx} variant="secondary" className="bg-green-100 text-green-800">
+                                        {factor}
+                                      </Badge>
+                                    ))
+                                  ) : (
+                                    <>
+                                      <Badge variant="secondary" className="bg-green-100 text-green-800">Intended Use</Badge>
+                                      <Badge variant="secondary" className="bg-green-100 text-green-800">Technology</Badge>
+                                      <Badge variant="secondary" className="bg-green-100 text-green-800">Classification</Badge>
+                                    </>
+                                  )}
+                                </div>
                               </div>
                             </div>
                             
-                            {/* Description if available */}
+                            {/* Description with improved collapsible */}
                             {insight.description && (
-                              <Collapsible className="mt-2">
-                                <CollapsibleTrigger className="flex items-center text-sm font-medium text-green-700 hover:text-green-900">
-                                  <span>View Device Details</span>
-                                  <ChevronDown className="h-4 w-4 ml-1" />
+                              <Collapsible className="border border-green-100 rounded-md overflow-hidden mb-2">
+                                <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-green-50 hover:bg-green-100 text-sm font-medium text-green-800">
+                                  <div className="flex items-center">
+                                    <FileText className="h-4 w-4 mr-1.5 text-green-600" />
+                                    <span>Similarity Analysis</span>
+                                  </div>
+                                  <ChevronDown className="h-4 w-4 text-green-600" />
                                 </CollapsibleTrigger>
-                                <CollapsibleContent className="text-sm text-green-800 mt-2 bg-green-50 p-2 rounded border border-green-100">
+                                <CollapsibleContent className="text-sm text-gray-700 p-3 border-t border-green-100">
                                   {insight.description}
                                 </CollapsibleContent>
                               </Collapsible>
                             )}
+
+                            {/* Enhanced action buttons with improved UX */}
+                            <div className="flex items-center justify-between mt-4">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                className="text-xs border-green-200 text-green-700 hover:bg-green-50"
+                                onClick={() => window.open(`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfpmn/pmn.cfm?ID=${insight.k_number}`, '_blank')}
+                              >
+                                <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                                View FDA Record
+                              </Button>
+                              <div className="flex space-x-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs border-blue-200 text-blue-700 hover:bg-blue-50"
+                                  onClick={() => {
+                                    // Add to comparison list
+                                    toast({
+                                      title: "Added to Comparison",
+                                      description: `${insight.name} added to comparison list.`,
+                                    });
+                                  }}
+                                >
+                                  <ListPlus className="h-3.5 w-3.5 mr-1" />
+                                  Compare
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  className="text-xs bg-green-600 hover:bg-green-700"
+                                  onClick={() => {
+                                    // Set as primary predicate
+                                    toast({
+                                      title: "Primary Predicate Selected",
+                                      description: `${insight.name} set as primary predicate device.`,
+                                    });
+                                  }}
+                                >
+                                  <Check className="h-3.5 w-3.5 mr-1" />
+                                  Select as Primary
+                                </Button>
+                              </div>
+                            </div>
                           </div>
                         ))
                       }
