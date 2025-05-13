@@ -19,14 +19,18 @@ import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPane
 import ExportModule from '@/components/cer/ExportModule';
 import CerComprehensiveReportsPanel from '@/components/cer/CerComprehensiveReportsPanel';
 import MAUDIntegrationPanel from '@/components/cer/MAUDIntegrationPanel';
+import ESTARPackageBuilder from '@/components/510k/ESTARPackageBuilder';
+import RegPathwayAnalyzer from '@/components/510k/RegPathwayAnalyzer';
+import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, GitBranch, ArrowRight, ArrowLeft, Package, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -65,6 +69,7 @@ export default function CERV2Page() {
   const [selectedTemplate, setSelectedTemplate] = useState('eu-mdr');
   const [showWizard, setShowWizard] = useState(false);
   const [showEvidenceReminder, setShowEvidenceReminder] = useState(true);
+  const [showEstarPackage, setShowEstarPackage] = useState(false);
   const { toast } = useToast();
   
   // Helper function to format CtQ factors for a specific objective
@@ -267,8 +272,7 @@ export default function CERV2Page() {
   const navigateToESTARPackage = () => {
     setDocumentType('510k'); // Set document type to 510k
     setActiveTab('510k'); // Show 510k tab
-    // Notify the KAutomationPanel to show eSTAR package section
-    setShowEstarPackage(true); // This will be passed to KAutomationPanel
+    setShowEstarPackage(true); // This flag will help the 510k tab initialize with the eSTAR tab active
     console.log("Navigating to eSTAR package builder within Medical Device and Diagnostics module");
   };
   
@@ -704,11 +708,205 @@ export default function CERV2Page() {
     }
     
     if (activeTab === '510k') {
-      console.log("Rendering 510k tab content");
+      console.log("Rendering fully integrated 510k tab content");
+      
+      // State for 510k workflow tabs
+      const [k510SubTab, setK510SubTab] = useState(showEstarPackage ? 'estar' : 'device-profile');
+      
       return (
         <div className="bg-white p-6 rounded-md shadow-sm border border-blue-100">
-          {/* Using showEstarBuilder prop to allow direct navigation to the eSTAR tab */}
-          <KAutomationPanel showEstarTab={showEstarPackage} />
+          <h2 className="text-2xl font-bold mb-4 text-blue-800">510(k) Submission Automation</h2>
+          
+          <Tabs value={k510SubTab} onValueChange={setK510SubTab} className="mb-6">
+            <TabsList className="grid grid-cols-5 mb-4">
+              <TabsTrigger value="device-profile" className="flex items-center">
+                <FileText className="h-4 w-4 mr-2" />
+                Device Profile
+              </TabsTrigger>
+              <TabsTrigger value="predicate" className="flex items-center">
+                <Search className="h-4 w-4 mr-2" />
+                Predicate Finder
+              </TabsTrigger>
+              <TabsTrigger value="pathway" className="flex items-center">
+                <GitBranch className="h-4 w-4 mr-2" />
+                Regulatory Pathway
+              </TabsTrigger>
+              <TabsTrigger value="equiv" className="flex items-center">
+                <GitCompare className="h-4 w-4 mr-2" />
+                Substantial Equivalence
+              </TabsTrigger>
+              <TabsTrigger value="estar" className="flex items-center">
+                <Package className="h-4 w-4 mr-2" />
+                eSTAR Package
+              </TabsTrigger>
+            </TabsList>
+              
+            <TabsContent value="device-profile" className="p-4 border rounded-md">
+              <h3 className="text-lg font-semibold mb-3">Device Profile</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Enter your device details to begin the 510(k) automation process.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="device-name-510k">Device Name</Label>
+                  <Input 
+                    id="device-name-510k" 
+                    value={deviceName} 
+                    onChange={(e) => setDeviceName(e.target.value)}
+                    className="mb-4"
+                  />
+                  
+                  <Label htmlFor="manufacturer-510k">Manufacturer</Label>
+                  <Input 
+                    id="manufacturer-510k" 
+                    value={manufacturer} 
+                    onChange={(e) => setManufacturer(e.target.value)}
+                    className="mb-4"
+                  />
+                  
+                  <Label htmlFor="intended-use-510k">Intended Use</Label>
+                  <Textarea 
+                    id="intended-use-510k" 
+                    value={intendedUse} 
+                    onChange={(e) => setIntendedUse(e.target.value)}
+                    className="mb-4"
+                  />
+                </div>
+                
+                <div className="border-l pl-4">
+                  <h4 className="font-medium mb-2">Device Classification</h4>
+                  <Select value={deviceType} onValueChange={setDeviceType}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select classification" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Class I Medical Device">Class I Medical Device</SelectItem>
+                      <SelectItem value="Class II Medical Device">Class II Medical Device</SelectItem>
+                      <SelectItem value="Class III Medical Device">Class III Medical Device</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  
+                  <div className="mt-6">
+                    <h4 className="font-medium mb-2">Submission Type</h4>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button 
+                        variant={documentType === '510k' ? "default" : "outline"}
+                        onClick={() => setDocumentType('510k')}
+                      >
+                        510(k)
+                      </Button>
+                      <Button 
+                        variant={documentType === 'cer' ? "default" : "outline"}
+                        onClick={() => setDocumentType('cer')}
+                      >
+                        CER
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-end">
+                <Button 
+                  onClick={() => setK510SubTab('predicate')}
+                  className="ml-2"
+                >
+                  Next: Find Predicates
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="predicate" className="p-4 border rounded-md">
+              <h3 className="text-lg font-semibold mb-3">Predicate & Literature Discovery</h3>
+              <PredicateFinderPanel 
+                deviceName={deviceName} 
+                deviceType={deviceType}
+                onNext={() => setK510SubTab('pathway')}
+                onBack={() => setK510SubTab('device-profile')}
+              />
+            </TabsContent>
+            
+            <TabsContent value="pathway" className="p-4 border rounded-md">
+              <h3 className="text-lg font-semibold mb-3">Regulatory Pathway Analysis</h3>
+              <RegPathwayAnalyzer 
+                deviceName={deviceName}
+                intendedUse={intendedUse}
+                deviceType={deviceType}
+                onNext={() => setK510SubTab('equiv')}
+                onBack={() => setK510SubTab('predicate')}
+              />
+            </TabsContent>
+            
+            <TabsContent value="equiv" className="p-4 border rounded-md">
+              <h3 className="text-lg font-semibold mb-3">Substantial Equivalence Drafting</h3>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600">
+                  Generate a substantial equivalence statement comparing your device to predicate devices.
+                </p>
+                
+                {/* Substantial Equivalence Tool */}
+                <div className="mt-6">
+                  <Label htmlFor="predicate-device">Primary Predicate Device (K Number)</Label>
+                  <Input 
+                    id="predicate-device" 
+                    placeholder="e.g., K123456" 
+                    className="mb-4"
+                  />
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <h4 className="font-medium mb-2">Key Performance Characteristics</h4>
+                      <Textarea 
+                        placeholder="Enter the key performance characteristics of your device"
+                        className="h-24"
+                      />
+                    </div>
+                    <div>
+                      <h4 className="font-medium mb-2">Design Differences</h4>
+                      <Textarea 
+                        placeholder="Describe any design differences from predicate device"
+                        className="h-24"
+                      />
+                    </div>
+                  </div>
+                  
+                  <Button className="w-full">
+                    Generate Substantial Equivalence Draft
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="flex justify-between mt-6">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setK510SubTab('pathway')}
+                >
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  Back to Pathway Analysis
+                </Button>
+                <Button 
+                  onClick={() => setK510SubTab('estar')}
+                >
+                  Next: eSTAR Package
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="estar" className="p-4 border rounded-md">
+              <h3 className="text-lg font-semibold mb-3">eSTAR Package Builder</h3>
+              <ESTARPackageBuilder 
+                deviceName={deviceName}
+                manufacturer={manufacturer}
+                deviceType={deviceType}
+                intendedUse={intendedUse}
+                projectId={k510DocumentId}
+                onBack={() => setK510SubTab('equiv')}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       );
     }
