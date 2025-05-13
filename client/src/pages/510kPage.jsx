@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Settings, FileText, Clipboard, Database, BookOpen, Search } from 'lucide-react';
+import { ArrowLeft, Settings, FileText, Clipboard, Database, BookOpen, Search, Route } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTenant } from '@/contexts/TenantContext';
 import { useNavigate } from 'wouter';
@@ -14,11 +14,11 @@ import {
   DeviceProfileForm, 
   PredicateAnalysis, 
   EnhancedLiteratureDiscovery,
-  PathwayAdvisorCard,
   EquivalenceDraft,
   ComplianceChecker,
   PackagePreview
 } from '../components/510k';
+import RegPathwayAnalyzer from '../components/510k/RegPathwayAnalyzer';
 import { DocumentSectionRecommender } from '../components/documentrecommender';
 
 /**
@@ -136,7 +136,7 @@ const FDA510kPage = () => {
             className="flex items-center"
             disabled={!deviceProfile || !isPathwayAdvisorEnabled}
           >
-            <Settings className="h-4 w-4 mr-2" />
+            <Route className="h-4 w-4 mr-2" />
             Regulatory Pathway
           </TabsTrigger>
           <TabsTrigger 
@@ -216,16 +216,9 @@ const FDA510kPage = () => {
 
         <TabsContent value="pathwayAdvisor" className="space-y-4">
           {isPathwayAdvisorEnabled ? (
-            <PathwayAdvisorCard
-              projectId={deviceProfile?.id}
-              onConfirm={(pathway) => {
-                toast({
-                  title: "Pathway Selected",
-                  description: `${pathway} confirmed as your submission pathway`
-                });
-                // Navigate to the next logical step after pathway confirmation
-                setActiveTab("predicateAnalysis");
-              }}
+            <RegPathwayAnalyzer
+              deviceProfile={deviceProfile}
+              organizationId={currentOrganization?.id || 1}
             />
           ) : (
             <Card>
