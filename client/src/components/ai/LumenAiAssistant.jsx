@@ -390,7 +390,7 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
 
   return (
     <Sheet open={isOpen} onOpenChange={open => !open && onClose()}>
-      <SheetContent side="right" className="w-[400px] sm:w-[540px] p-0 flex flex-col bg-white text-black">
+      <SheetContent side="right" className="w-[90%] sm:w-[600px] md:w-[750px] lg:w-[900px] p-0 flex flex-col bg-white text-black">
         <SheetHeader className="p-4 border-b border-gray-100 bg-white">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -520,24 +520,28 @@ For best results, upload documents related to your specific regulatory needs suc
             {messages.map((message, index) => (
               <div
                 key={index}
-                className={`flex ${
+                className={`flex mb-4 ${
                   message.role === 'user' ? 'justify-end' : 'justify-start'
                 }`}
               >
                 <div
-                  className={`rounded-lg px-4 py-2 max-w-[80%] ${
+                  className={`rounded-2xl px-5 py-3 max-w-[85%] shadow-sm ${
                     message.role === 'user'
-                      ? 'bg-indigo-600 text-white'
-                      : 'bg-gray-100 text-gray-800'
+                      ? 'bg-indigo-600 text-white ml-auto'
+                      : message.role === 'system'
+                      ? 'bg-amber-50 border border-amber-200 text-amber-900'
+                      : 'bg-white border border-gray-200 text-gray-800'
                   }`}
                 >
                   {message.isLoading ? (
                     <div className="flex items-center gap-2">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      <p>Thinking...</p>
+                      <p>Generating response...</p>
                     </div>
                   ) : (
-                    <p className="whitespace-pre-wrap">{message.content}</p>
+                    <div className="whitespace-pre-wrap markdown-content prose prose-sm max-w-none">
+                      {message.content}
+                    </div>
                   )}
                 </div>
               </div>
