@@ -580,6 +580,68 @@ const initializeOpenAI = async () => {
   return openai;
 };
 
+/**
+ * Get AI recommendations for predicate devices based on device profile
+ */
+router.post('/recommend', async (req, res) => {
+  try {
+    const profile = req.body.deviceProfile;
+    
+    // Validate input
+    if (!profile) {
+      return res.status(400).json({
+        success: false,
+        message: 'Device profile is required'
+      });
+    }
+    
+    // Check for OpenAI API key
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key not available. Cannot generate recommendations.');
+      return res.status(500).json({
+        success: false,
+        message: 'OpenAI API key is required for recommendations'
+      });
+    }
+    
+    // Initialize OpenAI if needed
+    await initializeOpenAI();
+    
+    const prompt = `
+    You are a regulatory AI assistant. Given this device profile JSON:
+    ${JSON.stringify(profile, null, 2)}
+    Recommend the top 5 predicate devices (by name & ID) with a one-sentence rationale each.
+    Respond in JSON: [{ id: string, name: string, rationale: string }, …].
+    `;
+    
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      response_format: { type: "json_object" }
+    });
+    
+    try {
+      const recs = JSON.parse(completion.choices[0].message.content);
+      res.json({ 
+        success: true,
+        recommendations: recs 
+      });
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to parse AI recommendations'
+      });
+    }
+  } catch (error) {
+    console.error('Error generating recommendations:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to generate recommendations'
+    });
+  }
+});
+
 // Export the router
 export default router;
 export { router };
