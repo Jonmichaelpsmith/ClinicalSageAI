@@ -525,12 +525,12 @@ For best results, upload documents related to your specific regulatory needs suc
                 }`}
               >
                 <div
-                  className={`rounded-2xl px-5 py-3 max-w-[85%] shadow-sm ${
+                  className={`rounded-2xl px-5 py-4 max-w-[85%] ${
                     message.role === 'user'
-                      ? 'bg-indigo-600 text-white ml-auto'
+                      ? 'bg-indigo-600 text-white ml-auto shadow-md'
                       : message.role === 'system'
-                      ? 'bg-amber-50 border border-amber-200 text-amber-900'
-                      : 'bg-white border border-gray-200 text-gray-800'
+                      ? 'bg-amber-50 border border-amber-200 text-amber-900 shadow-sm'
+                      : 'bg-white border border-gray-200 text-gray-800 shadow-sm'
                   }`}
                 >
                   {message.isLoading ? (
@@ -540,7 +540,9 @@ For best results, upload documents related to your specific regulatory needs suc
                     </div>
                   ) : (
                     <div 
-                      className="whitespace-pre-wrap markdown-content prose prose-sm max-w-none" 
+                      className={`whitespace-pre-wrap markdown-content prose prose-sm max-w-none ${
+                        message.role === 'user' ? 'prose-invert' : ''
+                      }`}
                       dangerouslySetInnerHTML={{ 
                         __html: message.content
                           .replace(/^### (.*$)/gim, '<h3>$1</h3>')
