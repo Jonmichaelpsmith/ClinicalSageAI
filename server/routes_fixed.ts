@@ -29,6 +29,9 @@ import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
 import { router as googleDocsRoutes } from './routes/googleDocs.js';
 // New device profile routes
 import deviceProfileRouter from './routes/cerDeviceProfileRoutes';
+// FDA 510(k) routes
+// @ts-ignore
+import { router as fda510kRouter } from './routes/fda510kRoutes.js';
 
 export default function registerRoutes(app: Express): void {
   // Create a router for basic CER routes
@@ -351,6 +354,10 @@ export default function registerRoutes(app: Express): void {
   // Register Google Docs routes
   app.use('/api/google-docs', googleDocsRoutes);
   console.log('Google Docs routes registered');
+  
+  // Register FDA 510(k) routes
+  app.use('/api/fda510k', fda510kRouter);
+  console.log('FDA 510(k) routes registered');
   
   // Error handler for API routes
   app.use('/api', (err: any, req: any, res: any, next: any) => {

@@ -102,6 +102,26 @@ class FDA510kService {
       throw new Error(error.response?.data?.message || 'Failed to check compliance');
     }
   }
+  
+  /**
+   * Run compliance check on a device profile directly
+   * 
+   * @param {Object} deviceData - Device profile data
+   * @param {number} organizationId - The organization ID
+   * @returns {Promise<Object>} - Compliance check results
+   */
+  async runComplianceCheck(deviceData, organizationId) {
+    try {
+      const response = await axios.post('/api/fda510k/compliance-check', {
+        deviceData,
+        organizationId
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error running compliance check:', error);
+      throw new Error(error.response?.data?.message || 'Failed to run compliance check');
+    }
+  }
 
   /**
    * Get predicate device information

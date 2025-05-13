@@ -342,24 +342,36 @@ export default function KAutomationPanel() {
         ]);
       }
       else if (step === 'runComplianceChecks') {
-        // For compliance validation, we'll simulate the API call for now
-        // In a real implementation, this would call FDA510kService.validateDeviceProfile()
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // Verify we have a device profile selected
+        if (!currentDeviceProfile) {
+          throw new Error("Please select a device profile before running compliance checks");
+        }
         
-        // Show validation results
+        // Use the actual device profile for compliance check
+        const complianceResponse = await FDA510kService.runComplianceCheck(
+          currentDeviceProfile, 
+          currentOrganization?.id
+        );
+        
+        // Map API response to insights format
         setAiInsights([
           {
-            id: 'validation-1',
+            id: `validation-${Date.now()}`,
             type: 'validation',
-            isValid: true,
-            score: 0.92,
-            passedChecks: 28,
-            totalChecks: 32,
-            criticalIssues: 0,
-            warnings: 2,
-            timestamp: new Date().toISOString()
+            isValid: complianceResponse.isValid,
+            score: complianceResponse.score,
+            passedChecks: complianceResponse.passedChecks,
+            totalChecks: complianceResponse.totalChecks,
+            criticalIssues: complianceResponse.criticalIssues,
+            warnings: complianceResponse.warnings,
+            errors: complianceResponse.errors,
+            detailedChecks: complianceResponse.detailedChecks,
+            timestamp: complianceResponse.timestamp || new Date().toISOString()
           }
         ]);
+        
+        // Automatically switch to insights tab
+        setActiveTab('insights');
       }
       
       // Complete progress and clear interval
