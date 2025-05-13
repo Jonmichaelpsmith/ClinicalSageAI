@@ -111,9 +111,9 @@ const ClientManagement = lazy(() => import('./pages/ClientManagement'));
 const Settings = lazy(() => import('./pages/Settings'));
 
 // FDA 510(k) Automation Pages
-const FDA510kPage = lazy(() => import('./pages/510kPage'));
-const FDA510kDashboard = lazy(() => import('./pages/FDA510kDashboard'));
-const ESTARPackagePage = lazy(() => import('./pages/ESTARPackagePage'));
+// 510k functionality is integrated within CERV2Page
+// 510k Dashboard functionality is integrated within CERV2Page
+// ESTAR functionality is integrated within CERV2Page
 
 function App() {
   // Default tab for the UnifiedTopNavV3 component
@@ -200,8 +200,8 @@ function App() {
               <Route path="/client-portal/csr-analyzer" component={CSRPage} />
               <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
               <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
-              <Route path="/client-portal/510k" component={FDA510kPage} />
-              <Route path="/client-portal/510k-dashboard" component={FDA510kDashboard} />
+              <Route path="/client-portal/510k" component={CERV2Page} /> {/* Redirecting 510k to CERV2Page */}
+              <Route path="/client-portal/510k-dashboard" component={CERV2Page} /> {/* Redirecting to integrated CERV2Page */}
               <Route path="/client-portal/estar-package" component={ESTARPackagePage} />
               <Route path="/client-portal/client-management">
                 {() => (
@@ -243,7 +243,7 @@ function App() {
               <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
               <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}
               <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
-              <Route path="/510k" component={FDA510kPage} /> {/* FDA 510(k) Automation page route */}
+              <Route path="/510k" component={CERV2Page} /> {/* FDA 510(k) functionality integrated in CERV2Page */}
               <Route path="/510k-dashboard" component={FDA510kDashboard} /> {/* Enhanced FDA 510(k) Dashboard page route */}
               <Route path="/estar-package" component={ESTARPackagePage} /> {/* eSTAR Package Builder showcase page */}
               <Route path="/csr" component={CSRPage} /> {/* CSR Deep Intelligence page route */}
