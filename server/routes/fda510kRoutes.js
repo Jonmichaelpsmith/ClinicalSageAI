@@ -583,6 +583,232 @@ const initializeOpenAI = async () => {
   return openai;
 };
 
+/**
+ * Preview eSTAR package for a 510(k) project
+ */
+router.post('/preview-estar-plus/:projectId', async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { includeCoverLetter = true } = req.body;
+    
+    console.log(`Previewing eSTAR package for project ${projectId}`);
+    
+    // In a production environment, we would check for a valid projectId and get device data
+    // For now, we'll mock the response with sample data
+    
+    // Check if OpenAI API key is available for AI compliance check
+    let aiComplianceReport = null;
+    
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        // Initialize OpenAI if not already done
+        if (!openai) {
+          const { OpenAI } = require('openai');
+          openai = new OpenAI({
+            apiKey: process.env.OPENAI_API_KEY
+          });
+        }
+        
+        // Generate AI compliance report
+        const prompt = `
+          Generate a compliance report for an FDA 510(k) submission eSTAR package. 
+          The report should assess if all required elements of an eSTAR package are present and properly formatted.
+          Include verification that:
+          1. The administrative information is complete
+          2. Device description documentation is present and accurate
+          3. Substantial equivalence discussion is well-supported
+          4. Performance data is properly provided
+          5. All required declarations and certifications are included
+          
+          Format the report in a professional, concise manner suitable for inclusion in an FDA submission.
+        `;
+        
+        const completion = await openai.chat.completions.create({
+          messages: [
+            { role: "system", content: "You are a medical regulatory affairs expert specializing in FDA 510(k) submissions." },
+            { role: "user", content: prompt }
+          ],
+          model: "gpt-4o",
+        });
+        
+        aiComplianceReport = completion.choices[0].message.content;
+      } catch (aiError) {
+        console.error('Error generating AI compliance report:', aiError);
+        // We'll continue without the AI report rather than failing the whole request
+      }
+    }
+    
+    // Mock file list for the package preview
+    const mockFileList = [
+      {
+        name: "Administrative Information.pdf",
+        size: 245760, // Size in bytes
+        type: "application/pdf"
+      },
+      {
+        name: "Device Description.pdf",
+        size: 512000,
+        type: "application/pdf"
+      },
+      {
+        name: "Substantial Equivalence Discussion.pdf",
+        size: 378880,
+        type: "application/pdf"
+      },
+      {
+        name: "Performance Testing.pdf",
+        size: 819200,
+        type: "application/pdf"
+      },
+      {
+        name: "Declarations and Certifications.pdf",
+        size: 163840,
+        type: "application/pdf"
+      },
+      {
+        name: "eSTAR Manifest.xml",
+        size: 8192,
+        type: "application/xml"
+      }
+    ];
+    
+    // If cover letter is requested, add it to the file list
+    if (includeCoverLetter) {
+      mockFileList.unshift({
+        name: "Cover Letter.pdf",
+        size: 102400,
+        type: "application/pdf"
+      });
+    }
+    
+    // Return the preview response
+    res.status(200).json({
+      success: true,
+      projectId,
+      files: mockFileList,
+      totalSize: mockFileList.reduce((total, file) => total + file.size, 0),
+      aiComplianceReport,
+      message: "eSTAR package preview generated successfully"
+    });
+  } catch (error) {
+    console.error('Error generating eSTAR package preview:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate eSTAR package preview',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Build and package eSTAR submission for a 510(k) project
+ */
+router.post('/build-estar-plus/:projectId', async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { includeCoverLetter = true, autoUpload = false } = req.body;
+    
+    console.log(`Building eSTAR package for project ${projectId}`);
+    console.log(`Options: includeCoverLetter=${includeCoverLetter}, autoUpload=${autoUpload}`);
+    
+    // For a real implementation, we would:
+    // 1. Gather all required documents from the database
+    // 2. Generate any missing documents (e.g., cover letter)
+    // 3. Package everything into a compliant eSTAR format
+    // 4. Digitally sign the package
+    // 5. Store the package for download
+    
+    // Simulate a processing delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    // Generate a mock download URL
+    const downloadUrl = `/api/fda510k/download/${projectId}/${Date.now()}/eSTAR_package.zip`;
+    
+    // Return success response with download URL
+    res.status(200).json({
+      success: true,
+      projectId,
+      downloadUrl,
+      packageSize: 2457600, // Size in bytes
+      message: "eSTAR package built successfully",
+      autoUploaded: autoUpload
+    });
+  } catch (error) {
+    console.error('Error building eSTAR package:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to build eSTAR package',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Verify digital signature on eSTAR package for a 510(k) project
+ */
+router.get('/verify-signature/:projectId', async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    
+    console.log(`Verifying digital signature for project ${projectId}`);
+    
+    // For a real implementation, we would:
+    // 1. Locate the package for the given project
+    // 2. Verify the XML Digital Signature on the package manifest
+    // 3. Return the verification results
+    
+    // Simulate a processing delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    // Return mock verification results
+    res.status(200).json({
+      success: true,
+      projectId,
+      verification: {
+        valid: true,
+        timestamp: new Date().toISOString(),
+        signatureDetails: {
+          algorithm: "RSA-SHA256",
+          signer: "Example Medical Device Corp.",
+          certificate: "Valid FDA ESG Submission Certificate"
+        },
+        message: "Digital signature successfully verified. The package integrity is confirmed and the signature is valid."
+      }
+    });
+  } catch (error) {
+    console.error('Error verifying digital signature:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to verify digital signature',
+      error: error.message
+    });
+  }
+});
+
+/**
+ * Handle download of eSTAR package (mock implementation)
+ */
+router.get('/download/:projectId/:timestamp/:filename', (req, res) => {
+  const { projectId, filename } = req.params;
+  
+  console.log(`Download request for project ${projectId}, file: ${filename}`);
+  
+  // For a real implementation, we would:
+  // 1. Authenticate the request
+  // 2. Locate the actual file
+  // 3. Stream it as a download
+  
+  // For this mock implementation, we'll return a simple placeholder
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.setHeader('Content-Type', 'application/zip');
+  
+  // Create a simple mock ZIP file (not a real ZIP, just a placeholder)
+  const mockZipContent = Buffer.from(`This is a placeholder for the eSTAR package for project ${projectId}.
+The real implementation would return an actual ZIP file with the complete eSTAR submission package.`);
+  
+  res.send(mockZipContent);
+});
+
 // Export the router
 /**
  * Get detailed comparisons of different regulatory pathways

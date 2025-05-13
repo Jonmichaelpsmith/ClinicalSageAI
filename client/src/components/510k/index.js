@@ -12,3 +12,4 @@ export { default as LiteratureSummaryGenerator } from './LiteratureSummaryGenera
 export { default as ComplianceChecker } from './ComplianceChecker';
 export { default as ComplianceCheckerPanel } from './ComplianceCheckerPanel';
 export { default as PackagePreview } from './PackagePreview';
+export { default as ESTARPackageBuilder } from './ESTARPackageBuilder';
