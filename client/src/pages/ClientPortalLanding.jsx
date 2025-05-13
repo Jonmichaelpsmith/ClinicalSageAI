@@ -83,7 +83,8 @@ const ClientPortalLanding = () => {
     { id: 'rih', title: 'Regulatory Intelligence Hub™', description: 'AI-powered strategy, timeline, and risk simulation', path: '/regulatory-intelligence-hub', highlight: true },
     { id: 'risk', title: 'Risk Heatmap™', description: 'Interactive visualization of CTD risk gaps & impacts', path: '/regulatory-risk-dashboard' },
     { id: 'study', title: 'Study Architect™', description: 'Protocol development with regulatory intelligence', path: '/study-architect' },
-    { id: 'analytics', title: 'Analytics Dashboard', description: 'Metrics and insights on regulatory performance', path: '/analytics' }
+    { id: 'analytics', title: 'Analytics Dashboard', description: 'Metrics and insights on regulatory performance', path: '/analytics' },
+    { id: 'rai-test', title: 'Regulatory AI Testing', description: 'Test the enhanced regulatory AI assistant with global regulatory knowledge', path: '/regulatory-ai-test', isNew: true }
   ];
 
   const handleModuleSelect = (moduleId) => {
