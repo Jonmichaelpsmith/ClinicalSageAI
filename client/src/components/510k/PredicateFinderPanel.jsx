@@ -14,6 +14,12 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
@@ -504,50 +510,68 @@ Match Rationale: ${device.matchRationale || 'Not available'}
                 
                 <div className="flex justify-end space-x-2 mt-2">
                   {reference.url && (
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="flex items-center"
-                      onClick={() => {
-                        window.open(reference.url, '_blank');
-                        toast({
-                          title: "Opened Publication",
-                          description: `Viewing "${reference.title}" in a new tab`,
-                        });
-                      }}
-                    >
-                      <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                      View Publication
-                    </Button>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex items-center"
+                            onClick={() => {
+                              window.open(reference.url, '_blank');
+                              toast({
+                                title: "Opened Publication",
+                                description: `Viewing "${reference.title}" in a new tab`,
+                              });
+                            }}
+                          >
+                            <ExternalLink className="h-3.5 w-3.5 mr-1" />
+                            View Publication
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Opens the original publication in a new tab</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   )}
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="text-blue-600 border-blue-200 hover:bg-blue-50"
-                    onClick={() => {
-                      // In a real implementation, this would add the citation to the 510(k) submission
-                      const citations = JSON.parse(localStorage.getItem('citations') || '[]');
-                      citations.push({
-                        id: new Date().getTime(),
-                        title: reference.title,
-                        authors: reference.authors,
-                        journal: reference.journal,
-                        year: reference.year,
-                        doi: reference.doi || '',
-                        addedAt: new Date().toISOString()
-                      });
-                      localStorage.setItem('citations', JSON.stringify(citations));
-                      
-                      toast({
-                        title: "Citation Added",
-                        description: `"${reference.title}" has been added to your 510(k) submission references`,
-                        variant: "success",
-                      });
-                    }}
-                  >
-                    <FileText className="h-3.5 w-3.5 mr-1" />
-                    Cite in Submission
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="text-blue-600 border-blue-200 hover:bg-blue-50"
+                          onClick={() => {
+                            // In a real implementation, this would add the citation to the 510(k) submission
+                            const citations = JSON.parse(localStorage.getItem('citations') || '[]');
+                            citations.push({
+                              id: new Date().getTime(),
+                              title: reference.title,
+                              authors: reference.authors,
+                              journal: reference.journal,
+                              year: reference.year,
+                              doi: reference.doi || '',
+                              addedAt: new Date().toISOString()
+                            });
+                            localStorage.setItem('citations', JSON.stringify(citations));
+                            
+                            toast({
+                              title: "Citation Added",
+                              description: `"${reference.title}" has been added to your 510(k) submission references`,
+                              variant: "success",
+                            });
+                          }}
+                        >
+                          <FileText className="h-3.5 w-3.5 mr-1" />
+                          Cite in Submission
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Add this reference to your 510(k) submission citations</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
               </div>
             </CollapsibleContent>
