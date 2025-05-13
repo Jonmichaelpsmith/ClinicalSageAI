@@ -463,6 +463,12 @@ export default function CERV2Page() {
       );
     }
 
+    if (activeTab === '510k') {
+      return (
+        <KAutomationPanel showEstarTab={true} />
+      );
+    }
+    
     if (activeTab === 'gspr-mapping') {
       return (
         <GSPRMappingPanel
