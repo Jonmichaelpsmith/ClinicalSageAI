@@ -1,151 +1,112 @@
-// server/routes/regulatory-ai.js
+// /server/routes/regulatory-ai.js
 
 const express = require('express');
 const router = express.Router();
-const OpenAI = require('openai');
+const { Configuration, OpenAIApi } = require('openai');
+const { rateLimiter } = require('./rate-limiter');
 
-// Initialize OpenAI client
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Check if OpenAI API key is available
+const openaiApiKey = process.env.OPENAI_API_KEY;
+const configuration = openaiApiKey
+  ? new Configuration({ apiKey: openaiApiKey })
+  : null;
+const openai = configuration ? new OpenAIApi(configuration) : null;
 
-// System prompt for the Regulatory Affairs AI assistant
-const SYSTEM_PROMPT = `You are Lumen, an AI assistant specializing in regulatory affairs for medical devices, pharmaceuticals, and diagnostics. 
+// Apply rate limiting to all routes
+router.use(rateLimiter);
 
-Your expertise includes:
-- FDA 510(k) submission process and requirements
-- Clinical Evaluation Reports (CER) for medical devices
-- Medical device classifications and regulations
-- FDA, EU MDR, and international regulatory frameworks
-- Predicate device identification
-- Substantial equivalence determination
-- Safety and performance assessment
-- Risk management for medical devices
-- Post-market surveillance requirements
-- Regulatory compliance strategies
-
-When responding:
-1. Be concise but thorough
-2. Cite regulatory guidelines when appropriate
-3. Format your responses with clear headings and bullet points when helpful
-4. Focus on factual, evidence-based information
-5. Acknowledge regulatory differences between regions
-6. Use proper regulatory terminology
-
-If you're not sure about something, acknowledge limitations rather than guessing. If the user's query is outside your regulatory expertise, redirect them to appropriate resources.
-
-Tailor your responses based on the context provided, including the module they're currently using, the document type they're working with, and any device information available.`;
-
-// API rate limiting settings
-const USER_RATE_LIMIT = 15; // requests per hour
-const userRequestCounts = new Map();
-
-// Rate limiting middleware
-function rateLimiter(req, res, next) {
-  const userId = req.headers['user-id'] || req.ip; // Use user ID if available, otherwise IP
-  const currentHour = new Date().getHours();
-  const userKey = `${userId}-${currentHour}`;
-  
-  const requestCount = userRequestCounts.get(userKey) || 0;
-  
-  if (requestCount >= USER_RATE_LIMIT) {
-    return res.status(429).json({
-      error: 'Rate limit exceeded',
-      message: 'You have reached the maximum number of AI assistant requests for this hour. Please try again later.'
-    });
-  }
-  
-  userRequestCounts.set(userKey, requestCount + 1);
-  next();
-}
-
-// Clean up rate limiting data periodically
-setInterval(() => {
-  const currentHour = new Date().getHours();
-  for (const [key] of userRequestCounts.entries()) {
-    if (!key.endsWith(`-${currentHour}`)) {
-      userRequestCounts.delete(key);
-    }
-  }
-}, 60 * 60 * 1000); // Clean up every hour
-
-// POST /api/regulatory-ai/chat - Chat with the Regulatory AI assistant
-router.post('/chat', rateLimiter, async (req, res) => {
+/**
+ * Process an AI query using GPT-4
+ * POST /api/regulatory-ai/query
+ */
+router.post('/query', async (req, res) => {
   try {
-    const { message, context = {} } = req.body;
-    
+    const { message, module, context, history } = req.body;
+
+    // Validate inputs
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
     }
-    
-    // Check if OpenAI API key is configured
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OpenAI API key is not configured');
-      return res.status(500).json({
-        error: 'Configuration error',
-        message: 'The AI service is not properly configured. Please contact support.'
-      });
-    }
-    
-    // Create message history
-    const messageHistory = [
-      { role: 'system', content: SYSTEM_PROMPT },
-    ];
-    
-    // Add context as a system message
-    if (context) {
-      const contextString = `Current user context:
-- Module: ${context.moduleName || 'Unknown'}
-- Document Type: ${context.documentType || 'Unknown'}
-- Current Tab: ${context.activeTab || 'Unknown'}
-- Device Information: ${context.deviceInfo?.deviceName ? JSON.stringify(context.deviceInfo) : 'Not available'}
 
-Use this context to tailor your response appropriately.`;
+    // Check if OpenAI is available
+    if (!openai) {
+      console.error('OpenAI API key not configured');
+      return res.status(503).json({
+        error: 'AI service is not available. Please contact your administrator.',
+        response: 'I apologize, but my AI service is currently unavailable. Please try again later or contact your system administrator.',
+      });
+    }
+
+    // Create system prompt based on the module and context
+    let systemPrompt = `You are Lumen Regulatory Affairs AI, a helpful assistant specializing in medical device and pharmaceutical regulatory affairs knowledge.
+    
+- Focus on providing clear, concise regulatory guidance.
+- Reference specific regulations and standards when appropriate.
+- Prioritize safety, compliance, and ethical considerations in all responses.
+- Do not provide legal advice, only regulatory information and guidance.
+- Format responses with markdown to improve readability.`;
+
+    // Add module-specific context to the system prompt
+    if (module) {
+      systemPrompt += `\n\nYou are currently being asked about the ${module} module.`;
       
-      messageHistory.push({ role: 'system', content: contextString });
+      // Add specific guidance based on module
+      if (module.toLowerCase().includes('510k')) {
+        systemPrompt += `\n\nFor 510(k) submissions:
+- Focus on substantial equivalence demonstrations.
+- Guide users through predicate device selection.
+- Help with device classification and regulatory pathways.
+- Provide clarity on FDA expectations for different device types.`;
+      } else if (module.toLowerCase().includes('cer')) {
+        systemPrompt += `\n\nFor Clinical Evaluation Reports (CER):
+- Follow MDR 2017/745 requirements for clinical evaluation.
+- Focus on MEDDEV 2.7/1 rev 4 guidelines.
+- Help with literature search strategies and equivalence demonstrations.
+- Guide users on risk-benefit analysis and gaps in clinical evidence.`;
+      }
     }
-    
-    // Add conversation history if provided
-    if (context.history && Array.isArray(context.history)) {
-      context.history.forEach(msg => {
-        if (msg.role === 'user' || msg.role === 'assistant') {
-          messageHistory.push({ role: msg.role, content: msg.content });
-        }
-      });
+
+    // Add any additional context if provided
+    if (context && Object.keys(context).length > 0) {
+      systemPrompt += `\n\nContext Information:\n${JSON.stringify(context, null, 2)}`;
     }
-    
-    // Add the current user message
-    messageHistory.push({ role: 'user', content: message });
-    
+
+    // Prepare conversation messages
+    const messages = [
+      { role: 'system', content: systemPrompt },
+    ];
+
+    // Add conversation history
+    if (history && Array.isArray(history)) {
+      // Only include the most recent 10 messages to stay within context limits
+      const recentHistory = history.slice(-10);
+      messages.push(...recentHistory);
+    }
+
+    // Add the user's current message
+    messages.push({ role: 'user', content: message });
+
     // Call OpenAI API
-    // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: messageHistory,
+    console.log('Sending request to OpenAI API...');
+    const completion = await openai.createChatCompletion({
+      model: "gpt-4-turbo", // Use GPT-4 for best results
+      messages: messages,
       temperature: 0.7,
-      max_tokens: 800,
+      max_tokens: 2048,
     });
-    
+
     // Extract the response
-    const assistantResponse = response.choices[0].message.content;
-    
-    return res.json({
-      response: assistantResponse,
-      usage: response.usage || {}
-    });
-    
+    const aiResponse = completion.data.choices[0].message.content;
+    console.log('Received response from OpenAI API');
+
+    // Return the AI response
+    return res.status(200).json({ response: aiResponse });
   } catch (error) {
-    console.error('Error in AI chat endpoint:', error);
-    
-    // Determine appropriate error response
-    if (error.response?.status === 429) {
-      return res.status(429).json({
-        error: 'Rate limit exceeded',
-        message: 'The AI service is currently experiencing high demand. Please try again in a few minutes.'
-      });
-    }
+    console.error('Error in regulatory AI query:', error);
     
     return res.status(500).json({
-      error: 'Internal server error',
-      message: 'An error occurred while processing your request. Please try again later.'
+      error: 'Failed to process your request',
+      response: 'I apologize, but I encountered an error processing your request. Please try again or contact support if the issue persists.',
     });
   }
 });
