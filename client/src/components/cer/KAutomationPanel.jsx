@@ -1091,6 +1091,7 @@ export default function KAutomationPanel() {
                       deviceProfile={currentDeviceProfile}
                       organizationId={currentOrganization?.id}
                       predicates={predicateSearchResults}
+                      recommendations={recommendedPredicates}
                     />
                   ) : (
                     <Alert className="bg-amber-50 border-amber-200">
