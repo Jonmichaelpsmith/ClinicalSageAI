@@ -114,6 +114,31 @@ export const featureFlags: Record<string, FeatureFlag> = {
     description: 'Enables semantic search capabilities across regulatory documents',
     defaultValue: true,
     enabled: true
+  },
+  
+  // Onboarding and assistance
+  ENABLE_ONBOARDING_TOUR: {
+    id: 'ENABLE_ONBOARDING_TOUR',
+    name: 'Guided Tour',
+    description: 'Enables guided tour for new users of the 510(k) module',
+    defaultValue: true,
+    enabled: true
+  },
+  ENABLE_ONBOARDING_CHATBOT: {
+    id: 'ENABLE_ONBOARDING_CHATBOT',
+    name: 'Assistant Chatbot',
+    description: 'Enables AI-powered regulatory assistant chatbot for in-app guidance',
+    defaultValue: true,
+    enabled: true
+  },
+  
+  // Device profile management
+  ENABLE_DEVICE_PROFILE: {
+    id: 'ENABLE_DEVICE_PROFILE',
+    name: 'Device Profile Manager',
+    description: 'Enables device profile intake and management for 510(k) submissions',
+    defaultValue: true,
+    enabled: true
   }
 };
 
