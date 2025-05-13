@@ -6,7 +6,7 @@ import {
   FileCheck, CheckCircle2, AlertTriangle, Lightbulb, Bot, Star, ListChecks, BookOpen, 
   Clock, Info, Check, Brain, Activity, FileText, Undo2, Users, Plus, Database,
   ChevronDown, ExternalLink, Bug, AlertCircle, BookmarkPlus, Calendar,
-  ChevronUp
+  ChevronUp, ListPlus
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -1370,6 +1370,29 @@ export default function KAutomationPanel() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-4">
+                    {/* Predicate devices statistics dashboard */}
+                    <div className="grid grid-cols-3 gap-3 mb-6">
+                      <div className="bg-green-50 p-3 rounded-md border border-green-100 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-green-700">
+                          {aiInsights.filter(i => i.type === 'predicate').length}
+                        </span>
+                        <span className="text-xs text-green-600">Potential Predicates</span>
+                      </div>
+                      <div className="bg-green-50 p-3 rounded-md border border-green-100 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-green-700">
+                          {aiInsights.filter(i => i.type === 'predicate' && i.confidence && i.confidence >= 0.7).length}
+                        </span>
+                        <span className="text-xs text-green-600">High Match Score</span>
+                      </div>
+                      <div className="bg-green-50 p-3 rounded-md border border-green-100 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-bold text-green-700">
+                          {Math.round(aiInsights.filter(i => i.type === 'predicate').reduce((sum, item) => sum + (item.confidence || 0), 0) / 
+                          (aiInsights.filter(i => i.type === 'predicate').length || 1) * 100)}%
+                        </span>
+                        <span className="text-xs text-green-600">Avg. Match Score</span>
+                      </div>
+                    </div>
+                    
                     <div className="space-y-4">
                       {aiInsights
                         .filter(i => i.type === 'predicate')
