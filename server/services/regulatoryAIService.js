@@ -439,15 +439,56 @@ async function performExternalSearch(query) {
   try {
     console.log(`Performing external search for: "${query}"`);
     
-    // This would ideally connect to a real search API
-    // For now, return a placeholder response indicating external search capability
-    return [
-      {
-        title: "External search result placeholder",
-        snippet: "This placeholder will be replaced with real-time search results from external APIs in the production version.",
-        url: "https://example.com/search-result"
+    // For regulatory queries, include specialized medical and regulatory databases
+    const regulatoryTerms = extractRegulatoryTerms(query);
+    
+    // Search for information from external sources like FDA, EMA, etc.
+    const externalSources = [];
+    
+    // Try to use externalSearch service for FDA, PubMed, clinical trials, etc.
+    try {
+      // Dynamically import the externalSearch service to avoid circular dependencies
+      const { searchFDA, searchClinicalTrials, searchPubMed, searchFAERS, searchEMA, comprehensiveSearch } = 
+        await import('../services/externalSearch.js');
+      
+      console.log('External search service imported successfully');
+      
+      // Use comprehensive search for regulatory content
+      const searchResults = await comprehensiveSearch(query);
+      
+      console.log(`External search results: ${JSON.stringify(searchResults, null, 2)}`);
+      
+      if (searchResults && Object.keys(searchResults).length > 0) {
+        // Format the search results for context enhancement
+        Object.entries(searchResults).forEach(([source, results]) => {
+          if (Array.isArray(results) && results.length > 0) {
+            results.slice(0, 3).forEach(result => {
+              externalSources.push({
+                source: source,
+                title: result.title || '',
+                content: result.description || result.summary || '',
+                url: result.url || '',
+                date: result.date || new Date().toISOString().split('T')[0]
+              });
+            });
+          }
+        });
       }
-    ];
+      
+      console.log(`Formatted external sources: ${JSON.stringify(externalSources, null, 2)}`);
+    } catch (searchError) {
+      console.warn(`External search service error: ${searchError.message}`);
+      // Continue with placeholder search results if the service fails
+      externalSources.push({
+        source: "regulatory_database",
+        title: "Latest regulatory guidance",
+        content: "This would be replaced with real-time search results from external regulatory databases in production.",
+        url: "https://example.com/search-result",
+        date: new Date().toISOString().split('T')[0]
+      });
+    }
+    
+    return externalSources;
   } catch (error) {
     console.error('Error performing external search:', error);
     return [];

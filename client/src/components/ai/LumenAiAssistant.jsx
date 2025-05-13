@@ -304,7 +304,10 @@ export function LumenAiAssistant({ isOpen, onClose, module, context }) {
           context: module?.toLowerCase() || 'general',
           module,
           additionalContext: context,
-          history: messages.map(msg => ({ role: msg.role, content: msg.content })),
+          history: messages.filter(msg => !msg.isLoading).map(msg => ({ 
+            role: msg.role, 
+            content: msg.content 
+          })),
         }),
         signal: controller.signal
       });
