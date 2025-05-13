@@ -73,6 +73,7 @@ const RegulatoryRiskDashboard = lazy(() => import('./pages/RegulatoryRiskDashboa
 const EnhancedRegulatoryDashboard = lazy(() => import('./pages/EnhancedRegulatoryDashboard'));
 const RegulatoryDashboard = lazy(() => import('./pages/RegulatoryDashboard'));
 const RegulatoryIntelligenceHub = lazy(() => import('./pages/RegulatoryIntelligenceHub'));
+const RegulatoryAITestPage = lazy(() => import('./pages/RegulatoryAITestPage'));
 
 // IND Wizard pages (no Submission Builder)
 const IndWizard = lazy(() => import('./pages/INDWizardFixed'));
@@ -261,6 +262,13 @@ function App() {
               <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
               <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
               <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
+              <Route path="/regulatory-ai-test">
+                {() => (
+                  <Suspense fallback={<LoadingPage />}>
+                    <RegulatoryAITestPage />
+                  </Suspense>
+                )}
+              </Route> {/* Test page for Regulatory AI queries */}
               {/* Regulatory Submissions Hub removed as requested */}
               {/* Removed Regulatory Submissions Hub as requested */}
 
