@@ -11,6 +11,8 @@ import errorHandler from './middleware/errorHandlerMiddleware';
 import globalErrorHandler from './utils/globalErrorHandler';
 import fs from 'fs';
 import { initializeDatabase } from './db/initDatabase';
+import OpenAI from 'openai';
+import multer from 'multer';
 
 // Load environment variables
 dotenv.config();
@@ -103,6 +105,8 @@ import { router as FDA510kApiRoutes } from './routes/510k-api-routes';
 app.use('/api/510k', FDA510kRoutes);
 app.use('/api/fda510k', FDA510kApiRoutes);
 console.log('FDA 510(k) Automation routes registered');
+
+// We'll register the regulatory AI routes below with FDA 510(k) routes
 
 // Import and register health check routes
 import { createHealthCheckRouter } from './routes/healthCheck';
