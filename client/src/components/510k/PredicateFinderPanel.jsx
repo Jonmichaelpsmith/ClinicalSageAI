@@ -63,6 +63,9 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
   const [selectedPredicate, setSelectedPredicate] = useState(null);
   const [savedReferences, setSavedReferences] = useState([]);
   const [summaries, setSummaries] = useState({});
+  const [semQuery, setSemQuery] = useState('');
+  const [isSemanticSearching, setIsSemanticSearching] = useState(false);
+  const [semanticResults, setSemanticResults] = useState([]);
   const [relevanceCriteria, setRelevanceCriteria] = useState({
     intendedUseWeight: 40,
     deviceClassWeight: 20,
@@ -244,6 +247,55 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
     });
   };
   
+  // Handler for semantic search
+  const handleSemanticSearch = async () => {
+    if (!semQuery.trim()) {
+      toast({
+        title: "Empty Query",
+        description: "Please enter a search query to perform semantic search",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSemanticSearching(true);
+    try {
+      // Add timeout protection
+      const searchPromise = FDA510kService.semanticSearch(semQuery);
+      
+      // Create a timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Semantic search timed out after 15 seconds'));
+        }, 15000);
+      });
+      
+      // Race the search against the timeout
+      const results = await Promise.race([searchPromise, timeoutPromise]);
+      
+      // Set the results
+      setSemanticResults(results);
+      
+      console.log('Semantic search completed successfully:', {
+        resultCount: results.length || 0
+      });
+      
+      toast({
+        title: "Semantic Search Complete",
+        description: `Found ${results.length || 0} potential predicate devices.`,
+      });
+    } catch (error) {
+      console.error('Error in semantic search:', error);
+      toast({
+        title: "Search Error",
+        description: error.message || "Could not complete semantic search",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSemanticSearching(false);
+    }
+  };
+  
   // Helper to show detailed comparison between selected device and the predicate
   const renderDeviceComparison = (predicateDevice) => {
     if (!deviceProfile || !predicateDevice) return null;
@@ -373,6 +425,91 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
   // Render an empty state
   const renderEmptyState = () => (
     <div>
+      {/* Semantic Search Panel */}
+      <div className="mb-6 p-4 border border-blue-100 rounded-lg bg-blue-50">
+        <div className="flex justify-between items-center mb-3">
+          <h3 className="text-md font-medium flex items-center">
+            <Search className="h-4 w-4 mr-2 text-blue-600" />
+            <span>🔍 Semantic Search</span>
+          </h3>
+          <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
+            Vector Search
+          </Badge>
+        </div>
+        
+        <p className="text-sm text-gray-600 mb-3">
+          Describe what you're looking for in natural language and we'll find semantically similar predicate devices.
+        </p>
+        
+        <div className="flex space-x-2 mb-4">
+          <div className="flex-1">
+            <input
+              type="text"
+              value={semQuery}
+              onChange={e => setSemQuery(e.target.value)}
+              placeholder="Describe what you're looking for…"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              disabled={isSemanticSearching}
+            />
+          </div>
+          <Button 
+            onClick={handleSemanticSearch} 
+            disabled={isSemanticSearching || !semQuery.trim()}
+            className="flex items-center gap-2"
+          >
+            {isSemanticSearching ? (
+              <>
+                <span className="animate-spin h-4 w-4 border-2 border-white border-opacity-50 border-t-transparent rounded-full"></span>
+                Searching...
+              </>
+            ) : (
+              <>
+                <Search className="h-4 w-4" />
+                Search
+              </>
+            )}
+          </Button>
+        </div>
+        
+        {semanticResults.length > 0 ? (
+          <div className="mt-3 space-y-2">
+            <h4 className="text-sm font-medium mb-2 flex items-center">
+              <Database className="h-4 w-4 mr-1.5 text-blue-600" />
+              Semantic Search Results ({semanticResults.length})
+            </h4>
+            <ScrollArea className="h-[300px] rounded-md border p-2">
+              <div className="space-y-2">
+                {semanticResults.map(result => (
+                  <Card key={result.id} className="p-3 bg-white">
+                    <div className="flex justify-between">
+                      <span className="font-medium">{result.name}</span>
+                      <span className="text-xs text-gray-500">{(result.score*100).toFixed(1)}% Match</span>
+                    </div>
+                    <p className="text-sm mt-1 text-gray-700">{result.description}</p>
+                    <div className="flex justify-end mt-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        className="text-xs"
+                        onClick={() => handleSelectPredicate({
+                          deviceName: result.name,
+                          description: result.description,
+                          matchScore: result.score,
+                          id: result.id
+                        })}
+                      >
+                        <FileText className="h-3 w-3 mr-1" />
+                        Select
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
+        ) : null}
+      </div>
+      
       {/* Customization Panel */}
       <div className="mb-6">
         <div className="flex justify-between items-center mb-2">

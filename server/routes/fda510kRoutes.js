@@ -643,5 +643,76 @@ router.post('/recommend', async (req, res) => {
 });
 
 // Export the router
+/**
+ * Semantic search for predicate devices
+ */
+router.post('/semantic-search', async (req, res) => {
+  try {
+    const { query } = req.body;
+    
+    if (!query || typeof query !== 'string' || query.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'A valid search query is required'
+      });
+    }
+    
+    // Check if OpenAI API key is available
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OpenAI API key not available. Cannot perform semantic search.');
+      return res.status(500).json({
+        success: false,
+        message: 'OpenAI API key is required for semantic search. Please provide a valid API key.'
+      });
+    }
+    
+    try {
+      // 1) Get embedding for user query
+      const embedRes = await openai.embeddings.create({
+        model: 'text-embedding-ada-002',
+        input: query
+      });
+      const qVec = embedRes.data[0].embedding;
+
+      // 2) Connect to the database pool
+      const db = new Pool({ connectionString: process.env.DATABASE_URL });
+      
+      // 3) Find top-10 nearest predicate_devices by cosine similarity
+      const sql = `
+        SELECT id, name, description,
+          1 - (embedding <=> $1) AS score
+        FROM predicate_devices
+        WHERE embedding IS NOT NULL
+        ORDER BY embedding <=> $1
+        LIMIT 10
+      `;
+      
+      const { rows } = await db.query(sql, [qVec]);
+      
+      // Close the database connection when done
+      await db.end();
+      
+      // 4) Return results
+      res.json({ 
+        success: true,
+        results: rows 
+      });
+    } catch (err) {
+      console.error('Semantic search error:', err);
+      res.status(500).json({ 
+        success: false,
+        error: 'Semantic search failed',
+        message: err.message
+      });
+    }
+  } catch (error) {
+    console.error('Error in semantic search endpoint:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Semantic search failed due to a server error'
+    });
+  }
+});
+
 export default router;
 export { router };

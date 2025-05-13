@@ -288,6 +288,25 @@ class FDA510kService {
       throw new Error(error.response?.data?.message || 'Failed to get recommendations');
     }
   }
+  
+  /**
+   * Perform semantic search on predicate devices using natural language
+   * 
+   * @param {string} query - Natural language query describing the device or requirements
+   * @returns {Promise<Array>} - Search results with relevance scores
+   */
+  async semanticSearch(query) {
+    try {
+      const response = await axios.post('/api/fda510k/semantic-search', {
+        query
+      });
+      
+      return response.data.results || [];
+    } catch (error) {
+      console.error('Error performing semantic search:', error);
+      throw new Error(error.response?.data?.message || 'Failed to perform semantic search');
+    }
+  }
 }
 
 // Create and export a singleton instance
