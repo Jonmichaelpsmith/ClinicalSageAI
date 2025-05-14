@@ -1220,15 +1220,18 @@ export default function CERV2Page() {
 
     if (activeTab === 'reports') {
       return (
-        <CerComprehensiveReportsPanel 
-          deviceName={deviceName}
-          deviceType={deviceType}
-          manufacturer={manufacturer}
-          cerData={{
-            title: title,
-            sections: sections
-          }}
-        />
+        <div className="space-y-6">
+          <ReportGenerationPanel />
+          <CerComprehensiveReportsPanel 
+            deviceName={deviceName}
+            deviceType={deviceType}
+            manufacturer={manufacturer}
+            cerData={{
+              title: title,
+              sections: sections
+            }}
+          />
+        </div>
       );
     }
     
