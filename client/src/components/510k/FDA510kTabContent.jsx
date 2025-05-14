@@ -16,6 +16,7 @@ import InsightsDisplay from './InsightsDisplay';
 import ProgressTracker from './ProgressTracker';
 import SubmissionTimeline from './SubmissionTimeline';
 import ReportGenerator from './ReportGenerator';
+import About510kDialog from './About510kDialog';
 
 export default function FDA510kTabContent({
   deviceProfile,
@@ -139,22 +140,25 @@ export default function FDA510kTabContent({
   if (activeTab === 'predicates') {
     return (
       <div className="space-y-4">
-        {showGuidance && (
-          <Alert className="bg-blue-50 border-blue-200">
-            <Info className="h-4 w-4 text-blue-600" />
-            <AlertTitle className="text-blue-800">Predicate Device Discovery</AlertTitle>
-            <AlertDescription className="text-blue-600">
-              Find FDA-cleared devices similar to yours to establish substantial equivalence for your 510(k) submission.
-              <Button 
-                variant="link" 
-                className="text-blue-600 p-0 h-auto font-normal" 
-                onClick={() => setShowGuidance(false)}
-              >
-                Dismiss
-              </Button>
-            </AlertDescription>
-          </Alert>
-        )}
+        <div className="flex justify-between items-start">
+          {showGuidance && (
+            <Alert className="bg-blue-50 border-blue-200 flex-1 mr-4">
+              <Info className="h-4 w-4 text-blue-600" />
+              <AlertTitle className="text-blue-800">Predicate Device Discovery</AlertTitle>
+              <AlertDescription className="text-blue-600">
+                Find FDA-cleared devices similar to yours to establish substantial equivalence for your 510(k) submission.
+                <Button 
+                  variant="link" 
+                  className="text-blue-600 p-0 h-auto font-normal" 
+                  onClick={() => setShowGuidance(false)}
+                >
+                  Dismiss
+                </Button>
+              </AlertDescription>
+            </Alert>
+          )}
+          <About510kDialog />
+        </div>
         
         <Card>
           <CardHeader>
