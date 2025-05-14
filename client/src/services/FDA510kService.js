@@ -28,6 +28,30 @@ class FDA510kService {
       throw new Error(error.response?.data?.message || 'Failed to preview eSTAR package');
     }
   }
+  
+  /**
+   * Integrate a document with the eSTAR generation process
+   * 
+   * @param {string} documentId - The document ID
+   * @param {string} projectId - The 510(k) project ID
+   * @param {Object} options - Optional parameters
+   * @param {boolean} options.validateFirst - Whether to validate before generating
+   * @returns {Promise<Object>} - Integration result with validation and eSTAR details
+   */
+  async integrateWithESTAR(documentId, projectId, { validateFirst = true } = {}) {
+    try {
+      const response = await axios.post('/api/fda510k/integrate-estar-workflow', {
+        documentId,
+        projectId,
+        validateFirst
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error integrating with eSTAR:', error);
+      throw new Error(error.response?.data?.message || 'Failed to integrate with eSTAR workflow');
+    }
+  }
 
   /**
    * Build and download/upload an eSTAR package
