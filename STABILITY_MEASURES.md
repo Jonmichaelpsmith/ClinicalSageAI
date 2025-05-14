@@ -4,6 +4,33 @@
 
 This document outlines the critical stability measures implemented to ensure the application remains operational at all times, with a particular focus on preventing the regulatory module from causing system-wide failures.
 
+## Running Tests
+
+We use Jest + Supertest for unit & integration tests. To run them:
+
+1. Ensure you've installed dev-dependencies:
+   ```bash
+   npm install
+   ```
+
+2. From the project root, run:
+
+   ```bash
+   ./test.sh
+   ```
+
+   This script will:
+
+   * Load your `.env` (if present)
+   * Invoke Jest with the proper config
+   * Exit non-zero if any test fails
+
+You can also pass Jest CLI flags, e.g.:
+
+```bash
+./test.sh --coverage
+```
+
 ## Critical Components
 
 The following components have been identified as critical to application stability:
