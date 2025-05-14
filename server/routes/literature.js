@@ -57,7 +57,7 @@ try {
  * @route POST /api/literature/search
  * @desc Search PubMed and other sources for literature related to a medical device
  */
-import { searchLiterature } from '../services/discoveryService.js';
+import discoveryService from '../services/discoveryService.js';
 
 router.post('/search', async (req, res) => {
   try {
@@ -70,7 +70,7 @@ router.post('/search', async (req, res) => {
     // Use the unified discoveryService to search for literature
     try {
       console.log('Searching for literature using discoveryService:', query);
-      const literatureResults = await searchLiterature(query, { limit });
+      const literatureResults = await discoveryService.searchLiterature(query, { limit });
       
       // Return the results in the expected format
       res.json({ 
