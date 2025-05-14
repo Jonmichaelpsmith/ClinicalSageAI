@@ -698,7 +698,8 @@ export default function LitReviewPanel() {
                             </div>
                           </div>
                         )}
-                          
+                        
+                        <div className="mt-4">
                           <Button variant="outline" size="sm" className="w-full" onClick={() => handleSearch()}>
                             Apply Filters
                           </Button>
