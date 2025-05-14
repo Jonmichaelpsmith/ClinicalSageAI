@@ -4,6 +4,7 @@ const API_BASE_URL = '/api/cer';
 const LITERATURE_SEARCH_URL = '/api/literature';
 const PUBMED_API_URL = '/api/pubmed';
 const IEEE_API_URL = '/api/ieee';
+const DISCOVERY_API_URL = '/api/discovery';
 
 /**
  * Post a new device profile
@@ -249,5 +250,44 @@ export const findPredicateDevices = async (deviceDescription, options = { limit:
     console.error('Error using unified predicate search:', error);
     // Return empty array as fallback since there's no traditional endpoint
     return [];
+  }
+};
+
+/**
+ * Generate a literature review from selected articles
+ * 
+ * @param {string} deviceName - The device name for context
+ * @param {Array} literatureReferences - Array of selected literature references
+ * @returns {Promise<Object>} - The generated literature review content
+ */
+export const generateLiteratureReview = async (deviceName, literatureReferences) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/generate-literature-review`, {
+      deviceName,
+      literatureReferences
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error generating literature review:', error);
+    throw error;
+  }
+};
+
+/**
+ * Save a generated literature review to a CER project
+ * 
+ * @param {string} cerProjectId - The CER project ID
+ * @param {Object} reviewData - The generated review data
+ * @returns {Promise<Object>} - The result of saving the review
+ */
+export const saveGeneratedLiteratureReview = async (cerProjectId, reviewData) => {
+  try {
+    const response = await axios.post(`${API_BASE_URL}/literature-review/${cerProjectId}`, {
+      reviewData
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error saving generated literature review:', error);
+    throw error;
   }
 };
