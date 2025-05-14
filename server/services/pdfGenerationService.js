@@ -11,7 +11,7 @@ const path = require('path');
 const { Buffer } = require('buffer');
 
 /**
- * Generate a PDF document from structured content
+ * Generate a PDF document from structured content that follows FDA formatting requirements
  * 
  * @param {Object} content - Structured content for the document
  * @param {String} filename - Target filename for the generated document
@@ -19,17 +19,126 @@ const { Buffer } = require('buffer');
  */
 async function generatePdf(content, filename) {
   try {
-    // Convert content structure to HTML
+    // For 510(k) submissions, we'll use a special FDA-compliant approach
+    if (content.title && content.title.includes('510(k)')) {
+      return await generate510kPdf(content, filename);
+    }
+    
+    // For other documents, use standard HTML conversion
     const html = generateHtml(content);
+    const { spawn } = require('child_process');
+    const outputPath = path.join(process.cwd(), 'generated_documents', filename);
     
-    // For this implementation, we're using a very simple approach
-    // that converts the HTML to a PDF-like format using HTML styling
-    const pdfBuffer = Buffer.from(html);
-    
-    return pdfBuffer;
+    // Use wkhtmltopdf to convert HTML to a proper PDF with correct formatting
+    // This is a workaround until we get the Python-based solution working
+    return new Promise((resolve, reject) => {
+      // First write the HTML to a temporary file
+      const tempHtmlPath = outputPath.replace('.pdf', '.html');
+      fs.writeFileSync(tempHtmlPath, html);
+      
+      // Then convert the HTML to PDF
+      const child = spawn('wkhtmltopdf', [
+        '--page-size', 'Letter',
+        '--margin-top', '0.5in',
+        '--margin-right', '0.5in',
+        '--margin-bottom', '0.5in',
+        '--margin-left', '0.5in',
+        '--header-spacing', '5',
+        '--footer-spacing', '5',
+        tempHtmlPath,
+        outputPath
+      ]);
+      
+      child.on('close', (code) => {
+        if (code !== 0) {
+          // If wkhtmltopdf fails, fall back to returning HTML in a buffer
+          console.warn('wkhtmltopdf command failed, falling back to HTML buffer');
+          resolve(Buffer.from(html));
+          return;
+        }
+        
+        // Read the generated PDF
+        try {
+          const pdfBuffer = fs.readFileSync(outputPath);
+          
+          // Clean up temporary files
+          try {
+            fs.unlinkSync(tempHtmlPath);
+          } catch (err) {
+            console.warn('Could not delete temporary HTML file:', err);
+          }
+          
+          resolve(pdfBuffer);
+        } catch (err) {
+          reject(new Error(`Failed to read generated PDF: ${err.message}`));
+        }
+      });
+    });
   } catch (error) {
     console.error('Error generating PDF:', error);
     throw new Error(`PDF generation failed: ${error.message}`);
+  }
+}
+
+/**
+ * Generate FDA-compliant 510(k) PDF using Python's reportlab for strict formatting
+ * 
+ * @param {Object} content - Structured content for the document
+ * @param {String} filename - Target filename for the generated document
+ * @returns {Buffer} PDF document as a buffer
+ */
+async function generate510kPdf(content, filename) {
+  try {
+    const outputPath = path.join(process.cwd(), 'generated_documents', filename);
+    const tempDataPath = outputPath.replace('.pdf', '.json');
+    
+    // Write the content to a temporary JSON file for the Python script to read
+    fs.writeFileSync(tempDataPath, JSON.stringify(content, null, 2));
+    
+    // Use Python's reportlab library for accurate FDA formatting
+    // If Python fails, fall back to a simpler method
+    try {
+      const { execFile } = require('child_process');
+      
+      return new Promise((resolve, reject) => {
+        execFile('python', [
+          path.join(process.cwd(), 'server', 'scripts', 'fda_pdf_generator.py'),
+          tempDataPath,
+          outputPath
+        ], (error, stdout, stderr) => {
+          // Clean up the temporary JSON file
+          try {
+            fs.unlinkSync(tempDataPath);
+          } catch (err) {
+            console.warn('Could not delete temporary JSON file:', err);
+          }
+          
+          if (error) {
+            console.error('Python PDF generation failed:', stderr);
+            // Fall back to HTML-based method
+            const html = generateHtml(content);
+            resolve(Buffer.from(html));
+            return;
+          }
+          
+          // Read the generated PDF
+          try {
+            const pdfBuffer = fs.readFileSync(outputPath);
+            resolve(pdfBuffer);
+          } catch (err) {
+            reject(new Error(`Failed to read generated PDF: ${err.message}`));
+          }
+        });
+      });
+    } catch (err) {
+      console.error('Failed to use Python for PDF generation:', err);
+      // Fall back to HTML method
+      const html = generateHtml(content);
+      return Buffer.from(html);
+    }
+  } catch (error) {
+    console.error('Error generating FDA-compliant PDF:', error);
+    throw new Error(`FDA-compliant PDF generation failed: ${error.message}`);
   }
 }
 
