@@ -11,149 +11,302 @@
 
 import express from 'express';
 import discoveryService from '../services/discoveryService.js';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
+
 const router = express.Router();
 
-// Destructure the methods from the imported service
-const { findPredicates, searchLiterature } = discoveryService;
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.join(process.cwd(), 'uploads');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const timestamp = Date.now();
+    const filename = `${timestamp}-${file.originalname.replace(/\s+/g, '_')}`;
+    cb(null, filename);
+  }
+});
+
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: function(req, file, cb) {
+    if (file.mimetype !== 'application/pdf') {
+      return cb(new Error('Only PDF files are allowed'), false);
+    }
+    cb(null, true);
+  }
+});
+
+// Ensure database tables exist on startup
+(async () => {
+  try {
+    await discoveryService.ensureTablesExist();
+    console.log('✅ Discovery service database tables ready');
+  } catch (error) {
+    console.error('❌ Failed to initialize discovery service database tables:', error);
+  }
+})();
 
 /**
- * @route POST /api/discovery/literature-search
- * @desc Unified literature search endpoint for both CER and 510k modules
+ * @route   GET /api/discovery/literature
+ * @desc    Search for literature based on query and filters
+ * @access  Protected
  */
-router.post('/literature-search', async (req, res) => {
+router.get('/literature', async (req, res) => {
   try {
-    const { query, limit = 10, module = 'cer' } = req.body;
+    const { query, yearStart, yearEnd, peerReviewedOnly, fullTextOnly, includePreprints, context } = req.query;
     
-    if (!query || typeof query !== 'string') {
-      return res.status(400).json({ error: 'Invalid query parameter' });
+    if (!query) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Search query is required' 
+      });
     }
     
-    console.log(`Unified literature search API (${module} context): ${query}`);
+    // Convert query parameters to appropriate types
+    const filters = {
+      yearStart: yearStart ? parseInt(yearStart) : undefined,
+      yearEnd: yearEnd ? parseInt(yearEnd) : undefined,
+      peerReviewedOnly: peerReviewedOnly === 'true',
+      fullTextOnly: fullTextOnly === 'true',
+      includePreprints: includePreprints === 'true',
+    };
     
-    // Use the unified discovery service to find literature
-    const results = await searchLiterature(query, { limit });
+    // Use the appropriate context (cer or 510k)
+    const moduleContext = context || 'cer';
     
-    // Format results based on the requesting module
-    let formattedResults;
-    if (module === '510k') {
-      formattedResults = format510kLiteratureResults(results);
-    } else {
-      // Default to CER format
-      formattedResults = formatCERLiteratureResults(results);
-    }
+    const results = await discoveryService.searchLiterature(query, filters, moduleContext);
     
-    return res.json({ results: formattedResults });
+    res.json({
+      success: true,
+      data: results
+    });
   } catch (error) {
-    console.error('Error in literature search:', error);
-    return res.status(500).json({ 
-      error: 'An error occurred during literature search',
-      message: error.message 
+    console.error('Literature search error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Failed to search literature',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
 
 /**
- * Format literature results for CER module
- * @param {Array} results - Array of literature results
- * @returns {Array} Formatted results for CER module
+ * @route   GET /api/discovery/predicates
+ * @desc    Search for predicate devices based on query and filters
+ * @access  Protected
  */
-function formatCERLiteratureResults(results) {
-  return results.map(result => ({
-    id: result.id || `lit-${Math.random().toString(16).slice(2, 10)}`,
-    title: result.title,
-    abstract: result.snippet,
-    authors: result.authors || 'Unknown',
-    journal: result.journal || 'Journal of Medical Research',
-    publicationDate: result.publicationDate || '2023',
-    relevanceScore: result.score,
-    source: result.source || 'PubMed'
-  }));
-}
-
-/**
- * Format literature results for 510k module
- * @param {Array} results - Array of literature results
- * @returns {Array} Formatted results for 510k module
- */
-function format510kLiteratureResults(results) {
-  return results.map(result => ({
-    id: result.id || `lit-${Math.random().toString(16).slice(2, 10)}`,
-    title: result.title,
-    snippet: result.snippet,
-    url: result.url || `https://pubmed.ncbi.nlm.nih.gov/${Math.floor(10000000 + Math.random() * 90000000)}/`,
-    authors: result.authors || 'Unknown',
-    relevance: result.score,
-    source: result.source || 'PubMed'
-  }));
-}
-
-/**
- * @route POST /api/discovery/find-predicates
- * @desc Unified predicate device search endpoint for both CER and 510k modules
- */
-router.post('/find-predicates', async (req, res) => {
+router.get('/predicates', async (req, res) => {
   try {
-    const { deviceDescription, limit = 8, module = '510k' } = req.body;
+    const { query, yearStart, yearEnd } = req.query;
     
-    if (!deviceDescription || typeof deviceDescription !== 'string') {
-      return res.status(400).json({ error: 'Invalid deviceDescription parameter' });
+    if (!query) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Search query is required' 
+      });
     }
     
-    console.log(`Unified predicate search API (${module} context): ${deviceDescription.substring(0, 50)}...`);
+    // Convert query parameters to appropriate types
+    const filters = {
+      yearStart: yearStart ? parseInt(yearStart) : undefined,
+      yearEnd: yearEnd ? parseInt(yearEnd) : undefined,
+    };
     
-    // Use the unified discovery service to find predicate devices
-    const predicates = await findPredicates(deviceDescription, { limit });
+    const results = await discoveryService.searchPredicateDevices(query, filters);
     
-    // Format results based on the requesting module
-    let formattedResults;
-    if (module === 'cer') {
-      formattedResults = formatCERPredicateResults(predicates);
-    } else {
-      // Default to 510k format
-      formattedResults = format510kPredicateResults(predicates);
-    }
-    
-    return res.json({ predicates: formattedResults });
+    res.json({
+      success: true,
+      data: results
+    });
   } catch (error) {
-    console.error('Error in predicate device search:', error);
-    return res.status(500).json({ 
-      error: 'An error occurred during predicate device search',
-      message: error.message 
+    console.error('Predicate device search error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Failed to search predicate devices',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
 
 /**
- * Format predicate device results for 510k module
- * @param {Array} predicates - Array of predicate device results
- * @returns {Array} Formatted results for 510k module
+ * @route   POST /api/discovery/upload
+ * @desc    Upload a literature PDF file for processing
+ * @access  Protected
  */
-function format510kPredicateResults(predicates) {
-  return predicates.map(p => ({
-    k_number: p.k_number,
-    device_name: p.device_name,
-    manufacturer: p.manufacturer,
-    decision_date: p.decision_date || '2023-01-15',
-    relevance_score: p.score
-  }));
-}
+router.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'No file uploaded' 
+      });
+    }
+    
+    const filePath = req.file.path;
+    const fileBuffer = fs.readFileSync(filePath);
+    
+    const result = await discoveryService.processLiteratureFile(fileBuffer, req.file.filename);
+    
+    res.json({
+      success: true,
+      data: {
+        id: result.id,
+        filename: req.file.filename,
+        metadata: result.metadata
+      }
+    });
+  } catch (error) {
+    console.error('Literature upload error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Failed to process literature file',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
 
 /**
- * Format predicate device results for CER module
- * @param {Array} predicates - Array of predicate device results
- * @returns {Array} Formatted results for CER module
+ * @route   POST /api/discovery/literature-review
+ * @desc    Generate a literature review from selected articles
+ * @access  Protected
  */
-function formatCERPredicateResults(predicates) {
-  return predicates.map(p => ({
-    id: p.k_number || `pred-${Math.random().toString(16).slice(2, 10)}`,
-    name: p.device_name,
-    manufacturer: p.manufacturer,
-    approvalDate: p.decision_date || '2023-01-15',
-    relevanceScore: p.score,
-    regulatoryPathway: '510(k)'
-  }));
-}
+router.post('/literature-review', async (req, res) => {
+  try {
+    const { selectedArticles, deviceDescription, context } = req.body;
+    
+    if (!selectedArticles || !Array.isArray(selectedArticles) || selectedArticles.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Selected articles are required' 
+      });
+    }
+    
+    if (!deviceDescription) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Device description is required' 
+      });
+    }
+    
+    // Use the appropriate context (cer or 510k)
+    const moduleContext = context || 'cer';
+    
+    const result = await discoveryService.generateLiteratureReview(
+      selectedArticles, 
+      deviceDescription,
+      moduleContext
+    );
+    
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Literature review generation error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Failed to generate literature review',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
 
-// Export as both default and named export for ESM compatibility
+/**
+ * @route   POST /api/discovery/predicate-comparison
+ * @desc    Generate a predicate device comparison report
+ * @access  Protected
+ */
+router.post('/predicate-comparison', async (req, res) => {
+  try {
+    const { selectedPredicates, deviceDescription } = req.body;
+    
+    if (!selectedPredicates || !Array.isArray(selectedPredicates) || selectedPredicates.length === 0) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Selected predicate devices are required' 
+      });
+    }
+    
+    if (!deviceDescription) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Device description is required' 
+      });
+    }
+    
+    const result = await discoveryService.generatePredicateComparison(
+      selectedPredicates, 
+      deviceDescription
+    );
+    
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    console.error('Predicate comparison generation error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Failed to generate predicate comparison',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+/**
+ * @route   GET /api/discovery/reviews
+ * @desc    Get all saved literature reviews
+ * @access  Protected
+ */
+router.get('/reviews', async (req, res) => {
+  try {
+    const reviews = await discoveryService.getSavedReviews();
+    
+    res.json({
+      success: true,
+      data: reviews
+    });
+  } catch (error) {
+    console.error('Retrieving saved reviews error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message || 'Failed to retrieve saved reviews',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+/**
+ * @route   GET /api/discovery/reviews/:id
+ * @desc    Get a specific saved review by ID
+ * @access  Protected
+ */
+router.get('/reviews/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const review = await discoveryService.getReviewById(id);
+    
+    res.json({
+      success: true,
+      data: review
+    });
+  } catch (error) {
+    console.error(`Retrieving review ${req.params.id} error:`, error);
+    res.status(error.message === 'Review not found' ? 404 : 500).json({ 
+      success: false, 
+      message: error.message || 'Failed to retrieve review',
+      error: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
 export default router;
-export { router };

@@ -35,7 +35,7 @@ import deviceProfileRouter from './routes/cerDeviceProfileRoutes';
 // @ts-ignore
 import { router as fda510kRouter } from './routes/fda510kRoutes.js';
 // @ts-ignore
-import { router as discoveryRouter } from './routes/discovery.js';
+import discoveryRouter from './routes/discovery.js';
 // Regulatory-ai router will be imported directly in server/index.ts
 
 export default function registerRoutes(app: Express): void {

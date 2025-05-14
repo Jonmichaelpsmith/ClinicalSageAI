@@ -152,7 +152,7 @@ router.get('/requirements/:deviceClass', async (req, res) => {
 /**
  * Find predicate devices based on device profile
  */
-import { findPredicates } from '../services/discoveryService.js';
+import discoveryService from '../services/discoveryService.js';
 
 router.post('/find-predicates', validateDeviceData, async (req, res) => {
   try {
@@ -168,7 +168,7 @@ router.post('/find-predicates', validateDeviceData, async (req, res) => {
     
     try {
       // Use the unified discovery service to find predicates
-      const predicateResults = await findPredicates(deviceDescription, { limit: 8 });
+      const predicateResults = await discoveryService.searchPredicateDevices(deviceDescription, { limit: 8 });
       
       // Format results for the client
       const predicateDevices = predicateResults.map(p => ({
