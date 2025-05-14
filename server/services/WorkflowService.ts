@@ -857,7 +857,7 @@ export class WorkflowService {
       return entry[0];
     } catch (error) {
       console.error('Error adding workflow history entry:', error);
-      throw new Error(`Failed to add workflow history entry: ${error.message}`);
+      throw new Error(`Failed to add workflow history entry: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 }
