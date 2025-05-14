@@ -258,9 +258,11 @@ const WorkflowEnabledReportGenerator = ({
                   organizationId={organizationId}
                   userId={userId}
                   moduleType="medical_device"
-                  documentId={generatedReportId}
-                  documentTitle={reportTitle}
-                  onWorkflowAction={handleWorkflowAction}
+                  documentData={{
+                    id: generatedReportId,
+                    title: reportTitle
+                  }}
+                  onWorkflowUpdated={handleWorkflowAction}
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center p-6 text-center">
