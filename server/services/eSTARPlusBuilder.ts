@@ -207,6 +207,151 @@ export class ESGClient {
  */
 export class eSTARPlusBuilder {
   /**
+   * Validate an eSTAR package for FDA compliance
+   * 
+   * @param projectId ID of the 510(k) project to validate
+   * @param strictMode Whether to enforce strict validation rules
+   * @returns Validation result with issues if any
+   */
+  static async validatePackage(projectId: string, strictMode: boolean = false): Promise<ValidationResult> {
+    console.log(`Validating eSTAR package for project ${projectId}`);
+    
+    // Initialize validation result
+    const validationResult: ValidationResult = {
+      valid: true,
+      issues: []
+    };
+    
+    try {
+      // Step 1: Get all sections for the project
+      const sections = await db?.query.fda510kSections.findMany({
+        where: eq(fda510kSections.projectId, projectId),
+        orderBy: [asc(fda510kSections.orderIndex)]
+      });
+      
+      if (!sections || sections.length === 0) {
+        validationResult.valid = false;
+        validationResult.issues.push({
+          severity: 'error',
+          message: 'No sections found for this project'
+        });
+        return validationResult;
+      }
+      
+      // Step 2: Validate document structure (required sections)
+      const structureValidation = await this.validateDocumentStructure(sections);
+      if (!structureValidation.valid) {
+        validationResult.valid = false;
+        validationResult.issues.push(...structureValidation.issues);
+      }
+      
+      // Step 3: Validate content completeness
+      const completenessValidation = await this.validateContentCompleteness(sections, strictMode);
+      if (!completenessValidation.valid) {
+        validationResult.valid = false;
+        validationResult.issues.push(...completenessValidation.issues);
+      }
+      
+      // Step 4: Validate file attachments if any
+      // This would check that referenced files exist and are valid
+      
+      return validationResult;
+    } catch (error) {
+      console.error('Error validating eSTAR package:', error);
+      return {
+        valid: false,
+        issues: [
+          {
+            severity: 'error',
+            message: `Validation error: ${error instanceof Error ? error.message : 'Unknown error'}`
+          }
+        ]
+      };
+    }
+  }
+  
+  /**
+   * Validate that all required sections are present
+   * 
+   * @private
+   * @param sections Array of 510(k) sections
+   * @returns Validation result
+   */
+  private static async validateDocumentStructure(sections: any[]): Promise<ValidationResult> {
+    const issues: Array<{severity: 'error' | 'warning', section?: string, message: string}> = [];
+    
+    // Define required sections according to FDA guidance
+    const requiredSections = [
+      'cover_letter',
+      'indications_for_use',
+      'device_description',
+      'substantial_equivalence',
+      'performance_data',
+      'declarations_of_conformity'
+    ];
+    
+    // Get all section names from the provided sections
+    const sectionNames = sections.map(s => s.sectionId);
+    
+    // Check for missing required sections
+    for (const required of requiredSections) {
+      if (!sectionNames.includes(required)) {
+        issues.push({
+          severity: 'error',
+          message: `Required section "${required}" is missing from the submission`
+        });
+      }
+    }
+    
+    return {
+      valid: issues.length === 0,
+      issues
+    };
+  }
+  
+  /**
+   * Validate that all sections have complete content
+   * 
+   * @private
+   * @param sections Array of 510(k) sections
+   * @param strictMode Whether to enforce strict validation 
+   * @returns Validation result
+   */
+  private static async validateContentCompleteness(sections: any[], strictMode: boolean = false): Promise<ValidationResult> {
+    const issues: Array<{severity: 'error' | 'warning', section?: string, message: string}> = [];
+    
+    // Check each section for content completeness
+    for (const section of sections) {
+      if (!section.content || section.content.trim() === '') {
+        issues.push({
+          severity: strictMode ? 'error' : 'warning',
+          section: section.title,
+          message: `Section "${section.title}" has no content`
+        });
+      } else if (section.content.includes('[') && section.content.includes(']')) {
+        // Look for placeholder text that indicates incomplete content
+        if (strictMode) {
+          issues.push({
+            severity: 'error',
+            section: section.title,
+            message: `Section "${section.title}" contains placeholder text that needs to be replaced`
+          });
+        } else {
+          issues.push({
+            severity: 'warning',
+            section: section.title,
+            message: `Section "${section.title}" may contain placeholder text that should be reviewed`
+          });
+        }
+      }
+    }
+    
+    return {
+      valid: strictMode ? issues.length === 0 : !issues.some(issue => issue.severity === 'error'),
+      issues
+    };
+  }
+  /**
    * Build and assemble an eSTAR package
    * 
    * @param projectId The ID of the 510(k) project

@@ -303,7 +303,8 @@ export class WorkflowService {
       .from(workflowTemplates)
       .where(
         and(
-          eq(workflowTemplates.moduleType, moduleType),
+          // Using the SQL template string syntax to compare the moduleType column with the parameter
+          sql`${workflowTemplates.moduleType} = ${moduleType}`,
           eq(workflowTemplates.organizationId, organizationId),
           eq(workflowTemplates.isActive, true)
         )
