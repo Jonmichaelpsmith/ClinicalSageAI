@@ -526,6 +526,45 @@ export const generateCERPreview = async (cerData) => {
  * @param {boolean} enhance - Whether to enhance the document with AI
  * @returns {Promise<Object>} - The result of the operation
  */
+/**
+ * Compare a device with selected predicate devices
+ * 
+ * @param {Object} deviceDescription - The device to compare
+ * @param {Array} selectedPredicates - Array of selected predicate devices
+ * @returns {Promise<Object>} - The predicate device comparison data
+ */
+export const comparePredicateDevices = async (deviceDescription, selectedPredicates) => {
+  // Import error handling utility
+  const errorHandling = await import('../utils/errorHandling');
+  
+  try {
+    // Timeout for API request in milliseconds (2 minutes)
+    const API_TIMEOUT = 120000;
+    
+    const response = await errorHandling.withTimeout(
+      axios.post(`${DISCOVERY_API_URL}/predicate-comparison`, {
+        deviceDescription,
+        selectedPredicates
+      }),
+      API_TIMEOUT,
+      'Predicate device comparison timed out'
+    );
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error comparing predicate devices:', error);
+    
+    // Return error object with informative message
+    return {
+      success: false,
+      error: {
+        message: error.message || 'Failed to generate predicate device comparison',
+        details: error.response?.data?.message || 'Unknown error occurred'
+      }
+    };
+  }
+};
+
 export const generateAndSaveCER = async (cerData, enhance = true) => {
   // Import error handling utility
   const errorHandling = await import('../utils/errorHandling');
