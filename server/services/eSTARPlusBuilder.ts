@@ -17,6 +17,30 @@ import { db } from '../db';
 import { fda510kSections, fda510kProjects } from '../../shared/schema';
 import { eq, asc } from 'drizzle-orm';
 
+// Define interface for validation result
+interface ValidationResult {
+  valid: boolean;
+  issues: Array<{
+    severity: 'error' | 'warning';
+    section?: string;
+    message: string;
+  }>;
+}
+
+// Define interface for build options
+interface BuildOptions {
+  includeCoverLetter?: boolean;
+  autoUpload?: boolean;
+}
+
+// Define interface for build result
+interface BuildResult {
+  success: boolean;
+  zipPath: string;
+  manifestPath: string;
+  message: string;
+}
+
 // Initialize Ajv schema validator
 const ajv = new Ajv();
 let manifestSchema: any;
