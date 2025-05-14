@@ -1720,72 +1720,9 @@ export default function CERV2Page() {
     }
   }, [showSystemHealth, refreshSystemHealth]);
 
-  // Simple document type selector buttons for switching between CER and 510k
+  // Document type is set to CER by default
   const renderDocumentTypeTabs = () => {
-    return (
-      <div className="w-full mb-6 mt-4">
-        <div className="p-4 bg-white shadow-md rounded-lg border border-gray-200">
-          <h2 className="text-lg font-semibold mb-3 text-gray-700">Select Document Type</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              type="button"
-              onClick={() => {
-                const newType = 'cer';
-                console.log(`Switching to CER mode (current: ${documentType}, new: ${newType})`);
-                // Force an update to make sure state changes properly
-                setDocumentType('');
-                setTimeout(() => {
-                  setDocumentType(newType);
-                  // Update title based on document type
-                  setTitle('Clinical Evaluation Report');
-                  // Set the appropriate tab for this document type
-                  setActiveTab('builder');
-                }, 50);
-              }}
-              className={`flex flex-col items-center justify-center p-4 rounded-lg border ${
-                documentType === 'cer' 
-                  ? 'bg-blue-50 border-blue-600 text-blue-700' 
-                  : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              <div className="flex items-center">
-                <FileText className="w-5 h-5 mr-2 text-blue-600" />
-                <span className="font-medium">Clinical Evaluation Report</span>
-              </div>
-              <span className="text-xs text-gray-500 mt-1">EU MDR compliant</span>
-            </button>
-            
-            <button
-              type="button"
-              onClick={() => {
-                const newType = '510k';
-                console.log(`Switching to 510k mode (current: ${documentType}, new: ${newType})`);
-                // Force an update to make sure state changes properly
-                setDocumentType('');
-                setTimeout(() => {
-                  setDocumentType(newType);
-                  // Update title based on document type
-                  setTitle('FDA 510(k) Submission');
-                  // Set the appropriate tab for this document type
-                  setActiveTab('predicate-finder');
-                }, 50);
-              }}
-              className={`flex flex-col items-center justify-center p-4 rounded-lg border ${
-                documentType === '510k' 
-                  ? 'bg-blue-50 border-blue-600 text-blue-700' 
-                  : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-              }`}
-            >
-              <div className="flex items-center">
-                <FileCheck className="w-5 h-5 mr-2 text-blue-600" />
-                <span className="font-medium">FDA 510(k) Submission</span>
-              </div>
-              <span className="text-xs text-gray-500 mt-1">US FDA compliant</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    );
+    return null;
   };
 
   return (
