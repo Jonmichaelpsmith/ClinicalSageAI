@@ -1,189 +1,203 @@
-/**
- * Unified Document Workflow System Schema
- * 
- * This file defines the schema for the unified document workflow system that
- * integrates across different modules (CMC Wizard, TrialSage Vault, Study Architect,
- * eCTD Co-author, and Medical Device and Diagnostics RA).
- */
-import { relations, InferSelectModel } from 'drizzle-orm';
-import { 
-  pgTable, uuid, varchar, text, timestamp, integer, boolean, jsonb
-} from 'drizzle-orm/pg-core';
+import { integer, pgEnum, pgTable, serial, text, timestamp, boolean, jsonb } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
 
-// Import references to existing tables
-import { documents } from '../schema';
-import { users } from '../schema';
+/**
+ * Module type enum
+ * Defines the various modules that can integrate with the unified workflow system
+ */
+export const moduleTypeEnum = pgEnum('module_type', [
+  'cmc_wizard',
+  'ectd_coauthor',
+  'med_device',
+  'study_architect'
+]);
 
 /**
- * Module Documents - Links documents from specific modules to the unified system
+ * Document status enum
+ * Defines the possible states of a document in the workflow system
  */
-export const moduleDocuments = pgTable('module_documents', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  documentId: integer('document_id').notNull().references(() => documents.id, { onDelete: 'cascade' }),
-  moduleType: varchar('module_type', { length: 50 }).notNull(),
-  moduleDocumentId: varchar('module_document_id', { length: 100 }).notNull(),
+export const documentStatusEnum = pgEnum('document_status', [
+  'draft',
+  'in_review',
+  'approved',
+  'rejected',
+  'archived'
+]);
+
+/**
+ * Workflow status enum
+ * Defines the possible states of a workflow
+ */
+export const workflowStatusEnum = pgEnum('workflow_status', [
+  'draft',
+  'in_review',
+  'approved',
+  'rejected',
+  'on_hold'
+]);
+
+/**
+ * Approval status enum
+ * Defines the possible states of an approval step
+ */
+export const approvalStatusEnum = pgEnum('approval_status', [
+  'pending',
+  'in_progress',
+  'approved',
+  'rejected',
+  'skipped'
+]);
+
+/**
+ * Unified Documents Table
+ * 
+ * This table stores metadata for documents from various modules that
+ * are registered with the unified workflow system.
+ */
+export const unifiedDocuments = pgTable('unified_documents', {
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull(),
+  moduleType: moduleTypeEnum('module_type').notNull(),
+  originalDocumentId: text('original_document_id').notNull(),
+  title: text('title').notNull(),
+  documentType: text('document_type').notNull(),
+  status: documentStatusEnum('status').default('draft'),
   metadata: jsonb('metadata'),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
+  content: jsonb('content'),
+  vaultFolderId: integer('vault_folder_id'),
+  createdBy: integer('created_by').notNull(),
+  updatedBy: integer('updated_by').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Unified documents insert schema
+export const insertUnifiedDocumentSchema = createInsertSchema(unifiedDocuments)
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true
+  });
+
+export type InsertUnifiedDocument = z.infer<typeof insertUnifiedDocumentSchema>;
+export type UnifiedDocument = typeof unifiedDocuments.$inferSelect;
+
 /**
- * Workflow Templates - Defines the structure and steps of workflows
+ * Workflow Templates Table
+ * 
+ * This table stores templates for different workflow processes.
+ * Templates define the approval steps required for different document types.
  */
 export const workflowTemplates = pgTable('workflow_templates', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  name: varchar('name', { length: 100 }).notNull(),
+  id: serial('id').primaryKey(),
+  organizationId: integer('organization_id').notNull(),
+  name: text('name').notNull(),
   description: text('description'),
-  moduleType: varchar('module_type', { length: 50 }).notNull(),
-  steps: jsonb('steps').notNull(),
+  moduleType: moduleTypeEnum('module_type').notNull(),
+  steps: jsonb('steps').notNull(), // Array of step objects with role, title, description
   isActive: boolean('is_active').default(true),
-  createdAt: timestamp('created_at').defaultNow(),
-  updatedAt: timestamp('updated_at').defaultNow(),
+  createdBy: integer('created_by').notNull(),
+  updatedBy: integer('updated_by').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Workflow templates insert schema
+export const insertWorkflowTemplateSchema = createInsertSchema(workflowTemplates)
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true
+  });
+
+export type InsertWorkflowTemplate = z.infer<typeof insertWorkflowTemplateSchema>;
+export type WorkflowTemplate = typeof workflowTemplates.$inferSelect;
+
 /**
- * Document Workflows - Active workflow instances for documents
+ * Document Workflows Table
+ * 
+ * This table tracks active workflows for documents.
+ * A workflow represents an approval process that a document must go through.
  */
 export const documentWorkflows = pgTable('document_workflows', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  documentId: integer('document_id').notNull().references(() => documents.id, { onDelete: 'cascade' }),
-  workflowTemplateId: uuid('workflow_template_id').references(() => workflowTemplates.id),
-  status: varchar('status', { length: 50 }).notNull().default('draft'),
+  id: serial('id').primaryKey(),
+  documentId: integer('document_id').notNull().references(() => unifiedDocuments.id),
+  templateId: integer('template_id').notNull().references(() => workflowTemplates.id),
+  status: workflowStatusEnum('status').default('draft'),
   currentStep: integer('current_step').default(0),
+  metadata: jsonb('metadata'),
   startedAt: timestamp('started_at').defaultNow(),
   completedAt: timestamp('completed_at'),
-  initiatedBy: integer('initiated_by').references(() => users.id),
-  data: jsonb('data'),
+  createdBy: integer('created_by').notNull(),
+  updatedBy: integer('updated_by').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
 
+// Document workflows insert schema
+export const insertDocumentWorkflowSchema = createInsertSchema(documentWorkflows)
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true
+  });
+
+export type InsertDocumentWorkflow = z.infer<typeof insertDocumentWorkflowSchema>;
+export type DocumentWorkflow = typeof documentWorkflows.$inferSelect;
+
 /**
- * Workflow Approvals - Individual approval steps in a workflow
+ * Document Workflow Approvals Table
+ * 
+ * This table stores information about individual approval steps within a workflow.
+ * Each record represents a person's review/approval of a specific step.
  */
 export const workflowApprovals = pgTable('workflow_approvals', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  workflowId: uuid('workflow_id').notNull().references(() => documentWorkflows.id, { onDelete: 'cascade' }),
+  id: serial('id').primaryKey(),
+  workflowId: integer('workflow_id').notNull().references(() => documentWorkflows.id),
   stepIndex: integer('step_index').notNull(),
-  status: varchar('status', { length: 50 }).notNull().default('pending'),
-  assignedRole: varchar('assigned_role', { length: 50 }).notNull(),
-  assignedTo: integer('assigned_to').references(() => users.id),
-  completedBy: integer('completed_by').references(() => users.id),
-  completedAt: timestamp('completed_at'),
+  assignedRole: text('assigned_role').notNull(),
+  assignedTo: integer('assigned_to'),
+  status: approvalStatusEnum('status').default('pending'),
   comments: text('comments'),
-  signatureData: text('signature_data'),
+  completedBy: integer('completed_by'),
+  completedAt: timestamp('completed_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
 });
+
+// Workflow approvals insert schema
+export const insertWorkflowApprovalSchema = createInsertSchema(workflowApprovals)
+  .omit({
+    id: true,
+    createdAt: true,
+    updatedAt: true
+  });
+
+export type InsertWorkflowApproval = z.infer<typeof insertWorkflowApprovalSchema>;
+export type WorkflowApproval = typeof workflowApprovals.$inferSelect;
 
 /**
- * Document Relationships - Tracks relationships between documents
+ * Document Workflow Audit Trail Table
+ * 
+ * This table maintains a complete audit trail of all actions taken
+ * within document workflows for compliance and transparency.
  */
-export const documentRelationships = pgTable('document_relationships', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  sourceDocumentId: integer('source_document_id').notNull().references(() => documents.id, { onDelete: 'cascade' }),
-  targetDocumentId: integer('target_document_id').notNull().references(() => documents.id, { onDelete: 'cascade' }),
-  relationshipType: varchar('relationship_type', { length: 50 }).notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
-  data: jsonb('data'),
+export const workflowAuditTrail = pgTable('workflow_audit_trail', {
+  id: serial('id').primaryKey(),
+  workflowId: integer('workflow_id').notNull().references(() => documentWorkflows.id),
+  actionType: text('action_type').notNull(), // e.g., 'workflow_started', 'step_approved', 'step_rejected'
+  actionBy: integer('action_by').notNull(),
+  actionDetails: jsonb('action_details'),
+  timestamp: timestamp('timestamp').defaultNow().notNull()
 });
 
-// Define insert schemas
-export const insertModuleDocumentSchema = createInsertSchema(moduleDocuments)
-  .omit({ id: true, createdAt: true, updatedAt: true });
+// Workflow audit trail insert schema
+export const insertWorkflowAuditTrailSchema = createInsertSchema(workflowAuditTrail)
+  .omit({
+    id: true,
+    timestamp: true
+  });
 
-export const insertWorkflowTemplateSchema = createInsertSchema(workflowTemplates)
-  .omit({ id: true, createdAt: true, updatedAt: true });
-
-export const insertDocumentWorkflowSchema = createInsertSchema(documentWorkflows)
-  .omit({ id: true, startedAt: true, completedAt: true });
-
-export const insertWorkflowApprovalSchema = createInsertSchema(workflowApprovals)
-  .omit({ id: true, completedAt: true });
-
-export const insertDocumentRelationshipSchema = createInsertSchema(documentRelationships)
-  .omit({ id: true, createdAt: true });
-
-// Define types
-export type ModuleDocument = InferSelectModel<typeof moduleDocuments>;
-export type InsertModuleDocument = z.infer<typeof insertModuleDocumentSchema>;
-
-export type WorkflowTemplate = InferSelectModel<typeof workflowTemplates>;
-export type InsertWorkflowTemplate = z.infer<typeof insertWorkflowTemplateSchema>;
-
-export type DocumentWorkflow = InferSelectModel<typeof documentWorkflows>;
-export type InsertDocumentWorkflow = z.infer<typeof insertDocumentWorkflowSchema>;
-
-export type WorkflowApproval = InferSelectModel<typeof workflowApprovals>;
-export type InsertWorkflowApproval = z.infer<typeof insertWorkflowApprovalSchema>;
-
-export type DocumentRelationship = InferSelectModel<typeof documentRelationships>;
-export type InsertDocumentRelationship = z.infer<typeof insertDocumentRelationshipSchema>;
-
-// Define step type for workflow templates
-export const workflowStepSchema = z.object({
-  role: z.string(),
-  title: z.string(),
-  description: z.string().optional(),
-  assignTo: z.number().optional(),
-  requireSignature: z.boolean().default(false),
-});
-
-export type WorkflowStep = z.infer<typeof workflowStepSchema>;
-
-// Define table relationships
-export const moduleDocumentsRelations = relations(moduleDocuments, ({ one }) => ({
-  document: one(documents, {
-    fields: [moduleDocuments.documentId],
-    references: [documents.id],
-  }),
-}));
-
-export const documentWorkflowsRelations = relations(documentWorkflows, ({ one, many }) => ({
-  document: one(documents, {
-    fields: [documentWorkflows.documentId],
-    references: [documents.id],
-  }),
-  template: one(workflowTemplates, {
-    fields: [documentWorkflows.workflowTemplateId],
-    references: [workflowTemplates.id],
-  }),
-  approvals: many(workflowApprovals),
-  initiator: one(users, {
-    fields: [documentWorkflows.initiatedBy],
-    references: [users.id],
-  }),
-}));
-
-export const workflowApprovalsRelations = relations(workflowApprovals, ({ one }) => ({
-  workflow: one(documentWorkflows, {
-    fields: [workflowApprovals.workflowId],
-    references: [documentWorkflows.id],
-  }),
-  assignee: one(users, {
-    fields: [workflowApprovals.assignedTo],
-    references: [users.id],
-  }),
-  completer: one(users, {
-    fields: [workflowApprovals.completedBy],
-    references: [users.id],
-  }),
-}));
-
-export const documentRelationshipsRelations = relations(documentRelationships, ({ one }) => ({
-  sourceDocument: one(documents, {
-    fields: [documentRelationships.sourceDocumentId],
-    references: [documents.id],
-  }),
-  targetDocument: one(documents, {
-    fields: [documentRelationships.targetDocumentId],
-    references: [documents.id],
-  }),
-}));
-
-// Export all schema components
-export const unifiedWorkflowSchema = {
-  moduleDocuments,
-  workflowTemplates,
-  documentWorkflows,
-  workflowApprovals,
-  documentRelationships,
-};
+export type InsertWorkflowAuditTrail = z.infer<typeof insertWorkflowAuditTrailSchema>;
+export type WorkflowAuditTrail = typeof workflowAuditTrail.$inferSelect;

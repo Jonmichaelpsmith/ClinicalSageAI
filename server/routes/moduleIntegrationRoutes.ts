@@ -10,6 +10,9 @@ import { ModuleIntegrationService } from '../services/ModuleIntegrationService';
 import { WorkflowService } from '../services/WorkflowService';
 import { authenticate } from '../middleware/authAdapter';
 import { z } from 'zod';
+import { db } from '../db/connection';
+import { desc, eq, and } from 'drizzle-orm';
+import { workflowTemplates } from '../shared/schema/unified_workflow';
 
 const router = express.Router();
 const moduleIntegrationService = new ModuleIntegrationService();
