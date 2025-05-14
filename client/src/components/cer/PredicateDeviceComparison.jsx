@@ -36,16 +36,23 @@ import { useToast } from "@/hooks/use-toast";
  * This component allows users to search for predicate devices, select them for comparison,
  * and generate a structured comparison table suitable for 510(k) submissions or CER documents.
  */
-const PredicateDeviceComparison = ({ deviceProfile, onComparisonGenerated }) => {
+const PredicateDeviceComparison = ({ deviceProfile, predicateDevices = [], onComparisonGenerated }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [predicateResults, setPredicateResults] = useState([]);
-  const [selectedPredicates, setSelectedPredicates] = useState([]);
+  const [selectedPredicates, setSelectedPredicates] = useState(predicateDevices || []);
   const [comparisonTable, setComparisonTable] = useState(null);
   const [isGeneratingComparison, setIsGeneratingComparison] = useState(false);
   const [sortField, setSortField] = useState('relevance');
   const [sortDirection, setSortDirection] = useState('desc');
   const { toast } = useToast();
+  
+  // Initialize selectedPredicates when predicateDevices prop changes
+  useEffect(() => {
+    if (predicateDevices && predicateDevices.length > 0) {
+      setSelectedPredicates(predicateDevices);
+    }
+  }, [predicateDevices]);
 
   // Filter predicate results based on selected sort options
   const filteredAndSortedPredicates = React.useMemo(() => {
