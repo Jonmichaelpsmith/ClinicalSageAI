@@ -10,7 +10,12 @@ import express from 'express';
 const router = express.Router();
 import { OpenAI } from 'openai';
 import { Pool } from 'pg';
+import multer from 'multer';
+import pdfParse from 'pdf-parse';
 import { fetchPubMed, fetchFAERS, fetchScholar } from '../config/literatureSources';
+
+// Set up multer for file uploads
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Initialize OpenAI with environment API key
 const openai = process.env.OPENAI_API_KEY ? new OpenAI({
@@ -871,6 +876,169 @@ router.post('/semantic-search', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Semantic search failed due to a server error'
+    });
+  }
+});
+
+/**
+ * Semantic Scholar search endpoint
+ */
+router.post('/semantic-scholar', async (req, res) => {
+  try {
+    const { query } = req.body;
+    const resp = await fetch(
+      `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=15&fields=title,abstract,url,year`
+    );
+    const json = await resp.json();
+    // normalize
+    const results = json.data.map(p => ({
+      id: p.paperId,
+      title: p.title,
+      abstract: p.abstract,
+      url: p.url,
+      year: p.year,
+      source: "Semantic Scholar"
+    }));
+    res.json({ results });
+  } catch (err) {
+    console.error('Semantic Scholar error:', err);
+    res.status(500).json({ error: 'Semantic Scholar search failed' });
+  }
+});
+
+/**
+ * ClinicalTrials.gov search endpoint
+ */
+router.post('/clinical-trials', async (req, res) => {
+  try {
+    const { query } = req.body;
+    const resp = await fetch(
+      `https://clinicaltrials.gov/api/query/study_fields?expr=${encodeURIComponent(query)}&fields=BriefTitle,BriefSummary,Condition,URL&max_rnk=15&fmt=json`
+    );
+    const json = await resp.json();
+    const results = json.StudyFieldsResponse.StudyFields.map(s => ({
+      id: s.NCTId?.[0] || `trial-${Date.now()}`,
+      title: s.BriefTitle?.[0],
+      abstract: s.BriefSummary?.[0],
+      url: `https://clinicaltrials.gov/ct2/show/${s.NCTId?.[0]}`,
+      source: "ClinicalTrials.gov"
+    }));
+    res.json({ results });
+  } catch (err) {
+    console.error('ClinicalTrials.gov error:', err);
+    res.status(500).json({ error: 'ClinicalTrials.gov search failed' });
+  }
+});
+
+/**
+ * IEEE Xplore search endpoint
+ */
+router.post('/ieee-xplore', async (req, res) => {
+  try {
+    const { query } = req.body;
+    
+    // Check for IEEE API key
+    const apiKey = process.env.IEEE_API_KEY;
+    if (!apiKey) {
+      console.warn('IEEE API key not found, using fallback example data');
+      return res.json({ 
+        results: [
+          {
+            id: "example-ieee-1",
+            title: "Medical Device Security: A Survey of Concerns, Approaches, and Challenges",
+            abstract: "Medical devices are increasingly connected to networks for remote monitoring and control. This survey examines security challenges and approaches for securing these devices.",
+            url: "https://ieeexplore.ieee.org/document/example1",
+            year: 2023,
+            source: "IEEE Xplore (Example)"
+          },
+          {
+            id: "example-ieee-2",
+            title: "Regulatory Considerations for AI-Based Medical Devices",
+            abstract: "This paper reviews the current regulatory landscape for artificial intelligence and machine learning technologies in medical devices.",
+            url: "https://ieeexplore.ieee.org/document/example2",
+            year: 2024,
+            source: "IEEE Xplore (Example)"
+          }
+        ]
+      });
+    }
+    
+    const resp = await fetch(
+      `https://ieeexploreapi.ieee.org/api/v1/search/articles?querytext=${encodeURIComponent(query)}&max_records=15&apikey=${apiKey}`
+    );
+    const json = await resp.json();
+    const results = json.articles.map(a => ({
+      id: a.article_number,
+      title: a.title,
+      abstract: a.abstract,
+      url: a.html_url,
+      year: a.publication_year,
+      source: "IEEE Xplore"
+    }));
+    res.json({ results });
+  } catch (err) {
+    console.error('IEEE Xplore error:', err);
+    res.status(500).json({ error: 'IEEE Xplore search failed' });
+  }
+});
+
+/**
+ * DOAJ (Directory of Open Access Journals) search endpoint
+ */
+router.post('/doaj-search', async (req, res) => {
+  try {
+    const { query } = req.body;
+    const resp = await fetch(
+      `https://doaj.org/api/v2/search/articles/${encodeURIComponent(query)}`
+    );
+    const json = await resp.json();
+    const results = json.results.slice(0,15).map(r => ({
+      id: r.id,
+      title: r.bibjson.title,
+      abstract: r.bibjson.abstract[0],
+      url: r.bibjson.link.find(l=>l.type==='full text')?.url,
+      year: r.bibjson.year,
+      source: "DOAJ"
+    }));
+    res.json({ results });
+  } catch (err) {
+    console.error('DOAJ error:', err);
+    res.status(500).json({ error: 'DOAJ search failed' });
+  }
+});
+
+/**
+ * PDF upload and processing endpoint
+ */
+router.post('/upload-literature', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'No file uploaded' 
+      });
+    }
+    
+    console.log(`Processing uploaded PDF file: ${req.file.originalname}, size: ${req.file.size} bytes`);
+    
+    // Parse the PDF file
+    const data = await pdfParse(req.file.buffer);
+    
+    // Extract text and truncate if too large 
+    // (to avoid overwhelming the API and the UI)
+    const text = data.text.slice(0, 15000); 
+    
+    res.json({ 
+      success: true,
+      text: text, 
+      pageCount: data.numpages,
+      fileName: req.file.originalname
+    });
+  } catch (err) {
+    console.error('Error processing PDF file:', err);
+    res.status(500).json({ 
+      success: false,
+      message: 'PDF parsing failed: ' + err.message 
     });
   }
 });

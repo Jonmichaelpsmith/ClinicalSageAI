@@ -1,0 +1,257 @@
+Below is a **hand-held, drop-into-Replit** expansion for Step 2b—“Enterprise-Grade Literature Review”—to **add more real‐world sources** (Semantic Scholar, ClinicalTrials.gov, IEEE Xplore, DOAJ) on top of PubMed/FAERS/PDF.  Every file change lives under **`client/src/pages/CERV2Page.jsx`** or its children in **`client/src/components/cer/…`**—**no** standalone pages.
+
+---
+
+## 🏗 Step 2c: Multi-Source Literature Discovery
+
+### 1. Install any new server dependencies
+
+```bash
+# in Replit Shell
+npm install node-fetch xml2js
+```
+
+> ‼️ We already have `node-fetch`, `multer`, `pdf-parse` and OpenAI on the server.
+
+---
+
+### 2. Server––Add new search endpoints
+
+#### a) Semantic Scholar
+
+In **`server/routes/fda510kRoutes.js`**, **below** your other routes:
+
+```js
+import fetch from 'node-fetch';
+
+router.post('/semantic-scholar', async (req, res) => {
+  try {
+    const { query } = req.body;
+    const resp = await fetch(
+      `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(query)}&limit=15&fields=title,abstract,url,year`
+    );
+    const json = await resp.json();
+    // normalize
+    const results = json.data.map(p => ({
+      id: p.paperId,
+      title: p.title,
+      abstract: p.abstract,
+      url: p.url,
+      year: p.year
+    }));
+    res.json({ results });
+  } catch (err) {
+    console.error('Semantic Scholar error:', err);
+    res.status(500).json({ error: 'Semantic Scholar search failed' });
+  }
+});
+```
+
+#### b) ClinicalTrials.gov
+
+```js
+router.post('/clinical-trials', async (req, res) => {
+  try {
+    const { query } = req.body;
+    const resp = await fetch(
+      `https://clinicaltrials.gov/api/query/study_fields?expr=${encodeURIComponent(query)}&fields=BriefTitle,BriefSummary,Condition,URL&max_rnk=15&fmt=json`
+    );
+    const json = await resp.json();
+    const results = json.StudyFieldsResponse.StudyFields.map(s => ({
+      id: s.NCTId?.[0] || UUID(),
+      title: s.BriefTitle?.[0],
+      abstract: s.BriefSummary?.[0],
+      url: `https://clinicaltrials.gov/ct2/show/${s.NCTId?.[0]}`
+    }));
+    res.json({ results });
+  } catch (err) {
+    console.error('ClinicalTrials.gov error:', err);
+    res.status(500).json({ error: 'ClinicalTrials.gov search failed' });
+  }
+});
+```
+
+#### c) IEEE Xplore (XML → JSON)
+
+```js
+import xml2js from 'xml2js';
+
+router.post('/ieee-xplore', async (req, res) => {
+  try {
+    const { query } = req.body;
+    const apiKey = process.env.IEEE_API_KEY;
+    const resp = await fetch(
+      `https://ieeexploreapi.ieee.org/api/v1/search/articles?querytext=${encodeURIComponent(query)}&max_records=15&apikey=${apiKey}`
+    );
+    const json = await resp.json();
+    const results = json.articles.map(a => ({
+      id: a.article_number,
+      title: a.title,
+      abstract: a.abstract,
+      url: a.html_url,
+      year: a.publication_year
+    }));
+    res.json({ results });
+  } catch (err) {
+    console.error('IEEE Xplore error:', err);
+    res.status(500).json({ error: 'IEEE Xplore search failed' });
+  }
+});
+```
+
+#### d) DOAJ (Directory of Open Access Journals)
+
+```js
+router.post('/doaj-search', async (req, res) => {
+  try {
+    const { query } = req.body;
+    const resp = await fetch(
+      `https://doaj.org/api/v2/search/articles/${encodeURIComponent(query)}`
+    );
+    const json = await resp.json();
+    const results = json.results.slice(0,15).map(r => ({
+      id: r.id,
+      title: r.bibjson.title,
+      abstract: r.bibjson.abstract[0],
+      url: r.bibjson.link.find(l=>l.type==='full text')?.url,
+      year: r.bibjson.year
+    }));
+    res.json({ results });
+  } catch (err) {
+    console.error('DOAJ error:', err);
+    res.status(500).json({ error: 'DOAJ search failed' });
+  }
+});
+```
+
+> **Don’t forget** to **restart** your server after saving those changes.
+
+---
+
+### 3. Client service methods
+
+In **`client/src/services/FDA510kService.js`**, **inside** your singleton:
+
+```js
+// after existing methods...
+async semanticScholar(query) {
+  const res = await fetch('/api/fda510k/semantic-scholar', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query}) });
+  return (await res.json()).results;
+},
+async clinicalTrials(query) {
+  const res = await fetch('/api/fda510k/clinical-trials', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query}) });
+  return (await res.json()).results;
+},
+async ieeeXplore(query) {
+  const res = await fetch('/api/fda510k/ieee-xplore', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query}) });
+  return (await res.json()).results;
+},
+async doajSearch(query) {
+  const res = await fetch('/api/fda510k/doaj-search', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({query}) });
+  return (await res.json()).results;
+},
+```
+
+> **Save** and **re-run** your front-end dev server.
+
+---
+
+### 4. UI: Extend `LiteratureReviewPanel.jsx`
+
+1. **Import** your new methods & add extra tabs:
+
+   ```jsx
+   import FDA510kService from '@/services/FDA510kService';
+   // …
+   const [ssResults, setSsResults]         = useState([]);
+   const [ctResults, setCtResults]         = useState([]);
+   const [ieeeResults, setIeeeResults]     = useState([]);
+   const [doajResults, setDoajResults]     = useState([]);
+   ```
+
+2. **Create handlers** under your existing ones:
+
+   ```jsx
+   const doSS = async () => {
+     const r = await FDA510kService.instance.semanticScholar(query);
+     setSsResults(r);
+     toast({ title: 'Semantic Scholar ✓', description:`${r.length} papers` });
+   };
+   const doCT = async () => {
+     const r = await FDA510kService.instance.clinicalTrials(query);
+     setCtResults(r);
+     toast({ title: 'ClinicalTrials ✓', description:`${r.length} studies` });
+   };
+   const doIEEE = async () => {
+     const r = await FDA510kService.instance.ieeeXplore(query);
+     setIeeeResults(r);
+     toast({ title: 'IEEE Xplore ✓', description:`${r.length} articles` });
+   };
+   const doDOAJ = async () => {
+     const r = await FDA510kService.instance.doajSearch(query);
+     setDoajResults(r);
+     toast({ title: 'DOAJ ✓', description:`${r.length} articles` });
+   };
+   ```
+
+3. **Extend** your `<Tabs>`:
+
+   ```jsx
+   <TabList>
+     <Tab>PubMed</Tab>
+     <Tab>FAERS</Tab>
+     <Tab>Upload PDF</Tab>
+     <Tab>Semantic Scholar</Tab>
+     <Tab>ClinicalTrials</Tab>
+     <Tab>IEEE Xplore</Tab>
+     <Tab>DOAJ</Tab>
+   </TabList>
+   <TabPanels>
+     {/* …existing panels… */}
+
+     <TabPanel>
+       <div className="flex gap-2 mb-2">
+         <Input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Semantic Scholar…" />
+         <Button onClick={doSS}>Search</Button>
+       </div>
+       {ssResults.map(a => (
+         <Card key={a.id} className="mb-2 p-3">
+           <h4 className="font-bold">{a.title}</h4>
+           <p className="text-xs">{a.abstract?.slice(0,200)}…</p>
+           <a href={a.url} target="_blank" className="text-blue-600 text-sm">Open</a>
+         </Card>
+       ))}
+     </TabPanel>
+
+     <TabPanel>
+       {/* ClinicalTrials same pattern, use ctResults & doCT */}
+     </TabPanel>
+
+     <TabPanel>
+       {/* IEEE Xplore pattern, use ieeeResults & doIEEE */}
+     </TabPanel>
+
+     <TabPanel>
+       {/* DOAJ pattern, use doajResults & doDOAJ */}
+     </TabPanel>
+   </TabPanels>
+   ```
+
+4. **Re-style** cards as needed (consistent padding/text sizes).
+
+---
+
+### 5. Smoke-Test & Polish
+
+1. **Restart** both server & client.
+2. In **Client Portal → Med Device & Diagnostics → 510(k) Step 2** you should now see **7 tabs**.
+3. For each:
+
+   * Enter a natural-language query (e.g. “catheter design safety”).
+   * Click **Search**.
+   * Verify 10–20 results appear with title, snippet, link.
+4. **Iterate** UI: tweak card headers, spacing, toast messages.
+
+---
+
+🎉  Your **multi-source**, AI-augmented Literature Review now reaches **PubMed, FAERS, your own PDFs, Semantic Scholar, ClinicalTrials.gov, IEEE Xplore and DOAJ**—all inside **CER2V**. Clients get **true enterprise value**, not just boilerplate.
