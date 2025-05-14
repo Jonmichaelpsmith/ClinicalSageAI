@@ -41,7 +41,7 @@ import literatureReviewGeneratorRouter from './routes/literature-review-generato
 // @ts-ignore
 import { router as documentAssemblyRouter } from './routes/document-assembly-esm.js';
 // @ts-ignore
-import * as draftGeneratorRouter from './routes/510k-draft-generator.js';
+import { router as draftGeneratorRouter } from './routes/510k-draft-generator-esm.js';
 // Regulatory-ai router will be imported directly in server/index.ts
 
 export default function registerRoutes(app: Express): void {
