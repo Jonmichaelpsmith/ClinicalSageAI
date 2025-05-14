@@ -1321,6 +1321,64 @@ export default function CERV2Page() {
         </div>
       );
     }
+    
+    // Unified Workflow Panel for both 510k and CER documents
+    if (activeTab === 'workflow') {
+      // Create the appropriate document data for the UnifiedWorkflowPanel
+      const currentDocumentId = documentType === 'cer' ? cerDocumentId : k510DocumentId;
+      const currentDocumentData = {
+        id: currentDocumentId || `temp-${Date.now()}`, // Fallback if no ID available yet
+        title: documentType === 'cer' ? title : `${deviceName} 510(k) Submission`,
+        type: documentType === 'cer' ? 'cer_report' : 'report_510k',
+        status: draftStatus || 'draft',
+        version: '1.0'
+      };
+      
+      // Define module type based on document type
+      const moduleType = documentType === 'cer' ? 'cer' : 'medical_device';
+      
+      // Get organization and user ID from context or local state
+      // In production, these would come from auth context
+      const organizationId = 1; 
+      const userId = 1;
+      
+      return (
+        <div className="bg-[#F9F9F9] py-4">
+          <div className="px-4">
+            <h2 className="text-xl font-semibold text-[#323130] mb-4">
+              {documentType === 'cer' 
+                ? 'Clinical Evaluation Report Workflow' 
+                : '510(k) Submission Workflow'}
+            </h2>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle>Document Workflow Management</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {documentType === 'cer' 
+                    ? 'Manage Clinical Evaluation Report workflows and approvals' 
+                    : 'Manage 510(k) Submission workflows and approvals'}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <UnifiedWorkflowPanel
+                  documentData={currentDocumentData}
+                  moduleType={moduleType}
+                  organizationId={organizationId}
+                  userId={userId}
+                  onWorkflowUpdated={() => {
+                    toast({
+                      title: "Workflow Updated",
+                      description: "The document workflow has been updated successfully",
+                      variant: "success"
+                    });
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      );
+    }
 
     if (activeTab === 'sota') {
       return (
