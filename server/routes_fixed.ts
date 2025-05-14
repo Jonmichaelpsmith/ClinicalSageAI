@@ -7,6 +7,7 @@
 
 import { Express } from 'express';
 import { router as estar510kRouter } from './routes/510kEstarRoutes';
+import cerDeviceProfileRoutes from './routes/cerDeviceProfileRoutes';
 
 /**
  * Register all routes with the Express application
@@ -16,6 +17,10 @@ import { router as estar510kRouter } from './routes/510kEstarRoutes';
 export default function registerRoutes(app: Express): void {
   // Register FDA 510k eSTAR routes
   app.use('/api/fda510k/estar', estar510kRouter);
+  
+  // Register CER device profile routes
+  app.use('/api/cer/device-profile', cerDeviceProfileRoutes);
+  console.log('CER Device Profile routes registered');
   
   // Additional routes can be registered here
 }
