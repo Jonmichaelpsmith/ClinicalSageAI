@@ -336,3 +336,29 @@ export async function getPendingApprovals(userId, organizationId) {
     throw error;
   }
 }
+
+/**
+ * Get document workflow history
+ * 
+ * @param {string} documentId - The document ID
+ * @returns {Promise<Array>} List of workflow history events
+ */
+export async function getDocumentWorkflowHistory(documentId) {
+  if (!documentId) {
+    throw new Error('Document ID is required');
+  }
+  
+  try {
+    const response = await fetch(`/api/module-integration/workflow-history/${documentId}`);
+    
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to fetch workflow history');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error fetching workflow history:', error);
+    throw error;
+  }
+}
