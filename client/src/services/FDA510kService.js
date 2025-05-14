@@ -331,6 +331,32 @@ class FDA510kService {
       };
     }
   }
+
+  /**
+   * Run a comprehensive compliance check for a 510(k) submission
+   * 
+   * This function performs a detailed analysis of a 510(k) submission project
+   * to identify any issues with FDA compliance, missing sections, or
+   * documentation gaps.
+   * 
+   * @param {string} projectId The ID of the 510(k) project to check
+   * @param {Object} options Optional parameters for the compliance check
+   * @returns {Promise<Object>} Detailed compliance check results with issues and score
+   */
+  async runComplianceCheck(projectId, options = {}) {
+    try {
+      // Call the API endpoint for compliance checking
+      const response = await apiRequest.post('/api/fda510k/compliance-check', {
+        projectId,
+        options
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error(`Error running 510(k) compliance check for project ${projectId}:`, error);
+      throw error;
+    }
+  }
 }
 
 // Export a singleton instance
