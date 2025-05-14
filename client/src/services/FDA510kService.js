@@ -402,6 +402,29 @@ class FDA510kService {
       throw error;
     }
   }
+
+  /**
+   * Create or update a device profile for a 510(k) submission
+   * 
+   * @param {Object} deviceProfileData The device profile data to save
+   * @returns {Promise<Object>} The saved device profile
+   */
+  async saveDeviceProfile(deviceProfileData) {
+    try {
+      // If there's an ID, this is an update
+      if (deviceProfileData.id) {
+        const response = await apiRequest.put(`/api/fda510k/device-profiles/${deviceProfileData.id}`, deviceProfileData);
+        return response.data;
+      } else {
+        // Otherwise it's a new profile
+        const response = await apiRequest.post('/api/fda510k/device-profiles', deviceProfileData);
+        return response.data;
+      }
+    } catch (error) {
+      console.error('Error saving device profile:', error);
+      throw error;
+    }
+  }
 }
 
 // Export a singleton instance
