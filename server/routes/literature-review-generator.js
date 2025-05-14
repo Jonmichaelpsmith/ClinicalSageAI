@@ -30,6 +30,16 @@ router.post('/generate-literature-review', async (req, res) => {
     
     console.log(`Generating literature review for ${deviceName} with ${literatureReferences.length} references`);
     
+    // Check for OpenAI API key
+    if (!process.env.OPENAI_API_KEY) {
+      console.error('OPENAI_API_KEY is missing');
+      return res.status(500).json({
+        success: false,
+        error: 'OpenAI API key is missing or invalid',
+        message: 'Server configuration error: OpenAI API key is missing'
+      });
+    }
+    
     // Format the references for the AI model
     const formattedReferences = literatureReferences.map((ref, index) => {
       return `
@@ -42,6 +52,8 @@ ${ref.abstract ? `Abstract: ${ref.abstract}` : ''}
 ${ref.keywords ? `Keywords: ${ref.keywords.join(', ')}` : ''}
 `;
     }).join('\n');
+    
+    console.log('References formatted successfully');
     
     // Create the AI prompt
     const prompt = `
@@ -62,51 +74,78 @@ Include proper citations to the references using the format [Author et al., Year
 Conclude with a summary of the state of the art based on the literature.
 `;
 
-    // Generate the literature review using OpenAI
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
-      messages: [
-        {
-          role: "system",
-          content: "You are a medical device regulatory expert specializing in clinical evaluation reports and literature reviews. You follow MEDDEV 2.7/1 Rev 4 guidelines and produce comprehensive, evidence-based analyses for medical device manufacturers."
-        },
-        { role: "user", content: prompt }
-      ],
-      temperature: 0.2,
-    });
+    console.log('Calling OpenAI API...');
     
-    const literatureReview = completion.choices[0].message.content;
-    
-    // Extract references into a structured format
-    const referencesRegex = /References?:?\s*([\\s\\S]*?)(?:\\n\\n|$)/i;
-    const referencesMatch = literatureReview.match(referencesRegex);
-    
-    let structuredReferences = [];
-    if (referencesMatch && referencesMatch[1]) {
-      const referencesText = referencesMatch[1];
-      const referenceLines = referencesText.split('\n').filter(line => line.trim());
+    try {
+      // Generate the literature review using OpenAI
+      const completion = await openai.chat.completions.create({
+        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
+        messages: [
+          {
+            role: "system",
+            content: "You are a medical device regulatory expert specializing in clinical evaluation reports and literature reviews. You follow MEDDEV 2.7/1 Rev 4 guidelines and produce comprehensive, evidence-based analyses for medical device manufacturers."
+          },
+          { role: "user", content: prompt }
+        ],
+        temperature: 0.2,
+      });
       
-      structuredReferences = referenceLines.map(line => {
-        // Basic cleaning
-        return line.replace(/^\d+\.\s*/, '').trim();
+      console.log('OpenAI API response received successfully');
+      
+      if (!completion.choices || !completion.choices.length) {
+        console.error('OpenAI API returned an incomplete response:', completion);
+        return res.status(500).json({
+          success: false,
+          error: 'Invalid response from OpenAI',
+          message: 'The AI service returned an incomplete response'
+        });
+      }
+      
+      const literatureReview = completion.choices[0].message.content;
+      
+      // Extract references into a structured format
+      const referencesRegex = /References?:?\s*([\\s\\S]*?)(?:\\n\\n|$)/i;
+      const referencesMatch = literatureReview.match(referencesRegex);
+      
+      let structuredReferences = [];
+      if (referencesMatch && referencesMatch[1]) {
+        const referencesText = referencesMatch[1];
+        const referenceLines = referencesText.split('\n').filter(line => line.trim());
+        
+        structuredReferences = referenceLines.map(line => {
+          // Basic cleaning
+          return line.replace(/^\d+\.\s*/, '').trim();
+        });
+      }
+      
+      console.log('Literature review generated and structured successfully');
+      
+      // Return the generated literature review
+      res.json({
+        success: true,
+        content: literatureReview,
+        structuredReferences,
+        metadata: {
+          deviceName,
+          referenceCount: literatureReferences.length,
+          generated: new Date().toISOString(),
+          modelUsed: "GPT-4O"
+        }
+      });
+    } catch (apiError) {
+      console.error('OpenAI API error:', apiError);
+      console.error('Error details:', JSON.stringify(apiError, null, 2));
+      res.status(500).json({
+        success: false,
+        error: 'OpenAI API error',
+        message: apiError.message,
+        details: apiError.response ? apiError.response.data : null
       });
     }
     
-    // Return the generated literature review
-    res.json({
-      success: true,
-      content: literatureReview,
-      structuredReferences,
-      metadata: {
-        deviceName,
-        referenceCount: literatureReferences.length,
-        generated: new Date().toISOString(),
-        modelUsed: "GPT-4O"
-      }
-    });
-    
   } catch (error) {
     console.error('Error generating literature review:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
       error: 'Failed to generate literature review',
