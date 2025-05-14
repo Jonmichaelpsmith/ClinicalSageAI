@@ -1,18 +1,23 @@
 /**
- * Document Assembly Routes (CommonJS Version)
+ * Document Assembly Routes (ESM Version)
  * 
  * These routes handle document assembly and generation for
  * FDA 510(k) submissions and clinical evaluation reports.
  */
 
-const express = require('express');
-const fs = require('fs').promises;
-const path = require('path');
+import express from 'express';
+import { promises as fs } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-// Import services
-const documentAssemblyService = require('../services/documentAssemblyService');
-const pdfGenerationService = require('../services/pdfGenerationService');
-const wordGenerationService = require('../services/wordGenerationService');
+// Get dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Import services as CommonJS 
+import documentAssemblyService from '../services/documentAssemblyService-esm.js';
+import pdfGenerationService from '../services/pdfGenerationService-esm.js';
+import wordGenerationService from '../services/wordGenerationService-esm.js';
 
 const router = express.Router();
 
@@ -216,4 +221,4 @@ router.post('/generate-510k-example', async (req, res) => {
   }
 });
 
-module.exports = router;
+export { router };

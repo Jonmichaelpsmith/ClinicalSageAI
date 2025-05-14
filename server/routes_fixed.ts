@@ -39,7 +39,9 @@ import discoveryRouter from './routes/discovery.js';
 // @ts-ignore
 import literatureReviewGeneratorRouter from './routes/literature-review-generator.js';
 // @ts-ignore
-import documentAssemblyRouter from './routes/document-assembly.mjs';
+import { router as documentAssemblyRouter } from './routes/document-assembly-esm.js';
+// @ts-ignore
+import * as draftGeneratorRouter from './routes/510k-draft-generator.js';
 // Regulatory-ai router will be imported directly in server/index.ts
 
 export default function registerRoutes(app: Express): void {
@@ -376,9 +378,13 @@ export default function registerRoutes(app: Express): void {
   app.use('/api/cer', literatureReviewGeneratorRouter);
   console.log('Literature review generator routes registered');
   
-  // Register document assembly routes with ESM version
+  // Register document assembly routes with CommonJS version
   app.use('/api/document-assembly', documentAssemblyRouter);
-  console.log('Document assembly routes registered (ESM)');
+  console.log('Document assembly routes registered (CommonJS)');
+  
+  // Register 510(k) draft generator routes
+  app.use('/api/510k', draftGeneratorRouter);
+  console.log('510(k) draft generator routes registered');
   
   // Use the updated regulatory-ai.js implementation with no mocks or fallbacks
   // @ts-ignore

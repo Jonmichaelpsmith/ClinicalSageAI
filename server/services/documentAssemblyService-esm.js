@@ -1,15 +1,21 @@
 /**
- * Document Assembly Service
+ * Document Assembly Service (ESM Version)
  * 
  * This service handles the assembly of complete CER and 510(k) reports by combining
  * various document sections and applying consistent formatting and validation.
  */
 
-const fs = require('fs/promises');
-const path = require('path');
-const crypto = require('crypto');
-const axios = require('axios');
-const pdfGenerationService = require('./pdfGenerationService');
+import fs from 'fs/promises';
+import path from 'path';
+import crypto from 'crypto';
+import axios from 'axios';
+import { fileURLToPath } from 'url';
+import pdfGenerationService from './pdfGenerationService-esm.js';
+import wordGenerationService from './wordGenerationService-esm.js';
+
+// Get dirname equivalent in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Generate a unique ID (replacement for uuid)
 function generateId() {
@@ -505,7 +511,7 @@ async function assemble510kDocument(submission510kData, options = {}) {
     documentHtml += `
         <div class="section" id="conclusion">
           <h2>Conclusion</h2>
-          ${submission510kData.conclusion || '<p>Based on the information presented in this submission, the subject device is substantially equivalent to the predicate device(s).</p>'}
+          ${submission510kData.conclusion || '<p>Based on the information provided in this submission, the subject device is substantially equivalent to the predicate device.</p>'}
         </div>
         
         <div class="footer">
@@ -572,243 +578,303 @@ function getAssemblyStatus(assemblyId) {
 function listAssemblies(options = {}) {
   const { limit = 10, type } = options;
   
-  let assemblies = Array.from(activeAssemblies.values());
+  // Convert Map to Array and sort by startTime (descending)
+  let assemblies = Array.from(activeAssemblies.values())
+    .sort((a, b) => (b.startTime || 0) - (a.startTime || 0));
   
-  // Apply type filter if specified
+  // Filter by type if specified
   if (type) {
-    assemblies = assemblies.filter(assembly => assembly.type === type);
+    assemblies = assemblies.filter(a => a.type === type);
   }
   
-  // Sort by start time (most recent first)
-  assemblies.sort((a, b) => b.startTime - a.startTime);
-  
-  // Apply limit
+  // Limit results
   return assemblies.slice(0, limit);
 }
 
 /**
- * Generate a perfect example 510(k) report for demo purposes
+ * Generate a perfect 510(k) example report for demo purposes
  * 
  * @returns {Promise<string>} - Path to the example report
  */
 async function generatePerfect510kExampleReport() {
   try {
-    console.log('Generating perfect 510(k) example report...');
-    
-    // Create a well-structured example device profile
-    const exampleDeviceProfile = {
-      deviceName: "CardioFlow X1 Cardiac Monitor",
-      manufacturer: "MedTech Innovations, Inc.",
-      commonName: "Cardiac Monitor",
-      classificationName: "Monitor, Cardiac (including Cardiotachometer and Rate Alarm)",
-      deviceClass: "II",
-      productCode: "DRT",
-      regulationNumber: "870.2300",
-      intendedUse: "The CardioFlow X1 Cardiac Monitor is intended for continuous monitoring of cardiac output and cardiac rhythm in adult patients in clinical and hospital environments.",
-      deviceDescription: "The CardioFlow X1 is a portable cardiac monitor that utilizes advanced sensor technology to provide continuous, real-time monitoring of cardiac output, rhythm, and associated physiological parameters. The device features a high-resolution touch display, wireless connectivity, and is designed for use in various clinical settings.",
-      technicalSpecifications: "Dimensions: 8.5\" x 5.2\" x 1.3\", Weight: 320g, Display: 7\" touch-screen LCD, Battery: Rechargeable lithium-ion (12 hours operation), Connectivity: Bluetooth 5.0, Wi-Fi (802.11 a/b/g/n), Data storage: 72 hours of continuous recording"
-    };
-    
-    // Create sections for the example report
-    const exampleSections = [
-      {
-        title: "Performance Testing",
-        content: `
-          <h3>Bench Testing</h3>
-          <p>The CardioFlow X1 Cardiac Monitor underwent comprehensive bench testing to validate its performance against established industry standards and predicate devices. The following tests were conducted:</p>
-          <ul>
-            <li>Electrical safety testing according to IEC 60601-1</li>
-            <li>Electromagnetic compatibility testing according to IEC 60601-1-2</li>
-            <li>Accuracy testing for cardiac output measurement</li>
-            <li>Alarm system functionality testing</li>
-            <li>Battery performance and longevity testing</li>
-            <li>Mechanical integrity and durability testing</li>
-          </ul>
-          <p>All test results demonstrated that the CardioFlow X1 meets or exceeds the established performance criteria and is substantially equivalent to legally marketed predicate devices.</p>
-          
-          <h3>Software Verification and Validation</h3>
-          <p>Software verification and validation testing was conducted according to the FDA guidance "General Principles of Software Validation" and IEC 62304. The software was classified as Class B according to IEC 62304. Testing included:</p>
-          <ul>
-            <li>Unit testing of software components</li>
-            <li>Integration testing of software modules</li>
-            <li>System-level verification testing</li>
-            <li>User interface validation</li>
-            <li>Algorithm validation using reference datasets</li>
-          </ul>
-          <p>All software verification and validation activities were successfully completed, and the results confirm that the software meets its intended use and specified requirements.</p>
-        `,
-        metadata: {
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
+    // Generate a simulated 510(k) submission with all proper sections
+    const exampleSubmission = {
+      deviceProfile: {
+        deviceName: 'ExampleMed Glucose Monitor Pro',
+        manufacturer: 'ExampleMed Technologies, Inc.',
+        commonName: 'Blood Glucose Monitor',
+        classificationName: 'System, Test, Blood Glucose, Over The Counter',
+        deviceClass: 'II',
+        productCode: 'NBW',
+        regulationNumber: '21 CFR 862.1345',
+        intendedUse: 'The ExampleMed Glucose Monitor Pro is intended for the quantitative measurement of glucose in fresh capillary whole blood samples drawn from the fingertips. It is indicated for use by healthcare professionals and people with diabetes mellitus in home settings as an aid in monitoring the effectiveness of diabetes control programs.',
+        deviceDescription: 'The ExampleMed Glucose Monitor Pro is a compact, handheld blood glucose monitoring system designed for self-testing. The system includes a meter, test strips, and a lancing device. The meter uses electrochemical biosensor technology to measure glucose levels in whole blood samples, requiring a minimum sample volume of 0.5 μL and providing results in approximately 5 seconds.',
+        technicalSpecifications: 'The device utilizes electrochemical biosensor technology with glucose oxidase enzyme reaction. It has a measurement range of 20-600 mg/dL with a clinical accuracy of ±10% compared to laboratory reference methods. It includes features such as automatic coding, hypoglycemia warning alerts, 500-test memory storage, and data connectivity via Bluetooth to compatible mobile applications.'
       },
-      {
-        title: "Biocompatibility Evaluation",
-        content: `
-          <h3>Materials Used</h3>
-          <p>The CardioFlow X1 Cardiac Monitor includes the following patient-contacting materials:</p>
+      sections: [
+        {
+          title: 'Indications for Use',
+          content: `<p>The ExampleMed Glucose Monitor Pro is intended for the quantitative measurement of glucose in fresh capillary whole blood samples drawn from the fingertips. It is indicated for use by healthcare professionals and people with diabetes mellitus in home settings as an aid in monitoring the effectiveness of diabetes control programs.</p>
+          
+          <p>The system is intended for single patient use and should not be shared. It is intended for self-testing outside the body (in vitro diagnostic use).</p>
+          
+          <p>The ExampleMed Glucose Monitor Pro is not intended for the diagnosis of or screening for diabetes and is not intended for use on neonates.</p>`
+        },
+        {
+          title: 'Performance Data',
+          content: `<h3>Clinical Studies</h3>
+          <p>A clinical study was conducted to evaluate the performance of the ExampleMed Glucose Monitor Pro. The study included 350 participants with diabetes across 5 clinical sites. Blood glucose measurements were compared with a laboratory reference method (YSI Glucose Analyzer).</p>
+          
+          <table>
+            <tr>
+              <th>Parameter</th>
+              <th>Result</th>
+              <th>Acceptance Criteria</th>
+            </tr>
+            <tr>
+              <td>System Accuracy (within ±15 mg/dL or ±15% of reference)</td>
+              <td>95.8%</td>
+              <td>≥95%</td>
+            </tr>
+            <tr>
+              <td>System Accuracy (within ±10 mg/dL or ±10% of reference)</td>
+              <td>90.3%</td>
+              <td>≥85%</td>
+            </tr>
+            <tr>
+              <td>Coefficient of Variation</td>
+              <td>3.8%</td>
+              <td>≤5%</td>
+            </tr>
+          </table>
+          
+          <h3>Reliability Testing</h3>
+          <p>The device was subjected to extensive reliability testing, including:</p>
           <ul>
-            <li>Medical-grade silicone (sensor housing)</li>
-            <li>Medical-grade stainless steel (electrode contacts)</li>
-            <li>Hypoallergenic medical adhesive (attachment mechanism)</li>
+            <li>Drop test (1 meter onto hardwood surface): Passed</li>
+            <li>Vibration test: Passed</li>
+            <li>Altitude simulation (up to 10,000 feet): Passed</li>
+            <li>Temperature and humidity variation: Passed</li>
+            <li>Electrical safety testing: Passed</li>
+          </ul>`
+        },
+        {
+          title: 'Technological Characteristics',
+          content: `<p>The ExampleMed Glucose Monitor Pro and the predicate device both utilize electrochemical biosensor technology based on glucose oxidase enzyme reactions. Both devices measure glucose in whole blood samples, require similar blood volumes, and provide results within 10 seconds.</p>
+          
+          <h3>Key Technological Features Comparison</h3>
+          <table>
+            <tr>
+              <th>Feature</th>
+              <th>ExampleMed Glucose Monitor Pro</th>
+              <th>Predicate Device</th>
+            </tr>
+            <tr>
+              <td>Measurement Technology</td>
+              <td>Electrochemical biosensor</td>
+              <td>Electrochemical biosensor</td>
+            </tr>
+            <tr>
+              <td>Enzyme</td>
+              <td>Glucose oxidase</td>
+              <td>Glucose oxidase</td>
+            </tr>
+            <tr>
+              <td>Sample Type</td>
+              <td>Fresh capillary whole blood</td>
+              <td>Fresh capillary whole blood</td>
+            </tr>
+            <tr>
+              <td>Sample Size</td>
+              <td>0.5 μL</td>
+              <td>0.6 μL</td>
+            </tr>
+            <tr>
+              <td>Test Time</td>
+              <td>5 seconds</td>
+              <td>8 seconds</td>
+            </tr>
+            <tr>
+              <td>Measurement Range</td>
+              <td>20-600 mg/dL</td>
+              <td>20-500 mg/dL</td>
+            </tr>
+            <tr>
+              <td>Memory Capacity</td>
+              <td>500 tests</td>
+              <td>450 tests</td>
+            </tr>
+            <tr>
+              <td>Data Connectivity</td>
+              <td>Bluetooth, USB</td>
+              <td>USB only</td>
+            </tr>
+          </table>`
+        },
+        {
+          title: 'Sterilization and Shelf Life',
+          content: `<p>The ExampleMed Glucose Monitor Pro is not supplied sterile as sterilization is not required for this type of device. The test strips are manufactured in a controlled environment to maintain cleanliness and functionality.</p>
+          
+          <h3>Shelf Life</h3>
+          <p>Shelf life studies were conducted to establish the following:</p>
+          <ul>
+            <li>Glucose Monitor: 5 years from date of manufacture</li>
+            <li>Test Strips: 18 months from date of manufacture when stored in the original vial at 39-86°F (4-30°C) and 10-90% relative humidity</li>
+            <li>Control Solution: 3 months after first opening or until the expiration date printed on the bottle, whichever comes first</li>
           </ul>
           
-          <h3>Biocompatibility Assessment</h3>
-          <p>Biocompatibility evaluation was conducted in accordance with ISO 10993-1:2018 "Biological evaluation of medical devices - Part 1: Evaluation and testing within a risk management process." The device was categorized as surface device with limited contact duration (≤24 hours) with intact skin.</p>
+          <p>Accelerated aging studies confirmed that the device maintains its performance specifications throughout the labeled shelf life.</p>`
+        },
+        {
+          title: 'Biocompatibility',
+          content: `<p>The patient-contacting components of the ExampleMed Glucose Monitor Pro system include the test strips and the lancing device. Biocompatibility testing was conducted in accordance with ISO 10993-1:2018 for the appropriate category of devices with limited (less than 24 hours) skin contact.</p>
           
-          <h3>Testing Performed</h3>
-          <p>The following biocompatibility tests were conducted:</p>
+          <h3>Biocompatibility Testing Results</h3>
+          <table>
+            <tr>
+              <th>Test</th>
+              <th>Standard</th>
+              <th>Result</th>
+            </tr>
+            <tr>
+              <td>Cytotoxicity</td>
+              <td>ISO 10993-5</td>
+              <td>Pass</td>
+            </tr>
+            <tr>
+              <td>Sensitization</td>
+              <td>ISO 10993-10</td>
+              <td>Pass</td>
+            </tr>
+            <tr>
+              <td>Irritation</td>
+              <td>ISO 10993-10</td>
+              <td>Pass</td>
+            </tr>
+            <tr>
+              <td>Acute Systemic Toxicity</td>
+              <td>ISO 10993-11</td>
+              <td>Pass</td>
+            </tr>
+          </table>
+          
+          <p>All materials used in the patient-contacting components have a history of safe use in previously cleared blood glucose monitoring systems.</p>`
+        },
+        {
+          title: 'Software Verification and Validation',
+          content: `<p>The ExampleMed Glucose Monitor Pro contains software of moderate level of concern as defined by FDA's guidance document "Guidance for the Content of Premarket Submissions for Software Contained in Medical Devices." Software verification and validation testing were conducted according to IEC 62304:2015 Medical device software – Software life cycle processes.</p>
+          
+          <h3>Software Testing Summary</h3>
           <ul>
-            <li>Cytotoxicity (ISO 10993-5)</li>
-            <li>Sensitization (ISO 10993-10)</li>
-            <li>Irritation (ISO 10993-10)</li>
+            <li>Software Version: v3.2.1</li>
+            <li>Requirements Specification: All requirements verified</li>
+            <li>Risk Analysis: All identified risks mitigated to acceptable levels</li>
+            <li>Unit Testing: Passed all 127 unit tests</li>
+            <li>Integration Testing: Passed all 45 integration scenarios</li>
+            <li>System Testing: Passed all 32 system test cases</li>
+            <li>Cybersecurity Assessment: No critical vulnerabilities identified</li>
           </ul>
           
-          <h3>Results</h3>
-          <p>All biocompatibility tests were completed successfully, demonstrating that the patient-contacting materials of the CardioFlow X1 Cardiac Monitor are non-cytotoxic, non-sensitizing, and non-irritating. The device meets all applicable biocompatibility requirements for its intended use.</p>
-        `,
-        metadata: {
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
+          <p>The software validation documentation is provided in Section 16 of this submission.</p>`
+        },
+      ],
+      predicateComparison: {
+        html: `<div class="predicate-comparison">
+          <h3>Predicate Device Comparison</h3>
+          <p>The ExampleMed Glucose Monitor Pro is substantially equivalent to the GlucoSense 5000 (K123456) in terms of intended use, technological characteristics, and performance.</p>
+          
+          <h4>Substantial Equivalence Comparison</h4>
+          <table>
+            <tr>
+              <th>Characteristic</th>
+              <th>ExampleMed Glucose Monitor Pro</th>
+              <th>GlucoSense 5000 (Predicate)</th>
+              <th>Comparison</th>
+            </tr>
+            <tr>
+              <td>Intended Use</td>
+              <td>Measurement of glucose in capillary whole blood for self-testing</td>
+              <td>Measurement of glucose in capillary whole blood for self-testing</td>
+              <td>Same</td>
+            </tr>
+            <tr>
+              <td>Technology</td>
+              <td>Electrochemical biosensor</td>
+              <td>Electrochemical biosensor</td>
+              <td>Same</td>
+            </tr>
+            <tr>
+              <td>Sample Type</td>
+              <td>Fresh capillary whole blood</td>
+              <td>Fresh capillary whole blood</td>
+              <td>Same</td>
+            </tr>
+            <tr>
+              <td>Measurement Range</td>
+              <td>20-600 mg/dL</td>
+              <td>20-500 mg/dL</td>
+              <td>Similar (Wider range)</td>
+            </tr>
+            <tr>
+              <td>Accuracy</td>
+              <td>±10% (90.3% of samples)</td>
+              <td>±10% (89.7% of samples)</td>
+              <td>Similar (Slightly improved)</td>
+            </tr>
+            <tr>
+              <td>Test Time</td>
+              <td>5 seconds</td>
+              <td>8 seconds</td>
+              <td>Similar (Faster)</td>
+            </tr>
+            <tr>
+              <td>Sample Size</td>
+              <td>0.5 μL</td>
+              <td>0.6 μL</td>
+              <td>Similar (Smaller sample)</td>
+            </tr>
+            <tr>
+              <td>Operating Temperature</td>
+              <td>50-104°F (10-40°C)</td>
+              <td>50-104°F (10-40°C)</td>
+              <td>Same</td>
+            </tr>
+            <tr>
+              <td>Storage Temperature</td>
+              <td>39-86°F (4-30°C)</td>
+              <td>39-86°F (4-30°C)</td>
+              <td>Same</td>
+            </tr>
+            <tr>
+              <td>Power Source</td>
+              <td>3V lithium battery (CR2032)</td>
+              <td>3V lithium battery (CR2032)</td>
+              <td>Same</td>
+            </tr>
+          </table>
+          
+          <h4>Differences Analysis</h4>
+          <p>The differences between the ExampleMed Glucose Monitor Pro and the predicate device do not raise new questions of safety or effectiveness:</p>
+          <ul>
+            <li>The wider measurement range (20-600 mg/dL vs. 20-500 mg/dL) provides additional clinical utility without affecting performance within the overlapping range.</li>
+            <li>The faster test time (5 seconds vs. 8 seconds) is due to an improved enzyme formulation and does not affect accuracy or reliability.</li>
+            <li>The smaller sample size (0.5 μL vs. 0.6 μL) reduces discomfort without compromising test accuracy.</li>
+            <li>Additional connectivity features (Bluetooth) provide improved user convenience but do not affect the core measurement functionality.</li>
+          </ul>
+        </div>`
       },
-      {
-        title: "Clinical Evaluation",
-        content: `
-          <h3>Clinical Studies Overview</h3>
-          <p>A clinical evaluation of the CardioFlow X1 Cardiac Monitor was conducted to assess device performance and safety in the intended use environment. The evaluation included:</p>
-          <ol>
-            <li>A comprehensive literature review of similar devices</li>
-            <li>A clinical validation study</li>
-            <li>Analysis of post-market surveillance data from similar devices</li>
-          </ol>
-          
-          <h3>Clinical Validation Study</h3>
-          <p>A clinical validation study was conducted at three clinical sites with a total of 85 adult patients requiring cardiac monitoring. The primary endpoints were:</p>
-          <ul>
-            <li>Accuracy of cardiac output measurements compared to a reference method (thermodilution)</li>
-            <li>Reliability of rhythm detection compared to standard 12-lead ECG</li>
-            <li>Incidence of device-related adverse events</li>
-          </ul>
-          
-          <h3>Results</h3>
-          <p>The CardioFlow X1 demonstrated a high correlation (r=0.94, p&lt;0.001) with the reference method for cardiac output measurements with a mean percentage error of 5.2% (within the predetermined acceptance criteria of ±10%). Rhythm detection showed 98.7% agreement with standard 12-lead ECG interpretation. No serious device-related adverse events were reported during the study.</p>
-          
-          <h3>Conclusion</h3>
-          <p>The clinical evaluation demonstrates that the CardioFlow X1 Cardiac Monitor performs as intended for its specific use, with acceptable accuracy and reliability. The benefit-risk analysis supports the safety and performance of the device for its intended use.</p>
-        `,
-        metadata: {
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-      }
-    ];
-    
-    // Create a predicate comparison section
-    const predicateComparison = {
-      html: `
-        <h3>Predicate Device Comparison</h3>
-        <p>The CardioFlow X1 Cardiac Monitor is substantially equivalent to the following legally marketed predicate device:</p>
-        <p><strong>Primary Predicate:</strong> CardioSense PRO (K123456)</p>
-        
-        <table style="width:100%; border-collapse: collapse; margin: 20px 0;">
-          <tr style="background-color: #f3f4f6;">
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Feature</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">CardioFlow X1 (Subject Device)</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">CardioSense PRO (Predicate)</th>
-            <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">Comparison</th>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;"><strong>Intended Use</strong></td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Continuous monitoring of cardiac output and cardiac rhythm in adult patients in clinical and hospital environments</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Continuous monitoring of cardiac output and cardiac rhythm in adult patients in clinical and hospital environments</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Same</td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;"><strong>Device Classification</strong></td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Class II</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Class II</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Same</td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;"><strong>Product Code</strong></td>
-            <td style="border: 1px solid #ddd; padding: 8px;">DRT</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">DRT</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Same</td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;"><strong>Measurement Technology</strong></td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Impedance cardiography with advanced algorithm</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Impedance cardiography</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Similar, with enhanced algorithm</td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;"><strong>Display</strong></td>
-            <td style="border: 1px solid #ddd; padding: 8px;">7" touch-screen LCD</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">5.5" LCD</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Larger display with touch capability</td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;"><strong>Battery Life</strong></td>
-            <td style="border: 1px solid #ddd; padding: 8px;">12 hours</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">8 hours</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Improved</td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;"><strong>Connectivity</strong></td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Bluetooth 5.0, Wi-Fi</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Bluetooth 4.2, Wi-Fi</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Enhanced</td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;"><strong>Data Storage</strong></td>
-            <td style="border: 1px solid #ddd; padding: 8px;">72 hours</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">48 hours</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Improved</td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;"><strong>Patient Population</strong></td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Adults</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Adults</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Same</td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;"><strong>Biocompatibility</strong></td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Complies with ISO 10993</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Complies with ISO 10993</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Same</td>
-          </tr>
-          <tr>
-            <td style="border: 1px solid #ddd; padding: 8px;"><strong>Electrical Safety</strong></td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Complies with IEC 60601-1</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Complies with IEC 60601-1</td>
-            <td style="border: 1px solid #ddd; padding: 8px;">Same</td>
-          </tr>
-        </table>
-        
-        <h3>Substantial Equivalence Analysis</h3>
-        <p>The CardioFlow X1 has the same intended use, patient population, and fundamental technology as the predicate device CardioSense PRO. The differences between the subject and predicate devices do not raise new questions of safety or effectiveness. The subject device incorporates technological improvements such as enhanced display, longer battery life, and improved data storage, which provide benefits without introducing new risks.</p>
-        
-        <p>Performance testing has demonstrated that the CardioFlow X1 is as safe and effective as the predicate device for its intended use. Therefore, the CardioFlow X1 Cardiac Monitor is substantially equivalent to the legally marketed predicate device CardioSense PRO.</p>
-      `
+      conclusion: `<p>Based on the information provided in this 510(k) submission, including performance data and comparison to the predicate device, the ExampleMed Glucose Monitor Pro is substantially equivalent to the predicate device GlucoSense 5000 (K123456).</p>
+      
+      <p>The ExampleMed Glucose Monitor Pro has the same intended use and similar technological characteristics as the predicate device. The differences between the devices do not raise new questions of safety or effectiveness, and performance testing demonstrates that the device is as safe and effective as the predicate device.</p>
+      
+      <p>Therefore, the ExampleMed Glucose Monitor Pro is substantially equivalent to the legally marketed predicate device.</p>`
     };
     
-    // Create the example 510(k) submission data
-    const submission510kData = {
-      deviceProfile: exampleDeviceProfile,
-      sections: exampleSections,
-      predicateComparison: predicateComparison,
-      conclusion: `
-        <p>Based on the comparison of intended use, technological characteristics, performance data, and overall evaluation, the CardioFlow X1 Cardiac Monitor is substantially equivalent to the legally marketed predicate device. The subject device does not raise new questions of safety or effectiveness and performs as well as or better than the predicate device.</p>
-        
-        <p>The data presented in this submission demonstrate that the CardioFlow X1 Cardiac Monitor is as safe and effective as the predicate device and is substantially equivalent to the CardioSense PRO (K123456) for its intended use.</p>
-      `
-    };
+    // Generate the document
+    const result = await assemble510kDocument(exampleSubmission);
     
-    // Generate the 510(k) document
-    const result = await assemble510kDocument(submission510kData);
-    
-    // Save a copy to the example reports directory
+    // Copy to the example directory
     const exampleFilename = 'Example_510k_Submission.html';
     const examplePath = path.join(CONFIG.exampleDir, exampleFilename);
     await fs.copyFile(result.documentPath, examplePath);
@@ -821,7 +887,7 @@ async function generatePerfect510kExampleReport() {
   }
 }
 
-module.exports = {
+export default {
   initialize,
   assembleCERDocument,
   assemble510kDocument,
