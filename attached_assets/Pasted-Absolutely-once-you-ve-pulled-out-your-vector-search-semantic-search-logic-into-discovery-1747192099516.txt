@@ -1,0 +1,168 @@
+Absolutely—once you’ve pulled out your **vector‐search** & **semantic‐search** logic into `discoveryService.js`, there are several other bits you built for 510(k) that are **pure backend** and can seamlessly power your CER Generator too:
+
+---
+
+## 1. OpenAI Summarization Helpers
+
+In your 510(k) routes you likely called OpenAI to
+
+* Summarize literature abstracts
+* Generate draft substantial equivalence text
+* Craft compliance “fix suggestions”
+
+**What to reuse:**
+
+```js
+// server/services/aiService.js
+import OpenAI from 'openai';
+const openai = new OpenAI();
+
+// Summarize a block of text
+export async function summarizeText(text, maxTokens=200) {
+  const resp = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages: [{ role:'user', content:`Please summarize this:\n\n${text}` }],
+    max_tokens: maxTokens
+  });
+  return resp.choices[0].message.content;
+}
+
+// Generate persuasive boilerplate
+export async function generateBoilerplate(templateName, contextObj) {
+  const resp = await openai.chat.completions.create({
+    model: 'gpt-4o-mini',
+    messages:[{ role:'system', content:`Use the ${templateName} template.` },
+              { role:'user', content: JSON.stringify(contextObj) }],
+  });
+  return resp.choices[0].message.content;
+}
+```
+
+**How CER uses it:**
+
+* In your CER routes (e.g. `server/routes/cerRoutes.js`), import `summarizeText()` to **auto‐summarize** selected papers.
+* Import `generateBoilerplate()` to **draft CI sections** (e.g. Introduction, Methods) from your device profile + literature insights.
+
+---
+
+## 2. Compliance Rule Engine
+
+Your 510(k) “Pre‐Submission QA” probably lives in something like:
+
+```js
+// server/services/complianceService.js
+export async function runComplianceCheck(projectId, type='510k') { … }
+```
+
+**What to reuse:**
+
+* The core logic that takes a list of **checklist items** + **project data** and returns `{ passed:[], warnings:[], errors:[] }`.
+
+**How CER uses it:**
+
+* In `cerRoutes.js`, call `runComplianceCheck(cerProjectId, 'cer')` to enforce your **CER template rules** (e.g., “Abstract present,” “Key sections included,” “Reference count >5”).
+
+---
+
+## 3. PDF Ingestion & Metadata Extraction
+
+If you built file‐upload + metadata extraction for 510(k):
+
+```js
+// server/services/fileService.js
+export async function ingestPDF(fileBuffer) { 
+  // parse text, detect sections, return JSON
+}
+```
+
+**What to reuse:**
+
+* The **PDF→text** pipeline & **regex/ML** to split into sections.
+
+**How CER uses it:**
+
+* Let your CER workflow **auto‐ingest** uploaded clinical study reports, then feed each section into `summarizeText()` for bullet‐point summaries.
+
+---
+
+## 4. Regulatory Guidance Fetcher
+
+You may have an endpoint:
+
+```js
+// server/services/guidanceService.js
+export async function fetchFDAComplianceDocs(topic) { … }
+```
+
+**What to reuse:**
+
+* The logic that queries an internal table or calls an external API to bring back **guidance PDFs** or **URLs** relevant to a section.
+
+**How CER uses it:**
+
+* When building a CER Methodology section, call `fetchFDAComplianceDocs('statistical methods')` to show **live guidance links**.
+
+---
+
+### 5. Putting It Together
+
+1. **Create** (or update) a shared folder:
+
+   ```
+   server/services/
+     discoveryService.js      ← vector search
+     aiService.js             ← summarization & boilerplate
+     complianceService.js     ← generic RTA checks
+     fileService.js           ← PDF ingestion
+     guidanceService.js       ← guidance lookups
+   ```
+
+2. **Wire** your CER routes (`cerRoutes.js`):
+
+   ```js
+   import { searchLiterature }   from '../services/discoveryService.js';
+   import { summarizeText }     from '../services/aiService.js';
+   import { runComplianceCheck }from '../services/complianceService.js';
+   import { ingestPDF }         from '../services/fileService.js';
+   import { fetchFDAComplianceDocs } from '../services/guidanceService.js';
+
+   router.post('/cer/literature', async (req,res)=>{
+     const hits = await searchLiterature(req.body.query);
+     res.json({ hits });
+   });
+
+   router.post('/cer/summarize', async (req,res)=>{
+     const sum = await summarizeText(req.body.text);
+     res.json({ summary: sum });
+   });
+
+   router.post('/cer/compliance', async (req,res)=>{
+     const report = await runComplianceCheck(req.body.projectId,'cer');
+     res.json(report);
+   });
+
+   router.post('/cer/ingest-pdf', async (req,res)=>{
+     const sections = await ingestPDF(req.files.pdf.data);
+     res.json({ sections });
+   });
+
+   router.post('/cer/guidance', async (req,res)=>{
+     const docs = await fetchFDAComplianceDocs(req.body.topic);
+     res.json({ docs });
+   });
+   ```
+
+3. **Smoke‐test** both flows:
+
+   * 510(k) predicate search still works unchanged.
+   * CER literature search + summarization + compliance + PDF ingestion + guidance all call into the **same** shared services.
+
+---
+
+**Why this is great for clients**
+
+* **Consistency:** identical AI/DB logic for both CER & 510(k) → uniform quality.
+* **Maintainability:** one place to upgrade models or tweak SQL.
+* **No UI upheaval:** front‐ends stay exactly as is—just point at these new endpoints.
+
+Copy these steps verbatim into your Replit agent prompt to refactor your backend into a truly **unified** “Discovery & AI” layer.
