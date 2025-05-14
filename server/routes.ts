@@ -5,9 +5,15 @@ import path from 'path';
 
 // Document integration routes
 import googleDocsRoutes from './routes/googleDocs';
+import moduleIntegrationRoutes from './routes/moduleIntegrationRoutes';
 
 // Declare module types to avoid TypeScript errors
 declare module './routes/googleDocs' {
+  const router: express.Router;
+  export default router;
+}
+
+declare module './routes/moduleIntegrationRoutes' {
   const router: express.Router;
   export default router;
 }
@@ -364,6 +370,10 @@ export default function registerRoutes(app: Express): void {
   // Register the validation router
   app.use('/api/cer', cerValidationRouter);
   console.log('Temporary CER validation routes registered');
+  
+  // Register module integration routes
+  app.use('/api/integration', moduleIntegrationRoutes);
+  console.log('Module integration routes registered');
   
   // Error handler for API routes
   app.use('/api', (err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
