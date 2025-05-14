@@ -949,17 +949,25 @@ The package contains ${sections.length} sections including: ${sections.map(s => 
       
       const complianceScore = Math.max(0, baseScore - criticalPenalty - minorPenalty);
       
-      // Return comprehensive validation results
+      // Combine all issues into a single array with correct format
+      const allIssues = [
+        ...structureIssues.map((issue: any) => ({
+          severity: issue.severity === 'critical' ? 'error' : 'warning',
+          section: issue.section,
+          message: issue.message
+        })),
+        ...completenessIssues.map((issue: any) => ({
+          severity: issue.severity === 'critical' ? 'error' : 'warning',
+          section: issue.section,
+          message: issue.message
+        }))
+      ];
+      
+      // Return properly structured validation results
       return {
         valid: mandatoryIssues === 0,
-        manifestValid: manifestValid,
-        complianceScore,
-        structureIssues,
-        completenessIssues,
-        aiReport,
-        strictMode,
-        timestamp: new Date().toISOString(),
-        projectId
+        issues: allIssues,
+        score: complianceScore
       };
     } catch (error) {
       console.error('Error validating eSTAR package:', error);
