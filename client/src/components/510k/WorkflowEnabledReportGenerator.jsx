@@ -75,6 +75,38 @@ const WorkflowEnabledReportGenerator = ({
       setReportTitle(`510(k) Submission for ${deviceData.deviceName}`);
     }
   }, [deviceData]);
+  
+  // Fetch FDA compliance status
+  const fetchComplianceStatus = async () => {
+    setLoadingCompliance(true);
+    try {
+      const result = await FDA510kService.getComplianceStatus();
+      
+      if (result.success) {
+        setComplianceData(result);
+      } else {
+        toast({
+          title: 'Warning',
+          description: 'Could not load compliance data: ' + (result.errorMessage || 'Unknown error'),
+          variant: 'warning'
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching compliance status:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load compliance data: ' + (error.message || 'Unknown error'),
+        variant: 'destructive'
+      });
+    } finally {
+      setLoadingCompliance(false);
+    }
+  };
+  
+  // Load compliance data on component mount
+  useEffect(() => {
+    fetchComplianceStatus();
+  }, []);
 
   // Generate the regulatory report
   const handleGenerateReport = async () => {
