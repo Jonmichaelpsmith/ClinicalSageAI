@@ -63,18 +63,48 @@ export default function LitReviewPanel() {
         keywords: filters.keywordFilters
       };
       
-      // First try the combined literature search endpoint that aggregates results
+      // Import the API functions
       const literatureApi = await import('../../api/cer');
-      const results = await literatureApi.searchLiterature(searchQuery, apiFilters);
       
-      // If the combined endpoint returns results, use them
-      if (results && results.length > 0) {
-        setSearchResults(results);
-        setSearching(false);
-        return;
+      // Try the unified discovery service first
+      console.log('Attempting to use unified discovery service...');
+      try {
+        const unifiedResults = await literatureApi.searchUnifiedLiterature(searchQuery, {
+          limit: 15,
+          module: 'cer'
+        });
+        
+        // If the unified endpoint returns results, use them
+        if (unifiedResults && unifiedResults.length > 0) {
+          console.log('Using results from unified discovery service:', unifiedResults);
+          setSearchResults(unifiedResults);
+          setSearching(false);
+          return;
+        }
+      } catch (unifiedError) {
+        console.warn('Unified discovery service error:', unifiedError);
+        // Continue with fallback options
       }
       
-      // Otherwise, try individual source endpoints and combine results
+      // Fallback: Try the combined literature search endpoint
+      console.log('Falling back to combined literature search endpoint...');
+      try {
+        const results = await literatureApi.searchLiterature(searchQuery, apiFilters);
+        
+        // If the combined endpoint returns results, use them
+        if (results && results.length > 0) {
+          console.log('Using results from combined literature search:', results);
+          setSearchResults(results);
+          setSearching(false);
+          return;
+        }
+      } catch (combinedError) {
+        console.warn('Combined literature search error:', combinedError);
+        // Continue with individual source endpoints
+      }
+      
+      // Last resort: Try individual source endpoints and combine results
+      console.log('Trying individual source endpoints...');
       const [pubmedResults, ieeeResults] = await Promise.all([
         literatureApi.searchPubMed(searchQuery, apiFilters).catch(err => {
           console.warn('PubMed search error:', err);
@@ -92,6 +122,7 @@ export default function LitReviewPanel() {
         index === self.findIndex(t => t.id === item.id)
       );
       
+      console.log('Using combined individual source results:', uniqueResults);
       setSearchResults(uniqueResults);
     } catch (error) {
       console.error('Error searching literature:', error);
