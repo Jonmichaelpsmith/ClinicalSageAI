@@ -3,6 +3,7 @@ import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
 import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
 import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
+import LitReviewPanel from '@/components/cer/LitReviewPanel';
 import LiteratureMethodologyPanel from '@/components/cer/LiteratureMethodologyPanel';
 import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
 import CerAssistantPanel from '@/components/cer/CerAssistantPanel';
