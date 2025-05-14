@@ -1,355 +1,408 @@
 /**
  * FDA Compliance Tracker
  * 
- * This service tracks the progress and implementation status of the FDA-compliant
- * 510(k) submission system, including eSTAR integration, validation, and workflow
- * integration. It provides a structured way to track progress against the
- * implementation plan and maintain a log of validation results.
+ * This service tracks compliance status for FDA regulatory submissions,
+ * providing visibility into validation progress, errors, and completion status.
  */
 
-import fs from 'fs';
-import path from 'path';
+import { z } from 'zod';
+import { db } from '../db';
+import { fda510kProjects } from '../../shared/schema';
+import { eq } from 'drizzle-orm';
 
-export const implementationPhases = {
-  VALIDATION: {
-    id: 'validation',
-    name: 'eSTAR Validation',
-    steps: [
-      'Define validation criteria based on FDA eSTAR guidelines',
-      'Implement schema validation for document structure',
-      'Add content validation for required sections',
-      'Create validation for file attachments',
-      'Implement comprehensive validation reporting'
-    ]
-  },
-  PDF_GENERATION: {
-    id: 'pdf_generation',
-    name: 'FDA-Compliant PDF Generation',
-    steps: [
-      'Create PDF templates that comply with FDA requirements',
-      'Implement PDF/A compliance for archival standards',
-      'Add proper bookmarking and TOC generation',
-      'Ensure text searchability for all content',
-      'Implement digital signing capabilities'
-    ]
-  },
-  WORKFLOW_INTEGRATION: {
-    id: 'workflow_integration',
-    name: 'Workflow Integration',
-    steps: [
-      'Connect eSTAR validation to workflow engine',
-      'Add eSTAR generation step to submission workflow',
-      'Implement validation-based workflow branching',
-      'Create workflow notifications for validation issues',
-      'Add audit trail for validation history'
-    ]
-  },
-  TESTING: {
-    id: 'testing',
-    name: 'Comprehensive Testing',
-    steps: [
-      'Define test cases for all validation scenarios',
-      'Create automated tests for validation engine',
-      'Perform end-to-end workflow testing',
-      'Validate PDF output against FDA requirements',
-      'Load test with realistic submission volumes'
-    ]
-  }
-};
+// Define the compliance step record schema
+export const complianceStepSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  status: z.enum(['notStarted', 'inProgress', 'completed', 'error', 'skipped']),
+  completedAt: z.date().optional(),
+  errorDetails: z.string().optional(),
+  requirements: z.array(z.string()).optional(),
+  dependencies: z.array(z.string()).optional(),
+});
 
-export interface ValidationLogEntry {
-  timestamp: string;
-  projectId: string;
-  validationResult: {
-    valid: boolean;
-    score: number;
-    issueCount: number;
-    errorCount: number;
-    warningCount: number;
-  };
-  buildAttempted: boolean;
-  buildSuccessful: boolean | null;
-}
+export type ComplianceStep = z.infer<typeof complianceStepSchema>;
 
-export interface ImplementationProgress {
-  phases: {
-    [key: string]: {
-      name: string;
-      progress: number;
-      completedSteps: string[];
-      remainingSteps: string[];
-    }
-  };
-  overallProgress: number;
-  lastUpdated: string;
-}
+// Define the compliance tracker schema
+export const complianceTrackerSchema = z.object({
+  projectId: z.string(),
+  submissionType: z.enum(['510k', 'pma', 'de_novo']),
+  steps: z.array(complianceStepSchema),
+  lastUpdated: z.date(),
+  validationScore: z.number().min(0).max(100).optional(),
+  complianceScore: z.number().min(0).max(100).optional(),
+  issues: z.array(z.object({
+    stepId: z.string(),
+    severity: z.enum(['error', 'warning', 'info']),
+    message: z.string(),
+    code: z.string().optional(),
+    resolved: z.boolean().default(false),
+  })).optional(),
+});
+
+export type ComplianceTracker = z.infer<typeof complianceTrackerSchema>;
 
 /**
- * FDA Compliance Tracker
+ * FDA Compliance Tracker Service
  */
 export class FDAComplianceTracker {
-  private static readonly BASE_DIR = path.join(process.cwd(), 'logs');
-  private static readonly VALIDATION_LOG_PATH = path.join(FDAComplianceTracker.BASE_DIR, 'fda_validation_log.json');
-  private static readonly PROGRESS_LOG_PATH = path.join(FDAComplianceTracker.BASE_DIR, 'fda_implementation_progress.json');
-
   /**
-   * Initialize the compliance tracker
+   * Initialize a compliance tracker for a project
+   * 
+   * @param projectId The project ID
+   * @param submissionType The type of FDA submission
+   * @returns The initialized compliance tracker
    */
-  static async initialize(): Promise<void> {
-    try {
-      // Ensure logs directory exists
-      if (!fs.existsSync(this.BASE_DIR)) {
-        fs.mkdirSync(this.BASE_DIR, { recursive: true });
-      }
-
-      // Initialize validation log if it doesn't exist
-      if (!fs.existsSync(this.VALIDATION_LOG_PATH)) {
-        fs.writeFileSync(this.VALIDATION_LOG_PATH, JSON.stringify([], null, 2));
-      }
-
-      // Initialize progress log if it doesn't exist
-      if (!fs.existsSync(this.PROGRESS_LOG_PATH)) {
-        const initialProgress: ImplementationProgress = {
-          phases: Object.values(implementationPhases).reduce((acc, phase) => {
-            acc[phase.id] = {
-              name: phase.name,
-              progress: 0,
-              completedSteps: [],
-              remainingSteps: [...phase.steps]
-            };
-            return acc;
-          }, {}),
-          overallProgress: 0,
-          lastUpdated: new Date().toISOString()
-        };
-
-        fs.writeFileSync(this.PROGRESS_LOG_PATH, JSON.stringify(initialProgress, null, 2));
-      }
-    } catch (error) {
-      console.error('Error initializing FDA Compliance Tracker:', error);
-      throw error;
+  static async initialize(projectId: string, submissionType: '510k' | 'pma' | 'de_novo'): Promise<ComplianceTracker> {
+    // Check if project exists
+    const project = await db.query.fda510kProjects.findFirst({
+      where: eq(fda510kProjects.id, projectId)
+    });
+    
+    if (!project) {
+      throw new Error(`Project with ID ${projectId} does not exist`);
+    }
+    
+    // Define the default steps for each submission type
+    const steps: ComplianceStep[] = this.getDefaultSteps(submissionType);
+    
+    // Create the compliance tracker
+    const tracker: ComplianceTracker = {
+      projectId,
+      submissionType,
+      steps,
+      lastUpdated: new Date(),
+      validationScore: 0,
+      complianceScore: 0,
+      issues: [],
+    };
+    
+    // Store the tracker in the database (placeholder)
+    // In a real implementation, this would persist the tracker to a database
+    
+    return tracker;
+  }
+  
+  /**
+   * Get the default steps for a submission type
+   * 
+   * @param submissionType The type of FDA submission
+   * @returns Array of default compliance steps
+   */
+  private static getDefaultSteps(submissionType: '510k' | 'pma' | 'de_novo'): ComplianceStep[] {
+    switch (submissionType) {
+      case '510k':
+        return [
+          {
+            id: 'deviceInfo',
+            name: 'Device Information',
+            description: 'Basic device identification and classification information',
+            status: 'notStarted',
+            requirements: ['deviceName', 'deviceClass', 'regulationNumber'],
+          },
+          {
+            id: 'predicateDevice',
+            name: 'Predicate Device',
+            description: 'Identification of predicate device(s) for substantial equivalence',
+            status: 'notStarted',
+            requirements: ['predicateName', 'predicateKNumber'],
+            dependencies: ['deviceInfo'],
+          },
+          {
+            id: 'deviceDescription',
+            name: 'Device Description',
+            description: 'Comprehensive description of the device',
+            status: 'notStarted',
+            requirements: ['physicalDescription', 'performanceCharacteristics', 'specifications'],
+            dependencies: ['deviceInfo'],
+          },
+          {
+            id: 'substEquivalence',
+            name: 'Substantial Equivalence',
+            description: 'Comparison to predicate device(s)',
+            status: 'notStarted',
+            requirements: ['comparisonTable', 'differenceAnalysis'],
+            dependencies: ['predicateDevice', 'deviceDescription'],
+          },
+          {
+            id: 'performanceData',
+            name: 'Performance Data',
+            description: 'Performance testing and validation data',
+            status: 'notStarted',
+            requirements: ['benchData', 'clinicalData', 'biocompatibility'].filter(Boolean),
+            dependencies: ['deviceDescription'],
+          },
+          {
+            id: 'estarPackage',
+            name: 'eSTAR Package',
+            description: 'Electronic Submission Template And Resource (eSTAR) package',
+            status: 'notStarted',
+            requirements: ['fullSubmission', 'validationPassed'],
+            dependencies: [
+              'deviceInfo',
+              'predicateDevice',
+              'deviceDescription',
+              'substEquivalence',
+              'performanceData',
+            ],
+          },
+        ];
+      
+      case 'pma':
+        // PMA steps would be defined here
+        return [];
+        
+      case 'de_novo':
+        // De Novo steps would be defined here
+        return [];
+        
+      default:
+        return [];
     }
   }
-
+  
   /**
-   * Log a validation result
+   * Update a step in the compliance tracker
    * 
-   * @param projectId The 510(k) project ID
-   * @param validationResult The validation result to log
-   * @param buildAttempted Whether a build was attempted after validation
-   * @param buildSuccessful Whether the build was successful (if attempted)
+   * @param projectId The project ID
+   * @param stepId The step ID to update
+   * @param update The update object
+   * @returns The updated compliance tracker
    */
-  static async logValidation(
+  static async updateStep(
     projectId: string,
-    validationResult: any,
-    buildAttempted: boolean = false,
-    buildSuccessful: boolean | null = null
-  ): Promise<void> {
+    stepId: string,
+    update: Partial<ComplianceStep>
+  ): Promise<ComplianceTracker> {
+    // In a real implementation, this would fetch the tracker from a database,
+    // update the step, and persist the changes
+    
+    // For now, we'll return a mock tracker with the updated step
+    const tracker = await this.getTracker(projectId);
+    
+    if (!tracker) {
+      throw new Error(`Compliance tracker for project ${projectId} not found`);
+    }
+    
+    const stepIndex = tracker.steps.findIndex(step => step.id === stepId);
+    
+    if (stepIndex === -1) {
+      throw new Error(`Step ${stepId} not found in tracker for project ${projectId}`);
+    }
+    
+    // Update the step
+    tracker.steps[stepIndex] = {
+      ...tracker.steps[stepIndex],
+      ...update,
+      // If status is changing to completed, set completedAt
+      ...(update.status === 'completed' && !update.completedAt
+        ? { completedAt: new Date() }
+        : {}),
+    };
+    
+    // Update the tracker
+    tracker.lastUpdated = new Date();
+    
+    // Recalculate scores
+    this.recalculateScores(tracker);
+    
+    // Persist changes (placeholder)
+    
+    return tracker;
+  }
+  
+  /**
+   * Get a compliance tracker for a project
+   * 
+   * @param projectId The project ID
+   * @returns The compliance tracker or null if not found
+   */
+  static async getTracker(projectId: string): Promise<ComplianceTracker | null> {
+    // In a real implementation, this would fetch the tracker from a database
+    
+    // For now, we'll initialize a new tracker
     try {
-      // Ensure initialization
-      if (!fs.existsSync(this.VALIDATION_LOG_PATH)) {
-        await this.initialize();
+      // Check if project exists
+      const project = await db.query.fda510kProjects.findFirst({
+        where: eq(fda510kProjects.id, projectId)
+      });
+      
+      if (!project) {
+        return null;
       }
-
-      // Calculate derived metrics
-      const issues = validationResult.issues || [];
-      const errorCount = issues.filter(i => i.severity === 'error').length;
-      const warningCount = issues.filter(i => i.severity === 'warning').length;
-
-      // Create log entry
-      const entry: ValidationLogEntry = {
-        timestamp: new Date().toISOString(),
-        projectId,
-        validationResult: {
-          valid: validationResult.valid,
-          score: validationResult.score || 0,
-          issueCount: issues.length,
-          errorCount,
-          warningCount
-        },
-        buildAttempted,
-        buildSuccessful
-      };
-
-      // Read existing log
-      const logData = fs.readFileSync(this.VALIDATION_LOG_PATH, 'utf8');
-      const log = JSON.parse(logData);
-
-      // Add new entry
-      log.push(entry);
-
-      // Write updated log
-      fs.writeFileSync(this.VALIDATION_LOG_PATH, JSON.stringify(log, null, 2));
+      
+      // Create a mock tracker
+      return this.initialize(projectId, '510k');
     } catch (error) {
-      console.error('Error logging validation result:', error);
-      throw error;
+      console.error(`Error fetching compliance tracker for project ${projectId}:`, error);
+      return null;
     }
   }
-
+  
   /**
-   * Update implementation progress
+   * Add an issue to the compliance tracker
    * 
-   * @param phaseId The phase ID to update
-   * @param completedStep The step that was completed
-   * @param setProgress Override the calculated progress percentage (optional)
+   * @param projectId The project ID
+   * @param issue The issue to add
+   * @returns The updated compliance tracker
    */
-  static async updateProgress(
-    phaseId: string,
-    completedStep: string,
-    setProgress?: number
-  ): Promise<void> {
-    try {
-      // Ensure initialization
-      if (!fs.existsSync(this.PROGRESS_LOG_PATH)) {
-        await this.initialize();
-      }
-
-      // Read existing progress
-      const progressData = fs.readFileSync(this.PROGRESS_LOG_PATH, 'utf8');
-      const progress: ImplementationProgress = JSON.parse(progressData);
-
-      // Validate phase ID
-      if (!progress.phases[phaseId]) {
-        throw new Error(`Invalid phase ID: ${phaseId}`);
-      }
-
-      const phase = progress.phases[phaseId];
-
-      // Remove completed step from remaining and add to completed
-      const stepIndex = phase.remainingSteps.findIndex(s => s === completedStep);
-      if (stepIndex >= 0) {
-        phase.remainingSteps.splice(stepIndex, 1);
-        phase.completedSteps.push(completedStep);
-      } else if (!phase.completedSteps.includes(completedStep)) {
-        // If not in remaining, but also not in completed, just add it to completed
-        phase.completedSteps.push(completedStep);
-      }
-
-      // Calculate phase progress
-      const totalSteps = phase.completedSteps.length + phase.remainingSteps.length;
-      phase.progress = setProgress !== undefined ? 
-        setProgress : 
-        Math.round((phase.completedSteps.length / totalSteps) * 100);
-
-      // Calculate overall progress
-      const phaseCount = Object.keys(progress.phases).length;
-      const totalProgress = Object.values(progress.phases).reduce((sum, p) => sum + p.progress, 0);
-      progress.overallProgress = Math.round(totalProgress / phaseCount);
-
-      // Update timestamp
-      progress.lastUpdated = new Date().toISOString();
-
-      // Write updated progress
-      fs.writeFileSync(this.PROGRESS_LOG_PATH, JSON.stringify(progress, null, 2));
-    } catch (error) {
-      console.error('Error updating implementation progress:', error);
-      throw error;
+  static async addIssue(
+    projectId: string,
+    issue: {
+      stepId: string;
+      severity: 'error' | 'warning' | 'info';
+      message: string;
+      code?: string;
     }
+  ): Promise<ComplianceTracker> {
+    const tracker = await this.getTracker(projectId);
+    
+    if (!tracker) {
+      throw new Error(`Compliance tracker for project ${projectId} not found`);
+    }
+    
+    // Add the issue
+    tracker.issues = [
+      ...(tracker.issues || []),
+      {
+        ...issue,
+        resolved: false,
+      },
+    ];
+    
+    // Update the tracker
+    tracker.lastUpdated = new Date();
+    
+    // Recalculate scores
+    this.recalculateScores(tracker);
+    
+    // Persist changes (placeholder)
+    
+    return tracker;
   }
-
+  
   /**
-   * Get current implementation progress
+   * Resolve an issue in the compliance tracker
    * 
-   * @returns Promise with implementation progress
+   * @param projectId The project ID
+   * @param issueIndex The index of the issue to resolve
+   * @returns The updated compliance tracker
    */
-  static async getProgress(): Promise<ImplementationProgress> {
-    try {
-      // Ensure initialization
-      if (!fs.existsSync(this.PROGRESS_LOG_PATH)) {
-        await this.initialize();
-      }
-
-      // Read existing progress
-      const progressData = fs.readFileSync(this.PROGRESS_LOG_PATH, 'utf8');
-      return JSON.parse(progressData);
-    } catch (error) {
-      console.error('Error getting implementation progress:', error);
-      throw error;
+  static async resolveIssue(
+    projectId: string,
+    issueIndex: number
+  ): Promise<ComplianceTracker> {
+    const tracker = await this.getTracker(projectId);
+    
+    if (!tracker) {
+      throw new Error(`Compliance tracker for project ${projectId} not found`);
     }
+    
+    if (!tracker.issues || issueIndex >= tracker.issues.length) {
+      throw new Error(`Issue index ${issueIndex} out of bounds`);
+    }
+    
+    // Mark the issue as resolved
+    tracker.issues[issueIndex].resolved = true;
+    
+    // Update the tracker
+    tracker.lastUpdated = new Date();
+    
+    // Recalculate scores
+    this.recalculateScores(tracker);
+    
+    // Persist changes (placeholder)
+    
+    return tracker;
   }
-
+  
   /**
-   * Get validation log entries, optionally filtered by project
+   * Recalculate compliance and validation scores
    * 
-   * @param projectId Optional project ID to filter by
-   * @param limit Optional limit on the number of entries to return
-   * @returns Promise with array of validation log entries
+   * @param tracker The compliance tracker to update
    */
-  static async getValidationLog(
-    projectId?: string,
-    limit?: number
-  ): Promise<ValidationLogEntry[]> {
-    try {
-      // Ensure initialization
-      if (!fs.existsSync(this.VALIDATION_LOG_PATH)) {
-        await this.initialize();
-      }
-
-      // Read existing log
-      const logData = fs.readFileSync(this.VALIDATION_LOG_PATH, 'utf8');
-      let log: ValidationLogEntry[] = JSON.parse(logData);
-
-      // Filter by project if specified
-      if (projectId) {
-        log = log.filter(entry => entry.projectId === projectId);
-      }
-
-      // Sort by timestamp (newest first)
-      log.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-
-      // Apply limit if specified
-      if (limit && limit > 0) {
-        log = log.slice(0, limit);
-      }
-
-      return log;
-    } catch (error) {
-      console.error('Error getting validation log:', error);
-      throw error;
+  private static recalculateScores(tracker: ComplianceTracker): void {
+    // Calculate validation score
+    const totalSteps = tracker.steps.length;
+    const completedSteps = tracker.steps.filter(step => step.status === 'completed').length;
+    
+    tracker.validationScore = Math.round((completedSteps / totalSteps) * 100);
+    
+    // Calculate compliance score based on issues
+    if (!tracker.issues || tracker.issues.length === 0) {
+      tracker.complianceScore = 100;
+      return;
     }
+    
+    const unresolvedErrors = tracker.issues.filter(
+      issue => !issue.resolved && issue.severity === 'error'
+    ).length;
+    
+    const unresolvedWarnings = tracker.issues.filter(
+      issue => !issue.resolved && issue.severity === 'warning'
+    ).length;
+    
+    // Weight errors more heavily than warnings
+    const totalPenalty = (unresolvedErrors * 15) + (unresolvedWarnings * 5);
+    tracker.complianceScore = Math.max(0, Math.min(100, 100 - totalPenalty));
   }
-
+  
   /**
-   * Mark all steps in a phase as completed
+   * Validate a submission for completeness
    * 
-   * @param phaseId The phase ID to mark as complete
+   * @param projectId The project ID
+   * @returns The validation result
    */
-  static async completePhase(phaseId: string): Promise<void> {
-    try {
-      // Ensure initialization
-      if (!fs.existsSync(this.PROGRESS_LOG_PATH)) {
-        await this.initialize();
-      }
-
-      // Read existing progress
-      const progressData = fs.readFileSync(this.PROGRESS_LOG_PATH, 'utf8');
-      const progress: ImplementationProgress = JSON.parse(progressData);
-
-      // Validate phase ID
-      if (!progress.phases[phaseId]) {
-        throw new Error(`Invalid phase ID: ${phaseId}`);
-      }
-
-      const phase = progress.phases[phaseId];
-
-      // Move all remaining steps to completed
-      phase.completedSteps = [...phase.completedSteps, ...phase.remainingSteps];
-      phase.remainingSteps = [];
-      phase.progress = 100;
-
-      // Calculate overall progress
-      const phaseCount = Object.keys(progress.phases).length;
-      const totalProgress = Object.values(progress.phases).reduce((sum, p) => sum + p.progress, 0);
-      progress.overallProgress = Math.round(totalProgress / phaseCount);
-
-      // Update timestamp
-      progress.lastUpdated = new Date().toISOString();
-
-      // Write updated progress
-      fs.writeFileSync(this.PROGRESS_LOG_PATH, JSON.stringify(progress, null, 2));
-    } catch (error) {
-      console.error('Error completing phase:', error);
-      throw error;
+  static async validateSubmission(projectId: string): Promise<{
+    valid: boolean;
+    score: number;
+    issues: Array<{
+      stepId: string;
+      severity: 'error' | 'warning' | 'info';
+      message: string;
+    }>;
+  }> {
+    const tracker = await this.getTracker(projectId);
+    
+    if (!tracker) {
+      throw new Error(`Compliance tracker for project ${projectId} not found`);
     }
+    
+    // Check for incomplete required steps
+    const incompleteSteps = tracker.steps.filter(
+      step => step.status !== 'completed' && step.status !== 'skipped'
+    );
+    
+    const issues = incompleteSteps.map(step => ({
+      stepId: step.id,
+      severity: 'error' as const,
+      message: `Step "${step.name}" is not complete`,
+    }));
+    
+    // Add unresolved tracker issues
+    if (tracker.issues) {
+      const unresolvedIssues = tracker.issues
+        .filter(issue => !issue.resolved)
+        .map(issue => ({
+          stepId: issue.stepId,
+          severity: issue.severity,
+          message: issue.message,
+        }));
+      
+      issues.push(...unresolvedIssues);
+    }
+    
+    // Calculate validation score
+    const score = tracker.validationScore || 0;
+    
+    // A submission is valid if score is 100 and no error issues
+    const valid = score === 100 && !issues.some(issue => issue.severity === 'error');
+    
+    return {
+      valid,
+      score,
+      issues,
+    };
   }
 }
