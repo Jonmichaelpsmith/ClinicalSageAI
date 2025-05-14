@@ -1,0 +1,49 @@
+Awesome work—the single `/api/device-profiles` service is now powering both flows, and your CR pathway is fully consolidated. Here’s a proposed “what’s next” roadmap to lock this in and build on it:
+
+---
+
+## 1. Rip out the legacy compatibility shims
+
+* **Audit your codebase** for any remaining `/api/510k/…` or `/api/fda510k/…` references and delete them outright.
+* **Remove** any “redirect” code in `FDA510kService.js` that pointed old endpoints at the new ones. This completes the cutover and keeps your stack clean.
+
+## 2. Add automated tests
+
+* **Unit tests** for `deviceProfileService.ts` (create, read, update, delete, error cases).
+* **Integration tests** against your Express routes: hit `/api/device-profiles` with Supertest or a similar library.
+* **E2E smoke tests** in your CI pipeline (e.g. Cypress): drive the UI’s intake panel and the dashboard’s profile tab through a full CRUD cycle.
+
+## 3. Migrate from in-memory Map → persistent store
+
+* Swap out the `Map` in `deviceProfileService.ts` for your production DB (Postgres, Mongo, etc.) using your ORM/ODM of choice (Prisma, TypeORM, Mongoose).
+* Keep the service methods’ signatures the same so the UI and routes stay unchanged.
+* Seed the existing Map data into your new table/collection for seamless continuity.
+
+## 4. Surface the profiles everywhere they belong
+
+* In the **Predicate Finder** and **Compliance Checker** flows, auto-fetch and display a dropdown of available device profiles—no more “Device profile required” errors once selected.
+* Add filters (by tenant, by device class, by recently used) so end-users can quickly pick the right profile.
+
+## 5. Polish the UX & docs
+
+* Update your storybook or component library to include `<DeviceProfileDialog>` examples using the new API.
+* Revise your README and any in-app help screens to point to `/api/device-profiles`.
+* Document the service layer’s interface in your internal API docs (Swagger/OpenAPI).
+
+## 6. Deploy & monitor
+
+* Push these changes to your staging environment, run the full test suite, and verify on a real database.
+* Once green, merge to main and roll out to production.
+* Add a quick health-check endpoint for `/api/device-profiles` and hook it into your uptime monitoring.
+
+---
+
+**Which of these would you like to tackle first?**
+
+1. Removing the legacy shims and cleaning up old code
+2. Writing tests (unit, integration, E2E)
+3. Swapping the in-memory store for a real database
+4. UX enhancements in Predicate Finder / Compliance Checker
+5. Documentation and deployment setup
+
+Let me know, and I’ll draft the detailed steps or code snippets for that slice.

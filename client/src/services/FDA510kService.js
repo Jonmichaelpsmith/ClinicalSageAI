@@ -506,46 +506,8 @@ class FDA510kService {
     }
   };
   
-  /**
-   * Legacy method - redirects to the new DeviceProfileAPI
-   * @deprecated Use DeviceProfileAPI instead
-   */
-  async saveDeviceProfile(deviceProfileData) {
-    try {
-      if (deviceProfileData.id) {
-        return await this.DeviceProfileAPI.update(deviceProfileData.id, deviceProfileData);
-      } else {
-        return await this.DeviceProfileAPI.create(deviceProfileData);
-      }
-    } catch (error) {
-      console.error('Error saving device profile:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Legacy method - redirects to the new DeviceProfileAPI 
-   * @deprecated Use DeviceProfileAPI instead
-   */
-  async getDeviceProfiles(organizationId) {
-    return this.DeviceProfileAPI.list(organizationId);
-  }
-  
-  /**
-   * Legacy method - redirects to the new DeviceProfileAPI
-   * @deprecated Use DeviceProfileAPI instead
-   */
-  async getDeviceProfile(profileId, organizationId) {
-    return this.DeviceProfileAPI.get(profileId, organizationId);
-  }
-  
-  /**
-   * Legacy method - redirects to the new DeviceProfileAPI
-   * @deprecated Use DeviceProfileAPI instead
-   */
-  async deleteDeviceProfile(profileId, organizationId) {
-    return this.DeviceProfileAPI.delete(profileId, organizationId);
-  }
+  // Legacy device profile methods have been removed.
+  // Use DeviceProfileAPI instead for all device profile operations.
 }
 
 // Export a singleton instance
