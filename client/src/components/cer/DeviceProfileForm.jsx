@@ -147,7 +147,7 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
               )}
             />
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               <FormField
                 control={form.control}
                 name="modelNumber"
@@ -157,7 +157,7 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
                     <FormControl>
                       <Input id="model" placeholder="e.g. CM3000-X" {...field} />
                     </FormControl>
-                    <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
+                    <FormDescription className="text-xs text-slate-600 mt-1 mb-3">
                       Device model or catalog number
                     </FormDescription>
                     <FormMessage />
@@ -174,7 +174,7 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
                     <FormControl>
                       <Input id="manufacturer" placeholder="e.g. MedTech Industries" {...field} />
                     </FormControl>
-                    <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
+                    <FormDescription className="text-xs text-slate-600 mt-1 mb-3">
                       Legal manufacturer of the device
                     </FormDescription>
                     <FormMessage />
@@ -204,13 +204,15 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
                       <SelectItem value="III" className="hover:bg-blue-50">Class III</SelectItem>
                     </SelectContent>
                   </Select>
-                  <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
+                  <FormDescription className="text-xs text-slate-600 mt-1 mb-3">
                     FDA regulatory classification of the device
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            
+            <div className="h-4"></div>
             
             <FormField
               control={form.control}
@@ -366,7 +368,7 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
               )}
             />
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
               <FormField
                 control={form.control}
                 name="productCode"
