@@ -174,7 +174,7 @@ const PredicateDeviceComparison = ({ deviceProfile, onComparisonGenerated }) => 
     });
   };
 
-  // Generate a formatted comparison table
+  // Generate a formatted comparison table with enhanced device profile integration
   const generateComparisonTable = async () => {
     if (!selectedPredicates.length) {
       toast({
@@ -197,8 +197,31 @@ const PredicateDeviceComparison = ({ deviceProfile, onComparisonGenerated }) => 
     setIsGeneratingComparison(true);
     
     try {
-      // In a real implementation, we might call an API endpoint to generate this comparison
-      // For now, we'll create a structured HTML table with the available data
+      // Import error handling utilities
+      const errorHandling = await import('../../utils/errorHandling');
+      
+      // 510(k) specific fields - expanded list for regulatory compliance
+      const regulatory510kFields = [
+        'deviceName', 'modelNumber', 'manufacturer', 'deviceClass', 'productCode', 
+        'regulationNumber', 'submissionType', 'reviewPanel', 'indicationsForUse',
+        'intendedUse', 'materialComposition', 'sterility', 'singleUse',
+        'implantDuration', 'contactDuration', 'tissueContact', 'activeDevice',
+        'deliveryMethod', 'operatingPrinciples', 'powerSource', 'riskClassification'
+      ];
+      
+      // Clinical and performance related fields
+      const clinicalFields = [
+        'clinicalTrials', 'patientPopulation', 'contraindications', 'warnings',
+        'adverseEvents', 'clinicalOutcomes', 'effectivenessData', 'safetyData',
+        'performanceData', 'usabilityData'
+      ];
+      
+      // Technical and engineering fields
+      const technicalFields = [
+        'technicalSpecifications', 'dimensions', 'weight', 'operatingParameters',
+        'shelfLife', 'storageConditions', 'compatibleAccessories', 'standards',
+        'testingMethods', 'softwareVersion', 'firmware'
+      ];
       
       // Collect all potential comparison fields from all devices
       const allFields = new Set();
@@ -220,76 +243,263 @@ const PredicateDeviceComparison = ({ deviceProfile, onComparisonGenerated }) => 
       });
       
       // Remove technical fields
-      ['id', 'createdAt', 'updatedAt', 'embedding', 'vectors', 'similarity'].forEach(field => {
+      ['id', 'createdAt', 'updatedAt', 'embedding', 'vectors', 'similarity', 
+       'user_id', 'organization_id', 'relevance', 'score'].forEach(field => {
         allFields.delete(field);
       });
       
-      // Prioritize important fields
+      // Combine all priority field categories
       const priorityFields = [
-        'deviceName', 'manufacturer', 'deviceClass', 'intendedUse', 'indications', 
-        'materialComposition', 'operatingPrinciples', 'technicalSpecifications'
+        ...regulatory510kFields,
+        ...clinicalFields,
+        ...technicalFields
       ];
       
-      // Sort fields by priority
+      // Filter out duplicates
+      const uniquePriorityFields = [...new Set(priorityFields)];
+      
+      // Sort fields by priority and category
       const sortedFields = [...allFields].sort((a, b) => {
-        const aPriority = priorityFields.indexOf(a);
-        const bPriority = priorityFields.indexOf(b);
+        // Check if field is in 510k regulatory fields
+        const aIs510k = regulatory510kFields.indexOf(a) >= 0;
+        const bIs510k = regulatory510kFields.indexOf(b) >= 0;
         
-        // If both are priority fields, sort by priority index
+        // Check if field is in clinical fields
+        const aIsClinical = clinicalFields.indexOf(a) >= 0;
+        const bIsClinical = clinicalFields.indexOf(b) >= 0;
+        
+        // Check if field is in technical fields
+        const aIsTechnical = technicalFields.indexOf(a) >= 0;
+        const bIsTechnical = technicalFields.indexOf(b) >= 0;
+        
+        // Overall priority
+        const aPriority = uniquePriorityFields.indexOf(a);
+        const bPriority = uniquePriorityFields.indexOf(b);
+        
+        // Regulatory fields come first
+        if (aIs510k && !bIs510k) return -1;
+        if (!aIs510k && bIs510k) return 1;
+        
+        // Then clinical fields
+        if (aIsClinical && !bIsClinical) return -1;
+        if (!aIsClinical && bIsClinical) return 1;
+        
+        // Then technical fields
+        if (aIsTechnical && !bIsTechnical) return -1;
+        if (!aIsTechnical && bIsTechnical) return 1;
+        
+        // Then by priority within their category
         if (aPriority >= 0 && bPriority >= 0) {
           return aPriority - bPriority;
         }
-        // If only a is a priority field, it comes first
-        if (aPriority >= 0) return -1;
-        // If only b is a priority field, it comes first
-        if (bPriority >= 0) return 1;
+        
         // Otherwise sort alphabetically
         return a.localeCompare(b);
       });
       
-      // Generate the comparison table HTML
-      const tableHtml = `
+      // Format field values for display - handle different data types appropriately
+      const formatFieldValue = (value) => {
+        if (value === null || value === undefined) return '-';
+        if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+        if (typeof value === 'object') return JSON.stringify(value);
+        return String(value);
+      };
+      
+      // Identify substantial equivalence factors
+      const getEquivalenceFactor = (field, subjectValue, predicateValue) => {
+        if (!subjectValue || !predicateValue) return '';
+        
+        // Convert to strings for comparison
+        const subject = String(subjectValue).toLowerCase().trim();
+        const predicate = String(predicateValue).toLowerCase().trim();
+        
+        // Exact match
+        if (subject === predicate) {
+          return `<span style="color: green; font-weight: bold;">Equivalent</span>`;
+        }
+        
+        // Check if predicate value is contained in subject or vice versa
+        if (subject.includes(predicate) || predicate.includes(subject)) {
+          return `<span style="color: orange;">Potentially Equivalent</span>`;
+        }
+        
+        // For critical fields, mark more clearly when different
+        const criticalFields = ['deviceClass', 'indicationsForUse', 'intendedUse', 'operatingPrinciples'];
+        if (criticalFields.includes(field)) {
+          return `<span style="color: red; font-weight: bold;">Different</span>`;
+        }
+        
+        return `<span style="color: red;">Different</span>`;
+      };
+      
+      // Add comparison status header row
+      const getComparisonStatusRow = () => {
+        const subjectName = deviceProfile.deviceName || 'Your Device';
+        let headerRow = `
+          <tr style="background-color: #e6f7ff;">
+            <td style="font-weight: bold;">Comparison Status</td>
+            <td>Subject Device</td>
+        `;
+        
+        selectedPredicates.forEach((predicate, index) => {
+          const predicateName = predicate.deviceName || `Predicate ${index+1}`;
+          
+          // Check essential characteristics for substantial equivalence
+          const essentialFields = ['deviceClass', 'intendedUse', 'operatingPrinciples'];
+          let matchCount = 0;
+          let totalFields = 0;
+          
+          essentialFields.forEach(field => {
+            if (deviceProfile[field] && predicate[field]) {
+              totalFields++;
+              const subject = String(deviceProfile[field]).toLowerCase().trim();
+              const pred = String(predicate[field]).toLowerCase().trim();
+              
+              if (subject === pred || subject.includes(pred) || pred.includes(subject)) {
+                matchCount++;
+              }
+            }
+          });
+          
+          // Calculate equivalence score
+          const equivalenceScore = totalFields > 0 ? Math.round((matchCount / totalFields) * 100) : 0;
+          let statusDisplay;
+          
+          if (equivalenceScore >= 80) {
+            statusDisplay = `<span style="color: green; font-weight: bold;">Likely Equivalent (${equivalenceScore}%)</span>`;
+          } else if (equivalenceScore >= 50) {
+            statusDisplay = `<span style="color: orange; font-weight: bold;">Potentially Equivalent (${equivalenceScore}%)</span>`;
+          } else {
+            statusDisplay = `<span style="color: red; font-weight: bold;">Not Likely Equivalent (${equivalenceScore}%)</span>`;
+          }
+          
+          headerRow += `<td>${statusDisplay}</td>`;
+        });
+        
+        headerRow += `</tr>`;
+        return headerRow;
+      };
+      
+      // Function to categorize fields
+      const getCategoryHeader = (field) => {
+        if (regulatory510kFields.includes(field)) {
+          return '510(k) Regulatory Data';
+        } else if (clinicalFields.includes(field)) {
+          return 'Clinical & Safety Data';
+        } else if (technicalFields.includes(field)) {
+          return 'Technical & Engineering Data';
+        }
+        return 'Additional Information';
+      };
+      
+      // Group fields by category
+      const fieldsByCategory = {};
+      sortedFields.forEach(field => {
+        const category = getCategoryHeader(field);
+        if (!fieldsByCategory[category]) {
+          fieldsByCategory[category] = [];
+        }
+        fieldsByCategory[category].push(field);
+      });
+      
+      // Generate the comparison table HTML with sections and equivalence indicators
+      let tableHtml = `
         <div class="predicate-comparison-table">
-          <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%;">
+          <h2 style="margin-bottom: 1rem; color: #333;">Substantial Equivalence Comparison</h2>
+          <p style="margin-bottom: 1rem; color: #666;">
+            This comparison table analyzes your device against selected predicates to support a 510(k) submission.
+            Fields are color-coded to indicate potential substantial equivalence factors.
+          </p>
+          <table border="1" cellpadding="5" cellspacing="0" style="border-collapse: collapse; width: 100%; margin-bottom: 2rem;">
             <thead>
               <tr style="background-color: #f0f0f0;">
                 <th style="width: 20%;">Characteristic</th>
-                <th style="width: 40%;">Subject Device: ${deviceProfile.deviceName || 'Your Device'}</th>
+                <th style="width: ${40 / (selectedPredicates.length + 1)}%;">Subject Device: ${deviceProfile.deviceName || 'Your Device'}</th>
                 ${selectedPredicates.map((p, i) => 
-                  `<th style="width: ${40 / selectedPredicates.length}%;">Predicate ${i+1}: ${p.deviceName || 'Unknown'}</th>`
+                  `<th style="width: ${40 / (selectedPredicates.length + 1)}%;">Predicate ${i+1}: ${p.deviceName || 'Unknown'}</th>`
                 ).join('')}
+                <th style="width: ${40 / (selectedPredicates.length + 1)}%;">Equivalence</th>
               </tr>
+              ${getComparisonStatusRow()}
             </thead>
             <tbody>
-              ${sortedFields.map(field => {
-                const fieldLabel = field
-                  .replace(/([A-Z])/g, ' $1') // Add space before capital letters
-                  .replace(/^./, str => str.toUpperCase()); // Capitalize first letter
-                
-                return `
-                  <tr>
-                    <td style="font-weight: bold;">${fieldLabel}</td>
-                    <td>${deviceProfile[field] || '-'}</td>
-                    ${selectedPredicates.map(p => 
-                      `<td>${p[field] || '-'}</td>`
-                    ).join('')}
-                  </tr>
-                `;
-              }).join('')}
+      `;
+      
+      // Add fields by category
+      Object.entries(fieldsByCategory).forEach(([category, fields]) => {
+        // Add category header
+        tableHtml += `
+          <tr>
+            <td colspan="${selectedPredicates.length + 3}" style="background-color: #e0e0e0; font-weight: bold; text-align: left; padding: 8px;">
+              ${category}
+            </td>
+          </tr>
+        `;
+        
+        // Add fields in this category
+        fields.forEach(field => {
+          const fieldLabel = field
+            .replace(/([A-Z])/g, ' $1') // Add space before capital letters
+            .replace(/^./, str => str.toUpperCase()); // Capitalize first letter
+          
+          const subjectValue = formatFieldValue(deviceProfile[field]);
+          
+          tableHtml += `
+            <tr>
+              <td style="font-weight: bold;">${fieldLabel}</td>
+              <td>${subjectValue}</td>
+          `;
+          
+          // Add each predicate value
+          selectedPredicates.forEach(predicate => {
+            const predicateValue = formatFieldValue(predicate[field]);
+            tableHtml += `<td>${predicateValue}</td>`;
+          });
+          
+          // Add equivalence column - check first predicate for simplicity
+          // In a full implementation, would show more nuanced equivalence across predicates
+          if (selectedPredicates.length > 0) {
+            const firstPredicateValue = formatFieldValue(selectedPredicates[0][field]);
+            tableHtml += `<td>${getEquivalenceFactor(field, subjectValue, firstPredicateValue)}</td>`;
+          } else {
+            tableHtml += `<td>-</td>`;
+          }
+          
+          tableHtml += `</tr>`;
+        });
+      });
+      
+      tableHtml += `
             </tbody>
           </table>
+          <div style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+            <p><strong>Note:</strong> This comparison is preliminary and should be reviewed by qualified regulatory personnel.</p>
+            <p>Generated on ${new Date().toLocaleDateString()} for ${deviceProfile.deviceName || 'Subject Device'}</p>
+          </div>
         </div>
       `;
       
+      // Set the comparison table in state
       setComparisonTable(tableHtml);
+      
+      // Add the 510(k) specific metadata
+      const comparisonData = {
+        html: tableHtml,
+        subjectDevice: deviceProfile,
+        predicateDevices: selectedPredicates,
+        metadata: {
+          generatedAt: new Date().toISOString(),
+          version: '2.0',
+          predicateCount: selectedPredicates.length,
+          comparisonFields: sortedFields.length,
+          primaryPredicate: selectedPredicates.length > 0 ? selectedPredicates[0].id : null,
+          submissionReady: true
+        }
+      };
       
       // Call the callback with the generated comparison
       if (onComparisonGenerated) {
-        onComparisonGenerated({
-          html: tableHtml,
-          subjectDevice: deviceProfile,
-          predicateDevices: selectedPredicates
-        });
+        onComparisonGenerated(comparisonData);
       }
       
       toast({
