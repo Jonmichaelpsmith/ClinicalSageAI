@@ -6,7 +6,7 @@
  */
 
 import { db } from '../db/connection';
-import { and, eq, inArray, desc, isNull, ne, or } from 'drizzle-orm';
+import { and, eq, inArray, desc, isNull, ne, or, sql } from 'drizzle-orm';
 import { 
   workflowTemplates,
   workflowSteps,
