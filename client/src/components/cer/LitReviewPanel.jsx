@@ -25,15 +25,22 @@ import {
   Beaker,
   Database,
   FileCheck,
-  FileWarning
+  FileWarning,
+  Layers,
+  Shield
 } from 'lucide-react';
 
 export default function LitReviewPanel() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [deviceDescription, setDeviceDescription] = useState('');
   const [currentTab, setCurrentTab] = useState('search');
+  const [searchType, setSearchType] = useState('literature'); // 'literature' or 'predicates'
   const [searchResults, setSearchResults] = useState([]);
+  const [predicateResults, setPredicateResults] = useState([]);
   const [selectedArticles, setSelectedArticles] = useState([]);
+  const [selectedPredicates, setSelectedPredicates] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [searchingPredicates, setSearchingPredicates] = useState(false);
   const [generatingReview, setGeneratingReview] = useState(false);
   const [reviewGenerated, setReviewGenerated] = useState(false);
   const [filters, setFilters] = useState({
@@ -45,8 +52,20 @@ export default function LitReviewPanel() {
     keywordFilters: ['efficacy', 'safety', 'clinical trial']
   });
 
+  // Handle switching between literature search and predicate search
+  const handleSearchTypeChange = (type) => {
+    setSearchType(type);
+    setSearchResults([]);
+    setPredicateResults([]);
+  };
+
   // Real API call for literature search
   const handleSearch = async () => {
+    if (searchType === 'predicates') {
+      handlePredicateSearch();
+      return;
+    }
+    
     if (!searchQuery.trim()) return;
     
     setSearching(true);
@@ -134,12 +153,48 @@ export default function LitReviewPanel() {
       setSearching(false);
     }
   };
+  
+  // Handle predicate device search using the unified discovery service
+  const handlePredicateSearch = async () => {
+    if (!deviceDescription.trim()) return;
+    
+    setSearchingPredicates(true);
+    setPredicateResults([]);
+    
+    try {
+      // Import the API functions
+      const cerApi = await import('../../api/cer');
+      
+      console.log('Searching for predicate devices...');
+      const predicates = await cerApi.findPredicateDevices(deviceDescription, {
+        limit: 10,
+        module: 'cer' // Use 'cer' module format
+      });
+      
+      console.log('Predicate device search results:', predicates);
+      setPredicateResults(predicates);
+    } catch (error) {
+      console.error('Error searching for predicate devices:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'An error occurred during predicate search';
+      console.error(errorMessage);
+    } finally {
+      setSearchingPredicates(false);
+    }
+  };
 
   const toggleArticleSelection = (article) => {
     if (selectedArticles.some(a => a.id === article.id)) {
       setSelectedArticles(selectedArticles.filter(a => a.id !== article.id));
     } else {
       setSelectedArticles([...selectedArticles, article]);
+    }
+  };
+  
+  const togglePredicateSelection = (predicate) => {
+    if (selectedPredicates.some(p => p.id === predicate.id)) {
+      setSelectedPredicates(selectedPredicates.filter(p => p.id !== predicate.id));
+    } else {
+      setSelectedPredicates([...selectedPredicates, predicate]);
     }
   };
 
