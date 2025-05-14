@@ -35,15 +35,15 @@ const DeviceProfileDialog = ({
       let result;
       
       if (existingData?.id) {
-        // Update existing profile
-        result = await updateDeviceProfile(existingData.id, data);
+        // Update existing profile using unified DeviceProfileAPI
+        result = await FDA510kService.DeviceProfileAPI.update(existingData.id, data);
         toast({
           title: 'Device profile updated',
           description: 'Your device profile has been successfully updated.',
         });
       } else {
-        // Create new profile
-        result = await postDeviceProfile(data);
+        // Create new profile using unified DeviceProfileAPI
+        result = await FDA510kService.DeviceProfileAPI.create(data);
         toast({
           title: 'Device profile created',
           description: 'Your device profile has been successfully created.',
