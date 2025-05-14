@@ -1,0 +1,185 @@
+Alright—let’s swap out the in‐memory `Map` for a real Postgres database using Prisma. This will give you true persistence and multi-tenant durability. Follow these detailed steps in Replit:
+
+---
+
+## 1. Provision a Postgres Database
+
+If you don’t already have a Postgres instance, spin one up. You can use Heroku Postgres, Supabase, or Docker locally. At the end you’ll need a `DATABASE_URL`, for example:
+
+```
+postgresql://username:password@host:port/dbname?schema=public
+```
+
+Save that URL in your Replit Secrets (or `.env`) under:
+
+```
+DATABASE_URL="postgresql://…"
+```
+
+---
+
+## 2. Install Prisma
+
+In your Replit shell, run:
+
+```bash
+npm install prisma @prisma/client
+npx prisma init
+```
+
+This creates a `prisma/` folder and a `.env` (if you don’t already have one).
+
+---
+
+## 3. Define Your DeviceProfile Schema
+
+Open `prisma/schema.prisma` and replace its contents (or add) with:
+
+```prisma
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model DeviceProfile {
+  id             String   @id @default(uuid())
+  name           String
+  classification String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  tenantId       String?  // if you need multi-tenancy
+}
+```
+
+---
+
+## 4. Run Your First Migration
+
+In the shell:
+
+```bash
+npx prisma migrate dev --name init_device_profiles
+```
+
+This will create `prisma/migrations/…` and apply it to your database.
+
+---
+
+## 5. Generate the Prisma Client
+
+Still in your shell:
+
+```bash
+npx prisma generate
+```
+
+This produces `node_modules/@prisma/client`.
+
+---
+
+## 6. Update `deviceProfileService.ts` to Use Prisma
+
+Replace the in-memory store with real DB calls. Your new service might look like:
+
+```ts
+// server/services/deviceProfileService.ts
+import { PrismaClient } from '@prisma/client';
+const prisma = new PrismaClient();
+
+export function listProfiles(tenantId?: string) {
+  return prisma.deviceProfile.findMany({
+    where: tenantId ? { tenantId } : {},
+    orderBy: { createdAt: 'desc' },
+  });
+}
+
+export function getProfile(id: string) {
+  return prisma.deviceProfile.findUnique({ where: { id } });
+}
+
+export function createProfile(data: {
+  name: string;
+  classification: string;
+  tenantId?: string;
+}) {
+  return prisma.deviceProfile.create({ data });
+}
+
+export function updateProfile(id: string, data: Partial<{
+  name: string;
+  classification: string;
+  tenantId?: string;
+}>) {
+  return prisma.deviceProfile.update({ where: { id }, data });
+}
+
+export function deleteProfile(id: string) {
+  return prisma.deviceProfile.delete({ where: { id } });
+}
+```
+
+---
+
+## 7. Remove the Old `Map` Logic
+
+* Delete the lines importing or instantiating your old `Map` store.
+* Ensure all imports now point to the Prisma-backed service.
+
+---
+
+## 8. Seed Existing Data (Optional)
+
+If you need to migrate profiles already in your Map, write a one-off script:
+
+```ts
+// scripts/seedProfiles.ts
+import { PrismaClient } from '@prisma/client';
+import oldProfiles from '../server/services/deviceProfileMapData'; // wherever you export your Map data
+
+const prisma = new PrismaClient();
+async function seed() {
+  for (const p of oldProfiles) {
+    await prisma.deviceProfile.upsert({
+      where: { id: p.id },
+      create: { ...p },
+      update: { ...p },
+    });
+  }
+  console.log('Seed complete');
+  process.exit();
+}
+seed();
+```
+
+Then run:
+
+```bash
+node scripts/seedProfiles.ts
+```
+
+---
+
+## 9. Test & Verify
+
+1. **Restart your server**: your unified routes now hit Postgres.
+2. Run `npm test`—your existing unit & integration tests should still pass (they’ll hit the DB instead of Map).
+3. Manually exercise both the 510(k) intake and Device Profiles dashboard: create, edit, delete profiles, then restart the app and confirm the data persists.
+
+---
+
+## 10. Commit & Deploy
+
+```bash
+git add prisma/ server/services/deviceProfileService.ts
+git commit -m "Migrate DeviceProfileService to Prisma/Postgres"
+```
+
+Deploy to your staging environment (ensuring `DATABASE_URL` is set), run `prisma migrate deploy`, and you’re live on a real database.
+
+---
+
+You now have a production-ready, persistent device profile system. Let me know how it goes or if you need the seed-script file saved in your project!

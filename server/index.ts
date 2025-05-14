@@ -240,3 +240,6 @@ process.on('SIGTERM', () => {
     process.exit(0);
   });
 });
+
+// Export app for testing
+export default app;
