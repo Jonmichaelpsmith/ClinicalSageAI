@@ -1,128 +1,137 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "FDA eSTAR Package Manifest",
-  "description": "Schema for validating eSTAR package structure and content",
+  "title": "FDA eSTAR Manifest",
+  "description": "Schema for FDA eSTAR 510(k) submission manifest",
   "type": "object",
-  "required": ["packageInfo", "sections", "documents"],
-  "properties": {
-    "packageInfo": {
-      "type": "object",
-      "required": ["submissionType", "deviceName", "applicant", "contactPerson", "submissionDate"],
-      "properties": {
-        "submissionType": {
-          "type": "string",
-          "enum": ["Traditional", "Abbreviated", "Special"]
-        },
-        "deviceName": {
-          "type": "string",
-          "minLength": 1
-        },
-        "applicant": {
-          "type": "string",
-          "minLength": 1
-        },
-        "contactPerson": {
-          "type": "object",
-          "required": ["name", "title", "email", "phone"],
-          "properties": {
-            "name": {
-              "type": "string",
-              "minLength": 1
-            },
-            "title": {
-              "type": "string",
-              "minLength": 1
-            },
-            "email": {
-              "type": "string",
-              "format": "email"
-            },
-            "phone": {
-              "type": "string",
-              "pattern": "^[0-9\\-\\(\\)\\s\\+]+$"
-            }
-          }
-        },
-        "submissionDate": {
-          "type": "string",
-          "format": "date"
-        },
-        "predicateDevice": {
-          "type": "object",
-          "required": ["name", "manufacturer", "kNumber"],
-          "properties": {
-            "name": {
-              "type": "string",
-              "minLength": 1
-            },
-            "manufacturer": {
-              "type": "string",
-              "minLength": 1
-            },
-            "kNumber": {
-              "type": "string",
-              "pattern": "^K[0-9]{6}$"
-            }
-          }
-        }
-      }
+  "requiredFields": [
+    {
+      "section": "Administrative Information",
+      "name": "Device Name",
+      "pattern": "devicename|device name",
+      "critical": true
     },
-    "sections": {
-      "type": "array",
-      "minItems": 13,
-      "items": {
-        "type": "object",
-        "required": ["id", "title", "status", "content"],
-        "properties": {
-          "id": {
-            "type": "string",
-            "pattern": "^[A-Z0-9]+$"
-          },
-          "title": {
-            "type": "string",
-            "minLength": 1
-          },
-          "status": {
-            "type": "string",
-            "enum": ["notStarted", "inProgress", "completed", "approved"]
-          },
-          "content": {
-            "type": "object"
-          }
-        }
-      }
+    {
+      "section": "Administrative Information",
+      "name": "Company Name",
+      "pattern": "company|manufacturer",
+      "critical": true
     },
-    "documents": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "required": ["id", "fileName", "fileType", "sectionId", "status"],
-        "properties": {
-          "id": {
-            "type": "string",
-            "minLength": 1
-          },
-          "fileName": {
-            "type": "string",
-            "minLength": 1
-          },
-          "fileType": {
-            "type": "string",
-            "enum": ["pdf", "docx", "xlsx", "jpg", "png", "tiff"]
-          },
-          "sectionId": {
-            "type": "string",
-            "pattern": "^[A-Z0-9]+$"
-          },
-          "status": {
-            "type": "string",
-            "enum": ["uploaded", "pending", "verified", "rejected"]
-          },
-          "metadata": {
-            "type": "object"
-          }
-        }
+    {
+      "section": "Administrative Information",
+      "name": "Contact Information",
+      "pattern": "contact|phone|email",
+      "critical": true
+    },
+    {
+      "section": "Administrative Information",
+      "name": "Submission Type",
+      "pattern": "submission type|510k type",
+      "critical": true
+    },
+    {
+      "section": "Device Description",
+      "name": "Intended Use",
+      "pattern": "intended use|purpose",
+      "critical": true
+    },
+    {
+      "section": "Device Description",
+      "name": "Materials",
+      "pattern": "material|composition",
+      "critical": false
+    },
+    {
+      "section": "Device Description",
+      "name": "Specifications",
+      "pattern": "specification|dimension|measurement",
+      "critical": false
+    },
+    {
+      "section": "Performance Testing",
+      "name": "Test Methodology",
+      "pattern": "methodology|test protocol|procedure",
+      "critical": true
+    },
+    {
+      "section": "Performance Testing",
+      "name": "Test Results",
+      "pattern": "result|outcome|finding",
+      "critical": true
+    },
+    {
+      "section": "Substantial Equivalence Discussion",
+      "name": "Predicate Device",
+      "pattern": "predicate|substantially equivalent|similar device",
+      "critical": true
+    },
+    {
+      "section": "Substantial Equivalence Discussion",
+      "name": "Comparison",
+      "pattern": "comparison|compare|similarity|difference",
+      "critical": true
+    },
+    {
+      "section": "Labeling",
+      "name": "Labels",
+      "pattern": "label|packaging|include",
+      "critical": true
+    }
+  ],
+  "fileTypeRequirements": {
+    "allowedTypes": [
+      ".pdf",
+      ".docx",
+      ".xlsx",
+      ".jpg",
+      ".jpeg",
+      ".png",
+      ".svg",
+      ".xml"
+    ],
+    "preferredTypes": [
+      ".pdf"
+    ],
+    "sectionSpecificRequirements": {
+      "Performance Testing": {
+        "requiredTypes": [
+          ".pdf",
+          ".xlsx"
+        ],
+        "message": "Performance testing section requires PDF reports and/or Excel data"
+      },
+      "Labeling": {
+        "requiredTypes": [
+          ".pdf",
+          ".jpg",
+          ".jpeg",
+          ".png"
+        ],
+        "message": "Labeling section requires PDF documents or images"
       }
     }
-  }
+  },
+  "pdfRequirements": {
+    "standard": "PDF/A",
+    "maxSizeMB": 50,
+    "securitySettings": {
+      "allowPrinting": true,
+      "allowCopying": true,
+      "allowEditing": false,
+      "allowAnnotations": true
+    },
+    "validation": {
+      "requireTextSearchability": true,
+      "requireBookmarks": true,
+      "requireTOC": true
+    }
+  },
+  "submissionChecklist": [
+    "Verify all required sections are present",
+    "Ensure all file attachments meet FDA format requirements",
+    "Check that the Administrative Information is accurate and complete",
+    "Validate that PDF files conform to PDF/A standards",
+    "Confirm that substantial equivalence is clearly established with predicate device(s)",
+    "Verify that performance testing data supports safety and effectiveness claims",
+    "Ensure labeling is consistent with 21 CFR 801"
+  ]
 }

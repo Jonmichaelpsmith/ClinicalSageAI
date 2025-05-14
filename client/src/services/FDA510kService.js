@@ -102,17 +102,52 @@ class FDA510kService {
   /**
    * Integrate an eSTAR package with workflow
    * 
+   * @param {string} reportId Report ID from which to create the eSTAR package
    * @param {string} projectId Project ID
-   * @param {string} workflowId Workflow ID
+   * @param {Object} options Integration options including validation preferences
    * @returns Promise with integration result
    */
-  async integrateWithESTAR(projectId, workflowId) {
+  async integrateWithESTAR(reportId, projectId, options = {}) {
     try {
+      // Extract options
+      const { validateFirst = true, strictValidation = false } = options;
+      
+      // If validation is requested, perform it first
+      let validationResult = null;
+      if (validateFirst) {
+        try {
+          validationResult = await this.validateESTARPackage(projectId, strictValidation);
+          
+          // If validation fails and we're in strict mode, return the validation result
+          if (strictValidation && validationResult && !validationResult.valid) {
+            return {
+              success: false,
+              validated: true,
+              packageGenerated: false,
+              validationResult,
+              message: 'eSTAR package validation failed. Please resolve the issues before proceeding.'
+            };
+          }
+        } catch (validationError) {
+          console.warn('Validation error, but continuing with integration:', validationError);
+        }
+      }
+      
+      // Proceed with integration
       const response = await apiRequest.post(`/api/fda510k/estar/workflow/integrate`, {
+        reportId,
         projectId,
-        workflowId
+        validationPerformed: !!validationResult,
+        validationResult,
+        options
       });
-      return response.data;
+      
+      // Enhance the response with validation data if performed
+      return {
+        ...response.data,
+        validated: !!validationResult,
+        validationResult
+      };
     } catch (error) {
       console.error(`Error integrating eSTAR with workflow for project ${projectId}:`, error);
       throw error;
