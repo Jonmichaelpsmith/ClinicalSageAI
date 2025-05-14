@@ -95,9 +95,7 @@ export default function LitReviewPanel({
       // Try the unified discovery service first
       console.log('Attempting to use unified discovery service...');
       try {
-        const unifiedResults = await discoveryApi.search(searchQuery, {
-          type: 'literature',
-          source: 'all',
+        const unifiedResults = await cerApi.searchUnifiedLiterature(searchQuery, {
           limit: 15,
           module: 'cer'
         });
@@ -117,7 +115,7 @@ export default function LitReviewPanel({
       // Fallback: Try the combined literature search endpoint
       console.log('Falling back to combined literature search endpoint...');
       try {
-        const results = await literatureApi.searchLiterature(searchQuery, apiFilters);
+        const results = await cerApi.searchLiterature(searchQuery, apiFilters);
         
         // If the combined endpoint returns results, use them
         if (results && results.length > 0) {
@@ -134,11 +132,11 @@ export default function LitReviewPanel({
       // Last resort: Try individual source endpoints and combine results
       console.log('Trying individual source endpoints...');
       const [pubmedResults, ieeeResults] = await Promise.all([
-        literatureApi.searchPubMed(searchQuery, apiFilters).catch(err => {
+        cerApi.searchPubMed(searchQuery, apiFilters).catch(err => {
           console.warn('PubMed search error:', err);
           return [];
         }),
-        literatureApi.searchIEEE(searchQuery, apiFilters).catch(err => {
+        cerApi.searchIEEE(searchQuery, apiFilters).catch(err => {
           console.warn('IEEE search error:', err);
           return [];
         })
