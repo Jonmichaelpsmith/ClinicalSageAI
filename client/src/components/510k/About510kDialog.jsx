@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -6,7 +6,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogClose
+  DialogClose,
+  DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,9 +18,57 @@ import {
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Info, HelpCircle, BookOpen } from 'lucide-react';
+import { Info, HelpCircle, BookOpen, FileText, SwitchCamera, Check } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+
+// Create a context to track document type state
+// This will be populated from CERV2Page.jsx state when the component mounts
+const DocumentContext = React.createContext({
+  documentType: 'cer',
+  setDocumentType: () => {},
+  title: 'Clinical Evaluation Report',
+  setTitle: () => {}
+});
+
+// Custom hook to use document context
+export const useDocumentContext = () => useContext(DocumentContext);
+
+// Provider component
+export const DocumentContextProvider = ({ children, value }) => (
+  <DocumentContext.Provider value={value}>
+    {children}
+  </DocumentContext.Provider>
+);
 
 function About510kDialog() {
+  // Access document context to get current state and setter functions
+  const { documentType, setDocumentType, setTitle } = useDocumentContext();
+
+  // Handle switching to CER mode
+  const switchToCER = () => {
+    console.log(`Switching to CER mode (current: ${documentType}, new: cer)`);
+    // Force an update to make sure state changes properly
+    setDocumentType('');
+    setTimeout(() => {
+      setDocumentType('cer');
+      // Update title based on document type
+      setTitle('Clinical Evaluation Report');
+    }, 50);
+  };
+
+  // Handle switching to 510k mode
+  const switchTo510k = () => {
+    console.log(`Switching to 510k mode (current: ${documentType}, new: 510k)`);
+    // Force an update to make sure state changes properly
+    setDocumentType('');
+    setTimeout(() => {
+      setDocumentType('510k');
+      // Update title based on document type
+      setTitle('FDA 510(k) Submission');
+    }, 50);
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -54,6 +103,10 @@ function About510kDialog() {
               <TabsTrigger value="howto" className="flex items-center gap-2">
                 <BookOpen className="h-4 w-4" />
                 How To Use
+              </TabsTrigger>
+              <TabsTrigger value="switch" className="flex items-center gap-2">
+                <SwitchCamera className="h-4 w-4" />
+                Switch Mode
               </TabsTrigger>
             </TabsList>
             
@@ -243,6 +296,98 @@ function About510kDialog() {
                   <li>Use the date range filters to focus on recent literature when appropriate</li>
                   <li>Save important findings throughout your research process</li>
                 </ul>
+              </div>
+            </TabsContent>
+
+            {/* Switch Mode Tab - New addition */}
+            <TabsContent value="switch" className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Switch Between Modules</h3>
+                <p className="text-gray-700">
+                  TrialSage offers two integrated modules for regulatory documentation. Select the module you want to work with:
+                </p>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  {/* CER Card */}
+                  <Card className={`border-2 transition-all ${documentType === 'cer' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-blue-600" />
+                        Clinical Evaluation Report
+                        {documentType === 'cer' && (
+                          <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-700 border-blue-200">
+                            <Check className="h-3 w-3 mr-1" /> Active
+                          </Badge>
+                        )}
+                      </CardTitle>
+                      <CardDescription>
+                        EU MDR-compliant clinical evaluation documentation
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-sm text-gray-600">
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>State of Art Literature Review</li>
+                        <li>Equivalence Assessment</li>
+                        <li>Clinical Evaluation Planning</li>
+                        <li>Compliance with EU MDR</li>
+                      </ul>
+                    </CardContent>
+                    <CardFooter>
+                      <Button 
+                        onClick={switchToCER}
+                        variant={documentType === 'cer' ? 'default' : 'outline'}
+                        className="w-full"
+                        disabled={documentType === 'cer'}
+                      >
+                        {documentType === 'cer' ? 'Currently Active' : 'Switch to CER Mode'}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                  
+                  {/* 510k Card */}
+                  <Card className={`border-2 transition-all ${documentType === '510k' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-blue-300'}`}>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <FileText className="h-5 w-5 text-blue-600" />
+                        FDA 510(k) Submission
+                        {documentType === '510k' && (
+                          <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-700 border-blue-200">
+                            <Check className="h-3 w-3 mr-1" /> Active
+                          </Badge>
+                        )}
+                      </CardTitle>
+                      <CardDescription>
+                        FDA-compliant premarket notification process
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent className="text-sm text-gray-600">
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Predicate Device Discovery</li>
+                        <li>Substantial Equivalence Evidence</li>
+                        <li>Multi-Source Literature Review</li>
+                        <li>AI-Assisted Documentation</li>
+                      </ul>
+                    </CardContent>
+                    <CardFooter>
+                      <Button 
+                        onClick={switchTo510k}
+                        variant={documentType === '510k' ? 'default' : 'outline'}
+                        className="w-full"
+                        disabled={documentType === '510k'}
+                      >
+                        {documentType === '510k' ? 'Currently Active' : 'Switch to 510(k) Mode'}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </div>
+                
+                <div className="mt-6 p-4 border border-blue-200 rounded-md bg-blue-50">
+                  <h4 className="text-md font-medium text-blue-800 mb-2">About Switching Modes</h4>
+                  <p className="text-sm text-blue-700">
+                    Both modules access the same underlying data but provide specialized interfaces and tools for different regulatory requirements.
+                    You can switch between modes at any time without losing your work.
+                  </p>
+                </div>
               </div>
             </TabsContent>
           </Tabs>
