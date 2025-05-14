@@ -23,17 +23,15 @@ export async function registerModuleDocument(
   workflowTemplateId
 ) {
   try {
-    // Validate inputs
-    if (!organizationId || !userId || !moduleType || !documentMetadata || !workflowTemplateId) {
+    if (!organizationId || !userId || !moduleType || !documentMetadata) {
       throw new Error('Missing required parameters for document registration');
     }
     
-    // Ensure the document has required fields
-    const document = {
+    // Ensure required metadata fields
+    const metadata = {
       title: documentMetadata.title || 'Untitled Document',
-      type: documentMetadata.type || 'report',
-      format: documentMetadata.format || 'pdf',
-      status: documentMetadata.status || 'draft',
+      description: documentMetadata.description || '',
+      documentType: documentMetadata.documentType || 'general',
       ...documentMetadata
     };
     
@@ -47,21 +45,21 @@ export async function registerModuleDocument(
         organizationId,
         userId,
         moduleType,
-        document,
+        metadata,
         workflowTemplateId
       })
     });
     
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to register document in workflow system');
+      throw new Error(errorData.message || 'Failed to register document');
     }
     
     const data = await response.json();
-    return data;
+    return data.document;
     
   } catch (error) {
-    console.error('Error registering document in workflow system:', error);
+    console.error('Error registering document:', error);
     throw error;
   }
 }
@@ -76,14 +74,17 @@ export async function registerModuleDocument(
  */
 export async function updateDocumentWorkflowStatus(documentId, newStatus, userId) {
   try {
-    // Call the API to update the document status
-    const response = await fetch('/api/module-integration/update-document-status', {
+    if (!documentId || !newStatus || !userId) {
+      throw new Error('Missing required parameters for updating document status');
+    }
+    
+    // Call the API to update document status
+    const response = await fetch(`/api/module-integration/document-status/${documentId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        documentId,
         newStatus,
         userId
       })
@@ -95,10 +96,10 @@ export async function updateDocumentWorkflowStatus(documentId, newStatus, userId
     }
     
     const data = await response.json();
-    return data;
+    return data.document;
     
   } catch (error) {
-    console.error('Error updating document workflow status:', error);
+    console.error('Error updating document status:', error);
     throw error;
   }
 }
@@ -111,19 +112,23 @@ export async function updateDocumentWorkflowStatus(documentId, newStatus, userId
  */
 export async function getDocumentWorkflowProgression(documentId) {
   try {
-    // Call the API to get the document workflow progression
-    const response = await fetch(`/api/module-integration/document-workflow/${documentId}`);
+    if (!documentId) {
+      throw new Error('Document ID is required for getting workflow progression');
+    }
+    
+    // Call the API to get workflow progression
+    const response = await fetch(`/api/module-integration/workflow-progression/${documentId}`);
     
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to retrieve document workflow progression');
+      throw new Error(errorData.message || 'Failed to retrieve workflow progression');
     }
     
     const data = await response.json();
-    return data;
+    return data.progression;
     
   } catch (error) {
-    console.error('Error getting document workflow progression:', error);
+    console.error('Error getting workflow progression:', error);
     throw error;
   }
 }
@@ -137,27 +142,30 @@ export async function getDocumentWorkflowProgression(documentId) {
  */
 export async function removeDocumentFromWorkflow(documentId, userId) {
   try {
-    // Call the API to delete the document
-    const response = await fetch('/api/module-integration/remove-document', {
+    if (!documentId || !userId) {
+      throw new Error('Missing required parameters for removing document from workflow');
+    }
+    
+    // Call the API to remove the document
+    const response = await fetch(`/api/module-integration/remove-document/${documentId}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        documentId,
         userId
       })
     });
     
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to remove document from workflow system');
+      throw new Error(errorData.message || 'Failed to remove document from workflow');
     }
     
     return true;
     
   } catch (error) {
-    console.error('Error removing document from workflow system:', error);
+    console.error('Error removing document from workflow:', error);
     throw error;
   }
 }
