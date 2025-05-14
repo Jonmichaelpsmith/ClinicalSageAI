@@ -1,183 +1,203 @@
 /**
- * Module Document Registration Helper
+ * Module Document Registration Utility
  * 
- * This module provides a simple helper function to register documents from
- * different modules with the unified document workflow system.
+ * This utility provides functions for registering documents from various modules
+ * in the unified document workflow system.
  */
 
 import { apiRequest } from '@/lib/queryClient';
 
 /**
- * Register a document with the unified workflow system
+ * Register a document from the Medical Device module in the unified workflow system
  * 
- * @param {string} moduleType - The type of module (med_device, cmc_wizard, etc.)
- * @param {string} originalDocumentId - The document ID in the original module
- * @param {string} title - Document title
- * @param {string} documentType - Type of document (510k, CER, etc.)
- * @param {Object} metadata - Optional document metadata
- * @param {Object} content - Optional document content
- * @param {number} vaultFolderId - Optional vault folder ID
+ * @param {Object} params - Registration parameters
+ * @param {string} params.originalDocumentId - Original document ID in the Medical Device module
+ * @param {string} params.title - Document title
+ * @param {string} params.documentType - Type of document (510k, CER, etc.)
+ * @param {number} params.organizationId - Organization ID
+ * @param {number} params.userId - User ID registering the document
+ * @param {Object} params.metadata - Optional document metadata
+ * @param {Object} params.content - Optional document content
+ * @param {number} params.vaultFolderId - Optional vault folder ID
  * @returns {Promise<Object>} The registered document
  */
-export async function registerModuleDocument(
-  moduleType,
+export const registerMedicalDeviceDocument = async ({
   originalDocumentId,
   title,
   documentType,
+  organizationId,
+  userId,
   metadata = {},
   content = null,
   vaultFolderId = null
-) {
+}) => {
   try {
-    const response = await apiRequest({
-      url: `/api/integration/modules/${moduleType}/documents`,
+    const response = await apiRequest('/api/module-integration/register-document', {
       method: 'POST',
       data: {
+        moduleType: 'med_device',
         originalDocumentId,
         title,
         documentType,
+        organizationId,
+        userId,
         metadata,
         content,
         vaultFolderId
       }
     });
-
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to register document');
-    }
-
-    return response.document;
+    
+    return response.data;
   } catch (error) {
-    console.error('Error registering document with unified workflow:', error);
+    console.error('Error registering medical device document:', error);
     throw error;
   }
-}
+};
 
 /**
- * Get document workflow status
+ * Register a document from the CMC Wizard module in the unified workflow system
  * 
- * @param {string} moduleType - The type of module
- * @param {string} originalDocumentId - The document ID in the original module
- * @returns {Promise<Object>} Workflow status
+ * @param {Object} params - Registration parameters
+ * @param {string} params.originalDocumentId - Original document ID in the CMC Wizard module
+ * @param {string} params.title - Document title
+ * @param {string} params.documentType - Type of document
+ * @param {number} params.organizationId - Organization ID
+ * @param {number} params.userId - User ID registering the document
+ * @param {Object} params.metadata - Optional document metadata
+ * @param {Object} params.content - Optional document content
+ * @param {number} params.vaultFolderId - Optional vault folder ID
+ * @returns {Promise<Object>} The registered document
  */
-export async function getDocumentWorkflow(moduleType, originalDocumentId) {
-  try {
-    const response = await apiRequest({
-      url: `/api/integration/modules/${moduleType}/documents/${originalDocumentId}/workflow`,
-      method: 'GET'
-    });
-
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to get document workflow');
-    }
-
-    return {
-      document: response.document,
-      workflow: response.workflow
-    };
-  } catch (error) {
-    console.error('Error getting document workflow:', error);
-    // Return null for workflow if not found (document might not be in workflow yet)
-    if (error.response?.status === 404) {
-      return { document: null, workflow: null };
-    }
-    throw error;
-  }
-}
-
-/**
- * Initiate a workflow for a document
- * 
- * @param {string} moduleType - The type of module
- * @param {string} originalDocumentId - The document ID in the original module
- * @param {number} templateId - The workflow template ID
- * @param {Object} metadata - Optional workflow metadata
- * @returns {Promise<Object>} The initiated workflow
- */
-export async function initiateDocumentWorkflow(
-  moduleType,
+export const registerCmcWizardDocument = async ({
   originalDocumentId,
-  templateId,
-  metadata = {}
-) {
+  title,
+  documentType,
+  organizationId,
+  userId,
+  metadata = {},
+  content = null,
+  vaultFolderId = null
+}) => {
   try {
-    const response = await apiRequest({
-      url: `/api/integration/modules/${moduleType}/documents/${originalDocumentId}/workflow`,
+    const response = await apiRequest('/api/module-integration/register-document', {
+      method: 'POST',
+      data: {
+        moduleType: 'cmc_wizard',
+        originalDocumentId,
+        title,
+        documentType,
+        organizationId,
+        userId,
+        metadata,
+        content,
+        vaultFolderId
+      }
+    });
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error registering CMC Wizard document:', error);
+    throw error;
+  }
+};
+
+/**
+ * Initiate a workflow for a document in the unified system
+ * 
+ * @param {Object} params - Workflow initiation parameters
+ * @param {number} params.documentId - The document ID in the unified system
+ * @param {number} params.templateId - The workflow template ID
+ * @param {number} params.userId - User ID initiating the workflow
+ * @param {Object} params.metadata - Optional workflow metadata
+ * @returns {Promise<Object>} The created workflow with approval steps
+ */
+export const initiateDocumentWorkflow = async ({
+  documentId,
+  templateId,
+  userId,
+  metadata = {}
+}) => {
+  try {
+    const response = await apiRequest(`/api/module-integration/document/${documentId}/workflow`, {
       method: 'POST',
       data: {
         templateId,
+        userId,
         metadata
       }
     });
-
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to initiate workflow');
-    }
-
-    return response.workflow;
+    
+    return response.data;
   } catch (error) {
     console.error('Error initiating document workflow:', error);
     throw error;
   }
-}
+};
 
 /**
- * Get available workflow templates for a module
+ * Get the active workflow for a document
  * 
- * @param {string} moduleType - The type of module
- * @returns {Promise<Array>} Available workflow templates
+ * @param {number} documentId - The document ID in the unified system
+ * @returns {Promise<Object|null>} The workflow with approvals, or null if no workflow exists
  */
-export async function getWorkflowTemplates(moduleType) {
+export const getDocumentWorkflow = async (documentId) => {
   try {
-    const response = await apiRequest({
-      url: `/api/integration/modules/${moduleType}/templates`,
-      method: 'GET'
-    });
-
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to get workflow templates');
-    }
-
-    return response.templates;
+    const response = await apiRequest(`/api/module-integration/document/${documentId}/workflow`);
+    return response.data;
   } catch (error) {
-    console.error('Error getting workflow templates:', error);
-    throw error;
+    console.error('Error getting document workflow:', error);
+    return null;
   }
-}
+};
 
 /**
  * Submit an approval for a workflow step
  * 
- * @param {number} workflowId - The workflow ID
- * @param {number} stepIndex - The step index
- * @param {string} status - Approval status (approved or rejected)
- * @param {string} comments - Optional comments
- * @returns {Promise<Object>} Updated workflow
+ * @param {Object} params - Approval submission parameters
+ * @param {number} params.workflowId - The workflow ID
+ * @param {number} params.stepIndex - The step index (0-based)
+ * @param {number} params.userId - User ID approving the step
+ * @param {string} params.status - Approval status ('approved' or 'rejected')
+ * @param {string} params.comments - Optional comments
+ * @returns {Promise<Object>} The updated workflow
  */
-export async function submitWorkflowApproval(
+export const submitWorkflowApproval = async ({
   workflowId,
   stepIndex,
+  userId,
   status,
   comments = ''
-) {
+}) => {
   try {
-    const response = await apiRequest({
-      url: `/api/integration/workflows/${workflowId}/approve`,
+    const response = await apiRequest(`/api/module-integration/workflow/${workflowId}/approval/${stepIndex}`, {
       method: 'POST',
       data: {
-        stepIndex,
+        userId,
         status,
         comments
       }
     });
-
-    if (!response.success) {
-      throw new Error(response.message || 'Failed to submit approval');
-    }
-
-    return response.workflow;
+    
+    return response.data;
   } catch (error) {
     console.error('Error submitting workflow approval:', error);
     throw error;
   }
-}
+};
+
+/**
+ * Get available workflow templates for a module
+ * 
+ * @param {string} moduleType - The module type
+ * @param {number} organizationId - Organization ID
+ * @returns {Promise<Array>} - List of workflow templates
+ */
+export const getWorkflowTemplates = async (moduleType, organizationId) => {
+  try {
+    const response = await apiRequest(`/api/module-integration/workflow-templates/${moduleType}?organizationId=${organizationId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error getting workflow templates:', error);
+    return [];
+  }
+};

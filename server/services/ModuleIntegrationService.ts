@@ -1,37 +1,47 @@
 /**
  * Module Integration Service
  * 
- * This service handles the integration of documents from different modules
- * into the unified document workflow system.
+ * This service manages the integration between different modules
+ * and provides a unified document management and workflow system.
  */
 
 import { eq, and } from 'drizzle-orm';
-import { SQL } from 'drizzle-orm';
 import { db } from '../db/connection';
-import { 
-  unifiedDocuments,
-  documentWorkflows,
+import {
+  documents,
+  moduleDocuments,
   workflowTemplates,
-  workflowApprovals,
-  workflowAuditLog,
-  moduleTypeEnum,
-  InsertUnifiedDocument,
-  UnifiedDocument
+  Document,
+  ModuleDocument,
+  WorkflowTemplate,
 } from '../../shared/schema/unified_workflow';
 import { WorkflowService } from './WorkflowService';
 
+// Supported module types
+const MODULE_TYPES = ['med_device', 'cmc_wizard', 'ectd_coauthor', 'study_architect', 'vault'];
+
+/**
+ * Service for managing cross-module document integration
+ */
 export class ModuleIntegrationService {
   private workflowService: WorkflowService;
-  
+
   constructor() {
     this.workflowService = new WorkflowService();
   }
-  
+
+  /**
+   * Get supported module types
+   */
+  async getModuleTypes(): Promise<string[]> {
+    return MODULE_TYPES;
+  }
+
   /**
    * Register a document from a module in the unified system
    * 
-   * @param moduleType - Type of module (med_device, cmc_wizard, etc.)
-   * @param originalDocumentId - Original document ID in the source module
+   * @param moduleType - The module type (med_device, cmc_wizard, etc.)
+   * @param originalDocumentId - The original document ID in the source module
    * @param title - Document title
    * @param documentType - Type of document (510k, CER, etc.)
    * @param organizationId - Organization ID
@@ -39,285 +49,226 @@ export class ModuleIntegrationService {
    * @param metadata - Optional document metadata
    * @param content - Optional document content
    * @param vaultFolderId - Optional vault folder ID
-   * @returns The registered document record
+   * @returns Registered document
    */
-  async registerModuleDocument(
+  async registerDocument(
     moduleType: string,
     originalDocumentId: string,
     title: string,
     documentType: string,
     organizationId: number,
     userId: number,
-    metadata: any = {},
+    metadata: Record<string, any> = {},
     content: any = null,
-    vaultFolderId: number = null
-  ): Promise<UnifiedDocument> {
-    // Validate module type
-    if (!Object.values(moduleTypeEnum.enum).includes(moduleType as any)) {
-      throw new Error(`Invalid module type: ${moduleType}`);
-    }
-    
+    vaultFolderId: number | null = null
+  ): Promise<Document & { moduleDocument: ModuleDocument }> {
     try {
-      // Check if document already exists for this module + original ID + org
-      const existingDoc = await db.select()
-        .from(unifiedDocuments)
-        .where(
-          and(
-            eq(unifiedDocuments.moduleType, moduleType),
-            eq(unifiedDocuments.originalDocumentId, originalDocumentId),
-            eq(unifiedDocuments.organizationId, organizationId),
-            eq(unifiedDocuments.isDeleted, false)
-          )
-        )
-        .limit(1);
+      // Check if the document already exists
+      const existingDoc = await this.getDocumentByModuleId(moduleType, originalDocumentId, organizationId);
       
-      if (existingDoc.length > 0) {
-        // Document already exists, update it
-        const [updated] = await db.update(unifiedDocuments)
-          .set({
-            title,
-            documentType,
-            metadata,
-            content,
-            vaultFolderId,
-            updatedAt: new Date(),
-            updatedBy: userId
-          })
-          .where(eq(unifiedDocuments.id, existingDoc[0].id))
-          .returning();
-        
-        return updated;
+      if (existingDoc) {
+        return existingDoc;
       }
       
-      // Insert new document
-      const [document] = await db.insert(unifiedDocuments)
-        .values({
-          moduleType,
-          originalDocumentId,
-          title,
-          documentType,
-          metadata,
-          content,
-          vaultFolderId,
-          organizationId,
-          createdBy: userId,
-          updatedBy: userId
-        })
-        .returning();
+      // Begin transaction
+      const result = await db.transaction(async (tx) => {
+        // Insert document
+        const [document] = await tx
+          .insert(documents)
+          .values({
+            title,
+            documentType,
+            organizationId,
+            createdBy: userId,
+            vaultFolderId,
+            metadata,
+            content,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .returning();
+        
+        // Insert module document
+        const [moduleDocument] = await tx
+          .insert(moduleDocuments)
+          .values({
+            documentId: document.id,
+            moduleType,
+            originalDocumentId,
+            organizationId,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          })
+          .returning();
+        
+        return { ...document, moduleDocument };
+      });
       
-      return document;
+      return result;
     } catch (error) {
-      console.error('Error registering module document:', error);
-      throw new Error(`Failed to register document: ${error.message}`);
+      console.error('Error registering document:', error);
+      throw new Error('Failed to register document');
     }
   }
-  
+
   /**
-   * Get a document by its module ID
+   * Get a document by its module type and original ID
    * 
-   * @param moduleType - Type of module (med_device, cmc_wizard, etc.)
-   * @param originalDocumentId - Original document ID in the source module
+   * @param moduleType - The module type
+   * @param originalId - Original document ID in the source module
    * @param organizationId - Organization ID
-   * @returns The document record or null if not found
+   * @returns Document with its module details
    */
   async getDocumentByModuleId(
     moduleType: string,
-    originalDocumentId: string,
+    originalId: string,
     organizationId: number
-  ): Promise<UnifiedDocument> {
+  ): Promise<(Document & { moduleDocument: ModuleDocument }) | null> {
     try {
-      // Validate module type
-      if (!Object.values(moduleTypeEnum.enum).includes(moduleType as any)) {
-        throw new Error(`Invalid module type: ${moduleType}`);
+      // Find module document
+      const moduleDoc = await db.query.moduleDocuments.findFirst({
+        where: and(
+          eq(moduleDocuments.moduleType, moduleType),
+          eq(moduleDocuments.originalDocumentId, originalId),
+          eq(moduleDocuments.organizationId, organizationId)
+        ),
+      });
+      
+      if (!moduleDoc) {
+        return null;
       }
       
-      const documents = await db.select()
-        .from(unifiedDocuments)
-        .where(
-          and(
-            eq(unifiedDocuments.moduleType, moduleType),
-            eq(unifiedDocuments.originalDocumentId, originalDocumentId),
-            eq(unifiedDocuments.organizationId, organizationId),
-            eq(unifiedDocuments.isDeleted, false)
-          )
-        )
-        .limit(1);
+      // Get the related document
+      const document = await db.query.documents.findFirst({
+        where: eq(documents.id, moduleDoc.documentId),
+      });
       
-      if (documents.length === 0) {
-        throw new Error(`Document not found for ${moduleType}:${originalDocumentId}`);
+      if (!document) {
+        return null;
       }
       
-      return documents[0];
+      return { ...document, moduleDocument: moduleDoc };
     } catch (error) {
-      console.error('Error getting document by module ID:', error);
-      throw new Error(`Failed to get document: ${error.message}`);
+      console.error('Error finding document by module ID:', error);
+      throw new Error('Failed to find document by module ID');
     }
   }
-  
+
   /**
-   * Update a document's details
+   * Get a document by its internal ID
    * 
-   * @param documentId - The document ID
-   * @param updates - Updates to apply
-   * @param userId - User ID making the update
-   * @returns Updated document
+   * @param id - Document ID
+   * @returns Document with its module details
    */
-  async updateDocument(
-    documentId: number,
-    updates: Partial<UnifiedDocument>,
-    userId: number
-  ): Promise<UnifiedDocument> {
+  async getDocumentById(id: number): Promise<(Document & { moduleDocument: ModuleDocument }) | null> {
     try {
-      // Get current document to ensure it exists
-      const documents = await db.select()
-        .from(unifiedDocuments)
-        .where(eq(unifiedDocuments.id, documentId))
-        .limit(1);
+      // Find document
+      const document = await db.query.documents.findFirst({
+        where: eq(documents.id, id),
+      });
       
-      if (documents.length === 0) {
-        throw new Error(`Document not found with ID: ${documentId}`);
+      if (!document) {
+        return null;
       }
       
-      // Prepare update fields, ensure certain fields can't be changed
-      const updateFields = {
-        ...updates,
-        updatedAt: new Date(),
-        updatedBy: userId
-      };
+      // Get the related module document
+      const moduleDoc = await db.query.moduleDocuments.findFirst({
+        where: eq(moduleDocuments.documentId, id),
+      });
       
-      // Remove fields that shouldn't be updateable
-      delete updateFields.id;
-      delete updateFields.moduleType;
-      delete updateFields.originalDocumentId;
-      delete updateFields.organizationId;
-      delete updateFields.createdAt;
-      delete updateFields.createdBy;
+      if (!moduleDoc) {
+        return null;
+      }
+      
+      return { ...document, moduleDocument: moduleDoc };
+    } catch (error) {
+      console.error('Error finding document by ID:', error);
+      throw new Error('Failed to find document by ID');
+    }
+  }
+
+  /**
+   * Update a document
+   * 
+   * @param id - Document ID
+   * @param data - The data to update
+   * @returns The updated document
+   */
+  async updateDocument(id: number, data: Partial<Document>): Promise<Document | null> {
+    try {
+      // Ensure we don't update ID or timestamps
+      const { id: _, createdAt, updatedAt, ...updateData } = data as any;
       
       // Update the document
-      const [updated] = await db.update(unifiedDocuments)
-        .set(updateFields)
-        .where(eq(unifiedDocuments.id, documentId))
+      const [updated] = await db
+        .update(documents)
+        .set({ 
+          ...updateData,
+          updatedAt: new Date() 
+        })
+        .where(eq(documents.id, id))
         .returning();
       
-      return updated;
+      return updated || null;
     } catch (error) {
       console.error('Error updating document:', error);
-      throw new Error(`Failed to update document: ${error.message}`);
+      throw new Error('Failed to update document');
     }
   }
-  
+
   /**
    * Get workflow templates for a module type
    * 
-   * @param moduleType - Type of module (med_device, cmc_wizard, etc.)
+   * @param moduleType - The module type
    * @param organizationId - Organization ID
-   * @returns Array of workflow templates
+   * @returns List of workflow templates
    */
-  async getWorkflowTemplatesForModule(
+  async getWorkflowTemplates(
     moduleType: string,
     organizationId: number
-  ): Promise<any[]> {
+  ): Promise<WorkflowTemplate[]> {
     try {
-      // Validate module type
-      if (!Object.values(moduleTypeEnum.enum).includes(moduleType as any)) {
-        throw new Error(`Invalid module type: ${moduleType}`);
-      }
-      
-      const templates = await db.select()
-        .from(workflowTemplates)
-        .where(
-          and(
-            eq(workflowTemplates.moduleType, moduleType),
-            eq(workflowTemplates.organizationId, organizationId),
-            eq(workflowTemplates.isActive, true)
-          )
-        )
-        .orderBy(workflowTemplates.name);
+      // Get templates for the module and organization
+      const templates = await db.query.workflowTemplates.findMany({
+        where: and(
+          eq(workflowTemplates.moduleType, moduleType),
+          eq(workflowTemplates.organizationId, organizationId),
+          eq(workflowTemplates.isActive, true)
+        ),
+        orderBy: (templates, { desc }) => [desc(templates.createdAt)],
+      });
       
       return templates;
     } catch (error) {
       console.error('Error getting workflow templates:', error);
-      throw new Error(`Failed to get workflow templates: ${error.message}`);
+      throw new Error('Failed to get workflow templates');
     }
   }
-  
-  /**
-   * Get the workflow for a document
-   * 
-   * @param documentId - The document ID
-   * @returns Workflow details with approvals, or null if no workflow exists
-   */
-  async getDocumentWorkflow(documentId: number) {
-    try {
-      const workflows = await db.select()
-        .from(documentWorkflows)
-        .where(eq(documentWorkflows.documentId, documentId))
-        .orderBy(documentWorkflows.createdAt, 'desc')
-        .limit(1);
-      
-      if (workflows.length === 0) {
-        return null;
-      }
-      
-      const workflowId = workflows[0].id;
-      
-      // Get workflow with approvals
-      const workflowWithApprovals = await this.workflowService.getWorkflowWithApprovals(workflowId);
-      
-      return workflowWithApprovals;
-    } catch (error) {
-      console.error('Error getting document workflow:', error);
-      throw new Error(`Failed to get document workflow: ${error.message}`);
-    }
-  }
-  
+
   /**
    * Initiate a workflow for a document
    * 
-   * @param documentId - The document ID
-   * @param templateId - The workflow template ID
+   * @param documentId - Document ID
+   * @param templateId - Workflow template ID
    * @param userId - User ID initiating the workflow
    * @param metadata - Optional workflow metadata
-   * @returns Created workflow with approvals
+   * @returns The created workflow with steps
    */
   async initiateWorkflow(
     documentId: number,
     templateId: number,
     userId: number,
-    metadata: any = {}
+    metadata: Record<string, any> = {}
   ) {
     try {
       // Check if document exists
-      const documents = await db.select()
-        .from(unifiedDocuments)
-        .where(
-          and(
-            eq(unifiedDocuments.id, documentId),
-            eq(unifiedDocuments.isDeleted, false)
-          )
-        )
-        .limit(1);
+      const document = await this.getDocumentById(documentId);
       
-      if (documents.length === 0) {
-        throw new Error(`Document not found with ID: ${documentId}`);
+      if (!document) {
+        throw new Error('Document not found');
       }
       
-      // Check if workflow already exists and is active
-      const existingWorkflows = await db.select()
-        .from(documentWorkflows)
-        .where(
-          and(
-            eq(documentWorkflows.documentId, documentId),
-            eq(documentWorkflows.status, 'pending')
-          )
-        )
-        .limit(1);
-      
-      if (existingWorkflows.length > 0) {
-        throw new Error('A workflow is already in progress for this document');
-      }
-      
-      // Use the workflow service to create the workflow
+      // Create the workflow
       const workflow = await this.workflowService.createWorkflow(
         documentId,
         templateId,
@@ -325,13 +276,144 @@ export class ModuleIntegrationService {
         metadata
       );
       
-      // Get the full workflow with approvals
-      const workflowWithApprovals = await this.workflowService.getWorkflowWithApprovals(workflow.id);
-      
-      return workflowWithApprovals;
+      return workflow;
     } catch (error) {
       console.error('Error initiating workflow:', error);
-      throw new Error(`Failed to initiate workflow: ${error.message}`);
+      throw new Error('Failed to initiate workflow');
+    }
+  }
+
+  /**
+   * Submit an approval for a workflow step
+   * 
+   * @param workflowId - Workflow ID
+   * @param stepIndex - Step index
+   * @param userId - User ID submitting the approval
+   * @param status - Approval status (approved, rejected)
+   * @param comments - Optional comments
+   * @returns The updated workflow
+   */
+  async submitApproval(
+    workflowId: number,
+    stepIndex: number,
+    userId: number,
+    status: 'approved' | 'rejected',
+    comments: string = ''
+  ) {
+    try {
+      // Submit the approval
+      const workflow = await this.workflowService.submitApproval(
+        workflowId,
+        stepIndex,
+        userId,
+        status,
+        comments
+      );
+      
+      return workflow;
+    } catch (error) {
+      console.error('Error submitting approval:', error);
+      throw new Error('Failed to submit approval');
+    }
+  }
+
+  /**
+   * Assign a user to an approval step
+   * 
+   * @param workflowId - Workflow ID
+   * @param stepIndex - Step index
+   * @param userId - User ID to assign
+   * @param assignedById - User ID making the assignment
+   * @returns The updated workflow
+   */
+  async assignUserToApproval(
+    workflowId: number,
+    stepIndex: number,
+    userId: number,
+    assignedById: number
+  ) {
+    try {
+      // Get the workflow with approvals
+      const workflow = await this.workflowService.getWorkflowWithApprovals(workflowId);
+      
+      if (!workflow) {
+        throw new Error('Workflow not found');
+      }
+      
+      if (!workflow.approvals || workflow.approvals.length <= stepIndex) {
+        throw new Error('Invalid step index');
+      }
+      
+      // Get the approval ID
+      const approvalId = workflow.approvals[stepIndex].id;
+      
+      // Assign the user
+      const updatedApproval = await this.workflowService.assignUserToApproval(
+        approvalId,
+        userId,
+        assignedById
+      );
+      
+      // Get the updated workflow
+      const updatedWorkflow = await this.workflowService.getWorkflowWithApprovals(workflowId);
+      
+      return updatedWorkflow;
+    } catch (error) {
+      console.error('Error assigning user to approval:', error);
+      throw new Error('Failed to assign user to approval');
+    }
+  }
+
+  /**
+   * Get a document's active workflow
+   * 
+   * @param documentId - Document ID
+   * @returns The document's active workflow with approvals and audit log
+   */
+  async getDocumentWorkflow(documentId: number) {
+    try {
+      // Find active workflows for the document
+      const workflows = await this.workflowService.getWorkflowsForDocument(documentId);
+      
+      // Filter for active workflows (not completed or rejected)
+      const activeWorkflows = workflows.filter(
+        w => w.status !== 'completed' && w.status !== 'rejected'
+      );
+      
+      if (activeWorkflows.length === 0) {
+        return null;
+      }
+      
+      // Get the most recent active workflow
+      const latestWorkflow = activeWorkflows.reduce((latest, current) => {
+        if (!latest) return current;
+        return new Date(current.createdAt) > new Date(latest.createdAt) ? current : latest;
+      }, null);
+      
+      if (!latestWorkflow) {
+        return null;
+      }
+      
+      // Get full workflow details with approvals and audit log
+      return this.workflowService.getWorkflowWithApprovals(latestWorkflow.id);
+    } catch (error) {
+      console.error('Error getting document workflow:', error);
+      throw new Error('Failed to get document workflow');
+    }
+  }
+
+  /**
+   * Get all workflows for a document
+   * 
+   * @param documentId - Document ID
+   * @returns List of workflows for the document
+   */
+  async getDocumentWorkflows(documentId: number) {
+    try {
+      return this.workflowService.getWorkflowsForDocument(documentId);
+    } catch (error) {
+      console.error('Error getting document workflows:', error);
+      throw new Error('Failed to get document workflows');
     }
   }
 }
