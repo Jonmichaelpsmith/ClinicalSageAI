@@ -19,13 +19,17 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Info, HelpCircle, BookOpen } from 'lucide-react';
 
-export function About510kDialog() {
+function About510kDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2 mt-4">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="flex items-center gap-1.5"
+        >
           <Info className="h-4 w-4" />
-          About 510(k) Generator
+          <span>About 510(k)</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-3xl">
@@ -39,9 +43,18 @@ export function About510kDialog() {
         <ScrollArea className="h-[70vh] px-1">
           <Tabs defaultValue="overview">
             <TabsList className="mb-4">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="faq">FAQ</TabsTrigger>
-              <TabsTrigger value="howto">How To Use</TabsTrigger>
+              <TabsTrigger value="overview" className="flex items-center gap-2">
+                <Info className="h-4 w-4" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="faq" className="flex items-center gap-2">
+                <HelpCircle className="h-4 w-4" />
+                FAQ
+              </TabsTrigger>
+              <TabsTrigger value="howto" className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                How To Use
+              </TabsTrigger>
             </TabsList>
             
             {/* Overview Tab */}
@@ -237,7 +250,7 @@ export function About510kDialog() {
         
         <div className="flex justify-end mt-4">
           <DialogClose asChild>
-            <Button>Close</Button>
+            <Button variant="outline">Close</Button>
           </DialogClose>
         </div>
       </DialogContent>
