@@ -1,0 +1,136 @@
+Here’s a **step-by-step “surgical” refactor** you can follow in Replit to collapse your two device-profile implementations into one clean, predictable service—without Replit “helpfully” scattering files around:
+
+---
+
+## 1. Prep: branch, backup, clean slate
+
+1. **Create a Git branch** (`git checkout -b unify-device-profiles`) so you can revert easily.
+2. **Stop your dev server** in Replit.
+3. In Replit’s sidebar, hit the three-dot menu on your project and choose **“Clear Watcher Cache”** (this prevents stale watchers from firing).
+
+---
+
+## 2. Extract a shared service layer
+
+1. In `server/services/` (create it if it doesn’t exist), add `deviceProfileService.ts`:
+
+   ```ts
+   // server/services/deviceProfileService.ts
+   import { v4 as uuid } from 'uuid';
+
+   const store = new Map<string, DeviceProfile>();
+
+   export function listProfiles() { return Array.from(store.values()); }
+   export function getProfile(id: string) { return store.get(id); }
+   export function createProfile(data: Omit<DeviceProfile,'id'>) {
+     const id = uuid();
+     store.set(id, { id, ...data });
+     return store.get(id)!;
+   }
+   export function updateProfile(id: string, data: Partial<DeviceProfile>) {
+     const existing = store.get(id);
+     if (!existing) throw new Error('Not found');
+     const updated = { ...existing, ...data };
+     store.set(id, updated);
+     return updated;
+   }
+   export function deleteProfile(id: string) {
+     store.delete(id);
+   }
+   ```
+2. **Import** any shared types (e.g. `DeviceProfile`) or define them at the top of this file.
+
+---
+
+## 3. Consolidate your routes
+
+1. Create **one** route-file: `server/routes/deviceProfileRoutes.ts`:
+
+   ```ts
+   import { Router } from 'express';
+   import * as svc from '../services/deviceProfileService';
+
+   const router = Router();
+   router.post('/',    (req,res) => res.json(svc.createProfile(req.body)));
+   router.get('/',     (req,res) => res.json(svc.listProfiles()));
+   router.get('/:id',  (req,res) => res.json(svc.getProfile(req.params.id)));
+   router.put('/:id',  (req,res) => res.json(svc.updateProfile(req.params.id, req.body)));
+   router.delete('/:id',(req,res) => { svc.deleteProfile(req.params.id); res.sendStatus(204); });
+
+   export default router;
+   ```
+2. **In** `server/index.ts` (or wherever you wire routes), **replace** both your old
+
+   ```ts
+   app.use('/api/510k/device-profile',   require('./routes/510kRoutes'));
+   app.use('/api/fda510k/device-profiles', require('./routes/510k-api-routes'));
+   ```
+
+   with
+
+   ```ts
+   import deviceProfileRoutes from './routes/deviceProfileRoutes';
+   app.use('/api/device-profiles', deviceProfileRoutes);
+   ```
+
+---
+
+## 4. Remove the old endpoint files
+
+1. Delete or archive:
+
+   * `server/routes/510kRoutes.ts`
+   * `server/routes/510k-api-routes.ts`
+2. In `server/index.ts`, remove any stray `import` or `use()` calls for those files.
+
+---
+
+## 5. Update your front-end service
+
+1. In `client/src/services/FDA510kService.js`, **delete** any `/api/510k/*` or `/api/fda510k/*` profile methods.
+2. **Add** (or replace) a unified block:
+
+   ```js
+   import apiRequest from '../lib/queryClient';
+
+   export const DeviceProfileAPI = {
+     list:    () => apiRequest.get('/api/device-profiles'),
+     get:     id => apiRequest.get(`/api/device-profiles/${id}`),
+     create:  data => apiRequest.post('/api/device-profiles', data),
+     update:  (id, data) => apiRequest.put(`/api/device-profiles/${id}`, data),
+     remove:  id => apiRequest.delete(`/api/device-profiles/${id}`),
+   };
+   ```
+3. **Save** and let Replit rebuild.
+
+---
+
+## 6. Wire it into both UIs
+
+* **Pipeline Intake** (your 510(k) tab): import `DeviceProfileAPI` instead of whatever old calls you had.
+* **CERV2 Dashboard** (Device Profiles tab): same import, same methods—no more two code-paths.
+
+---
+
+## 7. Clean up and verify
+
+1. **Restart** your server (`npm run dev`).
+2. Open both the **“Create submission”** flow and the **“Manage Device Profiles”** dashboard—create, list, update, delete—and watch your single Map instance power them both.
+3. In Replit’s shell, run your route tests (or `curl localhost:3000/api/device-profiles`) to confirm.
+
+---
+
+## 8. Commit & merge
+
+1. `git add -u && git commit -m "Unify device-profile endpoints into /api/device-profiles"`.
+2. Merge back into `main` once you’ve smoke-tested.
+
+---
+
+### Why this keeps Replit happy
+
+* **One folder**, one file, one import path.
+* No more “which of the two endpoints did I break today?”
+* Replit’s file watcher only ever sees your new `deviceProfileRoutes.ts` and never “mystery” routes in two different places.
+
+Let me know if you need the exact diff snippets or if you want to walk through any one of those steps in more detail!
