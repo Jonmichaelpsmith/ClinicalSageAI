@@ -1,0 +1,393 @@
+Understood. I’ll now prepare backend-only integration instructions for Replit to unify the predicate and literature discovery services so they can be used by both the CER Generator and 510(k) Generator—without modifying the existing UI components.
+
+I’ll get back to you shortly with a detailed, clean set of implementation steps.
+
+
+# Plan: Unify CER & 510(k) Discovery Services in Backend
+
+The following steps outline how to refactor the backend to consolidate **literature search** and **predicate discovery** logic into a shared service (`server/services/discoveryService.js`). This ensures both the **CER Generator** and **510(k) Generator** modules use common functions with context-specific behavior, without changing any frontend or API contracts.
+
+## 1. Audit Current Implementation
+
+**Task:** Identify where literature and predicate searches are implemented separately for CER and 510(k).
+
+* **Locate endpoints**: Find the route handlers for:
+
+  * `/literature-search` (CER module, likely retrieving scientific literature references).
+  * `/find-predicates` (510(k) module, retrieving similar/predicate devices).
+  * `/semantic-search` (if implemented, possibly a general semantic query endpoint).
+* **File Paths:** Commonly these handlers reside in controller or route files, e.g.:
+
+  * `server/routes/cerRoutes.js` or `server/controllers/cerLiteratureController.js` (CER literature search logic).
+  * `server/routes/kRoutes.js` or `server/controllers/kPredicateController.js` (510(k) predicate search logic).
+* **Identify duplicate logic:** Look for similar code blocks in these handlers:
+
+  * Calls to OpenAI Embeddings API to vectorize a query or device description.
+  * Queries to the Postgres database (with the **pgvector** extension) for nearest-neighbor search.
+  * Parsing or formatting of results (e.g. assembling literature citation info or device details).
+* **Example (Pseudo-code snippet from existing handlers):**
+
+  ```js
+  // CER literature search handler (pseudo-code)
+  const queryText = req.body.query;
+  const embedding = await openai.createEmbedding(queryText);
+  const results = await db.query(
+    "SELECT id, title, snippet, embedding <-> $1 AS score FROM literature_vectors ORDER BY embedding <-> $1 LIMIT 5",
+    [embedding]
+  );
+  // format results (e.g. attach score or highlight snippet)
+  res.json({ results });
+  ```
+
+  ```js
+  // 510(k) predicate search handler (pseudo-code)
+  const deviceDesc = req.body.deviceDescription;
+  const emb = await openai.createEmbedding(deviceDesc);
+  const devices = await db.query(
+    "SELECT k_number, device_name, similarity(embedding, $1) AS score FROM device_vectors ORDER BY embedding <-> $1 LIMIT 5",
+    [emb]
+  );
+  // possibly filter or sort by score threshold
+  res.json({ predicates: devices });
+  ```
+* **Conclusion:** Note the redundant steps (embedding generation, vector query, result sorting) that we will consolidate.
+
+## 2. Design the `discoveryService.js` Module
+
+**Task:** Create a new service file to house shared discovery logic.
+
+* **File Path:** `server/services/discoveryService.js` (new file).
+* **Purpose:** Provide functions for semantic searches that both modules can call. Two primary functions will cover our needs:
+
+  * `searchLiterature(query, options)` – returns relevant literature references.
+  * `findPredicates(query, options)` – returns similar predicate devices.
+* **Context Parameters:** Each function will accept an `options` object to customize behavior. For example:
+
+  * `options.module` or `options.context`: either `"CER"` or `"510k"` (to adjust scoring or formatting if needed).
+  * `options.topK`: number of results to return (default could be 5, but CER vs 510k might differ).
+  * `options.scoreThreshold`: a minimum similarity score to filter results (if applicable).
+  * Other flags as needed (e.g. `options.includeSnippets` for literature).
+* **Shared utilities:** Inside `discoveryService`, implement helpers for common tasks:
+
+  * `getEmbedding(text)`: Use OpenAI API to get embedding vector for the input text. This should handle API calls and errors in one place.
+  * `queryVectorIndex(vector, indexTable, topK)`: Query the Postgres **pgvector** index for nearest vectors. This function can construct parameterized SQL for the given table and return rows with similarity scores.
+  * Possibly a helper to `fetchExternalDetails(result)` if needed for literature (e.g. retrieving full citation from an external API if our DB only stores partial info).
+* **Implement functions:**
+
+  ```js
+  // server/services/discoveryService.js
+  const openai = require('../util/openaiClient');  // hypothetical OpenAI client util
+  const db = require('../db');                     // database client (e.g. pg or Supabase client)
+
+  // Helper: embed text using OpenAI API
+  async function getEmbedding(text) {
+    // Call OpenAI Embeddings API (e.g., text-embedding-ada-002)
+    const response = await openai.createEmbedding({ input: text });
+    const embedding = response.data[0].embedding;
+    return embedding;
+  }
+
+  // Helper: perform vector similarity search on a given table
+  async function queryVectorIndex(embedding, tableName, topK = 5) {
+    // Example using pgvector's <-> operator for cosine distance
+    const query = `
+      SELECT *, embedding <-> $1 AS distance
+      FROM ${tableName}
+      ORDER BY embedding <-> $1
+      LIMIT $2;
+    `;
+    const results = await db.query(query, [embedding, topK]);
+    return results.rows;
+  }
+
+  // Main function: Literature search
+  async function searchLiterature(query, { module = 'CER', topK = 5 } = {}) {
+    const embedding = await getEmbedding(query);
+    let results = await queryVectorIndex(embedding, 'literature_vectors', topK);
+    // If needed, refine or format results based on module
+    if (module === 'CER') {
+      results = results.map(r => ({
+        title: r.title,
+        snippet: r.snippet,
+        score: parseFloat((1 - r.distance).toFixed(3))  // convert distance to similarity if needed
+      }));
+    } else if (module === '510k') {
+      // 510(k) might use literature search differently (if at all), but handle if needed
+      results = results.map(r => ({ ...r, score: 1 - r.distance }));
+    }
+    // (Optional) If any result needs external data (e.g., fetching full abstract), do it here.
+    return results;
+  }
+
+  // Main function: Predicate device search
+  async function findPredicates(deviceDesc, { module = '510k', topK = 5 } = {}) {
+    const embedding = await getEmbedding(deviceDesc);
+    let devices = await queryVectorIndex(embedding, 'device_vectors', topK);
+    // Module-specific adjustments
+    // e.g., ensure results share the same device type or apply custom scoring
+    if (module === '510k') {
+      devices = devices.map(d => ({
+        k_number: d.k_number,
+        device_name: d.device_name,
+        score: parseFloat((1 - d.distance).toFixed(3)),
+        manufacturer: d.manufacturer
+      }));
+    } else if (module === 'CER') {
+      // CER context might use "equivalent device" concept similarly
+      devices = devices.map(d => ({ name: d.device_name, similarity: 1 - d.distance }));
+    }
+    return devices;
+  }
+
+  module.exports = { searchLiterature, findPredicates };
+  ```
+
+  *Notes:* The above code is a **template**. In practice:
+
+  * Use actual OpenAI client calls (with proper API key from config).
+  * Use real table names and adjust fields based on your database schema.
+  * The `distance` is assumed to be returned by the `<->` operator (lower distance = higher similarity). We convert it to a similarity score if needed for output.
+  * Adjust formatting (e.g., number of decimal places for scores or including snippet text) as required by each module’s current behavior.
+
+## 3. Refactor Endpoints to Use the Unified Service
+
+**Task:** Update existing API route handlers to delegate to `discoveryService` instead of containing their own logic.
+
+* **CER Literature Search Endpoint:**
+  **File:** `server/routes/cerRoutes.js` (or appropriate controller file).
+  **Change:** Replace inline logic with a call to `discoveryService.searchLiterature`. For example:
+
+  ```js
+  // BEFORE (CER literature endpoint pseudocode)
+  router.post('/literature-search', async (req, res) => {
+    const query = req.body.query;
+    // ... embed query and search DB ...
+    res.json({ results: literatureResults });
+  });
+  ```
+
+  ```js
+  // AFTER (CER literature endpoint using discoveryService)
+  const discoveryService = require('../services/discoveryService');
+  router.post('/literature-search', async (req, res, next) => {
+    try {
+      const query = req.body.query;
+      const results = await discoveryService.searchLiterature(query, { module: 'CER', topK: 5 });
+      res.json({ results });  // preserve original response structure
+    } catch (err) {
+      next(err);  // handle errors via middleware
+    }
+  });
+  ```
+
+  Ensure that the response format (`{ results: [...] }`) remains exactly as before so the front-end continues to parse it correctly.
+
+* **510(k) Predicate Search Endpoint:**
+  **File:** `server/routes/kRoutes.js` (or similar).
+  **Change:** Use `discoveryService.findPredicates`:
+
+  ```js
+  // BEFORE
+  router.post('/find-predicates', async (req, res) => {
+    const desc = req.body.deviceDescription;
+    // ... embed and query ...
+    res.json({ predicates: deviceList });
+  });
+  ```
+
+  ```js
+  // AFTER
+  router.post('/find-predicates', async (req, res, next) => {
+    try {
+      const desc = req.body.deviceDescription;
+      const devices = await discoveryService.findPredicates(desc, { module: '510k', topK: 5 });
+      res.json({ predicates: devices });
+    } catch (err) {
+      next(err);
+    }
+  });
+  ```
+
+  This returns the predicate devices array under the key `predicates` as originally expected.
+
+* **Semantic Search Endpoint (if present):**
+  If an endpoint like `/semantic-search` exists, decide how it should use the new service:
+
+  * If it was essentially a literature search (general semantic query for references), route it to `searchLiterature` with an appropriate context.
+  * If it was a more general endpoint that could search both devices and literature depending on input, you might introduce a parameter in the request (e.g. `type: 'literature' | 'predicate'`) and call the respective service function.
+    **Example:**
+
+  ```js
+  router.post('/semantic-search', async (req, res, next) => {
+    try {
+      const { query, target } = req.body; // 'target' could be 'literature' or 'device'
+      let results;
+      if (target === 'device') {
+        results = await discoveryService.findPredicates(query, { module: '510k' });
+      } else {
+        results = await discoveryService.searchLiterature(query, { module: 'CER' });
+      }
+      res.json({ results });
+    } catch (err) { next(err); }
+  });
+  ```
+
+  If no such differentiation exists (perhaps semantic-search was an older alias), you can default to one behavior (e.g. treat it like literature search).
+
+* **Double-check other endpoints:** The prompt mentions "etc." – verify if there are any additional discovery-related routes (for example, maybe `/literature-search/:id` or other variations) that should also use the new service. Update those similarly, keeping inputs/outputs unchanged.
+
+* **Remove redundancy:** After refactoring, the original embedding and DB query code in each handler is no longer needed. Clean it up to avoid confusion:
+
+  * Delete or comment out old utility functions that have moved to `discoveryService` (e.g., if there were separate `cerSearchUtils.js` or `predicateUtils.js` with duplicate code).
+  * **Note:** If other parts of the codebase used those old utilities, consider refactoring them to call the new service as well, or leave a proxy function that calls the new one (to avoid breaking anything unexpectedly).
+
+## 4. Parameterize Formatting and Scoring for Each Module
+
+**Task:** Ensure the unified functions produce results tailored to CER vs 510(k) needs via parameters.
+
+* **Result Formatting:** Compare the current API responses:
+
+  * CER literature results might include fields like `title`, `snippet` (highlight from article), `score` or `relevance`.
+  * 510(k) predicate results likely include `k_number` (510(k) number), `device_name`, maybe `manufacturer`, and a similarity score.
+  * The unified service should produce the same structure given the module context.
+  * *Implementation:* Within `searchLiterature` and `findPredicates`, use `if (module === 'CER') { ... } else if (module === '510k') { ... }` to format the objects as needed. We did this in the sample code by mapping fields differently.
+  * For example, in `searchLiterature`, CER context returns `{title, snippet, score}` while 510k context might not be used or could format differently if needed.
+* **Scoring differences:** If the two modules rank or filter results differently:
+
+  * E.g., the CER module might want a minimum relevance score (distance threshold) to ignore irrelevant papers, whereas 510(k) might always take the top N devices regardless of score (or vice versa).
+  * Introduce an `options.scoreThreshold` if needed:
+
+    ```js
+    if (options.scoreThreshold) {
+      results = results.filter(r => (1 - r.distance) >= options.scoreThreshold);
+    }
+    ```
+
+    Set `scoreThreshold` when calling the service from the module’s route if the original logic had such filtering.
+  * If CER needed more results or different sorting, adjust `topK` or sorting logic accordingly in the call or inside the service.
+* **Module-specific data sources:** If the two modules originally searched different indices or databases:
+
+  * Ensure the service queries the correct index/table based on context. In our example, we used `'literature_vectors'` vs `'device_vectors'` table names. If these differ (for instance, maybe CER uses multiple literature sources, or 510k has separate index per product code), adjust the logic to handle it.
+  * You might maintain a mapping:
+
+    ```js
+    const indexTable = module === 'CER' ? 'literature_vectors' : 'device_vectors';
+    let results = await queryVectorIndex(embedding, indexTable, topK);
+    ```
+
+    This way, the function knows which dataset to search.
+* **External data parsing:** If *either* module required fetching extra info:
+
+  * For example, maybe after finding a literature DOI from the vector DB, the CER logic calls an external API (CrossRef, PubMed) to get the full citation (title, authors, journal).
+  * Similarly, maybe the predicate search might call an FDA API to get additional device info (if not already stored).
+  * Introduce optional steps in the service for these:
+
+    * E.g., a function `getPublicationDetails(id)` that is called on each result if needed (and cache or batch requests for efficiency).
+    * Use the module flag to decide: Only CER might do `getPublicationDetails`, 510k may not need it (assuming device DB has all info).
+  * Keep these network calls asynchronous and consider error handling (if external service fails, still return the core info available).
+* **Sample Adjustment:** If CER requires up to 10 literature references but 510k only uses top 3 predicate devices:
+
+  * In CER route: `discoveryService.searchLiterature(query, { module: 'CER', topK: 10 })`
+  * In 510k route: `discoveryService.findPredicates(desc, { module: '510k', topK: 3 })`
+  * The service functions already handle `topK` and formatting appropriately.
+
+By parameterizing in this way, the **same service code** can cater to both use-cases without branching outside, and we preserve each module’s expected output format and filtering rules.
+
+## 5. Preserve API Behavior and Avoid Frontend Changes
+
+**Task:** Ensure the refactor is transparent to the front-end and existing integrations.
+
+* **No URL or payload changes:** All endpoint URLs (`/semantic-search`, `/literature-search`, `/find-predicates`, etc.) and HTTP methods stay the same. We are only changing the internal implementation.
+* **Identical response format:** Double-check that keys and structure in JSON responses match the pre-refactor output:
+
+  * If previously `/literature-search` responded with `{ results: [ {title, snippet, score}, ... ] }`, the new code should do the same. Field naming (e.g. "score" vs "relevance") must remain consistent.
+  * If `/find-predicates` responded with `{ predicates: [ {k_number, device_name, score, ...}, ... ] }`, ensure we return the same keys. (The sample code above returns `manufacturer` as well if available, but **only include it** if it was originally part of the response or needed by UI.)
+* **Performance and side-effects:** The unified code should perform equivalently:
+
+  * Using the same or similar DB queries and OpenAI calls as before, so response times remain consistent.
+  * No new calls in series that were previously parallel – e.g., if literature search originally parallelized embedding and multiple DB lookups, do the same (though typically it’s one after the other: embed then query).
+  * No removal of essential steps – ensure that any previous post-processing (like sorting by date or filtering out the query device itself from results) is still done. For instance, if predicate search was excluding the device identical to the query (to avoid returning itself if stored in DB), carry that logic over.
+* **Backward compatibility with `/semantic-search`:** If the UI or other clients still use this endpoint, make sure it functions. If it was essentially a duplicate of literature search, having it call `searchLiterature` will maintain its behavior. If it was expecting a combined result set, consider splitting or mirroring the old logic exactly using the new service:
+
+  * For example, if `/semantic-search` previously returned both predicates and literature in one response (unlikely, but just in case), you could call both service functions and return an object like `{ literature: [...], predicates: [...] }` to match the original schema.
+* **No UI changes required:** Because outputs and endpoints are consistent, the front-end (React components or others) should not need any update. The UI will continue to render the data as before. We explicitly avoid any modification to how data is presented or triggered on the client side.
+
+By carefully keeping the external contract the same, we minimize the risk of breaking the application while improving the internal code quality.
+
+## 6. Testing and Regression Validation
+
+After implementing the unified service and refactoring the endpoints, perform thorough testing to ensure no regressions:
+
+* **Unit Tests for `discoveryService`:**
+
+  * Write tests for `searchLiterature` and `findPredicates` functions:
+
+    * **Embedding call:** Mock the OpenAI embedding function to return a known vector for a given input (to avoid actual API calls in tests).
+    * **DB query:** Mock the database query to return a controlled set of rows. For example, simulate `queryVectorIndex` returning two literature entries for a known query.
+    * **Validation:** Assert that the returned format from `searchLiterature` matches expectations for both CER and 510k contexts (e.g., has `title` and `snippet` for CER, etc.). Do the same for `findPredicates` (ensure it returns `k_number`, `device_name`, etc. for 510k).
+    * Test filtering logic by providing a `scoreThreshold` and ensuring results below the threshold are dropped.
+    * Test that passing different `topK` yields that number of results.
+* **Integration Tests / Smoke Tests for endpoints:**
+
+  * If possible, run the server in a test mode with a sample database (or a transaction rollback approach) and hit the endpoints:
+
+    * **/literature-search:** POST a sample query (e.g., `{ query: "heart stent efficacy" }`). Verify the response JSON has the same shape and content that the old implementation would have produced. If you have fixture data or known expected results (from before refactor), compare them.
+    * **/find-predicates:** POST a sample device description (e.g., `{ deviceDescription: "blood glucose monitor with Bluetooth" }`). Check that the response contains a list of predicates with realistic fields. If the old logic had deterministic output given a seeded DB, ensure it matches.
+    * **/semantic-search:** If applicable, test with both literature-type and device-type queries (or whatever usage it has) to ensure it routes correctly and returns data.
+  * These tests can be done with a tool like **Postman** or via automated test scripts (using supertest or similar in Node).
+* **Manual UI Testing:**
+
+  * Launch the application in Replit (or your dev environment) and navigate through the UI flows:
+
+    * In the **CER Generator** module, go to the literature discovery section and perform a sample search. Confirm that results populate as before (titles, snippets, relevance scores, etc.).
+    * In the **510(k) Generator** module, use the predicate discovery feature. Verify the list of suggested predicate devices appears and looks correct.
+    * Try edge cases:
+
+      * No results scenario (e.g., query something obscure) – the UI should handle it as before (maybe showing "No results" message). The backend should still return an empty list `results: []` or `predicates: []` as prior.
+      * Very long query text (to ensure the embedding call still handles it).
+      * Verify that error handling works (e.g., if OpenAI API key is missing or DB is unreachable, the errors are caught and returned as 500 or handled gracefully as before).
+* **Regression Checklist:**
+
+  * Compare output examples from before and after:
+
+    * If possible, retrieve logs or saved outputs from the old endpoints and compare to the new ones for the same input.
+    * Ensure numeric values (scores) are within a reasonable tolerance if slightly changed by implementation (e.g., if previously a similarity was 0.92 and now 0.920 due to formatting, that’s fine, but the structure should match exactly).
+  * Run any existing automated test suites. If the project has tests for these endpoints, all should pass. If not, consider adding some now to protect this functionality.
+* **Performance Testing:**
+
+  * Since we unified the code, test that response times didn’t regress. For instance, time a typical literature search before and after. The use of identical queries to the vector index and external APIs means performance should remain constant. If any slowdowns are noticed, profile whether the new code introduced any extra overhead (it shouldn’t, as it’s mostly function reorganization).
+  * Check memory usage if large responses (especially literature with snippets) are handled similarly.
+* **Monitoring after deployment:**
+
+  * Once this refactor is deployed (in the Replit environment or production), monitor logs for any unexpected errors in these endpoints. Any stack trace pointing to `discoveryService` can be quickly addressed since we isolated the logic there.
+  * Ensure that no calls from the UI are failing – for example, the frontend console should not show errors for the network calls to these endpoints.
+
+By following this testing strategy, we can be confident that unifying the discovery logic did not introduce regressions and that all modules function as before.
+
+## 7. Deployment and Handoff
+
+Finally, after validation, proceed to deploy the updated code:
+
+* **File Changes Summary:**
+
+  * *New:* `server/services/discoveryService.js` (contains unified logic).
+  * *Modified:* `server/routes/cerRoutes.js`, `server/routes/kRoutes.js` (or respective controller files for CER and 510k) to use the new service.
+  * *Unchanged:* All frontend files and any other service files not related to discovery.
+* **Document the changes:** Inform the team that the discovery logic is now centralized. Future adjustments to literature or predicate searching (e.g., tuning the embedding model or search algorithm) should be made in `discoveryService.js` to affect both modules uniformly.
+* **Retire duplicate code:** If there were any now-unused files (perhaps a `literatureService.js` or similar in each module), consider removing them to avoid confusion. Alternatively, leave a comment in them or re-export the new service functions for a transitional period:
+
+  ```js
+  // server/services/cerLiteratureService.js (deprecated)
+  module.exports = {
+    searchLiterature: discoveryService.searchLiterature
+  };
+  ```
+
+  so that any import of the old service still works but points to the new implementation.
+* **Future enhancements:** The unified service opens the door to easily extending functionality:
+
+  * You can add caching of embeddings or results, since both modules would benefit.
+  * Upgrading the embeddings model or adjusting vector search parameters now happens in one place.
+  * If a new module or context is added (say another regulatory module needing semantic search), it can reuse these services with a new context parameter rather than duplicating code.
+
+By completing these steps, Replit agents (developers) will have a clear blueprint to implement the unified discovery backend. This improves maintainability (one source of truth for discovery logic) and ensures consistent behavior across the CER and 510(k) features, all while keeping the client experience and API interface unchanged. Good luck with the integration!
