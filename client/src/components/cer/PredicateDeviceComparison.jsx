@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { findPredicateDevices } from '../../api/cer';
+import { findPredicateDevices, comparePredicateDevices } from '../../api/cer';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, X, Check, Search, FileText, Download, Copy, Plus } from "lucide-react";
@@ -199,6 +199,44 @@ const PredicateDeviceComparison = ({ deviceProfile, onComparisonGenerated }) => 
     try {
       // Import error handling utilities
       const errorHandling = await import('../../utils/errorHandling');
+      
+      // Prepare device description from the profile
+      const deviceDescription = {
+        deviceName: deviceProfile.deviceName || '',
+        manufacturer: deviceProfile.manufacturer || '',
+        modelNumber: deviceProfile.modelNumber || '',
+        deviceClass: deviceProfile.deviceClass || '',
+        intendedUse: deviceProfile.intendedUse || '',
+        operatingPrinciples: deviceProfile.operatingPrinciples || '',
+        ...deviceProfile // Include all other properties
+      };
+      
+      // Call the server-side API for predicate comparison
+      const response = await errorHandling.withTimeout(
+        comparePredicateDevices(deviceDescription, selectedPredicates),
+        120000, // 2 minute timeout
+        'Predicate device comparison generation timed out'
+      );
+      
+      if (!response || !response.success) {
+        throw new Error(response?.error?.message || 'Failed to generate predicate comparison');
+      }
+      
+      // Set the comparison result from the API
+      setComparisonTable(response.data.comparison);
+      
+      // Notify parent component if a callback was provided
+      if (onComparisonGenerated) {
+        onComparisonGenerated(response.data);
+      }
+      
+      toast({
+        title: "Comparison generated",
+        description: "Successfully generated predicate device comparison."
+      });
+      
+      // For backward compatibility, we'll keep the legacy field definitions that would
+      // be used in client-side processing, but we're not using them anymore
       
       // 510(k) specific fields - expanded list for regulatory compliance
       const regulatory510kFields = [

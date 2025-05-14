@@ -239,16 +239,28 @@ export const searchUnifiedLiterature = async (query, options = { limit: 10, modu
 export const findPredicateDevices = async (deviceDescription, options = { limit: 8, module: '510k' }) => {
   try {
     console.log('Finding predicates with unified discovery service:', { deviceDescription, options });
-    const response = await axios.post('/api/discovery/find-predicates', {
-      deviceDescription,
+    
+    // Build query parameters
+    const queryParams = new URLSearchParams({
+      query: deviceDescription,
       limit: options.limit || 8,
-      module: options.module || '510k'
+      context: options.module || '510k'
     });
+    
+    // Call the correct GET endpoint with query parameters
+    const response = await axios.get(`${DISCOVERY_API_URL}/predicates?${queryParams.toString()}`);
+    
     console.log('Unified predicate search response:', response.data);
-    return response.data.predicates || [];
+    return response.data.data || [];
   } catch (error) {
     console.error('Error using unified predicate search:', error);
-    // Return empty array as fallback since there's no traditional endpoint
+    
+    // Provide more detailed error logging
+    if (error.response) {
+      console.error('Server response:', error.response.data);
+    }
+    
+    // Return empty array as fallback for smoother UX
     return [];
   }
 };
