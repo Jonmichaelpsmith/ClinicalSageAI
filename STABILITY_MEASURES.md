@@ -8,6 +8,28 @@ This document outlines the critical stability measures implemented to ensure the
 
 The following components have been identified as critical to application stability:
 
+### Automated Testing Infrastructure
+
+1. **Unit Tests:**
+   - Service-level tests in `server/services/__tests__/deviceProfileService.test.ts`
+   - Validates core business logic without UI dependencies
+   - Ensures device profile CRUD operations function correctly
+
+2. **Integration Tests:**
+   - API route tests in `server/routes/__tests__/deviceProfileRoutes.test.ts`
+   - Tests the complete request/response cycle through HTTP
+   - Verifies API contracts between frontend and backend
+
+3. **Test Framework:**
+   - Jest configuration in root `jest.config.js`
+   - Test setup in `jest.setup.js`
+   - Custom test runner in `run_tests.js` for executing all tests
+
+4. **Test Documentation:**
+   - Testing guide in `server/services/__tests__/README.md`
+   - Details on test coverage and best practices
+   - Instructions for running tests and extending the test suite
+
 ### Client-Side Measures
 
 1. **Enhanced Error Boundaries:**
@@ -134,6 +156,54 @@ If the application does crash despite these measures:
 5. Use network resilience for critical API requests
 6. Test error scenarios thoroughly during development
 7. Never remove or disable stability measures without understanding the consequences
+
+## Automated Testing
+
+Automated tests are a critical part of our stability strategy. We use Jest to test both service-level logic and API endpoints. Here's how to work with our testing infrastructure:
+
+### Running Tests
+
+To run all tests:
+```
+node run_tests.js
+```
+
+To run specific test files:
+```
+node run_tests.js -- server/services/__tests__/deviceProfileService.test.ts
+```
+
+To run tests with specific patterns:
+```
+node run_tests.js -- -t "create profile"
+```
+
+### Test Coverage
+
+The tests cover the following:
+
+1. **Service Layer**:
+   - Creating profiles
+   - Retrieving profiles by ID
+   - Listing all profiles
+   - Updating profiles
+   - Deleting profiles
+   - Error handling
+
+2. **API Layer**:
+   - HTTP request/response cycle
+   - Input validation
+   - Error handling
+   - Data transformation
+
+### Extending Tests
+
+When adding new functionality:
+
+1. Add unit tests for new service methods before implementation
+2. Add integration tests for new API endpoints
+3. Run the entire test suite before committing changes
+4. Ensure both happy paths and error scenarios are tested
 
 ## Memory Usage Guidelines
 
