@@ -436,23 +436,51 @@ export default function FDA510kTabContent({
       <div className="space-y-4">
         <GuidedTooltip
           title="FDA 510(k) Submission"
-          content="Generate your final 510(k) submission package for FDA review."
+          content="Generate your final 510(k) submission package for FDA review with automated workflow capabilities."
           onDismiss={() => {}}
         />
         
-        <ReportGenerator 
+        <WorkflowEnabledReportGenerator 
           deviceProfile={deviceProfile}
           predicates={predicates}
           compliance={compliance}
           sections={sections}
-          onReportGenerated={(reportUrl) => {
+          documentType="510k"
+          organizationId={1} // In production, this would come from auth context
+          userId={1} // In production, this would come from auth context
+          onReportGenerated={(reportData) => {
             toast({
               title: 'Report Generated',
-              description: 'Your 510(k) submission package has been generated successfully.',
+              description: 'Your 510(k) submission package has been generated and added to your workflow.',
               variant: 'success'
             });
           }}
         />
+        
+        {/* Keep the original ReportGenerator as a fallback option */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Legacy Report Generator</CardTitle>
+            <CardDescription>
+              Generate your 510(k) submission without workflow integration
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ReportGenerator 
+              deviceProfile={deviceProfile}
+              predicates={predicates}
+              compliance={compliance}
+              sections={sections}
+              onReportGenerated={(reportUrl) => {
+                toast({
+                  title: 'Report Generated',
+                  description: 'Your 510(k) submission package has been generated successfully.',
+                  variant: 'success'
+                });
+              }}
+            />
+          </CardContent>
+        </Card>
       </div>
     );
   }
