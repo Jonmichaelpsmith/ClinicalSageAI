@@ -38,8 +38,8 @@ import { router as fda510kRouter } from './routes/fda510kRoutes.js';
 import discoveryRouter from './routes/discovery.js';
 // @ts-ignore
 import literatureReviewGeneratorRouter from './routes/literature-review-generator.js';
-// Use dynamic import for document-assembly router
-// We'll load it later in the registerRoutes function
+// @ts-ignore
+import documentAssemblyRouter from './routes/document-assembly.mjs';
 // Regulatory-ai router will be imported directly in server/index.ts
 
 export default function registerRoutes(app: Express): void {
@@ -376,14 +376,9 @@ export default function registerRoutes(app: Express): void {
   app.use('/api/cer', literatureReviewGeneratorRouter);
   console.log('Literature review generator routes registered');
   
-  // Register document assembly routes using require instead of import
-  try {
-    const documentAssemblyRouter = require('./routes/document-assembly.js');
-    app.use('/api/document-assembly', documentAssemblyRouter);
-    console.log('Document assembly routes registered');
-  } catch (error) {
-    console.error('Failed to load document assembly routes:', error);
-  }
+  // Register document assembly routes with ESM version
+  app.use('/api/document-assembly', documentAssemblyRouter);
+  console.log('Document assembly routes registered (ESM)');
   
   // Use the updated regulatory-ai.js implementation with no mocks or fallbacks
   // @ts-ignore
