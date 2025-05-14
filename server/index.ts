@@ -112,11 +112,12 @@ console.log('Module Integration routes registered');
 // Import and register 510(k) automation routes
 import FDA510kRoutes from './routes/510kRoutes';
 import { router as FDA510kApiRoutes } from './routes/510k-api-routes';
-import eSTARRoutes from './routes/510kEstarRoutes';
 app.use('/api/510k', FDA510kRoutes);
 app.use('/api/fda510k', FDA510kApiRoutes);
-app.use(eSTARRoutes); // eSTAR routes define their own paths
 console.log('FDA 510(k) Automation routes registered');
+
+// The eSTAR routes are now registered in routes_fixed.ts
+console.log('FDA 510(k) eSTAR routes registered via routes_fixed.ts');
 
 // We'll register the regulatory AI routes below with FDA 510(k) routes
 

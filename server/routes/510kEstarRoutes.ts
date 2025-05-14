@@ -91,7 +91,7 @@ router.post('/build', async (req, res) => {
     console.error('Error building eSTAR package:', error);
     return res.status(500).json({
       success: false,
-      error: error.message || 'An error occurred during eSTAR package generation'
+      errorMessage: error.message || 'An error occurred during eSTAR package generation'
     });
   }
 });
@@ -142,7 +142,7 @@ router.post('/submit', async (req, res) => {
     console.error('Error submitting eSTAR package:', error);
     return res.status(500).json({
       success: false,
-      error: error.message || 'An error occurred during eSTAR submission'
+      errorMessage: error.message || 'An error occurred during eSTAR submission'
     });
   }
 });
@@ -196,7 +196,7 @@ router.post('/workflow/integrate', async (req, res) => {
     console.error('Error integrating eSTAR with workflow:', error);
     return res.status(500).json({
       success: false,
-      error: error.message || 'An error occurred during eSTAR workflow integration'
+      errorMessage: error.message || 'An error occurred during eSTAR workflow integration'
     });
   }
 });
@@ -227,7 +227,7 @@ router.get('/download/:projectId', (req, res) => {
     console.error('Error serving eSTAR package:', error);
     return res.status(500).json({
       success: false,
-      error: error.message || 'An error occurred while serving the eSTAR package'
+      errorMessage: error.message || 'An error occurred while serving the eSTAR package'
     });
   }
 });
