@@ -214,15 +214,8 @@ export default function LitReviewPanel({
     }
   };
   
-  const togglePredicateSelection = (predicate) => {
-    if (selectedPredicates.some(p => p.id === predicate.id)) {
-      setSelectedPredicates(selectedPredicates.filter(p => p.id !== predicate.id));
-    } else {
-      setSelectedPredicates([...selectedPredicates, predicate]);
-      // Show visual confirmation
-      console.log('Predicate device selected:', predicate.title || predicate.name);
-    }
-  };
+  // Note: Removed duplicate togglePredicateSelection function
+  // All predicate selection should use toggleArticleSelection function with searchType === 'predicates'
 
   const handleFilterChange = (key, value) => {
     setFilters({
