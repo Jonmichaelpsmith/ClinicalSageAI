@@ -404,21 +404,118 @@ class FDA510kService {
   }
 
   /**
-   * Create or update a device profile for a 510(k) submission
+   * Device Profile API methods
    * 
-   * @param {Object} deviceProfileData The device profile data to save
-   * @returns {Promise<Object>} The saved device profile
+   * These methods handle all interactions with device profiles from both
+   * the 510(k) and CER interfaces using the unified API
+   */
+  DeviceProfileAPI = {
+    /**
+     * Create a new device profile
+     * 
+     * @param {Object} profileData The device profile data
+     * @param {string} organizationId Optional organization ID
+     * @returns {Promise<Object>} The created device profile
+     */
+    create: async (profileData, organizationId) => {
+      try {
+        const response = await apiRequest.post('/api/device-profiles', profileData, {
+          params: organizationId ? { organizationId } : undefined
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Error creating device profile:', error);
+        throw error;
+      }
+    },
+    
+    /**
+     * Update an existing device profile
+     * 
+     * @param {string} profileId The ID of the profile to update
+     * @param {Object} profileData The updated device profile data
+     * @param {string} organizationId Optional organization ID
+     * @returns {Promise<Object>} The updated device profile
+     */
+    update: async (profileId, profileData, organizationId) => {
+      try {
+        const response = await apiRequest.put(`/api/device-profiles/${profileId}`, profileData, {
+          params: organizationId ? { organizationId } : undefined
+        });
+        return response.data;
+      } catch (error) {
+        console.error(`Error updating device profile ${profileId}:`, error);
+        throw error;
+      }
+    },
+    
+    /**
+     * Get a list of all device profiles
+     * 
+     * @param {string} organizationId Optional organization ID to filter profiles
+     * @returns {Promise<Array>} Array of device profiles
+     */
+    list: async (organizationId) => {
+      try {
+        const response = await apiRequest.get('/api/device-profiles', {
+          params: organizationId ? { organizationId } : undefined
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching device profiles:', error);
+        throw error;
+      }
+    },
+    
+    /**
+     * Get a single device profile by ID
+     * 
+     * @param {string} profileId The ID of the device profile to retrieve
+     * @param {string} organizationId Optional organization ID for tenant context
+     * @returns {Promise<Object>} The device profile
+     */
+    get: async (profileId, organizationId) => {
+      try {
+        const response = await apiRequest.get(`/api/device-profiles/${profileId}`, {
+          params: organizationId ? { organizationId } : undefined
+        });
+        return response.data;
+      } catch (error) {
+        console.error(`Error fetching device profile ${profileId}:`, error);
+        throw error;
+      }
+    },
+    
+    /**
+     * Delete a device profile
+     * 
+     * @param {string} profileId The ID of the device profile to delete
+     * @param {string} organizationId Optional organization ID for tenant context
+     * @returns {Promise<boolean>} True if successful
+     */
+    delete: async (profileId, organizationId) => {
+      try {
+        await apiRequest.delete(`/api/device-profiles/${profileId}`, {
+          params: organizationId ? { organizationId } : undefined
+        });
+        return true;
+      } catch (error) {
+        console.error(`Error deleting device profile ${profileId}:`, error);
+        throw error;
+      }
+    }
+  };
+  
+  /**
+   * Legacy method - redirects to the new DeviceProfileAPI
+   * @deprecated Use DeviceProfileAPI instead
    */
   async saveDeviceProfile(deviceProfileData) {
     try {
-      // If there's an ID, this is an update
       if (deviceProfileData.id) {
-        const response = await apiRequest.put(`/api/device-profiles/${deviceProfileData.id}`, deviceProfileData);
-        return response.data;
+        return await this.DeviceProfileAPI.update(deviceProfileData.id, deviceProfileData);
       } else {
-        // Otherwise it's a new profile
-        const response = await apiRequest.post('/api/device-profiles', deviceProfileData);
-        return response.data;
+        return await this.DeviceProfileAPI.create(deviceProfileData);
       }
     } catch (error) {
       console.error('Error saving device profile:', error);
@@ -427,59 +524,27 @@ class FDA510kService {
   }
   
   /**
-   * Get all device profiles
-   * 
-   * @param {string} organizationId Optional organization ID to filter profiles
-   * @returns {Promise<Array>} Array of device profiles
+   * Legacy method - redirects to the new DeviceProfileAPI 
+   * @deprecated Use DeviceProfileAPI instead
    */
   async getDeviceProfiles(organizationId) {
-    try {
-      const response = await apiRequest.get('/api/device-profiles', {
-        params: organizationId ? { organizationId } : undefined
-      });
-      return response;
-    } catch (error) {
-      console.error('Error fetching device profiles:', error);
-      throw error;
-    }
+    return this.DeviceProfileAPI.list(organizationId);
   }
   
   /**
-   * Get a device profile by ID
-   * 
-   * @param {string} profileId The ID of the device profile to retrieve
-   * @param {string} organizationId Optional organization ID for tenant context
-   * @returns {Promise<Object>} The device profile
+   * Legacy method - redirects to the new DeviceProfileAPI
+   * @deprecated Use DeviceProfileAPI instead
    */
   async getDeviceProfile(profileId, organizationId) {
-    try {
-      const response = await apiRequest.get(`/api/device-profiles/${profileId}`, {
-        params: organizationId ? { organizationId } : undefined
-      });
-      return response;
-    } catch (error) {
-      console.error(`Error fetching device profile ${profileId}:`, error);
-      throw error;
-    }
+    return this.DeviceProfileAPI.get(profileId, organizationId);
   }
   
   /**
-   * Delete a device profile
-   * 
-   * @param {string} profileId The ID of the device profile to delete
-   * @param {string} organizationId Optional organization ID for tenant context
-   * @returns {Promise<boolean>} True if successful
+   * Legacy method - redirects to the new DeviceProfileAPI
+   * @deprecated Use DeviceProfileAPI instead
    */
   async deleteDeviceProfile(profileId, organizationId) {
-    try {
-      await apiRequest.delete(`/api/device-profiles/${profileId}`, {
-        params: organizationId ? { organizationId } : undefined
-      });
-      return true;
-    } catch (error) {
-      console.error(`Error deleting device profile ${profileId}:`, error);
-      throw error;
-    }
+    return this.DeviceProfileAPI.delete(profileId, organizationId);
   }
 }
 

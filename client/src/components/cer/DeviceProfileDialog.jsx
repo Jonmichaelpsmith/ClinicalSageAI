@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Clock, FileSymlink, Plus, RefreshCw } from 'lucide-react';
 import DeviceProfileForm from './DeviceProfileForm';
-import { postDeviceProfile, updateDeviceProfile } from '@/api/cer';
+import FDA510kService from '@/services/FDA510kService';
 
 const DeviceProfileDialog = ({ 
   buttonText = 'Create Device Profile', 

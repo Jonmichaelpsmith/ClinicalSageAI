@@ -1,4 +1,5 @@
 import axios from 'axios';
+import FDA510kService from '../services/FDA510kService';
 
 const API_BASE_URL = '/api/cer';
 const LITERATURE_SEARCH_URL = '/api/literature';
@@ -7,15 +8,16 @@ const IEEE_API_URL = '/api/ieee';
 const DISCOVERY_API_URL = '/api/discovery';
 
 /**
- * Post a new device profile
+ * Post a new device profile using the unified device profile API
  * 
  * @param {Object} data - The device profile data to save
  * @returns {Promise<Object>} - The saved device profile
  */
 export const postDeviceProfile = async (data) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/device-profile`, data);
-    return response.data;
+    // Use the new unified DeviceProfileAPI to create a device profile
+    const deviceProfile = await FDA510kService.DeviceProfileAPI.create(data);
+    return deviceProfile;
   } catch (error) {
     console.error('Error posting device profile:', error);
     throw error;
@@ -23,21 +25,16 @@ export const postDeviceProfile = async (data) => {
 };
 
 /**
- * Get all device profiles, optionally filtered by organization
+ * Get all device profiles, optionally filtered by organization using the unified device profile API
  * 
  * @param {string} organizationId - Optional organization ID filter
  * @returns {Promise<Array>} - Array of device profiles
  */
 export const getDeviceProfiles = async (organizationId) => {
   try {
-    let url = `${API_BASE_URL}/device-profile`;
-    
-    if (organizationId) {
-      url = `${API_BASE_URL}/device-profile/organization/${organizationId}`;
-    }
-    
-    const response = await axios.get(url);
-    return response.data;
+    // Use the new unified DeviceProfileAPI to list device profiles
+    const deviceProfiles = await FDA510kService.DeviceProfileAPI.list(organizationId);
+    return deviceProfiles;
   } catch (error) {
     console.error('Error getting device profiles:', error);
     throw error;
@@ -45,15 +42,16 @@ export const getDeviceProfiles = async (organizationId) => {
 };
 
 /**
- * Get a device profile by ID
+ * Get a device profile by ID using the unified device profile API
  * 
  * @param {string} id - The device profile ID
  * @returns {Promise<Object>} - The device profile
  */
 export const getDeviceProfileById = async (id) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/device-profile/${id}`);
-    return response.data;
+    // Use the new unified DeviceProfileAPI to get a device profile
+    const deviceProfile = await FDA510kService.DeviceProfileAPI.get(id);
+    return deviceProfile;
   } catch (error) {
     console.error(`Error getting device profile ID ${id}:`, error);
     throw error;
@@ -61,7 +59,7 @@ export const getDeviceProfileById = async (id) => {
 };
 
 /**
- * Update a device profile
+ * Update a device profile using the unified device profile API
  * 
  * @param {string} id - The device profile ID
  * @param {Object} data - The updated device profile data
@@ -69,8 +67,9 @@ export const getDeviceProfileById = async (id) => {
  */
 export const updateDeviceProfile = async (id, data) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/device-profile/${id}`, data);
-    return response.data;
+    // Use the new unified DeviceProfileAPI to update a device profile
+    const deviceProfile = await FDA510kService.DeviceProfileAPI.update(id, data);
+    return deviceProfile;
   } catch (error) {
     console.error(`Error updating device profile ID ${id}:`, error);
     throw error;
@@ -78,15 +77,16 @@ export const updateDeviceProfile = async (id, data) => {
 };
 
 /**
- * Delete a device profile
+ * Delete a device profile using the unified device profile API
  * 
  * @param {number} id - The device profile ID to delete
  * @returns {Promise<boolean>} - True if successful
  */
 export const deleteDeviceProfile = async (id) => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/device-profile/${id}`);
-    return response.data;
+    // Use the new unified DeviceProfileAPI to delete a device profile
+    const success = await FDA510kService.DeviceProfileAPI.delete(id);
+    return success;
   } catch (error) {
     console.error(`Error deleting device profile ID ${id}:`, error);
     throw error;
