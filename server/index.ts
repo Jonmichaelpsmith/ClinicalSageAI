@@ -112,9 +112,16 @@ console.log('Module Integration routes registered');
 // Import and register 510(k) automation routes
 import FDA510kRoutes from './routes/510kRoutes';
 import { router as FDA510kApiRoutes } from './routes/510k-api-routes';
+import deviceProfileRoutes from './routes/deviceProfileRoutes';
+
+// Register the new unified device profile routes
+app.use('/api/device-profiles', deviceProfileRoutes);
+console.log('Unified Device Profile routes registered at /api/device-profiles');
+
+// Keep old routes temporarily for backward compatibility
 app.use('/api/510k', FDA510kRoutes);
 app.use('/api/fda510k', FDA510kApiRoutes);
-console.log('FDA 510(k) Automation routes registered');
+console.log('FDA 510(k) Automation routes registered (legacy support)');
 
 // The eSTAR routes are now registered in routes_fixed.ts
 console.log('FDA 510(k) eSTAR routes registered via routes_fixed.ts');
