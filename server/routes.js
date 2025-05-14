@@ -16,6 +16,7 @@ const retrieveRoutes = require('./routes/ai/common/retrieve');
 const documentRoutes = require('./routes/documentRoutes');
 const { router: sseRoutes, sendEventToJob } = require('./routes/sseRoutes');
 const cerGenerationRoutes = require('./routes/cerGenerationRoutes');
+const discoveryRoutes = require('./routes/discovery');
 
 /**
  * Register routes on the Express app
