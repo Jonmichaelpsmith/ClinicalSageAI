@@ -2047,9 +2047,12 @@ export default function CERV2Page() {
     
       <div className="flex flex-col md:flex-row justify-between items-start p-6 pb-2 bg-gradient-to-r from-blue-50 to-white rounded-t-lg shadow-sm">
         <div>
-          <h1 className="text-2xl font-semibold text-[#0F6CBD] mb-1">
-            {documentType === '510k' ? 'FDA 510(k) Submission' : 'CER Builder'}
-          </h1>
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-2xl font-semibold text-[#0F6CBD]">
+              {documentType === '510k' ? 'FDA 510(k) Submission' : 'CER Builder'}
+            </h1>
+            {documentType === '510k' && <About510kDialog />}
+          </div>
           <p className="text-[#616161]">
             {documentType === '510k' 
               ? 'FDA compliant 510(k) premarket notification submission generator' 
