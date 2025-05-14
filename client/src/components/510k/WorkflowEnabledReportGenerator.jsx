@@ -1,488 +1,314 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { AlertCircle, Download, FileText, Check, Clock, RefreshCw, FileUp } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { toast } from '@/hooks/use-toast';
+import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, FileText, Check, Info, ArrowRight, Download, Share2, Copy, AlertCircle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
-// Import OneClick510kDraft for FDA-compliant formatting
-import OneClick510kDraft from './OneClick510kDraft';
+import UnifiedWorkflowPanel from '../unified-workflow/UnifiedWorkflowPanel';
 import { registerModuleDocument } from '../unified-workflow/registerModuleDocument';
-import { getWorkflowTemplates } from '../unified-workflow/WorkflowTemplateService';
 
-export default function WorkflowEnabledReportGenerator({
-  deviceProfile,
-  predicates = [],
-  compliance,
-  sections = [],
-  documentType = '510k',
+const REPORT_FORMATS = [
+  { value: 'pdf', label: 'PDF (.pdf)' },
+  { value: 'docx', label: 'Microsoft Word (.docx)' }
+];
+
+const WorkflowEnabledReportGenerator = ({
   organizationId,
   userId,
-  onReportGenerated
-}) {
+  deviceData,
+  predicateData,
+  reportType = "510k",
+  className = ''
+}) => {
+  const [activeTab, setActiveTab] = useState('generator');
+  const [reportFormat, setReportFormat] = useState('pdf');
+  const [reportTitle, setReportTitle] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [reportUrl, setReportUrl] = useState(null);
-  const [reportData, setReportData] = useState(null);
-  const [selectedFormat, setSelectedFormat] = useState('pdf');
-  const [selectedSections, setSelectedSections] = useState([
-    'device_description',
-    'intended_use',
-    'substantial_equivalence',
-    'standards',
-    'performance_data',
-    'conclusion'
-  ]);
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [workflowTemplates, setWorkflowTemplates] = useState([]);
-  const [selectedWorkflowTemplate, setSelectedWorkflowTemplate] = useState(null);
-  const [workflowInitialized, setWorkflowInitialized] = useState(false);
-  
-  const { toast } = useToast();
+  const [generatedReportId, setGeneratedReportId] = useState(null);
+  const [generatedReportUrl, setGeneratedReportUrl] = useState(null);
+  const [additionalNotes, setAdditionalNotes] = useState('');
+  const [documentRegistered, setDocumentRegistered] = useState(false);
+  const [workflowStarted, setWorkflowStarted] = useState(false);
 
-  // Initialize component by loading available workflow templates
-  React.useEffect(() => {
-    async function loadWorkflowTemplates() {
-      try {
-        // Fetch workflow templates for this organization and module
-        const templates = await getWorkflowTemplates(organizationId, documentType === '510k' ? 'medical_device' : 'cer');
-        
-        if (templates && templates.length > 0) {
-          setWorkflowTemplates(templates);
-          // Default to the first template
-          setSelectedWorkflowTemplate(templates[0].id);
-        }
-      } catch (error) {
-        console.error('Error loading workflow templates:', error);
-        toast({
-          title: 'Error Loading Workflows',
-          description: 'Could not load available workflow templates. Using default workflow.',
-          variant: 'destructive'
-        });
-        
-        // Set a default workflow template to allow continuing
-        setWorkflowTemplates([{
-          id: 'default',
-          name: 'Standard 510(k) Review',
-          description: 'Default workflow for 510(k) submissions'
-        }]);
-        setSelectedWorkflowTemplate('default');
-      }
+  // Set default report title based on device data
+  useEffect(() => {
+    if (deviceData?.deviceName) {
+      setReportTitle(`510(k) Submission for ${deviceData.deviceName}`);
     }
-    
-    loadWorkflowTemplates();
-  }, [organizationId, documentType, toast]);
+  }, [deviceData]);
 
-  // Toggle selected sections
-  const toggleSection = (sectionId) => {
-    if (selectedSections.includes(sectionId)) {
-      setSelectedSections(selectedSections.filter(id => id !== sectionId));
-    } else {
-      setSelectedSections([...selectedSections, sectionId]);
-    }
-  };
-
-  // Generate the 510k report
+  // Generate the regulatory report
   const handleGenerateReport = async () => {
-    try {
-      setIsGenerating(true);
-      setProgress(0);
-      
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          const newProgress = prev + Math.random() * 10;
-          return newProgress >= 90 ? 90 : newProgress;
-        });
-      }, 500);
-
-      // Simulate generating the report - this would call the backend API in a real implementation
-      await new Promise(resolve => setTimeout(resolve, 3000));
-      
-      clearInterval(progressInterval);
-      setProgress(100);
-      
-      // Create a sample report URL (in a real implementation, this would be returned from the API)
-      const url = selectedFormat === 'pdf' 
-        ? '/api/510k/reports/sample_510k_submission.pdf' 
-        : '/api/510k/reports/sample_510k_submission.docx';
-      
-      setReportUrl(url);
-      
-      // Create report data object for workflow integration
-      const generatedReport = {
-        id: `510k-${Date.now()}`,
-        title: `${deviceProfile.deviceName || 'Device'} 510(k) Submission`,
-        format: selectedFormat,
-        url: url,
-        generatedAt: new Date().toISOString(),
-        sections: selectedSections
-      };
-      
-      setReportData(generatedReport);
-      
-      if (onReportGenerated) {
-        onReportGenerated(generatedReport);
-      }
-      
-      setIsGenerating(false);
-      
+    if (!reportTitle.trim()) {
       toast({
-        title: 'Report Generated',
-        description: `Your 510(k) submission has been generated in ${selectedFormat.toUpperCase()} format.`,
-        variant: 'success'
-      });
-      
-    } catch (error) {
-      console.error('Error generating report:', error);
-      setIsGenerating(false);
-      
-      toast({
-        title: 'Generation Failed',
-        description: 'Failed to generate the 510(k) submission. Please try again.',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  // Register the document in the workflow system
-  const registerInWorkflow = async () => {
-    if (!reportData || !selectedWorkflowTemplate) {
-      toast({
-        title: 'Missing Data',
-        description: 'Please generate a report first and select a workflow template.',
-        variant: 'destructive'
+        title: 'Report title required',
+        description: 'Please provide a title for the report.',
+        variant: 'destructive',
       });
       return;
     }
-    
+
     try {
-      setIsRegistering(true);
+      setIsGenerating(true);
       
-      // Create document metadata
+      // Make API call to generate the report
+      const response = await fetch('/api/module-integration/510k-report', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          organizationId,
+          userId,
+          deviceData,
+          predicateData,
+          reportTitle,
+          reportFormat,
+          additionalNotes,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate report');
+      }
+
+      const data = await response.json();
+      
+      setGeneratedReportId(data.reportId);
+      setGeneratedReportUrl(data.reportUrl);
+
+      toast({
+        title: 'Report generated successfully',
+        description: 'Your report has been generated and is ready for review.',
+      });
+
+      // Register the document in the workflow system
+      await registerReportInWorkflow(data.reportId);
+      
+      // Switch to the workflow tab
+      setActiveTab('workflow');
+      
+    } catch (error) {
+      console.error('Error generating report:', error);
+      toast({
+        title: 'Error generating report',
+        description: error.message || 'An unexpected error occurred while generating the report.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  // Register the generated report in the workflow system
+  const registerReportInWorkflow = async (reportId) => {
+    try {
       const documentMetadata = {
-        title: reportData.title,
-        type: documentType === '510k' ? 'report_510k' : 'cer_report',
-        format: reportData.format,
-        url: reportData.url,
-        sections: reportData.sections,
-        deviceProfile: deviceProfile,
-        status: 'draft'
+        title: reportTitle,
+        description: `510(k) submission report for ${deviceData?.deviceName || 'Unknown Device'}`,
+        documentType: '510k_submission',
+        reportId: reportId,
+        deviceId: deviceData?.id,
+        predicateDeviceId: predicateData?.id,
+        format: reportFormat,
+        createdAt: new Date().toISOString(),
       };
       
-      // Register the document in the workflow system
       const registeredDocument = await registerModuleDocument(
         organizationId,
         userId,
-        documentType === '510k' ? 'medical_device' : 'cer',
-        documentMetadata,
-        selectedWorkflowTemplate
+        'medical_device',
+        documentMetadata
       );
       
-      setWorkflowInitialized(true);
+      setDocumentRegistered(true);
       
       toast({
-        title: 'Workflow Initialized',
-        description: `Your 510(k) submission has been registered in the workflow system.`,
-        variant: 'success'
+        title: 'Document registered',
+        description: 'The report has been registered in the workflow system.',
       });
+      
+      return registeredDocument;
       
     } catch (error) {
       console.error('Error registering document in workflow:', error);
-      
       toast({
-        title: 'Workflow Registration Failed',
-        description: 'Failed to register the document in the workflow system.',
-        variant: 'destructive'
+        title: 'Error registering document',
+        description: error.message || 'An unexpected error occurred while registering the document in the workflow system.',
+        variant: 'destructive',
       });
-      
-    } finally {
-      setIsRegistering(false);
+    }
+  };
+
+  // Handle workflow actions (from UnifiedWorkflowPanel)
+  const handleWorkflowAction = (action, id) => {
+    console.log(`Workflow action: ${action} for ID: ${id}`);
+    
+    if (action === 'start') {
+      setWorkflowStarted(true);
+      toast({
+        title: 'Workflow started',
+        description: 'The document workflow has been started successfully.',
+      });
     }
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>510(k) Submission Generator</CardTitle>
-        <CardDescription>
-          Generate your FDA 510(k) submission with proper formatting and workflow integration
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="generate" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="generate">Generate</TabsTrigger>
-            <TabsTrigger value="preview">Preview</TabsTrigger>
-            <TabsTrigger value="workflow" disabled={!reportData}>Workflow</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="generate" className="space-y-4 mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-lg font-medium mb-2">Document Format</h3>
-                <div className="flex space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="format-pdf" 
-                      checked={selectedFormat === 'pdf'} 
-                      onCheckedChange={() => setSelectedFormat('pdf')}
+    <div className={className}>
+      <Card>
+        <CardHeader>
+          <CardTitle>FDA 510(k) Report Generator</CardTitle>
+          <CardDescription>
+            Generate FDA-compliant 510(k) submission reports with regulatory workflow management
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="generator">
+                <FileText className="h-4 w-4 mr-2" /> 
+                Report Generator
+              </TabsTrigger>
+              <TabsTrigger value="workflow" disabled={!generatedReportId}>
+                <Clock className="h-4 w-4 mr-2" /> 
+                Regulatory Workflow
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="generator" className="py-4">
+              <div className="space-y-6">
+                <Alert variant="info" className="bg-blue-50">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>FDA Compliance Note</AlertTitle>
+                  <AlertDescription>
+                    This generator creates FDA-compliant 510(k) documentation following the latest regulatory guidelines.
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="report-title">Report Title</Label>
+                    <Input
+                      id="report-title"
+                      placeholder="Enter report title"
+                      value={reportTitle}
+                      onChange={(e) => setReportTitle(e.target.value)}
                     />
-                    <Label htmlFor="format-pdf">PDF</Label>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="format-word" 
-                      checked={selectedFormat === 'docx'} 
-                      onCheckedChange={() => setSelectedFormat('docx')}
-                    />
-                    <Label htmlFor="format-word">MS Word</Label>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="report-format">Report Format</Label>
+                    <Select value={reportFormat} onValueChange={setReportFormat}>
+                      <SelectTrigger id="report-format">
+                        <SelectValue placeholder="Select format" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {REPORT_FORMATS.map((format) => (
+                          <SelectItem key={format.value} value={format.value}>
+                            {format.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-lg font-medium mb-2">Document Sections</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="section-device" 
-                      checked={selectedSections.includes('device_description')} 
-                      onCheckedChange={() => toggleSection('device_description')}
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="additional-notes">Additional Notes</Label>
+                    <Textarea
+                      id="additional-notes"
+                      placeholder="Enter any additional notes for the report"
+                      value={additionalNotes}
+                      onChange={(e) => setAdditionalNotes(e.target.value)}
+                      className="min-h-[100px]"
                     />
-                    <Label htmlFor="section-device">Device Description</Label>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="section-intended" 
-                      checked={selectedSections.includes('intended_use')} 
-                      onCheckedChange={() => toggleSection('intended_use')}
-                    />
-                    <Label htmlFor="section-intended">Intended Use</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="section-equivalence" 
-                      checked={selectedSections.includes('substantial_equivalence')} 
-                      onCheckedChange={() => toggleSection('substantial_equivalence')}
-                    />
-                    <Label htmlFor="section-equivalence">Substantial Equivalence</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="section-standards" 
-                      checked={selectedSections.includes('standards')} 
-                      onCheckedChange={() => toggleSection('standards')}
-                    />
-                    <Label htmlFor="section-standards">Standards</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="section-performance" 
-                      checked={selectedSections.includes('performance_data')} 
-                      onCheckedChange={() => toggleSection('performance_data')}
-                    />
-                    <Label htmlFor="section-performance">Performance Data</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox 
-                      id="section-conclusion" 
-                      checked={selectedSections.includes('conclusion')} 
-                      onCheckedChange={() => toggleSection('conclusion')}
-                    />
-                    <Label htmlFor="section-conclusion">Conclusion</Label>
+
+                  <div className="bg-muted p-4 rounded-md">
+                    <h3 className="font-medium mb-2">Device Information</h3>
+                    <div className="text-sm">
+                      <p><span className="font-medium">Device Name:</span> {deviceData?.deviceName || 'Not specified'}</p>
+                      <p><span className="font-medium">Device Class:</span> {deviceData?.deviceClass || 'Not specified'}</p>
+                      <p><span className="font-medium">Manufacturer:</span> {deviceData?.manufacturer || 'Not specified'}</p>
+                    </div>
+                    
+                    <Separator className="my-3" />
+                    
+                    <h3 className="font-medium mb-2">Predicate Device</h3>
+                    <div className="text-sm">
+                      <p><span className="font-medium">Predicate Name:</span> {predicateData?.deviceName || 'Not specified'}</p>
+                      <p><span className="font-medium">Predicate 510(k) Number:</span> {predicateData?.k510Number || 'Not specified'}</p>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-            
-            {isGenerating ? (
-              <div className="space-y-2 mt-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium">Generating 510(k) Submission...</span>
-                  <span className="text-sm font-medium">{Math.round(progress)}%</span>
+            </TabsContent>
+
+            <TabsContent value="workflow" className="py-4">
+              {generatedReportId ? (
+                <UnifiedWorkflowPanel
+                  organizationId={organizationId}
+                  userId={userId}
+                  moduleType="medical_device"
+                  documentId={generatedReportId}
+                  documentTitle={reportTitle}
+                  onWorkflowAction={handleWorkflowAction}
+                />
+              ) : (
+                <div className="flex flex-col items-center justify-center p-6 text-center">
+                  <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium">No Report Generated</h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Generate a report first to manage its regulatory workflow.
+                  </p>
                 </div>
-                <Progress value={progress} className="h-2" />
-              </div>
-            ) : (
-              <div className="flex justify-end mt-4">
-                <Button onClick={handleGenerateReport} className="space-x-2">
-                  <FileText className="h-4 w-4" />
-                  <span>Generate 510(k) Submission</span>
-                </Button>
-              </div>
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+        <CardFooter className={activeTab === 'generator' ? 'flex justify-between' : 'hidden'}>
+          <div className="flex items-center">
+            {generatedReportUrl && (
+              <Button variant="outline" size="sm" className="mr-2" asChild>
+                <a href={generatedReportUrl} target="_blank" rel="noopener noreferrer">
+                  <Download className="h-4 w-4 mr-1" /> Download Report
+                </a>
+              </Button>
             )}
-            
-            {reportUrl && (
-              <Alert className="mt-4 bg-green-50 border-green-200">
-                <Check className="h-4 w-4 text-green-600" />
-                <AlertTitle className="text-green-800">Report Generated</AlertTitle>
-                <AlertDescription className="text-green-700 flex justify-between items-center">
-                  <span>Your 510(k) submission has been successfully generated.</span>
-                  <div className="space-x-2">
-                    <Button size="sm" variant="outline" asChild>
-                      <a href={reportUrl} download target="_blank" rel="noopener noreferrer">
-                        <Download className="h-4 w-4 mr-1" />
-                        Download
-                      </a>
-                    </Button>
-                  </div>
-                </AlertDescription>
-              </Alert>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="preview" className="space-y-4 mt-4">
-            <Alert className="bg-blue-50 border-blue-200">
-              <Info className="h-4 w-4 text-blue-600" />
-              <AlertTitle className="text-blue-800">Preview Mode</AlertTitle>
-              <AlertDescription className="text-blue-700">
-                This is a preview of your 510(k) submission document. It will be formatted according to FDA guidelines.
-              </AlertDescription>
-            </Alert>
-            
-            <Card className="border border-gray-200">
-              <CardHeader className="bg-gray-50 border-b py-2">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-md">Document Preview</CardTitle>
-                  {reportUrl && (
-                    <Button size="sm" variant="outline" asChild>
-                      <a href={reportUrl} download target="_blank" rel="noopener noreferrer">
-                        <Download className="h-4 w-4 mr-1" />
-                        Download
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <ScrollArea className="h-[400px] w-full">
-                  <div className="p-4">
-                    <OneClick510kDraft 
-                      deviceProfile={deviceProfile}
-                      predicates={predicates}
-                      selectedSections={selectedSections}
-                    />
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="workflow" className="space-y-4 mt-4">
-            <Alert className="bg-amber-50 border-amber-200">
-              <Info className="h-4 w-4 text-amber-600" />
-              <AlertTitle className="text-amber-800">Workflow Integration</AlertTitle>
-              <AlertDescription className="text-amber-700">
-                Register your 510(k) submission in the workflow system for organized review and approval.
-              </AlertDescription>
-            </Alert>
-            
-            {reportData && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 gap-4">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-md">Select Workflow Template</CardTitle>
-                      <CardDescription>
-                        Choose a workflow template for document review and approval
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      {workflowTemplates.length > 0 ? (
-                        <div className="space-y-2">
-                          {workflowTemplates.map(template => (
-                            <div key={template.id} className="flex items-center space-x-2">
-                              <Checkbox 
-                                id={`template-${template.id}`} 
-                                checked={selectedWorkflowTemplate === template.id} 
-                                onCheckedChange={() => setSelectedWorkflowTemplate(template.id)}
-                              />
-                              <Label htmlFor={`template-${template.id}`}>
-                                <span className="font-medium">{template.name}</span>
-                                {template.description && (
-                                  <p className="text-sm text-gray-500">{template.description}</p>
-                                )}
-                              </Label>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center p-4">
-                          <p className="text-gray-500">Loading workflow templates...</p>
-                        </div>
-                      )}
-                    </CardContent>
-                    <CardFooter className="pt-0 justify-end">
-                      {workflowInitialized ? (
-                        <Button variant="outline" className="space-x-2" disabled>
-                          <Check className="h-4 w-4 text-green-600" />
-                          <span>Registered in Workflow</span>
-                        </Button>
-                      ) : (
-                        <Button 
-                          onClick={registerInWorkflow} 
-                          disabled={isRegistering || !selectedWorkflowTemplate}
-                          className="space-x-2"
-                        >
-                          {isRegistering ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                              <span>Registering...</span>
-                            </>
-                          ) : (
-                            <>
-                              <ArrowRight className="h-4 w-4" />
-                              <span>Register in Workflow</span>
-                            </>
-                          )}
-                        </Button>
-                      )}
-                    </CardFooter>
-                  </Card>
-                  
-                  {workflowInitialized && (
-                    <Alert className="bg-green-50 border-green-200">
-                      <Check className="h-4 w-4 text-green-600" />
-                      <AlertTitle className="text-green-800">Document Registered</AlertTitle>
-                      <AlertDescription className="text-green-700">
-                        Your 510(k) submission has been successfully registered in the workflow system.
-                        Visit the Workflow tab to track approval status.
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </div>
-              </div>
-            )}
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-      <CardFooter className="border-t bg-gray-50 flex justify-between">
-        <div className="text-sm text-gray-500">
-          {reportData ? 'Document ready for workflow integration' : 'Generate a document to begin'}
-        </div>
-        {reportData && !workflowInitialized && (
+          </div>
           <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => {
-              const tabTriggers = document.querySelectorAll('[role="tab"]');
-              const workflowTab = Array.from(tabTriggers).find(tab => tab.getAttribute('value') === 'workflow');
-              if (workflowTab) {
-                workflowTab.click();
-              }
-            }}
+            onClick={handleGenerateReport} 
+            disabled={isGenerating || !reportTitle.trim()}
           >
-            <ArrowRight className="h-4 w-4 mr-1" />
-            Continue to Workflow
+            {isGenerating ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : generatedReportId ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Regenerate Report
+              </>
+            ) : (
+              <>
+                <FileUp className="h-4 w-4 mr-2" />
+                Generate Report
+              </>
+            )}
           </Button>
-        )}
-      </CardFooter>
-    </Card>
+        </CardFooter>
+      </Card>
+    </div>
   );
-}
+};
+
+export default WorkflowEnabledReportGenerator;

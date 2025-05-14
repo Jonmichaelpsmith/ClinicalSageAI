@@ -1,317 +1,550 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle, FileText, FilePlus, Check, RefreshCw, Download } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { registerModuleDocument } from '../unified-workflow/registerModuleDocument';
 
-/**
- * OneClick510kDraft Component
- * 
- * Renders a preview of a 510(k) submission document with proper FDA-compliant formatting.
- * This component implements strict formatting guidelines for FDA submissions.
- */
-export default function OneClick510kDraft({
-  deviceProfile = {},
-  predicates = [],
-  selectedSections = ['device_description', 'intended_use', 'substantial_equivalence', 'standards', 'performance_data', 'conclusion']
-}) {
-  const {
-    deviceName = 'Sample Medical Device',
-    manufacturer = 'Sample Manufacturer, Inc.',
-    deviceType = 'Class II',
-    modelNumber = 'MD-2025-X1',
-    indications = 'For diagnostic use in clinical settings',
-    contraindications = 'Not for use in MRI environments',
-    deviceDescription = 'This device is designed for clinical diagnostic applications...'
-  } = deviceProfile;
+const DEVICE_TYPES = [
+  { value: 'cardio', label: 'Cardiovascular' },
+  { value: 'orthopedic', label: 'Orthopedic' },
+  { value: 'neuro', label: 'Neurological' },
+  { value: 'diagnostic', label: 'Diagnostic' },
+  { value: 'general', label: 'General Hospital' },
+  { value: 'dental', label: 'Dental' },
+  { value: 'ophthalmic', label: 'Ophthalmic' },
+  { value: 'ear_nose_throat', label: 'Ear, Nose, and Throat' },
+  { value: 'radiology', label: 'Radiology' }
+];
 
-  // Format creation date according to FDA requirements
-  const getFormattedDate = () => {
-    const date = new Date();
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+const RISK_CLASSIFICATIONS = [
+  { value: 'class_i', label: 'Class I' },
+  { value: 'class_ii', label: 'Class II' },
+  { value: 'class_iii', label: 'Class III' }
+];
 
-  // Generate FDA-compliant headings
-  const renderHeading = (sectionNumber, title) => (
-    <div className="border-b border-gray-300 mb-4 pb-1">
-      <h2 className="text-lg font-bold text-gray-800">{sectionNumber}. {title}</h2>
-    </div>
-  );
+const SUBMISSION_TYPES = [
+  { value: 'traditional', label: 'Traditional 510(k)' },
+  { value: 'abbreviated', label: 'Abbreviated 510(k)' },
+  { value: 'special', label: 'Special 510(k)' }
+];
 
-  // Generate a table of contents
-  const renderTableOfContents = () => {
-    let toc = [];
-    let sectionCount = 1;
-
-    if (selectedSections.includes('device_description')) {
-      toc.push({ number: sectionCount++, title: 'Device Description' });
+const OneClick510kDraft = ({
+  organizationId,
+  userId,
+  deviceData,
+  predicateData,
+  onDraftCreated,
+  className = ''
+}) => {
+  const [activeTab, setActiveTab] = useState('device-info');
+  const [deviceType, setDeviceType] = useState('cardio');
+  const [riskClass, setRiskClass] = useState('class_ii');
+  const [submissionType, setSubmissionType] = useState('traditional');
+  const [title, setTitle] = useState(deviceData?.deviceName ? `${deviceData.deviceName} 510(k) Draft` : '');
+  const [description, setDescription] = useState('');
+  const [intendedUse, setIntendedUse] = useState(deviceData?.intendedUse || '');
+  const [technicalCharacteristics, setTechnicalCharacteristics] = useState('');
+  const [predicateComparison, setPredicateComparison] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isStandards, setIsStandards] = useState(true);
+  const [isSoftware, setIsSoftware] = useState(false);
+  const [isAnimalTesting, setIsAnimalTesting] = useState(false);
+  const [isClinicalData, setIsClinicalData] = useState(false);
+  const [draftId, setDraftId] = useState(null);
+  const [draftUrl, setDraftUrl] = useState(null);
+  
+  // Set default values based on device data
+  React.useEffect(() => {
+    if (deviceData?.deviceName) {
+      setTitle(`${deviceData.deviceName} 510(k) Draft`);
+    }
+    if (deviceData?.intendedUse) {
+      setIntendedUse(deviceData.intendedUse);
+    }
+    if (deviceData?.description) {
+      setDescription(deviceData.description);
+    }
+    if (deviceData?.deviceClass) {
+      const classMapping = {
+        'Class I': 'class_i',
+        'Class II': 'class_ii',
+        'Class III': 'class_iii'
+      };
+      if (classMapping[deviceData.deviceClass]) {
+        setRiskClass(classMapping[deviceData.deviceClass]);
+      }
     }
     
-    if (selectedSections.includes('intended_use')) {
-      toc.push({ number: sectionCount++, title: 'Indications for Use' });
+    // Generate technical characteristics based on device data
+    if (deviceData?.technicalSpecifications) {
+      const specs = deviceData.technicalSpecifications;
+      let techSpecs = '';
+      for (const [key, value] of Object.entries(specs)) {
+        // Convert camelCase to Title Case
+        const formattedKey = key.replace(/([A-Z])/g, ' $1')
+          .replace(/^./, (str) => str.toUpperCase());
+        techSpecs += `${formattedKey}: ${value}\n`;
+      }
+      setTechnicalCharacteristics(techSpecs);
     }
     
-    if (selectedSections.includes('substantial_equivalence')) {
-      toc.push({ number: sectionCount++, title: 'Substantial Equivalence Discussion' });
+    // Generate predicate comparison if predicate data exists
+    if (predicateData?.deviceName) {
+      setPredicateComparison(
+        `The ${deviceData?.deviceName || 'subject device'} is substantially equivalent to ${predicateData.deviceName} (${predicateData.k510Number || 'K-number pending'}) in terms of intended use, technological characteristics, and safety profile.`
+      );
+    }
+  }, [deviceData, predicateData]);
+  
+  const handleGenerate510kDraft = async () => {
+    if (!title.trim()) {
+      toast({
+        title: 'Title required',
+        description: 'Please provide a title for the 510(k) draft.',
+        variant: 'destructive',
+      });
+      return;
     }
     
-    if (selectedSections.includes('standards')) {
-      toc.push({ number: sectionCount++, title: 'Standards and Guidance Documents' });
-    }
+    setIsGenerating(true);
     
-    if (selectedSections.includes('performance_data')) {
-      toc.push({ number: sectionCount++, title: 'Performance Data' });
+    try {
+      // Collect all draft data
+      const draftData = {
+        organizationId,
+        userId,
+        title,
+        description,
+        deviceType,
+        riskClass,
+        submissionType,
+        intendedUse,
+        technicalCharacteristics,
+        predicateComparison,
+        deviceData,
+        predicateData,
+        sections: {
+          isStandards,
+          isSoftware,
+          isAnimalTesting,
+          isClinicalData
+        }
+      };
+      
+      // Make API call to generate the draft
+      const response = await fetch('/api/module-integration/510k-draft', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(draftData),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate 510(k) draft');
+      }
+      
+      const data = await response.json();
+      
+      setDraftId(data.draftId);
+      setDraftUrl(data.draftUrl);
+      
+      // Register the document in the workflow system
+      await registerDraftInWorkflow(data.draftId);
+      
+      toast({
+        title: '510(k) draft generated',
+        description: 'Your draft has been created and is ready for review.',
+      });
+      
+      // Notify parent component
+      if (onDraftCreated) {
+        onDraftCreated(data.draftId);
+      }
+      
+    } catch (error) {
+      console.error('Error generating draft:', error);
+      toast({
+        title: 'Error generating draft',
+        description: error.message || 'An unexpected error occurred while generating the 510(k) draft.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGenerating(false);
     }
-    
-    if (selectedSections.includes('conclusion')) {
-      toc.push({ number: sectionCount++, title: 'Conclusion' });
+  };
+  
+  const registerDraftInWorkflow = async (draftId) => {
+    try {
+      const documentMetadata = {
+        title,
+        description: `510(k) draft for ${deviceData?.deviceName || 'new device'}`,
+        documentType: '510k_draft',
+        draftId,
+        deviceId: deviceData?.id,
+        predicateDeviceId: predicateData?.id,
+        submissionType,
+        riskClass,
+        createdAt: new Date().toISOString(),
+      };
+      
+      await registerModuleDocument(
+        organizationId,
+        userId,
+        'medical_device',
+        documentMetadata
+      );
+      
+      toast({
+        title: 'Document registered',
+        description: 'The 510(k) draft has been registered in the document workflow system.',
+      });
+      
+    } catch (error) {
+      console.error('Error registering document in workflow:', error);
+      toast({
+        title: 'Registration warning',
+        description: 'The draft was created but could not be registered in the workflow system.',
+        variant: 'warning',
+      });
     }
-
-    return (
-      <div className="mb-8">
-        <h2 className="text-lg font-bold mb-3">Table of Contents</h2>
-        <div className="border-t border-gray-300 pt-2">
-          {toc.map(section => (
-            <div key={section.number} className="mb-2 flex">
-              <span className="font-medium w-8">{section.number}.</span>
-              <span>{section.title}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
   };
-
-  // Render predicate comparison table
-  const renderPredicateComparison = () => {
-    const predicate = predicates[0] || {
-      deviceName: 'Predicate Device XYZ',
-      manufacturer: 'ABC Medical, Inc.',
-      k510Number: 'K123456',
-      approvalDate: '2024-01-15'
-    };
-
-    return (
-      <div className="border border-gray-300 mb-6">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-2 border-b border-r border-gray-300 text-left">Feature</th>
-              <th className="p-2 border-b border-r border-gray-300 text-left">Subject Device: {deviceName}</th>
-              <th className="p-2 border-b border-gray-300 text-left">Predicate: {predicate.deviceName}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="p-2 border-b border-r border-gray-300 bg-gray-50 font-medium">Device Type</td>
-              <td className="p-2 border-b border-r border-gray-300">{deviceType}</td>
-              <td className="p-2 border-b border-gray-300">Similar {deviceType} device</td>
-            </tr>
-            <tr>
-              <td className="p-2 border-b border-r border-gray-300 bg-gray-50 font-medium">Manufacturer</td>
-              <td className="p-2 border-b border-r border-gray-300">{manufacturer}</td>
-              <td className="p-2 border-b border-gray-300">{predicate.manufacturer}</td>
-            </tr>
-            <tr>
-              <td className="p-2 border-b border-r border-gray-300 bg-gray-50 font-medium">Indications for Use</td>
-              <td className="p-2 border-b border-r border-gray-300">{indications}</td>
-              <td className="p-2 border-b border-gray-300">Similar clinical diagnostic applications</td>
-            </tr>
-            <tr>
-              <td className="p-2 border-b border-r border-gray-300 bg-gray-50 font-medium">Technology</td>
-              <td className="p-2 border-b border-r border-gray-300">Advanced sensor technology with digital output</td>
-              <td className="p-2 border-b border-gray-300">Similar sensor technology with comparable output</td>
-            </tr>
-            <tr>
-              <td className="p-2 border-b border-r border-gray-300 bg-gray-50 font-medium">Materials</td>
-              <td className="p-2 border-b border-r border-gray-300">Medical-grade polymer with biocompatible coating</td>
-              <td className="p-2 border-b border-gray-300">Similar medical-grade materials</td>
-            </tr>
-            <tr>
-              <td className="p-2 border-r border-gray-300 bg-gray-50 font-medium">Performance</td>
-              <td className="p-2 border-r border-gray-300">Meets or exceeds all relevant standards</td>
-              <td className="p-2">Meets relevant standards</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
+  
+  const nextTab = () => {
+    if (activeTab === 'device-info') {
+      setActiveTab('technical-details');
+    } else if (activeTab === 'technical-details') {
+      setActiveTab('predicate-comparison');
+    } else if (activeTab === 'predicate-comparison') {
+      setActiveTab('sections');
+    }
   };
-
-  // Render standards table
-  const renderStandardsTable = () => {
-    return (
-      <div className="border border-gray-300 mb-6">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="p-2 border-b border-r border-gray-300 text-left">Standard</th>
-              <th className="p-2 border-b border-r border-gray-300 text-left">Title</th>
-              <th className="p-2 border-b border-gray-300 text-left">Compliance Method</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td className="p-2 border-b border-r border-gray-300">ISO 13485:2016</td>
-              <td className="p-2 border-b border-r border-gray-300">Medical devices — Quality management systems — Requirements for regulatory purposes</td>
-              <td className="p-2 border-b border-gray-300">Certification by Notified Body</td>
-            </tr>
-            <tr>
-              <td className="p-2 border-b border-r border-gray-300">ISO 14971:2019</td>
-              <td className="p-2 border-b border-r border-gray-300">Medical devices — Application of risk management to medical devices</td>
-              <td className="p-2 border-b border-gray-300">Internal validation</td>
-            </tr>
-            <tr>
-              <td className="p-2 border-b border-r border-gray-300">IEC 60601-1</td>
-              <td className="p-2 border-b border-r border-gray-300">Medical electrical equipment — Part 1: General requirements for basic safety and essential performance</td>
-              <td className="p-2 border-b border-gray-300">Third-party testing</td>
-            </tr>
-            <tr>
-              <td className="p-2 border-r border-gray-300">ISO 10993-1:2018</td>
-              <td className="p-2 border-r border-gray-300">Biological evaluation of medical devices — Part 1: Evaluation and testing within a risk management process</td>
-              <td className="p-2">Biocompatibility testing</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
+  
+  const prevTab = () => {
+    if (activeTab === 'sections') {
+      setActiveTab('predicate-comparison');
+    } else if (activeTab === 'predicate-comparison') {
+      setActiveTab('technical-details');
+    } else if (activeTab === 'technical-details') {
+      setActiveTab('device-info');
+    }
   };
-
-  // Render performance data summary
-  const renderPerformanceData = () => {
-    return (
-      <div className="space-y-4">
-        <div className="bg-gray-50 p-3 border border-gray-300 rounded-md">
-          <h4 className="font-medium mb-2">Bench Testing Results</h4>
-          <p className="text-sm">All bench testing was conducted according to FDA-recognized standards and internal protocols. The subject device met or exceeded all performance criteria established in the test protocols.</p>
-        </div>
-        
-        <div className="bg-gray-50 p-3 border border-gray-300 rounded-md">
-          <h4 className="font-medium mb-2">Biocompatibility Testing</h4>
-          <p className="text-sm">Biocompatibility testing was conducted in accordance with ISO 10993 standards. All materials demonstrated appropriate biocompatibility for the intended use of the device.</p>
-        </div>
-        
-        <div className="bg-gray-50 p-3 border border-gray-300 rounded-md">
-          <h4 className="font-medium mb-2">Software Verification and Validation</h4>
-          <p className="text-sm">Software verification and validation testing was conducted according to FDA's guidance for the premarket submissions for software contained in medical devices. All software requirements were verified and validated.</p>
-        </div>
-      </div>
-    );
-  };
-
-  // Track section numbers
-  let sectionCount = 1;
-
+  
   return (
-    <div className="text-gray-900 font-sans">
-      {/* Document header with FDA-compliant formatting */}
-      <div className="text-center mb-8">
-        <h1 className="text-xl font-bold mb-1">PREMARKET NOTIFICATION [510(k)]</h1>
-        <h2 className="text-lg font-semibold mb-3">{deviceName}</h2>
-        <p className="mb-1">Submitted by:</p>
-        <p className="font-medium mb-1">{manufacturer}</p>
-        <p className="mb-4">{getFormattedDate()}</p>
-        <p className="text-sm border-t border-b border-gray-300 py-1 italic">CONFIDENTIAL - Contains Proprietary Information</p>
-      </div>
-
-      {/* Table of Contents */}
-      {renderTableOfContents()}
-
-      {/* Device Description */}
-      {selectedSections.includes('device_description') && (
-        <div className="mb-8">
-          {renderHeading(sectionCount++, 'Device Description')}
-          <p className="mb-3">{deviceName} (Model: {modelNumber}) is a {deviceType} medical device manufactured by {manufacturer}.</p>
-          <p className="mb-3">{deviceDescription}</p>
-          <div className="bg-gray-50 p-3 border border-gray-300 rounded-md mt-4">
-            <h4 className="font-medium mb-1">Device Characteristics:</h4>
-            <ul className="list-disc pl-5 text-sm space-y-1">
-              <li>Model Number: {modelNumber}</li>
-              <li>Classification: {deviceType}</li>
-              <li>Sterility: Non-sterile</li>
-              <li>Dimensions: [Dimensions would be listed here]</li>
-              <li>Materials: Medical-grade polymer with biocompatible coating</li>
-            </ul>
+    <div className={className}>
+      <Card>
+        <CardHeader>
+          <CardTitle>One-Click 510(k) Draft Generator</CardTitle>
+          <CardDescription>
+            Create a structured 510(k) submission draft with AI-enhanced content generation
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="device-info">
+                Device Info
+              </TabsTrigger>
+              <TabsTrigger value="technical-details">
+                Technical Details
+              </TabsTrigger>
+              <TabsTrigger value="predicate-comparison">
+                Predicate Comparison
+              </TabsTrigger>
+              <TabsTrigger value="sections">
+                Sections
+              </TabsTrigger>
+            </TabsList>
+            
+            <div className="py-4">
+              <TabsContent value="device-info">
+                <div className="space-y-4">
+                  <Alert variant="info" className="bg-blue-50">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Device Information</AlertTitle>
+                    <AlertDescription>
+                      Enter basic information about your medical device for the 510(k) submission.
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <div className="grid gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="title">Draft Title</Label>
+                      <Input
+                        id="title"
+                        placeholder="Enter a title for your 510(k) draft"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                      />
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="description">Device Description</Label>
+                      <Textarea
+                        id="description"
+                        placeholder="Provide a brief description of the device"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        className="min-h-[100px]"
+                      />
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="device-type">Device Type</Label>
+                      <Select value={deviceType} onValueChange={setDeviceType}>
+                        <SelectTrigger id="device-type">
+                          <SelectValue placeholder="Select device type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {DEVICE_TYPES.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="risk-class">Risk Classification</Label>
+                      <Select value={riskClass} onValueChange={setRiskClass}>
+                        <SelectTrigger id="risk-class">
+                          <SelectValue placeholder="Select risk classification" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {RISK_CLASSIFICATIONS.map((riskClass) => (
+                            <SelectItem key={riskClass.value} value={riskClass.value}>
+                              {riskClass.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="submission-type">Submission Type</Label>
+                      <Select value={submissionType} onValueChange={setSubmissionType}>
+                        <SelectTrigger id="submission-type">
+                          <SelectValue placeholder="Select submission type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SUBMISSION_TYPES.map((type) => (
+                            <SelectItem key={type.value} value={type.value}>
+                              {type.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="technical-details">
+                <div className="space-y-4">
+                  <Alert variant="info" className="bg-blue-50">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Technical Details</AlertTitle>
+                    <AlertDescription>
+                      Provide technical specifications and intended use information for your device.
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <div className="grid gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="intended-use">Intended Use</Label>
+                      <Textarea
+                        id="intended-use"
+                        placeholder="Describe the intended use of the device"
+                        value={intendedUse}
+                        onChange={(e) => setIntendedUse(e.target.value)}
+                        className="min-h-[100px]"
+                      />
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="technical-characteristics">Technical Characteristics</Label>
+                      <Textarea
+                        id="technical-characteristics"
+                        placeholder="List the technical characteristics of the device"
+                        value={technicalCharacteristics}
+                        onChange={(e) => setTechnicalCharacteristics(e.target.value)}
+                        className="min-h-[150px]"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Include dimensions, materials, operating parameters, etc.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="predicate-comparison">
+                <div className="space-y-4">
+                  <Alert variant="info" className="bg-blue-50">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Predicate Device Comparison</AlertTitle>
+                    <AlertDescription>
+                      Describe how your device compares to the predicate device(s).
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <div className="bg-muted p-4 rounded-md mb-4">
+                    <h3 className="font-medium mb-2">Selected Predicate Device</h3>
+                    <div className="text-sm">
+                      <p><span className="font-medium">Name:</span> {predicateData?.deviceName || 'Not specified'}</p>
+                      <p><span className="font-medium">510(k) Number:</span> {predicateData?.k510Number || 'Not specified'}</p>
+                      <p><span className="font-medium">Manufacturer:</span> {predicateData?.manufacturer || 'Not specified'}</p>
+                      <p><span className="font-medium">Clearance Date:</span> {predicateData?.clearanceDate || 'Not specified'}</p>
+                    </div>
+                  </div>
+                  
+                  <div className="grid gap-2">
+                    <Label htmlFor="predicate-comparison">Substantial Equivalence Rationale</Label>
+                    <Textarea
+                      id="predicate-comparison"
+                      placeholder="Describe how your device is substantially equivalent to the predicate device"
+                      value={predicateComparison}
+                      onChange={(e) => setPredicateComparison(e.target.value)}
+                      className="min-h-[150px]"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Explain similarities and differences in intended use, technological characteristics, and performance.
+                    </p>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="sections">
+                <div className="space-y-4">
+                  <Alert variant="info" className="bg-blue-50">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>510(k) Sections</AlertTitle>
+                    <AlertDescription>
+                      Select the sections to include in your 510(k) draft.
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <div className="grid gap-4">
+                    <div className="flex items-center justify-between space-x-2">
+                      <Label htmlFor="standards">Standards</Label>
+                      <Switch
+                        id="standards"
+                        checked={isStandards}
+                        onCheckedChange={setIsStandards}
+                      />
+                    </div>
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between space-x-2">
+                      <Label htmlFor="software">Software Documentation</Label>
+                      <Switch
+                        id="software"
+                        checked={isSoftware}
+                        onCheckedChange={setIsSoftware}
+                      />
+                    </div>
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between space-x-2">
+                      <Label htmlFor="animal-testing">Animal Testing</Label>
+                      <Switch
+                        id="animal-testing"
+                        checked={isAnimalTesting}
+                        onCheckedChange={setIsAnimalTesting}
+                      />
+                    </div>
+                    <Separator />
+                    
+                    <div className="flex items-center justify-between space-x-2">
+                      <Label htmlFor="clinical-data">Clinical Data</Label>
+                      <Switch
+                        id="clinical-data"
+                        checked={isClinicalData}
+                        onCheckedChange={setIsClinicalData}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+            </div>
+          </Tabs>
+          
+          {draftId && (
+            <div className="mt-4 p-4 bg-green-50 rounded-md">
+              <div className="flex items-center">
+                <Check className="h-5 w-5 text-green-600 mr-2" />
+                <h3 className="font-medium text-green-800">Draft Generated Successfully</h3>
+              </div>
+              <p className="text-sm text-green-700 mt-1">
+                Your 510(k) draft document has been created and is ready for review.
+              </p>
+              {draftUrl && (
+                <Button 
+                  variant="link" 
+                  size="sm" 
+                  className="p-0 mt-2 text-green-700"
+                  asChild
+                >
+                  <a href={draftUrl} target="_blank" rel="noopener noreferrer">
+                    <Download className="h-4 w-4 mr-1" /> Download Draft
+                  </a>
+                </Button>
+              )}
+            </div>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <div>
+            {activeTab !== 'device-info' && (
+              <Button variant="outline" onClick={prevTab}>
+                Previous
+              </Button>
+            )}
           </div>
-        </div>
-      )}
-
-      {/* Indications for Use */}
-      {selectedSections.includes('intended_use') && (
-        <div className="mb-8">
-          {renderHeading(sectionCount++, 'Indications for Use')}
-          <div className="border border-gray-300 p-4 mb-4">
-            <h4 className="font-medium mb-2">Indications for Use Statement:</h4>
-            <p>{indications}</p>
+          
+          <div>
+            {activeTab !== 'sections' ? (
+              <Button onClick={nextTab}>
+                Next
+              </Button>
+            ) : (
+              <Button 
+                onClick={handleGenerate510kDraft} 
+                disabled={isGenerating || !title.trim()}
+              >
+                {isGenerating ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                    Generating...
+                  </>
+                ) : draftId ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 mr-2" />
+                    Regenerate Draft
+                  </>
+                ) : (
+                  <>
+                    <FilePlus className="h-4 w-4 mr-2" />
+                    Generate Draft
+                  </>
+                )}
+              </Button>
+            )}
           </div>
-          
-          <h4 className="font-medium mt-4 mb-2">Contraindications:</h4>
-          <p>{contraindications}</p>
-        </div>
-      )}
-
-      {/* Substantial Equivalence */}
-      {selectedSections.includes('substantial_equivalence') && (
-        <div className="mb-8">
-          {renderHeading(sectionCount++, 'Substantial Equivalence Discussion')}
-          <p className="mb-4">
-            The {deviceName} is substantially equivalent to the predicate device{predicates.length > 0 ? ` ${predicates[0].deviceName} (${predicates[0].k510Number})` : ''} in terms of intended use, technological characteristics, and performance capabilities.
-          </p>
-          
-          <h4 className="font-medium mb-2">Comparison to Predicate Device:</h4>
-          {renderPredicateComparison()}
-          
-          <p className="mt-3">
-            Any differences between the subject device and the predicate device do not raise new questions of safety and effectiveness. The comparison demonstrates that the {deviceName} is substantially equivalent to the legally marketed predicate device.
-          </p>
-        </div>
-      )}
-
-      {/* Standards */}
-      {selectedSections.includes('standards') && (
-        <div className="mb-8">
-          {renderHeading(sectionCount++, 'Standards and Guidance Documents')}
-          <p className="mb-4">
-            The development, testing, and manufacturing of the {deviceName} comply with the following FDA-recognized consensus standards and guidance documents:
-          </p>
-          
-          {renderStandardsTable()}
-        </div>
-      )}
-
-      {/* Performance Data */}
-      {selectedSections.includes('performance_data') && (
-        <div className="mb-8">
-          {renderHeading(sectionCount++, 'Performance Data')}
-          <p className="mb-4">
-            The following performance data were provided in support of the substantial equivalence determination:
-          </p>
-          
-          {renderPerformanceData()}
-        </div>
-      )}
-
-      {/* Conclusion */}
-      {selectedSections.includes('conclusion') && (
-        <div className="mb-8">
-          {renderHeading(sectionCount++, 'Conclusion')}
-          <p className="mb-3">
-            Based on the information provided in this premarket notification, the {deviceName} is substantially equivalent to the predicate device{predicates.length > 0 ? ` ${predicates[0].deviceName} (${predicates[0].k510Number})` : ''}.
-          </p>
-          <p className="mb-3">
-            The subject device has the same intended use and similar technological characteristics as the predicate device. The differences between the subject device and the predicate device do not raise new questions of safety and effectiveness.
-          </p>
-          <p className="font-medium">
-            Therefore, the {deviceName} is substantially equivalent to the legally marketed predicate device.
-          </p>
-        </div>
-      )}
-
-      {/* Document footer */}
-      <div className="text-center border-t border-gray-300 pt-4 mt-8">
-        <p className="text-sm">END OF 510(k) SUBMISSION</p>
-        <p className="text-xs mt-1">© {new Date().getFullYear()} {manufacturer}. All rights reserved.</p>
-      </div>
+        </CardFooter>
+      </Card>
     </div>
   );
-}
+};
+
+export default OneClick510kDraft;

@@ -1,63 +1,58 @@
 /**
  * Module Document Registration Utility
  * 
- * This utility handles the registration of documents in the workflow system,
- * providing a unified approach across different modules (CER, 510k, CMC, etc.).
+ * This utility handles the registration of documents from various modules into the
+ * unified workflow system, enabling cross-module document management and approval processes.
  */
 
 /**
- * Register a document in the workflow system
+ * Register a document from any module into the unified workflow system
  * 
- * @param {number} organizationId - The organization ID
- * @param {number} userId - The user ID
- * @param {string} moduleType - The module type (cer, medical_device, cmc, study, ectd, vault)
- * @param {Object} documentMetadata - Metadata about the document
- * @param {string} workflowTemplateId - The workflow template ID to use
- * @returns {Promise<Object>} - The registered document data
+ * @param {string} organizationId - The organization ID
+ * @param {string} userId - The ID of the user registering the document
+ * @param {string} moduleType - The module type (e.g., 'medical_device', 'cmc', 'ectd', 'study', 'vault')
+ * @param {object} documentMetadata - Document metadata specific to the module
+ * @returns {Promise<object>} The registered document information
  */
 export async function registerModuleDocument(
   organizationId,
   userId,
   moduleType,
-  documentMetadata,
-  workflowTemplateId
+  documentMetadata
 ) {
+  if (!organizationId || !userId || !moduleType || !documentMetadata) {
+    throw new Error('Missing required parameters for document registration');
+  }
+
   try {
-    if (!organizationId || !userId || !moduleType || !documentMetadata) {
-      throw new Error('Missing required parameters for document registration');
-    }
-    
-    // Ensure required metadata fields
-    const metadata = {
-      title: documentMetadata.title || 'Untitled Document',
-      description: documentMetadata.description || '',
-      documentType: documentMetadata.documentType || 'general',
-      ...documentMetadata
+    // Add common metadata
+    const registrationData = {
+      organizationId,
+      userId,
+      moduleType,
+      documentMetadata: {
+        ...documentMetadata,
+        registeredAt: new Date().toISOString(),
+        registeredBy: userId,
+        status: 'registered'
+      }
     };
-    
-    // Call the API to register the document
+
+    // Make API call to register the document
     const response = await fetch('/api/module-integration/register-document', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        organizationId,
-        userId,
-        moduleType,
-        metadata,
-        workflowTemplateId
-      })
+      body: JSON.stringify(registrationData),
     });
-    
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to register document');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to register document in workflow system');
     }
-    
-    const data = await response.json();
-    return data.document;
-    
+
+    return await response.json();
   } catch (error) {
     console.error('Error registering document:', error);
     throw error;
@@ -65,39 +60,47 @@ export async function registerModuleDocument(
 }
 
 /**
- * Update document workflow status
+ * Update document status in the workflow system
  * 
- * @param {number} documentId - The document ID
- * @param {string} newStatus - The new status
- * @param {number} userId - The user ID making the change
- * @returns {Promise<Object>} - The updated document data
+ * @param {string} documentId - The registered document ID 
+ * @param {string} status - New status ('registered', 'in_review', 'approved', 'rejected')
+ * @param {string} userId - The ID of the user updating the status
+ * @param {string} [comment] - Optional comment about the status change
+ * @returns {Promise<object>} Updated document information
  */
-export async function updateDocumentWorkflowStatus(documentId, newStatus, userId) {
+export async function updateDocumentStatus(
+  documentId,
+  status,
+  userId,
+  comment = ''
+) {
+  if (!documentId || !status || !userId) {
+    throw new Error('Missing required parameters for status update');
+  }
+
   try {
-    if (!documentId || !newStatus || !userId) {
-      throw new Error('Missing required parameters for updating document status');
-    }
-    
-    // Call the API to update document status
-    const response = await fetch(`/api/module-integration/document-status/${documentId}`, {
-      method: 'POST',
+    const updateData = {
+      documentId,
+      status,
+      userId,
+      comment,
+      updatedAt: new Date().toISOString()
+    };
+
+    const response = await fetch('/api/module-integration/update-document-status', {
+      method: 'PUT',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        newStatus,
-        userId
-      })
+      body: JSON.stringify(updateData),
     });
-    
+
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       throw new Error(errorData.message || 'Failed to update document status');
     }
-    
-    const data = await response.json();
-    return data.document;
-    
+
+    return await response.json();
   } catch (error) {
     console.error('Error updating document status:', error);
     throw error;
@@ -105,67 +108,94 @@ export async function updateDocumentWorkflowStatus(documentId, newStatus, userId
 }
 
 /**
- * Get workflow progression for a document
+ * Get document registration information
  * 
- * @param {number} documentId - The document ID
- * @returns {Promise<Object>} - The workflow progression data
+ * @param {string} documentId - The registered document ID
+ * @returns {Promise<object>} Document registration information
  */
-export async function getDocumentWorkflowProgression(documentId) {
+export async function getDocumentRegistration(documentId) {
+  if (!documentId) {
+    throw new Error('Document ID is required');
+  }
+
   try {
-    if (!documentId) {
-      throw new Error('Document ID is required for getting workflow progression');
-    }
-    
-    // Call the API to get workflow progression
-    const response = await fetch(`/api/module-integration/workflow-progression/${documentId}`);
-    
+    const response = await fetch(`/api/module-integration/document/${documentId}`);
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to retrieve workflow progression');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to retrieve document registration');
     }
-    
-    const data = await response.json();
-    return data.progression;
-    
+
+    return await response.json();
   } catch (error) {
-    console.error('Error getting workflow progression:', error);
+    console.error('Error retrieving document registration:', error);
     throw error;
   }
 }
 
 /**
- * Delete a document from the workflow system
+ * Get document workflow history
  * 
- * @param {number} documentId - The document ID
- * @param {number} userId - The user ID making the request
- * @returns {Promise<boolean>} - Success indicator
+ * @param {string} documentId - The registered document ID
+ * @returns {Promise<Array>} Document workflow history
  */
-export async function removeDocumentFromWorkflow(documentId, userId) {
+export async function getDocumentWorkflowHistory(documentId) {
+  if (!documentId) {
+    throw new Error('Document ID is required');
+  }
+
   try {
-    if (!documentId || !userId) {
-      throw new Error('Missing required parameters for removing document from workflow');
+    const response = await fetch(`/api/module-integration/document/${documentId}/history`);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to retrieve document workflow history');
     }
-    
-    // Call the API to remove the document
-    const response = await fetch(`/api/module-integration/remove-document/${documentId}`, {
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error retrieving document workflow history:', error);
+    throw error;
+  }
+}
+
+/**
+ * Add a document comment
+ * 
+ * @param {string} documentId - The registered document ID
+ * @param {string} userId - The user adding the comment
+ * @param {string} comment - The comment text
+ * @returns {Promise<object>} The created comment
+ */
+export async function addDocumentComment(documentId, userId, comment) {
+  if (!documentId || !userId || !comment) {
+    throw new Error('Missing required parameters for adding comment');
+  }
+
+  try {
+    const commentData = {
+      documentId,
+      userId,
+      comment,
+      createdAt: new Date().toISOString()
+    };
+
+    const response = await fetch('/api/module-integration/document-comment', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        userId
-      })
+      body: JSON.stringify(commentData),
     });
-    
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Failed to remove document from workflow');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Failed to add document comment');
     }
-    
-    return true;
-    
+
+    return await response.json();
   } catch (error) {
-    console.error('Error removing document from workflow:', error);
+    console.error('Error adding document comment:', error);
     throw error;
   }
 }
