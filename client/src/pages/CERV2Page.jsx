@@ -1634,6 +1634,7 @@ export default function CERV2Page() {
                   deviceType,
                   manufacturer,
                   sections: sections.map(s => ({ title: s.title, content: s.content })),
+                  }
                 });
                 openAssistant();
               }}
