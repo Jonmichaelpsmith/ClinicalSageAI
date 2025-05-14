@@ -8,6 +8,7 @@ import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
+import PredicateDeviceComparison from './PredicateDeviceComparison';
 import {
   Search,
   Filter,
@@ -30,7 +31,7 @@ import {
   Shield
 } from 'lucide-react';
 
-export default function LitReviewPanel() {
+export default function LitReviewPanel({ deviceProfile = {} }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [deviceDescription, setDeviceDescription] = useState('');
   const [currentTab, setCurrentTab] = useState('search');
