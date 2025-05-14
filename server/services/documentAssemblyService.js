@@ -5,10 +5,15 @@
  * various document sections and applying consistent formatting and validation.
  */
 
-const fs = require('fs').promises;
-const path = require('path');
-const { v4: uuidv4 } = require('uuid');
-const axios = require('axios');
+import fs from 'fs/promises';
+import path from 'path';
+import crypto from 'crypto';
+import axios from 'axios';
+
+// Generate a unique ID (replacement for uuid)
+function generateId() {
+  return crypto.randomBytes(16).toString('hex');
+}
 
 // Configuration
 const CONFIG = {
@@ -44,7 +49,7 @@ async function initialize() {
  * @returns {Promise<Object>} - Assembly result with document paths and status
  */
 async function assembleCERDocument(cerData, options = {}) {
-  const assemblyId = uuidv4();
+  const assemblyId = generateId();
   const startTime = Date.now();
   
   try {
@@ -572,7 +577,7 @@ function listAssemblies(options = {}) {
   return assemblies.slice(0, limit);
 }
 
-module.exports = {
+export default {
   initialize,
   assembleCERDocument,
   assemble510kDocument,
