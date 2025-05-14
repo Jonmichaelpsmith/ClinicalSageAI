@@ -202,3 +202,52 @@ export const getSavedLiterature = async (cerProjectId) => {
     throw error;
   }
 };
+
+/**
+ * Search literature using the unified discovery service
+ * 
+ * @param {string} query - The search query
+ * @param {Object} options - Search options (limit, module context)
+ * @returns {Promise<Array>} - Array of literature results
+ */
+export const searchUnifiedLiterature = async (query, options = { limit: 10, module: 'cer' }) => {
+  try {
+    console.log('Searching literature with unified discovery service:', { query, options });
+    const response = await axios.post('/api/discovery/literature-search', {
+      query,
+      limit: options.limit || 10,
+      module: options.module || 'cer'
+    });
+    console.log('Unified literature search response:', response.data);
+    return response.data.results || [];
+  } catch (error) {
+    console.error('Error using unified literature search:', error);
+    // Fallback to traditional literature search
+    console.log('Falling back to traditional literature search');
+    return searchLiterature(query);
+  }
+};
+
+/**
+ * Find predicate devices using the unified discovery service
+ * 
+ * @param {string} deviceDescription - The device description to search for predicates
+ * @param {Object} options - Search options (limit, module context)
+ * @returns {Promise<Array>} - Array of predicate device results
+ */
+export const findPredicateDevices = async (deviceDescription, options = { limit: 8, module: '510k' }) => {
+  try {
+    console.log('Finding predicates with unified discovery service:', { deviceDescription, options });
+    const response = await axios.post('/api/discovery/find-predicates', {
+      deviceDescription,
+      limit: options.limit || 8,
+      module: options.module || '510k'
+    });
+    console.log('Unified predicate search response:', response.data);
+    return response.data.predicates || [];
+  } catch (error) {
+    console.error('Error using unified predicate search:', error);
+    // Return empty array as fallback since there's no traditional endpoint
+    return [];
+  }
+};
