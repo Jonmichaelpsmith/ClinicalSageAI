@@ -377,8 +377,11 @@ export default function LitReviewPanel({
       // Show generating state
       setGeneratingReview(true);
       
-      // Import the API functions
-      const cerApi = await import('../../api/cer');
+      // Import the necessary services and API functions
+      const [cerApi, cerComplianceService] = await Promise.all([
+        import('../../api/cer'),
+        import('../../services/CerComplianceService')
+      ]);
       
       // Call the API to generate literature review
       const response = await fetch('/api/cer/generate-literature-review', {
@@ -400,11 +403,45 @@ export default function LitReviewPanel({
       
       const result = await response.json();
       
+      // Validate the generated review for compliance
+      const validationResults = await cerComplianceService.default.validateLiteratureReview(
+        result.review,
+        selectedArticles,
+        deviceName || (deviceProfile?.deviceName || 'Device')
+      );
+      
       // Show success state
       setGeneratingReview(false);
       setReviewGenerated(true);
       
-      // Save the generated review to the CER project
+      // Check for critical compliance issues
+      if (validationResults.criticalIssues && validationResults.criticalIssues.length > 0) {
+        const issueMessages = validationResults.criticalIssues.map(issue => `- ${issue.message}`).join('\n');
+        
+        const proceed = window.confirm(
+          `Warning: The generated literature review has critical compliance issues:\n\n${issueMessages}\n\nDo you want to continue anyway?`
+        );
+        
+        if (!proceed) {
+          return false;
+        }
+      }
+      
+      // Add compliance metadata to the review
+      result.review.complianceStatus = {
+        complianceScore: validationResults.complianceScore || 0,
+        valid: validationResults.valid || false,
+        passedChecks: validationResults.passedChecks || [],
+        failedChecks: validationResults.failedChecks || [],
+        issueCount: {
+          critical: validationResults.criticalIssues?.length || 0,
+          major: validationResults.majorIssues?.length || 0,
+          minor: validationResults.minorIssues?.length || 0
+        },
+        validatedAt: new Date().toISOString()
+      };
+      
+      // Save the generated and validated review to the CER project
       await cerApi.saveGeneratedLiteratureReview(cerProjectId, result.review);
       
       // Add the review as a section to the CER document using the callback
@@ -418,14 +455,19 @@ export default function LitReviewPanel({
             articleCount: selectedArticles.length,
             articleIds: selectedArticles.map(article => article.id),
             generatedAt: new Date().toISOString(),
+            complianceStatus: result.review.complianceStatus
           }
         };
         
         onAddSection(newSection);
       }
       
-      // Show success message
-      alert('Literature review generated and added to your CER!');
+      // Show appropriate success message based on compliance
+      if (validationResults.valid) {
+        alert(`Literature review generated and added to your CER! Compliance score: ${validationResults.complianceScore}%`);
+      } else {
+        alert(`Literature review generated with compliance warnings (Score: ${validationResults.complianceScore}%). Review the regulatory compliance section for details.`);
+      }
       
       return true;
     } catch (error) {
