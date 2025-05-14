@@ -1,168 +1,125 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "eSTAR Plus Manifest Schema",
-  "description": "JSON Schema for validating FDA eSTAR Plus submission manifests",
+  "title": "FDA eSTAR Package Manifest",
+  "description": "Schema for validating eSTAR package structure and content",
   "type": "object",
-  "required": ["estarSubmission"],
+  "required": ["packageInfo", "sections", "documents"],
   "properties": {
-    "estarSubmission": {
+    "packageInfo": {
       "type": "object",
-      "required": [
-        "metadata",
-        "sections"
-      ],
+      "required": ["submissionType", "deviceName", "applicant", "contactPerson", "submissionDate"],
       "properties": {
-        "metadata": {
+        "submissionType": {
+          "type": "string",
+          "enum": ["Traditional", "Abbreviated", "Special"]
+        },
+        "deviceName": {
+          "type": "string",
+          "minLength": 1
+        },
+        "applicant": {
+          "type": "string",
+          "minLength": 1
+        },
+        "contactPerson": {
           "type": "object",
-          "required": [
-            "submissionId",
-            "submissionDate",
-            "applicant",
-            "deviceName",
-            "deviceClass"
-          ],
+          "required": ["name", "title", "email", "phone"],
           "properties": {
-            "submissionId": {
-              "type": "string",
-              "description": "Unique identifier for the submission",
-              "minLength": 1
-            },
-            "submissionDate": {
-              "type": "string",
-              "description": "Date of submission in ISO format",
-              "format": "date-time"
-            },
-            "applicant": {
-              "type": "object",
-              "required": ["name"],
-              "properties": {
-                "name": {
-                  "type": "string",
-                  "minLength": 1
-                },
-                "address": {
-                  "type": "string"
-                },
-                "contactPerson": {
-                  "type": "string"
-                },
-                "phoneNumber": {
-                  "type": "string"
-                },
-                "email": {
-                  "type": "string",
-                  "format": "email"
-                }
-              }
-            },
-            "deviceName": {
+            "name": {
               "type": "string",
               "minLength": 1
             },
-            "deviceClass": {
+            "title": {
               "type": "string",
-              "enum": ["I", "II", "III"]
+              "minLength": 1
             },
-            "productCode": {
-              "type": "string"
-            },
-            "regulationNumber": {
-              "type": "string"
-            },
-            "submissionType": {
+            "email": {
               "type": "string",
-              "enum": ["Traditional", "Special", "Abbreviated"]
+              "format": "email"
+            },
+            "phone": {
+              "type": "string",
+              "pattern": "^[0-9\\-\\(\\)\\s\\+]+$"
             }
           }
         },
-        "sections": {
-          "type": "array",
-          "minItems": 1,
-          "items": {
-            "type": "object",
-            "required": [
-              "sectionId",
-              "title",
-              "files"
-            ],
-            "properties": {
-              "sectionId": {
-                "type": "string",
-                "minLength": 1
-              },
-              "title": {
-                "type": "string",
-                "minLength": 1
-              },
-              "description": {
-                "type": "string"
-              },
-              "files": {
-                "type": "array",
-                "minItems": 1,
-                "items": {
-                  "type": "object",
-                  "required": [
-                    "fileName",
-                    "path",
-                    "fileType"
-                  ],
-                  "properties": {
-                    "fileName": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "path": {
-                      "type": "string",
-                      "minLength": 1
-                    },
-                    "fileType": {
-                      "type": "string",
-                      "enum": ["pdf", "docx", "xlsx", "pptx", "xml", "json", "txt", "jpg", "png"]
-                    },
-                    "fileSize": {
-                      "type": "number",
-                      "minimum": 0
-                    },
-                    "contentDescription": {
-                      "type": "string"
-                    },
-                    "hashValue": {
-                      "type": "string"
-                    },
-                    "hashAlgorithm": {
-                      "type": "string",
-                      "enum": ["SHA-256", "SHA-512", "MD5"]
-                    }
-                  }
-                }
-              }
-            }
-          }
+        "submissionDate": {
+          "type": "string",
+          "format": "date"
         },
-        "digitalSignature": {
+        "predicateDevice": {
           "type": "object",
-          "required": [
-            "algorithm",
-            "value",
-            "signedAt"
-          ],
+          "required": ["name", "manufacturer", "kNumber"],
           "properties": {
-            "algorithm": {
+            "name": {
               "type": "string",
-              "enum": ["HMAC-SHA256", "RSA-SHA256"]
+              "minLength": 1
             },
-            "value": {
+            "manufacturer": {
               "type": "string",
-              "minLength": 64
+              "minLength": 1
             },
-            "signedAt": {
+            "kNumber": {
               "type": "string",
-              "format": "date-time"
-            },
-            "certificate": {
-              "type": "string"
+              "pattern": "^K[0-9]{6}$"
             }
+          }
+        }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 13,
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "status", "content"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]+$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "type": "string",
+            "enum": ["notStarted", "inProgress", "completed", "approved"]
+          },
+          "content": {
+            "type": "object"
+          }
+        }
+      }
+    },
+    "documents": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "fileName", "fileType", "sectionId", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fileName": {
+            "type": "string",
+            "minLength": 1
+          },
+          "fileType": {
+            "type": "string",
+            "enum": ["pdf", "docx", "xlsx", "jpg", "png", "tiff"]
+          },
+          "sectionId": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]+$"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["uploaded", "pending", "verified", "rejected"]
+          },
+          "metadata": {
+            "type": "object"
           }
         }
       }

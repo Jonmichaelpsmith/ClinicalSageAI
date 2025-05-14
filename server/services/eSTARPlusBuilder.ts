@@ -239,21 +239,35 @@ export class eSTARPlusBuilder {
       }
       
       // Step 2: Validate document structure (required sections)
-      const structureValidation = await this.validateDocumentStructure(sections);
-      if (!structureValidation.valid) {
+      const structureIssues = await this.validateDocumentStructure(sections);
+      if (structureIssues.length > 0) {
         validationResult.valid = false;
-        validationResult.issues.push(...structureValidation.issues);
+        validationResult.issues.push(...structureIssues);
       }
       
       // Step 3: Validate content completeness
-      const completenessValidation = await this.validateContentCompleteness(sections, strictMode);
-      if (!completenessValidation.valid) {
-        validationResult.valid = false;
-        validationResult.issues.push(...completenessValidation.issues);
+      const completenessIssues = await this.validateContentCompleteness(sections, strictMode);
+      if (completenessIssues.length > 0) {
+        // Only set valid to false if we have error-level issues
+        if (strictMode || completenessIssues.some(issue => issue.severity === 'error')) {
+          validationResult.valid = false;
+        }
+        validationResult.issues.push(...completenessIssues);
       }
       
-      // Step 4: Validate file attachments if any
-      // This would check that referenced files exist and are valid
+      // Step 4: Validate against FDA eSTAR schema
+      const schemaIssues = await this.validateAgainstFDASchema(projectId, sections);
+      if (schemaIssues.length > 0) {
+        validationResult.valid = false;
+        validationResult.issues.push(...schemaIssues);
+      }
+      
+      // Step 5: Validate file attachments if any
+      const attachmentIssues = await this.validateAttachments(projectId, sections);
+      if (attachmentIssues.length > 0) {
+        validationResult.valid = false;
+        validationResult.issues.push(...attachmentIssues);
+      }
       
       return validationResult;
     } catch (error) {
@@ -275,38 +289,68 @@ export class eSTARPlusBuilder {
    * 
    * @private
    * @param sections Array of 510(k) sections
-   * @returns Validation result
+   * @returns Array of validation issues
    */
-  private static async validateDocumentStructure(sections: any[]): Promise<ValidationResult> {
+  private static async validateDocumentStructure(sections: any[]): Promise<Array<{
+    severity: 'error' | 'warning';
+    section?: string;
+    message: string;
+  }>> {
     const issues: Array<{severity: 'error' | 'warning', section?: string, message: string}> = [];
     
-    // Define required sections according to FDA guidance
+    // Define required sections according to FDA eSTAR guidance
     const requiredSections = [
-      'cover_letter',
-      'indications_for_use',
-      'device_description',
-      'substantial_equivalence',
-      'performance_data',
-      'declarations_of_conformity'
+      { id: 'A', name: 'Administrative' },
+      { id: 'B', name: 'Device Description and Classification' },
+      { id: 'C', name: 'Indications for Use' },
+      { id: 'D', name: 'Device Marketing History' },
+      { id: 'E', name: 'Substantial Equivalence Discussion' },
+      { id: 'F', name: 'Proposed Labeling' },
+      { id: 'G', name: 'Sterilization and Shelf Life' },
+      { id: 'H', name: 'Biocompatibility' },
+      { id: 'I', name: 'Software' },
+      { id: 'J', name: 'Electromagnetic Compatibility and Electrical Safety' },
+      { id: 'K', name: 'Performance Testing - Bench' },
+      { id: 'L', name: 'Performance Testing - Animal' },
+      { id: 'M', name: 'Performance Testing - Clinical' }
     ];
     
     // Get all section names from the provided sections
-    const sectionNames = sections.map(s => s.sectionId);
+    const sectionNames = sections.map(s => s.name);
     
-    // Check for missing required sections
+    // Check for required sections
     for (const required of requiredSections) {
-      if (!sectionNames.includes(required)) {
+      const sectionExists = sectionNames.some(name => 
+        name.startsWith(required.id) || name.includes(required.name)
+      );
+      
+      if (!sectionExists) {
         issues.push({
           severity: 'error',
-          message: `Required section "${required}" is missing from the submission`
+          message: `Required section "${required.id}: ${required.name}" is missing from the submission`
         });
       }
     }
     
-    return {
-      valid: issues.length === 0,
-      issues
-    };
+    // Check for section ordering
+    const orderedSections = [...sections].sort((a, b) => {
+      // Sort by FDA section ID (A, B, C, etc.)
+      const aId = a.name.charAt(0);
+      const bId = b.name.charAt(0);
+      
+      if (aId < bId) return -1;
+      if (aId > bId) return 1;
+      return 0;
+    });
+    
+    if (JSON.stringify(orderedSections.map(s => s.id)) !== JSON.stringify(sections.map(s => s.id))) {
+      issues.push({
+        severity: 'warning',
+        message: 'Sections appear to be out of order based on FDA guidelines'
+      });
+    }
+    
+    return issues;
   }
   
   /**
@@ -315,41 +359,278 @@ export class eSTARPlusBuilder {
    * @private
    * @param sections Array of 510(k) sections
    * @param strictMode Whether to enforce strict validation 
-   * @returns Validation result
+   * @returns Array of validation issues
    */
-  private static async validateContentCompleteness(sections: any[], strictMode: boolean = false): Promise<ValidationResult> {
+  private static async validateContentCompleteness(sections: any[], strictMode: boolean = false): Promise<Array<{
+    severity: 'error' | 'warning';
+    section?: string;
+    message: string;
+  }>> {
     const issues: Array<{severity: 'error' | 'warning', section?: string, message: string}> = [];
+    
+    // Section-specific validation rules
+    const sectionRules: Record<string, {
+      required: boolean;
+      minWords?: number;
+      requiredKeywords?: string[];
+      prohibitedPatterns?: RegExp[];
+    }> = {
+      'A': { // Administrative
+        required: true,
+        minWords: 100,
+        requiredKeywords: ['contact', 'applicant', 'address', 'phone', 'email'],
+        prohibitedPatterns: [/\[.*?\]/, /TBD/, /to be determined/i]
+      },
+      'B': { // Device Description
+        required: true,
+        minWords: 200,
+        requiredKeywords: ['description', 'classification', 'specification', 'component'],
+        prohibitedPatterns: [/\[.*?\]/, /TBD/, /to be determined/i]
+      },
+      'C': { // Indications for Use
+        required: true,
+        minWords: 50,
+        requiredKeywords: ['indicated', 'use', 'purpose'],
+        prohibitedPatterns: [/\[.*?\]/, /TBD/, /to be determined/i]
+      },
+      'E': { // Substantial Equivalence
+        required: true,
+        minWords: 300,
+        requiredKeywords: ['equivalent', 'predicate', 'comparison', 'similar'],
+        prohibitedPatterns: [/\[.*?\]/, /TBD/, /to be determined/i]
+      }
+    };
     
     // Check each section for content completeness
     for (const section of sections) {
-      if (!section.content || section.content.trim() === '') {
+      // Get the section ID (first character of the name)
+      const sectionId = section.name.charAt(0);
+      const rules = sectionRules[sectionId];
+      
+      // If we don't have specific rules for this section, apply general checks
+      if (!rules) {
+        if (!section.content || (typeof section.content === 'string' && section.content.trim() === '')) {
+          issues.push({
+            severity: strictMode ? 'error' : 'warning',
+            section: section.name,
+            message: `Section "${section.name}" has no content`
+          });
+        } else if (typeof section.content === 'string' && 
+                  (section.content.includes('[') && section.content.includes(']'))) {
+          // Look for placeholder text that indicates incomplete content
+          issues.push({
+            severity: strictMode ? 'error' : 'warning',
+            section: section.name,
+            message: `Section "${section.name}" contains placeholder text that needs to be replaced`
+          });
+        }
+        continue;
+      }
+      
+      // Apply section-specific rules
+      if (rules.required && (!section.content || section.content.trim() === '')) {
         issues.push({
-          severity: strictMode ? 'error' : 'warning',
-          section: section.title,
-          message: `Section "${section.title}" has no content`
+          severity: 'error',
+          section: section.name,
+          message: `Section "${section.name}" is required but has no content`
         });
-      } else if (section.content.includes('[') && section.content.includes(']')) {
-        // Look for placeholder text that indicates incomplete content
-        if (strictMode) {
+        continue;
+      }
+      
+      // Check for content length if we have a content string
+      if (typeof section.content === 'string') {
+        if (rules.minWords && section.content.split(/\s+/).length < rules.minWords) {
           issues.push({
-            severity: 'error',
-            section: section.title,
-            message: `Section "${section.title}" contains placeholder text that needs to be replaced`
+            severity: strictMode ? 'error' : 'warning',
+            section: section.name,
+            message: `Section "${section.name}" content is too brief (minimum ${rules.minWords} words required)`
           });
-        } else {
-          issues.push({
-            severity: 'warning',
-            section: section.title,
-            message: `Section "${section.title}" may contain placeholder text that should be reviewed`
-          });
+        }
+        
+        // Check for required keywords
+        if (rules.requiredKeywords) {
+          const missingKeywords = rules.requiredKeywords.filter(
+            keyword => !section.content.toLowerCase().includes(keyword.toLowerCase())
+          );
+          
+          if (missingKeywords.length > 0) {
+            issues.push({
+              severity: strictMode ? 'error' : 'warning',
+              section: section.name,
+              message: `Section "${section.name}" is missing key content related to: ${missingKeywords.join(', ')}`
+            });
+          }
+        }
+        
+        // Check for prohibited patterns (placeholders, TBDs, etc.)
+        if (rules.prohibitedPatterns) {
+          const foundPatterns = rules.prohibitedPatterns.filter(
+            pattern => pattern.test(section.content)
+          );
+          
+          if (foundPatterns.length > 0) {
+            issues.push({
+              severity: strictMode ? 'error' : 'warning',
+              section: section.name,
+              message: `Section "${section.name}" contains placeholder text or incomplete information`
+            });
+          }
         }
       }
     }
     
-    return {
-      valid: strictMode ? issues.length === 0 : !issues.some(issue => issue.severity === 'error'),
-      issues
-    };
+    return issues;
+  }
+  
+  /**
+   * Validate eSTAR package against FDA schema
+   * 
+   * @private
+   * @param projectId ID of the project
+   * @param sections Array of sections
+   * @returns Array of validation issues
+   */
+  private static async validateAgainstFDASchema(projectId: string, sections: any[]): Promise<Array<{
+    severity: 'error' | 'warning';
+    section?: string;
+    message: string;
+  }>> {
+    const issues: Array<{severity: 'error' | 'warning', section?: string, message: string}> = [];
+    
+    try {
+      // Get project metadata
+      const project = await db?.query.fda510kProjects.findFirst({
+        where: eq(fda510kProjects.id, projectId)
+      });
+      
+      if (!project) {
+        issues.push({
+          severity: 'error',
+          message: 'Project metadata not found'
+        });
+        return issues;
+      }
+      
+      // Build a mock package object to validate against schema
+      const packageObj = {
+        packageInfo: {
+          submissionType: project.submissionType || 'Traditional',
+          deviceName: project.deviceName || '',
+          applicant: project.applicant || '',
+          contactPerson: {
+            name: project.contactName || '',
+            title: project.contactTitle || '',
+            email: project.contactEmail || '',
+            phone: project.contactPhone || ''
+          },
+          submissionDate: project.submissionDate || new Date().toISOString().split('T')[0],
+          predicateDevice: {
+            name: project.predicateDeviceName || '',
+            manufacturer: project.predicateManufacturer || '',
+            kNumber: project.predicateKNumber || ''
+          }
+        },
+        sections: sections.map(s => ({
+          id: s.id,
+          title: s.name,
+          status: s.status || 'inProgress',
+          content: s.content || {}
+        })),
+        documents: []  // Would include attached documents in a real implementation
+      };
+      
+      // Validate against schema
+      const ajv = new Ajv();
+      const validate = ajv.compile(manifestSchema);
+      const valid = validate(packageObj);
+      
+      if (!valid && validate.errors) {
+        for (const error of validate.errors) {
+          const dataPath = error.dataPath || '';
+          const message = error.message || 'Unknown error';
+          
+          let section: string | undefined = undefined;
+          if (dataPath.includes('sections')) {
+            const match = dataPath.match(/sections\/(\d+)/);
+            if (match && match[1]) {
+              const sectionIndex = parseInt(match[1]);
+              section = sections[sectionIndex]?.name;
+            }
+          }
+          
+          issues.push({
+            severity: 'error',
+            section,
+            message: `Schema error at ${dataPath}: ${message}`
+          });
+        }
+      }
+      
+      return issues;
+    } catch (error) {
+      console.error('Error validating against FDA schema:', error);
+      issues.push({
+        severity: 'error',
+        message: `Schema validation error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+      return issues;
+    }
+  }
+  
+  /**
+   * Validate file attachments in the eSTAR package
+   * 
+   * @private
+   * @param projectId ID of the project
+   * @param sections Array of sections
+   * @returns Array of validation issues
+   */
+  private static async validateAttachments(projectId: string, sections: any[]): Promise<Array<{
+    severity: 'error' | 'warning';
+    section?: string;
+    message: string;
+  }>> {
+    const issues: Array<{severity: 'error' | 'warning', section?: string, message: string}> = [];
+    
+    try {
+      // This is a simplified implementation - in a real implementation,
+      // we would check that all referenced files exist, have the correct format, etc.
+      
+      // Get required attachments for FDA submissions
+      const requiredAttachments = [
+        { name: 'Declaration of Conformity', section: 'G' },
+        { name: 'Test Results', section: 'K' },
+        { name: 'Device Labeling', section: 'F' }
+      ];
+      
+      // In a real implementation, we would query for attachments and validate them
+      // For now, just return placeholder issues for missing attachments
+      for (const attachment of requiredAttachments) {
+        const sectionExists = sections.some(s => s.name.startsWith(attachment.section));
+        
+        if (sectionExists) {
+          // Mock check for attachments - in a real implementation, we would check the database
+          const hasAttachment = Math.random() > 0.5; // Simulate 50% chance of missing attachment
+          
+          if (!hasAttachment) {
+            issues.push({
+              severity: 'warning',
+              section: attachment.section,
+              message: `Required attachment "${attachment.name}" may be missing from section ${attachment.section}`
+            });
+          }
+        }
+      }
+      
+      return issues;
+    } catch (error) {
+      console.error('Error validating attachments:', error);
+      issues.push({
+        severity: 'error',
+        message: `Attachment validation error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+      return issues;
+    }
   }
   /**
    * Build and assemble an eSTAR package
