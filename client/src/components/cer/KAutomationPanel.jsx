@@ -831,7 +831,7 @@ export default function KAutomationPanel() {
                       onClick={() => handleRunPipeline('ingestDeviceProfile')}
                       className="bg-blue-600 hover:bg-blue-700"
                     >
-                      {currentDeviceProfile ? "Change Device Profile" : "Upload Device Profile"}
+                      {currentDeviceProfile ? "Change Device Profile" : "Select Device Profile"}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -1059,10 +1059,10 @@ export default function KAutomationPanel() {
               <div className="space-y-4">
                 <div className="bg-blue-50 p-4 rounded-md mb-6 border border-blue-100">
                   <h3 className="text-lg font-medium text-blue-800 mb-2 flex items-center">
-                    <Database className="h-5 w-5 mr-2" /> Device Profile Management
+                    <Database className="h-5 w-5 mr-2" /> Device Profiles
                   </h3>
                   <p className="text-sm text-blue-700 mb-4">
-                    Create and manage your medical device profiles for 510(k) submissions. Select a device to use in your automation workflow.
+                    Create and manage your medical device profiles for 510(k) submissions. Select a device profile to use in your automation workflow.
                   </p>
                   <div className="flex items-center">
                     <Button
