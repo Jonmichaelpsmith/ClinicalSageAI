@@ -812,7 +812,9 @@ export default function LitReviewPanel({
                       <div className="space-y-4">
                         {searchResults.map(article => (
                           <Card key={article.id} className={`transition-all ${
-                            selectedArticles.some(a => a.id === article.id) ? 'border-blue-500 bg-blue-50' : ''
+                            searchType === 'predicates' 
+                              ? selectedPredicates.some(p => p.id === article.id) ? 'border-green-500 bg-green-50' : ''
+                              : selectedArticles.some(a => a.id === article.id) ? 'border-blue-500 bg-blue-50' : ''
                           }`}>
                             <CardContent className="p-4">
                               <div className="flex items-start justify-between">
@@ -851,12 +853,18 @@ export default function LitReviewPanel({
                                 
                                 <div className="flex items-center ml-4">
                                   <Button
-                                    variant={selectedArticles.some(a => a.id === article.id) ? "default" : "outline"}
+                                    variant={
+                                      searchType === 'predicates'
+                                        ? selectedPredicates.some(p => p.id === article.id) ? "default" : "outline"
+                                        : selectedArticles.some(a => a.id === article.id) ? "default" : "outline"
+                                    }
                                     size="sm"
                                     className="min-w-24"
                                     onClick={() => toggleArticleSelection(article)}
                                   >
-                                    {selectedArticles.some(a => a.id === article.id) ? (
+                                    {(searchType === 'predicates' 
+                                      ? selectedPredicates.some(p => p.id === article.id)
+                                      : selectedArticles.some(a => a.id === article.id)) ? (
                                       <>
                                         <Check className="mr-1 h-4 w-4" />
                                         Selected
