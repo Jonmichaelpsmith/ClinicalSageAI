@@ -7,6 +7,7 @@
 
 import { Router } from 'express';
 import { eSTARValidator } from '../services/eSTARValidator';
+import { fdaComplianceTracker } from '../services/FDAComplianceTracker';
 import { z } from 'zod';
 
 // Initialize router
@@ -228,6 +229,37 @@ router.get('/download/:projectId', (req, res) => {
     return res.status(500).json({
       success: false,
       errorMessage: error.message || 'An error occurred while serving the eSTAR package'
+    });
+  }
+});
+
+/**
+ * Get implementation progress for FDA compliance
+ * 
+ * Returns the current status of FDA 510(k) compliance implementation,
+ * including completed steps, validation rules, and progress metrics.
+ */
+router.get('/compliance-status', (req, res) => {
+  try {
+    // Get compliance data from the tracker
+    const implementationSteps = fdaComplianceTracker.getImplementationSteps();
+    const validationRules = fdaComplianceTracker.getValidationRules();
+    const progressSummary = fdaComplianceTracker.getProgressSummary();
+    const nextSteps = fdaComplianceTracker.getNextSteps();
+    
+    return res.json({
+      success: true,
+      implementationSteps,
+      validationRules,
+      progressSummary,
+      nextSteps,
+      totalProgress: progressSummary.overallPercentage
+    });
+  } catch (error: any) {
+    console.error('Error fetching FDA compliance status:', error);
+    return res.status(500).json({
+      success: false,
+      errorMessage: error.message || 'An error occurred while retrieving compliance data'
     });
   }
 });
