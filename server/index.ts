@@ -94,6 +94,11 @@ import reportsRoutes from './routes/reports.js';
 app.use('/api/reports', reportsRoutes);
 console.log('Reports API routes registered');
 
+// Import and register CERV2 protection routes
+import cerv2ProtectionRoutes from './routes/cerv2-protection.js';
+app.use('/api/cerv2', cerv2ProtectionRoutes);
+console.log('CERV2 Protection API routes registered');
+
 // Import and register tenant section gating API routes
 import tenantSectionGatingRoutes from './routes/tenant-section-gating.js';
 app.use('/api/tenant-section-gating', tenantSectionGatingRoutes);
