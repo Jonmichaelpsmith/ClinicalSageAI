@@ -1603,7 +1603,10 @@ export default function CERV2Page() {
           };
           
           // Set the context and open the AI assistant
-          setModuleContext('regulatory', context);
+          setModuleContext({
+            module: 'regulatory',
+            context: context
+          });
           openAssistant();
         }
       }, [activeTab, setModuleContext, openAssistant, documentType, deviceName, deviceType, manufacturer, sections, selectedPredicate]);
@@ -1623,7 +1626,9 @@ export default function CERV2Page() {
             <Button 
               className="mt-6" 
               onClick={() => {
-                setModuleContext('regulatory', {
+                setModuleContext({
+                  module: 'regulatory',
+                  context: {
                   documentType,
                   deviceName,
                   deviceType,
