@@ -2075,6 +2075,9 @@ export default function CERV2Page() {
         </div>
       </div>
     
+      {/* Document Type Tabs */}
+      {renderDocumentTypeTabs()}
+      
       <div className="flex flex-col md:flex-row justify-between items-start p-6 pb-2 bg-gradient-to-r from-blue-50 to-white rounded-t-lg shadow-sm">
         <div>
           <div className="flex items-center gap-2 mb-1">
