@@ -13,7 +13,8 @@ import {
   ClipboardCheck,
   BookOpen,
   AlertCircle,
-  ShieldCheck
+  ShieldCheck,
+  AlertTriangle
 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from '@/hooks/use-toast';
