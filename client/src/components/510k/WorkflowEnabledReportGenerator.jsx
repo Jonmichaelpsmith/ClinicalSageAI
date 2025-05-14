@@ -80,10 +80,17 @@ const WorkflowEnabledReportGenerator = ({
   const fetchComplianceStatus = async () => {
     setLoadingCompliance(true);
     try {
+      // Call the FDA510kService to get compliance data
       const result = await FDA510kService.getComplianceStatus();
       
       if (result.success) {
         setComplianceData(result);
+        
+        // Show success toast
+        toast({
+          title: 'Compliance data loaded',
+          description: `FDA 510(k) implementation status: ${result.progressSummary.overallPercentage}% complete.`,
+        });
       } else {
         toast({
           title: 'Warning',
@@ -228,45 +235,6 @@ const WorkflowEnabledReportGenerator = ({
       }
     }
   };
-  
-  // Fetch FDA compliance status data
-  const fetchComplianceStatus = async () => {
-    setLoadingCompliance(true);
-    try {
-      // Call the FDA510kService to get compliance data
-      const result = await FDA510kService.getComplianceStatus();
-      
-      if (result.success) {
-        setComplianceData(result);
-        
-        // Show success toast
-        toast({
-          title: 'Compliance data loaded',
-          description: `FDA 510(k) implementation status: ${result.progressSummary.overallPercentage}% complete.`,
-        });
-      } else {
-        toast({
-          title: 'Warning',
-          description: 'Could not load compliance data: ' + (result.errorMessage || 'Unknown error'),
-          variant: 'warning'
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching compliance status:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to load compliance data: ' + (error.message || 'Unknown error'),
-        variant: 'destructive'
-      });
-    } finally {
-      setLoadingCompliance(false);
-    }
-  };
-
-  // Load compliance data on component mount
-  useEffect(() => {
-    fetchComplianceStatus();
-  }, []);
 
   // Handle eSTAR package integration with the workflow
   const handleESTARIntegration = async () => {
