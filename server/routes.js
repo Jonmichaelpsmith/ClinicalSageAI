@@ -74,6 +74,10 @@ function registerRoutes(app) {
   console.log('Registering CER generation routes');
   app.use('/api/cer', cerGenerationRoutes);
   
+  // Register unified discovery routes for both CER and 510(k) modules
+  console.log('Registering unified discovery routes');
+  app.use('/api/discovery', discoveryRoutes);
+  
   // Log all routes for debugging
   app._router.stack.forEach(function(r){
     if (r.route && r.route.path){
