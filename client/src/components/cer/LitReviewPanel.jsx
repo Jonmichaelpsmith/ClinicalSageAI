@@ -43,93 +43,63 @@ export default function LitReviewPanel() {
     keywordFilters: ['efficacy', 'safety', 'clinical trial']
   });
 
-  // Simulate search functionality
-  const handleSearch = () => {
+  // Real API call for literature search
+  const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     
     setSearching(true);
     setSearchResults([]);
     
-    // Simulate API call delay
-    setTimeout(() => {
-      const mockResults = [
-        {
-          id: '10.1056/NEJMra1910136',
-          title: 'Advances in Enzyme Replacement Therapy for Metabolic Disorders',
-          authors: 'Chen M, Johnson S, Smith RJ',
-          journal: 'New England Journal of Medicine',
-          year: 2024,
-          abstract: 'Recent advances in enzyme replacement therapy have shown significant promise for treating various metabolic disorders. This review summarizes clinical evidence from pivotal trials and real-world data.',
-          keywords: ['enzyme replacement therapy', 'metabolic disorders', 'clinical trials', 'efficacy'],
-          citationCount: 47,
-          fullTextAvailable: true,
-          peerReviewed: true
-        },
-        {
-          id: '10.1016/j.jceh.2023.06.003',
-          title: 'Long-term Safety Profile of Enzymex Forte in Adult Patients: A Five-Year Follow-up Study',
-          authors: 'Rodriguez KL, Williams P, Li X',
-          journal: 'Journal of Clinical Enzymology and Health',
-          year: 2023,
-          abstract: 'This five-year follow-up study evaluates the long-term safety profile of Enzymex Forte in adult patients with enzyme deficiencies. Results indicate a favorable safety profile with minimal adverse events.',
-          keywords: ['Enzymex', 'enzyme therapy', 'safety', 'long-term follow-up'],
-          citationCount: 28,
-          fullTextAvailable: true,
-          peerReviewed: true
-        },
-        {
-          id: '10.1038/s41591-022-01942-9',
-          title: 'Comparative Efficacy of Novel Enzyme Formulations in Pediatric Patients',
-          authors: 'Patel A, Schneider B, Martinez C',
-          journal: 'Nature Medicine',
-          year: 2022,
-          abstract: 'This randomized controlled trial compares the efficacy of three novel enzyme formulations, including Enzymex Forte, in pediatric patients with enzyme deficiencies. Enzymex Forte demonstrated superior efficacy with comparable safety.',
-          keywords: ['comparative efficacy', 'enzyme formulations', 'pediatric', 'clinical trial'],
-          citationCount: 63,
-          fullTextAvailable: true,
-          peerReviewed: true
-        },
-        {
-          id: '10.1101/2024.02.15.573921',
-          title: 'Mechanism of Action of Enzymex Forte: Insights from Molecular Dynamics Simulations',
-          authors: 'Zhang Y, Kumar R',
-          journal: 'bioRxiv',
-          year: 2024,
-          abstract: 'This preprint explores the molecular mechanism underlying the enhanced activity of Enzymex Forte using computational methods. Results suggest a novel binding mode that explains improved clinical outcomes.',
-          keywords: ['mechanism of action', 'molecular dynamics', 'enzyme kinetics'],
-          citationCount: 5,
-          fullTextAvailable: true,
-          peerReviewed: false
-        },
-        {
-          id: '10.1016/j.clint.2023.08.012',
-          title: 'Real-world Effectiveness of Enzyme Replacement Therapies in Rare Metabolic Conditions',
-          authors: 'Blackwell T, Davidson J, Miller HS',
-          journal: 'Clinical Therapeutics',
-          year: 2023,
-          abstract: 'This retrospective analysis of registry data evaluates the real-world effectiveness of enzyme replacement therapies, including Enzymex Forte, in patients with rare metabolic conditions. Outcomes are consistent with clinical trial results.',
-          keywords: ['real-world evidence', 'registry data', 'enzyme replacement', 'effectiveness'],
-          citationCount: 19,
-          fullTextAvailable: false,
-          peerReviewed: true
-        },
-        {
-          id: '10.1002/jimd.12455',
-          title: 'Systematic Review and Meta-analysis of Enzyme Replacement Therapies for Lysosomal Storage Disorders',
-          authors: 'Brown L, Fernandez G, Cho SY',
-          journal: 'Journal of Inherited Metabolic Disease',
-          year: 2021,
-          abstract: 'This systematic review and meta-analysis evaluates the efficacy and safety of enzyme replacement therapies for lysosomal storage disorders. Pooled data from 24 studies demonstrates significant clinical benefits with manageable safety profiles.',
-          keywords: ['systematic review', 'meta-analysis', 'lysosomal storage disorders', 'enzyme replacement therapy'],
-          citationCount: 89,
-          fullTextAvailable: true,
-          peerReviewed: true
-        },
-      ];
+    try {
+      // Prepare filter object based on UI settings
+      const apiFilters = {
+        yearStart: filters.yearStart,
+        yearEnd: filters.yearEnd,
+        peerReviewedOnly: filters.peerReviewedOnly,
+        fullTextAvailable: filters.fullTextAvailable,
+        includePreprints: filters.includePreprints,
+        keywords: filters.keywordFilters
+      };
       
-      setSearchResults(mockResults);
+      // First try the combined literature search endpoint that aggregates results
+      const literatureApi = await import('../../api/cer');
+      const results = await literatureApi.searchLiterature(searchQuery, apiFilters);
+      
+      // If the combined endpoint returns results, use them
+      if (results && results.length > 0) {
+        setSearchResults(results);
+        setSearching(false);
+        return;
+      }
+      
+      // Otherwise, try individual source endpoints and combine results
+      const [pubmedResults, ieeeResults] = await Promise.all([
+        literatureApi.searchPubMed(searchQuery, apiFilters).catch(err => {
+          console.warn('PubMed search error:', err);
+          return [];
+        }),
+        literatureApi.searchIEEE(searchQuery, apiFilters).catch(err => {
+          console.warn('IEEE search error:', err);
+          return [];
+        })
+      ]);
+      
+      // Combine and deduplicate results by ID
+      const combinedResults = [...pubmedResults, ...ieeeResults];
+      const uniqueResults = combinedResults.filter((item, index, self) => 
+        index === self.findIndex(t => t.id === item.id)
+      );
+      
+      setSearchResults(uniqueResults);
+    } catch (error) {
+      console.error('Error searching literature:', error);
+      // Show error in UI
+      const errorMessage = error.response?.data?.message || error.message || 'An error occurred during search';
+      // In a real app, we would show this error to the user in a toast or alert
+      console.error(errorMessage);
+    } finally {
       setSearching(false);
-    }, 1500);
+    }
   };
 
   const toggleArticleSelection = (article) => {
@@ -168,43 +138,121 @@ export default function LitReviewPanel() {
   };
 
   const uploadPaperHandler = () => {
-    // In a real app, this would trigger a file upload dialog
+    // Trigger file upload dialog
     document.getElementById('paper-upload').click();
   };
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     if (e.target.files.length > 0) {
-      // In a real app, we would upload the file and process it
-      // For now, we'll just simulate adding it to the selected articles
-      const file = e.target.files[0];
-      
-      const newArticle = {
-        id: `upload-${Date.now()}`,
-        title: file.name.replace(/\.[^/.]+$/, ''), // Remove file extension
-        authors: 'Manually Uploaded',
-        journal: 'User Upload',
-        year: new Date().getFullYear(),
-        abstract: 'This is a manually uploaded document.',
-        keywords: ['user upload'],
-        citationCount: 0,
-        fullTextAvailable: true,
-        peerReviewed: false,
-        isUpload: true
-      };
-      
-      setSelectedArticles([...selectedArticles, newArticle]);
-      
-      // Reset file input
-      e.target.value = '';
-      
-      // Switch to selected tab
-      setCurrentTab('selected');
+      try {
+        const file = e.target.files[0];
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        // Show uploading state
+        const tempArticle = {
+          id: `uploading-${Date.now()}`,
+          title: `Uploading: ${file.name}...`,
+          authors: 'Processing...',
+          journal: 'User Upload',
+          year: new Date().getFullYear(),
+          abstract: 'Upload in progress. The document is being processed and analyzed.',
+          keywords: ['user upload'],
+          citationCount: 0,
+          fullTextAvailable: true,
+          peerReviewed: false,
+          isUpload: true,
+          uploading: true
+        };
+        
+        setSelectedArticles([...selectedArticles, tempArticle]);
+        
+        // Upload to server and process the document
+        const response = await fetch('/api/cer/upload-literature', {
+          method: 'POST',
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
+        }
+        
+        const processedArticle = await response.json();
+        
+        // Replace the temporary uploading article with the processed one
+        setSelectedArticles(prev => prev.map(article => 
+          article.id === tempArticle.id ? {
+            ...processedArticle,
+            isUpload: true
+          } : article
+        ));
+        
+        // Reset file input
+        e.target.value = '';
+        
+        // Switch to selected tab
+        setCurrentTab('selected');
+      } catch (error) {
+        console.error('Error uploading literature:', error);
+        
+        // Remove the temporary uploading article and show error
+        setSelectedArticles(prev => prev.filter(article => !article.uploading));
+        
+        // In a real app, show an error toast to the user
+        console.error('Failed to process uploaded document');
+        
+        // Reset file input
+        e.target.value = '';
+      }
     }
   };
 
-  const handleClearSelections = () => {
+  const handleClearSelections = async () => {
     if (confirm('Are you sure you want to clear all selected literature?')) {
-      setSelectedArticles([]);
+      try {
+        // Clear from state first for immediate UI response
+        setSelectedArticles([]);
+        
+        // Then clear from server/database
+        const cerProjectId = localStorage.getItem('currentCerProjectId');
+        if (cerProjectId) {
+          // Import the API functions
+          const cerApi = await import('../../api/cer');
+          
+          // Clear the literature selection on the server
+          await cerApi.saveLiteratureSelection(cerProjectId, []);
+        }
+      } catch (error) {
+        console.error('Error clearing literature selections:', error);
+      }
+    }
+  };
+  
+  // Save selected articles to the server
+  const handleSaveSelections = async () => {
+    try {
+      const cerProjectId = localStorage.getItem('currentCerProjectId');
+      if (!cerProjectId) {
+        throw new Error('No active CER project found. Please create or select a project first.');
+      }
+      
+      if (selectedArticles.length === 0) {
+        throw new Error('Please select at least one article to save.');
+      }
+      
+      // Import the API functions
+      const cerApi = await import('../../api/cer');
+      
+      // Save the selected literature to the server
+      await cerApi.saveLiteratureSelection(cerProjectId, selectedArticles);
+      
+      // Show success message to user
+      console.log('Literature selections saved successfully');
+      
+      return true;
+    } catch (error) {
+      console.error('Error saving literature selections:', error);
+      return false;
     }
   };
 
