@@ -1,231 +1,266 @@
 /**
- * Module Document Registration Service
+ * Module Document Registration Utility
  * 
- * This service provides functions for registering documents from different modules
- * in the unified document workflow system.
+ * This utility provides functions to register documents from different modules
+ * into the unified workflow system. It handles the mapping of module-specific
+ * document structures to the unified document schema.
  */
 
+import { apiRequest } from '@/lib/queryClient';
+
 /**
- * Register a document from a module in the unified document system
+ * Register a document from any module into the unified workflow system
  * 
- * @param {Object} documentData Document data to register
- * @returns {Promise<Object>} The registered document with its module reference
+ * @param {Object} documentData - Module-specific document data
+ * @param {string} moduleType - The type of module (510k, cmc, ectd, study, cer)
+ * @param {string} organizationId - The organization ID
+ * @param {string} userId - The user ID of the creator
+ * @returns {Promise<Object>} - The registered document in unified format
  */
-export async function registerModuleDocument(documentData) {
-  try {
-    const response = await fetch('/api/module-integration/register-document', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(documentData),
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Failed to register document: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error registering module document:', error);
-    throw error;
-  }
+export async function registerModuleDocument(documentData, moduleType, organizationId, userId) {
+  // Map the module-specific data to the unified schema
+  const unifiedData = mapToUnifiedSchema(documentData, moduleType, organizationId, userId);
+  
+  // Register the document through the API
+  const response = await apiRequest({
+    url: '/api/module-integration/register-document',
+    method: 'POST',
+    data: unifiedData
+  });
+  
+  return response;
 }
 
 /**
- * Get a document by its module-specific ID
+ * Map module-specific document data to unified document schema
  * 
- * @param {string} moduleType Module type
- * @param {string} originalId Original document ID in the module
- * @param {number} organizationId Organization ID
- * @returns {Promise<Object>} The document or null if not found
+ * @param {Object} documentData - Module-specific document data
+ * @param {string} moduleType - The type of module (510k, cmc, ectd, study, cer)
+ * @param {string} organizationId - The organization ID
+ * @param {string} userId - The user ID of the creator
+ * @returns {Object} - Document data mapped to unified schema
  */
-export async function getDocumentByModuleId(moduleType, originalId, organizationId) {
-  try {
-    const response = await fetch(`/api/module-integration/document/${moduleType}/${originalId}?organizationId=${organizationId}`);
-    
-    if (response.status === 404) {
-      // Document not found is a valid case, not an error
-      return null;
-    }
-    
-    if (!response.ok) {
-      throw new Error(`Failed to get document: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching document by module ID:', error);
-    throw error;
-  }
-}
-
-/**
- * Get documents for a module
- * 
- * @param {string} moduleType Module type
- * @param {number} organizationId Organization ID
- * @returns {Promise<Array>} List of documents
- */
-export async function getModuleDocuments(moduleType, organizationId) {
-  try {
-    const response = await fetch(`/api/module-integration/documents/${moduleType}?organizationId=${organizationId}`);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to get documents: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching module documents:', error);
-    throw error;
-  }
-}
-
-/**
- * Get document counts by type for an organization
- * 
- * @param {number} organizationId Organization ID
- * @returns {Promise<Object>} Map of document types to counts
- */
-export async function getDocumentCountByType(organizationId) {
-  try {
-    const response = await fetch(`/api/module-integration/document-counts?organizationId=${organizationId}`);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to get document counts: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching document counts:', error);
-    throw error;
-  }
-}
-
-/**
- * Get documents in review
- * 
- * @param {number} organizationId Organization ID
- * @returns {Promise<Array>} Documents in review
- */
-export async function getDocumentsInReview(organizationId) {
-  try {
-    const response = await fetch(`/api/module-integration/documents-in-review?organizationId=${organizationId}`);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to get documents in review: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching documents in review:', error);
-    throw error;
-  }
-}
-
-/**
- * Register a 510(k) document
- * 
- * @param {string} projectId 510(k) project ID
- * @param {string} title Document title
- * @param {string} documentType Document type
- * @param {number} organizationId Organization ID
- * @param {number} userId User ID
- * @param {Object} metadata Additional metadata
- * @returns {Promise<Object>} The registered document
- */
-export async function register510kDocument(projectId, title, documentType, organizationId, userId, metadata = {}) {
-  return registerModuleDocument({
-    title,
-    documentType,
+function mapToUnifiedSchema(documentData, moduleType, organizationId, userId) {
+  // Common mapping for all modules
+  const commonData = {
     organizationId,
     createdBy: userId,
-    status: 'draft',
-    latestVersion: 1,
-    moduleType: '510k',
-    originalId: projectId,
-    metadata: {
-      ...metadata,
-      projectId
-    }
-  });
-}
-
-/**
- * Register a CER document
- * 
- * @param {string} projectId CER project ID
- * @param {string} title Document title
- * @param {string} documentType Document type
- * @param {number} organizationId Organization ID
- * @param {number} userId User ID
- * @param {Object} metadata Additional metadata
- * @returns {Promise<Object>} The registered document
- */
-export async function registerCERDocument(projectId, title, documentType, organizationId, userId, metadata = {}) {
-  return registerModuleDocument({
-    title,
-    documentType,
-    organizationId,
-    createdBy: userId,
-    status: 'draft',
-    latestVersion: 1,
-    moduleType: 'cer',
-    originalId: projectId,
-    metadata: {
-      ...metadata,
-      projectId
-    }
-  });
-}
-
-/**
- * Register a CSR document
- * 
- * @param {string} projectId CSR project ID
- * @param {string} title Document title
- * @param {string} documentType Document type
- * @param {number} organizationId Organization ID
- * @param {number} userId User ID
- * @param {Object} metadata Additional metadata
- * @returns {Promise<Object>} The registered document
- */
-export async function registerCSRDocument(projectId, title, documentType, organizationId, userId, metadata = {}) {
-  return registerModuleDocument({
-    title,
-    documentType,
-    organizationId,
-    createdBy: userId,
-    status: 'draft',
-    latestVersion: 1,
-    moduleType: 'csr',
-    originalId: projectId,
-    metadata: {
-      ...metadata,
-      projectId
-    }
-  });
-}
-
-/**
- * Compare document versions
- * 
- * @param {number} currentVersionId Current document version ID
- * @param {number} previousVersionId Previous document version ID
- * @returns {Promise<Object>} Comparison result
- */
-export async function compareDocumentVersions(currentVersionId, previousVersionId) {
-  try {
-    const response = await fetch(`/api/module-integration/compare-versions?currentVersionId=${currentVersionId}&previousVersionId=${previousVersionId}`);
-    
-    if (!response.ok) {
-      throw new Error(`Failed to compare versions: ${response.statusText}`);
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error comparing document versions:', error);
-    throw error;
+    moduleType,
+    originalId: documentData.id?.toString() || documentData._id?.toString(),
+    status: documentData.status || 'draft'
+  };
+  
+  // Module-specific mapping
+  switch (moduleType) {
+    case '510k':
+      return {
+        ...commonData,
+        title: documentData.deviceName || documentData.title || '510(k) Submission',
+        documentType: getDocumentTypeFromModule(moduleType, documentData),
+        content: {
+          deviceName: documentData.deviceName,
+          predicateDevice: documentData.predicateDevice,
+          indications: documentData.indications,
+          deviceClass: documentData.deviceClass,
+          regulatoryClass: documentData.regulatoryClass,
+          sections: documentData.sections || [],
+          ...documentData.content
+        },
+        metadata: {
+          submissionType: documentData.submissionType || 'Traditional',
+          manufacturerName: documentData.manufacturerName,
+          contactPerson: documentData.contactPerson,
+          fdaProductCode: documentData.fdaProductCode,
+          regulationNumber: documentData.regulationNumber,
+          reviewPanel: documentData.reviewPanel,
+          ...documentData.metadata
+        }
+      };
+      
+    case 'cer':
+      return {
+        ...commonData,
+        title: documentData.deviceName || documentData.title || 'Clinical Evaluation Report',
+        documentType: getDocumentTypeFromModule(moduleType, documentData),
+        content: {
+          deviceName: documentData.deviceName,
+          deviceDescription: documentData.deviceDescription,
+          literatureSearch: documentData.literatureSearch,
+          clinicalData: documentData.clinicalData,
+          riskAnalysis: documentData.riskAnalysis,
+          sections: documentData.sections || [],
+          ...documentData.content
+        },
+        metadata: {
+          mddClass: documentData.mddClass,
+          riskClass: documentData.riskClass,
+          cerVersion: documentData.cerVersion,
+          standards: documentData.standards,
+          equivalentDevices: documentData.equivalentDevices,
+          ...documentData.metadata
+        }
+      };
+      
+    case 'cmc':
+      return {
+        ...commonData,
+        title: documentData.productName || documentData.title || 'CMC Documentation',
+        documentType: getDocumentTypeFromModule(moduleType, documentData),
+        content: {
+          productName: documentData.productName,
+          formulation: documentData.formulation,
+          manufacturingProcess: documentData.manufacturingProcess,
+          specs: documentData.specs,
+          sections: documentData.sections || [],
+          ...documentData.content
+        },
+        metadata: {
+          productType: documentData.productType,
+          dosageForm: documentData.dosageForm,
+          routeOfAdministration: documentData.routeOfAdministration,
+          applicationType: documentData.applicationType,
+          ...documentData.metadata
+        }
+      };
+      
+    case 'ectd':
+      return {
+        ...commonData,
+        title: documentData.submissionTitle || documentData.title || 'eCTD Submission',
+        documentType: getDocumentTypeFromModule(moduleType, documentData),
+        content: {
+          submissionTitle: documentData.submissionTitle,
+          sequence: documentData.sequence,
+          modules: documentData.modules || {},
+          sections: documentData.sections || [],
+          ...documentData.content
+        },
+        metadata: {
+          applicationNumber: documentData.applicationNumber,
+          submissionType: documentData.submissionType,
+          submissionSubtype: documentData.submissionSubtype,
+          applicant: documentData.applicant,
+          ...documentData.metadata
+        }
+      };
+      
+    case 'study':
+      return {
+        ...commonData,
+        title: documentData.studyTitle || documentData.title || 'Clinical Study',
+        documentType: getDocumentTypeFromModule(moduleType, documentData),
+        content: {
+          studyTitle: documentData.studyTitle,
+          protocol: documentData.protocol,
+          objectives: documentData.objectives,
+          endpoints: documentData.endpoints,
+          sections: documentData.sections || [],
+          ...documentData.content
+        },
+        metadata: {
+          sponsorName: documentData.sponsorName,
+          studyPhase: documentData.studyPhase,
+          studyType: documentData.studyType,
+          studyId: documentData.studyId,
+          ...documentData.metadata
+        }
+      };
+      
+    default:
+      // Generic mapping for other modules
+      return {
+        ...commonData,
+        title: documentData.title || 'Regulatory Document',
+        documentType: documentData.documentType || 'general',
+        content: documentData.content || {},
+        metadata: documentData.metadata || {}
+      };
   }
+}
+
+/**
+ * Determine the document type based on module and document data
+ * 
+ * @param {string} moduleType - The type of module
+ * @param {Object} documentData - Module-specific document data
+ * @returns {string} - Document type identifier
+ */
+function getDocumentTypeFromModule(moduleType, documentData) {
+  switch (moduleType) {
+    case '510k':
+      return documentData.documentType || documentData.submissionType?.toLowerCase() || '510k_submission';
+      
+    case 'cer':
+      return documentData.documentType || documentData.cerType?.toLowerCase() || 'clinical_evaluation_report';
+      
+    case 'cmc':
+      return documentData.documentType || documentData.cmcType?.toLowerCase() || 'cmc_documentation';
+      
+    case 'ectd':
+      return documentData.documentType || `ectd_module_${documentData.module || 'unknown'}`;
+      
+    case 'study':
+      return documentData.documentType || documentData.studyType?.toLowerCase() || 'clinical_study';
+      
+    default:
+      return documentData.documentType || 'regulatory_document';
+  }
+}
+
+/**
+ * Update an existing document in the unified system
+ * 
+ * @param {string} documentId - The unified document ID
+ * @param {Object} updateData - The data to update
+ * @param {string} userId - The user ID making the change
+ * @returns {Promise<Object>} - The updated document
+ */
+export async function updateModuleDocument(documentId, updateData, userId) {
+  const response = await apiRequest({
+    url: `/api/module-integration/documents/${documentId}`,
+    method: 'PATCH',
+    data: {
+      ...updateData,
+      updatedBy: userId
+    }
+  });
+  
+  return response;
+}
+
+/**
+ * Get document details from the unified system
+ * 
+ * @param {string} documentId - The unified document ID
+ * @returns {Promise<Object>} - The document details
+ */
+export async function getModuleDocument(documentId) {
+  const response = await apiRequest({
+    url: `/api/module-integration/document/${documentId}`,
+    method: 'GET'
+  });
+  
+  return response;
+}
+
+/**
+ * Check if a module-specific document has already been registered in the unified system
+ * 
+ * @param {string} moduleType - The type of module
+ * @param {string} originalId - The original document ID in the module
+ * @param {string} organizationId - The organization ID
+ * @returns {Promise<boolean>} - Whether the document exists in the unified system
+ */
+export async function isDocumentRegistered(moduleType, originalId, organizationId) {
+  const response = await apiRequest({
+    url: '/api/module-integration/document-exists',
+    method: 'GET',
+    params: {
+      moduleType,
+      originalId,
+      organizationId
+    }
+  });
+  
+  return response.exists;
 }
