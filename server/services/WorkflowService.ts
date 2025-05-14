@@ -1,615 +1,786 @@
 /**
  * Workflow Service
  * 
- * This service provides functionality for managing document workflows,
- * including templates, approvals, and workflow tracking.
+ * This service manages workflow templates, workflow instances, and approvals
+ * across the unified document system.
  */
 
 import { db } from '../db/connection';
-import { sql } from 'drizzle-orm';
+import { and, eq, inArray, desc, isNull, ne, or } from 'drizzle-orm';
+import { 
+  workflowTemplates,
+  workflowSteps,
+  documentWorkflows,
+  workflowApprovals,
+  workflowHistory
+} from '../../shared/schema/unified_workflow';
 
 export class WorkflowService {
+  constructor(private db: any) {}
+  
   /**
-   * Get workflow templates for a module
+   * Get workflow templates for a specific module
    * 
-   * @param {string} moduleType Module type
-   * @param {number} organizationId Organization ID
-   * @returns {Promise<Array>} List of workflow templates
+   * @param moduleType The module type (e.g., '510k', 'cer', 'cmc')
+   * @param organizationId The organization ID
+   * @returns Array of workflow templates
    */
-  async getTemplates(moduleType, organizationId) {
-    try {
-      const templates = await db.execute(
-        sql`SELECT t.*, 
-               (SELECT JSON_AGG(s.*) 
-                FROM workflow_template_steps s 
-                WHERE s.template_id = t.id 
-                ORDER BY s.step_order) as steps
-            FROM workflow_templates t
-            WHERE t.module_type = ${moduleType}
-            AND t.organization_id = ${organizationId}
-            ORDER BY t.created_at DESC`
-      );
-      
-      return templates;
-    } catch (error) {
-      console.error('Error in getTemplates:', error);
-      throw error;
-    }
+  async getWorkflowTemplatesByModule(moduleType: any, organizationId: any) {
+    return this.db
+      .select()
+      .from(workflowTemplates)
+      .where(
+        and(
+          eq(workflowTemplates.moduleType, moduleType),
+          eq(workflowTemplates.organizationId, organizationId),
+          eq(workflowTemplates.isActive, true)
+        )
+      )
+      .orderBy(desc(workflowTemplates.updatedAt));
   }
   
   /**
-   * Create default templates for a module
+   * Get a specific workflow template
    * 
-   * @param {string} moduleType Module type
-   * @param {number} organizationId Organization ID
-   * @param {number} userId User ID
-   * @returns {Promise<Array>} Created templates
+   * @param templateId The template ID
+   * @returns The workflow template
    */
-  async createDefaultTemplates(moduleType, organizationId, userId) {
-    try {
-      // Check if templates already exist
-      const existingTemplates = await this.getTemplates(moduleType, organizationId);
-      
-      if (existingTemplates.length > 0) {
-        return existingTemplates;
-      }
-      
-      // Create templates based on module type
-      let templates = [];
-      
-      if (moduleType === '510k') {
-        templates = await this.create510kTemplates(organizationId, userId);
-      } else if (moduleType === 'cer') {
-        templates = await this.createCERTemplates(organizationId, userId);
-      } else if (moduleType === 'csr') {
-        templates = await this.createCSRTemplates(organizationId, userId);
-      } else {
-        // Default simple approval template
-        templates = await this.createSimpleTemplate(moduleType, organizationId, userId);
-      }
-      
-      return templates;
-    } catch (error) {
-      console.error('Error in createDefaultTemplates:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Create a simple approval template
-   * 
-   * @param {string} moduleType Module type
-   * @param {number} organizationId Organization ID
-   * @param {number} userId User ID
-   * @returns {Promise<Array>} Created template
-   */
-  private async createSimpleTemplate(moduleType, organizationId, userId) {
-    return await db.transaction(async (tx) => {
-      // Create template
-      const [template] = await tx.execute(
-        sql`INSERT INTO workflow_templates
-          (name, description, module_type, organization_id, created_by, created_at, updated_at)
-          VALUES ('Basic Approval', 'Simple approval workflow with a single reviewer', 
-                 ${moduleType}, ${organizationId}, ${userId}, NOW(), NOW())
-          RETURNING *`
-      );
-      
-      // Create step
-      await tx.execute(
-        sql`INSERT INTO workflow_template_steps
-          (template_id, step_name, step_description, step_order, approval_role, created_at, updated_at)
-          VALUES (${template.id}, 'Review', 'Review and approve document', 1, 'reviewer', NOW(), NOW())`
-      );
-      
-      // Return template with steps
-      const [resultTemplate] = await tx.execute(
-        sql`SELECT t.*, 
-              (SELECT JSON_AGG(s.*) 
-               FROM workflow_template_steps s 
-               WHERE s.template_id = t.id 
-               ORDER BY s.step_order) as steps
-           FROM workflow_templates t
-           WHERE t.id = ${template.id}`
-      );
-      
-      return [resultTemplate];
-    });
-  }
-  
-  /**
-   * Create 510(k) templates
-   * 
-   * @param {number} organizationId Organization ID
-   * @param {number} userId User ID
-   * @returns {Promise<Array>} Created templates
-   */
-  private async create510kTemplates(organizationId, userId) {
-    return await db.transaction(async (tx) => {
-      // Create template
-      const [template] = await tx.execute(
-        sql`INSERT INTO workflow_templates
-          (name, description, module_type, organization_id, created_by, created_at, updated_at)
-          VALUES ('510(k) Submission Review', 'FDA 510(k) submission workflow with multiple approval steps', 
-                 '510k', ${organizationId}, ${userId}, NOW(), NOW())
-          RETURNING *`
-      );
-      
-      // Create steps
-      await tx.execute(
-        sql`INSERT INTO workflow_template_steps
-          (template_id, step_name, step_description, step_order, approval_role, created_at, updated_at)
-          VALUES 
-          (${template.id}, 'Technical Review', 'Technical content review by engineering team', 1, 'technical_reviewer', NOW(), NOW()),
-          (${template.id}, 'Regulatory Review', 'Regulatory compliance review', 2, 'regulatory_reviewer', NOW(), NOW()),
-          (${template.id}, 'QA Approval', 'Quality assurance final approval', 3, 'qa_approver', NOW(), NOW()),
-          (${template.id}, 'Management Sign-off', 'Executive management sign-off', 4, 'management', NOW(), NOW())`
-      );
-      
-      // Create simplified template
-      const [simpleTemplate] = await tx.execute(
-        sql`INSERT INTO workflow_templates
-          (name, description, module_type, organization_id, created_by, created_at, updated_at)
-          VALUES ('Quick 510(k) Review', 'Simplified 510(k) review for minor updates', 
-                 '510k', ${organizationId}, ${userId}, NOW(), NOW())
-          RETURNING *`
-      );
-      
-      // Create steps for simplified template
-      await tx.execute(
-        sql`INSERT INTO workflow_template_steps
-          (template_id, step_name, step_description, step_order, approval_role, created_at, updated_at)
-          VALUES 
-          (${simpleTemplate.id}, 'Technical Review', 'Technical content review', 1, 'technical_reviewer', NOW(), NOW()),
-          (${simpleTemplate.id}, 'Regulatory Approval', 'Regulatory compliance approval', 2, 'regulatory_reviewer', NOW(), NOW())`
-      );
-      
-      // Return templates with steps
-      const templates = await tx.execute(
-        sql`SELECT t.*, 
-              (SELECT JSON_AGG(s.*) 
-               FROM workflow_template_steps s 
-               WHERE s.template_id = t.id 
-               ORDER BY s.step_order) as steps
-           FROM workflow_templates t
-           WHERE t.id IN (${template.id}, ${simpleTemplate.id})
-           ORDER BY t.created_at DESC`
-      );
-      
-      return templates;
-    });
-  }
-  
-  /**
-   * Create CER templates
-   * 
-   * @param {number} organizationId Organization ID
-   * @param {number} userId User ID
-   * @returns {Promise<Array>} Created templates
-   */
-  private async createCERTemplates(organizationId, userId) {
-    return await db.transaction(async (tx) => {
-      // Create template
-      const [template] = await tx.execute(
-        sql`INSERT INTO workflow_templates
-          (name, description, module_type, organization_id, created_by, created_at, updated_at)
-          VALUES ('CER MDR Review', 'Clinical Evaluation Report review for EU MDR compliance', 
-                 'cer', ${organizationId}, ${userId}, NOW(), NOW())
-          RETURNING *`
-      );
-      
-      // Create steps
-      await tx.execute(
-        sql`INSERT INTO workflow_template_steps
-          (template_id, step_name, step_description, step_order, approval_role, created_at, updated_at)
-          VALUES 
-          (${template.id}, 'Clinical Review', 'Review by clinical specialist', 1, 'clinical_reviewer', NOW(), NOW()),
-          (${template.id}, 'Literature Review', 'Review of literature section by specialist', 2, 'literature_reviewer', NOW(), NOW()),
-          (${template.id}, 'PMS Data Review', 'Review of PMS/PMCF data', 3, 'pms_reviewer', NOW(), NOW()),
-          (${template.id}, 'Regulatory Review', 'Regulatory compliance review', 4, 'regulatory_reviewer', NOW(), NOW()),
-          (${template.id}, 'QA Approval', 'Quality assurance final approval', 5, 'qa_approver', NOW(), NOW())`
-      );
-      
-      // Return templates with steps
-      const [resultTemplate] = await tx.execute(
-        sql`SELECT t.*, 
-              (SELECT JSON_AGG(s.*) 
-               FROM workflow_template_steps s 
-               WHERE s.template_id = t.id 
-               ORDER BY s.step_order) as steps
-           FROM workflow_templates t
-           WHERE t.id = ${template.id}`
-      );
-      
-      return [resultTemplate];
-    });
-  }
-  
-  /**
-   * Create CSR templates
-   * 
-   * @param {number} organizationId Organization ID
-   * @param {number} userId User ID
-   * @returns {Promise<Array>} Created templates
-   */
-  private async createCSRTemplates(organizationId, userId) {
-    return await db.transaction(async (tx) => {
-      // Create template
-      const [template] = await tx.execute(
-        sql`INSERT INTO workflow_templates
-          (name, description, module_type, organization_id, created_by, created_at, updated_at)
-          VALUES ('Clinical Study Report Review', 'Standard CSR review workflow', 
-                 'csr', ${organizationId}, ${userId}, NOW(), NOW())
-          RETURNING *`
-      );
-      
-      // Create steps
-      await tx.execute(
-        sql`INSERT INTO workflow_template_steps
-          (template_id, step_name, step_description, step_order, approval_role, created_at, updated_at)
-          VALUES 
-          (${template.id}, 'Medical Review', 'Review by medical specialist', 1, 'medical_reviewer', NOW(), NOW()),
-          (${template.id}, 'Statistical Review', 'Review of statistical analysis', 2, 'statistical_reviewer', NOW(), NOW()),
-          (${template.id}, 'Scientific Review', 'Scientific validity review', 3, 'scientific_reviewer', NOW(), NOW()),
-          (${template.id}, 'Regulatory Review', 'Regulatory compliance review', 4, 'regulatory_reviewer', NOW(), NOW()),
-          (${template.id}, 'QA Approval', 'Quality assurance final approval', 5, 'qa_approver', NOW(), NOW())`
-      );
-      
-      // Return templates with steps
-      const [resultTemplate] = await tx.execute(
-        sql`SELECT t.*, 
-              (SELECT JSON_AGG(s.*) 
-               FROM workflow_template_steps s 
-               WHERE s.template_id = t.id 
-               ORDER BY s.step_order) as steps
-           FROM workflow_templates t
-           WHERE t.id = ${template.id}`
-      );
-      
-      return [resultTemplate];
-    });
-  }
-  
-  /**
-   * Create a workflow template
-   * 
-   * @param {Object} templateData Template data
-   * @returns {Promise<Object>} Created template
-   */
-  async createTemplate(templateData) {
-    const {
-      name,
-      description,
-      moduleType,
-      organizationId,
-      createdBy,
-      steps = []
-    } = templateData;
+  async getWorkflowTemplate(templateId: number) {
+    const templates = await this.db
+      .select()
+      .from(workflowTemplates)
+      .where(eq(workflowTemplates.id, templateId))
+      .limit(1);
     
-    return await db.transaction(async (tx) => {
-      // Create template
-      const [template] = await tx.execute(
-        sql`INSERT INTO workflow_templates
-          (name, description, module_type, organization_id, created_by, created_at, updated_at)
-          VALUES (${name}, ${description}, ${moduleType}, ${organizationId}, ${createdBy}, NOW(), NOW())
-          RETURNING *`
+    if (!templates.length) {
+      return null;
+    }
+    
+    const steps = await this.db
+      .select()
+      .from(workflowSteps)
+      .where(eq(workflowSteps.templateId, templateId))
+      .orderBy(workflowSteps.order);
+    
+    return {
+      ...templates[0],
+      steps
+    };
+  }
+  
+  /**
+   * Create a new workflow template
+   * 
+   * @param moduleType The module type (e.g., '510k', 'cer', 'cmc')
+   * @param organizationId The organization ID
+   * @param userId The user ID of the creator
+   * @param data The template data
+   * @returns The created workflow template
+   */
+  async createWorkflowTemplate(moduleType: any, organizationId: any, userId: any, data: any) {
+    return this.db.transaction(async (tx: any) => {
+      // Create the template
+      const [template] = await tx
+        .insert(workflowTemplates)
+        .values({
+          name: data.name,
+          description: data.description,
+          moduleType,
+          organizationId,
+          createdBy: userId,
+          isActive: true,
+          documentTypes: data.documentTypes || [],
+          defaultForTypes: data.defaultForTypes || []
+        })
+        .returning();
+      
+      // Create the steps
+      const steps = await Promise.all(
+        data.steps.map(async (step: any, index: number) => {
+          const [createdStep] = await tx
+            .insert(workflowSteps)
+            .values({
+              templateId: template.id,
+              name: step.name,
+              description: step.description,
+              order: index + 1,
+              approverType: step.approverType,
+              approverIds: step.approverIds || [],
+              requiredActions: step.requiredActions || []
+            })
+            .returning();
+          
+          return createdStep;
+        })
       );
       
-      // Create steps if provided
-      if (steps.length > 0) {
-        for (let i = 0; i < steps.length; i++) {
-          const step = steps[i];
-          await tx.execute(
-            sql`INSERT INTO workflow_template_steps
-              (template_id, step_name, step_description, step_order, approval_role, created_at, updated_at)
-              VALUES (${template.id}, ${step.stepName}, ${step.stepDescription}, ${i + 1}, ${step.approvalRole}, NOW(), NOW())`
-          );
-        }
-      }
-      
-      // Return template with steps
-      const [resultTemplate] = await tx.execute(
-        sql`SELECT t.*, 
-              (SELECT JSON_AGG(s.*) 
-               FROM workflow_template_steps s 
-               WHERE s.template_id = t.id 
-               ORDER BY s.step_order) as steps
-           FROM workflow_templates t
-           WHERE t.id = ${template.id}`
-      );
-      
-      return resultTemplate;
+      return {
+        ...template,
+        steps
+      };
     });
   }
   
   /**
-   * Get document workflows
+   * Get predefined workflow template for a document type
    * 
-   * @param {number} documentId Document ID
-   * @returns {Promise<Array>} List of workflows with approval steps
+   * @param moduleType The module type (e.g., '510k', 'cer', 'cmc')
+   * @param organizationId The organization ID
+   * @param userId The user ID
+   * @param documentType The document type
+   * @returns Predefined workflow template 
    */
-  async getDocumentWorkflows(documentId) {
-    try {
-      const workflows = await db.execute(
-        sql`SELECT w.*
-            FROM document_workflows w
-            WHERE w.document_id = ${documentId}
-            ORDER BY w.created_at DESC`
+  async getPredefinedTemplate(moduleType: any, organizationId: any, userId: any, documentType: string) {
+    return this.db.transaction(async (tx: any) => {
+      // Check if there's a default template for this document type
+      const defaultTemplates = await tx
+        .select()
+        .from(workflowTemplates)
+        .where(
+          and(
+            eq(workflowTemplates.moduleType, moduleType),
+            eq(workflowTemplates.organizationId, organizationId),
+            eq(workflowTemplates.isActive, true)
+          )
+        );
+      
+      const matchingTemplate = defaultTemplates.find(
+        (t: any) => 
+          t.defaultForTypes.includes(documentType) || 
+          t.documentTypes.includes(documentType)
       );
       
-      // For each workflow, get its approvals
-      for (const workflow of workflows) {
-        const approvals = await db.execute(
-          sql`SELECT a.*, s.step_name, s.step_description, s.step_order, s.approval_role
-              FROM workflow_approvals a
-              JOIN workflow_template_steps s ON a.step_id = s.id
-              WHERE a.workflow_id = ${workflow.id}
-              ORDER BY s.step_order`
-        );
+      if (matchingTemplate) {
+        const steps = await tx
+          .select()
+          .from(workflowSteps)
+          .where(eq(workflowSteps.templateId, matchingTemplate.id))
+          .orderBy(workflowSteps.order);
         
-        workflow.approvals = approvals;
+        return {
+          ...matchingTemplate,
+          steps
+        };
       }
       
-      return workflows;
-    } catch (error) {
-      console.error('Error in getDocumentWorkflows:', error);
-      throw error;
-    }
+      // If no template exists, create a basic default one
+      const defaultTemplateData = {
+        name: `Default ${documentType} Workflow`,
+        description: `Standard workflow for ${documentType} documents`,
+        moduleType,
+        documentTypes: [documentType],
+        defaultForTypes: [documentType],
+        steps: [
+          {
+            name: 'Initial Review',
+            description: 'First level review',
+            approverType: 'role',
+            approverIds: ['reviewer'],
+            requiredActions: ['review', 'comment']
+          },
+          {
+            name: 'Quality Check',
+            description: 'QC verification',
+            approverType: 'role',
+            approverIds: ['qc_specialist'],
+            requiredActions: ['verify', 'comment']
+          },
+          {
+            name: 'Final Approval',
+            description: 'Senior approval',
+            approverType: 'role',
+            approverIds: ['manager', 'senior_reviewer'],
+            requiredActions: ['approve', 'comment']
+          }
+        ]
+      };
+      
+      return this.createWorkflowTemplate(moduleType, organizationId, userId, defaultTemplateData);
+    });
   }
   
   /**
-   * Get active workflows by organization
+   * Update a workflow template
    * 
-   * @param {number} organizationId Organization ID
-   * @returns {Promise<Array>} Active workflows
+   * @param templateId The template ID
+   * @param data The update data
+   * @param userId The user ID making the update
+   * @returns The updated template
    */
-  async getActiveWorkflowsByOrganization(organizationId) {
-    try {
-      const workflows = await db.execute(
-        sql`SELECT w.*
-            FROM document_workflows w
-            JOIN unified_documents d ON w.document_id = d.id
-            WHERE d.organization_id = ${organizationId}
-            AND w.status = 'active'
-            ORDER BY w.updated_at DESC`
-      );
+  async updateWorkflowTemplate(templateId: number, data: any, userId: string) {
+    return this.db.transaction(async (tx: any) => {
+      // Update the template
+      const [template] = await tx
+        .update(workflowTemplates)
+        .set({
+          name: data.name,
+          description: data.description,
+          documentTypes: data.documentTypes || [],
+          defaultForTypes: data.defaultForTypes || [],
+          updatedAt: new Date(),
+          updatedBy: userId
+        })
+        .where(eq(workflowTemplates.id, templateId))
+        .returning();
       
-      // For each workflow, get its approvals
-      for (const workflow of workflows) {
-        const approvals = await db.execute(
-          sql`SELECT a.*, s.step_name, s.step_description, s.step_order, s.approval_role
-              FROM workflow_approvals a
-              JOIN workflow_template_steps s ON a.step_id = s.id
-              WHERE a.workflow_id = ${workflow.id}
-              ORDER BY s.step_order`
+      // Handle step updates if provided
+      if (data.steps && data.steps.length > 0) {
+        // Delete existing steps
+        await tx
+          .delete(workflowSteps)
+          .where(eq(workflowSteps.templateId, templateId));
+        
+        // Create new steps
+        const steps = await Promise.all(
+          data.steps.map(async (step: any, index: number) => {
+            const [createdStep] = await tx
+              .insert(workflowSteps)
+              .values({
+                templateId: template.id,
+                name: step.name,
+                description: step.description,
+                order: index + 1,
+                approverType: step.approverType,
+                approverIds: step.approverIds || [],
+                requiredActions: step.requiredActions || []
+              })
+              .returning();
+            
+            return createdStep;
+          })
         );
         
-        workflow.approvals = approvals;
+        return {
+          ...template,
+          steps
+        };
       }
       
-      return workflows;
-    } catch (error) {
-      console.error('Error in getActiveWorkflowsByOrganization:', error);
-      throw error;
-    }
+      const steps = await tx
+        .select()
+        .from(workflowSteps)
+        .where(eq(workflowSteps.templateId, templateId))
+        .orderBy(workflowSteps.order);
+      
+      return {
+        ...template,
+        steps
+      };
+    });
   }
   
   /**
-   * Create a workflow for a document
+   * Deactivate a workflow template
    * 
-   * @param {number} documentId Document ID
-   * @param {number} templateId Template ID
-   * @param {number} startedBy User ID
-   * @param {Object} metadata Optional metadata
-   * @returns {Promise<Object>} Created workflow
+   * @param templateId The template ID
+   * @param userId The user ID making the update
+   * @returns Success status
    */
-  async createWorkflow(documentId, templateId, startedBy, metadata = {}) {
-    return await db.transaction(async (tx) => {
-      // Get template and steps
-      const [template] = await tx.execute(
-        sql`SELECT t.*
-            FROM workflow_templates t
-            WHERE t.id = ${templateId}`
+  async deactivateWorkflowTemplate(templateId: number, userId: string) {
+    await this.db
+      .update(workflowTemplates)
+      .set({
+        isActive: false,
+        updatedAt: new Date(),
+        updatedBy: userId
+      })
+      .where(eq(workflowTemplates.id, templateId));
+    
+    return { success: true };
+  }
+  
+  /**
+   * Get workflow templates by document type
+   * 
+   * @param moduleType The module type (e.g., '510k', 'cer', 'cmc')
+   * @param documentType The document type
+   * @param organizationId The organization ID
+   * @returns Array of compatible workflow templates
+   */
+  async getWorkflowTemplatesByDocumentType(moduleType: string, documentType: string, organizationId: string) {
+    const templates = await this.db
+      .select()
+      .from(workflowTemplates)
+      .where(
+        and(
+          eq(workflowTemplates.moduleType, moduleType),
+          eq(workflowTemplates.organizationId, organizationId),
+          eq(workflowTemplates.isActive, true)
+        )
       );
+    
+    return templates.filter((template: any) => 
+      template.documentTypes.includes(documentType) || 
+      template.documentTypes.length === 0 // Templates with empty documentTypes are applicable to all
+    );
+  }
+  
+  /**
+   * Start a workflow for a document
+   * 
+   * @param documentId The document ID
+   * @param templateId The template ID
+   * @param startedBy The user ID starting the workflow
+   * @param metadata Additional metadata
+   * @returns The created workflow
+   */
+  async startWorkflow(documentId: any, templateId: any, startedBy: any, metadata: any = {}) {
+    return this.db.transaction(async (tx: any) => {
+      // Get the template with steps
+      const template = await this.getWorkflowTemplate(templateId);
       
       if (!template) {
-        throw new Error('Template not found');
+        throw new Error(`Workflow template with ID ${templateId} not found`);
       }
       
-      const steps = await tx.execute(
-        sql`SELECT s.*
-            FROM workflow_template_steps s
-            WHERE s.template_id = ${templateId}
-            ORDER BY s.step_order`
-      );
+      // Create the workflow
+      const [workflow] = await tx
+        .insert(documentWorkflows)
+        .values({
+          documentId,
+          templateId,
+          status: 'active',
+          currentStep: 1,
+          startedBy,
+          organizationId: template.organizationId,
+          metadata: metadata || {}
+        })
+        .returning();
       
-      if (steps.length === 0) {
-        throw new Error('Template has no steps');
-      }
+      // Create the first approval
+      const firstStep = template.steps[0];
+      const [approval] = await tx
+        .insert(workflowApprovals)
+        .values({
+          workflowId: workflow.id,
+          stepId: firstStep.id,
+          stepOrder: firstStep.order,
+          status: 'pending',
+          assignedTo: firstStep.approverIds,
+          assignmentType: firstStep.approverType,
+          requiredActions: firstStep.requiredActions
+        })
+        .returning();
       
-      // Create workflow
-      const [workflow] = await tx.execute(
-        sql`INSERT INTO document_workflows
-            (document_id, template_id, started_by, status, metadata, created_at, updated_at)
-            VALUES (${documentId}, ${templateId}, ${startedBy}, 'active', ${JSON.stringify(metadata)}, NOW(), NOW())
-            RETURNING *`
-      );
+      // Create workflow history entry
+      await tx
+        .insert(workflowHistory)
+        .values({
+          workflowId: workflow.id,
+          action: 'workflow_started',
+          performedBy: startedBy,
+          details: {
+            templateName: template.name,
+            documentId
+          }
+        });
       
-      // Add approval entries for each step
-      const approvals = [];
-      for (const step of steps) {
-        const [approval] = await tx.execute(
-          sql`INSERT INTO workflow_approvals
-              (workflow_id, step_id, status, created_at, updated_at)
-              VALUES (${workflow.id}, ${step.id}, 'pending', NOW(), NOW())
-              RETURNING *`
-        );
-        
-        // Add step information to approval
-        approval.step_name = step.step_name;
-        approval.step_description = step.step_description;
-        approval.step_order = step.step_order;
-        approval.approval_role = step.approval_role;
-        
-        approvals.push(approval);
-      }
-      
-      // Update document status
-      await tx.execute(
-        sql`UPDATE unified_documents
-            SET status = 'in_review', updated_at = NOW()
-            WHERE id = ${documentId}`
-      );
-      
-      // Return workflow with approvals
-      workflow.approvals = approvals;
-      workflow.name = template.name;
-      
-      return workflow;
+      return {
+        ...workflow,
+        currentApproval: approval,
+        template
+      };
     });
+  }
+  
+  /**
+   * Get approvals for a workflow
+   * 
+   * @param workflowId The workflow ID
+   * @returns Array of approvals
+   */
+  async getWorkflowApprovals(workflowId: number) {
+    return this.db
+      .select()
+      .from(workflowApprovals)
+      .where(eq(workflowApprovals.workflowId, workflowId))
+      .orderBy(workflowApprovals.stepOrder);
   }
   
   /**
    * Approve a workflow step
    * 
-   * @param {number} approvalId Approval ID
-   * @param {number} userId User ID
-   * @param {string} comments Optional comments
-   * @returns {Promise<Object>} Updated workflow
+   * @param approvalId The approval ID
+   * @param userId The user ID making the approval
+   * @param comments Optional comments
+   * @returns The updated workflow
    */
-  async approveStep(approvalId, userId, comments = '') {
-    return await db.transaction(async (tx) => {
-      // Update approval status
-      const [approval] = await tx.execute(
-        sql`UPDATE workflow_approvals
-            SET status = 'approved', 
-                approved_by = ${userId}, 
-                approved_at = NOW(), 
-                comments = ${comments}, 
-                updated_at = NOW()
-            WHERE id = ${approvalId}
-            RETURNING *`
-      );
+  async approveWorkflowStep(approvalId: any, userId: any, comments: string = '') {
+    return this.db.transaction(async (tx: any) => {
+      // Get the approval
+      const approvals = await tx
+        .select()
+        .from(workflowApprovals)
+        .where(eq(workflowApprovals.id, approvalId))
+        .limit(1);
       
-      if (!approval) {
-        throw new Error('Approval not found');
+      if (!approvals.length) {
+        throw new Error(`Approval with ID ${approvalId} not found`);
       }
       
-      // Get workflow
-      const [workflow] = await tx.execute(
-        sql`SELECT * FROM document_workflows WHERE id = ${approval.workflow_id}`
-      );
+      const approval = approvals[0];
+      
+      // Check if approval is pending
+      if (approval.status !== 'pending') {
+        throw new Error(`Approval with ID ${approvalId} is not pending`);
+      }
+      
+      // Update the approval
+      const [updatedApproval] = await tx
+        .update(workflowApprovals)
+        .set({
+          status: 'approved',
+          completedBy: userId,
+          completedAt: new Date(),
+          comments
+        })
+        .where(eq(workflowApprovals.id, approvalId))
+        .returning();
+      
+      // Get the workflow
+      const workflows = await tx
+        .select()
+        .from(documentWorkflows)
+        .where(eq(documentWorkflows.id, approval.workflowId))
+        .limit(1);
+      
+      const workflow = workflows[0];
+      
+      // Create workflow history entry
+      await tx
+        .insert(workflowHistory)
+        .values({
+          workflowId: workflow.id,
+          action: 'step_approved',
+          performedBy: userId,
+          details: {
+            approvalId,
+            stepOrder: approval.stepOrder,
+            comments
+          }
+        });
+      
+      // Get the template to determine next steps
+      const template = await this.getWorkflowTemplate(workflow.templateId);
       
       // Check if this was the last step
-      const [pendingCount] = await tx.execute(
-        sql`SELECT COUNT(*) as count
-            FROM workflow_approvals
-            WHERE workflow_id = ${workflow.id} AND status = 'pending'`
-      );
-      
-      // If no more pending approvals, mark workflow as completed
-      if (pendingCount.count === '0') {
-        await tx.execute(
-          sql`UPDATE document_workflows
-              SET status = 'completed', completed_at = NOW(), updated_at = NOW()
-              WHERE id = ${workflow.id}`
-        );
+      if (approval.stepOrder === template.steps.length) {
+        // Complete the workflow
+        const [completedWorkflow] = await tx
+          .update(documentWorkflows)
+          .set({
+            status: 'completed',
+            completedBy: userId,
+            completedAt: new Date()
+          })
+          .where(eq(documentWorkflows.id, workflow.id))
+          .returning();
         
-        // Update document status
-        await tx.execute(
-          sql`UPDATE unified_documents
-              SET status = 'approved', updated_at = NOW()
-              WHERE id = ${workflow.document_id}`
-        );
+        // Create workflow history entry
+        await tx
+          .insert(workflowHistory)
+          .values({
+            workflowId: workflow.id,
+            action: 'workflow_completed',
+            performedBy: userId,
+            details: {
+              completedAt: completedWorkflow.completedAt
+            }
+          });
+        
+        return {
+          ...completedWorkflow,
+          currentApproval: null,
+          isCompleted: true
+        };
+      } else {
+        // Move to the next step
+        const nextStepOrder = approval.stepOrder + 1;
+        const nextStep = template.steps.find((s: any) => s.order === nextStepOrder);
+        
+        // Create next approval
+        const [nextApproval] = await tx
+          .insert(workflowApprovals)
+          .values({
+            workflowId: workflow.id,
+            stepId: nextStep.id,
+            stepOrder: nextStep.order,
+            status: 'pending',
+            assignedTo: nextStep.approverIds,
+            assignmentType: nextStep.approverType,
+            requiredActions: nextStep.requiredActions
+          })
+          .returning();
+        
+        // Update workflow currentStep
+        const [updatedWorkflow] = await tx
+          .update(documentWorkflows)
+          .set({
+            currentStep: nextStepOrder
+          })
+          .where(eq(documentWorkflows.id, workflow.id))
+          .returning();
+        
+        // Create workflow history entry
+        await tx
+          .insert(workflowHistory)
+          .values({
+            workflowId: workflow.id,
+            action: 'step_started',
+            performedBy: userId,
+            details: {
+              stepOrder: nextStepOrder,
+              approvalId: nextApproval.id
+            }
+          });
+        
+        return {
+          ...updatedWorkflow,
+          currentApproval: nextApproval,
+          isCompleted: false
+        };
       }
-      
-      // Get updated workflow with approvals
-      const [updatedWorkflow] = await tx.execute(
-        sql`SELECT w.*
-            FROM document_workflows w
-            WHERE w.id = ${workflow.id}`
-      );
-      
-      const approvals = await tx.execute(
-        sql`SELECT a.*, s.step_name, s.step_description, s.step_order, s.approval_role
-            FROM workflow_approvals a
-            JOIN workflow_template_steps s ON a.step_id = s.id
-            WHERE a.workflow_id = ${workflow.id}
-            ORDER BY s.step_order`
-      );
-      
-      updatedWorkflow.approvals = approvals;
-      
-      return updatedWorkflow;
     });
   }
   
   /**
    * Reject a workflow step
    * 
-   * @param {number} approvalId Approval ID
-   * @param {number} userId User ID
-   * @param {string} comments Required comments
-   * @returns {Promise<Object>} Updated workflow
+   * @param approvalId The approval ID
+   * @param userId The user ID making the rejection
+   * @param comments Comments explaining the rejection
+   * @returns The updated workflow
    */
-  async rejectStep(approvalId, userId, comments) {
-    if (!comments || comments.trim() === '') {
-      throw new Error('Comments are required for rejection');
-    }
-    
-    return await db.transaction(async (tx) => {
-      // Update approval status
-      const [approval] = await tx.execute(
-        sql`UPDATE workflow_approvals
-            SET status = 'rejected', 
-                rejected_by = ${userId}, 
-                rejected_at = NOW(), 
-                comments = ${comments}, 
-                updated_at = NOW()
-            WHERE id = ${approvalId}
-            RETURNING *`
-      );
+  async rejectWorkflowStep(approvalId: any, userId: any, comments: any) {
+    return this.db.transaction(async (tx: any) => {
+      // Get the approval
+      const approvals = await tx
+        .select()
+        .from(workflowApprovals)
+        .where(eq(workflowApprovals.id, approvalId))
+        .limit(1);
       
-      if (!approval) {
-        throw new Error('Approval not found');
+      if (!approvals.length) {
+        throw new Error(`Approval with ID ${approvalId} not found`);
       }
       
-      // Get workflow
-      const [workflow] = await tx.execute(
-        sql`SELECT * FROM document_workflows WHERE id = ${approval.workflow_id}`
-      );
+      const approval = approvals[0];
       
-      // Mark workflow as rejected
-      await tx.execute(
-        sql`UPDATE document_workflows
-            SET status = 'rejected', rejected_at = NOW(), updated_at = NOW()
-            WHERE id = ${workflow.id}`
-      );
+      // Check if approval is pending
+      if (approval.status !== 'pending') {
+        throw new Error(`Approval with ID ${approvalId} is not pending`);
+      }
       
-      // Update document status
-      await tx.execute(
-        sql`UPDATE unified_documents
-            SET status = 'rejected', updated_at = NOW()
-            WHERE id = ${workflow.document_id}`
-      );
+      // Update the approval
+      const [updatedApproval] = await tx
+        .update(workflowApprovals)
+        .set({
+          status: 'rejected',
+          completedBy: userId,
+          completedAt: new Date(),
+          comments
+        })
+        .where(eq(workflowApprovals.id, approvalId))
+        .returning();
       
-      // Get updated workflow with approvals
-      const [updatedWorkflow] = await tx.execute(
-        sql`SELECT w.*
-            FROM document_workflows w
-            WHERE w.id = ${workflow.id}`
-      );
+      // Get the workflow
+      const workflows = await tx
+        .select()
+        .from(documentWorkflows)
+        .where(eq(documentWorkflows.id, approval.workflowId))
+        .limit(1);
       
-      const approvals = await tx.execute(
-        sql`SELECT a.*, s.step_name, s.step_description, s.step_order, s.approval_role
-            FROM workflow_approvals a
-            JOIN workflow_template_steps s ON a.step_id = s.id
-            WHERE a.workflow_id = ${workflow.id}
-            ORDER BY s.step_order`
-      );
+      const workflow = workflows[0];
       
-      updatedWorkflow.approvals = approvals;
+      // Update the workflow status
+      const [updatedWorkflow] = await tx
+        .update(documentWorkflows)
+        .set({
+          status: 'rejected',
+          rejectedBy: userId,
+          rejectedAt: new Date()
+        })
+        .where(eq(documentWorkflows.id, workflow.id))
+        .returning();
       
-      return updatedWorkflow;
+      // Create workflow history entry
+      await tx
+        .insert(workflowHistory)
+        .values({
+          workflowId: workflow.id,
+          action: 'step_rejected',
+          performedBy: userId,
+          details: {
+            approvalId,
+            stepOrder: approval.stepOrder,
+            comments
+          }
+        });
+      
+      // Create workflow history entry for workflow rejection
+      await tx
+        .insert(workflowHistory)
+        .values({
+          workflowId: workflow.id,
+          action: 'workflow_rejected',
+          performedBy: userId,
+          details: {
+            rejectedAt: updatedWorkflow.rejectedAt,
+            reason: comments
+          }
+        });
+      
+      return {
+        ...updatedWorkflow,
+        currentApproval: updatedApproval,
+        isRejected: true
+      };
     });
+  }
+  
+  /**
+   * Get active workflows
+   * 
+   * @param organizationId The organization ID
+   * @returns Array of active workflows
+   */
+  async getActiveWorkflows(organizationId: string) {
+    const workflows = await this.db
+      .select()
+      .from(documentWorkflows)
+      .where(
+        and(
+          eq(documentWorkflows.status, 'active'),
+          eq(documentWorkflows.organizationId, organizationId)
+        )
+      );
+    
+    return Promise.all(workflows.map(async (workflow: any) => {
+      const approvals = await this.getWorkflowApprovals(workflow.id);
+      const pendingApproval = approvals.find((a: any) => a.status === 'pending');
+      const template = await this.getWorkflowTemplate(workflow.templateId);
+      
+      return {
+        ...workflow,
+        currentApproval: pendingApproval,
+        template,
+        approvals
+      };
+    }));
+  }
+  
+  /**
+   * Get completed workflows
+   * 
+   * @param organizationId The organization ID
+   * @returns Array of completed workflows
+   */
+  async getCompletedWorkflows(organizationId: string) {
+    const workflows = await this.db
+      .select()
+      .from(documentWorkflows)
+      .where(
+        and(
+          eq(documentWorkflows.status, 'completed'),
+          eq(documentWorkflows.organizationId, organizationId)
+        )
+      )
+      .orderBy(desc(documentWorkflows.completedAt));
+    
+    return Promise.all(workflows.map(async (workflow: any) => {
+      const approvals = await this.getWorkflowApprovals(workflow.id);
+      const template = await this.getWorkflowTemplate(workflow.templateId);
+      
+      return {
+        ...workflow,
+        template,
+        approvals
+      };
+    }));
+  }
+  
+  /**
+   * Get workflows pending approval for a user
+   * 
+   * @param organizationId The organization ID
+   * @param userId The user ID
+   * @returns Array of workflows pending approval
+   */
+  async getPendingApprovals(organizationId: string, userId: string) {
+    // Get all active workflows for the organization
+    const workflows = await this.db
+      .select()
+      .from(documentWorkflows)
+      .where(
+        and(
+          eq(documentWorkflows.status, 'active'),
+          eq(documentWorkflows.organizationId, organizationId)
+        )
+      );
+    
+    if (!workflows.length) {
+      return [];
+    }
+    
+    const workflowIds = workflows.map((w: any) => w.id);
+    
+    // Get pending approvals across all workflows
+    const approvals = await this.db
+      .select()
+      .from(workflowApprovals)
+      .where(
+        and(
+          inArray(workflowApprovals.workflowId, workflowIds),
+          eq(workflowApprovals.status, 'pending')
+        )
+      );
+    
+    // Filter for approvals relevant to this user
+    const userApprovals = approvals.filter((approval: any) => {
+      // Direct assignment
+      if (approval.assignedTo.includes(userId)) {
+        return true;
+      }
+      
+      // Role-based assignment (would need integration with a role service)
+      // For simplicity, we'll assume the user has the roles in assignedTo if assignmentType is 'role'
+      if (approval.assignmentType === 'role') {
+        return true; // In a real app, check user roles against approval.assignedTo
+      }
+      
+      return false;
+    });
+    
+    if (!userApprovals.length) {
+      return [];
+    }
+    
+    // Get full workflow details for these approvals
+    return Promise.all(userApprovals.map(async (approval: any) => {
+      const workflow = workflows.find((w: any) => w.id === approval.workflowId);
+      const template = await this.getWorkflowTemplate(workflow.templateId);
+      const step = template.steps.find((s: any) => s.id === approval.stepId);
+      
+      return {
+        workflow,
+        approval,
+        template,
+        step
+      };
+    }));
+  }
+  
+  /**
+   * Get workflow history
+   * 
+   * @param workflowId The workflow ID
+   * @returns Array of history events
+   */
+  async getWorkflowHistory(workflowId: number) {
+    return this.db
+      .select()
+      .from(workflowHistory)
+      .where(eq(workflowHistory.workflowId, workflowId))
+      .orderBy(desc(workflowHistory.createdAt));
   }
 }

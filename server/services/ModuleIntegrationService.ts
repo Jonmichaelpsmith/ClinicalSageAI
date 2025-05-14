@@ -1,273 +1,465 @@
 /**
  * Module Integration Service
  * 
- * This service provides functionality for managing document integration between
- * different modules in the unified document workflow system.
+ * This service handles the integration of module-specific documents with the unified
+ * document workflow system. It provides methods for registering, retrieving, and
+ * managing documents across different modules.
  */
 
 import { db } from '../db/connection';
-import { sql } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import { WorkflowService } from './WorkflowService';
+import { 
+  unifiedDocuments, 
+  moduleDocuments, 
+  documentVersions,
+  documentAuditLogs,
+  documentWorkflows
+} from '../../shared/schema/unified_workflow';
+
+/**
+ * Exception for document not found errors
+ */
+export class DocumentNotFoundException extends Error {
+  constructor(documentId: number | string) {
+    super(`Document with ID ${documentId} not found`);
+    this.name = 'DocumentNotFoundException';
+  }
+}
 
 export class ModuleIntegrationService {
   private workflowService: WorkflowService;
   
-  constructor() {
-    this.workflowService = new WorkflowService();
+  constructor(private db: any) {
+    this.workflowService = new WorkflowService(db);
   }
   
   /**
-   * Register a document from a module in the unified system
+   * Register a new document in the unified system
    * 
-   * @param {Object} documentData Document data to register
-   * @returns {Promise<Object>} The registered document with its module reference
+   * @param documentData The document data to register
+   * @returns The registered document
    */
-  async registerModuleDocument(documentData) {
-    const {
-      title,
-      documentType,
-      organizationId,
-      createdBy,
-      status,
-      latestVersion,
-      moduleType,
-      originalId,
-      metadata
-    } = documentData;
+  async registerDocument(documentData: any) {
+    return this.db.transaction(async (tx: any) => {
+      try {
+        // Create the unified document
+        const [unifiedDoc] = await tx
+          .insert(unifiedDocuments)
+          .values({
+            title: documentData.title,
+            documentType: documentData.documentType,
+            status: documentData.status || 'draft',
+            createdBy: documentData.createdBy,
+            organizationId: documentData.organizationId,
+            latestVersion: 1,
+            metadata: documentData.metadata || {}
+          })
+          .returning();
+        
+        // Create the initial version
+        const [version] = await tx
+          .insert(documentVersions)
+          .values({
+            documentId: unifiedDoc.id,
+            version: 1,
+            content: documentData.content || null,
+            createdBy: documentData.createdBy,
+          })
+          .returning();
+        
+        // Link to the original module document
+        const [moduleDoc] = await tx
+          .insert(moduleDocuments)
+          .values({
+            unifiedDocumentId: unifiedDoc.id,
+            moduleType: documentData.moduleType,
+            originalId: documentData.originalId,
+            organizationId: documentData.organizationId,
+          })
+          .returning();
+        
+        // Create audit log entry
+        await tx
+          .insert(documentAuditLogs)
+          .values({
+            documentId: unifiedDoc.id,
+            action: 'document_created',
+            performedBy: documentData.createdBy,
+            details: {
+              moduleType: documentData.moduleType,
+              originalId: documentData.originalId
+            }
+          });
+        
+        return {
+          ...unifiedDoc,
+          version,
+          moduleDocument: moduleDoc
+        };
+      } catch (error) {
+        console.error('Error registering document:', error);
+        throw error;
+      }
+    });
+  }
+  
+  /**
+   * Check if a document exists in the unified system
+   * 
+   * @param moduleType The module type
+   * @param originalId The original ID in the module
+   * @param organizationId The organization ID
+   * @returns Whether the document exists
+   */
+  async documentExists(moduleType: any, originalId: any, organizationId: any) {
+    const result = await this.db
+      .select({ count: { count: 'id' } })
+      .from(moduleDocuments)
+      .where(
+        and(
+          eq(moduleDocuments.moduleType, moduleType),
+          eq(moduleDocuments.originalId, originalId),
+          eq(moduleDocuments.organizationId, organizationId)
+        )
+      );
     
-    // Begin transaction
-    return await db.transaction(async (tx) => {
-      // Insert into unified documents table
-      const [document] = await tx.execute(
-        sql`INSERT INTO unified_documents 
-          (title, document_type, organization_id, created_by, status, latest_version, created_at, updated_at)
-          VALUES (${title}, ${documentType}, ${organizationId}, ${createdBy}, ${status}, ${latestVersion}, NOW(), NOW())
-          RETURNING *`
+    return result.length > 0 && result[0].count > 0;
+  }
+  
+  /**
+   * Get documents by module type
+   * 
+   * @param moduleType The module type
+   * @param organizationId The organization ID
+   * @returns Array of documents
+   */
+  async getDocumentsByModule(moduleType: any, organizationId: any) {
+    const moduleDocsResult = await this.db
+      .select()
+      .from(moduleDocuments)
+      .where(
+        and(
+          eq(moduleDocuments.moduleType, moduleType),
+          eq(moduleDocuments.organizationId, organizationId)
+        )
       );
-      
-      // Insert module reference
-      const [moduleRef] = await tx.execute(
-        sql`INSERT INTO module_documents
-          (document_id, module_type, original_id, organization_id, metadata, created_at, updated_at)
-          VALUES (${document.id}, ${moduleType}, ${originalId}, ${organizationId}, ${JSON.stringify(metadata)}, NOW(), NOW())
-          RETURNING *`
-      );
-      
-      // Return combined result
+    
+    if (!moduleDocsResult.length) {
+      return [];
+    }
+    
+    const documentIds = moduleDocsResult.map((doc) => doc.unifiedDocumentId);
+    
+    const docsResult = await this.db
+      .select()
+      .from(unifiedDocuments)
+      .where(inArray(unifiedDocuments.id, documentIds));
+    
+    // Join the results
+    return docsResult.map((doc) => {
+      const moduleDoc = moduleDocsResult.find((md) => md.unifiedDocumentId === doc.id);
       return {
-        ...document,
-        moduleReference: moduleRef
+        ...doc,
+        moduleType,
+        originalId: moduleDoc?.originalId
       };
     });
   }
   
   /**
-   * Get a document by its module-specific ID
+   * Get documents in review (with active workflows)
    * 
-   * @param {string} moduleType Module type
-   * @param {string} originalId Original document ID in the module
-   * @param {number} organizationId Organization ID
-   * @returns {Promise<Object>} The document or null if not found
+   * @param organizationId The organization ID
+   * @returns Array of documents with their active workflows
    */
-  async getDocumentByModuleId(moduleType, originalId, organizationId) {
-    try {
-      const [result] = await db.execute(
-        sql`SELECT d.*, m.module_type, m.original_id, m.metadata
-          FROM unified_documents d
-          JOIN module_documents m ON d.id = m.document_id
-          WHERE m.module_type = ${moduleType}
-          AND m.original_id = ${originalId}
-          AND d.organization_id = ${organizationId}
-          LIMIT 1`
+  async getDocumentsInReview(organizationId: any) {
+    // Get active workflows
+    const workflows = await this.db
+      .select()
+      .from(documentWorkflows)
+      .where(
+        and(
+          eq(documentWorkflows.status, 'active'),
+          eq(documentWorkflows.organizationId, organizationId)
+        )
       );
-      
-      if (!result) {
-        return null;
-      }
-      
-      return result;
-    } catch (error) {
-      console.error('Error in getDocumentByModuleId:', error);
-      throw error;
+    
+    if (!workflows.length) {
+      return [];
     }
-  }
-  
-  /**
-   * Get documents for a module
-   * 
-   * @param {string} moduleType Module type
-   * @param {number} organizationId Organization ID
-   * @returns {Promise<Array>} List of documents
-   */
-  async getModuleDocuments(moduleType, organizationId) {
-    try {
-      const results = await db.execute(
-        sql`SELECT d.*, m.module_type, m.original_id, m.metadata
-          FROM unified_documents d
-          JOIN module_documents m ON d.id = m.document_id
-          WHERE m.module_type = ${moduleType}
-          AND d.organization_id = ${organizationId}
-          ORDER BY d.updated_at DESC`
-      );
+    
+    // Get the documents
+    const documentIds = workflows.map((w: any) => w.documentId);
+    const documents = await this.db
+      .select()
+      .from(unifiedDocuments)
+      .where(inArray(unifiedDocuments.id, documentIds));
+    
+    // Join with module documents
+    const moduleDocsResult = await this.db
+      .select()
+      .from(moduleDocuments)
+      .where(inArray(moduleDocuments.unifiedDocumentId, documentIds));
+    
+    // Get current approvals for each workflow
+    const workflowsWithApprovals = await Promise.all(
+      workflows.map(async (w: any) => {
+        const approvals = await this.workflowService.getWorkflowApprovals(w.id);
+        const currentApproval = approvals.find((a) => a.status === 'pending');
+        return {
+          ...w,
+          approvals,
+          currentApproval
+        };
+      })
+    );
+    
+    // Join everything together
+    return documents.map((doc) => {
+      const moduleDoc = moduleDocsResult.find((md) => md.unifiedDocumentId === doc.id);
+      const docWorkflows = workflowsWithApprovals.filter((w) => w.documentId === doc.id);
       
-      return results;
-    } catch (error) {
-      console.error('Error in getModuleDocuments:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Get document counts by type for an organization
-   * 
-   * @param {number} organizationId Organization ID
-   * @returns {Promise<Object>} Map of document types to counts
-   */
-  async getDocumentCountByType(organizationId) {
-    try {
-      const results = await db.execute(
-        sql`SELECT m.module_type, COUNT(*) as count
-          FROM module_documents m
-          JOIN unified_documents d ON m.document_id = d.id
-          WHERE d.organization_id = ${organizationId}
-          GROUP BY m.module_type`
-      );
-      
-      const countMap = {};
-      for (const row of results) {
-        countMap[row.module_type] = Number(row.count);
-      }
-      
-      return countMap;
-    } catch (error) {
-      console.error('Error in getDocumentCountByType:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Get documents in review
-   * 
-   * @param {number} organizationId Organization ID
-   * @returns {Promise<Array>} Documents in review
-   */
-  async getDocumentsInReview(organizationId) {
-    try {
-      // Get all active workflows
-      const activeWorkflows = await this.workflowService.getActiveWorkflowsByOrganization(organizationId);
-      
-      // Extract document IDs from active workflows
-      const documentIds = new Set(activeWorkflows.map(w => w.document_id));
-      
-      if (documentIds.size === 0) {
-        return [];
-      }
-      
-      // Get documents in review
-      const documentIdsArray = Array.from(documentIds);
-      const placeholders = documentIdsArray.map((_, i) => `$${i + 1}`).join(', ');
-      
-      const documents = await db.execute(
-        sql`SELECT d.*, m.module_type, m.original_id, m.metadata
-          FROM unified_documents d
-          JOIN module_documents m ON d.id = m.document_id
-          WHERE d.id IN (${placeholders})
-          AND d.organization_id = ${organizationId}
-          ORDER BY d.updated_at DESC`,
-        documentIdsArray
-      );
-      
-      // Attach workflow information to each document
-      for (const doc of documents) {
-        doc.workflows = activeWorkflows.filter(w => w.document_id === doc.id);
-      }
-      
-      return documents;
-    } catch (error) {
-      console.error('Error in getDocumentsInReview:', error);
-      throw error;
-    }
-  }
-  
-  /**
-   * Compare document versions
-   * 
-   * @param {number} currentVersionId Current document version ID
-   * @param {number} previousVersionId Previous document version ID
-   * @returns {Promise<Object>} Comparison result
-   */
-  async compareDocumentVersions(currentVersionId, previousVersionId) {
-    try {
-      // Get the versions
-      const [currentVersion] = await db.execute(
-        sql`SELECT * FROM document_versions WHERE id = ${currentVersionId} LIMIT 1`
-      );
-      
-      const [previousVersion] = await db.execute(
-        sql`SELECT * FROM document_versions WHERE id = ${previousVersionId} LIMIT 1`
-      );
-      
-      if (!currentVersion || !previousVersion) {
-        throw new Error('One or both versions not found');
-      }
-      
-      // Simple comparison method - in a real implementation, this would use
-      // a diff algorithm or specialized document comparison logic
-      const comparison = {
-        documentId: currentVersion.document_id,
-        currentVersionId,
-        previousVersionId,
-        currentVersionNumber: currentVersion.version_number,
-        previousVersionNumber: previousVersion.version_number,
-        createdAt: currentVersion.created_at,
-        createdBy: currentVersion.created_by,
-        changes: []
+      return {
+        document: {
+          ...doc,
+          moduleType: moduleDoc?.moduleType,
+          originalId: moduleDoc?.originalId
+        },
+        workflows: docWorkflows,
+        id: doc.id,
+        status: doc.status,
+        // For documents with pending approval
+        currentApproval: docWorkflows[0]?.currentApproval
       };
+    });
+  }
+  
+  /**
+   * Get a specific document
+   * 
+   * @param documentId The document ID
+   * @returns The document
+   */
+  async getDocument(documentId: any) {
+    const document = await this.db
+      .select()
+      .from(unifiedDocuments)
+      .where(eq(unifiedDocuments.id, documentId))
+      .limit(1);
+    
+    if (!document.length) {
+      throw new DocumentNotFoundException(documentId);
+    }
+    
+    const moduleDoc = await this.db
+      .select()
+      .from(moduleDocuments)
+      .where(eq(moduleDocuments.unifiedDocumentId, documentId))
+      .limit(1);
+    
+    const latestVersion = await this.db
+      .select()
+      .from(documentVersions)
+      .where(
+        and(
+          eq(documentVersions.documentId, documentId),
+          eq(documentVersions.version, document[0].latestVersion)
+        )
+      )
+      .limit(1);
+    
+    return {
+      ...document[0],
+      moduleType: moduleDoc[0]?.moduleType,
+      originalId: moduleDoc[0]?.originalId,
+      version: latestVersion[0]
+    };
+  }
+  
+  /**
+   * Update a document
+   * 
+   * @param documentId The document ID
+   * @param updateData The data to update
+   * @returns The updated document
+   */
+  async updateDocument(documentId: any, updateData: any) {
+    return this.db.transaction(async (tx: any) => {
+      // Check if document exists
+      const existingDoc = await tx
+        .select()
+        .from(unifiedDocuments)
+        .where(eq(unifiedDocuments.id, documentId))
+        .limit(1);
       
-      // Add mock comparison for demo - would be replaced with actual diff
-      if (currentVersion.content && previousVersion.content) {
-        // In a real implementation, this would be a more sophisticated diff
-        const currentContent = JSON.parse(currentVersion.content);
-        const previousContent = JSON.parse(previousVersion.content);
+      if (!existingDoc.length) {
+        throw new DocumentNotFoundException(documentId);
+      }
+      
+      // Check if content is being updated
+      let newVersion = null;
+      if (updateData.content !== undefined) {
+        // Create a new version
+        const [version] = await tx
+          .insert(documentVersions)
+          .values({
+            documentId,
+            version: existingDoc[0].latestVersion + 1,
+            content: updateData.content,
+            createdBy: updateData.updatedBy
+          })
+          .returning();
         
-        // Find changed fields
-        for (const key in currentContent) {
-          if (JSON.stringify(currentContent[key]) !== JSON.stringify(previousContent[key])) {
-            comparison.changes.push({
-              field: key,
-              previous: previousContent[key],
-              current: currentContent[key]
-            });
-          }
-        }
+        newVersion = version;
         
-        // Find added fields
-        for (const key in currentContent) {
-          if (!(key in previousContent)) {
-            comparison.changes.push({
-              field: key,
-              action: 'added',
-              value: currentContent[key]
-            });
-          }
-        }
+        // Update latestVersion in document
+        updateData.latestVersion = existingDoc[0].latestVersion + 1;
         
-        // Find removed fields
-        for (const key in previousContent) {
-          if (!(key in currentContent)) {
-            comparison.changes.push({
-              field: key,
-              action: 'removed',
-              value: previousContent[key]
-            });
-          }
+        // Add audit log for version change
+        await tx
+          .insert(documentAuditLogs)
+          .values({
+            documentId,
+            action: 'version_created',
+            performedBy: updateData.updatedBy,
+            details: {
+              previousVersion: existingDoc[0].latestVersion,
+              newVersion: updateData.latestVersion
+            }
+          });
+        
+        // Create diff logs if needed
+        if (existingDoc[0].latestVersion > 0) {
+          await this.logDocumentChanges(tx, documentId, existingDoc[0].latestVersion, updateData.latestVersion, updateData.updatedBy);
         }
       }
       
-      return comparison;
-    } catch (error) {
-      console.error('Error in compareDocumentVersions:', error);
-      throw error;
-    }
+      // Remove content from updateData since it's stored in versions
+      const { content, ...docUpdateData } = updateData;
+      
+      // Update the document
+      if (Object.keys(docUpdateData).length > 0) {
+        const [updatedDoc] = await tx
+          .update(unifiedDocuments)
+          .set({
+            ...docUpdateData,
+            updatedAt: new Date()
+          })
+          .where(eq(unifiedDocuments.id, documentId))
+          .returning();
+        
+        // Create audit log for document update
+        const changedFields = Object.keys(docUpdateData).filter(key => 
+          key !== 'updatedBy' && key !== 'updatedAt' && 
+          docUpdateData[key] !== existingDoc[0][key]
+        );
+        
+        if (changedFields.length > 0) {
+          changedFields.forEach(field => {
+            tx.insert(documentAuditLogs)
+              .values({
+                documentId,
+                action: 'field_updated',
+                performedBy: updateData.updatedBy,
+                details: {
+                  field,
+                  previous: existingDoc[0][field],
+                  current: docUpdateData[field]
+                }
+              });
+          });
+        }
+        
+        return {
+          ...updatedDoc,
+          version: newVersion
+        };
+      }
+      
+      return {
+        ...existingDoc[0],
+        version: newVersion
+      };
+    });
+  }
+  
+  /**
+   * Log changes between document versions
+   * 
+   * @param tx Transaction object
+   * @param documentId Document ID
+   * @param previousVersionId Previous version ID
+   * @param currentVersionId Current version ID
+   * @param userId User making the change
+   */
+  private async logDocumentChanges(tx: any, documentId: any, previousVersionId: any, currentVersionId: any, userId: string) {
+    // In a real implementation, this would do a diff of the versions
+    // and log specific changes. For simplicity, we'll just log that a change occurred.
+    
+    await tx.insert(documentAuditLogs)
+      .values({
+        documentId,
+        action: 'content_changed',
+        performedBy: userId,
+        details: {
+          field: 'content',
+          action: 'update',
+          value: `Updated from version ${previousVersionId} to ${currentVersionId}`
+        }
+      });
+  }
+  
+  /**
+   * Add an attachment to a document
+   * 
+   * @param documentId Document ID
+   * @param attachmentData Attachment data
+   * @param userId User adding the attachment
+   */
+  async addDocumentAttachment(documentId: number, attachmentData: any, userId: string) {
+    return this.db.transaction(async (tx: any) => {
+      // Add the attachment
+      
+      // Log the action
+      await tx.insert(documentAuditLogs)
+        .values({
+          documentId,
+          action: 'attachment_added',
+          performedBy: userId,
+          details: {
+            field: 'attachments',
+            action: 'add',
+            value: attachmentData.fileName
+          }
+        });
+    });
+  }
+  
+  /**
+   * Remove an attachment from a document
+   * 
+   * @param documentId Document ID
+   * @param attachmentId Attachment ID
+   * @param userId User removing the attachment
+   */
+  async removeDocumentAttachment(documentId: number, attachmentId: number, userId: string) {
+    return this.db.transaction(async (tx: any) => {
+      // Get attachment details first
+      // Remove the attachment
+      
+      // Log the action
+      await tx.insert(documentAuditLogs)
+        .values({
+          documentId,
+          action: 'attachment_removed',
+          performedBy: userId,
+          details: {
+            field: 'attachments',
+            action: 'remove',
+            value: attachmentId
+          }
+        });
+    });
   }
 }
