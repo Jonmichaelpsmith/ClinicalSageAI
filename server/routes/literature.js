@@ -57,6 +57,8 @@ try {
  * @route POST /api/literature/search
  * @desc Search PubMed and other sources for literature related to a medical device
  */
+import { searchLiterature } from '../services/discoveryService.js';
+
 router.post('/search', async (req, res) => {
   try {
     const { query, limit = 20, filters = {}, sources = ['pubmed', 'googleScholar'] } = req.body;
@@ -65,56 +67,30 @@ router.post('/search', async (req, res) => {
       return res.status(400).json({ error: 'Query parameter is required' });
     }
 
-    // Initialize results arrays for each source
-    let pubmedResults = [];
-    let scholarResults = [];
-    
-    // Search PubMed if requested
-    if (sources.includes('pubmed')) {
-      pubmedResults = await searchPubMed(query, limit, filters);
-    }
-    
-    // Search Google Scholar if requested
-    if (sources.includes('googleScholar')) {
-      scholarResults = await searchGoogleScholar(query, Math.floor(limit / 2), filters);
-    }
-    
-    // Combine and deduplicate results
-    let allResults = [...pubmedResults, ...scholarResults];
-    
-    // Remove duplicates based on title similarity
-    const uniqueResults = [];
-    const titleSet = new Set();
-    
-    for (const result of allResults) {
-      // Create a simplified title for comparison (lowercase, no punctuation)
-      const simplifiedTitle = result.title.toLowerCase().replace(/[^\w\s]/g, '');
+    // Use the unified discoveryService to search for literature
+    try {
+      console.log('Searching for literature using discoveryService:', query);
+      const literatureResults = await searchLiterature(query, { limit });
       
-      if (!titleSet.has(simplifiedTitle)) {
-        titleSet.add(simplifiedTitle);
-        uniqueResults.push(result);
-      }
+      // Return the results in the expected format
+      res.json({ 
+        results: literatureResults,
+        metadata: {
+          totalResults: literatureResults.length,
+          // We no longer have source-specific counts since we're using the unified service
+          sourcesUsed: sources,
+          query: query
+        }
+      });
+    } catch (discoveryError) {
+      console.error('Error using discovery service for literature search:', discoveryError);
+      
+      // Attempt to handle the error gracefully
+      return res.status(500).json({
+        error: 'An error occurred during literature search',
+        message: discoveryError.message
+      });
     }
-    
-    // Sort by publication date (newest first)
-    uniqueResults.sort((a, b) => {
-      const dateA = new Date(a.publicationDate);
-      const dateB = new Date(b.publicationDate);
-      return dateB - dateA;
-    });
-    
-    // Limit to requested number
-    const limitedResults = uniqueResults.slice(0, limit);
-    
-    res.json({ 
-      results: limitedResults,
-      metadata: {
-        totalResults: uniqueResults.length,
-        pubmedCount: pubmedResults.length,
-        scholarCount: scholarResults.length,
-        duplicatesRemoved: allResults.length - uniqueResults.length
-      }
-    });
   } catch (error) {
     console.error('Literature search error:', error);
     res.status(500).json({ error: 'An error occurred during literature search' });
