@@ -1,312 +1,337 @@
 /**
  * Module Integration Service
  * 
- * This service provides integration capabilities between different modules
- * and the unified document workflow system. It handles:
- * - Document registration from modules to the unified system
- * - Document retrieval with module-specific transformations
- * - Workflow management across modules
+ * This service handles the integration of documents from different modules
+ * into the unified document workflow system.
  */
 
+import { eq, and } from 'drizzle-orm';
+import { SQL } from 'drizzle-orm';
 import { db } from '../db/connection';
 import { 
-  documents, 
-  insertDocumentSchema,
-  documentFolders
-} from '../../shared/schema';
-import {
-  moduleDocuments,
-  insertModuleDocumentSchema,
-  workflowTemplates
+  unifiedDocuments,
+  documentWorkflows,
+  workflowTemplates,
+  workflowApprovals,
+  workflowAuditLog,
+  moduleTypeEnum,
+  InsertUnifiedDocument,
+  UnifiedDocument
 } from '../../shared/schema/unified_workflow';
 import { WorkflowService } from './WorkflowService';
-import { eq, and, isNull, asc, desc } from 'drizzle-orm';
-import { z } from 'zod';
-import { v4 as uuidv4 } from 'uuid';
-
-// Module document registration parameters
-export const moduleDocumentRegistrationSchema = z.object({
-  documentId: z.string(),         // Original document ID in the module
-  moduleType: z.enum(['cmc_wizard', 'ectd_coauthor', 'med_device', 'study_architect']),
-  title: z.string(),
-  organizationId: z.number(),
-  clientWorkspaceId: z.number().optional(),
-  documentType: z.string(),       // Type of document within the module
-  content: z.any().optional(),    // Optional document content
-  metadata: z.any().optional(),   // Module-specific metadata
-  folderId: z.number().optional(),// Optional target folder in Vault
-  initiateWorkflow: z.boolean().optional().default(false), // Whether to start a default workflow
-  workflowTemplateId: z.string().optional(), // Optional specific workflow template
-});
-
-export type ModuleDocumentRegistration = z.infer<typeof moduleDocumentRegistrationSchema>;
 
 export class ModuleIntegrationService {
   private workflowService: WorkflowService;
-
+  
   constructor() {
     this.workflowService = new WorkflowService();
   }
-
+  
   /**
    * Register a document from a module in the unified system
+   * 
+   * @param moduleType - Type of module (med_device, cmc_wizard, etc.)
+   * @param originalDocumentId - Original document ID in the source module
+   * @param title - Document title
+   * @param documentType - Type of document (510k, CER, etc.)
+   * @param organizationId - Organization ID
+   * @param userId - User ID registering the document
+   * @param metadata - Optional document metadata
+   * @param content - Optional document content
+   * @param vaultFolderId - Optional vault folder ID
+   * @returns The registered document record
    */
-  async registerModuleDocument(registration: ModuleDocumentRegistration, userId: number): Promise<{ documentId: number, workflowId?: string }> {
-    try {
-      // Validate registration parameters
-      const validatedRegistration = moduleDocumentRegistrationSchema.parse(registration);
-      
-      // 1. Create a document in the unified system
-      const documentData = {
-        organizationId: validatedRegistration.organizationId,
-        name: validatedRegistration.title,
-        type: validatedRegistration.documentType,
-        status: 'draft',
-        folderId: validatedRegistration.folderId || 
-                 await this.getDefaultModuleFolder(validatedRegistration.moduleType, validatedRegistration.organizationId),
-        content: validatedRegistration.content || {},
-        metadata: validatedRegistration.metadata || {},
-        createdById: userId,
-        clientWorkspaceId: validatedRegistration.clientWorkspaceId,
-      };
-      
-      // Insert document
-      const insertDocumentResult = await db.insert(documents)
-        .values(documentData)
-        .returning();
-      
-      if (insertDocumentResult.length === 0) {
-        throw new Error('Failed to create document in unified system');
-      }
-      
-      const document = insertDocumentResult[0];
-      
-      // 2. Create module document link
-      const moduleDocData = {
-        documentId: document.id,
-        moduleType: validatedRegistration.moduleType,
-        moduleDocumentId: validatedRegistration.documentId,
-        metadata: validatedRegistration.metadata || {}
-      };
-      
-      await db.insert(moduleDocuments)
-        .values(moduleDocData);
-      
-      // 3. Optionally start a workflow
-      let workflowId: string | undefined;
-      
-      if (validatedRegistration.initiateWorkflow) {
-        const templateId = validatedRegistration.workflowTemplateId || 
-                         await this.getDefaultWorkflowTemplate(validatedRegistration.moduleType);
-        
-        if (templateId) {
-          workflowId = await this.workflowService.initiateWorkflow({
-            documentId: document.id,
-            workflowTemplateId: templateId,
-            initiatedBy: userId
-          });
-        }
-      }
-      
-      return {
-        documentId: document.id,
-        workflowId
-      };
-    } catch (error) {
-      console.error(`Error registering module document: ${error.message}`);
-      throw new Error(`Failed to register module document: ${error.message}`);
+  async registerModuleDocument(
+    moduleType: string,
+    originalDocumentId: string,
+    title: string,
+    documentType: string,
+    organizationId: number,
+    userId: number,
+    metadata: any = {},
+    content: any = null,
+    vaultFolderId: number = null
+  ): Promise<UnifiedDocument> {
+    // Validate module type
+    if (!Object.values(moduleTypeEnum.enum).includes(moduleType as any)) {
+      throw new Error(`Invalid module type: ${moduleType}`);
     }
-  }
-  
-  /**
-   * Get a unified document by its module document ID
-   */
-  async getDocumentByModuleId(moduleType: string, moduleDocumentId: string): Promise<any> {
+    
     try {
-      // Find the module document link
-      const moduleDoc = await db.select()
-        .from(moduleDocuments)
+      // Check if document already exists for this module + original ID + org
+      const existingDoc = await db.select()
+        .from(unifiedDocuments)
         .where(
           and(
-            eq(moduleDocuments.moduleType, moduleType),
-            eq(moduleDocuments.moduleDocumentId, moduleDocumentId)
+            eq(unifiedDocuments.moduleType, moduleType),
+            eq(unifiedDocuments.originalDocumentId, originalDocumentId),
+            eq(unifiedDocuments.organizationId, organizationId),
+            eq(unifiedDocuments.isDeleted, false)
           )
         )
         .limit(1);
-        
-      if (moduleDoc.length === 0) {
-        throw new Error(`Document not found for module ${moduleType} with ID ${moduleDocumentId}`);
-      }
       
-      // Get the unified document
-      const doc = await db.select()
-        .from(documents)
-        .where(eq(documents.id, moduleDoc[0].documentId))
-        .limit(1);
-        
-      if (doc.length === 0) {
-        throw new Error(`Document not found with ID ${moduleDoc[0].documentId}`);
-      }
-      
-      return {
-        ...doc[0],
-        moduleMetadata: moduleDoc[0].metadata
-      };
-    } catch (error) {
-      console.error(`Error retrieving document by module ID: ${error.message}`);
-      throw new Error(`Failed to retrieve document by module ID: ${error.message}`);
-    }
-  }
-  
-  /**
-   * Update a document's content or metadata from its source module
-   */
-  async updateDocumentFromModule(
-    moduleType: string, 
-    moduleDocumentId: string, 
-    updates: { content?: any, metadata?: any, status?: string },
-    userId: number
-  ): Promise<number> {
-    try {
-      // Find the module document link
-      const moduleDoc = await db.select()
-        .from(moduleDocuments)
-        .where(
-          and(
-            eq(moduleDocuments.moduleType, moduleType),
-            eq(moduleDocuments.moduleDocumentId, moduleDocumentId)
-          )
-        )
-        .limit(1);
-        
-      if (moduleDoc.length === 0) {
-        throw new Error(`Document not found for module ${moduleType} with ID ${moduleDocumentId}`);
-      }
-      
-      const documentId = moduleDoc[0].documentId;
-      
-      // Update the document
-      const updateData: any = {};
-      
-      if (updates.content) {
-        updateData.content = updates.content;
-      }
-      
-      if (updates.status) {
-        updateData.status = updates.status;
-      }
-      
-      updateData.updatedAt = new Date();
-      
-      // Update the document
-      if (Object.keys(updateData).length > 0) {
-        await db.update(documents)
-          .set(updateData)
-          .where(eq(documents.id, documentId));
-      }
-      
-      // Update the module document metadata if provided
-      if (updates.metadata) {
-        await db.update(moduleDocuments)
-          .set({ 
-            metadata: updates.metadata,
-            updatedAt: new Date()
+      if (existingDoc.length > 0) {
+        // Document already exists, update it
+        const [updated] = await db.update(unifiedDocuments)
+          .set({
+            title,
+            documentType,
+            metadata,
+            content,
+            vaultFolderId,
+            updatedAt: new Date(),
+            updatedBy: userId
           })
-          .where(
-            and(
-              eq(moduleDocuments.moduleType, moduleType),
-              eq(moduleDocuments.moduleDocumentId, moduleDocumentId)
-            )
-          );
-      }
-      
-      return documentId;
-    } catch (error) {
-      console.error(`Error updating document from module: ${error.message}`);
-      throw new Error(`Failed to update document from module: ${error.message}`);
-    }
-  }
-  
-  /**
-   * Get the default folder for a module
-   */
-  private async getDefaultModuleFolder(moduleType: string, organizationId: number): Promise<number> {
-    try {
-      // Locate or create module folder
-      const folderName = this.getModuleFolderName(moduleType);
-      
-      // Check if folder exists
-      const existingFolder = await db.select()
-        .from(documentFolders)
-        .where(
-          and(
-            eq(documentFolders.name, folderName),
-            eq(documentFolders.organizationId, organizationId),
-            isNull(documentFolders.parentId)
-          )
-        )
-        .limit(1);
+          .where(eq(unifiedDocuments.id, existingDoc[0].id))
+          .returning();
         
-      if (existingFolder.length > 0) {
-        return existingFolder[0].id;
+        return updated;
       }
       
-      // Create folder
-      const result = await db.insert(documentFolders)
+      // Insert new document
+      const [document] = await db.insert(unifiedDocuments)
         .values({
-          name: folderName,
+          moduleType,
+          originalDocumentId,
+          title,
+          documentType,
+          metadata,
+          content,
+          vaultFolderId,
           organizationId,
-          description: `Documents from ${folderName}`,
-          path: `/${folderName}`
+          createdBy: userId,
+          updatedBy: userId
         })
         .returning();
-        
-      return result[0].id;
+      
+      return document;
     } catch (error) {
-      console.error(`Error getting default module folder: ${error.message}`);
-      // Return null and let the caller handle it (document will be created without a folder)
-      throw new Error(`Failed to get default module folder: ${error.message}`);
+      console.error('Error registering module document:', error);
+      throw new Error(`Failed to register document: ${error.message}`);
     }
   }
   
   /**
-   * Get default workflow template for a module
+   * Get a document by its module ID
+   * 
+   * @param moduleType - Type of module (med_device, cmc_wizard, etc.)
+   * @param originalDocumentId - Original document ID in the source module
+   * @param organizationId - Organization ID
+   * @returns The document record or null if not found
    */
-  private async getDefaultWorkflowTemplate(moduleType: string): Promise<string | null> {
+  async getDocumentByModuleId(
+    moduleType: string,
+    originalDocumentId: string,
+    organizationId: number
+  ): Promise<UnifiedDocument> {
     try {
-      const result = await db.select()
+      // Validate module type
+      if (!Object.values(moduleTypeEnum.enum).includes(moduleType as any)) {
+        throw new Error(`Invalid module type: ${moduleType}`);
+      }
+      
+      const documents = await db.select()
+        .from(unifiedDocuments)
+        .where(
+          and(
+            eq(unifiedDocuments.moduleType, moduleType),
+            eq(unifiedDocuments.originalDocumentId, originalDocumentId),
+            eq(unifiedDocuments.organizationId, organizationId),
+            eq(unifiedDocuments.isDeleted, false)
+          )
+        )
+        .limit(1);
+      
+      if (documents.length === 0) {
+        throw new Error(`Document not found for ${moduleType}:${originalDocumentId}`);
+      }
+      
+      return documents[0];
+    } catch (error) {
+      console.error('Error getting document by module ID:', error);
+      throw new Error(`Failed to get document: ${error.message}`);
+    }
+  }
+  
+  /**
+   * Update a document's details
+   * 
+   * @param documentId - The document ID
+   * @param updates - Updates to apply
+   * @param userId - User ID making the update
+   * @returns Updated document
+   */
+  async updateDocument(
+    documentId: number,
+    updates: Partial<UnifiedDocument>,
+    userId: number
+  ): Promise<UnifiedDocument> {
+    try {
+      // Get current document to ensure it exists
+      const documents = await db.select()
+        .from(unifiedDocuments)
+        .where(eq(unifiedDocuments.id, documentId))
+        .limit(1);
+      
+      if (documents.length === 0) {
+        throw new Error(`Document not found with ID: ${documentId}`);
+      }
+      
+      // Prepare update fields, ensure certain fields can't be changed
+      const updateFields = {
+        ...updates,
+        updatedAt: new Date(),
+        updatedBy: userId
+      };
+      
+      // Remove fields that shouldn't be updateable
+      delete updateFields.id;
+      delete updateFields.moduleType;
+      delete updateFields.originalDocumentId;
+      delete updateFields.organizationId;
+      delete updateFields.createdAt;
+      delete updateFields.createdBy;
+      
+      // Update the document
+      const [updated] = await db.update(unifiedDocuments)
+        .set(updateFields)
+        .where(eq(unifiedDocuments.id, documentId))
+        .returning();
+      
+      return updated;
+    } catch (error) {
+      console.error('Error updating document:', error);
+      throw new Error(`Failed to update document: ${error.message}`);
+    }
+  }
+  
+  /**
+   * Get workflow templates for a module type
+   * 
+   * @param moduleType - Type of module (med_device, cmc_wizard, etc.)
+   * @param organizationId - Organization ID
+   * @returns Array of workflow templates
+   */
+  async getWorkflowTemplatesForModule(
+    moduleType: string,
+    organizationId: number
+  ): Promise<any[]> {
+    try {
+      // Validate module type
+      if (!Object.values(moduleTypeEnum.enum).includes(moduleType as any)) {
+        throw new Error(`Invalid module type: ${moduleType}`);
+      }
+      
+      const templates = await db.select()
         .from(workflowTemplates)
         .where(
           and(
             eq(workflowTemplates.moduleType, moduleType),
+            eq(workflowTemplates.organizationId, organizationId),
             eq(workflowTemplates.isActive, true)
           )
         )
-        .orderBy(desc(workflowTemplates.updatedAt))
-        .limit(1);
-        
-      return result.length > 0 ? result[0].id : null;
+        .orderBy(workflowTemplates.name);
+      
+      return templates;
     } catch (error) {
-      console.error(`Error getting default workflow template: ${error.message}`);
-      return null;
+      console.error('Error getting workflow templates:', error);
+      throw new Error(`Failed to get workflow templates: ${error.message}`);
     }
   }
   
   /**
-   * Get folder name for a module
+   * Get the workflow for a document
+   * 
+   * @param documentId - The document ID
+   * @returns Workflow details with approvals, or null if no workflow exists
    */
-  private getModuleFolderName(moduleType: string): string {
-    switch (moduleType) {
-      case 'cmc_wizard':
-        return 'CMC Wizard';
-      case 'ectd_coauthor':
-        return 'eCTD Co-author';
-      case 'med_device':
-        return 'Medical Device and Diagnostics';
-      case 'study_architect':
-        return 'Study Architect';
-      default:
-        return moduleType;
+  async getDocumentWorkflow(documentId: number) {
+    try {
+      const workflows = await db.select()
+        .from(documentWorkflows)
+        .where(eq(documentWorkflows.documentId, documentId))
+        .orderBy(documentWorkflows.createdAt, 'desc')
+        .limit(1);
+      
+      if (workflows.length === 0) {
+        return null;
+      }
+      
+      const workflowId = workflows[0].id;
+      
+      // Get workflow with approvals
+      const workflowWithApprovals = await this.workflowService.getWorkflowWithApprovals(workflowId);
+      
+      return workflowWithApprovals;
+    } catch (error) {
+      console.error('Error getting document workflow:', error);
+      throw new Error(`Failed to get document workflow: ${error.message}`);
+    }
+  }
+  
+  /**
+   * Initiate a workflow for a document
+   * 
+   * @param documentId - The document ID
+   * @param templateId - The workflow template ID
+   * @param userId - User ID initiating the workflow
+   * @param metadata - Optional workflow metadata
+   * @returns Created workflow with approvals
+   */
+  async initiateWorkflow(
+    documentId: number,
+    templateId: number,
+    userId: number,
+    metadata: any = {}
+  ) {
+    try {
+      // Check if document exists
+      const documents = await db.select()
+        .from(unifiedDocuments)
+        .where(
+          and(
+            eq(unifiedDocuments.id, documentId),
+            eq(unifiedDocuments.isDeleted, false)
+          )
+        )
+        .limit(1);
+      
+      if (documents.length === 0) {
+        throw new Error(`Document not found with ID: ${documentId}`);
+      }
+      
+      // Check if workflow already exists and is active
+      const existingWorkflows = await db.select()
+        .from(documentWorkflows)
+        .where(
+          and(
+            eq(documentWorkflows.documentId, documentId),
+            eq(documentWorkflows.status, 'pending')
+          )
+        )
+        .limit(1);
+      
+      if (existingWorkflows.length > 0) {
+        throw new Error('A workflow is already in progress for this document');
+      }
+      
+      // Use the workflow service to create the workflow
+      const workflow = await this.workflowService.createWorkflow(
+        documentId,
+        templateId,
+        userId,
+        metadata
+      );
+      
+      // Get the full workflow with approvals
+      const workflowWithApprovals = await this.workflowService.getWorkflowWithApprovals(workflow.id);
+      
+      return workflowWithApprovals;
+    } catch (error) {
+      console.error('Error initiating workflow:', error);
+      throw new Error(`Failed to initiate workflow: ${error.message}`);
     }
   }
 }
