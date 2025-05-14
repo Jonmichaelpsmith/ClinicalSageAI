@@ -20,14 +20,14 @@ export async function createDefault510kTemplates(organizationId, userId) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        organizationId,
         moduleType: '510k',
-        createdBy: userId,
+        organizationId,
+        createdBy: userId
       }),
     });
     
     if (!response.ok) {
-      throw new Error(`Failed to create default templates: ${response.statusText}`);
+      throw new Error(`Failed to create templates: ${response.statusText}`);
     }
     
     return await response.json();
@@ -52,14 +52,14 @@ export async function createDefaultCERTemplates(organizationId, userId) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        organizationId,
         moduleType: 'cer',
-        createdBy: userId,
+        organizationId,
+        createdBy: userId
       }),
     });
     
     if (!response.ok) {
-      throw new Error(`Failed to create default templates: ${response.statusText}`);
+      throw new Error(`Failed to create templates: ${response.statusText}`);
     }
     
     return await response.json();
@@ -78,10 +78,10 @@ export async function createDefaultCERTemplates(organizationId, userId) {
  */
 export async function getWorkflowTemplates(moduleType, organizationId) {
   try {
-    const response = await fetch(`/api/module-integration/workflow-templates/${moduleType}?organizationId=${organizationId}`);
+    const response = await fetch(`/api/module-integration/templates/${moduleType}?organizationId=${organizationId}`);
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch templates: ${response.statusText}`);
+      throw new Error(`Failed to get templates: ${response.statusText}`);
     }
     
     return await response.json();
@@ -99,7 +99,7 @@ export async function getWorkflowTemplates(moduleType, organizationId) {
  */
 export async function createWorkflowTemplate(templateData) {
   try {
-    const response = await fetch('/api/module-integration/create-template', {
+    const response = await fetch('/api/module-integration/templates', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -129,7 +129,7 @@ export async function getDocumentWorkflows(documentId) {
     const response = await fetch(`/api/module-integration/document-workflows/${documentId}`);
     
     if (!response.ok) {
-      throw new Error(`Failed to fetch workflows: ${response.statusText}`);
+      throw new Error(`Failed to get workflows: ${response.statusText}`);
     }
     
     return await response.json();
@@ -150,7 +150,7 @@ export async function getDocumentWorkflows(documentId) {
  */
 export async function createDocumentWorkflow(documentId, templateId, startedBy, metadata = {}) {
   try {
-    const response = await fetch('/api/module-integration/create-workflow', {
+    const response = await fetch('/api/module-integration/workflows', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
