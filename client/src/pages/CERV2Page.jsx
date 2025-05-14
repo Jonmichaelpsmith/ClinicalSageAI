@@ -22,6 +22,12 @@ import ExportModule from '@/components/cer/ExportModule';
 import CerComprehensiveReportsPanel from '@/components/cer/CerComprehensiveReportsPanel';
 import MAUDIntegrationPanel from '@/components/cer/MAUDIntegrationPanel';
 import ReportGenerationPanel from '@/components/cer/ReportGenerationPanel';
+// Contextual tooltip system components
+import { CERV2TooltipProvider, useCERV2Tooltips } from '@/components/cer/TooltipTracker';
+import TooltipTracker from '@/components/cer/TooltipTracker';
+import ContextualTooltip from '@/components/cer/ContextualTooltip';
+import ComplianceStoryPanel from '@/components/cer/ComplianceStoryPanel';
+import GuidedWalkthrough, { walkthroughScenarios } from '@/components/cer/GuidedWalkthrough';
 // 510k enhanced components
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import GuidedTooltip from '@/components/510k/GuidedTooltip';
@@ -35,7 +41,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, GraduationCap, HelpCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
