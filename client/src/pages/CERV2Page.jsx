@@ -1724,8 +1724,17 @@ export default function CERV2Page() {
             <button
               type="button"
               onClick={() => {
-                console.log('Switching to CER mode');
-                setDocumentType('cer');
+                const newType = 'cer';
+                console.log(`Switching to CER mode (current: ${documentType}, new: ${newType})`);
+                // Force an update to make sure state changes properly
+                setDocumentType('');
+                setTimeout(() => {
+                  setDocumentType(newType);
+                  // Update title based on document type
+                  setTitle('Clinical Evaluation Report');
+                  // Set the appropriate tab for this document type
+                  setActiveTab('builder');
+                }, 50);
               }}
               className={`flex flex-col items-center justify-center p-4 rounded-lg border ${
                 documentType === 'cer' 
@@ -1743,8 +1752,17 @@ export default function CERV2Page() {
             <button
               type="button"
               onClick={() => {
-                console.log('Switching to 510k mode');
-                setDocumentType('510k');
+                const newType = '510k';
+                console.log(`Switching to 510k mode (current: ${documentType}, new: ${newType})`);
+                // Force an update to make sure state changes properly
+                setDocumentType('');
+                setTimeout(() => {
+                  setDocumentType(newType);
+                  // Update title based on document type
+                  setTitle('FDA 510(k) Submission');
+                  // Set the appropriate tab for this document type
+                  setActiveTab('predicate-finder');
+                }, 50);
               }}
               className={`flex flex-col items-center justify-center p-4 rounded-lg border ${
                 documentType === '510k' 
