@@ -1,1 +1,8 @@
-This is a mock PDF file for testing purposes
+This is a mock FDA 510(k) submission PDF for CardioTrack-X500 medical device.
+- Device: CardioTrack X500
+- Manufacturer: MedTech Innovations Inc.
+- Predicate Device: CardioMonitor 400 (K192456)
+- This submission includes all required FDA sections
+- All validation tests pass FDA compliance checks
+- Version: 1.0.0
+- Date: May 14, 2025
