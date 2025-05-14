@@ -80,7 +80,7 @@ const UnifiedWorkflowPanel = ({
   const [workflowStarted, setWorkflowStarted] = useState(false);
   const [workflowStatus, setWorkflowStatus] = useState(null);
   const [workflowHistory, setWorkflowHistory] = useState([]);
-  const [documentData, setDocumentData] = useState(null);
+  const [documentDataState, setDocumentDataState] = useState(null);
   const [commentText, setCommentText] = useState('');
   const [actionComment, setActionComment] = useState('');
   const [isLoading, setIsLoading] = useState({
@@ -151,7 +151,7 @@ const UnifiedWorkflowPanel = ({
     
     try {
       const data = await getDocumentRegistration(documentId);
-      setDocumentData(data);
+      setDocumentDataState(data);
     } catch (error) {
       console.error('Error loading document data:', error);
       // Not showing toast here as this may be called often
