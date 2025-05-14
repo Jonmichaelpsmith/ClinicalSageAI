@@ -1,85 +1,122 @@
 /**
- * Module Integration Routes
+ * Module Integration API Routes
  * 
- * This file defines API routes for module integration and unified workflow functionality.
+ * This file provides API endpoints for integrating different modules
+ * with the unified document workflow system.
  */
 
-import { Router } from 'express';
-import { moduleIntegrationService, registerDocumentSchema } from '../services/ModuleIntegrationService';
+import express from 'express';
+import { z } from 'zod';
+import { 
+  moduleIntegrationService,
+  registerDocumentSchema,
+  moduleReferenceSchema
+} from '../services/ModuleIntegrationService';
 import { workflowService } from '../services/WorkflowService';
 
-const router = Router();
+const router = express.Router();
 
-// Get document by module ID
-router.get('/documents/module/:moduleType/:originalId', async (req, res) => {
+/**
+ * Register a document from a module in the unified document system
+ * 
+ * POST /api/module-integration/register-document
+ */
+router.post('/register-document', async (req, res) => {
+  try {
+    // Validate request body
+    const validationResult = registerDocumentSchema.safeParse(req.body);
+    
+    if (!validationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request data',
+        details: validationResult.error.format()
+      });
+    }
+    
+    const document = await moduleIntegrationService.registerModuleDocument(validationResult.data);
+    
+    return res.status(200).json({
+      success: true,
+      data: document
+    });
+  } catch (error) {
+    console.error('Error registering document:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to register document',
+      message: (error as Error).message
+    });
+  }
+});
+
+/**
+ * Get a document by its module-specific ID
+ * 
+ * GET /api/module-integration/document/:moduleType/:originalId
+ */
+router.get('/document/:moduleType/:originalId', async (req, res) => {
   try {
     const { moduleType, originalId } = req.params;
     const organizationId = parseInt(req.query.organizationId as string, 10);
     
-    if (!moduleType || !originalId || isNaN(organizationId)) {
-      return res.status(400).json({ error: 'Missing required parameters' });
+    // Validate parameters
+    const validationResult = moduleReferenceSchema.safeParse({
+      moduleType,
+      originalId,
+      organizationId
+    });
+    
+    if (!validationResult.success) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid request parameters',
+        details: validationResult.error.format()
+      });
     }
     
-    const result = await moduleIntegrationService.getDocumentByModuleId(
+    const document = await moduleIntegrationService.getDocumentByModuleId(
       moduleType,
       originalId,
       organizationId
     );
     
-    if (!result) {
-      return res.status(404).json({ error: 'Document not found' });
+    if (!document) {
+      return res.status(404).json({
+        success: false,
+        error: 'Document not found'
+      });
     }
     
-    res.json(result);
+    return res.status(200).json({
+      success: true,
+      data: document
+    });
   } catch (error) {
-    console.error('Error retrieving document by module ID:', error);
-    res.status(500).json({ error: 'Failed to retrieve document' });
+    console.error('Error getting document:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to get document',
+      message: (error as Error).message
+    });
   }
 });
 
-// Register a document from a module
-router.post('/documents/register', async (req, res) => {
-  try {
-    // Validate the request body (will throw if invalid)
-    const validatedData = registerDocumentSchema.parse(req.body);
-    
-    const result = await moduleIntegrationService.registerModuleDocument(validatedData);
-    res.status(201).json(result);
-  } catch (error) {
-    if (error.name === 'ZodError') {
-      return res.status(400).json({ error: 'Invalid input', details: error.errors });
-    }
-    
-    console.error('Error registering document:', error);
-    res.status(500).json({ error: 'Failed to register document' });
-  }
-});
-
-// Update a document
-router.patch('/documents/:id', async (req, res) => {
-  try {
-    const documentId = parseInt(req.params.id, 10);
-    
-    if (isNaN(documentId)) {
-      return res.status(400).json({ error: 'Invalid document ID' });
-    }
-    
-    const result = await moduleIntegrationService.updateDocument(documentId, req.body);
-    res.json(result);
-  } catch (error) {
-    console.error('Error updating document:', error);
-    res.status(500).json({ error: 'Failed to update document' });
-  }
-});
-
-// Get documents for a module
-router.get('/documents/module/:moduleType', async (req, res) => {
+/**
+ * Get documents for a module
+ * 
+ * GET /api/module-integration/documents/:moduleType
+ */
+router.get('/documents/:moduleType', async (req, res) => {
   try {
     const { moduleType } = req.params;
     const organizationId = parseInt(req.query.organizationId as string, 10);
     
     if (!moduleType || isNaN(organizationId)) {
-      return res.status(400).json({ error: 'Missing required parameters' });
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid module type or organization ID'
+      });
     }
     
     const documents = await moduleIntegrationService.getModuleDocuments(
@@ -87,183 +124,100 @@ router.get('/documents/module/:moduleType', async (req, res) => {
       organizationId
     );
     
-    res.json(documents);
+    return res.status(200).json({
+      success: true,
+      data: documents
+    });
   } catch (error) {
-    console.error('Error retrieving module documents:', error);
-    res.status(500).json({ error: 'Failed to retrieve documents' });
+    console.error('Error getting documents:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to get documents',
+      message: (error as Error).message
+    });
   }
 });
 
-// Create a workflow for a document
-router.post('/documents/:id/workflows', async (req, res) => {
-  try {
-    const documentId = parseInt(req.params.id, 10);
-    const { templateId, startedBy, metadata } = req.body;
-    
-    if (isNaN(documentId) || !templateId || !startedBy) {
-      return res.status(400).json({ error: 'Missing required parameters' });
-    }
-    
-    const result = await moduleIntegrationService.createDocumentWorkflow(
-      documentId,
-      templateId,
-      startedBy,
-      metadata
-    );
-    
-    res.status(201).json(result);
-  } catch (error) {
-    console.error('Error creating workflow:', error);
-    res.status(500).json({ error: 'Failed to create workflow' });
-  }
-});
-
-// Get workflows for a document
-router.get('/documents/:id/workflows', async (req, res) => {
-  try {
-    const documentId = parseInt(req.params.id, 10);
-    
-    if (isNaN(documentId)) {
-      return res.status(400).json({ error: 'Invalid document ID' });
-    }
-    
-    const workflows = await workflowService.getDocumentWorkflows(documentId);
-    res.json(workflows);
-  } catch (error) {
-    console.error('Error retrieving document workflows:', error);
-    res.status(500).json({ error: 'Failed to retrieve workflows' });
-  }
-});
-
-// Get workflow details
-router.get('/workflows/:id', async (req, res) => {
-  try {
-    const workflowId = parseInt(req.params.id, 10);
-    
-    if (isNaN(workflowId)) {
-      return res.status(400).json({ error: 'Invalid workflow ID' });
-    }
-    
-    const workflow = await workflowService.getWorkflow(workflowId);
-    res.json(workflow);
-  } catch (error) {
-    console.error('Error retrieving workflow:', error);
-    res.status(500).json({ error: 'Failed to retrieve workflow' });
-  }
-});
-
-// Approve a workflow step
-router.post('/workflows/approvals/:id/approve', async (req, res) => {
-  try {
-    const approvalId = parseInt(req.params.id, 10);
-    const { userId, comments } = req.body;
-    
-    if (isNaN(approvalId) || !userId) {
-      return res.status(400).json({ error: 'Missing required parameters' });
-    }
-    
-    const result = await workflowService.approveStep(approvalId, userId, comments);
-    res.json(result);
-  } catch (error) {
-    console.error('Error approving workflow step:', error);
-    res.status(500).json({ error: 'Failed to approve workflow step' });
-  }
-});
-
-// Reject a workflow step
-router.post('/workflows/approvals/:id/reject', async (req, res) => {
-  try {
-    const approvalId = parseInt(req.params.id, 10);
-    const { userId, comments } = req.body;
-    
-    if (isNaN(approvalId) || !userId || !comments) {
-      return res.status(400).json({ error: 'Missing required parameters' });
-    }
-    
-    const result = await workflowService.rejectStep(approvalId, userId, comments);
-    res.json(result);
-  } catch (error) {
-    console.error('Error rejecting workflow step:', error);
-    res.status(500).json({ error: 'Failed to reject workflow step' });
-  }
-});
-
-// Get workflow templates for an organization and module
-router.get('/workflow-templates', async (req, res) => {
-  try {
-    const organizationId = parseInt(req.query.organizationId as string, 10);
-    const moduleType = req.query.moduleType as string;
-    
-    if (isNaN(organizationId) || !moduleType) {
-      return res.status(400).json({ error: 'Missing required parameters' });
-    }
-    
-    const templates = await workflowService.getWorkflowTemplates(organizationId, moduleType);
-    res.json(templates);
-  } catch (error) {
-    console.error('Error retrieving workflow templates:', error);
-    res.status(500).json({ error: 'Failed to retrieve workflow templates' });
-  }
-});
-
-// Create workflow template
-router.post('/workflow-templates', async (req, res) => {
-  try {
-    const template = await workflowService.createWorkflowTemplate(req.body);
-    res.status(201).json(template);
-  } catch (error) {
-    console.error('Error creating workflow template:', error);
-    res.status(500).json({ error: 'Failed to create workflow template' });
-  }
-});
-
-// Create default workflow templates
-router.post('/workflow-templates/defaults', async (req, res) => {
-  try {
-    const { organizationId, createdBy } = req.body;
-    
-    if (!organizationId || !createdBy) {
-      return res.status(400).json({ error: 'Missing required parameters' });
-    }
-    
-    const templates = await moduleIntegrationService.createDefaultWorkflowTemplates(
-      organizationId,
-      createdBy
-    );
-    
-    res.status(201).json(templates);
-  } catch (error) {
-    console.error('Error creating default workflow templates:', error);
-    res.status(500).json({ error: 'Failed to create default workflow templates' });
-  }
-});
-
-// Get document counts by type
-router.get('/documents/counts/by-type', async (req, res) => {
+/**
+ * Get document counts by type for an organization
+ * 
+ * GET /api/module-integration/document-counts
+ */
+router.get('/document-counts', async (req, res) => {
   try {
     const organizationId = parseInt(req.query.organizationId as string, 10);
     
     if (isNaN(organizationId)) {
-      return res.status(400).json({ error: 'Invalid organization ID' });
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid organization ID'
+      });
     }
     
     const counts = await moduleIntegrationService.getDocumentCountByType(organizationId);
-    res.json(counts);
+    
+    return res.status(200).json({
+      success: true,
+      data: counts
+    });
   } catch (error) {
-    console.error('Error retrieving document counts:', error);
-    res.status(500).json({ error: 'Failed to retrieve document counts' });
+    console.error('Error getting document counts:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to get document counts',
+      message: (error as Error).message
+    });
   }
 });
 
-// Get recent documents for user
-router.get('/documents/recent', async (req, res) => {
+/**
+ * Get documents in review
+ * 
+ * GET /api/module-integration/documents-in-review
+ */
+router.get('/documents-in-review', async (req, res) => {
+  try {
+    const organizationId = parseInt(req.query.organizationId as string, 10);
+    
+    if (isNaN(organizationId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid organization ID'
+      });
+    }
+    
+    const documents = await moduleIntegrationService.getDocumentsInReview(organizationId);
+    
+    return res.status(200).json({
+      success: true,
+      data: documents
+    });
+  } catch (error) {
+    console.error('Error getting documents in review:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to get documents in review',
+      message: (error as Error).message
+    });
+  }
+});
+
+/**
+ * Get recent documents for a user
+ * 
+ * GET /api/module-integration/recent-documents
+ */
+router.get('/recent-documents', async (req, res) => {
   try {
     const userId = parseInt(req.query.userId as string, 10);
     const organizationId = parseInt(req.query.organizationId as string, 10);
-    const limit = parseInt(req.query.limit as string || '10', 10);
+    const limit = parseInt(req.query.limit as string, 10) || 10;
     
     if (isNaN(userId) || isNaN(organizationId)) {
-      return res.status(400).json({ error: 'Invalid user or organization ID' });
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid user ID or organization ID'
+      });
     }
     
     const documents = await moduleIntegrationService.getRecentDocumentsForUser(
@@ -272,38 +226,143 @@ router.get('/documents/recent', async (req, res) => {
       limit
     );
     
-    res.json(documents);
+    return res.status(200).json({
+      success: true,
+      data: documents
+    });
   } catch (error) {
-    console.error('Error retrieving recent documents:', error);
-    res.status(500).json({ error: 'Failed to retrieve recent documents' });
+    console.error('Error getting recent documents:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to get recent documents',
+      message: (error as Error).message
+    });
   }
 });
 
-// Get documents in review
-router.get('/documents/in-review', async (req, res) => {
+/**
+ * Create a workflow for a document
+ * 
+ * POST /api/module-integration/create-workflow
+ */
+router.post('/create-workflow', async (req, res) => {
   try {
-    const organizationId = parseInt(req.query.organizationId as string, 10);
+    const { documentId, templateId, startedBy, metadata } = req.body;
     
-    if (isNaN(organizationId)) {
-      return res.status(400).json({ error: 'Invalid organization ID' });
+    if (!documentId || !templateId || !startedBy) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required parameters'
+      });
     }
     
-    const documents = await moduleIntegrationService.getDocumentsInReview(organizationId);
-    res.json(documents);
+    const workflow = await moduleIntegrationService.createDocumentWorkflow(
+      documentId,
+      templateId,
+      startedBy,
+      metadata || {}
+    );
+    
+    return res.status(200).json({
+      success: true,
+      data: workflow
+    });
   } catch (error) {
-    console.error('Error retrieving documents in review:', error);
-    res.status(500).json({ error: 'Failed to retrieve documents in review' });
+    console.error('Error creating workflow:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to create workflow',
+      message: (error as Error).message
+    });
   }
 });
 
-// Compare document versions
-router.get('/documents/compare', async (req, res) => {
+/**
+ * Get workflow templates for a module
+ * 
+ * GET /api/module-integration/workflow-templates/:moduleType
+ */
+router.get('/workflow-templates/:moduleType', async (req, res) => {
+  try {
+    const { moduleType } = req.params;
+    const organizationId = parseInt(req.query.organizationId as string, 10);
+    
+    if (!moduleType || isNaN(organizationId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid module type or organization ID'
+      });
+    }
+    
+    const templates = await workflowService.getWorkflowTemplates(
+      organizationId,
+      moduleType
+    );
+    
+    return res.status(200).json({
+      success: true,
+      data: templates
+    });
+  } catch (error) {
+    console.error('Error getting workflow templates:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to get workflow templates',
+      message: (error as Error).message
+    });
+  }
+});
+
+/**
+ * Create default workflow templates for an organization
+ * 
+ * POST /api/module-integration/create-default-templates
+ */
+router.post('/create-default-templates', async (req, res) => {
+  try {
+    const { organizationId, createdBy } = req.body;
+    
+    if (!organizationId || !createdBy) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required parameters'
+      });
+    }
+    
+    const templates = await moduleIntegrationService.createDefaultWorkflowTemplates(
+      organizationId,
+      createdBy
+    );
+    
+    return res.status(200).json({
+      success: true,
+      data: templates
+    });
+  } catch (error) {
+    console.error('Error creating default templates:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to create default templates',
+      message: (error as Error).message
+    });
+  }
+});
+
+/**
+ * Compare document versions
+ * 
+ * GET /api/module-integration/compare-versions
+ */
+router.get('/compare-versions', async (req, res) => {
   try {
     const currentVersionId = parseInt(req.query.currentVersionId as string, 10);
     const previousVersionId = parseInt(req.query.previousVersionId as string, 10);
     
     if (isNaN(currentVersionId) || isNaN(previousVersionId)) {
-      return res.status(400).json({ error: 'Invalid document version IDs' });
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid version IDs'
+      });
     }
     
     const comparison = await moduleIntegrationService.compareDocumentVersions(
@@ -311,27 +370,17 @@ router.get('/documents/compare', async (req, res) => {
       previousVersionId
     );
     
-    res.json(comparison);
+    return res.status(200).json({
+      success: true,
+      data: comparison
+    });
   } catch (error) {
-    console.error('Error comparing document versions:', error);
-    res.status(500).json({ error: 'Failed to compare document versions' });
-  }
-});
-
-// Get pending approvals for user
-router.get('/workflows/pending-approvals', async (req, res) => {
-  try {
-    const userId = parseInt(req.query.userId as string, 10);
-    
-    if (isNaN(userId)) {
-      return res.status(400).json({ error: 'Invalid user ID' });
-    }
-    
-    const pendingApprovals = await workflowService.findUserPendingApprovals(userId);
-    res.json(pendingApprovals);
-  } catch (error) {
-    console.error('Error retrieving pending approvals:', error);
-    res.status(500).json({ error: 'Failed to retrieve pending approvals' });
+    console.error('Error comparing versions:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to compare versions',
+      message: (error as Error).message
+    });
   }
 });
 
