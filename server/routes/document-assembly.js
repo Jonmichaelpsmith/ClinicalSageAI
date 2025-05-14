@@ -1,197 +1,186 @@
 /**
  * Document Assembly Routes
  * 
- * This module provides API routes for assembling CER and 510(k) documents from their
- * component sections, validating them, and making them available for download.
+ * These routes handle document assembly and generation for
+ * FDA 510(k) submissions and clinical evaluation reports.
  */
 
-import express from 'express';
-import path from 'path';
-import documentAssemblyService from '../services/documentAssemblyService.js';
-
+const express = require('express');
 const router = express.Router();
+const fs = require('fs').promises;
+const path = require('path');
 
-// Initialize the document assembly service
+// Import services
+const documentAssemblyService = require('../services/documentAssemblyService');
+const pdfGenerationService = require('../services/pdfGenerationService');
+const wordGenerationService = require('../services/wordGenerationService');
+
+// Initialize services
 (async () => {
-  await documentAssemblyService.initialize();
+  try {
+    await documentAssemblyService.initialize();
+    await pdfGenerationService.initialize();
+    await wordGenerationService.initialize();
+    console.log('Document assembly routes registered');
+  } catch (error) {
+    console.error('Failed to initialize document assembly services:', error);
+  }
 })();
 
 /**
- * @route POST /api/document-assembly/cer
- * @description Assemble a complete CER document from sections and metadata
- * @access Private
+ * Generate and download an example 510(k) submission report
+ * 
+ * @route GET /api/document-assembly/example/510k
+ * @query {string} format - Format of the example (html, docx)
+ * @returns {File} The generated example file
  */
-router.post('/cer', async (req, res) => {
+router.get('/example/510k', async (req, res) => {
   try {
-    const { cerData } = req.body;
+    const format = req.query.format || 'html';
     
-    if (!cerData) {
-      return res.status(400).json({
-        success: false,
-        message: 'CER data is required'
+    let filePath;
+    if (format === 'html') {
+      filePath = await pdfGenerationService.generatePerfect510kExample();
+    } else if (format === 'docx') {
+      filePath = await wordGenerationService.generatePerfect510kExampleWord();
+    } else {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid format. Supported formats: html, docx' 
       });
     }
     
-    const result = await documentAssemblyService.assembleCERDocument(cerData);
+    const fileStats = await fs.stat(filePath);
+    const fileName = path.basename(filePath);
     
-    return res.status(200).json({
-      success: true,
-      ...result
-    });
+    res.setHeader('Content-Type', format === 'html' ? 'text/html' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Length', fileStats.size);
+    
+    const fileStream = fs.createReadStream(filePath);
+    fileStream.pipe(res);
   } catch (error) {
-    console.error('Error assembling CER document:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to assemble CER document'
+    console.error('Error generating example 510(k) report:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error generating example 510(k) report',
+      error: error.message
     });
   }
 });
 
 /**
- * @route POST /api/document-assembly/510k
- * @description Assemble a 510(k) submission document
- * @access Private
+ * Generate a 510(k) submission document based on provided data
+ * 
+ * @route POST /api/document-assembly/generate/510k
+ * @body {Object} submissionData - The data for the 510(k) submission
+ * @query {string} format - Format to generate (html, docx)
+ * @returns {Object} Path to the generated document
  */
-router.post('/510k', async (req, res) => {
+router.post('/generate/510k', async (req, res) => {
   try {
-    const { submission510kData } = req.body;
+    const { submissionData } = req.body;
+    const format = req.query.format || 'html';
     
-    if (!submission510kData) {
-      return res.status(400).json({
-        success: false,
-        message: '510(k) submission data is required'
+    if (!submissionData || !submissionData.deviceProfile) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Missing required submission data' 
       });
     }
     
-    const result = await documentAssemblyService.assemble510kDocument(submission510kData);
+    let filePath;
+    if (format === 'html') {
+      const baseHtml = await documentAssemblyService.assemble510kSubmission(submissionData);
+      filePath = await pdfGenerationService.generate510kPdf(baseHtml, submissionData.deviceProfile);
+    } else if (format === 'docx') {
+      filePath = await wordGenerationService.generate510kDocument(submissionData);
+    } else {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid format. Supported formats: html, docx' 
+      });
+    }
     
-    return res.status(200).json({
-      success: true,
-      ...result
+    res.json({ 
+      success: true, 
+      filePath: filePath.replace(process.cwd(), ''), 
+      format 
     });
   } catch (error) {
-    console.error('Error assembling 510(k) document:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to assemble 510(k) document'
+    console.error('Error generating 510(k) document:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error generating 510(k) document',
+      error: error.message
     });
   }
 });
 
 /**
- * @route GET /api/document-assembly/status/:assemblyId
- * @description Get the status of a document assembly operation
- * @access Private
+ * Download a generated document
+ * 
+ * @route GET /api/document-assembly/download
+ * @query {string} filePath - Path to the file
+ * @query {string} format - Format of the file (html, docx, pdf)
+ * @returns {File} The requested file
  */
-router.get('/status/:assemblyId', async (req, res) => {
+router.get('/download', async (req, res) => {
   try {
-    const { assemblyId } = req.params;
+    const { filePath, format } = req.query;
     
-    if (!assemblyId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Assembly ID is required'
+    if (!filePath) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Missing required file path' 
       });
     }
     
-    const status = documentAssemblyService.getAssemblyStatus(assemblyId);
+    const fullPath = path.join(process.cwd(), filePath);
     
-    if (!status) {
-      return res.status(404).json({
-        success: false,
-        message: 'Assembly not found'
+    // Verify the file exists
+    try {
+      await fs.access(fullPath);
+    } catch (error) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'File not found' 
       });
     }
     
-    return res.status(200).json({
-      success: true,
-      status
-    });
+    const fileStats = await fs.stat(fullPath);
+    const fileName = path.basename(fullPath);
+    
+    let contentType;
+    switch (format) {
+      case 'html':
+        contentType = 'text/html';
+        break;
+      case 'docx':
+        contentType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+        break;
+      case 'pdf':
+        contentType = 'application/pdf';
+        break;
+      default:
+        contentType = 'application/octet-stream';
+    }
+    
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Length', fileStats.size);
+    
+    const fileStream = fs.createReadStream(fullPath);
+    fileStream.pipe(res);
   } catch (error) {
-    console.error('Error getting assembly status:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to get assembly status'
+    console.error('Error downloading document:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error downloading document',
+      error: error.message
     });
   }
 });
 
-/**
- * @route GET /api/document-assembly/list
- * @description List recent document assembly operations
- * @access Private
- */
-router.get('/list', async (req, res) => {
-  try {
-    const { limit = 10, type } = req.query;
-    
-    const assemblies = documentAssemblyService.listAssemblies({
-      limit: parseInt(limit),
-      type
-    });
-    
-    return res.status(200).json({
-      success: true,
-      assemblies
-    });
-  } catch (error) {
-    console.error('Error listing assemblies:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to list assembly operations'
-    });
-  }
-});
-
-/**
- * @route GET /api/document-assembly/download/:assemblyId
- * @description Download an assembled document
- * @access Private
- */
-router.get('/download/:assemblyId', async (req, res) => {
-  try {
-    const { assemblyId } = req.params;
-    
-    if (!assemblyId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Assembly ID is required'
-      });
-    }
-    
-    const status = documentAssemblyService.getAssemblyStatus(assemblyId);
-    
-    if (!status) {
-      return res.status(404).json({
-        success: false,
-        message: 'Assembly not found'
-      });
-    }
-    
-    if (status.status !== 'completed') {
-      return res.status(400).json({
-        success: false,
-        message: `Assembly is not ready for download (status: ${status.status})`
-      });
-    }
-    
-    if (!status.outputPath) {
-      return res.status(500).json({
-        success: false,
-        message: 'Assembly output path is missing'
-      });
-    }
-    
-    // Send the file
-    const filename = path.basename(status.outputPath);
-    res.download(status.outputPath, filename);
-  } catch (error) {
-    console.error('Error downloading assembly:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to download assembly'
-    });
-  }
-});
-
-export default router;
+// Export as CommonJS module
+module.exports = router;
