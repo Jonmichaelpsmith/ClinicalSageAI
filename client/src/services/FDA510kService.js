@@ -137,8 +137,7 @@ class FDA510kService {
       const response = await apiRequest.post(`/api/fda510k/estar/workflow/integrate`, {
         reportId,
         projectId,
-        validationPerformed: !!validationResult,
-        validationResult,
+        validationResult: validationResult?.result, // Match server schema expectation
         options
       });
       
