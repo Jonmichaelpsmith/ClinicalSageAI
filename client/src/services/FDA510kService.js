@@ -172,6 +172,59 @@ class FDA510kService {
   }
 
   /**
+   * Advanced predicate device search with semantic matching
+   * 
+   * @param {Object} searchData Structured search data including device name, product code, etc.
+   * @param {string} organizationId Organization ID for tenant context
+   * @returns Promise with array of matching predicate devices and match scores
+   */
+  async findPredicateDevices(searchData, organizationId) {
+    try {
+      // First try the enhanced predicate search endpoint
+      const response = await apiRequest.get(`/api/fda510k/predicates`, {
+        params: { 
+          search: searchData.deviceName || '',
+          productCode: searchData.productCode,
+          manufacturer: searchData.manufacturer,
+          intendedUse: searchData.intendedUse,
+          limit: searchData.limit || 10
+        },
+        headers: organizationId ? {
+          'X-Organization-Id': organizationId
+        } : undefined
+      });
+      
+      return {
+        success: true,
+        predicates: response.data.predicates,
+        searchQuery: response.data.searchQuery
+      };
+    } catch (error) {
+      console.error('Error in advanced predicate device search:', error);
+      // Fall back to simple search if enhanced search fails
+      try {
+        // Use simple search as fallback
+        const fallbackResponse = await this.fetchPredicateDevices(
+          searchData.deviceName || searchData.query || ''
+        );
+        
+        return {
+          success: true,
+          predicates: fallbackResponse.predicates,
+          fallback: true
+        };
+      } catch (fallbackError) {
+        console.error('Fallback predicate search also failed:', fallbackError);
+        return {
+          success: false,
+          error: error.message || 'Failed to search for predicate devices',
+          predicates: []
+        };
+      }
+    }
+  }
+
+  /**
    * Add a predicate device to a 510(k) project
    * 
    * @param {string} projectId Project ID
