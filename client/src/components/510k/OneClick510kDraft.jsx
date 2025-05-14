@@ -1,254 +1,314 @@
 import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Check, AlertTriangle, Loader2, Download } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
-import { useQuery } from '@tanstack/react-query';
-import SimpleTooltip from '@/components/cer/SimpleTooltip';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { Info, FileText, AlertCircle, Download, CheckCircle2 } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2 } from 'lucide-react';
+import axios from 'axios';
 
-/**
- * OneClick510kDraft Component
- * 
- * This component provides a streamlined interface for generating a complete 510(k) draft
- * based on the current device profile and predicate comparison data.
- */
-const OneClick510kDraft = ({ 
-  deviceProfile,
-  predicateDevices = [],
-  onDownloadComplete = () => {}
-}) => {
-  const [generationStatus, setGenerationStatus] = useState('idle'); // idle, generating, complete, error
-  const [downloadUrl, setDownloadUrl] = useState(null);
-  const [downloadFormat, setDownloadFormat] = useState('docx');
-  
-  // Check if we have enough data to generate a draft
-  const canGenerateDraft = deviceProfile && 
-    deviceProfile.deviceName && 
-    deviceProfile.manufacturer && 
-    deviceProfile.deviceClass &&
-    predicateDevices && 
-    predicateDevices.length > 0;
-  
-  // Generate draft document
-  const handleGenerateDraft = async (format = 'docx') => {
-    setGenerationStatus('generating');
-    setDownloadFormat(format);
-    
-    try {
-      // Prepare request payload
-      const payload = {
-        deviceProfile,
-        predicateDevices: predicateDevices.slice(0, 3), // Use top 3 predicates
-        format
-      };
-      
-      // Call API to generate document
-      const response = await fetch('/api/510k/generate-draft', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Failed to generate draft: ${response.statusText}`);
-      }
-      
-      // For PDF/Word document
-      if (format === 'pdf' || format === 'docx') {
-        const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
-        setDownloadUrl(url);
-      } else {
-        // For JSON or other formats
-        const data = await response.json();
-        setDownloadUrl(data.downloadUrl);
-      }
-      
-      setGenerationStatus('complete');
+const OneClick510kDraft = ({ deviceProfile, predicateDevices = [] }) => {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [generatedDraft, setGeneratedDraft] = useState(null);
+  const [includeFormatting, setIncludeFormatting] = useState(true);
+  const [includeAppendices, setIncludeAppendices] = useState(true);
+  const [includeReferences, setIncludeReferences] = useState(true);
+  const [includeComparisons, setIncludeComparisons] = useState(true);
+  const [selectedFormat, setSelectedFormat] = useState('pdf');
+
+  const validProfile = deviceProfile && deviceProfile.deviceName && deviceProfile.intendedUse;
+  const hasPredicate = predicateDevices && predicateDevices.length > 0;
+
+  const handleGenerateDraft = async () => {
+    if (!validProfile) {
       toast({
-        title: "510(k) Draft Generated",
-        description: `Your ${format.toUpperCase()} draft is ready for download.`,
-        variant: "success"
-      });
-      
-      // Notify parent component
-      onDownloadComplete({
-        format,
-        downloadUrl: downloadUrl,
-        timestamp: new Date().toISOString()
-      });
-      
-    } catch (error) {
-      console.error("Error generating 510(k) draft:", error);
-      setGenerationStatus('error');
-      toast({
-        title: "Generation Failed",
-        description: error.message || "Failed to generate 510(k) draft. Please try again.",
+        title: "Missing Device Profile",
+        description: "Please complete your device profile before generating a draft.",
         variant: "destructive"
       });
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const options = {
+        includeFormatting,
+        includeAppendices,
+        includeReferences,
+        includeComparisons,
+        outputFormat: selectedFormat
+      };
+
+      const response = await axios.post('/api/510k/generate-draft', {
+        deviceProfile,
+        predicateDevices,
+        options
+      });
+
+      if (response.data && response.data.success) {
+        setGeneratedDraft(response.data);
+        toast({
+          title: "Draft Generated Successfully",
+          description: "Your 510(k) draft document has been generated.",
+          variant: "success"
+        });
+      } else {
+        throw new Error(response.data?.message || 'Failed to generate draft');
+      }
+    } catch (error) {
+      console.error('Error generating 510(k) draft:', error);
+      toast({
+        title: "Draft Generation Failed",
+        description: error.message || "There was an error generating your draft. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
-  
-  // Handle direct download
+
   const handleDownload = () => {
-    if (downloadUrl) {
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = `510k-draft-${deviceProfile.deviceName.replace(/\s+/g, '-').toLowerCase()}.${downloadFormat}`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    if (!generatedDraft) return;
+    
+    // Create a download link
+    const fileExtension = selectedFormat === 'pdf' ? 'pdf' : 'docx';
+    const blob = new Blob([generatedDraft.documentData], {
+      type: selectedFormat === 'pdf' 
+        ? 'application/pdf' 
+        : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    });
+    
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `510k_draft_${deviceProfile.deviceName.replace(/\s+/g, '_')}.${fileExtension}`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Cleanup
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 0);
+    
+    toast({
+      title: "Document Downloaded",
+      description: `Your 510(k) draft has been downloaded in ${fileExtension.toUpperCase()} format.`,
+      variant: "success"
+    });
   };
-  
-  // Fetch FDA 510(k) requirements for the device class
-  const { data: requirements, isLoading: loadingRequirements } = useQuery({
-    queryKey: ['fda510k', 'requirements', deviceProfile?.deviceClass],
-    enabled: !!deviceProfile?.deviceClass,
-    queryFn: async () => {
-      const response = await fetch(`/api/fda510k/requirements/${deviceProfile.deviceClass}`);
-      if (!response.ok) throw new Error('Failed to fetch requirements');
-      return response.json();
-    }
-  });
-  
-  // Render status indicator
-  const renderStatusIndicator = () => {
-    switch (generationStatus) {
-      case 'generating':
-        return (
-          <div className="flex items-center gap-2 text-amber-600">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Generating your draft...</span>
-          </div>
-        );
-      case 'complete':
-        return (
-          <div className="flex items-center gap-2 text-green-600">
-            <Check className="h-4 w-4" />
-            <span>Draft ready for download</span>
-          </div>
-        );
-      case 'error':
-        return (
-          <div className="flex items-center gap-2 text-red-600">
-            <AlertTriangle className="h-4 w-4" />
-            <span>Generation failed</span>
-          </div>
-        );
-      default:
-        return (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <FileText className="h-4 w-4" />
-            <span>Ready to generate</span>
-          </div>
-        );
-    }
-  };
-  
-  // When we don't have enough data to generate
-  if (!canGenerateDraft) {
-    return (
-      <Card className="mb-6 border-amber-200 bg-amber-50">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-amber-500" />
-            510(k) Draft Generation
-          </CardTitle>
-          <CardDescription>
-            Additional information needed
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="text-sm space-y-2">
-            <p>To generate a complete 510(k) draft, please ensure you have:</p>
-            <ul className="list-disc pl-5 space-y-1">
-              {!deviceProfile?.deviceName && <li>Device name</li>}
-              {!deviceProfile?.manufacturer && <li>Manufacturer information</li>}
-              {!deviceProfile?.deviceClass && <li>Device classification</li>}
-              {(!predicateDevices || predicateDevices.length === 0) && <li>At least one predicate device</li>}
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-  
+
   return (
-    <Card className="mb-6">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg flex items-center gap-2">
-          <FileText className="h-5 w-5 text-blue-500" />
-          One-Click 510(k) Draft
-          <SimpleTooltip
-            title="FDA-Compliant Documents" 
-            content="This tool generates a complete 510(k) draft document that follows all FDA formatting and content requirements. The generated document includes predicate device comparisons and all required sections for submission."
-            width="lg"
-          />
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <FileText className="h-5 w-5 text-primary" />
+          One-Click 510(k) Draft Generator
         </CardTitle>
         <CardDescription>
-          Generate a complete 510(k) submission draft with predicate comparisons
+          Automatically generate a complete 510(k) submission draft document based on your device profile
+          and predicate device comparisons.
         </CardDescription>
       </CardHeader>
-      
-      <CardContent className="space-y-4">
-        <div className="bg-slate-50 p-3 rounded-md border text-sm">
-          <div className="font-medium mb-1">Draft will include:</div>
-          <ul className="list-disc pl-5 space-y-1 text-slate-700">
-            <li>Device description and intended use</li>
-            <li>Substantial equivalence comparison</li>
-            <li>Performance data and testing summary</li>
-            <li>Regulatory requirements compliance</li>
-            {requirements && requirements.sections && (
-              <li>
-                {requirements.sections.slice(0, 3).map(section => section.title).join(', ')}
-                {requirements.sections.length > 3 && `, and ${requirements.sections.length - 3} more...`}
-              </li>
-            )}
-          </ul>
+      <CardContent>
+        <Tabs defaultValue="options">
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value="options">Options</TabsTrigger>
+            <TabsTrigger value="info">Information</TabsTrigger>
+          </TabsList>
           
-          <div className="text-xs text-slate-500 mt-2">
-            Using {predicateDevices.length} predicate device{predicateDevices.length !== 1 ? 's' : ''} for comparison
-          </div>
-        </div>
-        
-        {renderStatusIndicator()}
+          <TabsContent value="options">
+            <div className="space-y-4">
+              {(!validProfile || !hasPredicate) && (
+                <div className="bg-amber-50 border border-amber-200 rounded-md p-3 mb-4 flex items-start gap-3">
+                  <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <h4 className="text-sm font-medium text-amber-800">Attention Required</h4>
+                    <p className="text-sm text-amber-700 mt-1">
+                      {!validProfile && "Please complete your device profile information. "}
+                      {!hasPredicate && "You need at least one predicate device for comparison. "}
+                      These are required to generate a comprehensive 510(k) draft.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              <div className="mb-6">
+                <h3 className="text-sm font-medium mb-3">Document Format</h3>
+                <div className="flex gap-4">
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="radio" 
+                      id="format-pdf" 
+                      name="format" 
+                      value="pdf"
+                      checked={selectedFormat === 'pdf'}
+                      onChange={() => setSelectedFormat('pdf')}
+                      className="h-4 w-4 text-primary"
+                    />
+                    <Label htmlFor="format-pdf">PDF Format</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <input 
+                      type="radio" 
+                      id="format-docx" 
+                      name="format" 
+                      value="docx"
+                      checked={selectedFormat === 'docx'}
+                      onChange={() => setSelectedFormat('docx')}
+                      className="h-4 w-4 text-primary"
+                    />
+                    <Label htmlFor="format-docx">Word Document</Label>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-sm font-medium mb-2">Document Options</h3>
+                <div className="flex items-start space-x-2">
+                  <Checkbox 
+                    id="include-formatting" 
+                    checked={includeFormatting} 
+                    onCheckedChange={setIncludeFormatting}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label htmlFor="include-formatting" className="text-sm font-medium">
+                      FDA-compliant formatting
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Apply standard FDA-compliant formatting to the document
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-2">
+                  <Checkbox 
+                    id="include-appendices" 
+                    checked={includeAppendices} 
+                    onCheckedChange={setIncludeAppendices}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label htmlFor="include-appendices" className="text-sm font-medium">
+                      Include appendices
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Add standard appendices with placeholders for additional information
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-2">
+                  <Checkbox 
+                    id="include-references" 
+                    checked={includeReferences} 
+                    onCheckedChange={setIncludeReferences}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label htmlFor="include-references" className="text-sm font-medium">
+                      Include literature references
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Add literature citations and references section from discovered literature
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-2">
+                  <Checkbox 
+                    id="include-comparisons" 
+                    checked={includeComparisons} 
+                    onCheckedChange={setIncludeComparisons}
+                  />
+                  <div className="grid gap-1.5 leading-none">
+                    <Label htmlFor="include-comparisons" className="text-sm font-medium">
+                      Include detailed comparisons
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Add detailed comparison tables between your device and predicates
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="info">
+            <div className="space-y-3">
+              <div className="flex gap-3 items-start">
+                <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-medium">What's included in the 510(k) draft?</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    The generated draft includes all sections required for a complete 510(k) submission,
+                    including device description, indications for use, substantial equivalence comparison,
+                    performance data summary, and more.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 items-start">
+                <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-medium">Edit after generation</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    After generating the draft, you can download it and make any necessary edits
+                    in your preferred word processor. The document includes placeholders for
+                    information that requires manual input.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 items-start">
+                <Info className="h-5 w-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-sm font-medium">FDA compliance</h4>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    The generated draft follows FDA guidance for 510(k) submissions. However,
+                    it's important to review the document thoroughly and ensure all information
+                    is accurate and complete before submission.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+        </Tabs>
       </CardContent>
-      
-      <CardFooter className="flex justify-between pt-0">
-        <div className="space-x-2">
+      <CardFooter className="flex justify-between border-t pt-4">
+        <div className="text-sm text-muted-foreground flex items-center">
+          <CheckCircle2 className="h-4 w-4 mr-1 text-green-500" />
+          FDA-compliant formatting
+        </div>
+        <div className="flex gap-2">
+          {generatedDraft && (
+            <Button 
+              variant="outline" 
+              onClick={handleDownload}
+              disabled={isLoading}
+              className="flex items-center gap-1"
+            >
+              <Download className="h-4 w-4 mr-1" /> Download
+            </Button>
+          )}
           <Button 
-            variant="outline" 
-            size="sm"
-            disabled={generationStatus === 'generating'}
-            onClick={() => handleGenerateDraft('docx')}
+            onClick={handleGenerateDraft} 
+            disabled={isLoading || !validProfile || !hasPredicate}
+            className="flex items-center gap-1"
           >
-            Word Format
-          </Button>
-          
-          <Button 
-            variant="outline"
-            size="sm"
-            disabled={generationStatus === 'generating'}
-            onClick={() => handleGenerateDraft('pdf')}
-          >
-            PDF Format
+            {isLoading ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-1 animate-spin" /> Generating...
+              </>
+            ) : (
+              <>
+                <FileText className="h-4 w-4 mr-1" /> Generate Draft
+              </>
+            )}
           </Button>
         </div>
-        
-        {generationStatus === 'complete' && (
-          <Button 
-            variant="default" 
-            className="gap-1" 
-            size="sm"
-            onClick={handleDownload}
-          >
-            <Download className="h-4 w-4" />
-            Download
-          </Button>
-        )}
       </CardFooter>
     </Card>
   );

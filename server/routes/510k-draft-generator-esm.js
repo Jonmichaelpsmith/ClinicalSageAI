@@ -1,14 +1,15 @@
 /**
- * 510(k) Draft Generator API
+ * 510(k) Draft Generator API (ESM Version)
  * 
  * Handles the generation of complete 510(k) submission draft documents
  * based on device profiles and predicate comparisons.
  */
 
-const express = require('express');
+import express from 'express';
+import pdfService from '../services/pdfGenerationService-esm.js';
+import wordService from '../services/wordGenerationService-esm.js';
+
 const router = express.Router();
-const pdfService = require('../services/pdfGenerationService');
-const wordService = require('../services/wordGenerationService');
 
 /**
  * Generate a complete 510(k) draft document
@@ -207,4 +208,4 @@ function generateComparisonRows(deviceProfile, predicateDevice) {
   return rows;
 }
 
-module.exports = router;
+export { router };
