@@ -1,195 +1,251 @@
 import React, { useState, useEffect } from 'react';
-import ReportGenerator from './ReportGenerator';
+import { Button, Typography, Box, Card, CardContent, CircularProgress, Snackbar, Alert } from '@mui/material';
 import UnifiedWorkflowPanel from '../unified-workflow/UnifiedWorkflowPanel';
-import { register510kDocument } from '../unified-workflow/registerModuleDocument';
-import { useToast } from '@/hooks/use-toast';
-import { Button } from '@/components/ui/button';
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger
-} from '@/components/ui/dialog';
-import { ArrowRight, FileCheck, Loader2 } from 'lucide-react';
+import { getDocumentByModuleId, register510kDocument } from '../unified-workflow/registerModuleDocument';
+import { getWorkflowTemplates, createDefault510kTemplates } from '../unified-workflow/WorkflowTemplateService';
 
 /**
- * WorkflowEnabledReportGenerator
+ * Workflow-Enabled Report Generator Component
  * 
- * Extended version of the ReportGenerator that integrates with the unified document workflow system.
- * This component allows 510(k) reports to be registered in the workflow system and sent through
- * review/approval processes.
+ * This component provides a unified interface for generating reports with
+ * integrated workflow capabilities for review and approval process.
  */
-const WorkflowEnabledReportGenerator = ({
-  deviceProfile = {},
-  predicates = [],
-  literatureReferences = [],
-  insightData = [],
-  complianceStatus = {},
+const WorkflowEnabledReportGenerator = ({ 
+  projectId,
+  projectTitle,
+  organizationId,
+  userId = 1, // Default user ID for demo purposes
   onGenerateReport,
-  recentReports = []
+  onViewReport,
+  reportStatus
 }) => {
-  const [registeredDocuments, setRegisteredDocuments] = useState([]);
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [selectedReport, setSelectedReport] = useState(null);
-  const [showWorkflowDialog, setShowWorkflowDialog] = useState(false);
-  const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [document, setDocument] = useState(null);
+  const [registering, setRegistering] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [templates, setTemplates] = useState([]);
+  const [notification, setNotification] = useState({ open: false, message: '', severity: 'info' });
 
-  // Generate a report and register it in the workflow system
-  const handleGenerateAndRegister = async (reportOptions) => {
-    try {
-      setIsRegistering(true);
-      
-      // First, generate the report using the provided handler
-      const reportResult = await onGenerateReport(reportOptions);
-      
-      // Then register the generated report with the workflow system
-      const registrationResult = await register510kDocument({
-        documentId: reportResult.id,
-        title: reportResult.name || `510(k) Report - ${deviceProfile.deviceName || 'Unknown Device'}`,
-        documentType: '510k_submission',
-        metadata: {
-          reportFormat: reportOptions.type,
-          deviceType: deviceProfile.deviceType,
-          deviceClass: deviceProfile.deviceClass,
-          predicateDevices: predicates.map(p => p.id),
-          sections: Object.keys(reportOptions.sections).filter(k => reportOptions.sections[k])
-        },
-        content: {
-          generatedReport: reportResult,
-          deviceProfile,
-          predicates,
-          literatureReferences: literatureReferences.slice(0, 10) // Limit to avoid overly large payloads
+  // Fetch document and templates on component mount
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch document if it exists
+        const existingDocument = await getDocumentByModuleId('510k', projectId, organizationId);
+        setDocument(existingDocument);
+        
+        // Fetch workflow templates
+        const templateList = await getWorkflowTemplates('510k', organizationId);
+        setTemplates(templateList);
+        
+        // If no templates, create default ones
+        if (templateList.length === 0) {
+          await createDefault510kTemplates(organizationId, userId);
+          // Refetch templates
+          const newTemplates = await getWorkflowTemplates('510k', organizationId);
+          setTemplates(newTemplates);
         }
-      });
-      
-      // Add to registered documents list
-      setRegisteredDocuments(prev => [
-        {
-          id: registrationResult.documentId,
-          originalId: reportResult.id,
-          name: reportResult.name,
-          timestamp: new Date().toISOString(),
-          type: reportOptions.type,
-          workflowId: registrationResult.workflowId
-        },
-        ...prev
-      ]);
-      
-      setIsRegistering(false);
-      
-      toast({
-        title: 'Report Registered',
-        description: 'The report has been generated and registered in the workflow system.',
-        variant: 'success'
-      });
-      
-      return reportResult;
-    } catch (error) {
-      console.error('Error generating and registering report:', error);
-      setIsRegistering(false);
-      
-      toast({
-        title: 'Error',
-        description: `Failed to register report: ${error.message}`,
-        variant: 'destructive'
-      });
-      
-      // Still try to return whatever the report generator produced
-      if (onGenerateReport) {
-        return onGenerateReport(reportOptions);
+      } catch (err) {
+        console.error('Error fetching document data:', err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
+    };
+
+    fetchData();
+  }, [projectId, organizationId, userId, refreshTrigger]);
+
+  // Register document in the unified system
+  const handleRegisterDocument = async () => {
+    setRegistering(true);
+    setError(null);
+    
+    try {
+      const newDocument = await register510kDocument(
+        projectId,
+        projectTitle || `510(k) Project ${projectId}`,
+        '510k_submission',
+        organizationId,
+        userId,
+        {
+          status: reportStatus || 'draft',
+          registeredAt: new Date().toISOString()
+        }
+      );
+      
+      setDocument(newDocument);
+      setNotification({
+        open: true,
+        message: 'Document registered successfully in the unified workflow system',
+        severity: 'success'
+      });
+      
+      // Refresh data
+      setRefreshTrigger(prev => prev + 1);
+    } catch (err) {
+      console.error('Error registering document:', err);
+      setError(err.message);
+      setNotification({
+        open: true,
+        message: `Error registering document: ${err.message}`,
+        severity: 'error'
+      });
+    } finally {
+      setRegistering(false);
     }
   };
-  
-  // Open workflow dialog for a specific report
-  const openWorkflowForReport = (report) => {
-    setSelectedReport(report);
-    setShowWorkflowDialog(true);
+
+  // Generate report with workflow tracking
+  const handleGenerateReport = async () => {
+    setGenerating(true);
+    setError(null);
+    
+    try {
+      // If document doesn't exist yet, register it first
+      if (!document) {
+        await handleRegisterDocument();
+      }
+      
+      // Call the actual report generation function
+      await onGenerateReport();
+      
+      setNotification({
+        open: true,
+        message: 'Report generated successfully',
+        severity: 'success'
+      });
+      
+      // Refresh data
+      setRefreshTrigger(prev => prev + 1);
+    } catch (err) {
+      console.error('Error generating report:', err);
+      setError(err.message);
+      setNotification({
+        open: true,
+        message: `Error generating report: ${err.message}`,
+        severity: 'error'
+      });
+    } finally {
+      setGenerating(false);
+    }
   };
-  
+
+  // Close notification
+  const handleCloseNotification = () => {
+    setNotification({ ...notification, open: false });
+  };
+
+  // Render loading state
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
-    <div className="space-y-4">
-      <ReportGenerator
-        deviceProfile={deviceProfile}
-        predicates={predicates}
-        literatureReferences={literatureReferences}
-        insightData={insightData}
-        complianceStatus={complianceStatus}
-        onGenerateReport={handleGenerateAndRegister}
-        recentReports={[
-          ...registeredDocuments,
-          ...recentReports.filter(r => !registeredDocuments.some(rd => rd.originalId === r.id))
-        ].slice(0, 5)}
-      />
-      
-      {registeredDocuments.length > 0 && (
-        <div className="mt-6 p-4 border rounded-lg bg-white shadow-sm">
-          <h3 className="text-sm font-medium flex items-center mb-3">
-            <FileCheck className="h-4 w-4 mr-2 text-green-600" />
-            Reports in Workflow System
-          </h3>
+    <Box sx={{ width: '100%' }}>
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" gutterBottom>
+            510(k) Report Generator with Approval Workflow
+          </Typography>
           
-          <div className="space-y-2">
-            {registeredDocuments.map((report) => (
-              <div 
-                key={report.id}
-                className="flex items-center justify-between p-3 border rounded hover:bg-blue-50"
-              >
-                <div>
-                  <span className="font-medium">{report.name}</span>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {new Date(report.timestamp).toLocaleString()}
-                  </div>
-                </div>
-                
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-blue-600 border-blue-200"
-                  onClick={() => openWorkflowForReport(report)}
-                >
-                  <ArrowRight className="h-4 w-4 mr-1" />
-                  Workflow
-                </Button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-      
-      {/* Workflow Dialog */}
-      <Dialog open={showWorkflowDialog} onOpenChange={setShowWorkflowDialog}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>Document Workflow - {selectedReport?.name}</DialogTitle>
-            <DialogDescription>
-              Manage the approval workflow for this 510(k) report
-            </DialogDescription>
-          </DialogHeader>
+          <Typography variant="body2" color="text.secondary" paragraph>
+            Generate and manage your 510(k) submission report with integrated approval workflow.
+            Track document versions, review status, and approval history in one place.
+          </Typography>
           
-          {selectedReport && (
-            <div className="my-4">
-              <UnifiedWorkflowPanel
-                documentId={selectedReport.originalId}
-                moduleType="med_device"
-              />
-            </div>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
           )}
           
-          <DialogFooter>
+          <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
             <Button
-              variant="outline"
-              onClick={() => setShowWorkflowDialog(false)}
+              variant="contained"
+              color="primary"
+              onClick={handleGenerateReport}
+              disabled={generating}
             >
-              Close
+              {generating ? <CircularProgress size={24} /> : 'Generate Report'}
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+            
+            {onViewReport && (
+              <Button
+                variant="outlined"
+                onClick={onViewReport}
+                disabled={!document || reportStatus !== 'completed'}
+              >
+                View Report
+              </Button>
+            )}
+            
+            {!document && (
+              <Button
+                variant="outlined"
+                color="secondary"
+                onClick={handleRegisterDocument}
+                disabled={registering}
+              >
+                {registering ? <CircularProgress size={24} /> : 'Register in Workflow System'}
+              </Button>
+            )}
+          </Box>
+          
+          {document && (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle1">
+                Document Status: <strong>{document.status}</strong>
+              </Typography>
+              <Typography variant="body2">
+                Last Updated: {new Date(document.updatedAt).toLocaleString()}
+              </Typography>
+              <Typography variant="body2">
+                Version: {document.latestVersion}
+              </Typography>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+      
+      {document && (
+        <Card>
+          <CardContent>
+            <Typography variant="h6" gutterBottom>
+              Workflow Management
+            </Typography>
+            
+            <UnifiedWorkflowPanel
+              documentId={document.id}
+              moduleType="510k"
+              organizationId={organizationId}
+              refreshTrigger={refreshTrigger}
+            />
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Notification */}
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={6000}
+        onClose={handleCloseNotification}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseNotification} severity={notification.severity}>
+          {notification.message}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 };
 

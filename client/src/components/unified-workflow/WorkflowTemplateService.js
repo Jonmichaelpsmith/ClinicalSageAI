@@ -1,60 +1,90 @@
 /**
  * Workflow Template Service
  * 
- * This service provides client-side functionality for workflow template operations,
- * with caching for performance and consistency.
+ * This service provides functions for creating and managing workflow templates
+ * in the unified document workflow system.
  */
-
-import { apiRequest } from '@/lib/queryClient';
-
-// Template cache to minimize API calls
-const templateCache = {
-  byModule: {}, // Cached by moduleType and organizationId
-  byId: {},     // Cached by templateId
-  expiry: {}    // Cache expiry timestamps
-};
-
-// Cache TTL in milliseconds (5 minutes)
-const CACHE_TTL = 5 * 60 * 1000;
 
 /**
- * Gets workflow templates for an organization and module type
+ * Create default workflow templates for 510(k) module
  * 
- * @param {string} moduleType - The module type
- * @param {number} organizationId - The organization ID
- * @param {boolean} forceRefresh - Whether to bypass cache
+ * @param {number} organizationId Organization ID
+ * @param {number} userId User ID
+ * @returns {Promise<Array>} Created template(s)
+ */
+export async function createDefault510kTemplates(organizationId, userId) {
+  try {
+    const response = await fetch('/api/module-integration/create-default-templates', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        organizationId,
+        moduleType: '510k',
+        createdBy: userId,
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to create default templates: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating default 510k templates:', error);
+    throw error;
+  }
+}
+
+/**
+ * Create default workflow templates for CER module
+ * 
+ * @param {number} organizationId Organization ID
+ * @param {number} userId User ID
+ * @returns {Promise<Array>} Created template(s)
+ */
+export async function createDefaultCERTemplates(organizationId, userId) {
+  try {
+    const response = await fetch('/api/module-integration/create-default-templates', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        organizationId,
+        moduleType: 'cer',
+        createdBy: userId,
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to create default templates: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating default CER templates:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get workflow templates for a module
+ * 
+ * @param {string} moduleType Module type
+ * @param {number} organizationId Organization ID
  * @returns {Promise<Array>} List of workflow templates
  */
-export async function getWorkflowTemplates(moduleType, organizationId, forceRefresh = false) {
-  const cacheKey = `${moduleType}-${organizationId}`;
-  
-  // Check cache first
-  if (
-    !forceRefresh && 
-    templateCache.byModule[cacheKey] && 
-    templateCache.expiry[cacheKey] > Date.now()
-  ) {
-    return templateCache.byModule[cacheKey];
-  }
-  
-  // Fetch templates from API
+export async function getWorkflowTemplates(moduleType, organizationId) {
   try {
-    const templates = await apiRequest({
-      url: `/api/module-integration/workflow-templates?moduleType=${moduleType}&organizationId=${organizationId}`,
-      method: 'GET'
-    });
+    const response = await fetch(`/api/module-integration/workflow-templates/${moduleType}?organizationId=${organizationId}`);
     
-    // Update cache
-    templateCache.byModule[cacheKey] = templates;
-    templateCache.expiry[cacheKey] = Date.now() + CACHE_TTL;
+    if (!response.ok) {
+      throw new Error(`Failed to fetch templates: ${response.statusText}`);
+    }
     
-    // Also cache individual templates
-    templates.forEach(template => {
-      templateCache.byId[template.id] = template;
-      templateCache.expiry[template.id] = Date.now() + CACHE_TTL;
-    });
-    
-    return templates;
+    return await response.json();
   } catch (error) {
     console.error('Error fetching workflow templates:', error);
     throw error;
@@ -62,64 +92,26 @@ export async function getWorkflowTemplates(moduleType, organizationId, forceRefr
 }
 
 /**
- * Gets a workflow template by ID
+ * Create a new workflow template
  * 
- * @param {number} templateId - The template ID
- * @param {boolean} forceRefresh - Whether to bypass cache
- * @returns {Promise<Object>} The workflow template
- */
-export async function getWorkflowTemplateById(templateId, forceRefresh = false) {
-  // Check cache first
-  if (
-    !forceRefresh && 
-    templateCache.byId[templateId] && 
-    templateCache.expiry[templateId] > Date.now()
-  ) {
-    return templateCache.byId[templateId];
-  }
-  
-  // Fetch template from API
-  try {
-    const template = await apiRequest({
-      url: `/api/module-integration/workflow-templates/${templateId}`,
-      method: 'GET'
-    });
-    
-    // Update cache
-    templateCache.byId[template.id] = template;
-    templateCache.expiry[template.id] = Date.now() + CACHE_TTL;
-    
-    return template;
-  } catch (error) {
-    console.error(`Error fetching workflow template with ID ${templateId}:`, error);
-    throw error;
-  }
-}
-
-/**
- * Creates a new workflow template
- * 
- * @param {Object} templateData - The template data
- * @returns {Promise<Object>} The created template
+ * @param {Object} templateData Template data
+ * @returns {Promise<Object>} Created template
  */
 export async function createWorkflowTemplate(templateData) {
   try {
-    const template = await apiRequest({
-      url: '/api/module-integration/workflow-templates',
+    const response = await fetch('/api/module-integration/create-template', {
       method: 'POST',
-      data: templateData
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(templateData),
     });
     
-    // Update cache
-    const cacheKey = `${template.moduleType}-${template.organizationId}`;
-    templateCache.byId[template.id] = template;
-    templateCache.expiry[template.id] = Date.now() + CACHE_TTL;
+    if (!response.ok) {
+      throw new Error(`Failed to create template: ${response.statusText}`);
+    }
     
-    // Invalidate module cache to force refresh on next fetch
-    delete templateCache.byModule[cacheKey];
-    delete templateCache.expiry[cacheKey];
-    
-    return template;
+    return await response.json();
   } catch (error) {
     console.error('Error creating workflow template:', error);
     throw error;
@@ -127,114 +119,127 @@ export async function createWorkflowTemplate(templateData) {
 }
 
 /**
- * Creates default workflow templates for an organization
+ * Get document workflows
  * 
- * @param {number} organizationId - The organization ID
- * @param {number} createdBy - User ID of the creator
- * @returns {Promise<Array>} The created templates
+ * @param {number} documentId Document ID
+ * @returns {Promise<Array>} List of workflows
  */
-export async function createDefaultWorkflowTemplates(organizationId, createdBy) {
+export async function getDocumentWorkflows(documentId) {
   try {
-    const templates = await apiRequest({
-      url: '/api/module-integration/workflow-templates/defaults',
-      method: 'POST',
-      data: { organizationId, createdBy }
-    });
+    const response = await fetch(`/api/module-integration/document-workflows/${documentId}`);
     
-    // Clear all caches for this organization
-    Object.keys(templateCache.byModule).forEach(key => {
-      if (key.endsWith(`-${organizationId}`)) {
-        delete templateCache.byModule[key];
-        delete templateCache.expiry[key];
-      }
-    });
+    if (!response.ok) {
+      throw new Error(`Failed to fetch workflows: ${response.statusText}`);
+    }
     
-    return templates;
+    return await response.json();
   } catch (error) {
-    console.error('Error creating default workflow templates:', error);
+    console.error('Error fetching document workflows:', error);
     throw error;
   }
 }
 
 /**
- * Clears all template caches
+ * Create a workflow for a document
+ * 
+ * @param {number} documentId Document ID
+ * @param {number} templateId Template ID
+ * @param {number} startedBy User ID
+ * @param {Object} metadata Optional metadata
+ * @returns {Promise<Object>} Created workflow
  */
-export function clearTemplateCache() {
-  templateCache.byModule = {};
-  templateCache.byId = {};
-  templateCache.expiry = {};
+export async function createDocumentWorkflow(documentId, templateId, startedBy, metadata = {}) {
+  try {
+    const response = await fetch('/api/module-integration/create-workflow', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        documentId,
+        templateId,
+        startedBy,
+        metadata
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to create workflow: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating document workflow:', error);
+    throw error;
+  }
 }
 
 /**
- * Formats workflow steps for display
+ * Approve a workflow step
  * 
- * @param {Array} steps - The workflow steps
- * @returns {string} Formatted steps text
+ * @param {number} approvalId Approval ID
+ * @param {number} userId User ID
+ * @param {string} comments Optional comments
+ * @returns {Promise<Object>} Approval result
  */
-export function formatWorkflowSteps(steps) {
-  if (!steps || !steps.length) {
-    return 'No steps defined';
+export async function approveWorkflowStep(approvalId, userId, comments = '') {
+  try {
+    const response = await fetch('/api/module-integration/approve-step', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        approvalId,
+        userId,
+        comments
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to approve step: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error approving workflow step:', error);
+    throw error;
+  }
+}
+
+/**
+ * Reject a workflow step
+ * 
+ * @param {number} approvalId Approval ID
+ * @param {number} userId User ID
+ * @param {string} comments Required comments
+ * @returns {Promise<Object>} Rejection result
+ */
+export async function rejectWorkflowStep(approvalId, userId, comments) {
+  if (!comments || comments.trim() === '') {
+    throw new Error('Comments are required for rejection');
   }
   
-  return steps.map((step, index) => 
-    `${index + 1}. ${step.name}${step.description ? ` - ${step.description}` : ''}`
-  ).join('\n');
-}
-
-/**
- * Returns default workflow templates for module types
- * 
- * @param {string} moduleType - The module type
- * @returns {Array} Default templates for the module type
- */
-export function getDefaultTemplateStructure(moduleType) {
-  const templates = {
-    'medical_device': [
-      {
-        name: '510(k) Standard Review',
-        description: 'Standard workflow for 510(k) submission review',
-        steps: [
-          { name: 'Initial Review', description: 'Technical content review' },
-          { name: 'Quality Check', description: 'Formatting and completeness check' },
-          { name: 'Regulatory Review', description: 'Compliance with regulations' },
-          { name: 'Final Approval', description: 'Final sign-off before submission' }
-        ]
+  try {
+    const response = await fetch('/api/module-integration/reject-step', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
       },
-      {
-        name: 'Expedited Review',
-        description: 'Faster review for time-sensitive documents',
-        steps: [
-          { name: 'Rapid Review', description: 'Combined technical and quality review' },
-          { name: 'Final Approval', description: 'Final sign-off' }
-        ]
-      }
-    ],
-    'cer': [
-      {
-        name: 'CER Standard Review',
-        description: 'Standard workflow for Clinical Evaluation Report review',
-        steps: [
-          { name: 'Data Review', description: 'Clinical data validation' },
-          { name: 'Medical Writing', description: 'Narrative and structure' },
-          { name: 'Quality Check', description: 'Formatting and references' },
-          { name: 'Medical Expert Review', description: 'Clinical validity check' },
-          { name: 'Final Approval', description: 'Final sign-off for use' }
-        ]
-      }
-    ],
-    'cmc': [
-      {
-        name: 'CMC Section Review',
-        description: 'Standard review process for CMC sections',
-        steps: [
-          { name: 'Technical Review', description: 'Scientific content review' },
-          { name: 'QC Review', description: 'Quality control check' },
-          { name: 'Regulatory Assessment', description: 'Regulatory compliance check' },
-          { name: 'Final Approval', description: 'Sign-off for submission' }
-        ]
-      }
-    ]
-  };
-  
-  return templates[moduleType] || [];
+      body: JSON.stringify({
+        approvalId,
+        userId,
+        comments
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Failed to reject step: ${response.statusText}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error rejecting workflow step:', error);
+    throw error;
+  }
 }

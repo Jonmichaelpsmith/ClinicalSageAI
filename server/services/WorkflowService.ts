@@ -8,26 +8,23 @@
 import { z } from 'zod';
 import { db, pgClient } from '../db/connection';
 import * as schema from '../../shared/schema/unified_workflow';
-import { eq, and, inArray, desc, sql } from 'drizzle-orm';
+import { eq, and, or, inArray, desc, sql } from 'drizzle-orm';
 import { type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 // Define validation schemas
 export const workflowTemplateSchema = z.object({
   name: z.string().min(1),
   description: z.string().optional(),
-  organizationId: z.number(),
-  moduleType: z.string(),
-  steps: z.array(
-    z.object({
-      name: z.string().min(1),
-      description: z.string().optional(),
-      order: z.number(),
-      assigneeType: z.string().optional(),
-      reviewerGroups: z.array(z.number()).optional()
-    })
-  ),
-  createdBy: z.number(),
-  isDefault: z.boolean().optional().default(false)
+  organizationId: z.number().int().positive(),
+  moduleType: z.string().min(1),
+  isDefault: z.boolean().optional().default(false),
+  createdBy: z.number().int().positive(),
+  steps: z.array(z.object({
+    name: z.string().min(1),
+    description: z.string().optional(),
+    order: z.number().int().nonnegative().optional(),
+    assigneeType: z.string().optional()
+  })).min(1)
 });
 
 class WorkflowService {
@@ -39,7 +36,8 @@ class WorkflowService {
    * @returns List of workflow templates
    */
   async getWorkflowTemplates(organizationId: number, moduleType: string) {
-    return db
+    // Get templates
+    const templates = await db
       .select()
       .from(schema.workflowTemplates)
       .where(
@@ -49,6 +47,29 @@ class WorkflowService {
         )
       )
       .orderBy(schema.workflowTemplates.name);
+
+    // Get all template IDs
+    const templateIds = templates.map(t => t.id);
+    
+    if (templateIds.length === 0) {
+      return [];
+    }
+    
+    // Get steps for all templates
+    const steps = await db
+      .select()
+      .from(schema.workflowTemplateSteps)
+      .where(inArray(schema.workflowTemplateSteps.templateId, templateIds))
+      .orderBy(schema.workflowTemplateSteps.order);
+    
+    // Combine templates with their steps
+    return templates.map(template => {
+      const templateSteps = steps.filter(s => s.templateId === template.id);
+      return {
+        ...template,
+        steps: templateSteps
+      };
+    });
   }
 
   /**
@@ -118,21 +139,20 @@ class WorkflowService {
       .select()
       .from(schema.workflowTemplates)
       .where(eq(schema.workflowTemplates.id, templateId))
-      .limit(1)
-      .then(res => res[0] || null);
-
-    if (!template) {
+      .limit(1);
+    
+    if (template.length === 0) {
       return null;
     }
-
+    
     const steps = await db
       .select()
       .from(schema.workflowTemplateSteps)
       .where(eq(schema.workflowTemplateSteps.templateId, templateId))
       .orderBy(schema.workflowTemplateSteps.order);
-
+    
     return {
-      ...template,
+      ...template[0],
       steps
     };
   }
@@ -150,13 +170,14 @@ class WorkflowService {
     const client = await pgClient.begin();
 
     try {
-      // First, get the template with steps
+      // Get the template with steps
       const template = await this.getWorkflowTemplate(templateId);
+      
       if (!template) {
-        throw new Error(`Workflow template with ID ${templateId} not found`);
+        throw new Error(`Workflow template ${templateId} not found`);
       }
-
-      // Create the workflow
+      
+      // Insert the workflow
       const [workflow] = await db
         .insert(schema.documentWorkflows)
         .values({
@@ -164,38 +185,51 @@ class WorkflowService {
           templateId,
           status: 'in_progress',
           startedBy,
-          metadata: metadata || {},
           startedAt: new Date(),
+          metadata: metadata || {},
           updatedAt: new Date()
         })
         .returning()
-        .execute(tx);
-
-      // Create approval steps based on template steps
-      const approvals = await Promise.all(template.steps.map(async (step, index) => {
-        const isFirst = index === 0;
-
+        .execute(client as any);
+      
+      // Insert approvals for each step
+      const approvals = await Promise.all(template.steps.map(async (step: any, index: number) => {
         const [approval] = await db
           .insert(schema.workflowApprovals)
           .values({
             workflowId: workflow.id,
             stepId: step.id,
-            status: isFirst ? 'pending' : 'waiting',
+            status: index === 0 ? 'pending' : 'not_started',
             order: step.order,
             createdAt: new Date(),
             updatedAt: new Date()
           })
           .returning()
-          .execute(tx);
-
+          .execute(client as any);
+        
         return approval;
       }));
-
+      
+      // Add audit log entry
+      await db
+        .insert(schema.workflowAuditLogs)
+        .values({
+          workflowId: workflow.id,
+          action: 'workflow_started',
+          userId: startedBy,
+          details: {
+            documentId,
+            templateId,
+            templateName: template.name
+          },
+          createdAt: new Date()
+        })
+        .execute(client as any);
+      
       await client.commit();
-
+      
       return {
         ...workflow,
-        template,
         approvals
       };
     } catch (error) {
@@ -212,50 +246,63 @@ class WorkflowService {
    * @returns List of workflows
    */
   async getDocumentWorkflows(documentId: number) {
+    // Get workflows
     const workflows = await db
       .select()
       .from(schema.documentWorkflows)
       .where(eq(schema.documentWorkflows.documentId, documentId))
       .orderBy(desc(schema.documentWorkflows.startedAt));
-
-    if (!workflows.length) {
+    
+    if (workflows.length === 0) {
       return [];
     }
-
-    // Get templates for these workflows
-    const templateIds = workflows.map(w => w.templateId);
+    
+    // Get all workflow IDs
+    const workflowIds = workflows.map(w => w.id);
+    
+    // Get approvals for all workflows
+    const approvals = await db
+      .select()
+      .from(schema.workflowApprovals)
+      .where(inArray(schema.workflowApprovals.workflowId, workflowIds))
+      .orderBy(schema.workflowApprovals.order);
+    
+    // Get templates
+    const templateIds = [...new Set(workflows.map(w => w.templateId))];
     const templates = await db
       .select()
       .from(schema.workflowTemplates)
       .where(inArray(schema.workflowTemplates.id, templateIds));
-
-    const templatesById = templates.reduce((acc, t) => {
-      acc[t.id] = t;
-      return acc;
-    }, {});
-
-    // Get workflow approvals
-    const workflowIds = workflows.map(w => w.id);
-    const approvals = await db
-      .select()
-      .from(schema.workflowApprovals)
-      .where(inArray(schema.workflowApprovals.workflowId, workflowIds));
-
-    // Group approvals by workflow
-    const approvalsByWorkflow = approvals.reduce((acc, a) => {
-      if (!acc[a.workflowId]) {
-        acc[a.workflowId] = [];
-      }
-      acc[a.workflowId].push(a);
-      return acc;
-    }, {});
-
-    // Combine data
-    return workflows.map(workflow => ({
-      ...workflow,
-      template: templatesById[workflow.templateId] || null,
-      approvals: approvalsByWorkflow[workflow.id] || []
-    }));
+    
+    // Get template steps
+    const allStepIds = approvals.map(a => a.stepId);
+    const steps = allStepIds.length > 0 
+      ? await db
+          .select()
+          .from(schema.workflowTemplateSteps)
+          .where(inArray(schema.workflowTemplateSteps.id, allStepIds))
+      : [];
+    
+    // Organize results
+    return workflows.map(workflow => {
+      const workflowApprovals = approvals
+        .filter(a => a.workflowId === workflow.id)
+        .map(approval => {
+          const step = steps.find(s => s.id === approval.stepId);
+          return {
+            ...approval,
+            step
+          };
+        });
+      
+      const template = templates.find(t => t.id === workflow.templateId);
+      
+      return {
+        ...workflow,
+        template,
+        approvals: workflowApprovals
+      };
+    });
   }
 
   /**
@@ -265,47 +312,64 @@ class WorkflowService {
    * @returns The workflow with approvals and audit logs
    */
   async getWorkflow(workflowId: number) {
-    const workflow = await db
+    // Get workflow
+    const workflows = await db
       .select()
       .from(schema.documentWorkflows)
       .where(eq(schema.documentWorkflows.id, workflowId))
-      .limit(1)
-      .then(res => res[0] || null);
-
-    if (!workflow) {
+      .limit(1);
+    
+    if (workflows.length === 0) {
       return null;
     }
-
+    
+    const workflow = workflows[0];
+    
     // Get template
-    const template = await this.getWorkflowTemplate(workflow.templateId);
-
+    const templates = await db
+      .select()
+      .from(schema.workflowTemplates)
+      .where(eq(schema.workflowTemplates.id, workflow.templateId))
+      .limit(1);
+    
+    const template = templates.length > 0 ? templates[0] : null;
+    
     // Get approvals
     const approvals = await db
       .select()
       .from(schema.workflowApprovals)
       .where(eq(schema.workflowApprovals.workflowId, workflowId))
       .orderBy(schema.workflowApprovals.order);
-
-    // Get document
-    const document = await db
-      .select()
-      .from(schema.documents)
-      .where(eq(schema.documents.id, workflow.documentId))
-      .limit(1)
-      .then(res => res[0] || null);
-
+    
+    // Get steps for approvals
+    const stepIds = approvals.map(a => a.stepId);
+    const steps = stepIds.length > 0 
+      ? await db
+          .select()
+          .from(schema.workflowTemplateSteps)
+          .where(inArray(schema.workflowTemplateSteps.id, stepIds))
+      : [];
+    
     // Get audit logs
     const auditLogs = await db
       .select()
       .from(schema.workflowAuditLogs)
       .where(eq(schema.workflowAuditLogs.workflowId, workflowId))
       .orderBy(desc(schema.workflowAuditLogs.createdAt));
-
+    
+    // Organize results
+    const approvalsWithSteps = approvals.map(approval => {
+      const step = steps.find(s => s.id === approval.stepId);
+      return {
+        ...approval,
+        step
+      };
+    });
+    
     return {
       ...workflow,
       template,
-      document,
-      approvals,
+      approvals: approvalsWithSteps,
       auditLogs
     };
   }
@@ -323,72 +387,58 @@ class WorkflowService {
 
     try {
       // Get the approval
-      const approval = await db
+      const approvals = await db
         .select()
         .from(schema.workflowApprovals)
         .where(eq(schema.workflowApprovals.id, approvalId))
         .limit(1)
-        .then(res => res[0]);
-
-      if (!approval) {
-        throw new Error(`Approval with ID ${approvalId} not found`);
+        .execute(client as any);
+      
+      if (approvals.length === 0) {
+        throw new Error(`Approval ${approvalId} not found`);
       }
-
+      
+      const approval = approvals[0];
+      
+      // Can only approve if status is pending
       if (approval.status !== 'pending') {
-        throw new Error(`Approval is not in pending status (current: ${approval.status})`);
+        throw new Error(`Approval ${approvalId} is not pending`);
       }
-
+      
       // Update the approval
-      await db
+      const [updatedApproval] = await db
         .update(schema.workflowApprovals)
         .set({
           status: 'approved',
-          updatedAt: new Date(),
           approvedBy: userId,
           approvedAt: new Date(),
-          comments: comments || null
+          comments: comments || null,
+          updatedAt: new Date()
         })
         .where(eq(schema.workflowApprovals.id, approvalId))
-        .execute(tx);
-
-      // Add audit log
-      await db
-        .insert(schema.workflowAuditLogs)
-        .values({
-          workflowId: approval.workflowId,
-          action: 'step_approved',
-          userId,
-          details: {
-            approvalId,
-            comments: comments || null
-          },
-          createdAt: new Date()
-        })
-        .execute(tx);
-
-      // Get workflow to check for completion
-      const workflow = await db
+        .returning()
+        .execute(client as any);
+      
+      // Get all approvals for this workflow to check overall status
+      const workflowApprovals = await db
+        .select()
+        .from(schema.workflowApprovals)
+        .where(eq(schema.workflowApprovals.workflowId, approval.workflowId))
+        .orderBy(schema.workflowApprovals.order)
+        .execute(client as any);
+      
+      // Get the workflow
+      const [workflow] = await db
         .select()
         .from(schema.documentWorkflows)
         .where(eq(schema.documentWorkflows.id, approval.workflowId))
         .limit(1)
-        .then(res => res[0]);
-
-      // Find the next step if not the last one
-      const nextApproval = await db
-        .select()
-        .from(schema.workflowApprovals)
-        .where(
-          and(
-            eq(schema.workflowApprovals.workflowId, approval.workflowId),
-            eq(schema.workflowApprovals.status, 'waiting')
-          )
-        )
-        .orderBy(schema.workflowApprovals.order)
-        .limit(1)
-        .then(res => res[0] || null);
-
-      // If there's a next step, set it to pending
+        .execute(client as any);
+      
+      // Update next approval to pending if there is one
+      const currentIndex = workflowApprovals.findIndex(a => a.id === approvalId);
+      const nextApproval = workflowApprovals[currentIndex + 1];
+      
       if (nextApproval) {
         await db
           .update(schema.workflowApprovals)
@@ -397,9 +447,14 @@ class WorkflowService {
             updatedAt: new Date()
           })
           .where(eq(schema.workflowApprovals.id, nextApproval.id))
-          .execute(tx);
-      } else {
-        // If no next step, mark workflow as completed
+          .execute(client as any);
+      }
+      
+      // Check if all approvals are approved
+      const allApproved = workflowApprovals.every(a => a.status === 'approved');
+      
+      // If all approved, update workflow status to completed
+      if (allApproved) {
         await db
           .update(schema.documentWorkflows)
           .set({
@@ -408,31 +463,35 @@ class WorkflowService {
             updatedAt: new Date()
           })
           .where(eq(schema.documentWorkflows.id, approval.workflowId))
-          .execute(tx);
-
-        // Add completion audit log
-        await db
-          .insert(schema.workflowAuditLogs)
-          .values({
-            workflowId: approval.workflowId,
-            action: 'workflow_completed',
-            userId,
-            details: {},
-            createdAt: new Date()
-          })
-          .execute(tx);
+          .execute(client as any);
       }
-
+      
+      // Add audit log entry
+      await db
+        .insert(schema.workflowAuditLogs)
+        .values({
+          workflowId: approval.workflowId,
+          action: 'step_approved',
+          userId,
+          details: {
+            approvalId,
+            stepId: approval.stepId,
+            comments
+          },
+          createdAt: new Date()
+        })
+        .execute(client as any);
+      
       await client.commit();
-
+      
       return {
-        success: true,
-        nextStep: nextApproval,
-        workflowCompleted: !nextApproval
+        approval: updatedApproval,
+        workflowStatus: allApproved ? 'completed' : 'in_progress',
+        nextApproval: nextApproval || null
       };
     } catch (error) {
       await client.rollback();
-      console.error('Error approving workflow step:', error);
+      console.error('Error approving step:', error);
       throw error;
     }
   }
@@ -447,42 +506,56 @@ class WorkflowService {
    */
   async rejectStep(approvalId: number, userId: number, comments: string) {
     if (!comments) {
-      throw new Error('Comments are required when rejecting a workflow step');
+      throw new Error('Comments are required for rejection');
     }
-
+    
     const client = await pgClient.begin();
 
     try {
       // Get the approval
-      const approval = await db
+      const approvals = await db
         .select()
         .from(schema.workflowApprovals)
         .where(eq(schema.workflowApprovals.id, approvalId))
         .limit(1)
-        .then(res => res[0]);
-
-      if (!approval) {
-        throw new Error(`Approval with ID ${approvalId} not found`);
+        .execute(client as any);
+      
+      if (approvals.length === 0) {
+        throw new Error(`Approval ${approvalId} not found`);
       }
-
+      
+      const approval = approvals[0];
+      
+      // Can only reject if status is pending
       if (approval.status !== 'pending') {
-        throw new Error(`Approval is not in pending status (current: ${approval.status})`);
+        throw new Error(`Approval ${approvalId} is not pending`);
       }
-
+      
       // Update the approval
-      await db
+      const [updatedApproval] = await db
         .update(schema.workflowApprovals)
         .set({
           status: 'rejected',
-          updatedAt: new Date(),
           rejectedBy: userId,
           rejectedAt: new Date(),
-          comments
+          comments,
+          updatedAt: new Date()
         })
         .where(eq(schema.workflowApprovals.id, approvalId))
-        .execute(tx);
-
-      // Add audit log
+        .returning()
+        .execute(client as any);
+      
+      // Update workflow status to rejected
+      await db
+        .update(schema.documentWorkflows)
+        .set({
+          status: 'rejected',
+          updatedAt: new Date()
+        })
+        .where(eq(schema.documentWorkflows.id, approval.workflowId))
+        .execute(client as any);
+      
+      // Add audit log entry
       await db
         .insert(schema.workflowAuditLogs)
         .values({
@@ -491,30 +564,22 @@ class WorkflowService {
           userId,
           details: {
             approvalId,
+            stepId: approval.stepId,
             comments
           },
           createdAt: new Date()
         })
-        .execute(tx);
-
-      // Mark workflow as rejected
-      await db
-        .update(schema.documentWorkflows)
-        .set({
-          status: 'rejected',
-          updatedAt: new Date()
-        })
-        .where(eq(schema.documentWorkflows.id, approval.workflowId))
-        .execute(tx);
-
+        .execute(client as any);
+      
       await client.commit();
-
+      
       return {
-        success: true
+        approval: updatedApproval,
+        workflowStatus: 'rejected'
       };
     } catch (error) {
       await client.rollback();
-      console.error('Error rejecting workflow step:', error);
+      console.error('Error rejecting step:', error);
       throw error;
     }
   }
@@ -526,80 +591,63 @@ class WorkflowService {
    * @returns Pending approvals with workflow information
    */
   async findUserPendingApprovals(userId: number) {
-    // In a real implementation, this would check user roles, groups, etc.
-    // For now, we'll assume all pending approvals are visible to the user
+    // For a real implementation, this would incorporate role-based assignment logic
+    // For now, we'll return all pending approvals where no specific assignee is set
     
+    // Get all approvals with pending status
     const pendingApprovals = await db
       .select()
       .from(schema.workflowApprovals)
       .where(eq(schema.workflowApprovals.status, 'pending'))
-      .orderBy(schema.workflowApprovals.createdAt);
-
-    if (!pendingApprovals.length) {
+      .orderBy(desc(schema.workflowApprovals.updatedAt));
+    
+    if (pendingApprovals.length === 0) {
       return [];
     }
-
-    // Get workflows for these approvals
-    const workflowIds = new Set(pendingApprovals.map(a => a.workflowId));
+    
+    // Get all workflow IDs
+    const workflowIds = [...new Set(pendingApprovals.map(a => a.workflowId))];
+    
+    // Get workflows
     const workflows = await db
       .select()
       .from(schema.documentWorkflows)
-      .where(inArray(schema.documentWorkflows.id, [...workflowIds]));
-
-    const workflowsById = workflows.reduce((acc, w) => {
-      acc[w.id] = w;
-      return acc;
-    }, {});
-
-    // Get documents for these workflows
-    const documentIds = workflows.map(w => w.documentId);
+      .where(inArray(schema.documentWorkflows.id, workflowIds));
+    
+    // Get documents
+    const documentIds = [...new Set(workflows.map(w => w.documentId))];
     const documents = await db
       .select()
       .from(schema.documents)
       .where(inArray(schema.documents.id, documentIds));
-
-    const documentsById = documents.reduce((acc, d) => {
-      acc[d.id] = d;
-      return acc;
-    }, {});
-
-    // Get templates
-    const templateIds = workflows.map(w => w.templateId);
-    const templates = await db
-      .select()
-      .from(schema.workflowTemplates)
-      .where(inArray(schema.workflowTemplates.id, templateIds));
-
-    const templatesById = templates.reduce((acc, t) => {
-      acc[t.id] = t;
-      return acc;
-    }, {});
-
-    // Get template steps for context
+    
+    // Get template steps
     const stepIds = pendingApprovals.map(a => a.stepId);
     const steps = await db
       .select()
       .from(schema.workflowTemplateSteps)
       .where(inArray(schema.workflowTemplateSteps.id, stepIds));
-
-    const stepsById = steps.reduce((acc, s) => {
-      acc[s.id] = s;
-      return acc;
-    }, {});
-
-    // Combine data
+    
+    // Get templates
+    const templateIds = [...new Set(workflows.map(w => w.templateId))];
+    const templates = await db
+      .select()
+      .from(schema.workflowTemplates)
+      .where(inArray(schema.workflowTemplates.id, templateIds));
+    
+    // Combine results
     return pendingApprovals.map(approval => {
-      const workflow = workflowsById[approval.workflowId] || null;
-      const document = workflow ? documentsById[workflow.documentId] || null : null;
-      const template = workflow ? templatesById[workflow.templateId] || null : null;
-      const step = stepsById[approval.stepId] || null;
-
+      const workflow = workflows.find(w => w.id === approval.workflowId);
+      const document = documents.find(d => d.id === workflow.documentId);
+      const step = steps.find(s => s.id === approval.stepId);
+      const template = templates.find(t => t.id === workflow.templateId);
+      
       return {
         approval,
         workflow,
         document,
-        template,
-        step
+        step,
+        template
       };
     });
   }
