@@ -1717,35 +1717,49 @@ export default function CERV2Page() {
   // Main document type tabs for switching between CER and 510k
   const renderDocumentTypeTabs = () => {
     return (
-      <div className="w-full mb-4 mt-2">
-        <Tabs 
-          defaultValue={documentType} 
-          className="w-full"
-          onValueChange={(value) => setDocumentType(value)}
-        >
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger 
-              value="cer"
-              className="flex items-center justify-center"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              Clinical Evaluation Report
-            </TabsTrigger>
-            <TabsTrigger 
-              value="510k"
-              className="flex items-center justify-center"
-            >
-              <FileCheck className="w-4 h-4 mr-2" />
-              FDA 510(k) Submission
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+      <div className="w-full mb-6 mt-4">
+        <div className="p-4 bg-white shadow-md rounded-lg border border-gray-200">
+          <h2 className="text-lg font-semibold mb-3 text-gray-700">Select Document Type</h2>
+          <Tabs 
+            defaultValue={documentType} 
+            className="w-full"
+            onValueChange={(value) => setDocumentType(value)}
+          >
+            <TabsList className="grid w-full grid-cols-2 h-16">
+              <TabsTrigger 
+                value="cer"
+                className="flex flex-col items-center justify-center py-3 data-[state=active]:bg-blue-50 data-[state=active]:border-blue-600"
+              >
+                <div className="flex items-center">
+                  <FileText className="w-5 h-5 mr-2 text-blue-600" />
+                  <span className="font-medium">Clinical Evaluation Report</span>
+                </div>
+                <span className="text-xs text-gray-500 mt-1">EU MDR compliant</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="510k"
+                className="flex flex-col items-center justify-center py-3 data-[state=active]:bg-blue-50 data-[state=active]:border-blue-600"
+              >
+                <div className="flex items-center">
+                  <FileCheck className="w-5 h-5 mr-2 text-blue-600" />
+                  <span className="font-medium">FDA 510(k) Submission</span>
+                </div>
+                <span className="text-xs text-gray-500 mt-1">US FDA compliant</span>
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
       </div>
     );
   };
 
   return (
     <div className="max-w-[1200px] mx-auto relative">
+      {/* Top-level Module Selection Tabs */}
+      <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm py-3 px-3 mb-5">
+        {renderDocumentTypeTabs()}
+      </div>
+      
       {/* Fixed position Ask Lumen AI button */}
       <div className="fixed bottom-4 right-4 z-50">
         <Button
@@ -2074,9 +2088,6 @@ export default function CERV2Page() {
           <KAutomationPanel />
         </div>
       </div>
-    
-      {/* Document Type Tabs */}
-      {renderDocumentTypeTabs()}
       
       <div className="flex flex-col md:flex-row justify-between items-start p-6 pb-2 bg-gradient-to-r from-blue-50 to-white rounded-t-lg shadow-sm">
         <div>
