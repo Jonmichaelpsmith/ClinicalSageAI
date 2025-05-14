@@ -27,21 +27,49 @@ const defaultQueryFn = async ({ queryKey }) => {
 };
 
 // Helper for API requests with various methods (POST, PATCH, DELETE, etc.)
-export const apiRequest = async (url, options = {}) => {
-  const { method = 'GET', data, headers = {} } = options;
+export const apiRequest = {
+  async get(url, options = {}) {
+    try {
+      const response = await api.get(url, options);
+      return response;
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || error.message || 'An error occurred';
+      console.error(`[API Error GET]: ${errorMessage}`, error);
+      throw new Error(errorMessage);
+    }
+  },
   
-  try {
-    const response = await api({
-      url,
-      method,
-      data,
-      headers,
-    });
-    return response.data;
-  } catch (error) {
-    const errorMessage = error.response?.data?.error || error.message || 'An error occurred';
-    console.error(`[API Error]: ${errorMessage}`, error);
-    throw new Error(errorMessage);
+  async post(url, data, options = {}) {
+    try {
+      const response = await api.post(url, data, options);
+      return response;
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || error.message || 'An error occurred';
+      console.error(`[API Error POST]: ${errorMessage}`, error);
+      throw new Error(errorMessage);
+    }
+  },
+  
+  async put(url, data, options = {}) {
+    try {
+      const response = await api.put(url, data, options);
+      return response;
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || error.message || 'An error occurred';
+      console.error(`[API Error PUT]: ${errorMessage}`, error);
+      throw new Error(errorMessage);
+    }
+  },
+  
+  async delete(url, options = {}) {
+    try {
+      const response = await api.delete(url, options);
+      return response;
+    } catch (error) {
+      const errorMessage = error.response?.data?.error || error.message || 'An error occurred';
+      console.error(`[API Error DELETE]: ${errorMessage}`, error);
+      throw new Error(errorMessage);
+    }
   }
 };
 
