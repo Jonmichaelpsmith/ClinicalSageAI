@@ -27,6 +27,7 @@ import InsightsDisplay from '@/components/510k/InsightsDisplay';
 import ProgressTracker from '@/components/510k/ProgressTracker';
 import SubmissionTimeline from '@/components/510k/SubmissionTimeline';
 import ReportGenerator from '@/components/510k/ReportGenerator';
+import About510kDialog from '@/components/510k/About510kDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';

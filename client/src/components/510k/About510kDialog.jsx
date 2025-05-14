@@ -17,14 +17,14 @@ import {
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { InfoCircledIcon, QuestionMarkCircledIcon, BookOpenIcon } from '@radix-ui/react-icons';
+import { Info, HelpCircle, BookOpen } from 'lucide-react';
 
 export function About510kDialog() {
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button variant="outline" className="gap-2 mt-4">
-          <InfoCircledIcon className="h-4 w-4" />
+          <Info className="h-4 w-4" />
           About 510(k) Generator
         </Button>
       </DialogTrigger>
