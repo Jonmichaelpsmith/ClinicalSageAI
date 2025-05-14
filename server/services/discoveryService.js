@@ -1,11 +1,22 @@
-// server/services/discoveryService.js
-import OpenAI from 'openai';
-import { Pool }   from 'pg';
+/**
+ * Discovery Service
+ * 
+ * Provides unified discovery capabilities for literature search and predicate device search
+ * across CER and 510(k) modules using vector search with OpenAI-powered fallbacks.
+ */
 
+import OpenAI from 'openai';
+import { Pool } from 'pg';
+
+// Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const db = new Pool({ connectionString: process.env.DATABASE_URL });
+
+// Initialize database connection pool
+const db = new Pool({ 
+  connectionString: process.env.DATABASE_URL 
+});
 
 // Convert text → 1536-dim embedding
 async function embed(text) {
