@@ -1,8 +1,11 @@
 import express from 'express';
 import path from 'path';
 import { eSTARPlusBuilder, DigitalSigner, ESGClient } from '../services/eSTARPlusBuilder';
+import { WorkflowService } from '../services/WorkflowService';
+import { db } from '../db/connection';
 
 const estarRouter = express.Router();
+const workflowService = new WorkflowService(db);
 
 /**
  * Preview an eSTAR Plus package
@@ -230,6 +233,105 @@ estarRouter.post('/validate-estar/:projectId', async (req: express.Request, res:
     res.status(500).json({
       success: false,
       message: errorMessage
+    });
+  }
+});
+
+/**
+ * Integrate eSTAR package generation with unified workflow
+ * POST /api/fda510k/integrate-estar-workflow
+ */
+estarRouter.post('/integrate-estar-workflow', async (req: express.Request, res: express.Response) => {
+  const { documentId, projectId, validateFirst = true } = req.body;
+  
+  try {
+    // Validate inputs
+    if (!documentId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Document ID is required' 
+      });
+    }
+    
+    if (!projectId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Project ID is required' 
+      });
+    }
+    
+    // Step 1: If validation is requested, validate the eSTAR package first
+    let validationResult = null;
+    if (validateFirst) {
+      validationResult = await eSTARPlusBuilder.validatePackage(projectId, true);
+      
+      // If validation fails, return the issues without generating the package
+      if (!validationResult.valid) {
+        return res.json({
+          success: false,
+          validated: true,
+          validationResult,
+          message: 'eSTAR package validation failed. Please resolve issues before generating.'
+        });
+      }
+    }
+    
+    // Step 2: Get the active workflow for the document
+    const documentWorkflow = await workflowService.getDocumentWorkflow(parseInt(documentId));
+    if (!documentWorkflow) {
+      return res.status(404).json({
+        success: false,
+        message: 'No active workflow found for this document'
+      });
+    }
+    
+    // Step 3: Add a validation step to the workflow history
+    await workflowService.addWorkflowHistoryEntry(
+      documentWorkflow.id,
+      'eSTAR_validation',
+      'system',
+      {
+        projectId,
+        validationResult,
+        timestamp: new Date().toISOString()
+      }
+    );
+    
+    // Step 4: Generate the eSTAR package
+    const packageResult = await eSTARPlusBuilder.build(projectId, {
+      includeCoverLetter: true,
+      autoUpload: false
+    });
+    
+    // Step 5: Add a package generation step to the workflow history
+    await workflowService.addWorkflowHistoryEntry(
+      documentWorkflow.id,
+      'eSTAR_generation',
+      'system',
+      {
+        projectId,
+        packagePath: packageResult.zipPath,
+        downloadUrl: `/api/fda510k/download/${path.basename(packageResult.zipPath)}`,
+        timestamp: new Date().toISOString()
+      }
+    );
+    
+    // Return success response with package and validation details
+    res.json({
+      success: true,
+      validated: validateFirst,
+      validationResult: validationResult,
+      packageGenerated: true,
+      downloadUrl: `/api/fda510k/download/${path.basename(packageResult.zipPath)}`,
+      workflowUpdated: true
+    });
+    
+  } catch (error: unknown) {
+    console.error('Error integrating eSTAR with workflow:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    res.status(500).json({
+      success: false,
+      message: `Failed to integrate eSTAR with workflow: ${errorMessage}`
     });
   }
 });

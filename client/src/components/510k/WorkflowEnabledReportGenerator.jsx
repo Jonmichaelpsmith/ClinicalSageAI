@@ -6,15 +6,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { AlertCircle, Download, FileText, Check, Clock, RefreshCw, FileUp } from 'lucide-react';
+import { AlertCircle, Download, FileText, Check, Clock, RefreshCw, FileUp, PackageCheck, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { toast } from '@/hooks/use-toast';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
 
 import UnifiedWorkflowPanel from '../unified-workflow/UnifiedWorkflowPanel';
 import { registerModuleDocument } from '../unified-workflow/registerModuleDocument';
+import FDA510kService from '../../services/FDA510kService';
 
 const REPORT_FORMATS = [
   { value: 'pdf', label: 'PDF (.pdf)' },
@@ -38,6 +40,15 @@ const WorkflowEnabledReportGenerator = ({
   const [additionalNotes, setAdditionalNotes] = useState('');
   const [documentRegistered, setDocumentRegistered] = useState(false);
   const [workflowStarted, setWorkflowStarted] = useState(false);
+  const [generateESTARPackage, setGenerateESTARPackage] = useState(true);
+  const [validateBeforeGeneration, setValidateBeforeGeneration] = useState(true);
+  const [estarStatus, setEstarStatus] = useState({
+    packageGenerated: false,
+    validated: false,
+    downloadUrl: null,
+    validationIssues: []
+  });
+  const [isProcessingESTAR, setIsProcessingESTAR] = useState(false);
 
   // Set default report title based on device data
   useEffect(() => {
@@ -159,6 +170,71 @@ const WorkflowEnabledReportGenerator = ({
         title: 'Workflow started',
         description: 'The document workflow has been started successfully.',
       });
+      
+      // If eSTAR package generation is enabled, proceed with integration
+      if (generateESTARPackage && generatedReportId) {
+        handleESTARIntegration();
+      }
+    }
+  };
+  
+  // Handle eSTAR package integration with the workflow
+  const handleESTARIntegration = async () => {
+    if (!generatedReportId) {
+      toast({
+        title: 'Error',
+        description: 'No report has been generated yet. Please generate a report first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setIsProcessingESTAR(true);
+    try {
+      // Use the FDA510kService to integrate with eSTAR
+      const projectId = deviceData?.id || 'default-project-id';
+      const result = await FDA510kService.integrateWithESTAR(
+        generatedReportId,
+        projectId,
+        { validateFirst: validateBeforeGeneration }
+      );
+      
+      // Update eSTAR status
+      setEstarStatus({
+        packageGenerated: result.packageGenerated || false,
+        validated: result.validated || false,
+        downloadUrl: result.downloadUrl || null,
+        validationIssues: result.validationResult?.issues || []
+      });
+      
+      // Show appropriate toast message
+      if (result.success) {
+        toast({
+          title: 'eSTAR Package Generated',
+          description: 'eSTAR package has been successfully generated and integrated with the workflow.',
+        });
+      } else if (result.validated && !result.validationResult?.valid) {
+        toast({
+          title: 'eSTAR Validation Failed',
+          description: 'The eSTAR package validation failed. Please resolve the issues before proceeding.',
+          variant: 'destructive',
+        });
+      } else {
+        toast({
+          title: 'eSTAR Integration Error',
+          description: result.message || 'An error occurred during eSTAR integration.',
+          variant: 'destructive',
+        });
+      }
+    } catch (error) {
+      console.error('Error in eSTAR integration:', error);
+      toast({
+        title: 'eSTAR Integration Error',
+        description: error.message || 'An unexpected error occurred during eSTAR integration.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsProcessingESTAR(false);
     }
   };
 
