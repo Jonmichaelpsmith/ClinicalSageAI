@@ -357,6 +357,51 @@ class FDA510kService {
       throw error;
     }
   }
+
+  /**
+   * Apply an automatic fix for a specific compliance issue
+   * 
+   * This function applies an automated solution to a specific compliance issue
+   * identified during a compliance check.
+   * 
+   * @param {string} projectId The ID of the 510(k) project
+   * @param {string} sectionId The ID of the section containing the issue
+   * @param {string} checkId The ID of the specific compliance check
+   * @returns {Promise<Object>} Result of the auto-fix operation
+   */
+  async applyAutoFix(projectId, sectionId, checkId) {
+    try {
+      const response = await apiRequest.post('/api/fda510k/compliance-fix', {
+        projectId,
+        sectionId,
+        checkId
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error(`Error applying auto-fix for compliance issue in project ${projectId}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get compliance check results for a 510(k) project
+   * 
+   * Retrieves the latest compliance check results for a 510(k) project,
+   * including any issues, scores, and recommended actions.
+   * 
+   * @param {string} projectId The ID of the 510(k) project
+   * @returns {Promise<Object>} Detailed compliance check results
+   */
+  async getComplianceCheckResults(projectId) {
+    try {
+      const response = await apiRequest.get(`/api/fda510k/compliance-results/${projectId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error getting compliance results for project ${projectId}:`, error);
+      throw error;
+    }
+  }
 }
 
 // Export a singleton instance
