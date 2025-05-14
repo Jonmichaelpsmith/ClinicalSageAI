@@ -16,6 +16,7 @@ import InsightsDisplay from './InsightsDisplay';
 import ProgressTracker from './ProgressTracker';
 import SubmissionTimeline from './SubmissionTimeline';
 import ReportGenerator from './ReportGenerator';
+import WorkflowEnabledReportGenerator from './WorkflowEnabledReportGenerator';
 import About510kDialog from './About510kDialog';
 
 export default function FDA510kTabContent({
