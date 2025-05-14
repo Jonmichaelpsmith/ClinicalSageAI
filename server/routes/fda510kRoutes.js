@@ -152,129 +152,49 @@ router.get('/requirements/:deviceClass', async (req, res) => {
 /**
  * Find predicate devices based on device profile
  */
+import { findPredicates } from '../services/discoveryService.js';
+
 router.post('/find-predicates', validateDeviceData, async (req, res) => {
   try {
     const { deviceData, organizationId } = req.body;
     
-    // Check if OpenAI API key is available
-    if (!process.env.OPENAI_API_KEY) {
-      console.error('OpenAI API key not available. Cannot perform predicate device search.');
-      return res.status(500).json({
-        success: false,
-        message: 'OpenAI API key is required for predicate device discovery. Please provide a valid API key.'
-      });
-    }
+    // Generate a comprehensive device description from profile
+    const deviceDescription = `${deviceData.deviceName} - ${deviceData.deviceClass} class device.
+      Intended Use: ${deviceData.intendedUse || 'Not specified'}.
+      Description: ${deviceData.description || 'Not specified'}.
+      Technology Type: ${deviceData.technologyType || 'Not specified'}.`;
     
-    // Initialize OpenAI if not already done
-    if (!openai) {
-      try {
-        const { OpenAI } = require('openai');
-        openai = new OpenAI({
-          apiKey: process.env.OPENAI_API_KEY
-        });
-        console.log('OpenAI client initialized for predicate device search');
-      } catch (err) {
-        console.error('Failed to initialize OpenAI client:', err);
-        return res.status(500).json({
-          success: false,
-          message: 'Failed to initialize AI services for predicate device search'
-        });
-      }
-    }
-
-    // Use OpenAI to find predicates in the real implementation
-    console.log('Searching for predicate devices using OpenAI for:', deviceData.deviceName);
+    console.log('Searching for predicate devices using discoveryService for:', deviceData.deviceName);
     
     try {
-      // Create a structured prompt to get consistently formatted results
-      const prompt = `
-        Analyze the following medical device and find potential predicate devices (similar FDA-cleared devices) 
-        and relevant literature references that could support a 510(k) submission.
-        
-        DEVICE DETAILS:
-        - Name: ${deviceData.deviceName}
-        - Class: ${deviceData.deviceClass}
-        - Intended Use: ${deviceData.intendedUse || 'Not specified'}
-        - Description: ${deviceData.description || 'Not specified'}
-        - Technology Type: ${deviceData.technologyType || 'Not specified'}
-        
-        INSTRUCTIONS:
-        1. Search for similar FDA-cleared medical devices that could serve as predicates.
-        2. Find relevant scientific literature to support substantial equivalence.
-        3. Format your response as structured JSON with the following format:
-        {
-          "predicateDevices": [
-            {
-              "deviceName": "string",
-              "kNumber": "string",
-              "clearanceDate": "YYYY-MM-DD",
-              "manufacturer": "string",
-              "deviceClass": "string",
-              "matchScore": number (0.0-1.0),
-              "matchRationale": "string",
-              "description": "string"
-            },
-            ...
-          ],
-          "literatureReferences": [
-            {
-              "title": "string",
-              "authors": ["string"],
-              "journal": "string",
-              "year": number,
-              "doi": "string",
-              "url": "string",
-              "relevanceScore": number (0.0-1.0),
-              "abstract": "string"
-            },
-            ...
-          ]
+      // Use the unified discovery service to find predicates
+      const predicateResults = await findPredicates(deviceDescription, { limit: 8 });
+      
+      // Format results for the client
+      const predicateDevices = predicateResults.map(p => ({
+        deviceName: p.device_name,
+        kNumber: p.k_number,
+        manufacturer: p.manufacturer,
+        matchScore: p.score,
+        matchRationale: "Similar device characteristics and intended use",
+        deviceClass: deviceData.deviceClass // Default to same class if not specified
+      }));
+      
+      // Return success response with predicate devices
+      return res.status(200).json({
+        success: true,
+        predicateDevices,
+        // For compatibility with existing code
+        predicates: {
+          predicateDevices
         }
-        
-        Return only the JSON with 3-5 predicate devices and 3-5 literature references.
-      `;
-      
-      // Make the OpenAI API call
-      const completion = await openai.chat.completions.create({
-        messages: [{ role: "system", content: "You are a regulatory affairs specialist with expertise in FDA 510(k) submissions." },
-                  { role: "user", content: prompt }],
-        model: "gpt-4o",
-        response_format: { type: "json_object" }
       });
+    } catch (discoveryError) {
+      console.error('Error using discovery service for predicate search:', discoveryError);
       
-      // Parse the response
-      const responseContent = completion.choices[0].message.content;
-      let jsonResponse;
-      
-      try {
-        jsonResponse = JSON.parse(responseContent);
-        
-        // Log success and return the formatted response
-        console.log('Successfully generated predicate devices using OpenAI');
-        
-        // Restructure the response to match client expectations
-        // The client expects predicateDevices at the top level
-        res.status(200).json({
-          success: true,
-          predicateDevices: jsonResponse.predicateDevices || [],
-          literatureReferences: jsonResponse.literatureReferences || [],
-          // Include the full response as a fallback
-          predicates: jsonResponse
-        });
-      } catch (parseError) {
-        console.error('Error parsing OpenAI response:', parseError);
-        console.log('Raw response:', responseContent);
-        
-        // If parsing fails, return a fallback with error details
-        throw new Error('Failed to parse AI response: ' + parseError.message);
-      }
-    } catch (aiError) {
-      console.error('Error using OpenAI for predicate search:', aiError);
-      
-      // Instead of using mock fallback data, return an error for GA release quality
       return res.status(500).json({
         success: false,
-        message: 'Failed to perform AI-powered predicate device search: ' + aiError.message,
+        message: 'Failed to perform predicate device search: ' + discoveryError.message,
         recommendation: 'Please try again or check your OpenAI API key configuration.'
       });
     }

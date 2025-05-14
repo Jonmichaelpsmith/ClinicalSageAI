@@ -1,0 +1,177 @@
+Below is a **precise, copy-and-pasteable recipe** for your Replit AI agent.  Every change is **backend only**—no UI edits—and lives under `server/…`.  We’ll **extract** your existing 510(k) and CER literature logic into one `discoveryService.js`, then **wire** both route files to call it.
+
+---
+
+### 1) Create `discoveryService.js`
+
+**File:** `server/services/discoveryService.js`
+**Action:** new file
+
+```js
+// server/services/discoveryService.js
+import OpenAI from 'openai';
+import { Pool }   from 'pg';
+
+const openai = new OpenAI();
+const db     = new Pool({ connectionString: process.env.DATABASE_URL });
+
+// Convert text → 1536-dim embedding
+async function embed(text) {
+  const r = await openai.embeddings.create({
+    model: 'text-embedding-ada-002',
+    input: text
+  });
+  return r.data[0].embedding;
+}
+
+// Generic vector search on any table with `embedding` column
+async function vectorSearch(table, vec, limit=10) {
+  const sql = `
+    SELECT *, 1 - (embedding <=> $1) AS score
+      FROM ${table}
+     ORDER BY embedding <=> $1
+     LIMIT $2
+  `;
+  const { rows } = await db.query(sql, [vec, limit]);
+  return rows;
+}
+
+/** 510(k) predicate finder */
+export async function findPredicates(deviceDescription, opts={limit:8}) {
+  const v   = await embed(deviceDescription);
+  const rows= await vectorSearch('predicate_devices', v, opts.limit);
+  return rows.map(r => ({
+    k_number:     r.k_number,
+    device_name:  r.device_name,
+    manufacturer: r.manufacturer,
+    score:        Number((r.score*100).toFixed(1))
+  }));
+}
+
+/** CER literature search */
+export async function searchLiterature(query, opts={limit:10}) {
+  const v    = await embed(query);
+  const rows = await vectorSearch('literature_vectors', v, opts.limit);
+  return rows.map(r => ({
+    title:   r.title,
+    snippet: r.snippet,
+    score:   Number((r.score*100).toFixed(1))
+  }));
+}
+```
+
+---
+
+### 2) Refactor your 510(k) route
+
+**File:** `server/routes/fda510kRoutes.js`
+**Action:** replace inline embedding/SQL with the new service
+
+```diff
+-import { /* inline OpenAI+pgvector code */ } from '../…'
++import { findPredicates } from '../services/discoveryService.js';
+
+ router.post('/find-predicates', async (req, res, next) => {
+   try {
+-    // OLD inline logic...
+-    const preds = /* … */
++    const preds = await findPredicates(req.body.deviceDescription, { limit: 8 });
+     res.json({ predicates: preds });
+   } catch(err) {
+     next(err);
+   }
+ });
+```
+
+> **Verify** the JSON still is `{ predicates: [ { k_number, device_name, manufacturer, score }, … ] }`.
+
+---
+
+### 3) Refactor your CER literature route
+
+**File:** wherever your CER `/literature-search` lives (e.g. `server/routes/cerRoutes.js`)
+**Action:** delegate to `searchLiterature`
+
+```diff
+-import { /* old OpenAI+pgvector */ } from '../…'
++import { searchLiterature } from '../services/discoveryService.js';
+
+ router.post('/literature-search', async (req, res, next) => {
+   try {
+-    // OLD inline logic...
+-    const list = /* … */
++    const list = await searchLiterature(req.body.query, { limit: 10 });
+     res.json({ results: list });
+   } catch(err) {
+     next(err);
+   }
+ });
+```
+
+> **Verify** you still return `{ results: [ { title, snippet, score }, … ] }`.
+
+---
+
+### 4) (Optional) Unify `/semantic-search`
+
+If you have a generic endpoint:
+
+```js
+router.post('/semantic-search', async (req,res,next)=>{
+  // OLD: embedding + SQL on predicate OR literature
+});
+```
+
+**Action:** swap in:
+
+```diff
+-import { /* inline code */ } from '../…'
++import { searchLiterature, findPredicates } from '../services/discoveryService.js';
+
+ router.post('/semantic-search', async (req, res, next) => {
+   try {
+     const { query, target='literature', limit=10 } = req.body;
+     const results = target === 'device'
+-      ? /* old predicate logic */
++      ? await findPredicates(query, { limit })
+-      : /* old literature logic */;
++      : await searchLiterature(query, { limit });
+     res.json({ results });
+   } catch(err) {
+     next(err);
+   }
+ });
+```
+
+> **Verify** no existing clients break and JSON stays `{ results: […] }`.
+
+---
+
+### 5) Clean up
+
+* **Delete** any leftover embedding/SQL snippets in your route files.
+* **Restart** the Replit server (Shell → Refresh).
+
+---
+
+### 6) Smoke-test
+
+1. **CER Path**:
+
+   * Client Portal → Medical Device & Diagnostics → CER Generator → Literature Review → search → results intact.
+2. **510(k) Path**:
+
+   * Client Portal → Medical Device & Diagnostics → 510(k) → Predicate Finder → search → predicates intact.
+3. **Semantic Search** (if used):
+
+   * `curl -X POST /api/fda510k/semantic-search` with both `target: 'device'` and without, inspect JSON.
+
+---
+
+**Why this works**
+
+* **One code-path** for embeddings & vector search
+* **No UI changes**: all endpoint shapes unchanged
+* **Easier to maintain** & extend (new model, new table)
+
+Paste these instructions to your Replit AI agent—they’ll cut your backend duplication in half while leaving your front-end exactly as is.
