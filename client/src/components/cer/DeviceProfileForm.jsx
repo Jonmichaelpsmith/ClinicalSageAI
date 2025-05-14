@@ -147,15 +147,15 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
               )}
             />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="modelNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Model Number</FormLabel>
+                    <FormLabel htmlFor="model">Model Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. CM3000-X" {...field} />
+                      <Input id="model" placeholder="e.g. CM3000-X" {...field} />
                     </FormControl>
                     <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
                       Device model or catalog number
@@ -170,9 +170,9 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
                 name="manufacturer"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Manufacturer</FormLabel>
+                    <FormLabel htmlFor="manufacturer">Manufacturer</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. MedTech Industries" {...field} />
+                      <Input id="manufacturer" placeholder="e.g. MedTech Industries" {...field} />
                     </FormControl>
                     <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
                       Legal manufacturer of the device
@@ -366,15 +366,15 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
               )}
             />
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <FormField
                 control={form.control}
                 name="productCode"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Product Code</FormLabel>
+                    <FormLabel htmlFor="productCode">Product Code</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. DQA, LLZ" {...field} />
+                      <Input id="productCode" placeholder="e.g. DQA, LLZ" {...field} />
                     </FormControl>
                     <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
                       FDA product classification code
@@ -389,9 +389,9 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
                 name="regulationNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Regulation Number</FormLabel>
+                    <FormLabel htmlFor="regulationNumber">Regulation Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. 21 CFR 870.2300" {...field} />
+                      <Input id="regulationNumber" placeholder="e.g. 21 CFR 870.2300" {...field} />
                     </FormControl>
                     <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
                       CFR regulation number, if known
@@ -510,11 +510,13 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
           </Accordion>
         </div>
         
-        <DialogFooter className="pt-4 mt-4 border-t sticky bottom-0 bg-white py-3 z-10">
-          <Button type="button" variant="outline" onClick={onCancel} className="mr-2">
-            Cancel
-          </Button>
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Save Device Profile</Button>
+        <DialogFooter className="pt-4 mt-8 border-t sticky bottom-0 bg-white py-3 z-10">
+          <div className="flex justify-end space-x-4 w-full">
+            <Button type="button" variant="outline" onClick={onCancel}>
+              Cancel
+            </Button>
+            <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Save Device Profile</Button>
+          </div>
         </DialogFooter>
       </form>
     </Form>

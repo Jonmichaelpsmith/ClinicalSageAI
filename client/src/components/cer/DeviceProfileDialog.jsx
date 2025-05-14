@@ -99,7 +99,7 @@ const DeviceProfileDialog = ({
           )}
         </div>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-hidden flex flex-col">
+      <DialogContent className="w-full sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-6">
         <DialogHeader className="sticky top-0 z-10 bg-white pb-3 border-b mb-2">
           <div className="flex justify-between items-center">
             <DialogTitle>{dialogTitle}</DialogTitle>
