@@ -39,7 +39,7 @@ import discoveryRouter from './routes/discovery.js';
 // @ts-ignore
 import literatureReviewGeneratorRouter from './routes/literature-review-generator.js';
 // @ts-ignore
-import documentAssemblyRouter from './routes/document-assembly.js';
+import { default as documentAssemblyRouter } from './routes/document-assembly.js';
 // Regulatory-ai router will be imported directly in server/index.ts
 
 export default function registerRoutes(app: Express): void {

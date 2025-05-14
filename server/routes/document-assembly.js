@@ -5,10 +5,11 @@
  * component sections, validating them, and making them available for download.
  */
 
-const express = require('express');
+import express from 'express';
+import path from 'path';
+import documentAssemblyService from '../services/documentAssemblyService.js';
+
 const router = express.Router();
-const documentAssemblyService = require('../services/documentAssemblyService');
-const path = require('path');
 
 // Initialize the document assembly service
 (async () => {
@@ -193,5 +194,4 @@ router.get('/download/:assemblyId', async (req, res) => {
   }
 });
 
-// Only use CommonJS export style for consistency with other route files
-module.exports = router;
+export default router;
