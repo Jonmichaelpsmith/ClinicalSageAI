@@ -388,6 +388,8 @@ export default function LitReviewPanel({
         },
         body: JSON.stringify({
           cerProjectId,
+          deviceName: deviceName || (deviceProfile?.deviceName || ''),
+          manufacturer: manufacturer || (deviceProfile?.manufacturer || ''),
           articleIds: selectedArticles.map(article => article.id)
         }),
       });
@@ -405,8 +407,25 @@ export default function LitReviewPanel({
       // Save the generated review to the CER project
       await cerApi.saveGeneratedLiteratureReview(cerProjectId, result.review);
       
+      // Add the review as a section to the CER document using the callback
+      if (onAddSection && typeof onAddSection === 'function') {
+        const newSection = {
+          id: `lit-review-${Date.now()}`,
+          title: 'Literature Review',
+          type: 'literature-review',
+          content: result.review.content,
+          metadata: {
+            articleCount: selectedArticles.length,
+            articleIds: selectedArticles.map(article => article.id),
+            generatedAt: new Date().toISOString(),
+          }
+        };
+        
+        onAddSection(newSection);
+      }
+      
       // Show success message
-      alert('Literature review generated and saved to your CER project!');
+      alert('Literature review generated and added to your CER!');
       
       return true;
     } catch (error) {
