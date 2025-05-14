@@ -897,96 +897,184 @@ export default function LitReviewPanel({
             </TabsContent>
             
             <TabsContent value="selected">
-              {selectedArticles.length === 0 ? (
-                <div className="text-center py-12 border rounded-md">
-                  <FileText className="h-10 w-10 text-gray-300 mx-auto mb-3" />
-                  <h3 className="text-lg font-medium text-gray-700 mb-1">No literature selected yet</h3>
-                  <p className="text-gray-500 mb-3">
-                    Search for and select relevant articles for your clinical evaluation
-                  </p>
-                  <Button onClick={() => setCurrentTab('search')}>
-                    <Search className="mr-2 h-4 w-4" />
-                    Search Literature
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-medium">Selected Literature ({selectedArticles.length})</h4>
-                    <div className="flex space-x-2">
-                      <Button variant="outline" size="sm" onClick={() => setCurrentTab('search')}>
-                        <Plus className="mr-1 h-4 w-4" />
-                        Add More
-                      </Button>
-                      <Button variant="destructive" size="sm" onClick={handleClearSelections}>
-                        <Trash className="mr-1 h-4 w-4" />
-                        Clear All
-                      </Button>
-                    </div>
+              {searchType === 'predicates' ? (
+                // Show predicate devices
+                selectedPredicates.length === 0 ? (
+                  <div className="text-center py-12 border rounded-md">
+                    <Shield className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                    <h3 className="text-lg font-medium text-gray-700 mb-1">No predicate devices selected yet</h3>
+                    <p className="text-gray-500 mb-3">
+                      Search for and select relevant predicate devices for your device comparison
+                    </p>
+                    <Button onClick={() => setCurrentTab('search')}>
+                      <Search className="mr-2 h-4 w-4" />
+                      Search Predicate Devices
+                    </Button>
                   </div>
-                  
-                  <div className="space-y-3">
-                    {selectedArticles.map(article => (
-                      <Card key={article.id}>
-                        <CardContent className="p-4">
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <div className="flex items-center mb-1 gap-2">
-                                {getSourceIcon(article)}
-                                <Badge variant="outline" className="text-xs">
-                                  {article.journal}
-                                </Badge>
-                                <Badge variant="outline" className="text-xs">
-                                  {article.year}
-                                </Badge>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-medium">Selected Predicate Devices ({selectedPredicates.length})</h4>
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => setCurrentTab('search')}>
+                          <Plus className="mr-1 h-4 w-4" />
+                          Add More
+                        </Button>
+                        <Button variant="destructive" size="sm" onClick={() => setSelectedPredicates([])}>
+                          <Trash className="mr-1 h-4 w-4" />
+                          Clear All
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {selectedPredicates.map(predicate => (
+                        <Card key={predicate.id} className="border-green-500">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center mb-1 gap-2">
+                                  <Shield className="h-4 w-4 text-green-500" />
+                                  <Badge variant="outline" className="text-xs bg-green-50">
+                                    {predicate.clearanceType || 'Predicate'}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs">
+                                    {predicate.clearanceNumber || predicate.k_number || 'No K Number'}
+                                  </Badge>
+                                </div>
+                                
+                                <h4 className="font-medium text-base mb-1">{predicate.title || predicate.name}</h4>
+                                <p className="text-sm text-gray-600">{predicate.manufacturer || 'Unknown Manufacturer'}</p>
                               </div>
                               
-                              <h4 className="font-medium text-base mb-1">{article.title}</h4>
-                              <p className="text-sm text-gray-600">{article.authors}</p>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleArticleSelection(predicate)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
                             </div>
-                            
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => toggleArticleSelection(article)}
-                              className="text-red-500 hover:text-red-700"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                  
-                  <div className="bg-blue-50 p-4 rounded-md">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <h4 className="font-medium text-blue-800">Literature Review Summary</h4>
-                        <p className="text-sm text-blue-600">
-                          Selected literature will be incorporated into your Clinical Evaluation Report
-                        </p>
-                      </div>
-                      
-                      <Button 
-                        onClick={handleGenerateLiteratureReview}
-                        disabled={generatingReview || selectedArticles.length < 3}
-                      >
-                        {generatingReview ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Generating Review...
-                          </>
-                        ) : (
-                          <>
-                            <FileText className="mr-2 h-4 w-4" />
-                            Generate Literature Review
-                          </>
-                        )}
-                      </Button>
+                          </CardContent>
+                        </Card>
+                      ))}
                     </div>
                   </div>
-                </div>
+                )
+              ) : (
+                // Show literature articles
+                selectedArticles.length === 0 ? (
+                  <div className="text-center py-12 border rounded-md">
+                    <FileText className="h-10 w-10 text-gray-300 mx-auto mb-3" />
+                    <h3 className="text-lg font-medium text-gray-700 mb-1">No literature selected yet</h3>
+                    <p className="text-gray-500 mb-3">
+                      Search for and select relevant articles for your clinical evaluation
+                    </p>
+                    <Button onClick={() => setCurrentTab('search')}>
+                      <Search className="mr-2 h-4 w-4" />
+                      Search Literature
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-medium">Selected Literature ({selectedArticles.length})</h4>
+                      <div className="flex space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => setCurrentTab('search')}>
+                          <Plus className="mr-1 h-4 w-4" />
+                          Add More
+                        </Button>
+                        <Button variant="destructive" size="sm" onClick={handleClearSelections}>
+                          <Trash className="mr-1 h-4 w-4" />
+                          Clear All
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {selectedArticles.map(article => (
+                        <Card key={article.id} className="border-blue-500">
+                          <CardContent className="p-4">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center mb-1 gap-2">
+                                  {getSourceIcon(article)}
+                                  <Badge variant="outline" className="text-xs">
+                                    {article.journal}
+                                  </Badge>
+                                  <Badge variant="outline" className="text-xs">
+                                    {article.year}
+                                  </Badge>
+                                </div>
+                                
+                                <h4 className="font-medium text-base mb-1">{article.title}</h4>
+                                <p className="text-sm text-gray-600">{article.authors}</p>
+                              </div>
+                              
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => toggleArticleSelection(article)}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )
+              )}
+                  
+                  {searchType === 'predicates' ? (
+                    <div className="bg-green-50 p-4 rounded-md">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="font-medium text-green-800">Predicate Device Summary</h4>
+                          <p className="text-sm text-green-600">
+                            Selected predicate devices will be used for substantial equivalence comparison
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={() => setCurrentTab('compare')}
+                          disabled={selectedPredicates.length === 0}
+                        >
+                          <FileCheck className="mr-2 h-4 w-4" />
+                          Compare Devices
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-blue-50 p-4 rounded-md">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <h4 className="font-medium text-blue-800">Literature Review Summary</h4>
+                          <p className="text-sm text-blue-600">
+                            Selected literature will be incorporated into your Clinical Evaluation Report
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={handleGenerateLiteratureReview}
+                          disabled={generatingReview || selectedArticles.length < 3}
+                        >
+                          {generatingReview ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Generating Review...
+                            </>
+                          ) : (
+                            <>
+                              <FileText className="mr-2 h-4 w-4" />
+                              Generate Literature Review
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
               )}
             </TabsContent>
             
