@@ -1,0 +1,115 @@
+To cleanly fix that narrow, overlapping form you’re seeing in the Device Intake modal, let’s make three surgical updates in your `DeviceProfileDialog.jsx` (or wherever that Intake form lives):
+
+---
+
+### 1. Give the dialog more horizontal real-estate
+
+Find the `<DialogContent>` (or equivalent) wrapper and bump its `max-w-*` class up. For example, change:
+
+```jsx
+<DialogContent className="w-full max-w-md p-6">
+  …
+</DialogContent>
+```
+
+to something like:
+
+```jsx
+<DialogContent className="w-full max-w-3xl p-6">
+  …
+</DialogContent>
+```
+
+* `max-w-3xl` will let it expand to about 48rem (768px)—feel free to go up to `4xl` if you need more.
+* `w-full` ensures it shrinks nicely on small screens.
+
+---
+
+### 2. Switch those two inputs into a responsive grid
+
+Instead of manually floating two `<Input>`s side by side (which can collapse), wrap them in a Tailwind grid:
+
+```diff
+- <div className="flex space-x-4">
+-   <div className="flex-1">
+-     <Label>Model Number</Label>
+-     <Input … />
+-   </div>
+-   <div className="flex-1">
+-     <Label>Manufacturer</Label>
+-     <Input … />
+-   </div>
+- </div>
++ <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
++   <div>
++     <Label htmlFor="model">Model Number</Label>
++     <Input id="model" name="model" … />
++   </div>
++   <div>
++     <Label htmlFor="manufacturer">Manufacturer</Label>
++     <Input id="manufacturer" name="manufacturer" … />
++   </div>
++ </div>
+```
+
+* On **small screens** it will be one column (`grid-cols-1`), on **SM+** it splits into two.
+* `gap-6` gives you comfortable spacing without overlap.
+
+---
+
+### 3. Ensure the buttons sit below the form, not on top of it
+
+Move your “Cancel” / “Save” buttons into their own footer container, and give it top margin:
+
+```diff
+- <Button variant="outline" onClick={onCancel}>Cancel</Button>
+- <Button onClick={onSave}>Save Device Profile</Button>
++ <div className="flex justify-end space-x-4 mt-8">
++   <Button variant="outline" onClick={onCancel}>Cancel</Button>
++   <Button onClick={onSave}>Save Device Profile</Button>
++ </div>
+```
+
+* `mt-8` pushes it well below the inputs.
+* `space-x-4` ensures they don’t butt up against each other.
+
+---
+
+### Putting it all together
+
+Your updated JSX might look like:
+
+```jsx
+<DialogContent className="w-full max-w-3xl p-6">
+  <h3 className="text-lg font-medium">510(k) Device Profile Information</h3>
+  {/* Regulatory Context, tabs, etc. */}
+
+  {/* 1. Responsive two-column grid */}
+  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-6">
+    <div>
+      <Label htmlFor="model">Model Number</Label>
+      <Input id="model" name="model" placeholder="e.g. CM3000-X" />
+    </div>
+    <div>
+      <Label htmlFor="manufacturer">Manufacturer</Label>
+      <Input id="manufacturer" name="manufacturer" placeholder="e.g. MedTech Industries" />
+    </div>
+  </div>
+
+  {/* …other fields… */}
+
+  {/* 2. Button footer */}
+  <div className="flex justify-end space-x-4 mt-8">
+    <Button variant="outline" onClick={onCancel}>Cancel</Button>
+    <Button onClick={onSave}>Save Device Profile</Button>
+  </div>
+</DialogContent>
+```
+
+With those three tweaks you’ll get:
+
+* A **wider**, non-cramped modal
+* **No overlap**—fields sit neatly in two columns
+* Buttons **clearly below** the form
+
+Give that a shot in Replit (remember to clear the watcher cache again if you rename files), restart your dev server, and let me know how it looks!
