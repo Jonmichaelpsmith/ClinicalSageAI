@@ -291,3 +291,62 @@ export const saveGeneratedLiteratureReview = async (cerProjectId, reviewData) =>
     throw error;
   }
 };
+
+/**
+ * Generate a preview of a CER document
+ * 
+ * @param {Object} cerData - The CER data including device profile and sections
+ * @returns {Promise<Object>} - The preview document
+ */
+export const generateCERPreview = async (cerData) => {
+  try {
+    const response = await axios.post('/api/document-assembly/preview', {
+      cerData
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error generating CER preview:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate a complete CER document and save it
+ * 
+ * @param {Object} cerData - The CER data including device profile and sections
+ * @param {boolean} enhance - Whether to enhance the document with AI
+ * @returns {Promise<Object>} - The result of the operation
+ */
+export const generateAndSaveCER = async (cerData, enhance = true) => {
+  try {
+    const response = await axios.post('/api/document-assembly/generate', {
+      cerData,
+      enhance
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error generating and saving CER:', error);
+    throw error;
+  }
+};
+
+/**
+ * Generate a specific section for a CER
+ * 
+ * @param {string} sectionKey - The section key/identifier
+ * @param {Object} deviceProfile - The device profile
+ * @param {Object} sectionData - Data specific to the section
+ * @returns {Promise<Object>} - The generated section
+ */
+export const generateCERSection = async (sectionKey, deviceProfile, sectionData = {}) => {
+  try {
+    const response = await axios.post(`/api/document-assembly/section/${sectionKey}`, {
+      deviceProfile,
+      sectionData
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error generating CER section ${sectionKey}:`, error);
+    throw error;
+  }
+};
