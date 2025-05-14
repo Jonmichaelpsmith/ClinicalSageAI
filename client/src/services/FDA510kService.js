@@ -331,6 +331,117 @@ class FDA510kService {
       throw new Error(error.response?.data?.message || 'Failed to perform literature review');
     }
   }
+  
+  /**
+   * Search Semantic Scholar for scientific papers
+   * 
+   * @param {string} query - Search query
+   * @returns {Promise<Array>} - Array of paper results
+   */
+  async semanticScholar(query) {
+    try {
+      const res = await fetch('/api/fda510k/semantic-scholar', { 
+        method: 'POST', 
+        headers: {'Content-Type':'application/json'}, 
+        body: JSON.stringify({query}) 
+      });
+      
+      const data = await res.json();
+      return data.results || [];
+    } catch (error) {
+      console.error('Error searching Semantic Scholar:', error);
+      throw new Error('Failed to search Semantic Scholar');
+    }
+  }
+  
+  /**
+   * Search ClinicalTrials.gov for relevant trials
+   * 
+   * @param {string} query - Search query
+   * @returns {Promise<Array>} - Array of clinical trial results
+   */
+  async clinicalTrials(query) {
+    try {
+      const res = await fetch('/api/fda510k/clinical-trials', { 
+        method: 'POST', 
+        headers: {'Content-Type':'application/json'}, 
+        body: JSON.stringify({query}) 
+      });
+      
+      const data = await res.json();
+      return data.results || [];
+    } catch (error) {
+      console.error('Error searching ClinicalTrials.gov:', error);
+      throw new Error('Failed to search clinical trials');
+    }
+  }
+  
+  /**
+   * Search IEEE Xplore for scientific articles
+   * 
+   * @param {string} query - Search query
+   * @returns {Promise<Array>} - Array of article results
+   */
+  async ieeeXplore(query) {
+    try {
+      const res = await fetch('/api/fda510k/ieee-xplore', { 
+        method: 'POST', 
+        headers: {'Content-Type':'application/json'}, 
+        body: JSON.stringify({query}) 
+      });
+      
+      const data = await res.json();
+      return data.results || [];
+    } catch (error) {
+      console.error('Error searching IEEE Xplore:', error);
+      throw new Error('Failed to search IEEE Xplore');
+    }
+  }
+  
+  /**
+   * Search Directory of Open Access Journals
+   * 
+   * @param {string} query - Search query
+   * @returns {Promise<Array>} - Array of journal article results
+   */
+  async doajSearch(query) {
+    try {
+      const res = await fetch('/api/fda510k/doaj-search', { 
+        method: 'POST', 
+        headers: {'Content-Type':'application/json'}, 
+        body: JSON.stringify({query}) 
+      });
+      
+      const data = await res.json();
+      return data.results || [];
+    } catch (error) {
+      console.error('Error searching DOAJ:', error);
+      throw new Error('Failed to search DOAJ');
+    }
+  }
+  
+  /**
+   * Upload and process PDF file for literature review
+   * 
+   * @param {File} file - PDF file to upload
+   * @returns {Promise<Object>} - Extracted text and metadata
+   */
+  async uploadLiterature(file) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/fda510k/upload-literature', {
+        method: 'POST',
+        body: formData
+      });
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error uploading literature PDF:', error);
+      throw new Error('Failed to upload and process PDF');
+    }
+  }
 }
 
 // Create and export a singleton instance
