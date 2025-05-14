@@ -1,219 +1,316 @@
-import React, { useState } from 'react';
-import { Button, Typography, Box, TextField, Card, CardContent, CircularProgress, Snackbar, Alert, Grid } from '@mui/material';
-import { register510kDocument } from '../unified-workflow/registerModuleDocument';
-import WorkflowEnabledReportGenerator from './WorkflowEnabledReportGenerator';
-
 /**
- * One-Click 510(k) Draft Generator
+ * OneClick510kDraft Component
  * 
- * This component provides a simplified interface for generating 510(k) drafts
- * with integrated workflow capabilities.
+ * This component provides a simplified "one-click" interface for generating 
+ * predefined 510(k) document templates with default settings. It's designed
+ * for users who need standardized reports without extensive customization.
  */
-const OneClick510kDraft = ({ organizationId = 1, userId = 1 }) => {
-  const [deviceName, setDeviceName] = useState('');
-  const [predicateDevice, setPredicateDevice] = useState('');
-  const [indication, setIndication] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [projectId, setProjectId] = useState(null);
-  const [projectTitle, setProjectTitle] = useState('');
-  const [error, setError] = useState(null);
-  const [reportStatus, setReportStatus] = useState('pending');
-  const [notification, setNotification] = useState({ open: false, message: '', severity: 'info' });
 
-  // Generate a 510(k) draft report
-  const handleGenerateReport = async () => {
-    if (!deviceName || !predicateDevice || !indication) {
-      setError('Please fill in all required fields');
+import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
+import { AlertCircle, Check, FileText, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
+import { useMutation } from '@tanstack/react-query';
+import { apiRequest } from '@/lib/queryClient';
+
+// Predefined template options for 510(k) submissions
+const TEMPLATE_OPTIONS = [
+  {
+    id: 'standard_510k',
+    name: 'Standard 510(k) Template',
+    description: 'Complete template for Standard 510(k) submissions with all required sections',
+    sections: [
+      'Administrative',
+      'Device Description',
+      'Substantial Equivalence',
+      'Performance Testing',
+      'Biocompatibility',
+      'Sterilization',
+      'Shelf Life',
+      'Clinical Data',
+      'Software Validation',
+      'Risk Analysis'
+    ]
+  },
+  {
+    id: 'abbreviated_510k',
+    name: 'Abbreviated 510(k) Template',
+    description: 'Streamlined template for Abbreviated 510(k) submissions based on guidance documents',
+    sections: [
+      'Administrative',
+      'Device Description',
+      'Declaration of Conformity',
+      'Summary of Performance Testing',
+      'Risk Analysis'
+    ]
+  },
+  {
+    id: 'special_510k',
+    name: 'Special 510(k) Template',
+    description: 'Template for device modifications where design controls were utilized',
+    sections: [
+      'Administrative',
+      'Device Description',
+      'Modification Description',
+      'Design Control Activities',
+      'Risk Analysis',
+      'Declaration of Conformity'
+    ]
+  }
+];
+
+// Predefined device types for quicker selection
+const DEVICE_TYPES = [
+  { id: 'diagnostic', name: 'Diagnostic Device' },
+  { id: 'therapeutic', name: 'Therapeutic Device' },
+  { id: 'implantable', name: 'Implantable Device' },
+  { id: 'monitoring', name: 'Monitoring Device' },
+  { id: 'imaging', name: 'Imaging Device' },
+  { id: 'surgical', name: 'Surgical Device' },
+  { id: 'software', name: 'Software as a Medical Device (SaMD)' },
+  { id: 'combination_product', name: 'Combination Product' },
+  { id: 'other', name: 'Other Medical Device' }
+];
+
+const OneClick510kDraft = ({ organizationId, userId, onDraftCreated }) => {
+  const [templateId, setTemplateId] = useState('');
+  const [deviceName, setDeviceName] = useState('');
+  const [deviceType, setDeviceType] = useState('');
+  const [predicateDevice, setPredicateDevice] = useState('');
+  const [includePredicateSearch, setIncludePredicateSearch] = useState(true);
+  const [includeAIRecommendations, setIncludeAIRecommendations] = useState(true);
+  const { toast } = useToast();
+  
+  // Selected template details
+  const selectedTemplate = TEMPLATE_OPTIONS.find(t => t.id === templateId);
+  
+  // Create a new 510(k) draft document
+  const createDraftMutation = useMutation({
+    mutationFn: (documentData) => apiRequest('/api/module-integration/register-document', {
+      method: 'POST',
+      body: JSON.stringify(documentData)
+    }),
+    onSuccess: (data) => {
+      toast({
+        title: 'Draft Created',
+        description: 'Your 510(k) draft has been created successfully.',
+      });
+      
+      // If there's a callback, pass the created document data
+      if (onDraftCreated) {
+        onDraftCreated(data);
+      }
+      
+      // Reset form
+      setDeviceName('');
+      setPredicateDevice('');
+    },
+    onError: (error) => {
+      toast({
+        title: 'Error',
+        description: `Failed to create draft: ${error.message}`,
+        variant: 'destructive'
+      });
+    }
+  });
+  
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    
+    if (!templateId || !deviceName || !deviceType) {
+      toast({
+        title: 'Missing Information',
+        description: 'Please select a template and provide device information.',
+        variant: 'destructive'
+      });
       return;
     }
     
-    setLoading(true);
-    setError(null);
+    // Create the draft document
+    createDraftMutation.mutate({
+      title: `${deviceName} - ${selectedTemplate.name}`,
+      documentType: '510k_submission',
+      organizationId,
+      createdBy: userId,
+      status: 'draft',
+      latestVersion: 1,
+      moduleType: '510k',
+      originalId: `510K-${Date.now()}`, // Generate a temporary ID
+      metadata: {
+        templateId,
+        deviceName,
+        deviceType,
+        predicateDevice: predicateDevice || null,
+        includePredicateSearch,
+        includeAIRecommendations,
+        createdVia: 'one_click_510k',
+        sections: selectedTemplate.sections,
+        creationDate: new Date().toISOString()
+      }
+    });
+  };
+  
+  // Render section list
+  const renderSections = () => {
+    if (!selectedTemplate) return null;
     
-    try {
-      // Generate a unique project ID if none exists
-      const newProjectId = projectId || `FDA510K-${Date.now()}`;
-      const title = projectTitle || `510(k) for ${deviceName}`;
-      
-      // Set project information
-      setProjectId(newProjectId);
-      setProjectTitle(title);
-      
-      // Simulate report generation
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setReportStatus('completed');
-      
-      setNotification({
-        open: true,
-        message: `510(k) draft generated successfully for ${deviceName}`,
-        severity: 'success'
-      });
-    } catch (err) {
-      console.error('Error generating report:', err);
-      setError(err.message);
-      setNotification({
-        open: true,
-        message: `Error generating report: ${err.message}`,
-        severity: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
+    return (
+      <div className="mt-4 space-y-2">
+        <h4 className="text-sm font-medium">Included Sections:</h4>
+        <ul className="grid grid-cols-2 gap-2">
+          {selectedTemplate.sections.map((section, index) => (
+            <li key={index} className="flex items-center">
+              <Check className="h-4 w-4 text-green-500 mr-2" />
+              <span className="text-sm">{section}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
   };
-
-  // Handle viewing the report
-  const handleViewReport = () => {
-    // Implement your report viewing logic here
-    window.alert('Report viewing functionality would be implemented here');
-  };
-
-  // Close notification
-  const handleCloseNotification = () => {
-    setNotification({ ...notification, open: false });
-  };
-
+  
   return (
-    <Box sx={{ width: '100%' }}>
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h5" gutterBottom>
-            One-Click 510(k) Draft Generator
-          </Typography>
+    <Card className="w-full max-w-2xl mx-auto">
+      <CardHeader>
+        <CardTitle className="flex items-center">
+          <FileText className="h-5 w-5 mr-2" />
+          One-Click 510(k) Draft Generator
+        </CardTitle>
+        <CardDescription>
+          Quickly generate a 510(k) document draft with predefined FDA-compliant templates
+        </CardDescription>
+      </CardHeader>
+      
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="template">510(k) Template Type</Label>
+            <Select value={templateId} onValueChange={setTemplateId}>
+              <SelectTrigger id="template">
+                <SelectValue placeholder="Select a template" />
+              </SelectTrigger>
+              <SelectContent>
+                {TEMPLATE_OPTIONS.map(template => (
+                  <SelectItem key={template.id} value={template.id}>
+                    {template.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedTemplate && (
+              <CardDescription className="mt-2">
+                {selectedTemplate.description}
+              </CardDescription>
+            )}
+            
+            {renderSections()}
+          </div>
           
-          <Typography variant="body2" color="text.secondary" paragraph>
-            Generate a comprehensive 510(k) submission draft with device information,
-            predicate device comparison, and intended use details. The document will be 
-            registered in the unified workflow system for review and approval.
-          </Typography>
+          <Separator />
           
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="device-name">Device Name</Label>
+              <Input 
+                id="device-name" 
+                placeholder="Enter the name of your medical device"
+                value={deviceName}
+                onChange={(e) => setDeviceName(e.target.value)}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="device-type">Device Type</Label>
+              <Select value={deviceType} onValueChange={setDeviceType}>
+                <SelectTrigger id="device-type">
+                  <SelectValue placeholder="Select device type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {DEVICE_TYPES.map(type => (
+                    <SelectItem key={type.id} value={type.id}>
+                      {type.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="predicate-device">Predicate Device (optional)</Label>
+              <Input 
+                id="predicate-device" 
+                placeholder="Enter a known predicate device name or 510(k) number"
+                value={predicateDevice}
+                onChange={(e) => setPredicateDevice(e.target.value)}
+              />
+            </div>
+          </div>
           
-          {!projectId ? (
-            <Grid container spacing={2} sx={{ mt: 1 }}>
-              <Grid item xs={12}>
-                <TextField
-                  label="Device Name"
-                  variant="outlined"
-                  fullWidth
-                  value={deviceName}
-                  onChange={(e) => setDeviceName(e.target.value)}
-                  required
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <TextField
-                  label="Predicate Device"
-                  variant="outlined"
-                  fullWidth
-                  value={predicateDevice}
-                  onChange={(e) => setPredicateDevice(e.target.value)}
-                  required
-                  helperText="Enter the name of a legally marketed device to which you claim equivalence"
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <TextField
-                  label="Intended Use / Indication"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  rows={3}
-                  value={indication}
-                  onChange={(e) => setIndication(e.target.value)}
-                  required
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <TextField
-                  label="Project Title"
-                  variant="outlined"
-                  fullWidth
-                  value={projectTitle}
-                  onChange={(e) => setProjectTitle(e.target.value)}
-                  placeholder={deviceName ? `510(k) for ${deviceName}` : ''}
-                  helperText="Optional - a title will be generated if none is provided"
-                />
-              </Grid>
-              
-              <Grid item xs={12}>
-                <Button 
-                  variant="contained" 
-                  color="primary"
-                  onClick={handleGenerateReport}
-                  disabled={loading || !deviceName || !predicateDevice || !indication}
-                  sx={{ mt: 1 }}
-                >
-                  {loading ? <CircularProgress size={24} /> : 'Generate 510(k) Draft'}
-                </Button>
-              </Grid>
-            </Grid>
-          ) : (
-            <Box sx={{ mt: 2 }}>
-              <Typography variant="h6">
-                Project: {projectTitle}
-              </Typography>
-              <Typography variant="body1">
-                ID: {projectId}
-              </Typography>
-              <Typography variant="body2" sx={{ mb: 2 }}>
-                Status: {reportStatus}
-              </Typography>
-              
-              <Button 
-                variant="outlined" 
-                onClick={() => {
-                  setProjectId(null);
-                  setReportStatus('pending');
-                }}
-                sx={{ mr: 1 }}
+          <Separator />
+          
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="predicate-search" 
+                checked={includePredicateSearch}
+                onCheckedChange={setIncludePredicateSearch}
+              />
+              <label
+                htmlFor="predicate-search"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                Start New Project
-              </Button>
-              
-              <Button
-                variant="contained"
-                onClick={handleViewReport}
-                disabled={reportStatus !== 'completed'}
+                Include automatic predicate device search
+              </label>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox 
+                id="ai-recommendations" 
+                checked={includeAIRecommendations}
+                onCheckedChange={setIncludeAIRecommendations}
+              />
+              <label
+                htmlFor="ai-recommendations"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
               >
-                View Report
-              </Button>
-            </Box>
-          )}
+                Include AI-driven content recommendations
+              </label>
+            </div>
+          </div>
+          
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>FDA Compliance Notice</AlertTitle>
+            <AlertDescription>
+              This tool generates a draft that follows FDA 510(k) submission guidelines.
+              All content should be reviewed by regulatory experts before final submission.
+            </AlertDescription>
+          </Alert>
         </CardContent>
-      </Card>
-      
-      {projectId && (
-        <WorkflowEnabledReportGenerator
-          projectId={projectId}
-          projectTitle={projectTitle}
-          organizationId={organizationId}
-          userId={userId}
-          onGenerateReport={handleGenerateReport}
-          onViewReport={handleViewReport}
-          reportStatus={reportStatus}
-        />
-      )}
-      
-      {/* Notification */}
-      <Snackbar
-        open={notification.open}
-        autoHideDuration={6000}
-        onClose={handleCloseNotification}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert onClose={handleCloseNotification} severity={notification.severity}>
-          {notification.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+        
+        <CardFooter>
+          <Button 
+            type="submit" 
+            className="w-full"
+            disabled={createDraftMutation.isPending}
+          >
+            {createDraftMutation.isPending && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            )}
+            Generate 510(k) Draft
+          </Button>
+        </CardFooter>
+      </form>
+    </Card>
   );
 };
 
