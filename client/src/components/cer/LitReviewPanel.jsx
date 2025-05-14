@@ -1029,7 +1029,7 @@ export default function LitReviewPanel({
                 )
               )}
                   
-                  {searchType === 'predicates' ? (
+                  {searchType === 'predicates' && (
                     <div className="bg-green-50 p-4 rounded-md">
                       <div className="flex justify-between items-center">
                         <div>
@@ -1047,7 +1047,9 @@ export default function LitReviewPanel({
                         </Button>
                       </div>
                     </div>
-                  ) : (
+                  )}
+                  
+                  {searchType === 'literature' && (
                     <div className="bg-blue-50 p-4 rounded-md">
                       <div className="flex justify-between items-center">
                         <div>
@@ -1075,7 +1077,6 @@ export default function LitReviewPanel({
                       </div>
                     </div>
                   )}
-              )}
             </TabsContent>
             
             <TabsContent value="upload">
