@@ -470,39 +470,99 @@ export default function LitReviewPanel() {
             
             <TabsContent value="search">
               <div className="space-y-4">
+                {/* Search Type Toggle */}
+                <div className="flex items-center justify-center bg-gray-50 rounded-md p-1 max-w-sm mx-auto">
+                  <Button
+                    type="button"
+                    variant={searchType === 'literature' ? "default" : "ghost"}
+                    size="sm"
+                    className={`flex-1 ${searchType === 'literature' ? '' : 'hover:bg-gray-100'}`}
+                    onClick={() => handleSearchTypeChange('literature')}
+                  >
+                    <BookOpen className="h-4 w-4 mr-2" /> Literature
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={searchType === 'predicates' ? "default" : "ghost"}
+                    size="sm"
+                    className={`flex-1 ${searchType === 'predicates' ? '' : 'hover:bg-gray-100'}`}
+                    onClick={() => handleSearchTypeChange('predicates')}
+                  >
+                    <Layers className="h-4 w-4 mr-2" /> Predicate Devices
+                  </Button>
+                </div>
+                
                 <div className="flex flex-col sm:flex-row items-start gap-4">
                   <div className="w-full sm:w-3/4">
-                    <div className="flex space-x-2">
-                      <div className="relative flex-grow">
-                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
-                        <Input
-                          placeholder="Search for relevant literature..."
-                          className="pl-9"
-                          value={searchQuery}
-                          onChange={(e) => setSearchQuery(e.target.value)}
-                          onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                        />
-                      </div>
-                      <Button onClick={handleSearch} disabled={searching}>
-                        {searching ? 'Searching...' : 'Search'}
-                      </Button>
-                    </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Search PubMed, Google Scholar, and other scientific databases
-                    </p>
+                    {searchType === 'literature' ? (
+                      <>
+                        <div className="flex space-x-2">
+                          <div className="relative flex-grow">
+                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                            <Input
+                              placeholder="Search for relevant literature..."
+                              className="pl-9"
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                            />
+                          </div>
+                          <Button onClick={handleSearch} disabled={searching}>
+                            {searching ? 'Searching...' : 'Search'}
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Search PubMed, Google Scholar, and other scientific databases
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex space-x-2">
+                          <div className="relative flex-grow">
+                            <Shield className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+                            <Input
+                              placeholder="Describe the device to find predicates..."
+                              className="pl-9"
+                              value={deviceDescription}
+                              onChange={(e) => setDeviceDescription(e.target.value)}
+                              onKeyPress={(e) => e.key === 'Enter' && handlePredicateSearch()}
+                            />
+                          </div>
+                          <Button onClick={handlePredicateSearch} disabled={searchingPredicates}>
+                            {searchingPredicates ? 'Searching...' : 'Search'}
+                          </Button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Search for similar predicate devices for 510(k) submissions
+                        </p>
+                      </>
+                    )}
                   </div>
                   
                   <div className="w-full sm:w-1/4">
                     <div className="flex items-center p-2 border rounded-md">
                       <Filter className="h-4 w-4 text-gray-500 mr-2" />
-                      <span className="text-sm font-medium">Filters Applied: {Object.values(filters).flat().filter(Boolean).length}</span>
+                      <span className="text-sm font-medium">
+                        {searchType === 'literature' 
+                          ? `Filters: ${Object.values(filters).flat().filter(Boolean).length}`
+                          : 'FDA Cleared Devices'}
+                      </span>
                     </div>
                   </div>
                 </div>
                 
-                {searching && (
+                {/* Literature Search Progress */}
+                {searching && searchType === 'literature' && (
                   <div className="py-8 text-center">
                     <p className="text-sm text-gray-500 mb-2">Searching multiple databases...</p>
+                    <Progress value={65} className="max-w-md mx-auto" />
+                  </div>
+                )}
+                
+                {/* Predicate Device Search Progress */}
+                {searchingPredicates && searchType === 'predicates' && (
+                  <div className="py-8 text-center">
+                    <p className="text-sm text-gray-500 mb-2">Searching for predicate devices in FDA database...</p>
                     <Progress value={65} className="max-w-md mx-auto" />
                   </div>
                 )}
@@ -511,83 +571,133 @@ export default function LitReviewPanel() {
                   <div className="md:col-span-1">
                     <Card>
                       <CardContent className="p-4">
-                        <h4 className="font-medium text-sm mb-3">Filter Results</h4>
-                        <div className="space-y-4">
-                          <div>
-                            <Label className="text-xs">Publication Year Range</Label>
-                            <div className="flex items-center space-x-2 mt-1">
-                              <Input
-                                type="number"
-                                min="1900"
-                                max="2030"
-                                value={filters.yearStart}
-                                onChange={(e) => handleFilterChange('yearStart', parseInt(e.target.value))}
-                                className="w-24"
-                              />
-                              <span>to</span>
-                              <Input
-                                type="number"
-                                min="1900"
-                                max="2030"
-                                value={filters.yearEnd}
-                                onChange={(e) => handleFilterChange('yearEnd', parseInt(e.target.value))}
-                                className="w-24"
-                              />
-                            </div>
-                          </div>
-                          
-                          <Separator />
-                          
-                          <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <Label htmlFor="peer-reviewed" className="text-xs">Peer-Reviewed Only</Label>
-                              <Switch
-                                id="peer-reviewed"
-                                checked={filters.peerReviewedOnly}
-                                onCheckedChange={(checked) => handleFilterChange('peerReviewedOnly', checked)}
-                              />
+                        {searchType === 'literature' ? (
+                          /* Literature Filter Options */
+                          <div className="space-y-4">
+                            <h4 className="font-medium text-sm mb-3">Filter Literature</h4>
+                            
+                            <div>
+                              <Label className="text-xs">Publication Year Range</Label>
+                              <div className="flex items-center space-x-2 mt-1">
+                                <Input
+                                  type="number"
+                                  min="1900"
+                                  max="2030"
+                                  value={filters.yearStart}
+                                  onChange={(e) => handleFilterChange('yearStart', parseInt(e.target.value))}
+                                  className="w-24"
+                                />
+                                <span>to</span>
+                                <Input
+                                  type="number"
+                                  min="1900"
+                                  max="2030"
+                                  value={filters.yearEnd}
+                                  onChange={(e) => handleFilterChange('yearEnd', parseInt(e.target.value))}
+                                  className="w-24"
+                                />
+                              </div>
                             </div>
                             
-                            <div className="flex items-center justify-between">
-                              <Label htmlFor="full-text" className="text-xs">Full Text Available</Label>
-                              <Switch
-                                id="full-text"
-                                checked={filters.fullTextAvailable}
-                                onCheckedChange={(checked) => handleFilterChange('fullTextAvailable', checked)}
-                              />
+                            <Separator />
+                            
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <Label htmlFor="peer-reviewed" className="text-xs">Peer-Reviewed Only</Label>
+                                <Switch
+                                  id="peer-reviewed"
+                                  checked={filters.peerReviewedOnly}
+                                  onCheckedChange={(checked) => handleFilterChange('peerReviewedOnly', checked)}
+                                />
+                              </div>
+                              
+                              <div className="flex items-center justify-between">
+                                <Label htmlFor="full-text" className="text-xs">Full Text Available</Label>
+                                <Switch
+                                  id="full-text"
+                                  checked={filters.fullTextAvailable}
+                                  onCheckedChange={(checked) => handleFilterChange('fullTextAvailable', checked)}
+                                />
+                              </div>
+                              
+                              <div className="flex items-center justify-between">
+                                <Label htmlFor="preprints" className="text-xs">Include Preprints</Label>
+                                <Switch
+                                  id="preprints"
+                                  checked={filters.includePreprints}
+                                  onCheckedChange={(checked) => handleFilterChange('includePreprints', checked)}
+                                />
+                              </div>
                             </div>
                             
-                            <div className="flex items-center justify-between">
-                              <Label htmlFor="preprints" className="text-xs">Include Preprints</Label>
-                              <Switch
-                                id="preprints"
-                                checked={filters.includePreprints}
-                                onCheckedChange={(checked) => handleFilterChange('includePreprints', checked)}
+                            <Separator />
+                            
+                            <div>
+                              <Label className="text-xs">Keyword Filters</Label>
+                              <Input
+                                placeholder="Add keyword and press Enter"
+                                onKeyPress={handleKeywordAdd}
+                                className="mt-1"
                               />
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {filters.keywordFilters.map(keyword => (
+                                  <Badge key={keyword} variant="secondary" className="flex items-center gap-1">
+                                    {keyword}
+                                    <X
+                                      className="h-3 w-3 cursor-pointer"
+                                      onClick={() => removeKeywordFilter(keyword)}
+                                    />
+                                  </Badge>
+                                ))}
+                              </div>
                             </div>
                           </div>
-                          
-                          <Separator />
-                          
-                          <div>
-                            <Label className="text-xs">Keyword Filters</Label>
-                            <Input
-                              placeholder="Add keyword and press Enter"
-                              onKeyPress={handleKeywordAdd}
-                              className="mt-1"
-                            />
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {filters.keywordFilters.map(keyword => (
-                                <Badge key={keyword} variant="secondary" className="flex items-center gap-1">
-                                  {keyword}
-                                  <X
-                                    className="h-3 w-3 cursor-pointer"
-                                    onClick={() => removeKeywordFilter(keyword)}
-                                  />
-                                </Badge>
-                              ))}
+                        ) : (
+                          /* Predicate Device Filter Options */
+                          <div className="space-y-4">
+                            <h4 className="font-medium text-sm mb-3">Predicate Device Filters</h4>
+                            
+                            <div>
+                              <Label className="text-xs">Device Characteristics</Label>
+                              <div className="mt-2 space-y-2">
+                                <div className="flex items-center space-x-2">
+                                  <Switch id="fda-cleared" checked={true} disabled />
+                                  <Label htmlFor="fda-cleared" className="text-xs">FDA Cleared Devices</Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Switch id="same-classification" checked={true} disabled />
+                                  <Label htmlFor="same-classification" className="text-xs">Same Classification</Label>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <Separator />
+                            
+                            <div>
+                              <Label className="text-xs">Clearance Year Range</Label>
+                              <div className="flex items-center space-x-2 mt-1">
+                                <Input
+                                  type="number"
+                                  min="1976"
+                                  max="2030"
+                                  value="2010"
+                                  disabled
+                                  className="w-24"
+                                />
+                                <span>to</span>
+                                <Input
+                                  type="number"
+                                  min="1976" 
+                                  max="2030"
+                                  value="2025"
+                                  disabled
+                                  className="w-24"
+                                />
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">Filters auto-applied for relevance</p>
                             </div>
                           </div>
+                        )}
                           
                           <Button variant="outline" size="sm" className="w-full" onClick={() => handleSearch()}>
                             Apply Filters
