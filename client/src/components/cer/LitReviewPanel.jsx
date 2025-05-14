@@ -90,12 +90,14 @@ export default function LitReviewPanel({
       };
       
       // Import the API functions
-      const literatureApi = await import('../../api/cer');
+      const cerApi = await import('../../api/cer');
       
       // Try the unified discovery service first
       console.log('Attempting to use unified discovery service...');
       try {
-        const unifiedResults = await literatureApi.searchUnifiedLiterature(searchQuery, {
+        const unifiedResults = await discoveryApi.search(searchQuery, {
+          type: 'literature',
+          source: 'all',
           limit: 15,
           module: 'cer'
         });
