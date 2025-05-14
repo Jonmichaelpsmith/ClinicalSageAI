@@ -1,60 +1,65 @@
-// /client/src/contexts/LumenAiAssistantContext.jsx
-
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import { LumenAiAssistant } from '../components/ai/LumenAiAssistant';
 
-// Create context
-const LumenAiAssistantContext = createContext();
+// Create a context for the Lumen AI Assistant
+const LumenAiAssistantContext = createContext({
+  isOpen: false,
+  messages: [],
+  moduleContext: {},
+  openAssistant: () => {},
+  closeAssistant: () => {},
+  addMessage: () => {},
+  clearMessages: () => {},
+  setModuleContext: () => {},
+});
 
-export function LumenAiAssistantProvider({ children }) {
+// Custom hook to use Lumen AI Assistant context
+export const useLumenAiAssistant = () => useContext(LumenAiAssistantContext);
+
+// Provider component
+export const LumenAiAssistantProvider = ({ children }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentModule, setCurrentModule] = useState(null);
-  const [currentContext, setCurrentContext] = useState({});
+  const [messages, setMessages] = useState([]);
+  const [moduleContext, setModuleContextState] = useState({});
 
-  // Open the assistant
   const openAssistant = useCallback(() => {
     setIsOpen(true);
   }, []);
 
-  // Close the assistant
   const closeAssistant = useCallback(() => {
     setIsOpen(false);
   }, []);
 
-  // Set the current module context
-  const setModuleContext = useCallback((module, context = {}) => {
-    setCurrentModule(module);
-    setCurrentContext(context);
+  const addMessage = useCallback((message) => {
+    setMessages((prevMessages) => [...prevMessages, message]);
+  }, []);
+
+  const clearMessages = useCallback(() => {
+    setMessages([]);
+  }, []);
+
+  const setModuleContext = useCallback((context) => {
+    setModuleContextState((prevContext) => ({
+      ...prevContext,
+      ...context,
+    }));
   }, []);
 
   return (
     <LumenAiAssistantContext.Provider
       value={{
         isOpen,
-        currentModule,
-        currentContext,
+        messages,
+        moduleContext,
         openAssistant,
         closeAssistant,
+        addMessage,
+        clearMessages,
         setModuleContext,
       }}
     >
       {children}
-      {/* Render the assistant UI outside the normal document flow */}
-      <LumenAiAssistant
-        isOpen={isOpen}
-        onClose={closeAssistant}
-        module={currentModule}
-        context={currentContext}
-      />
     </LumenAiAssistantContext.Provider>
   );
-}
+};
 
-// Custom hook to use the assistant context
-export function useLumenAiAssistant() {
-  const context = useContext(LumenAiAssistantContext);
-  if (!context) {
-    throw new Error('useLumenAiAssistant must be used within a LumenAiAssistantProvider');
-  }
-  return context;
-}
+export default LumenAiAssistantContext;

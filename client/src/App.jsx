@@ -36,7 +36,8 @@ import HomeLanding from './pages/HomeLanding';
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
 const CERPage = lazy(() => import('./pages/CerPage'));
-const CERV2Page = lazy(() => import('./pages/CERV2Page'));
+// Import the wrapper instead of directly importing the protected page
+const CERV2Page = lazy(() => import('./pages/CERV2PageWrapper'));
 const CerGeneratorLandingPage = lazy(() => import('./pages/CerGeneratorLandingPage'));
 const CerGenerator = lazy(() => import('./modules/CerGenerator'));
 
