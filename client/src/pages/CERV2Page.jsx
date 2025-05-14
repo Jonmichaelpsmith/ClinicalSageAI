@@ -2024,6 +2024,7 @@ export default function CERV2Page() {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold text-blue-700">510(k) Automation Pipeline</h2>
           <div className="flex items-center gap-2">
+            <About510kDialog />
             <Button 
               variant="ghost" 
               size="sm" 
