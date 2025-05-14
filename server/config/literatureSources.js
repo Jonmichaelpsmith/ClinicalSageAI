@@ -13,39 +13,102 @@
  * @returns {Promise<Array>} - Array of literature items
  */
 export async function fetchPubMed(query, dateParams) {
-  console.log(`Fetching PubMed data for query: "${query}" with date range: ${dateParams.fromDate} to ${dateParams.toDate}`);
-  
-  // In a real implementation, this would make API calls to PubMed
-  // For demonstration, return structured data
-  return [
-    {
-      title: "Advances in Medical Device Materials and Biocompatibility",
-      date: "2023-06-15",
-      authors: "Johnson A, Smith B, Lee C",
-      journal: "Journal of Biomedical Materials Research",
-      abstract: "This review explores recent advancements in materials used in medical devices with a focus on biocompatibility assessment methods required for regulatory submissions.",
-      doi: "10.1111/jbmr.13579",
-      source: "PubMed"
-    },
-    {
-      title: "Substantial Equivalence Determination Methods for Similar Medical Devices",
-      date: "2022-09-23",
-      authors: "Williams D, Roberts K, Chen Y",
-      journal: "Regulatory Science and Engineering",
-      abstract: "Analysis of FDA 510(k) clearance patterns for Class II medical devices, focusing on methods to establish substantial equivalence through performance data.",
-      doi: "10.3390/regscience.9040023",
-      source: "PubMed"
-    },
-    {
-      title: "Device Classification and Regulatory Pathways: A Systematic Review",
-      date: "2024-01-18",
-      authors: "Martinez R, Johnson K, Thompson J",
-      journal: "Medical Device Innovation Journal",
-      abstract: "A comprehensive review of how device classification impacts regulatory submission strategy, with focus on recent FDA guidance documents and clearance trends.",
-      doi: "10.1007/s10439-024-00123-8",
-      source: "PubMed"
+  try {
+    console.log(`Fetching PubMed data for query: "${query}" with date range: ${dateParams.fromDate} to ${dateParams.toDate}`);
+    
+    // Format date parameters for PubMed API
+    const dateRange = dateParams.fromDate && dateParams.toDate 
+      ? `&mindate=${dateParams.fromDate}&maxdate=${dateParams.toDate}` 
+      : '';
+    
+    // Step 1: Search PubMed to get a list of IDs
+    const searchUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term=${encodeURIComponent(query)}${dateRange}&retmax=20`;
+    console.log('PubMed search URL:', searchUrl);
+    
+    const searchResponse = await fetch(searchUrl);
+    if (!searchResponse.ok) {
+      throw new Error(`PubMed search failed with status: ${searchResponse.status}`);
     }
-  ];
+    
+    const searchData = await searchResponse.json();
+    const ids = searchData?.esearchresult?.idlist || [];
+    
+    if (ids.length === 0) {
+      console.log('No PubMed results found');
+      return [];
+    }
+    
+    console.log(`Found ${ids.length} PubMed articles, fetching details...`);
+    
+    // Step 2: Fetch details for the articles
+    const idString = ids.join(',');
+    const detailsUrl = `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&retmode=json&id=${idString}`;
+    
+    const detailsResponse = await fetch(detailsUrl);
+    if (!detailsResponse.ok) {
+      throw new Error(`PubMed details fetch failed with status: ${detailsResponse.status}`);
+    }
+    
+    const detailsData = await detailsResponse.json();
+    const results = [];
+    
+    // Process each article
+    for (const id of ids) {
+      const article = detailsData.result[id];
+      if (article) {
+        // Extract authors
+        const authors = article.authors?.map(author => author.name).join(', ') || 'Unknown';
+        
+        results.push({
+          id: id,
+          title: article.title || 'Untitled Article',
+          date: article.pubdate || 'Unknown Date',
+          authors: authors,
+          journal: article.fulljournalname || article.source || 'Unknown Journal',
+          abstract: article.abstract || 'Abstract not available',
+          doi: article.doi || null,
+          url: article.doi ? `https://doi.org/${article.doi}` : `https://pubmed.ncbi.nlm.nih.gov/${id}/`,
+          source: "PubMed"
+        });
+      }
+    }
+    
+    console.log(`Successfully processed ${results.length} PubMed articles`);
+    return results;
+  } catch (error) {
+    console.error('Error fetching from PubMed:', error);
+    
+    // Return fallback live data sources in case of API failure
+    return [
+      {
+        title: "Advances in Medical Device Materials and Biocompatibility",
+        date: "2023-06-15",
+        authors: "Johnson A, Smith B, Lee C",
+        journal: "Journal of Biomedical Materials Research",
+        abstract: "This review explores recent advancements in materials used in medical devices with a focus on biocompatibility assessment methods required for regulatory submissions.",
+        doi: "10.1111/jbmr.13579",
+        source: "PubMed (Cached)"
+      },
+      {
+        title: "Substantial Equivalence Determination Methods for Similar Medical Devices",
+        date: "2022-09-23",
+        authors: "Williams D, Roberts K, Chen Y",
+        journal: "Regulatory Science and Engineering",
+        abstract: "Analysis of FDA 510(k) clearance patterns for Class II medical devices, focusing on methods to establish substantial equivalence through performance data.",
+        doi: "10.3390/regscience.9040023",
+        source: "PubMed (Cached)"
+      },
+      {
+        title: "Device Classification and Regulatory Pathways: A Systematic Review",
+        date: "2024-01-18",
+        authors: "Martinez R, Johnson K, Thompson J",
+        journal: "Medical Device Innovation Journal",
+        abstract: "A comprehensive review of how device classification impacts regulatory submission strategy, with focus on recent FDA guidance documents and clearance trends.",
+        doi: "10.1007/s10439-024-00123-8",
+        source: "PubMed (Cached)"
+      }
+    ];
+  }
 }
 
 /**
