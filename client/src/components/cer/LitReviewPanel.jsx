@@ -167,6 +167,7 @@ export default function LitReviewPanel({
     
     setSearchingPredicates(true);
     setPredicateResults([]);
+    setSearchResults([]); // Clear search results when searching for predicates
     
     try {
       // Import the API functions
@@ -180,6 +181,7 @@ export default function LitReviewPanel({
       
       console.log('Predicate device search results:', predicates);
       setPredicateResults(predicates);
+      setSearchResults(predicates); // Set search results to show in UI
     } catch (error) {
       console.error('Error searching for predicate devices:', error);
       const errorMessage = error.response?.data?.message || error.message || 'An error occurred during predicate search';
@@ -190,10 +192,25 @@ export default function LitReviewPanel({
   };
 
   const toggleArticleSelection = (article) => {
-    if (selectedArticles.some(a => a.id === article.id)) {
-      setSelectedArticles(selectedArticles.filter(a => a.id !== article.id));
+    // Add check to see if we're in predicate search mode
+    if (searchType === 'predicates') {
+      // Handle predicate device selection
+      if (selectedPredicates.some(p => p.id === article.id)) {
+        setSelectedPredicates(selectedPredicates.filter(p => p.id !== article.id));
+      } else {
+        setSelectedPredicates([...selectedPredicates, article]);
+        // Show visual confirmation
+        console.log('Predicate device selected:', article.title || article.name);
+      }
     } else {
-      setSelectedArticles([...selectedArticles, article]);
+      // Handle literature selection
+      if (selectedArticles.some(a => a.id === article.id)) {
+        setSelectedArticles(selectedArticles.filter(a => a.id !== article.id));
+      } else {
+        setSelectedArticles([...selectedArticles, article]);
+        // Show visual confirmation
+        console.log('Literature article selected:', article.title);
+      }
     }
   };
   
@@ -202,6 +219,8 @@ export default function LitReviewPanel({
       setSelectedPredicates(selectedPredicates.filter(p => p.id !== predicate.id));
     } else {
       setSelectedPredicates([...selectedPredicates, predicate]);
+      // Show visual confirmation
+      console.log('Predicate device selected:', predicate.title || predicate.name);
     }
   };
 
