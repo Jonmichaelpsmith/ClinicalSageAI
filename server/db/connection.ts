@@ -1,28 +1,20 @@
 /**
  * Database Connection
  * 
- * This file sets up the connection to the PostgreSQL database
- * and initializes the Drizzle ORM.
+ * This file establishes the database connection for the application
+ * and exports the client for use in services.
  */
 
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as unifiedWorkflowSchema from '../../shared/schema/unified_workflow';
+import * as schema from '../../shared/schema/unified_workflow';
 
-// Use environment variable for database connection
+// Create the postgres connection
 const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/trialsage';
+const client = postgres(connectionString);
 
-// Create a regular client
-const client = postgres(connectionString, { max: 10 });
+// Create the drizzle client with the unified workflow schema
+export const db = drizzle(client, { schema });
 
-// Create a Drizzle ORM instance
-export const db = drizzle(client, {
-  schema: {
-    ...unifiedWorkflowSchema
-  },
-  // Setup logger for development
-  logger: process.env.NODE_ENV === 'development'
-});
-
-// Export schema
-export { unifiedWorkflowSchema };
+// Export the raw client for transactions
+export const pgClient = client;

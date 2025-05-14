@@ -104,6 +104,11 @@ import tenantSectionGatingRoutes from './routes/tenant-section-gating.js';
 app.use('/api/tenant-section-gating', tenantSectionGatingRoutes);
 console.log('Tenant Section Gating routes registered');
 
+// Import and register module integration routes
+import moduleIntegrationRoutes from './routes/moduleIntegrationRoutes';
+app.use('/api/module-integration', moduleIntegrationRoutes);
+console.log('Module Integration routes registered');
+
 // Import and register 510(k) automation routes
 import FDA510kRoutes from './routes/510kRoutes';
 import { router as FDA510kApiRoutes } from './routes/510k-api-routes';
