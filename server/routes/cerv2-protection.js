@@ -5,10 +5,14 @@
  * to validate and recover the CERV2Page.jsx file
  */
 
-const express = require('express');
-const { spawn } = require('child_process');
-const fs = require('fs');
-const path = require('path');
+import express from 'express';
+import { spawn } from 'child_process';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const router = express.Router();
 
 // Constants
@@ -207,4 +211,4 @@ router.get('/status', (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
