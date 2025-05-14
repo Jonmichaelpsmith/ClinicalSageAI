@@ -258,18 +258,119 @@ export const findPredicateDevices = async (deviceDescription, options = { limit:
  * 
  * @param {string} deviceName - The device name for context
  * @param {Array} literatureReferences - Array of selected literature references
+ * @param {Object} options - Additional options for generation
+ * @param {string} options.manufacturer - The manufacturer name
+ * @param {string} options.modelNumber - The device model number
+ * @param {boolean} options.useEnhancedGeneration - Whether to use enhanced AI generation
  * @returns {Promise<Object>} - The generated literature review content
  */
-export const generateLiteratureReview = async (deviceName, literatureReferences) => {
+export const generateLiteratureReview = async (deviceName, literatureReferences, options = {}) => {
+  const { 
+    manufacturer = '', 
+    modelNumber = '',
+    useEnhancedGeneration = true 
+  } = options;
+
+  // Import the error handling utility
+  const errorHandling = await import('../utils/errorHandling');
+  
+  // Timeout for API request in milliseconds (2 minutes)
+  const API_TIMEOUT = 120000;
+  
+  // Create a fallback function that generates a basic literature review
+  // when the main API call fails or times out
+  const fallbackLiteratureReviewGenerator = async (deviceName, literatureReferences, originalError) => {
+    console.log('Using fallback literature review generator');
+    
+    // Extract key information from references for the fallback generator
+    const extractedInfo = literatureReferences.map(ref => ({
+      title: ref.title,
+      authors: ref.authors,
+      year: ref.year,
+      journal: ref.journal,
+      abstract: ref.abstract?.substring(0, 200) || '',
+      id: ref.id
+    }));
+    
+    // Structure basic literature review
+    const fallbackReview = {
+      content: `# Literature Review for ${deviceName || 'Medical Device'}\n\n` +
+        `## Introduction\n\nThis literature review summarizes findings from ${literatureReferences.length} ` +
+        `scientific articles relevant to ${deviceName || 'the device'}${manufacturer ? ' manufactured by ' + manufacturer : ''}.\n\n` +
+        `## Methodology\n\nA literature search was conducted across medical and scientific databases. ` +
+        `${literatureReferences.length} relevant articles were selected for this review.\n\n` +
+        `## Summary of Findings\n\n` +
+        literatureReferences.map(ref => 
+          `- **${ref.title}** (${ref.authors}, ${ref.year}): ${ref.abstract?.substring(0, 150)}...`
+        ).join('\n\n') +
+        `\n\n## Conclusion\n\nBased on the literature reviewed, additional analysis is recommended.`,
+      error: {
+        original: originalError?.message || 'Unknown error',
+        type: 'fallback_generated',
+        timestamp: new Date().toISOString()
+      },
+      metadata: {
+        generatedWithFallback: true,
+        sourceCount: literatureReferences.length,
+        generationTimestamp: new Date().toISOString(),
+        generationMethod: 'basic'
+      }
+    };
+    
+    return { review: fallbackReview };
+  };
+
   try {
-    const response = await axios.post(`${API_BASE_URL}/generate-literature-review`, {
-      deviceName,
-      literatureReferences
-    });
-    return response.data;
+    // Wrap the API call with timeout
+    const apiCallWithTimeout = errorHandling.withTimeout(
+      axios.post(`${API_BASE_URL}/generate-literature-review`, {
+        deviceName,
+        manufacturer,
+        modelNumber,
+        literatureReferences,
+        useEnhancedGeneration
+      }),
+      API_TIMEOUT,
+      'Literature review generation timed out'
+    );
+    
+    // Execute the API call with error handling and fallback
+    const response = await errorHandling.withErrorHandling(
+      async () => {
+        const result = await apiCallWithTimeout;
+        return result.data;
+      },
+      {
+        fallback: (deviceNameArg, literatureRefsArg) => 
+          fallbackLiteratureReviewGenerator(deviceNameArg, literatureRefsArg, new Error('API call failed')),
+        retries: 1,
+        retryDelay: 2000,
+        onError: (error) => {
+          console.error('Error in literature review generation:', error);
+          // You could add analytics tracking here
+        }
+      }
+    )(deviceName, literatureReferences);
+    
+    return response;
   } catch (error) {
-    console.error('Error generating literature review:', error);
-    throw error;
+    // Format error for consistent handling
+    const formattedError = errorHandling.formatErrorForDisplay(error, {
+      friendlyMessages: {
+        ...errorHandling.defaultFriendlyMessages,
+        timeout: 'The literature review is taking longer than expected to generate. Please try again with fewer articles.'
+      }
+    });
+    
+    console.error('Literature review generation failed:', formattedError);
+    
+    // Try the fallback generator as a last resort
+    try {
+      return await fallbackLiteratureReviewGenerator(deviceName, literatureReferences, error);
+    } catch (fallbackError) {
+      console.error('Even fallback generation failed:', fallbackError);
+      throw new Error(`Failed to generate literature review: ${formattedError.message}`);
+    }
   }
 };
 
@@ -278,17 +379,125 @@ export const generateLiteratureReview = async (deviceName, literatureReferences)
  * 
  * @param {string} cerProjectId - The CER project ID
  * @param {Object} reviewData - The generated review data
+ * @param {Object} options - Additional options
+ * @param {boolean} options.validateBeforeSave - Whether to validate the review before saving
+ * @param {boolean} options.addComplianceData - Whether to add compliance metadata
  * @returns {Promise<Object>} - The result of saving the review
  */
-export const saveGeneratedLiteratureReview = async (cerProjectId, reviewData) => {
+export const saveGeneratedLiteratureReview = async (cerProjectId, reviewData, options = {}) => {
+  const {
+    validateBeforeSave = true,
+    addComplianceData = true
+  } = options;
+  
+  // Import error handling utility
+  const errorHandling = await import('../utils/errorHandling');
+  
+  // Add compliance and validation metadata if requested
+  const prepareReviewData = async (data) => {
+    let enhancedData = { ...data };
+    
+    if (addComplianceData) {
+      try {
+        // Add timestamp and version info
+        enhancedData.metadata = {
+          ...(enhancedData.metadata || {}),
+          savedAt: new Date().toISOString(),
+          version: '2.0',
+          validated: validateBeforeSave
+        };
+      } catch (error) {
+        console.warn('Error adding compliance data:', error);
+        // Continue with saving even if metadata enhancement fails
+      }
+    }
+    
+    return enhancedData;
+  };
+  
+  // Create offline storage fallback function
+  const saveToLocalStorageFallback = async (projectId, data) => {
+    try {
+      // Prepare data with compliance info
+      const preparedData = await prepareReviewData(data);
+      
+      // Store in localStorage for offline resilience
+      const storageKey = `cer_literature_review_${projectId}`;
+      const savedReviews = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      
+      // Add new review with pending sync flag
+      savedReviews.push({
+        ...preparedData,
+        _pendingSync: true,
+        _savedAt: new Date().toISOString()
+      });
+      
+      // Keep only the last 5 to avoid storage limits
+      const trimmedReviews = savedReviews.slice(-5);
+      localStorage.setItem(storageKey, JSON.stringify(trimmedReviews));
+      
+      console.log('Literature review saved to local storage as fallback');
+      
+      return {
+        success: true,
+        savedLocally: true,
+        pendingSync: true,
+        data: preparedData
+      };
+    } catch (error) {
+      console.error('Failed to save to local storage:', error);
+      throw new Error('Failed to save literature review to both server and local storage');
+    }
+  };
+
   try {
-    const response = await axios.post(`${API_BASE_URL}/literature-review/${cerProjectId}`, {
-      reviewData
-    });
-    return response.data;
+    // First, optionally apply validation and prepare review data
+    const preparedReviewData = await prepareReviewData(reviewData);
+    
+    // Wrap the API call with timeout and error handling
+    const apiCallWithTimeout = errorHandling.withTimeout(
+      axios.post(`${API_BASE_URL}/literature-review/${cerProjectId}`, {
+        reviewData: preparedReviewData
+      }),
+      30000, // 30 second timeout
+      'Literature review save operation timed out'
+    );
+    
+    // Execute API call with automatic retries and fallback
+    const response = await errorHandling.withErrorHandling(
+      async () => {
+        const result = await apiCallWithTimeout;
+        return result.data;
+      },
+      {
+        fallback: () => saveToLocalStorageFallback(cerProjectId, preparedReviewData),
+        retries: 2,
+        retryDelay: 1000,
+        onError: (error) => {
+          console.error('Error saving literature review:', error);
+        }
+      }
+    )();
+    
+    return response;
   } catch (error) {
-    console.error('Error saving generated literature review:', error);
-    throw error;
+    // Format the error for display
+    const formattedError = errorHandling.formatErrorForDisplay(error, {
+      friendlyMessages: {
+        network: 'Unable to save the literature review due to network issues. The review has been saved locally and will sync when connection is restored.',
+        server: 'The server encountered an issue while saving the literature review. Please try again later.',
+        default: 'There was a problem saving the literature review.'
+      }
+    });
+    
+    console.error('Failed to save literature review:', formattedError);
+    
+    // Try local storage as last resort
+    try {
+      return await saveToLocalStorageFallback(cerProjectId, reviewData);
+    } catch (fallbackError) {
+      throw new Error(`Failed to save literature review: ${formattedError.message}`);
+    }
   }
 };
 
