@@ -1,485 +1,636 @@
 /**
  * Module Integration Service
  * 
- * This service provides integration between various modules and the unified document workflow system.
- * It handles cross-module document registration, retrieval, and synchronization.
+ * This service handles integration between different modules and the unified document system.
  */
 
-import { and, eq, sql, desc } from 'drizzle-orm';
-import { db, unifiedWorkflowSchema } from '../db/connection';
-import { 
-  documents, moduleDocuments, workflowTemplates 
-} from '../../shared/schema/unified_workflow';
-import type { 
-  Document, DocumentInsert, ModuleDocument, ModuleDocumentInsert, WorkflowTemplate 
-} from '../../shared/schema/unified_workflow';
 import { z } from 'zod';
+import { eq, and, or, inArray, desc, sql } from 'drizzle-orm';
+import { db, pgClient } from '../db/connection';
+import * as schema from '../../shared/schema/unified_workflow';
 import { workflowService } from './WorkflowService';
 
-// Define supported module types
-export const ModuleType = {
-  CER: 'cer',
-  CMC: 'cmc',
-  MEDICAL_DEVICE: 'medical_device',
-  IND: 'ind',
-  ECTD: 'ectd',
-  VAULT: 'vault',
-  STUDY: 'study'
-};
-
-// Module-specific document types
-export const DocumentType = {
-  REPORT_510K: '510k_report',
-  CER_REPORT: 'cer_report',
-  QMS_DOCUMENT: 'qms_document',
-  CMC_SECTION: 'cmc_section',
-  STUDY_PROTOCOL: 'study_protocol',
-  REGULATORY_SUBMISSION: 'regulatory_submission',
-  LITERATURE_REVIEW: 'literature_review'
-};
-
-// Define module document registration input validation
+// Define validation schemas
 export const registerDocumentSchema = z.object({
-  title: z.string().min(3).max(255),
-  documentType: z.string().min(3).max(100),
-  moduleType: z.string().min(2).max(50),
-  originalDocumentId: z.string().min(1).max(255),
+  documentType: z.string().min(1),
+  name: z.string().min(1),
+  version: z.string().optional().default('1.0'),
   organizationId: z.number().int().positive(),
+  status: z.string().optional().default('draft'),
+  metadata: z.record(z.any()).optional().default({}),
+  externalId: z.string().min(1),
   createdBy: z.number().int().positive(),
-  vaultFolderId: z.number().int().positive().optional(),
-  metadata: z.record(z.any()).optional(),
-  content: z.any().optional()
+  moduleType: z.string().min(1),
+  originalId: z.string().min(1),
+  moduleUrl: z.string().optional(),
 });
 
-export type RegisterDocumentInput = z.infer<typeof registerDocumentSchema>;
+export const moduleReferenceSchema = z.object({
+  moduleType: z.string().min(1),
+  originalId: z.string().min(1),
+  organizationId: z.number().int().positive(),
+});
 
-export class ModuleIntegrationService {
+class ModuleIntegrationService {
   /**
-   * Registers a document from a specific module into the unified document system
+   * Register a document from a module in the unified document system
    * 
-   * @param documentData - The document data for registration
+   * @param data Document data
    * @returns The registered document with its module reference
    */
-  async registerModuleDocument(
-    documentData: RegisterDocumentInput
-  ): Promise<{ document: Document; moduleDocument: ModuleDocument }> {
-    // Validate input
-    const validatedData = registerDocumentSchema.parse(documentData);
-    
-    // Use a transaction to ensure both document and moduleDocument are created
-    const result = await db.transaction(async (tx) => {
-      // Insert the unified document
-      const [createdDocument] = await tx
-        .insert(documents)
-        .values({
-          title: validatedData.title,
-          documentType: validatedData.documentType,
-          organizationId: validatedData.organizationId,
-          createdBy: validatedData.createdBy,
-          vaultFolderId: validatedData.vaultFolderId,
-          metadata: validatedData.metadata || {},
-          content: validatedData.content || null
-        })
-        .returning();
-      
-      if (!createdDocument) {
-        throw new Error('Failed to create unified document');
-      }
-      
-      // Create the module-specific reference
-      const [moduleRef] = await tx
-        .insert(moduleDocuments)
-        .values({
-          documentId: createdDocument.id,
-          moduleType: validatedData.moduleType,
-          originalDocumentId: validatedData.originalDocumentId,
-          organizationId: validatedData.organizationId
-        })
-        .returning();
-      
-      if (!moduleRef) {
-        throw new Error('Failed to create module document reference');
-      }
-      
-      return { document: createdDocument, moduleDocument: moduleRef };
-    });
-    
-    return result;
-  }
-  
-  /**
-   * Retrieves a document by its module-specific ID
-   * 
-   * @param moduleType - The type of module
-   * @param originalDocumentId - The original ID in the module
-   * @param organizationId - The organization ID
-   * @returns The document with its module reference
-   */
-  async getDocumentByModuleId(
-    moduleType: string, 
-    originalDocumentId: string, 
-    organizationId: number
-  ): Promise<{ document: Document; moduleDocument: ModuleDocument } | null> {
-    // First find the module document reference
-    const moduleRef = await db.query.moduleDocuments.findFirst({
-      where: and(
-        eq(moduleDocuments.moduleType, moduleType),
-        eq(moduleDocuments.originalDocumentId, originalDocumentId),
-        eq(moduleDocuments.organizationId, organizationId)
-      )
-    });
-    
-    if (!moduleRef) {
-      return null;
-    }
-    
-    // Get the unified document
-    const doc = await db.query.documents.findFirst({
-      where: eq(documents.id, moduleRef.documentId)
-    });
-    
-    if (!doc) {
-      return null;
-    }
-    
-    return { document: doc, moduleDocument: moduleRef };
-  }
-  
-  /**
-   * Updates a unified document
-   * 
-   * @param documentId - The document ID
-   * @param updateData - The data to update
-   * @returns The updated document
-   */
-  async updateDocument(
-    documentId: number, 
-    updateData: Partial<DocumentInsert>
-  ): Promise<Document> {
-    // Verify the document exists
-    const existingDoc = await db.query.documents.findFirst({
-      where: eq(documents.id, documentId)
-    });
-    
-    if (!existingDoc) {
-      throw new Error(`Document with ID ${documentId} not found`);
-    }
-    
-    // Update the document
-    const [updatedDoc] = await db
-      .update(documents)
-      .set(updateData)
-      .where(eq(documents.id, documentId))
-      .returning();
-    
-    if (!updatedDoc) {
-      throw new Error('Failed to update document');
-    }
-    
-    return updatedDoc;
-  }
-  
-  /**
-   * Creates a workflow for a document using a specified template
-   * 
-   * @param documentId - The document ID
-   * @param templateId - The workflow template ID
-   * @param startedBy - User ID of the workflow initiator
-   * @param metadata - Optional workflow metadata
-   * @returns The created workflow with its approvals
-   */
-  async createDocumentWorkflow(
-    documentId: number, 
-    templateId: number, 
-    startedBy: number,
-    metadata: Record<string, any> = {}
-  ) {
-    // Verify the document exists
-    const document = await db.query.documents.findFirst({
-      where: eq(documents.id, documentId)
-    });
-    
-    if (!document) {
-      throw new Error(`Document with ID ${documentId} not found`);
-    }
-    
-    // Use the workflow service to create the workflow
-    return await workflowService.createWorkflow(
-      documentId,
-      templateId,
-      startedBy,
-      metadata
+  async registerModuleDocument(data: z.infer<typeof registerDocumentSchema>) {
+    // Check if document already exists by module reference
+    const existingDoc = await this.getDocumentByModuleId(
+      data.moduleType,
+      data.originalId,
+      data.organizationId
     );
-  }
-  
-  /**
-   * Gets all documents for a specific module and organization
-   * 
-   * @param moduleType - The module type
-   * @param organizationId - The organization ID
-   * @returns Array of documents with their module references
-   */
-  async getModuleDocuments(
-    moduleType: string, 
-    organizationId: number
-  ): Promise<{ document: Document; moduleDocument: ModuleDocument }[]> {
-    // Find all module document references
-    const moduleRefs = await db.query.moduleDocuments.findMany({
-      where: and(
-        eq(moduleDocuments.moduleType, moduleType),
-        eq(moduleDocuments.organizationId, organizationId)
-      )
-    });
-    
-    if (!moduleRefs.length) {
-      return [];
-    }
-    
-    // Get all document IDs
-    const documentIds = moduleRefs.map(ref => ref.documentId);
-    
-    // Get all documents
-    const docs = await db.query.documents.findMany({
-      where: sql`${documents.id} IN (${sql.join(documentIds, sql`, `)})`
-    });
-    
-    // Map documents to their module references
-    return moduleRefs.map(moduleRef => {
-      const document = docs.find(doc => doc.id === moduleRef.documentId);
-      if (!document) {
-        throw new Error(`Document with ID ${moduleRef.documentId} not found`);
-      }
-      return { document, moduleDocument: moduleRef };
-    });
-  }
-  
-  /**
-   * Gets document count by document type for an organization
-   * 
-   * @param organizationId - The organization ID
-   * @returns Map of document types to counts
-   */
-  async getDocumentCountByType(
-    organizationId: number
-  ): Promise<Record<string, number>> {
-    const results = await db.execute(sql`
-      SELECT document_type, COUNT(*) as count
-      FROM unified_documents
-      WHERE organization_id = ${organizationId}
-      GROUP BY document_type
-    `);
-    
-    const countMap: Record<string, number> = {};
-    for (const row of results.rows as { document_type: string; count: string }[]) {
-      countMap[row.document_type] = parseInt(row.count, 10);
-    }
-    
-    return countMap;
-  }
-  
-  /**
-   * Creates a default set of workflow templates for a new organization
-   * 
-   * @param organizationId - The organization ID
-   * @param createdBy - User ID of the creator
-   * @returns The created templates
-   */
-  async createDefaultWorkflowTemplates(
-    organizationId: number,
-    createdBy: number
-  ): Promise<WorkflowTemplate[]> {
-    const defaultTemplates = [
-      {
-        name: '510(k) Standard Review',
-        description: 'Standard workflow for 510(k) submission review',
-        moduleType: ModuleType.MEDICAL_DEVICE,
-        organizationId,
-        isActive: true,
-        createdBy,
-        steps: [
-          { name: 'Initial Review', description: 'Technical content review' },
-          { name: 'Quality Check', description: 'Formatting and completeness check' },
-          { name: 'Regulatory Review', description: 'Compliance with regulations' },
-          { name: 'Final Approval', description: 'Final sign-off before submission' }
-        ]
-      },
-      {
-        name: 'CER Standard Review',
-        description: 'Standard workflow for Clinical Evaluation Report review',
-        moduleType: ModuleType.CER,
-        organizationId,
-        isActive: true,
-        createdBy,
-        steps: [
-          { name: 'Data Review', description: 'Clinical data validation' },
-          { name: 'Medical Writing', description: 'Narrative and structure' },
-          { name: 'Quality Check', description: 'Formatting and references' },
-          { name: 'Medical Expert Review', description: 'Clinical validity check' },
-          { name: 'Final Approval', description: 'Final sign-off for use' }
-        ]
-      },
-      {
-        name: 'Expedited Review',
-        description: 'Faster review for time-sensitive documents',
-        moduleType: ModuleType.MEDICAL_DEVICE,
-        organizationId,
-        isActive: true,
-        createdBy,
-        steps: [
-          { name: 'Rapid Review', description: 'Combined technical and quality review' },
-          { name: 'Final Approval', description: 'Final sign-off' }
-        ]
-      }
-    ];
-    
-    const createdTemplates = await Promise.all(
-      defaultTemplates.map(template => 
-        workflowService.createWorkflowTemplate(template)
-      )
-    );
-    
-    return createdTemplates;
-  }
-  
-  /**
-   * Gets the most recent document versions from each module for a user
-   * 
-   * @param userId - The user ID
-   * @param organizationId - The organization ID
-   * @param limit - Optional limit on results
-   * @returns Recent documents from all modules
-   */
-  async getRecentDocumentsForUser(
-    userId: number,
-    organizationId: number,
-    limit = 10
-  ): Promise<Document[]> {
-    const recentDocs = await db.query.documents.findMany({
-      where: and(
-        eq(documents.organizationId, organizationId),
-        eq(documents.createdBy, userId)
-      ),
-      orderBy: [desc(documents.updatedAt)],
-      limit
-    });
-    
-    return recentDocs;
-  }
-  
-  /**
-   * Gets all documents that are currently in review workflows
-   * 
-   * @param organizationId - The organization ID
-   * @returns Documents with active workflows
-   */
-  async getDocumentsInReview(
-    organizationId: number
-  ): Promise<{ document: Document; workflowCount: number }[]> {
-    // This query finds documents with active workflows
-    const results = await db.execute(sql`
-      SELECT d.*, COUNT(w.id) as workflow_count
-      FROM unified_documents d
-      JOIN workflows w ON d.id = w.document_id
-      WHERE d.organization_id = ${organizationId}
-      AND w.status = 'in_progress'
-      GROUP BY d.id
-      ORDER BY d.updated_at DESC
-    `);
-    
-    // Convert the raw results to proper types
-    const docsWithCounts: { document: Document; workflowCount: number }[] = [];
-    
-    for (const row of results.rows) {
-      const doc = {
-        id: row.id,
-        title: row.title,
-        documentType: row.document_type,
-        organizationId: row.organization_id,
-        createdBy: row.created_by,
-        vaultFolderId: row.vault_folder_id,
-        metadata: row.metadata,
-        content: row.content,
-        createdAt: new Date(row.created_at),
-        updatedAt: new Date(row.updated_at)
-      } as Document;
-      
-      docsWithCounts.push({
-        document: doc,
-        workflowCount: parseInt(row.workflow_count, 10)
+
+    if (existingDoc) {
+      // If document exists, update it
+      return this.updateDocument(existingDoc.id, {
+        name: data.name,
+        version: data.version,
+        status: data.status,
+        metadata: data.metadata,
+        updatedAt: new Date()
       });
     }
-    
-    return docsWithCounts;
+
+    const client = await pgClient.begin();
+
+    try {
+      // Insert the document
+      const [document] = await db
+        .insert(schema.documents)
+        .values({
+          documentType: data.documentType,
+          name: data.name,
+          version: data.version || '1.0',
+          organizationId: data.organizationId,
+          status: data.status || 'draft',
+          metadata: data.metadata || {},
+          externalId: data.externalId,
+          createdBy: data.createdBy,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        })
+        .returning()
+        .execute(client as any);
+
+      // Insert module reference
+      const [moduleRef] = await db
+        .insert(schema.moduleReferences)
+        .values({
+          documentId: document.id,
+          moduleType: data.moduleType,
+          originalId: data.originalId,
+          moduleUrl: data.moduleUrl,
+          createdAt: new Date()
+        })
+        .returning()
+        .execute(client as any);
+
+      await client.commit();
+
+      return {
+        ...document,
+        moduleReference: moduleRef
+      };
+    } catch (error) {
+      await client.rollback();
+      console.error('Error registering module document:', error);
+      throw error;
+    }
   }
-  
+
   /**
-   * Compares two versions of a document to identify changes
+   * Update a document in the unified document system
    * 
-   * @param currentVersionId - Current document version ID
-   * @param previousVersionId - Previous document version ID
-   * @returns Difference summary
+   * @param documentId Document ID
+   * @param updateData Data to update
+   * @returns The updated document
    */
-  async compareDocumentVersions(
-    currentVersionId: number, 
-    previousVersionId: number
-  ): Promise<{
-    hasDifferences: boolean;
-    currentVersion: Document;
-    previousVersion: Document;
-    differences: string[];
-  }> {
-    // Get both document versions
-    const currentVersion = await db.query.documents.findFirst({
-      where: eq(documents.id, currentVersionId)
-    });
-    
-    const previousVersion = await db.query.documents.findFirst({
-      where: eq(documents.id, previousVersionId)
-    });
-    
-    if (!currentVersion || !previousVersion) {
-      throw new Error('One or both document versions not found');
+  async updateDocument(documentId: number, updateData: Partial<typeof schema.documents.$inferInsert>) {
+    const client = await pgClient.begin();
+
+    try {
+      const [updatedDoc] = await db
+        .update(schema.documents)
+        .set({
+          ...updateData,
+          updatedAt: new Date()
+        })
+        .where(eq(schema.documents.id, documentId))
+        .returning()
+        .execute(client as any);
+
+      const moduleReference = await db
+        .select()
+        .from(schema.moduleReferences)
+        .where(eq(schema.moduleReferences.documentId, documentId))
+        .execute(client as any);
+
+      await client.commit();
+
+      return {
+        ...updatedDoc,
+        moduleReference: moduleReference[0]
+      };
+    } catch (error) {
+      await client.rollback();
+      console.error('Error updating document:', error);
+      throw error;
     }
-    
-    // Compare basic fields
-    const differences: string[] = [];
-    
-    if (currentVersion.title !== previousVersion.title) {
-      differences.push(`Title changed from "${previousVersion.title}" to "${currentVersion.title}"`);
+  }
+
+  /**
+   * Get a document by its module-specific ID
+   * 
+   * @param moduleType Module type
+   * @param originalId Original document ID in the module
+   * @param organizationId Organization ID
+   * @returns The document with its module reference, or null if not found
+   */
+  async getDocumentByModuleId(moduleType: string, originalId: string, organizationId: number) {
+    const results = await db
+      .select()
+      .from(schema.documents)
+      .innerJoin(
+        schema.moduleReferences,
+        eq(schema.documents.id, schema.moduleReferences.documentId)
+      )
+      .where(
+        and(
+          eq(schema.moduleReferences.moduleType, moduleType),
+          eq(schema.moduleReferences.originalId, originalId),
+          eq(schema.documents.organizationId, organizationId)
+        )
+      )
+      .execute();
+
+    if (results.length === 0) {
+      return null;
     }
-    
-    // Compare metadata (simplistic approach)
-    const currentMeta = currentVersion.metadata as Record<string, any>;
-    const previousMeta = previousVersion.metadata as Record<string, any>;
-    
-    // Get all unique keys from both metadata objects
-    const allKeys = new Set([
-      ...Object.keys(currentMeta || {}),
-      ...Object.keys(previousMeta || {})
-    ]);
-    
-    for (const key of allKeys) {
-      const current = currentMeta?.[key];
-      const previous = previousMeta?.[key];
+
+    const res = results[0];
+    return {
+      id: res.documents.id,
+      ...res.documents,
+      moduleReference: res.module_references
+    };
+  }
+
+  /**
+   * Create a document workflow
+   * 
+   * @param documentId Document ID
+   * @param templateId Workflow template ID
+   * @param startedBy User who started the workflow
+   * @param metadata Optional workflow metadata
+   * @returns The created workflow with approvals
+   */
+  async createDocumentWorkflow(documentId: number, templateId: number, startedBy: number, metadata = {}) {
+    return workflowService.createWorkflow(documentId, templateId, startedBy, metadata);
+  }
+
+  /**
+   * Create default workflow templates for an organization
+   * 
+   * @param organizationId Organization ID
+   * @param createdBy User ID of creator
+   * @returns The created templates
+   */
+  async createDefaultWorkflowTemplates(organizationId: number, createdBy: number) {
+    const moduleTypes = ['CER', '510k', 'ClinicalTrial', 'IND', 'eCTD'];
+    const templates = [];
+
+    for (const moduleType of moduleTypes) {
+      const templateStructure = this.getDefaultTemplateStructure(moduleType);
       
-      if (JSON.stringify(current) !== JSON.stringify(previous)) {
-        differences.push(`Metadata field "${key}" changed`);
+      if (templateStructure) {
+        const templateData = {
+          name: templateStructure.name,
+          description: templateStructure.description,
+          organizationId,
+          moduleType,
+          isDefault: true,
+          createdBy,
+          steps: templateStructure.steps.map((step: any, index: number) => ({
+            name: step.name,
+            description: step.description,
+            order: index,
+            assigneeType: step.assigneeType || 'any'
+          }))
+        };
+        
+        const template = await workflowService.createWorkflowTemplate(templateData);
+        templates.push(template);
       }
     }
     
-    // Compare content (simplistic approach)
-    if (JSON.stringify(currentVersion.content) !== JSON.stringify(previousVersion.content)) {
-      differences.push('Document content changed');
-    }
+    return templates;
+  }
+
+  /**
+   * Get documents for a module
+   * 
+   * @param moduleType Module type
+   * @param organizationId Organization ID
+   * @returns List of documents
+   */
+  async getModuleDocuments(moduleType: string, organizationId: number) {
+    const results = await db
+      .select()
+      .from(schema.documents)
+      .innerJoin(
+        schema.moduleReferences,
+        eq(schema.documents.id, schema.moduleReferences.documentId)
+      )
+      .where(
+        and(
+          eq(schema.moduleReferences.moduleType, moduleType),
+          eq(schema.documents.organizationId, organizationId)
+        )
+      )
+      .orderBy(desc(schema.documents.updatedAt))
+      .execute();
+
+    return results.map((result) => ({
+      ...result.documents,
+      moduleReference: result.module_references
+    }));
+  }
+
+  /**
+   * Get document counts by type for an organization
+   * 
+   * @param organizationId Organization ID
+   * @returns Map of document types to counts
+   */
+  async getDocumentCountByType(organizationId: number) {
+    const results = await db
+      .select({
+        moduleType: schema.moduleReferences.moduleType,
+        count: sql`COUNT(*)`
+      })
+      .from(schema.documents)
+      .innerJoin(
+        schema.moduleReferences,
+        eq(schema.documents.id, schema.moduleReferences.documentId)
+      )
+      .where(eq(schema.documents.organizationId, organizationId))
+      .groupBy(schema.moduleReferences.moduleType)
+      .execute();
+
+    return results.reduce((acc: Record<string, number>, ref: any) => {
+      acc[ref.moduleType] = ref.count;
+      return acc;
+    }, {});
+  }
+
+  /**
+   * Get documents in review
+   * 
+   * @param organizationId Organization ID
+   * @returns Documents in review
+   */
+  async getDocumentsInReview(organizationId: number) {
+    const documents = await db
+      .select()
+      .from(schema.documents)
+      .innerJoin(
+        schema.moduleReferences,
+        eq(schema.documents.id, schema.moduleReferences.documentId)
+      )
+      .innerJoin(
+        schema.documentWorkflows,
+        eq(schema.documents.id, schema.documentWorkflows.documentId)
+      )
+      .where(
+        and(
+          eq(schema.documents.organizationId, organizationId),
+          eq(schema.documentWorkflows.status, 'in_progress')
+        )
+      )
+      .orderBy(desc(schema.documentWorkflows.startedAt))
+      .execute();
+
+    // Get all workflow IDs
+    const workflowIds = [...new Set(documents.map((doc: any) => doc.document_workflows.id))];
     
+    // Get all approvals
+    const approvals = workflowIds.length > 0 
+      ? await db
+          .select()
+          .from(schema.workflowApprovals)
+          .where(inArray(schema.workflowApprovals.workflowId, workflowIds))
+          .execute()
+      : [];
+
+    // Organize results by document
+    return documents.reduce((acc: any[], doc: any) => {
+      const existingDoc = acc.find(d => d.id === doc.documents.id);
+      
+      if (existingDoc) {
+        existingDoc.workflows.push({
+          ...doc.document_workflows,
+          approvals: approvals.filter(a => a.workflowId === doc.document_workflows.id)
+        });
+      } else {
+        acc.push({
+          ...doc.documents,
+          moduleReference: doc.module_references,
+          workflows: [{
+            ...doc.document_workflows,
+            approvals: approvals.filter(a => a.workflowId === doc.document_workflows.id)
+          }]
+        });
+      }
+      
+      return acc;
+    }, []);
+  }
+
+  /**
+   * Get recent documents for a user
+   * 
+   * @param userId User ID
+   * @param organizationId Organization ID
+   * @param limit Result limit
+   * @returns Recent documents
+   */
+  async getRecentDocumentsForUser(userId: number, organizationId: number, limit: number = 10) {
+    // Get documents created by user
+    const createdByUser = await db
+      .select()
+      .from(schema.documents)
+      .innerJoin(
+        schema.moduleReferences,
+        eq(schema.documents.id, schema.moduleReferences.documentId)
+      )
+      .where(
+        and(
+          eq(schema.documents.createdBy, userId),
+          eq(schema.documents.organizationId, organizationId)
+        )
+      )
+      .orderBy(desc(schema.documents.updatedAt))
+      .limit(limit)
+      .execute();
+
+    // Get workflows where user is an approver
+    const approvalWorkflows = await db
+      .select()
+      .from(schema.workflowApprovals)
+      .innerJoin(
+        schema.documentWorkflows,
+        eq(schema.workflowApprovals.workflowId, schema.documentWorkflows.id)
+      )
+      .where(
+        or(
+          eq(schema.workflowApprovals.approvedBy, userId),
+          eq(schema.workflowApprovals.status, 'pending')
+        )
+      )
+      .execute();
+
+    const documentIds = approvalWorkflows.map(w => w.document_workflows.documentId);
+    
+    // Get documents for the workflows
+    const approvalDocuments = documentIds.length > 0 
+      ? await db
+          .select()
+          .from(schema.documents)
+          .innerJoin(
+            schema.moduleReferences,
+            eq(schema.documents.id, schema.moduleReferences.documentId)
+          )
+          .where(
+            and(
+              inArray(schema.documents.id, documentIds),
+              eq(schema.documents.organizationId, organizationId)
+            )
+          )
+          .execute()
+      : [];
+
+    // Combine and sort results
+    const combined = [
+      ...createdByUser.map(doc => ({
+        ...doc.documents,
+        moduleReference: doc.module_references,
+        relationshipType: 'created'
+      })),
+      ...approvalDocuments.map(doc => ({
+        ...doc.documents,
+        moduleReference: doc.module_references,
+        relationshipType: 'approval'
+      }))
+    ];
+
+    // Remove duplicates and sort by updatedAt
+    const seen = new Set();
+    return combined
+      .filter(doc => {
+        if (seen.has(doc.id)) {
+          return false;
+        }
+        seen.add(doc.id);
+        return true;
+      })
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .slice(0, limit);
+  }
+
+  /**
+   * Compare document versions
+   * 
+   * @param currentVersionId Current document version ID
+   * @param previousVersionId Previous document version ID
+   * @returns The comparison result
+   */
+  async compareDocumentVersions(currentVersionId: number, previousVersionId: number) {
+    // This would be expanded to do field-by-field comparison for document versions
+    // For now we'll return a basic structure
     return {
-      hasDifferences: differences.length > 0,
-      currentVersion,
-      previousVersion,
-      differences
+      currentVersion: await this.getDocumentById(currentVersionId),
+      previousVersion: await this.getDocumentById(previousVersionId),
+      differences: [] // This would be populated with the actual differences
     };
+  }
+
+  /**
+   * Get a document by ID
+   * 
+   * @param documentId Document ID
+   * @returns The document with its module reference
+   */
+  private async getDocumentById(documentId: number) {
+    const results = await db
+      .select()
+      .from(schema.documents)
+      .leftJoin(
+        schema.moduleReferences,
+        eq(schema.documents.id, schema.moduleReferences.documentId)
+      )
+      .where(eq(schema.documents.id, documentId))
+      .execute();
+
+    if (results.length === 0) {
+      return null;
+    }
+
+    return {
+      ...results[0].documents,
+      moduleReference: results[0].module_references
+    };
+  }
+
+  /**
+   * Get default template structure for module type
+   */
+  getDefaultTemplateStructure(moduleType: string) {
+    const templates: Record<string, any> = {
+      '510k': {
+        name: '510(k) Review Workflow',
+        description: 'Standard review process for 510(k) submissions',
+        steps: [
+          {
+            name: 'Technical Review',
+            description: 'Technical staff review of documentation',
+            assigneeType: 'technical'
+          },
+          {
+            name: 'QA Review',
+            description: 'Quality assurance review',
+            assigneeType: 'qa'
+          },
+          {
+            name: 'Regulatory Review',
+            description: 'Regulatory affairs review',
+            assigneeType: 'regulatory'
+          },
+          {
+            name: 'Final Approval',
+            description: 'Final approval by management',
+            assigneeType: 'management'
+          }
+        ]
+      },
+      'CER': {
+        name: 'CER Review Workflow',
+        description: 'Standard review process for Clinical Evaluation Reports',
+        steps: [
+          {
+            name: 'Clinical Data Review',
+            description: 'Review of clinical data',
+            assigneeType: 'clinical'
+          },
+          {
+            name: 'Technical Review',
+            description: 'Technical staff review',
+            assigneeType: 'technical'
+          },
+          {
+            name: 'QA Review',
+            description: 'Quality assurance review',
+            assigneeType: 'qa'
+          },
+          {
+            name: 'Final Approval',
+            description: 'Final approval by management',
+            assigneeType: 'management'
+          }
+        ]
+      },
+      'ClinicalTrial': {
+        name: 'Clinical Trial Documentation Workflow',
+        description: 'Review process for clinical trial documentation',
+        steps: [
+          {
+            name: 'Protocol Review',
+            description: 'Review of protocol documentation',
+            assigneeType: 'clinical'
+          },
+          {
+            name: 'Statistical Review',
+            description: 'Review of statistical methods',
+            assigneeType: 'statistical'
+          },
+          {
+            name: 'Medical Review',
+            description: 'Medical review of study design',
+            assigneeType: 'medical'
+          },
+          {
+            name: 'Final Approval',
+            description: 'Final approval by management',
+            assigneeType: 'management'
+          }
+        ]
+      },
+      'IND': {
+        name: 'IND Review Workflow',
+        description: 'Review process for Investigational New Drug applications',
+        steps: [
+          {
+            name: 'CMC Review',
+            description: 'Chemistry, Manufacturing and Controls review',
+            assigneeType: 'cmc'
+          },
+          {
+            name: 'Toxicology Review',
+            description: 'Review of toxicology data',
+            assigneeType: 'toxicology'
+          },
+          {
+            name: 'Clinical Review',
+            description: 'Review of clinical protocol',
+            assigneeType: 'clinical'
+          },
+          {
+            name: 'Regulatory Review',
+            description: 'Regulatory affairs review',
+            assigneeType: 'regulatory'
+          },
+          {
+            name: 'Final Approval',
+            description: 'Final approval by management',
+            assigneeType: 'management'
+          }
+        ]
+      },
+      'eCTD': {
+        name: 'eCTD Review Workflow',
+        description: 'Review process for eCTD submissions',
+        steps: [
+          {
+            name: 'Content Review',
+            description: 'Review of submission content',
+            assigneeType: 'content'
+          },
+          {
+            name: 'Technical Review',
+            description: 'Technical validation of eCTD format',
+            assigneeType: 'technical'
+          },
+          {
+            name: 'Regulatory Review',
+            description: 'Regulatory affairs review',
+            assigneeType: 'regulatory'
+          },
+          {
+            name: 'Final Approval',
+            description: 'Final approval by management',
+            assigneeType: 'management'
+          }
+        ]
+      }
+    };
+
+    return templates[moduleType] || null;
   }
 }
 
-// Export a singleton instance
 export const moduleIntegrationService = new ModuleIntegrationService();

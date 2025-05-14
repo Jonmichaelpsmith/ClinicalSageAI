@@ -9,6 +9,7 @@ import { z } from 'zod';
 import { db, pgClient } from '../db/connection';
 import * as schema from '../../shared/schema/unified_workflow';
 import { eq, and, inArray, desc, sql } from 'drizzle-orm';
+import { type PostgresJsDatabase } from 'drizzle-orm/postgres-js';
 
 // Define validation schemas
 export const workflowTemplateSchema = z.object({
@@ -73,10 +74,10 @@ class WorkflowService {
           createdAt: new Date()
         })
         .returning()
-        .execute(tx);
+        .execute(client as any);
 
       // Insert the steps
-      const steps = await Promise.all(templateData.steps.map(async (step, index) => {
+      const steps = await Promise.all(templateData.steps.map(async (step: any, index: number) => {
         const [createdStep] = await db
           .insert(schema.workflowTemplateSteps)
           .values({
@@ -88,7 +89,7 @@ class WorkflowService {
             createdAt: new Date()
           })
           .returning()
-          .execute(tx);
+          .execute(client as any);
 
         return createdStep;
       }));
