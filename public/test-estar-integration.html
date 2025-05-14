@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>eSTAR Integration Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1 {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+    }
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .button {
+      background-color: #4361ee;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    .button:hover {
+      background-color: #3a56d4;
+    }
+    .button:disabled {
+      background-color: #a0aec0;
+      cursor: not-allowed;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      border-left: 4px solid #4361ee;
+      white-space: pre-wrap;
+      font-family: monospace;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .success {
+      border-left-color: #10b981;
+    }
+    .error {
+      border-left-color: #ef4444;
+    }
+    .input-group {
+      margin-bottom: 15px;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    .input-group input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>eSTAR Integration Test</h1>
+  
+  <div class="card">
+    <h2>Test eSTAR Validation</h2>
+    <div class="input-group">
+      <label for="projectId">Project ID</label>
+      <input type="text" id="projectId" value="test-project-1">
+    </div>
+    <div class="input-group">
+      <label>
+        <input type="checkbox" id="strictMode"> Strict Validation Mode
+      </label>
+    </div>
+    <button class="button" id="validateBtn">Validate eSTAR Package</button>
+    <div id="validateResult" class="result" style="display: none;"></div>
+  </div>
+  
+  <div class="card">
+    <h2>Test eSTAR Build</h2>
+    <button class="button" id="buildBtn">Build eSTAR Package</button>
+    <div id="buildResult" class="result" style="display: none;"></div>
+  </div>
+  
+  <div class="card">
+    <h2>Test Workflow Integration</h2>
+    <div class="input-group">
+      <label for="reportId">Report ID</label>
+      <input type="text" id="reportId" value="report-123">
+    </div>
+    <button class="button" id="integrateBtn">Integrate with Workflow</button>
+    <div id="integrateResult" class="result" style="display: none;"></div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Validation test
+      document.getElementById('validateBtn').addEventListener('click', async function() {
+        const resultEl = document.getElementById('validateResult');
+        resultEl.style.display = 'block';
+        resultEl.textContent = 'Validating...';
+        resultEl.className = 'result';
+        
+        const projectId = document.getElementById('projectId').value;
+        const strictMode = document.getElementById('strictMode').checked;
+        
+        try {
+          const response = await fetch('/api/fda510k/estar/validate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              projectId,
+              strictMode
+            }),
+          });
+          
+          const data = await response.json();
+          resultEl.textContent = JSON.stringify(data, null, 2);
+          
+          if (data.success) {
+            resultEl.classList.add('success');
+          } else {
+            resultEl.classList.add('error');
+          }
+        } catch (error) {
+          resultEl.textContent = `Error: ${error.message}`;
+          resultEl.classList.add('error');
+        }
+      });
+      
+      // Build test
+      document.getElementById('buildBtn').addEventListener('click', async function() {
+        const resultEl = document.getElementById('buildResult');
+        resultEl.style.display = 'block';
+        resultEl.textContent = 'Building...';
+        resultEl.className = 'result';
+        
+        const projectId = document.getElementById('projectId').value;
+        
+        try {
+          const response = await fetch('/api/fda510k/estar/build', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              projectId,
+              options: {}
+            }),
+          });
+          
+          const data = await response.json();
+          resultEl.textContent = JSON.stringify(data, null, 2);
+          
+          if (data.success) {
+            resultEl.classList.add('success');
+          } else {
+            resultEl.classList.add('error');
+          }
+        } catch (error) {
+          resultEl.textContent = `Error: ${error.message}`;
+          resultEl.classList.add('error');
+        }
+      });
+      
+      // Integration test
+      document.getElementById('integrateBtn').addEventListener('click', async function() {
+        const resultEl = document.getElementById('integrateResult');
+        resultEl.style.display = 'block';
+        resultEl.textContent = 'Integrating...';
+        resultEl.className = 'result';
+        
+        const projectId = document.getElementById('projectId').value;
+        const reportId = document.getElementById('reportId').value;
+        
+        try {
+          const response = await fetch('/api/fda510k/estar/workflow/integrate', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              projectId,
+              reportId,
+              options: {
+                validateFirst: true,
+                strictValidation: false
+              }
+            }),
+          });
+          
+          const data = await response.json();
+          resultEl.textContent = JSON.stringify(data, null, 2);
+          
+          if (data.success) {
+            resultEl.classList.add('success');
+          } else {
+            resultEl.classList.add('error');
+          }
+        } catch (error) {
+          resultEl.textContent = `Error: ${error.message}`;
+          resultEl.classList.add('error');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
