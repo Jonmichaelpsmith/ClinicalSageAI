@@ -1,185 +1,197 @@
 /**
  * Document Assembly Routes
  * 
- * This module provides API endpoints for assembling CER documents from
- * various sections, including literature reviews and predicate device comparisons.
+ * This module provides API routes for assembling CER and 510(k) documents from their
+ * component sections, validating them, and making them available for download.
  */
 
-import express from 'express';
-import { 
-  assembleCERDocument, 
-  generateCERDocument, 
-  enhanceCERWithAI, 
-  generateAndSaveCER 
-} from '../services/documentAssemblyService.js';
-
+const express = require('express');
 const router = express.Router();
+const documentAssemblyService = require('../services/documentAssemblyService');
+const path = require('path');
+
+// Initialize the document assembly service
+(async () => {
+  await documentAssemblyService.initialize();
+})();
 
 /**
- * POST /api/document-assembly/preview - Generate a preview of an assembled CER document
+ * @route POST /api/document-assembly/cer
+ * @description Assemble a complete CER document from sections and metadata
+ * @access Private
  */
-router.post('/preview', async (req, res) => {
+router.post('/cer', async (req, res) => {
   try {
     const { cerData } = req.body;
     
-    if (!cerData || !cerData.deviceProfile) {
+    if (!cerData) {
       return res.status(400).json({
         success: false,
-        error: 'Missing cerData or deviceProfile'
+        message: 'CER data is required'
       });
     }
     
-    console.log(`Generating preview for CER document: ${cerData.deviceProfile.deviceName || 'Unknown Device'}`);
+    const result = await documentAssemblyService.assembleCERDocument(cerData);
     
-    // Generate the CER document without AI enhancement for preview
-    const cerDocument = await generateCERDocument(cerData);
-    
-    res.json({
+    return res.status(200).json({
       success: true,
-      document: cerDocument,
-      message: 'CER document preview generated successfully'
+      ...result
     });
-    
   } catch (error) {
-    console.error('Error generating CER document preview:', error);
-    res.status(500).json({
+    console.error('Error assembling CER document:', error);
+    return res.status(500).json({
       success: false,
-      error: 'Failed to generate CER document preview',
-      message: error.message
+      message: error.message || 'Failed to assemble CER document'
     });
   }
 });
 
 /**
- * POST /api/document-assembly/generate - Generate a complete CER document and save it
+ * @route POST /api/document-assembly/510k
+ * @description Assemble a 510(k) submission document
+ * @access Private
  */
-router.post('/generate', async (req, res) => {
+router.post('/510k', async (req, res) => {
   try {
-    const { cerData, enhance = true } = req.body;
+    const { submission510kData } = req.body;
     
-    if (!cerData || !cerData.deviceProfile) {
+    if (!submission510kData) {
       return res.status(400).json({
         success: false,
-        error: 'Missing cerData or deviceProfile'
+        message: '510(k) submission data is required'
       });
     }
     
-    console.log(`Generating CER document for: ${cerData.deviceProfile.deviceName || 'Unknown Device'}`);
+    const result = await documentAssemblyService.assemble510kDocument(submission510kData);
     
-    // Generate and save the CER document
-    const result = await generateAndSaveCER(cerData, enhance);
-    
-    res.json({
+    return res.status(200).json({
       success: true,
-      ...result,
-      message: 'CER document generated and saved successfully'
+      ...result
     });
-    
   } catch (error) {
-    console.error('Error generating and saving CER document:', error);
-    res.status(500).json({
+    console.error('Error assembling 510(k) document:', error);
+    return res.status(500).json({
       success: false,
-      error: 'Failed to generate and save CER document',
-      message: error.message
+      message: error.message || 'Failed to assemble 510(k) document'
     });
   }
 });
 
 /**
- * POST /api/document-assembly/section/:sectionKey - Generate a specific section for a CER
+ * @route GET /api/document-assembly/status/:assemblyId
+ * @description Get the status of a document assembly operation
+ * @access Private
  */
-router.post('/section/:sectionKey', async (req, res) => {
+router.get('/status/:assemblyId', async (req, res) => {
   try {
-    const { sectionKey } = req.params;
-    const { deviceProfile, sectionData } = req.body;
+    const { assemblyId } = req.params;
     
-    if (!sectionKey) {
+    if (!assemblyId) {
       return res.status(400).json({
         success: false,
-        error: 'Missing section key'
+        message: 'Assembly ID is required'
       });
     }
     
-    if (!deviceProfile) {
-      return res.status(400).json({
+    const status = documentAssemblyService.getAssemblyStatus(assemblyId);
+    
+    if (!status) {
+      return res.status(404).json({
         success: false,
-        error: 'Missing device profile'
+        message: 'Assembly not found'
       });
     }
     
-    console.log(`Generating ${sectionKey} section for ${deviceProfile.deviceName || 'Unknown Device'}`);
-    
-    // Placeholder for section-specific generation logic
-    // In a real implementation, this would delegate to specific generators for each section type
-    let sectionContent;
-    
-    if (sectionKey === 'literature-review' && sectionData && sectionData.literatureReferences) {
-      // Use OpenAI to generate the literature review section
-      const openai = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-      
-      const prompt = `
-Generate a comprehensive literature review section for a Clinical Evaluation Report (CER) for the medical device "${deviceProfile.deviceName || 'medical device'}".
-
-Device Information:
-- Name: ${deviceProfile.deviceName || 'Unknown'}
-- Classification: ${deviceProfile.deviceClass || 'Unknown'}
-- Intended Use: ${deviceProfile.intendedUse || 'Unknown'}
-
-Based on the following literature references:
-${sectionData.literatureReferences.map((ref, i) => `
-${i+1}. ${ref.title || 'Unknown Title'}
-   Authors: ${ref.authors || 'Unknown Authors'}
-   Year: ${ref.year || 'Unknown Year'}
-   Journal: ${ref.journal || 'Unknown Journal'}
-   ${ref.abstract ? `Abstract: ${ref.abstract}` : ''}
-`).join('\n')}
-
-The literature review should follow MEDDEV 2.7/1 Rev 4 guidelines and include:
-1. Introduction to the search strategy
-2. Summary of relevant papers
-3. Critical analysis of the literature
-4. Evaluation of safety and performance data
-5. Identification of any gaps in evidence
-6. Conclusions based on the literature
-
-Format the response as HTML suitable for inclusion in a CER document.
-      `;
-      
-      const completion = await openai.chat.completions.create({
-        model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
-        messages: [
-          {
-            role: "system",
-            content: "You are a medical device regulatory expert specializing in clinical evaluation reports and literature reviews. You follow MEDDEV 2.7/1 Rev 4 guidelines and produce comprehensive, evidence-based analyses for medical device manufacturers."
-          },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.2,
-      });
-      
-      sectionContent = completion.choices[0].message.content;
-    } else {
-      sectionContent = `<h2>${sectionKey.replace(/-/g, ' ').replace(/^\w|\s\w/g, c => c.toUpperCase())}</h2>
-<p>This section requires specific data to be generated.</p>`;
-    }
-    
-    res.json({
+    return res.status(200).json({
       success: true,
-      sectionKey,
-      content: sectionContent,
-      message: `${sectionKey} section generated successfully`
+      status
     });
-    
   } catch (error) {
-    console.error(`Error generating section ${req.params.sectionKey}:`, error);
-    res.status(500).json({
+    console.error('Error getting assembly status:', error);
+    return res.status(500).json({
       success: false,
-      error: `Failed to generate ${req.params.sectionKey} section`,
-      message: error.message
+      message: error.message || 'Failed to get assembly status'
     });
   }
 });
 
-export default router;
+/**
+ * @route GET /api/document-assembly/list
+ * @description List recent document assembly operations
+ * @access Private
+ */
+router.get('/list', async (req, res) => {
+  try {
+    const { limit = 10, type } = req.query;
+    
+    const assemblies = documentAssemblyService.listAssemblies({
+      limit: parseInt(limit),
+      type
+    });
+    
+    return res.status(200).json({
+      success: true,
+      assemblies
+    });
+  } catch (error) {
+    console.error('Error listing assemblies:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to list assembly operations'
+    });
+  }
+});
+
+/**
+ * @route GET /api/document-assembly/download/:assemblyId
+ * @description Download an assembled document
+ * @access Private
+ */
+router.get('/download/:assemblyId', async (req, res) => {
+  try {
+    const { assemblyId } = req.params;
+    
+    if (!assemblyId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Assembly ID is required'
+      });
+    }
+    
+    const status = documentAssemblyService.getAssemblyStatus(assemblyId);
+    
+    if (!status) {
+      return res.status(404).json({
+        success: false,
+        message: 'Assembly not found'
+      });
+    }
+    
+    if (status.status !== 'completed') {
+      return res.status(400).json({
+        success: false,
+        message: `Assembly is not ready for download (status: ${status.status})`
+      });
+    }
+    
+    if (!status.outputPath) {
+      return res.status(500).json({
+        success: false,
+        message: 'Assembly output path is missing'
+      });
+    }
+    
+    // Send the file
+    const filename = path.basename(status.outputPath);
+    res.download(status.outputPath, filename);
+  } catch (error) {
+    console.error('Error downloading assembly:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Failed to download assembly'
+    });
+  }
+});
+
+// Only use CommonJS export style for consistency with other route files
+module.exports = router;

@@ -1,361 +1,581 @@
 /**
  * Document Assembly Service
  * 
- * This service provides document assembly functionality for Clinical Evaluation Reports (CERs),
- * merging content from different sections into a complete document according to
- * MEDDEV 2.7/1 Rev 4 guidelines.
+ * This service handles the assembly of complete CER and 510(k) reports by combining
+ * various document sections and applying consistent formatting and validation.
  */
 
-import OpenAI from 'openai';
-import fs from 'fs/promises';
-import path from 'path';
+const fs = require('fs').promises;
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+const axios = require('axios');
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Configuration
+const CONFIG = {
+  outputDir: path.join(process.cwd(), 'generated_documents'),
+  templateDir: path.join(process.cwd(), 'templates'),
+  maxConcurrentAssemblies: 5,
+  defaultTimeout: 180000, // 3 minutes
+};
+
+// Track active assembly operations
+const activeAssemblies = new Map();
 
 /**
- * Get template content for a specific CER section
- * 
- * @param {string} sectionKey - The section key/identifier
- * @returns {Promise<string>} - The template content
+ * Initialize document assembly service
  */
-const getTemplateContent = async (sectionKey) => {
+async function initialize() {
   try {
-    const templatesDir = path.join(process.cwd(), 'templates', 'cer');
-    const templatePath = path.join(templatesDir, `${sectionKey}.html`);
-    
-    try {
-      // Check if template exists
-      await fs.access(templatePath);
-      const content = await fs.readFile(templatePath, 'utf8');
-      return content;
-    } catch (e) {
-      // If template doesn't exist, use default template
-      console.log(`Template for ${sectionKey} not found, using default`);
-      return `<section id="${sectionKey}">
-        <h2>${sectionKey.replace(/-/g, ' ').replace(/^\w/, c => c.toUpperCase())}</h2>
-        <p>{{${sectionKey}_content}}</p>
-      </section>`;
-    }
+    // Ensure output directory exists
+    await fs.mkdir(CONFIG.outputDir, { recursive: true });
+    console.log(`Document Assembly Service initialized. Output directory: ${CONFIG.outputDir}`);
+    return true;
   } catch (error) {
-    console.error(`Error loading template for ${sectionKey}:`, error);
-    throw error;
+    console.error('Failed to initialize document assembly service:', error);
+    return false;
   }
-};
+}
 
 /**
- * Generate CER document structure based on device class and configurations
+ * Assemble a complete CER document from sections and metadata
  * 
- * @param {Object} deviceProfile - The device profile
- * @returns {Promise<Array>} - Array of section keys in the correct order
+ * @param {Object} cerData - The CER data including all sections and metadata
+ * @param {Object} options - Assembly options
+ * @returns {Promise<Object>} - Assembly result with document paths and status
  */
-const generateDocumentStructure = async (deviceProfile) => {
-  const deviceClass = deviceProfile.deviceClass || 'IIa';
+async function assembleCERDocument(cerData, options = {}) {
+  const assemblyId = uuidv4();
+  const startTime = Date.now();
   
-  // Base structure required for all device classes
-  const baseStructure = [
-    'executive-summary',
-    'device-description',
-    'intended-use',
-    'regulatory-status',
-    'literature-review',
-    'clinical-evaluation',
-    'risk-benefit-analysis',
-    'post-market-surveillance',
-    'conclusion',
-    'references'
-  ];
-  
-  // Additional sections for higher-risk devices
-  if (deviceClass === 'IIb' || deviceClass === 'III') {
-    // Insert clinical investigation data section after literature review
-    const index = baseStructure.indexOf('literature-review') + 1;
-    baseStructure.splice(index, 0, 'clinical-investigation-data');
-    
-    // Add more rigorous post-market surveillance for class III
-    if (deviceClass === 'III') {
-      const pmsIndex = baseStructure.indexOf('post-market-surveillance');
-      baseStructure.splice(pmsIndex + 1, 0, 'post-market-clinical-follow-up');
-    }
-  }
-  
-  return baseStructure;
-};
-
-/**
- * Merge content into a template by replacing placeholders
- * 
- * @param {string} template - The template content with placeholders
- * @param {Object} contentMap - Map of placeholder keys to content values
- * @returns {string} - The merged content
- */
-const mergeContentIntoTemplate = (template, contentMap) => {
-  let mergedContent = template;
-  
-  // Replace each placeholder with its corresponding content
-  Object.entries(contentMap).forEach(([key, value]) => {
-    const placeholder = `{{${key}}}`;
-    mergedContent = mergedContent.replace(new RegExp(placeholder, 'g'), value);
-  });
-  
-  return mergedContent;
-};
-
-/**
- * Assemble a complete CER document from section content
- * 
- * @param {Object} cerData - The CER data including device profile and section content
- * @returns {Promise<Object>} - The assembled document
- */
-const assembleCERDocument = async (cerData) => {
   try {
-    const { deviceProfile, sections = {} } = cerData;
-    
-    // Generate the document structure based on device class
-    const documentStructure = await generateDocumentStructure(deviceProfile);
-    
-    // Assemble each section
-    const assembledSections = await Promise.all(
-      documentStructure.map(async (sectionKey) => {
-        const template = await getTemplateContent(sectionKey);
-        const sectionContent = sections[sectionKey] || '';
-        
-        const contentMap = {
-          [`${sectionKey}_content`]: sectionContent,
-          device_name: deviceProfile.deviceName || 'Unknown Device',
-          manufacturer: deviceProfile.manufacturer || 'Unknown Manufacturer',
-          device_class: deviceProfile.deviceClass || 'IIa',
-        };
-        
-        return {
-          key: sectionKey,
-          content: mergeContentIntoTemplate(template, contentMap)
-        };
-      })
-    );
-    
-    // Generate TOC entries
-    const tocEntries = assembledSections.map(section => ({
-      key: section.key,
-      title: section.key.replace(/-/g, ' ').replace(/^\w|\s\w/g, c => c.toUpperCase())
-    }));
-    
-    // Combine sections into full document
-    const fullDocument = assembledSections.map(section => section.content).join('\n\n');
-    
-    // Build header data for the document
-    const headerData = {
-      title: `Clinical Evaluation Report - ${deviceProfile.deviceName || 'Unknown Device'}`,
-      manufacturer: deviceProfile.manufacturer || 'Unknown Manufacturer',
-      device_class: deviceProfile.deviceClass || 'IIa',
-      reference_number: deviceProfile.referenceNumber || 'REF-' + Date.now(),
-      revision: deviceProfile.revision || '1.0',
-      date: new Date().toISOString().split('T')[0]
-    };
-    
-    return {
-      headerData,
-      tocEntries,
-      fullDocument,
-      sections: assembledSections
-    };
-  } catch (error) {
-    console.error('Error assembling CER document:', error);
-    throw error;
-  }
-};
-
-/**
- * Generate a complete CER document in HTML format
- * 
- * @param {Object} cerData - The CER data including device profile and section content
- * @returns {Promise<string>} - The assembled document in HTML format
- */
-const generateCERDocument = async (cerData) => {
-  try {
-    const assembled = await assembleCERDocument(cerData);
-    
-    // Load the main document template
-    const documentTemplatePath = path.join(process.cwd(), 'templates', 'cer', 'document.html');
-    let documentTemplate;
-    
-    try {
-      documentTemplate = await fs.readFile(documentTemplatePath, 'utf8');
-    } catch (e) {
-      console.log('Main document template not found, using default');
-      documentTemplate = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>{{title}}</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 2cm; }
-    .header { text-align: center; margin-bottom: 2cm; }
-    .toc { margin-bottom: 2cm; }
-    .section { margin-bottom: 1cm; }
-    h1 { font-size: 24pt; }
-    h2 { font-size: 18pt; border-bottom: 1px solid #ccc; }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <h1>{{title}}</h1>
-    <p>Manufacturer: {{manufacturer}}</p>
-    <p>Device Class: {{device_class}}</p>
-    <p>Reference: {{reference_number}}</p>
-    <p>Revision: {{revision}}</p>
-    <p>Date: {{date}}</p>
-  </div>
-  
-  <div class="toc">
-    <h2>Table of Contents</h2>
-    <ul>
-      {{toc_items}}
-    </ul>
-  </div>
-  
-  <div class="content">
-    {{content}}
-  </div>
-</body>
-</html>`;
+    // Validate inputs
+    if (!cerData || !cerData.deviceProfile) {
+      throw new Error('CER data or device profile missing');
     }
     
-    // Generate TOC HTML
-    const tocItemsHtml = assembled.tocEntries.map((entry, index) => 
-      `<li><a href="#${entry.key}">${index + 1}. ${entry.title}</a></li>`
-    ).join('\n');
+    // Get device information
+    const { deviceName, manufacturer } = cerData.deviceProfile;
+    const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '');
+    const outputFilename = `CER_${deviceName || 'Device'}_${timestamp}.html`;
+    const outputPath = path.join(CONFIG.outputDir, outputFilename);
     
-    // Merge content into main template
-    const contentMap = {
-      title: assembled.headerData.title,
-      manufacturer: assembled.headerData.manufacturer,
-      device_class: assembled.headerData.device_class,
-      reference_number: assembled.headerData.reference_number,
-      revision: assembled.headerData.revision,
-      date: assembled.headerData.date,
-      toc_items: tocItemsHtml,
-      content: assembled.fullDocument
-    };
-    
-    return mergeContentIntoTemplate(documentTemplate, contentMap);
-  } catch (error) {
-    console.error('Error generating CER document:', error);
-    throw error;
-  }
-};
-
-/**
- * Enhance the assembled CER with AI review and refinement
- * 
- * @param {string} cerDocument - The assembled CER document
- * @param {Object} deviceProfile - The device profile
- * @returns {Promise<string>} - The enhanced document
- */
-const enhanceCERWithAI = async (cerDocument, deviceProfile) => {
-  try {
-    console.log('Enhancing CER document with AI...');
-    
-    // If OpenAI API key is not available, return the document as is
-    if (!process.env.OPENAI_API_KEY) {
-      console.warn('OpenAI API key not available, skipping AI enhancement');
-      return cerDocument;
-    }
-    
-    const prompt = `
-You are a medical device regulatory expert specializing in Clinical Evaluation Reports (CERs). 
-Review and enhance the following CER document for a ${deviceProfile.deviceClass || 'IIa'} 
-class device named "${deviceProfile.deviceName || 'medical device'}" according to 
-MEDDEV 2.7/1 Rev 4 guidelines.
-
-Improve the document by:
-1. Ensuring consistent formatting and style
-2. Checking for regulatory compliance
-3. Enhancing clarity and precision of language
-4. Ensuring appropriate references and citations
-5. Maintaining the HTML structure
-
-Here is the CER document HTML:
-${cerDocument}
-
-Return the enhanced HTML document with your improvements.
-`;
-
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o", // The newest OpenAI model
-      messages: [
-        {
-          role: "system", 
-          content: "You are a medical device regulatory expert specializing in Clinical Evaluation Reports. Your task is to review and enhance CER documents according to MEDDEV 2.7/1 Rev 4 guidelines while preserving the original HTML structure."
-        },
-        { role: "user", content: prompt }
-      ],
-      temperature: 0.2,
+    // Track assembly operation
+    activeAssemblies.set(assemblyId, {
+      id: assemblyId,
+      type: 'cer',
+      status: 'in_progress',
+      startTime,
+      deviceName,
+      outputPath,
     });
     
-    const enhancedDocument = completion.choices[0].message.content;
-    return enhancedDocument;
-  } catch (error) {
-    console.error('Error enhancing CER with AI:', error);
-    // Return original document if enhancement fails
-    return cerDocument;
-  }
-};
-
-/**
- * Generate and save a CER document
- * 
- * @param {Object} cerData - The CER data
- * @param {boolean} enhance - Whether to enhance the document with AI
- * @returns {Promise<Object>} - The result of the operation
- */
-const generateAndSaveCER = async (cerData, enhance = true) => {
-  try {
-    // Generate the basic document
-    const cerDocument = await generateCERDocument(cerData);
+    // Collect all sections
+    const sections = cerData.sections || [];
     
-    // Enhance with AI if requested
-    const finalDocument = enhance 
-      ? await enhanceCERWithAI(cerDocument, cerData.deviceProfile)
-      : cerDocument;
+    // Create HTML document structure
+    let documentHtml = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Clinical Evaluation Report - ${deviceName || 'Medical Device'}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          h1 {
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          h2 {
+            color: #1d4ed8;
+            margin-top: 40px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 8px;
+          }
+          h3 {
+            color: #1e40af;
+            margin-top: 25px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+          }
+          th, td {
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            text-align: left;
+          }
+          th {
+            background-color: #f3f4f6;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 40px;
+          }
+          .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+          }
+          .section {
+            margin-bottom: 30px;
+          }
+          .metadata {
+            font-size: 12px;
+            color: #6b7280;
+          }
+          .toc {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+          }
+          .toc ul {
+            list-style-type: none;
+          }
+          .toc a {
+            text-decoration: none;
+            color: #2563eb;
+          }
+          .toc a:hover {
+            text-decoration: underline;
+          }
+          .references {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+          }
+          .references ol {
+            padding-left: 20px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>Clinical Evaluation Report</h1>
+          <p><strong>${deviceName || 'Medical Device'}</strong>${manufacturer ? ' - ' + manufacturer : ''}</p>
+          <p>Generated: ${new Date().toLocaleDateString()}</p>
+        </div>
+        
+        <div class="toc" id="table-of-contents">
+          <h2>Table of Contents</h2>
+          <ul>
+            <li><a href="#overview">1. Device Overview</a></li>
+            ${sections.map((section, index) => 
+              `<li><a href="#section-${index+2}">${index+2}. ${section.title || 'Untitled Section'}</a></li>`
+            ).join('\n')}
+            <li><a href="#conclusion">Conclusion</a></li>
+          </ul>
+        </div>
+        
+        <div class="section" id="overview">
+          <h2>1. Device Overview</h2>
+          <table>
+            <tr>
+              <th>Device Name</th>
+              <td>${deviceName || 'Not Specified'}</td>
+            </tr>
+            <tr>
+              <th>Manufacturer</th>
+              <td>${cerData.deviceProfile.manufacturer || 'Not Specified'}</td>
+            </tr>
+            <tr>
+              <th>Device Class</th>
+              <td>${cerData.deviceProfile.deviceClass || 'Not Specified'}</td>
+            </tr>
+            <tr>
+              <th>Intended Use</th>
+              <td>${cerData.deviceProfile.intendedUse || 'Not Specified'}</td>
+            </tr>
+            <tr>
+              <th>Device Description</th>
+              <td>${cerData.deviceProfile.deviceDescription || 'Not Specified'}</td>
+            </tr>
+          </table>
+        </div>
+    `;
     
-    // Create a timestamp-based filename
-    const timestamp = Date.now();
-    const deviceName = cerData.deviceProfile.deviceName || 'device';
-    const sanitizedDeviceName = deviceName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const filename = `cer_${sanitizedDeviceName}_${timestamp}.html`;
+    // Add each section content
+    sections.forEach((section, index) => {
+      const sectionNumber = index + 2; // Start numbering from 2 (after overview)
+      
+      documentHtml += `
+        <div class="section" id="section-${sectionNumber}">
+          <h2>${sectionNumber}. ${section.title || 'Untitled Section'}</h2>
+          ${section.content || ''}
+          ${section.metadata ? `
+            <div class="metadata">
+              <p>Last updated: ${new Date(section.metadata.updatedAt || section.metadata.createdAt || Date.now()).toLocaleDateString()}</p>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    });
     
-    // Save to the generated_documents directory
-    const outputDir = path.join(process.cwd(), 'generated_documents');
+    // Add conclusion section
+    documentHtml += `
+        <div class="section" id="conclusion">
+          <h2>Conclusion</h2>
+          ${cerData.conclusion || '<p>Based on the clinical evaluation conducted, the device meets applicable requirements.</p>'}
+        </div>
+        
+        <div class="footer">
+          <p>This document was generated on ${new Date().toLocaleDateString()} by TrialSage Clinical Evaluation Report System.</p>
+        </div>
+      </body>
+      </html>
+    `;
     
-    // Ensure directory exists
-    try {
-      await fs.access(outputDir);
-    } catch (e) {
-      await fs.mkdir(outputDir, { recursive: true });
-    }
+    // Write to file
+    await fs.writeFile(outputPath, documentHtml);
     
-    const outputPath = path.join(outputDir, filename);
-    await fs.writeFile(outputPath, finalDocument, 'utf8');
+    // Update assembly status
+    activeAssemblies.set(assemblyId, {
+      ...activeAssemblies.get(assemblyId),
+      status: 'completed',
+      endTime: Date.now(),
+      outputPath,
+    });
     
     return {
       success: true,
-      filename,
-      path: outputPath,
-      documentSize: finalDocument.length,
-      enhanced: enhance
+      assemblyId,
+      documentPath: outputPath,
+      documentUrl: `/generated_documents/${outputFilename}`,
+      documentName: outputFilename,
+      executionTime: Date.now() - startTime,
     };
   } catch (error) {
-    console.error('Error generating and saving CER:', error);
+    console.error('Error assembling CER document:', error);
+    
+    // Update assembly status
+    if (activeAssemblies.has(assemblyId)) {
+      activeAssemblies.set(assemblyId, {
+        ...activeAssemblies.get(assemblyId),
+        status: 'failed',
+        endTime: Date.now(),
+        error: error.message,
+      });
+    }
+    
     throw error;
   }
-};
+}
 
-export {
+/**
+ * Assemble a 510(k) submission document
+ * 
+ * @param {Object} submission510kData - The 510(k) submission data
+ * @param {Object} options - Assembly options
+ * @returns {Promise<Object>} - Assembly result with document paths and status
+ */
+async function assemble510kDocument(submission510kData, options = {}) {
+  const assemblyId = uuidv4();
+  const startTime = Date.now();
+  
+  try {
+    // Validate inputs
+    if (!submission510kData || !submission510kData.deviceProfile) {
+      throw new Error('510(k) submission data or device profile missing');
+    }
+    
+    // Get device information
+    const { deviceName, manufacturer } = submission510kData.deviceProfile;
+    const timestamp = new Date().toISOString().replace(/:/g, '-').replace(/\..+/, '');
+    const outputFilename = `510k_${deviceName || 'Device'}_${timestamp}.html`;
+    const outputPath = path.join(CONFIG.outputDir, outputFilename);
+    
+    // Track assembly operation
+    activeAssemblies.set(assemblyId, {
+      id: assemblyId,
+      type: '510k',
+      status: 'in_progress',
+      startTime,
+      deviceName,
+      outputPath,
+    });
+    
+    // Collect all sections
+    const sections = submission510kData.sections || [];
+    
+    // Create HTML document structure
+    let documentHtml = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>510(k) Submission - ${deviceName || 'Medical Device'}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            color: #333;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+          }
+          h1 {
+            color: #2563eb;
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          h2 {
+            color: #1d4ed8;
+            margin-top: 40px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 8px;
+          }
+          h3 {
+            color: #1e40af;
+            margin-top: 25px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+          }
+          th, td {
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            text-align: left;
+          }
+          th {
+            background-color: #f3f4f6;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 40px;
+          }
+          .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 14px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 20px;
+          }
+          .section {
+            margin-bottom: 30px;
+          }
+          .metadata {
+            font-size: 12px;
+            color: #6b7280;
+          }
+          .toc {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 40px;
+          }
+          .toc ul {
+            list-style-type: none;
+          }
+          .toc a {
+            text-decoration: none;
+            color: #2563eb;
+          }
+          .toc a:hover {
+            text-decoration: underline;
+          }
+          .predicate-comparison {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <h1>510(k) Premarket Notification</h1>
+          <p><strong>${deviceName || 'Medical Device'}</strong>${manufacturer ? ' - ' + manufacturer : ''}</p>
+          <p>Generated: ${new Date().toLocaleDateString()}</p>
+        </div>
+        
+        <div class="toc" id="table-of-contents">
+          <h2>Table of Contents</h2>
+          <ul>
+            <li><a href="#administrative">1. Administrative Information</a></li>
+            <li><a href="#device-description">2. Device Description</a></li>
+            <li><a href="#substantial-equivalence">3. Substantial Equivalence</a></li>
+            ${sections.map((section, index) => 
+              `<li><a href="#section-${index+4}">${index+4}. ${section.title || 'Untitled Section'}</a></li>`
+            ).join('\n')}
+            <li><a href="#conclusion">Conclusion</a></li>
+          </ul>
+        </div>
+        
+        <div class="section" id="administrative">
+          <h2>1. Administrative Information</h2>
+          <table>
+            <tr>
+              <th>Device Trade Name</th>
+              <td>${deviceName || 'Not Specified'}</td>
+            </tr>
+            <tr>
+              <th>Manufacturer</th>
+              <td>${submission510kData.deviceProfile.manufacturer || 'Not Specified'}</td>
+            </tr>
+            <tr>
+              <th>Common Name</th>
+              <td>${submission510kData.deviceProfile.commonName || 'Not Specified'}</td>
+            </tr>
+            <tr>
+              <th>Classification Name</th>
+              <td>${submission510kData.deviceProfile.classificationName || 'Not Specified'}</td>
+            </tr>
+            <tr>
+              <th>Device Class</th>
+              <td>${submission510kData.deviceProfile.deviceClass || 'Not Specified'}</td>
+            </tr>
+            <tr>
+              <th>Product Code</th>
+              <td>${submission510kData.deviceProfile.productCode || 'Not Specified'}</td>
+            </tr>
+            <tr>
+              <th>Regulation Number</th>
+              <td>${submission510kData.deviceProfile.regulationNumber || 'Not Specified'}</td>
+            </tr>
+          </table>
+        </div>
+        
+        <div class="section" id="device-description">
+          <h2>2. Device Description</h2>
+          <h3>Intended Use</h3>
+          <p>${submission510kData.deviceProfile.intendedUse || 'Not Specified'}</p>
+          
+          <h3>Device Description</h3>
+          <p>${submission510kData.deviceProfile.deviceDescription || 'Not Specified'}</p>
+          
+          <h3>Technological Characteristics</h3>
+          <p>${submission510kData.deviceProfile.technicalSpecifications || 'Not Specified'}</p>
+        </div>
+        
+        <div class="section" id="substantial-equivalence">
+          <h2>3. Substantial Equivalence</h2>
+          ${submission510kData.predicateComparison?.html || '<p>No predicate device comparison available.</p>'}
+        </div>
+    `;
+    
+    // Add each section content
+    sections.forEach((section, index) => {
+      const sectionNumber = index + 4; // Start numbering from 4 (after administrative, description, and equivalence)
+      
+      documentHtml += `
+        <div class="section" id="section-${sectionNumber}">
+          <h2>${sectionNumber}. ${section.title || 'Untitled Section'}</h2>
+          ${section.content || ''}
+          ${section.metadata ? `
+            <div class="metadata">
+              <p>Last updated: ${new Date(section.metadata.updatedAt || section.metadata.createdAt || Date.now()).toLocaleDateString()}</p>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    });
+    
+    // Add conclusion section
+    documentHtml += `
+        <div class="section" id="conclusion">
+          <h2>Conclusion</h2>
+          ${submission510kData.conclusion || '<p>Based on the information presented in this submission, the subject device is substantially equivalent to the predicate device(s).</p>'}
+        </div>
+        
+        <div class="footer">
+          <p>This document was generated on ${new Date().toLocaleDateString()} by TrialSage 510(k) Submission System.</p>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    // Write to file
+    await fs.writeFile(outputPath, documentHtml);
+    
+    // Update assembly status
+    activeAssemblies.set(assemblyId, {
+      ...activeAssemblies.get(assemblyId),
+      status: 'completed',
+      endTime: Date.now(),
+      outputPath,
+    });
+    
+    return {
+      success: true,
+      assemblyId,
+      documentPath: outputPath,
+      documentUrl: `/generated_documents/${outputFilename}`,
+      documentName: outputFilename,
+      executionTime: Date.now() - startTime,
+    };
+  } catch (error) {
+    console.error('Error assembling 510(k) document:', error);
+    
+    // Update assembly status
+    if (activeAssemblies.has(assemblyId)) {
+      activeAssemblies.set(assemblyId, {
+        ...activeAssemblies.get(assemblyId),
+        status: 'failed',
+        endTime: Date.now(),
+        error: error.message,
+      });
+    }
+    
+    throw error;
+  }
+}
+
+/**
+ * Get assembly status
+ * 
+ * @param {string} assemblyId - The assembly ID to check
+ * @returns {Object|null} - Assembly status or null if not found
+ */
+function getAssemblyStatus(assemblyId) {
+  return activeAssemblies.get(assemblyId) || null;
+}
+
+/**
+ * List recent assembly operations
+ * 
+ * @param {Object} options - List options
+ * @param {number} options.limit - Number of assemblies to return (default: 10)
+ * @param {string} options.type - Filter by document type (cer, 510k)
+ * @returns {Array} - Array of assembly operations
+ */
+function listAssemblies(options = {}) {
+  const { limit = 10, type } = options;
+  
+  let assemblies = Array.from(activeAssemblies.values());
+  
+  // Apply type filter if specified
+  if (type) {
+    assemblies = assemblies.filter(assembly => assembly.type === type);
+  }
+  
+  // Sort by start time (most recent first)
+  assemblies.sort((a, b) => b.startTime - a.startTime);
+  
+  // Apply limit
+  return assemblies.slice(0, limit);
+}
+
+module.exports = {
+  initialize,
   assembleCERDocument,
-  generateCERDocument,
-  enhanceCERWithAI,
-  generateAndSaveCER
+  assemble510kDocument,
+  getAssemblyStatus,
+  listAssemblies,
 };

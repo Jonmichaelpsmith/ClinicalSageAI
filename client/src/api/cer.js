@@ -527,15 +527,46 @@ export const generateCERPreview = async (cerData) => {
  * @returns {Promise<Object>} - The result of the operation
  */
 export const generateAndSaveCER = async (cerData, enhance = true) => {
+  // Import error handling utility
+  const errorHandling = await import('../utils/errorHandling');
+  
   try {
-    const response = await axios.post('/api/document-assembly/generate', {
-      cerData,
-      enhance
-    });
-    return response.data;
+    // Try to use the document assembly service first
+    try {
+      const options = { enhance };
+      
+      const assemblyResponse = await errorHandling.withTimeout(
+        axios.post(`/api/document-assembly/cer`, { cerData, options }),
+        60000, // 1 minute timeout
+        'Document assembly timed out'
+      );
+      
+      return assemblyResponse.data;
+    } catch (assemblyError) {
+      console.warn('Document assembly service failed, falling back to legacy endpoint:', assemblyError);
+      
+      // Fall back to the legacy endpoint
+      const response = await axios.post('/api/document-assembly/generate', {
+        cerData,
+        enhance
+      });
+      
+      return response.data;
+    }
   } catch (error) {
-    console.error('Error generating and saving CER:', error);
-    throw error;
+    console.error('Error generating CER document:', error);
+    
+    // Format error for display
+    const formattedError = errorHandling.formatErrorForDisplay(error, {
+      friendlyMessages: {
+        network: 'Unable to connect to the document generation service. Please check your internet connection and try again.',
+        timeout: 'The document generation is taking longer than expected. Please try again with fewer sections or contact support.',
+        server: 'Our document generation service is experiencing issues. Please try again later.',
+        default: 'An error occurred while generating your document. Please try again or contact support.'
+      }
+    });
+    
+    throw new Error(formattedError.message || error.message);
   }
 };
 
