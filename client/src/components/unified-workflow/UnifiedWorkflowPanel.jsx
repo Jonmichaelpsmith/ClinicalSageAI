@@ -64,14 +64,16 @@ const MODULE_NAMES = {
 };
 
 const UnifiedWorkflowPanel = ({
+  documentData,  // Changed from documentId to documentData
+  moduleType,
   organizationId,
   userId,
-  moduleType,
-  documentId,
-  documentTitle,
-  onWorkflowAction,
+  onWorkflowUpdated, // Changed from onWorkflowAction to match how it's called
   className = ''
 }) => {
+  // Extract document properties from documentData
+  const documentId = documentData?.id;
+  const documentTitle = documentData?.title;
   const [activeTab, setActiveTab] = useState('status');
   const [workflowTemplates, setWorkflowTemplates] = useState([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState('');
@@ -199,8 +201,8 @@ const UnifiedWorkflowPanel = ({
         description: 'The document workflow has been started successfully',
       });
       
-      if (onWorkflowAction) {
-        onWorkflowAction('start', result.workflowId);
+      if (onWorkflowUpdated) {
+        onWorkflowUpdated('start', result.workflowId);
       }
       
       setActionComment('');
@@ -243,8 +245,8 @@ const UnifiedWorkflowPanel = ({
         description: `The workflow step has been ${action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'updated'}`,
       });
       
-      if (onWorkflowAction) {
-        onWorkflowAction(action, workflowStatus.workflowId);
+      if (onWorkflowUpdated) {
+        onWorkflowUpdated(action, workflowStatus.workflowId);
       }
       
       setActionComment('');
