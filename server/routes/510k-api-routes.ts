@@ -213,4 +213,214 @@ router.get('/requirement-analysis/:requirementId/:projectId', (req: express.Requ
   }
 });
 
+/**
+ * Device Profile Management
+ * Routes for managing device profiles in the CERV2 module
+ */
+
+// Generate a UUID-like ID without external dependencies
+const generateId = () => {
+  const timestamp = Date.now().toString(36);
+  const randomStr = Math.random().toString(36).substring(2, 10);
+  return `${timestamp}-${randomStr}`;
+};
+
+// In-memory storage for device profiles
+// This will be replaced with database storage in production
+const deviceProfiles = new Map();
+
+/**
+ * Create or update a device profile
+ * POST /api/fda510k/device-profiles
+ */
+router.post('/device-profiles', (req: express.Request, res: express.Response) => {
+  try {
+    const { organizationId, clientWorkspaceId } = (req as any).tenantContext || {};
+    
+    // Create or update device profile
+    const deviceProfile = {
+      ...req.body,
+      id: req.body.id || generateId(),
+      organizationId,
+      clientWorkspaceId,
+      updatedAt: new Date().toISOString()
+    };
+    
+    // If it's a new profile, set created date
+    if (!req.body.id) {
+      deviceProfile.createdAt = deviceProfile.updatedAt;
+    }
+    
+    // Store in memory (would be database in production)
+    const profileKey = `${organizationId || 'global'}_${deviceProfile.id}`;
+    deviceProfiles.set(profileKey, deviceProfile);
+    
+    console.log(`Device profile ${deviceProfile.id} saved`, { 
+      name: deviceProfile.deviceName || deviceProfile.name,
+      organizationId
+    });
+    
+    // Return success response
+    res.json({
+      success: true,
+      deviceProfile
+    });
+  } catch (error) {
+    console.error('Error saving device profile:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to save device profile'
+    });
+  }
+});
+
+/**
+ * Update an existing device profile
+ * PUT /api/fda510k/device-profiles/:id
+ */
+router.put('/device-profiles/:id', (req: express.Request, res: express.Response) => {
+  try {
+    const { id } = req.params;
+    const { organizationId } = (req as any).tenantContext || {};
+    
+    // Check if profile exists
+    const profileKey = `${organizationId || 'global'}_${id}`;
+    if (!deviceProfiles.has(profileKey)) {
+      return res.status(404).json({
+        success: false,
+        error: 'Device profile not found'
+      });
+    }
+    
+    // Update existing profile
+    const existingProfile = deviceProfiles.get(profileKey);
+    const updatedProfile = {
+      ...existingProfile,
+      ...req.body,
+      id, // Ensure ID doesn't change
+      organizationId, // Ensure org ID doesn't change
+      updatedAt: new Date().toISOString()
+    };
+    
+    // Store updated profile
+    deviceProfiles.set(profileKey, updatedProfile);
+    
+    console.log(`Device profile ${id} updated`, { 
+      name: updatedProfile.deviceName || updatedProfile.name,
+      organizationId
+    });
+    
+    // Return success response
+    res.json({
+      success: true,
+      deviceProfile: updatedProfile
+    });
+  } catch (error) {
+    console.error('Error updating device profile:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to update device profile'
+    });
+  }
+});
+
+/**
+ * Get a specific device profile
+ * GET /api/fda510k/device-profiles/:id
+ */
+router.get('/device-profiles/:id', (req: express.Request, res: express.Response) => {
+  try {
+    const { id } = req.params;
+    const { organizationId } = (req as any).tenantContext || {};
+    
+    // Look up profile
+    const profileKey = `${organizationId || 'global'}_${id}`;
+    const deviceProfile = deviceProfiles.get(profileKey);
+    
+    if (!deviceProfile) {
+      return res.status(404).json({
+        success: false,
+        error: 'Device profile not found'
+      });
+    }
+    
+    // Return profile
+    res.json({
+      success: true,
+      deviceProfile
+    });
+  } catch (error) {
+    console.error('Error fetching device profile:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch device profile'
+    });
+  }
+});
+
+/**
+ * Get all device profiles for the organization
+ * GET /api/fda510k/device-profiles
+ */
+router.get('/device-profiles', (req: express.Request, res: express.Response) => {
+  try {
+    const { organizationId } = (req as any).tenantContext || {};
+    
+    // Filter profiles by organization
+    const profiles = Array.from(deviceProfiles.entries())
+      .filter(([key]) => key.startsWith(`${organizationId || 'global'}_`))
+      .map(([, profile]) => profile);
+    
+    res.json({
+      success: true,
+      profiles
+    });
+  } catch (error) {
+    console.error('Error fetching device profiles:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch device profiles'
+    });
+  }
+});
+
+/**
+ * Delete a device profile
+ * DELETE /api/fda510k/device-profiles/:id
+ */
+router.delete('/device-profiles/:id', (req: express.Request, res: express.Response) => {
+  try {
+    const { id } = req.params;
+    const { organizationId } = (req as any).tenantContext || {};
+    
+    // Check if profile exists
+    const profileKey = `${organizationId || 'global'}_${id}`;
+    const exists = deviceProfiles.has(profileKey);
+    
+    if (!exists) {
+      return res.status(404).json({
+        success: false,
+        error: 'Device profile not found'
+      });
+    }
+    
+    // Delete profile
+    deviceProfiles.delete(profileKey);
+    
+    console.log(`Device profile ${id} deleted`, { organizationId });
+    
+    // Return success response
+    res.json({
+      success: true,
+      message: 'Device profile deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting device profile:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to delete device profile'
+    });
+  }
+});
+
 export { router };
