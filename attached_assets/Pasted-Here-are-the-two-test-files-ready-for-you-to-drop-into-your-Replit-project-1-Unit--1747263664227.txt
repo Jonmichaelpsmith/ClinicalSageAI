@@ -1,0 +1,137 @@
+Here are the two test files ready for you to drop into your Replit project.
+
+---
+
+### 1. **Unit tests for the service**
+
+**Path:** `server/services/__tests__/deviceProfileService.test.ts`
+
+```ts
+// server/services/__tests__/deviceProfileService.test.ts
+import * as svc from '../deviceProfileService';
+
+describe('deviceProfileService', () => {
+  // @ts-ignore
+  const store: Map<string, any> = (svc as any).store;
+
+  beforeEach(() => {
+    store.clear();
+  });
+
+  test('create → list → get', () => {
+    const data = { name: 'FooDevice', classification: 'Class II' };
+    const created = svc.createProfile(data);
+
+    expect(created).toMatchObject(data);
+    expect(created.id).toBeDefined();
+
+    const all = svc.listProfiles();
+    expect(all).toHaveLength(1);
+    expect(all[0]).toEqual(created);
+
+    const fetched = svc.getProfile(created.id);
+    expect(fetched).toEqual(created);
+  });
+
+  test('updateProfile merges correctly', () => {
+    const { id } = svc.createProfile({ name: 'Alpha', classification: 'Class I' });
+    const updated = svc.updateProfile(id, { classification: 'Class III' });
+
+    expect(updated).toEqual({ id, name: 'Alpha', classification: 'Class III' });
+  });
+
+  test('deleteProfile removes entry', () => {
+    const { id } = svc.createProfile({ name: 'Xray', classification: 'Class III' });
+    expect(svc.listProfiles()).toHaveLength(1);
+
+    svc.deleteProfile(id);
+    expect(svc.listProfiles()).toHaveLength(0);
+    expect(svc.getProfile(id)).toBeUndefined();
+  });
+
+  test('get/update non-existent id throws', () => {
+    expect(() => svc.getProfile('nonexistent')).toThrow();
+    expect(() => svc.updateProfile('nonexistent', {})).toThrow();
+  });
+});
+```
+
+---
+
+### 2. **Integration tests for the Express routes**
+
+**Path:** `server/routes/__tests__/deviceProfileRoutes.test.ts`
+
+```ts
+// server/routes/__tests__/deviceProfileRoutes.test.ts
+import request from 'supertest';
+import app from '../../index'; // adjust if your Express app is exported from a different file
+
+describe('DeviceProfileRoutes (integration)', () => {
+  let createdId: string;
+
+  it('POST  /api/device-profiles  → creates a profile', async () => {
+    const res = await request(app)
+      .post('/api/device-profiles')
+      .send({ name: 'TestDevice', classification: 'Class II' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBeDefined();
+    expect(res.body.name).toBe('TestDevice');
+    createdId = res.body.id;
+  });
+
+  it('GET   /api/device-profiles  → returns array including created', async () => {
+    const res = await request(app).get('/api/device-profiles');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.some((p: any) => p.id === createdId)).toBe(true);
+  });
+
+  it('GET   /api/device-profiles/:id  → returns single profile', async () => {
+    const res = await request(app).get(`/api/device-profiles/${createdId}`);
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe(createdId);
+  });
+
+  it('PUT   /api/device-profiles/:id  → updates and returns profile', async () => {
+    const res = await request(app)
+      .put(`/api/device-profiles/${createdId}`)
+      .send({ classification: 'Class III' });
+
+    expect(res.status).toBe(200);
+    expect(res.body.classification).toBe('Class III');
+  });
+
+  it('DELETE /api/device-profiles/:id  → deletes profile', async () => {
+    const res = await request(app).delete(`/api/device-profiles/${createdId}`);
+    expect(res.status).toBe(204);
+
+    const check = await request(app).get(`/api/device-profiles/${createdId}`);
+    expect(check.status).toBe(200);
+    expect(check.body).toBeNull(); // or adjust based on your getProfile() behavior
+  });
+});
+```
+
+---
+
+**Next Steps:**
+
+1. Make sure your `app` in `server/index.ts` is exported, e.g.:
+
+   ```ts
+   // server/index.ts
+   import express from 'express';
+   const app = express();
+   // … your middleware & routes
+   export default app;
+   ```
+
+2. Run your tests:
+
+   ```bash
+   npm test
+   ```
+
+Let me know if any test needs tweaking!

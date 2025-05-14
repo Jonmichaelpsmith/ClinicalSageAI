@@ -1,0 +1,151 @@
+Let’s lock in stability first—automated tests. Here’s the step-by-step plan to get full coverage of your new `/api/device-profiles` flow:
+
+---
+
+## A. Install & configure your test runner
+
+1. **Add Jest & Supertest**
+
+   ```bash
+   npm install --save-dev jest supertest @types/jest @types/supertest ts-jest
+   ```
+2. **Configure Jest**
+   In your `package.json`, add:
+
+   ```jsonc
+   "scripts": {
+     "test": "jest --runInBand"
+   },
+   "jest": {
+     "preset": "ts-jest",
+     "testEnvironment": "node",
+     "roots": ["<rootDir>/server", "<rootDir>/client"]
+   }
+   ```
+
+---
+
+## B. Unit tests for `deviceProfileService.ts`
+
+1. **Create** `server/services/__tests__/deviceProfileService.test.ts`
+2. **Write** tests covering:
+
+   * `createProfile` returns a profile with `id` and correct data
+   * `listProfiles` includes newly created profiles
+   * `getProfile` fetches by ID, errors if missing
+   * `updateProfile` merges updates correctly, errors if missing
+   * `deleteProfile` removes the profile
+
+```ts
+import * as svc from '../deviceProfileService';
+
+describe('deviceProfileService', () => {
+  beforeEach(() => {
+    // reset the in-memory store
+    (svc as any).store.clear();
+  });
+
+  test('create → list → get', () => {
+    const data = { name: 'Foo', classification: 'II' };
+    const created = svc.createProfile(data);
+    expect(created).toMatchObject(data);
+    expect(created.id).toBeDefined();
+
+    const all = svc.listProfiles();
+    expect(all).toHaveLength(1);
+
+    const fetched = svc.getProfile(created.id);
+    expect(fetched).toEqual(created);
+  });
+
+  test('updateProfile merges correctly', () => {
+    const { id } = svc.createProfile({ name: 'A', classification: 'I' });
+    const updated = svc.updateProfile(id, { classification: 'II' });
+    expect(updated).toEqual({ id, name: 'A', classification: 'II' });
+  });
+
+  test('deleteProfile removes entry', () => {
+    const { id } = svc.createProfile({ name: 'X', classification: 'III' });
+    svc.deleteProfile(id);
+    expect(svc.listProfiles()).toHaveLength(0);
+  });
+
+  test('get/update non-existent id throws', () => {
+    expect(() => svc.getProfile('nope')).toThrow();
+    expect(() => svc.updateProfile('nope', {})).toThrow();
+  });
+});
+```
+
+---
+
+## C. Integration tests for your Express routes
+
+1. **Create** `server/routes/__tests__/deviceProfileRoutes.test.ts`
+2. **Use** Supertest to spin up your `app` and hit `/api/device-profiles`
+3. **Cover** each HTTP verb: `POST`, `GET /`, `GET /:id`, `PUT`, `DELETE`
+
+```ts
+import request from 'supertest';
+import app from '../../index'; // your Express app
+
+describe('DeviceProfileRoutes', () => {
+  let createdId: string;
+
+  test('POST /api/device-profiles', async () => {
+    const res = await request(app)
+      .post('/api/device-profiles')
+      .send({ name: 'Test', classification: 'II' });
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBeDefined();
+    createdId = res.body.id;
+  });
+
+  test('GET /api/device-profiles', async () => {
+    const res = await request(app).get('/api/device-profiles');
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body)).toBe(true);
+    expect(res.body.some((p: any) => p.id === createdId)).toBe(true);
+  });
+
+  test('GET /api/device-profiles/:id', async () => {
+    const res = await request(app).get(`/api/device-profiles/${createdId}`);
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe(createdId);
+  });
+
+  test('PUT /api/device-profiles/:id', async () => {
+    const res = await request(app)
+      .put(`/api/device-profiles/${createdId}`)
+      .send({ classification: 'III' });
+    expect(res.status).toBe(200);
+    expect(res.body.classification).toBe('III');
+  });
+
+  test('DELETE /api/device-profiles/:id', async () => {
+    const res = await request(app).delete(`/api/device-profiles/${createdId}`);
+    expect(res.status).toBe(204);
+  });
+});
+```
+
+---
+
+## D. (Optional) E2E Smoke Test with Cypress or Playwright
+
+* Write a simple script that:
+
+  1. Navigates to the **Device Profiles** dashboard
+  2. Creates a new profile via the UI
+  3. Verifies it appears in the list
+  4. Updates it and confirms the change
+  5. Deletes it and confirms removal
+
+---
+
+Once you’ve got these in place:
+
+1. Run `npm test` — your service and route tests should pass.
+2. Integrate into your CI pipeline so every PR validates this critical flow.
+
+Shall I generate the exact test files (paths + code) for you to paste into Replit?
