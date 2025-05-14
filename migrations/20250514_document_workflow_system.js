@@ -7,194 +7,253 @@
  * Date: May 14, 2025
  */
 
-const migrationSchema = {
-  up: async (db) => {
-    console.log('Starting document workflow system migration...');
-    
-    // Unified Documents table
-    await db.schema.createTable('unified_documents')
-      .addColumn('id', 'serial', col => col.primaryKey())
-      .addColumn('module_type', 'text', col => col.notNull())
-      .addColumn('original_document_id', 'text', col => col.notNull())
-      .addColumn('title', 'text', col => col.notNull())
-      .addColumn('document_type', 'text', col => col.notNull())
-      .addColumn('metadata', 'jsonb')
-      .addColumn('content', 'jsonb')
-      .addColumn('vault_folder_id', 'integer')
-      .addColumn('organization_id', 'integer', col => col.notNull())
-      .addColumn('created_at', 'timestamp', col => col.defaultTo(db.fn.now()).notNull())
-      .addColumn('updated_at', 'timestamp', col => col.defaultTo(db.fn.now()).notNull())
-      .addColumn('created_by', 'integer', col => col.notNull())
-      .addColumn('updated_by', 'integer', col => col.notNull())
-      .addColumn('is_deleted', 'boolean', col => col.defaultTo(false).notNull())
-      .execute();
-    
-    // Create unique index on module+document+organization
-    await db.schema.createIndex('module_document_idx')
-      .on('unified_documents')
-      .columns(['module_type', 'original_document_id', 'organization_id'])
-      .unique()
-      .execute();
-    
-    // Workflow Templates table
-    await db.schema.createTable('workflow_templates')
-      .addColumn('id', 'serial', col => col.primaryKey())
-      .addColumn('module_type', 'text', col => col.notNull())
-      .addColumn('name', 'text', col => col.notNull())
-      .addColumn('description', 'text')
-      .addColumn('steps', 'jsonb', col => col.notNull())
-      .addColumn('organization_id', 'integer', col => col.notNull())
-      .addColumn('is_active', 'boolean', col => col.defaultTo(true).notNull())
-      .addColumn('created_at', 'timestamp', col => col.defaultTo(db.fn.now()).notNull())
-      .addColumn('updated_at', 'timestamp', col => col.defaultTo(db.fn.now()).notNull())
-      .addColumn('created_by', 'integer', col => col.notNull())
-      .execute();
-    
-    // Document Workflows table
-    await db.schema.createTable('document_workflows')
-      .addColumn('id', 'serial', col => col.primaryKey())
-      .addColumn('document_id', 'integer', col => col.notNull().references('unified_documents.id'))
-      .addColumn('template_id', 'integer', col => col.notNull().references('workflow_templates.id'))
-      .addColumn('status', 'text', col => col.notNull().defaultTo('pending'))
-      .addColumn('metadata', 'jsonb')
-      .addColumn('created_at', 'timestamp', col => col.defaultTo(db.fn.now()).notNull())
-      .addColumn('updated_at', 'timestamp', col => col.defaultTo(db.fn.now()).notNull())
-      .addColumn('completed_at', 'timestamp')
-      .addColumn('created_by', 'integer', col => col.notNull())
-      .addColumn('template_name', 'text')
-      .addColumn('template_steps', 'jsonb')
-      .execute();
-    
-    // Workflow Approvals table
-    await db.schema.createTable('workflow_approvals')
-      .addColumn('id', 'serial', col => col.primaryKey())
-      .addColumn('workflow_id', 'integer', col => col.notNull().references('document_workflows.id'))
-      .addColumn('step_index', 'integer', col => col.notNull())
-      .addColumn('step_name', 'text')
-      .addColumn('description', 'text')
-      .addColumn('status', 'text', col => col.notNull().defaultTo('pending'))
-      .addColumn('assigned_to', 'integer')
-      .addColumn('assigned_by', 'integer')
-      .addColumn('assigned_at', 'timestamp')
-      .addColumn('approved_by', 'integer')
-      .addColumn('approved_at', 'timestamp')
-      .addColumn('comments', 'text')
-      .addColumn('evidence', 'jsonb')
-      .execute();
-    
-    // Create unique index on workflow+step
-    await db.schema.createIndex('workflow_step_idx')
-      .on('workflow_approvals')
-      .columns(['workflow_id', 'step_index'])
-      .unique()
-      .execute();
-    
-    // Workflow Audit Log table
-    await db.schema.createTable('workflow_audit_log')
-      .addColumn('id', 'serial', col => col.primaryKey())
-      .addColumn('workflow_id', 'integer', col => col.notNull().references('document_workflows.id'))
-      .addColumn('action', 'text', col => col.notNull())
-      .addColumn('user_id', 'integer', col => col.notNull())
-      .addColumn('timestamp', 'timestamp', col => col.defaultTo(db.fn.now()).notNull())
-      .addColumn('details', 'text')
-      .addColumn('metadata', 'jsonb')
-      .execute();
-    
-    // Insert default workflow templates
-    await db.insert('workflow_templates').values([
-      {
-        module_type: 'med_device',
-        name: 'Standard 510(k) Review',
-        description: 'Standard review process for 510(k) documents with regulatory and QA checkpoints',
-        steps: JSON.stringify([
-          { name: 'Technical Review', description: 'Verification of technical content and claims', role: 'technical_reviewer' },
-          { name: 'Regulatory Review', description: 'Regulatory compliance assessment', role: 'regulatory_reviewer' },
-          { name: 'QA Approval', description: 'Final quality assurance approval', role: 'qa_approver' }
-        ]),
-        organization_id: 1,
-        created_by: 1
-      },
-      {
-        module_type: 'med_device',
-        name: 'CER Approval Workflow',
-        description: 'Clinical Evaluation Report review and approval process',
-        steps: JSON.stringify([
-          { name: 'Clinical Expert Review', description: 'Review by clinical subject matter expert', role: 'clinical_reviewer' },
-          { name: 'Regulatory Review', description: 'Compliance with regulatory standards', role: 'regulatory_reviewer' },
-          { name: 'QA Approval', description: 'Final quality assurance approval', role: 'qa_approver' },
-          { name: 'Executive Signoff', description: 'Executive management approval', role: 'executive_approver' }
-        ]),
-        organization_id: 1,
-        created_by: 1
-      },
-      {
-        module_type: 'cmc_wizard',
-        name: 'CMC Document Approval',
-        description: 'Chemistry, Manufacturing and Controls document approval workflow',
-        steps: JSON.stringify([
-          { name: 'Technical Review', description: 'Review of technical specifications', role: 'technical_reviewer' },
-          { name: 'Compliance Review', description: 'Regulatory compliance assessment', role: 'compliance_reviewer' },
-          { name: 'Quality Approval', description: 'Quality assurance approval', role: 'quality_approver' }
-        ]),
-        organization_id: 1,
-        created_by: 1
-      },
-      {
-        module_type: 'trial_sage',
-        name: 'Document Archival Workflow',
-        description: 'Process for finalizing and archiving documents',
-        steps: JSON.stringify([
-          { name: 'Content Review', description: 'Final content review before archival', role: 'content_reviewer' },
-          { name: 'Metadata Verification', description: 'Verification of document metadata', role: 'metadata_reviewer' },
-          { name: 'Archival Approval', description: 'Final approval for document archival', role: 'archival_approver' }
-        ]),
-        organization_id: 1,
-        created_by: 1
-      },
-      {
-        module_type: 'ectd_coauthor',
-        name: 'eCTD Submission Approval',
-        description: 'Approval workflow for eCTD submission documents',
-        steps: JSON.stringify([
-          { name: 'Author Review', description: 'Review by document author', role: 'author' },
-          { name: 'Technical Review', description: 'Technical content review', role: 'technical_reviewer' },
-          { name: 'Regulatory Review', description: 'Regulatory compliance review', role: 'regulatory_reviewer' },
-          { name: 'Publishing Approval', description: 'Final approval before publishing', role: 'publishing_approver' }
-        ]),
-        organization_id: 1,
-        created_by: 1
-      },
-      {
-        module_type: 'study_architect',
-        name: 'Study Protocol Approval',
-        description: 'Review and approval workflow for study protocols',
-        steps: JSON.stringify([
-          { name: 'Scientific Review', description: 'Review of scientific methodology', role: 'scientific_reviewer' },
-          { name: 'Statistical Review', description: 'Review of statistical methods', role: 'statistical_reviewer' },
-          { name: 'Clinical Review', description: 'Clinical aspects review', role: 'clinical_reviewer' },
-          { name: 'Ethics Review', description: 'Ethical considerations review', role: 'ethics_reviewer' },
-          { name: 'Final Approval', description: 'Final protocol approval', role: 'final_approver' }
-        ]),
-        organization_id: 1,
-        created_by: 1
-      }
-    ]).execute();
-    
-    console.log('Document workflow system migration completed successfully.');
-  },
-  
-  down: async (db) => {
-    console.log('Rolling back document workflow system migration...');
-    
-    // Drop tables in reverse order to avoid constraint issues
-    await db.schema.dropTable('workflow_audit_log').ifExists().execute();
-    await db.schema.dropTable('workflow_approvals').ifExists().execute();
-    await db.schema.dropTable('document_workflows').ifExists().execute();
-    await db.schema.dropTable('workflow_templates').ifExists().execute();
-    await db.schema.dropTable('unified_documents').ifExists().execute();
-    
-    console.log('Document workflow system rollback completed successfully.');
-  }
-};
+const { sql } = require('drizzle-orm');
 
-module.exports = migrationSchema;
+/**
+ * Perform the migration
+ * @param {*} db The database connection
+ */
+async function up(db) {
+  console.log('Creating unified document workflow tables...');
+
+  // Create unified_documents table
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS unified_documents (
+      id SERIAL PRIMARY KEY,
+      module_type TEXT NOT NULL,
+      original_document_id TEXT NOT NULL,
+      title TEXT NOT NULL,
+      document_type TEXT NOT NULL,
+      metadata JSONB DEFAULT '{}',
+      content JSONB,
+      vault_folder_id INTEGER,
+      organization_id INTEGER NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      created_by INTEGER NOT NULL,
+      updated_by INTEGER NOT NULL,
+      is_deleted BOOLEAN DEFAULT FALSE NOT NULL,
+      
+      UNIQUE(module_type, original_document_id, organization_id)
+    )
+  `);
+  console.log('Created unified_documents table');
+  
+  // Create workflow_templates table
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS workflow_templates (
+      id SERIAL PRIMARY KEY,
+      module_type TEXT NOT NULL,
+      name TEXT NOT NULL,
+      description TEXT,
+      steps JSONB NOT NULL,
+      organization_id INTEGER NOT NULL,
+      is_active BOOLEAN DEFAULT TRUE NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      created_by INTEGER NOT NULL,
+      updated_by INTEGER NOT NULL,
+      
+      UNIQUE(name, organization_id)
+    )
+  `);
+  console.log('Created workflow_templates table');
+  
+  // Create document_workflows table
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS document_workflows (
+      id SERIAL PRIMARY KEY,
+      document_id INTEGER NOT NULL REFERENCES unified_documents(id),
+      template_id INTEGER NOT NULL REFERENCES workflow_templates(id),
+      status TEXT NOT NULL DEFAULT 'pending',
+      metadata JSONB DEFAULT '{}',
+      template_name TEXT NOT NULL,
+      template_steps JSONB NOT NULL,
+      started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      completed_at TIMESTAMP,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      created_by INTEGER NOT NULL
+    )
+  `);
+  console.log('Created document_workflows table');
+  
+  // Create workflow_approvals table
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS workflow_approvals (
+      id SERIAL PRIMARY KEY,
+      workflow_id INTEGER NOT NULL REFERENCES document_workflows(id),
+      step_index INTEGER NOT NULL,
+      step_name TEXT,
+      description TEXT,
+      status TEXT NOT NULL DEFAULT 'pending',
+      assigned_to INTEGER,
+      assigned_by INTEGER,
+      assigned_at TIMESTAMP,
+      approved_by INTEGER,
+      approved_at TIMESTAMP,
+      comments TEXT,
+      
+      UNIQUE(workflow_id, step_index)
+    )
+  `);
+  console.log('Created workflow_approvals table');
+  
+  // Create workflow_audit_log table
+  await db.execute(sql`
+    CREATE TABLE IF NOT EXISTS workflow_audit_log (
+      id SERIAL PRIMARY KEY,
+      workflow_id INTEGER NOT NULL REFERENCES document_workflows(id),
+      action TEXT NOT NULL,
+      user_id INTEGER NOT NULL,
+      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
+      details TEXT,
+      metadata JSONB
+    )
+  `);
+  console.log('Created workflow_audit_log table');
+  
+  // Create indexes for better performance
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_unified_documents_module_type ON unified_documents(module_type)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_unified_documents_organization_id ON unified_documents(organization_id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_unified_documents_document_type ON unified_documents(document_type)`);
+  
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_workflow_templates_module_type ON workflow_templates(module_type)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_workflow_templates_organization_id ON workflow_templates(organization_id)`);
+  
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_document_workflows_document_id ON document_workflows(document_id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_document_workflows_status ON document_workflows(status)`);
+  
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_workflow_approvals_workflow_id ON workflow_approvals(workflow_id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_workflow_approvals_status ON workflow_approvals(status)`);
+  
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_workflow_audit_log_workflow_id ON workflow_audit_log(workflow_id)`);
+  await db.execute(sql`CREATE INDEX IF NOT EXISTS idx_workflow_audit_log_action ON workflow_audit_log(action)`);
+  
+  console.log('Created indexes for unified document workflow tables');
+  
+  // Create a default workflow template for the Medical Device module for 510k documents
+  await db.execute(sql`
+    INSERT INTO workflow_templates (
+      module_type,
+      name,
+      description,
+      steps,
+      organization_id,
+      created_by,
+      updated_by
+    ) 
+    VALUES (
+      'med_device',
+      '510k Review Workflow',
+      'Standard workflow for review and approval of 510k submissions',
+      '[
+        {
+          "name": "Initial Technical Review",
+          "description": "Technical review of the 510k submission content",
+          "role": "technical_reviewer",
+          "required_fields": ["device_description", "intended_use", "predicate_comparison"]
+        },
+        {
+          "name": "Regulatory Review",
+          "description": "Regulatory compliance review",
+          "role": "regulatory_specialist",
+          "required_fields": ["regulatory_standards", "compliance_checklist"]
+        },
+        {
+          "name": "Quality Assurance",
+          "description": "Final QA check before submission",
+          "role": "qa_specialist",
+          "required_fields": ["qa_checklist", "final_validation"]
+        },
+        {
+          "name": "Final Approval",
+          "description": "Management sign-off for submission",
+          "role": "manager",
+          "required_fields": ["approval_signature"]
+        }
+      ]',
+      1,
+      1,
+      1
+    )
+    ON CONFLICT (name, organization_id) DO NOTHING
+  `);
+  
+  // Create a default workflow template for the Medical Device module for CER documents
+  await db.execute(sql`
+    INSERT INTO workflow_templates (
+      module_type,
+      name,
+      description,
+      steps,
+      organization_id,
+      created_by,
+      updated_by
+    ) 
+    VALUES (
+      'med_device',
+      'CER Review Workflow',
+      'Standard workflow for review and approval of Clinical Evaluation Reports',
+      '[
+        {
+          "name": "Clinical Data Review",
+          "description": "Review of clinical data and literature",
+          "role": "clinical_specialist",
+          "required_fields": ["literature_review", "clinical_data_analysis"]
+        },
+        {
+          "name": "Technical Review",
+          "description": "Technical review of the device specification",
+          "role": "technical_reviewer",
+          "required_fields": ["device_specification", "technical_review_checklist"]
+        },
+        {
+          "name": "Medical Review",
+          "description": "Medical review by qualified medical professional",
+          "role": "medical_reviewer",
+          "required_fields": ["medical_opinion", "risk_assessment"]
+        },
+        {
+          "name": "Regulatory Review",
+          "description": "Regulatory compliance review",
+          "role": "regulatory_specialist",
+          "required_fields": ["regulatory_compliance", "standards_checklist"]
+        },
+        {
+          "name": "Final Approval",
+          "description": "Management sign-off for CER",
+          "role": "manager",
+          "required_fields": ["approval_signature"]
+        }
+      ]',
+      1,
+      1,
+      1
+    )
+    ON CONFLICT (name, organization_id) DO NOTHING
+  `);
+  
+  console.log('Added default workflow templates for Medical Device module');
+  
+  console.log('Document workflow system tables created successfully');
+}
+
+/**
+ * Rollback the migration
+ * @param {*} db The database connection
+ */
+async function down(db) {
+  console.log('Rolling back unified document workflow tables...');
+  
+  // Drop tables in reverse order of dependencies
+  await db.execute(sql`DROP TABLE IF EXISTS workflow_audit_log`);
+  await db.execute(sql`DROP TABLE IF EXISTS workflow_approvals`);
+  await db.execute(sql`DROP TABLE IF EXISTS document_workflows`);
+  await db.execute(sql`DROP TABLE IF EXISTS workflow_templates`);
+  await db.execute(sql`DROP TABLE IF EXISTS unified_documents`);
+  
+  console.log('Rolled back document workflow system tables');
+}
+
+module.exports = { up, down };
