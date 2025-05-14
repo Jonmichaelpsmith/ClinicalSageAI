@@ -241,6 +241,43 @@ class FDA510kService {
       throw error;
     }
   }
+
+  /**
+   * Get FDA compliance status and implementation progress
+   * 
+   * Retrieves the current status of FDA 510(k) compliance implementation,
+   * including completed steps, validation rules, and progress metrics.
+   * 
+   * @returns {Promise<Object>} Compliance status data containing progress and next steps
+   */
+  async getComplianceStatus() {
+    try {
+      const response = await apiRequest.get('/api/fda510k/estar/compliance-status');
+      return {
+        success: true,
+        ...response.data
+      };
+    } catch (error) {
+      console.error('Error fetching FDA compliance status:', error);
+      return {
+        success: false,
+        errorMessage: error.message || 'Failed to fetch compliance data',
+        progressSummary: {
+          overallPercentage: 0,
+          steps: {
+            total: 0,
+            completed: 0,
+            percentage: 0
+          },
+          validationRules: {
+            total: 0,
+            implemented: 0, 
+            percentage: 0
+          }
+        }
+      };
+    }
+  }
 }
 
 // Export a singleton instance
