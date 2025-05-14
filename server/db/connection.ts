@@ -1,42 +1,28 @@
 /**
- * Database Connection Module
+ * Database Connection
  * 
- * This module provides a centralized connection to the PostgreSQL database
- * using Drizzle ORM. It initializes the connection pool and prepares query
- * builders for all database tables.
+ * This file sets up the connection to the PostgreSQL database
+ * and initializes the Drizzle ORM.
  */
 
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { Pool } from 'pg';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 import * as unifiedWorkflowSchema from '../../shared/schema/unified_workflow';
 
-// Initialize connection pool
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  // Adjust pool settings for optimal performance
-  max: 10,
-  idleTimeoutMillis: 30000
-});
+// Use environment variable for database connection
+const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/trialsage';
 
-// Initialize Drizzle with the connection pool
-export const db = drizzle(pool, {
+// Create a regular client
+const client = postgres(connectionString, { max: 10 });
+
+// Create a Drizzle ORM instance
+export const db = drizzle(client, {
   schema: {
     ...unifiedWorkflowSchema
-  }
+  },
+  // Setup logger for development
+  logger: process.env.NODE_ENV === 'development'
 });
 
-// Export the raw pool for direct access when needed
-export const rawPool = pool;
-
-// Register shutdown handlers
-process.on('exit', () => {
-  console.log('Closing database connection pool');
-  pool.end();
-});
-
-// Handle unexpected errors to prevent application crashes
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
-});
-
-console.log('Database connection initialized');
+// Export schema
+export { unifiedWorkflowSchema };
