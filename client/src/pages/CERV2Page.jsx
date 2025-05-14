@@ -21,6 +21,7 @@ import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPane
 import ExportModule from '@/components/cer/ExportModule';
 import CerComprehensiveReportsPanel from '@/components/cer/CerComprehensiveReportsPanel';
 import MAUDIntegrationPanel from '@/components/cer/MAUDIntegrationPanel';
+import ReportGenerationPanel from '@/components/cer/ReportGenerationPanel';
 // 510k enhanced components
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import GuidedTooltip from '@/components/510k/GuidedTooltip';
