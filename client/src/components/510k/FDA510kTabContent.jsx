@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge';
 
 import OneClick510kDraft from './OneClick510kDraft';
 import WorkflowEnabledReportGenerator from './WorkflowEnabledReportGenerator';
+import ComplianceChecker from './ComplianceChecker';
 import FDA510kService from '../../services/FDA510kService';
 
 const DEFAULT_DEVICE_DATA = {
@@ -270,6 +271,11 @@ const FDA510kTabContent = ({
                     </Alert>
                   ) : (
                     <>
+                      {/* Integration of the ComplianceChecker component for comprehensive validation */}
+                      <ComplianceChecker projectId={deviceData?.id || 'dev-sample-1'} />
+                      
+                      <Separator className="my-8" />
+                      
                       <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-2">
                           <CheckSquare className="h-5 w-5 text-primary" />
