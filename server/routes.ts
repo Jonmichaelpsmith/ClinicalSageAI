@@ -300,6 +300,9 @@ export default function registerRoutes(app: Express): void {
   const regulatoryKnowledgeRouter = require('./routes/regulatory-knowledge');
   app.use('/api/regulatory-knowledge', regulatoryKnowledgeRouter);
   
+  // Register Module Integration routes
+  app.use('/api/integration', moduleIntegrationRoutes);
+  
   // Register Device Profile API routes directly
   const DeviceProfileService = require('./services/DeviceProfileService').default;
   const deviceProfileService = DeviceProfileService.getInstance();
