@@ -590,3 +590,155 @@ export const generateCERSection = async (sectionKey, deviceProfile, sectionData 
     throw error;
   }
 };
+
+/**
+ * Assemble a complete CER document from sections and metadata
+ * 
+ * @param {Object} cerData - Complete CER data including device profile and sections
+ * @returns {Promise<Object>} - Assembly result with document paths and status
+ */
+export const assembleCERDocument = async (cerData) => {
+  try {
+    const response = await axios.post('/api/document-assembly/cer', {
+      cerData
+    });
+    
+    if (!response.data || !response.data.success) {
+      throw new Error(response.data?.message || 'Failed to assemble CER document');
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error assembling CER document:', error);
+    
+    // Format error for display
+    const errorHandling = {
+      formatErrorForDisplay: (err, options = {}) => {
+        const friendlyMessages = options.friendlyMessages || {};
+        
+        if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+          return { message: friendlyMessages.timeout || 'Request timed out' };
+        } else if (!err.response || err.message.includes('Network Error')) {
+          return { message: friendlyMessages.network || 'Network error' };
+        } else if (err.response && err.response.status >= 500) {
+          return { message: friendlyMessages.server || 'Server error' };
+        }
+        
+        return { message: friendlyMessages.default || err.message };
+      }
+    };
+    
+    // Format error for display
+    const formattedError = errorHandling.formatErrorForDisplay(error, {
+      friendlyMessages: {
+        network: 'Unable to connect to the document assembly service. Please check your internet connection and try again.',
+        timeout: 'The document assembly is taking longer than expected. Please try again with fewer sections or contact support.',
+        server: 'Our document assembly service is experiencing issues. Please try again later.',
+        default: 'An error occurred while assembling your document. Please try again or contact support.'
+      }
+    });
+    
+    throw new Error(formattedError.message || error.message);
+  }
+};
+
+/**
+ * Assemble a 510(k) submission document
+ * 
+ * @param {Object} submission510kData - Complete 510(k) submission data
+ * @returns {Promise<Object>} - Assembly result with document paths and status
+ */
+export const assemble510kDocument = async (submission510kData) => {
+  try {
+    const response = await axios.post('/api/document-assembly/510k', {
+      submission510kData
+    });
+    
+    if (!response.data || !response.data.success) {
+      throw new Error(response.data?.message || 'Failed to assemble 510(k) document');
+    }
+    
+    return response.data;
+  } catch (error) {
+    console.error('Error assembling 510(k) document:', error);
+    
+    // Format error for display
+    const errorHandling = {
+      formatErrorForDisplay: (err, options = {}) => {
+        const friendlyMessages = options.friendlyMessages || {};
+        
+        if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+          return { message: friendlyMessages.timeout || 'Request timed out' };
+        } else if (!err.response || err.message.includes('Network Error')) {
+          return { message: friendlyMessages.network || 'Network error' };
+        } else if (err.response && err.response.status >= 500) {
+          return { message: friendlyMessages.server || 'Server error' };
+        }
+        
+        return { message: friendlyMessages.default || err.message };
+      }
+    };
+    
+    // Format error for display
+    const formattedError = errorHandling.formatErrorForDisplay(error, {
+      friendlyMessages: {
+        network: 'Unable to connect to the document assembly service. Please check your internet connection and try again.',
+        timeout: 'The document assembly is taking longer than expected. Please try again with fewer sections or contact support.',
+        server: 'Our document assembly service is experiencing issues. Please try again later.',
+        default: 'An error occurred while assembling your document. Please try again or contact support.'
+      }
+    });
+    
+    throw new Error(formattedError.message || error.message);
+  }
+};
+
+/**
+ * Get the status of a document assembly operation
+ * 
+ * @param {string} assemblyId - The assembly ID to check
+ * @returns {Promise<Object>} - Assembly status information
+ */
+export const getAssemblyStatus = async (assemblyId) => {
+  try {
+    const response = await axios.get(`/api/document-assembly/status/${assemblyId}`);
+    
+    if (!response.data || !response.data.success) {
+      throw new Error(response.data?.message || 'Failed to get assembly status');
+    }
+    
+    return response.data.status;
+  } catch (error) {
+    console.error('Error getting assembly status:', error);
+    throw error;
+  }
+};
+
+/**
+ * List recent document assembly operations
+ * 
+ * @param {Object} options - List options 
+ * @param {number} options.limit - Number of assemblies to return (default: 10)
+ * @param {string} options.type - Filter by document type (cer, 510k)
+ * @returns {Promise<Array>} - Array of assembly operations
+ */
+export const listAssemblies = async (options = {}) => {
+  try {
+    const { limit = 10, type } = options;
+    
+    const params = new URLSearchParams();
+    if (limit) params.append('limit', limit);
+    if (type) params.append('type', type);
+    
+    const response = await axios.get(`/api/document-assembly/list?${params}`);
+    
+    if (!response.data || !response.data.success) {
+      throw new Error(response.data?.message || 'Failed to list assemblies');
+    }
+    
+    return response.data.assemblies;
+  } catch (error) {
+    console.error('Error listing assemblies:', error);
+    throw error;
+  }
+};

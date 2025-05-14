@@ -287,7 +287,7 @@ async function assembleCERDocument(cerData, options = {}) {
  * @returns {Promise<Object>} - Assembly result with document paths and status
  */
 async function assemble510kDocument(submission510kData, options = {}) {
-  const assemblyId = uuidv4();
+  const assemblyId = generateId();
   const startTime = Date.now();
   
   try {
