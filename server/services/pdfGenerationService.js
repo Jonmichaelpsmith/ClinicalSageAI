@@ -1,14 +1,31 @@
 /**
- * PDF Generation Service
+ * FDA-Compliant PDF Generation Service
  * 
- * This service handles the generation of PDF documents for reports, using
- * HTML as an intermediary format. It's designed to be flexible and support
- * different types of regulatory documents.
+ * This service handles the generation of FDA-compliant PDF documents for regulatory submissions,
+ * particularly for 510(k) documents. It ensures that all formatting strictly adheres to
+ * FDA guidance documents and eCopy specifications.
+ * 
+ * FDA SUBMISSION REQUIREMENTS:
+ * - Letter size paper (8.5" x 11")
+ * - 1" margins on all sides
+ * - Font size minimum of 12 points
+ * - FDA-acceptable fonts: Times New Roman, Arial, Verdana
+ * - Headers and footers must be within the margins
+ * - All pages numbered sequentially
+ * - Bookmarks for major sections
+ * - Table of contents for submissions > 5 pages
+ * - No security settings that prevent copying text or adding annotations
+ * 
+ * Reference: FDA eCopy Program Guidance
  */
 
 const fs = require('fs');
 const path = require('path');
 const { Buffer } = require('buffer');
+const { exec, execFile, spawn } = require('child_process');
+const util = require('util');
+const execAsync = util.promisify(exec);
+const execFileAsync = util.promisify(execFile);
 
 /**
  * Generate a PDF document from structured content that follows FDA formatting requirements
