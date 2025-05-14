@@ -1,0 +1,233 @@
+Let’s beef up your **Automated Literature Review** into a first-class, multi-source, AI-powered research hub—**all** living inside your CER2V page under Step 2. Here’s a hand-held, step-by-step plan for Replit:
+
+---
+
+## 📚 Sprint 1 · Step 2b: Enterprise‐Grade Literature Review
+
+> **Reminder:** **Every** file change must live under:
+>
+> * `client/src/pages/CERV2Page.jsx` – into the Step 2 render block
+> * or its imported children in `client/src/components/cer/…`
+>   **No** standalone pages.
+
+---
+
+### 1. Expand Your Data Sources
+
+1. **PubMed API**
+
+   * **Install** a tiny wrapper on the server:
+
+     ```bash
+     # in shell
+     npm install node-fetch
+     ```
+
+   * **Add** a new route in `server/routes/fda510kRoutes.js` below `/semantic-search`:
+
+     ```js
+     import fetch from 'node-fetch';
+
+     router.post('/pubmed-search', async (req, res) => {
+       try {
+         const { query } = req.body;
+         const esearch = await fetch(
+           `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&retmode=json&term=${encodeURIComponent(query)}`
+         ).then(r => r.json());
+
+         const ids = esearch.esearchresult.idlist.slice(0, 20).join(',');
+         const efetch = await fetch(
+           `https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=pubmed&retmode=json&id=${ids}`
+         ).then(r => r.json());
+
+         // Simplify for client: id, title, abstract
+         const results = efetch.result.uids.map(uid => ({
+           id: uid,
+           title: efetch.result[uid].title,
+           abstract: efetch.result[uid].abstract
+         }));
+         res.json({ results });
+       } catch (err) {
+         console.error(err);
+         res.status(500).json({ error: 'PubMed search failed' });
+       }
+     });
+     ```
+
+2. **FAERS Database**
+
+   * If you have a local FAERS mirror table, expose a `/faers-search` route that queries it for your device’s code or keywords.
+
+3. **PDF Upload & OCR**
+
+   * **Install** on the server:
+
+     ```bash
+     npm install multer pdf-parse
+     ```
+
+   * **Add** a file-upload endpoint in the same routes file:
+
+     ```js
+     import multer from 'multer';
+     import pdfParse from 'pdf-parse';
+     const upload = multer();
+
+     router.post('/upload-literature', upload.single('file'), async (req, res) => {
+       try {
+         const data = await pdfParse(req.file.buffer);
+         res.json({ text: data.text.slice(0,5000) }); // limit size
+       } catch (err) {
+         console.error(err);
+         res.status(500).json({ error: 'PDF parse failed' });
+       }
+     });
+     ```
+
+---
+
+### 2. AI Summarization & Topic Extraction
+
+1. **Server-side OpenAI endpoints**
+
+   * In `fda510kRoutes.js`:
+
+     ```js
+     router.post('/summarize', async (req, res) => {
+       const { text } = req.body;
+       try {
+         const ai = new OpenAI();
+         const completion = await ai.chat.completions.create({
+           model: 'gpt-4o-mini',
+           messages: [
+             { role: 'system', content: 'You are a regulatory affairs summarization engine.' },
+             { role: 'user', content: `Summarize this abstract in 3 bullet points:\n\n${text}` }
+           ]
+         });
+         res.json({ summary: completion.choices[0].message.content });
+       } catch (e) {
+         console.error(e);
+         res.status(500).json({ error: 'Summarization failed' });
+       }
+     });
+     ```
+
+2. **Client service methods** in `client/src/services/FDA510kService.js`:
+
+   ```js
+   async pubmedSearch(query) { /* POST /pubmed-search */ }
+   async faersSearch(query)  { /* POST /faers-search */ }
+   async uploadLiterature(file) { /* POST /upload-literature */ }
+   async summarizeText(text)   { /* POST /summarize */ }
+   ```
+
+---
+
+### 3. Rich UI in `LiteratureReviewPanel.jsx`
+
+1. **Imports** at top of `client/src/components/cer/LiteratureReviewPanel.jsx`:
+
+   ```jsx
+   import { useState } from 'react';
+   import FDA510kService from '@/services/FDA510kService';
+   import { Input, Button, Card, Tabs, TabList, Tab, TabPanels, TabPanel } from '@/components/ui';
+   import { useToast } from '@/components/ui/use-toast';
+   ```
+
+2. **State + Handlers**:
+
+   ```jsx
+   const [query, setQuery] = useState('');
+   const [pubmedResults, setPubmedResults] = useState([]);
+   const [faersResults, setFaersResults] = useState([]);
+   const [uploadText, setUploadText]   = useState('');
+   const [summary, setSummary]         = useState('');
+   const { toast } = useToast();
+
+   const doPubmed = async () => {
+     const { results } = await FDA510kService.instance.pubmedSearch(query);
+     setPubmedResults(results);
+     toast({ title: 'PubMed ✓', description: `${results.length} articles` });
+   };
+   // similarly for faersSearch(), uploadLiterature(), summarizeText()
+   ```
+
+3. **Render** (inside your Step 2 card):
+
+   ```jsx
+   <Tabs defaultIndex={0}>
+     <TabList>
+       <Tab>PubMed</Tab>
+       <Tab>FAERS</Tab>
+       <Tab>Upload PDF</Tab>
+     </TabList>
+     <TabPanels>
+       {/* PUBMED */}
+       <TabPanel>
+         <div className="flex gap-2 mb-2">
+           <Input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search PubMed…" />
+           <Button onClick={doPubmed}>Search</Button>
+         </div>
+         {pubmedResults.map(a=>(
+           <Card key={a.id} className="mb-2 p-3">
+             <h4 className="font-bold text-sm">{a.title}</h4>
+             <p className="text-xs">{a.abstract?.slice(0,200)}…</p>
+             <Button size="sm" variant="link"
+               onClick={()=>FDA510kService.instance.summarizeText(a.abstract)
+                 .then(s=>setSummary(s))}
+             >Summarize</Button>
+           </Card>
+         ))}
+       </TabPanel>
+       {/* FAERS */}
+       <TabPanel>
+         /* same layout: Input+Button + faersResults.map(...) */
+       </TabPanel>
+       {/* UPLOAD */}
+       <TabPanel>
+         <input type="file" onChange={e=>setUploadText('…processing')} />
+         <Button onClick={async()=>{
+           const file = document.querySelector('input[type=file]').files[0];
+           const { text } = await FDA510kService.instance.uploadLiterature(file);
+           setUploadText(text);
+         }}>Upload</Button>
+         <p className="mt-2 max-h-40 overflow-auto text-xs">{uploadText}</p>
+       </TabPanel>
+     </TabPanels>
+   </Tabs>
+
+   {summary && (
+     <Card className="mt-4 p-3 bg-gray-50">
+       <h5 className="font-semibold">AI Summary</h5>
+       <p className="text-sm">{summary}</p>
+     </Card>
+   )}
+   ```
+
+---
+
+### 4. Smoke‐Test & Polish
+
+1. **Rebuild & Restart**:
+
+   ```bash
+   # Replit Shell
+   npm run build && npm run dev
+   ```
+
+2. **In-App**:
+
+   * Go to **Client Portal → Med Device & Diagnostics → 510(k) Step 2**
+   * You should see three tabs (PubMed / FAERS / Upload PDF).
+   * Try each: enter a query, click **Search**, verify 10–20 results.
+   * Click **Summarize** on an abstract—your AI summary card should appear.
+   * Upload a PDF and see its text + summary.
+
+3. **Polish**:
+
+   * Adjust spacing, labels, and error messages.
+   * Ensure everything is responsive (no narrow columns!).
+
+---
+
+When **all** of this lives cleanly inside your CER2V module, Step 2 will truly feel like an **enterprise-grade** research engine—no mocks, real data, AI smarts, and every line under `pages/CERV2Page.jsx` or its child components.
