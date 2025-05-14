@@ -22,6 +22,7 @@ import ExportModule from '@/components/cer/ExportModule';
 import CerComprehensiveReportsPanel from '@/components/cer/CerComprehensiveReportsPanel';
 import MAUDIntegrationPanel from '@/components/cer/MAUDIntegrationPanel';
 import ReportGenerationPanel from '@/components/cer/ReportGenerationPanel';
+import UnifiedWorkflowPanel from '@/components/unified-workflow/UnifiedWorkflowPanel';
 // Contextual tooltip system components
 import { CERV2TooltipProvider, useCERV2Tooltips } from '@/components/cer/TooltipTracker';
 import TooltipTracker from '@/components/cer/TooltipTracker';
@@ -194,7 +195,11 @@ export default function CERV2Page() {
             { id: "submission", label: <div className="flex items-center">
               <span>Final Submission</span>
               <span className="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full shadow-sm">New</span>
-            </div>, icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
+            </div>, icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
+            { id: "workflow", label: <div className="flex flex-col items-center leading-tight">
+              <span>Document Workflow</span>
+              <span className="text-[0.65rem] text-blue-600">Approval Process</span>
+            </div>, icon: <Clock className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
           ]
         },
         {
@@ -277,6 +282,10 @@ export default function CERV2Page() {
             <span className="text-[0.65rem] text-blue-600">Validated for GxP</span>
           </div>, icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
           { id: "data-retrieval", label: "Data Retrieval", icon: <Database className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
+          { id: "workflow", label: <div className="flex flex-col items-center leading-tight">
+            <span>Document Workflow</span>
+            <span className="text-[0.65rem] text-blue-600">Approval Process</span>
+          </div>, icon: <Clock className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
           { id: "510k", label: <div className="flex flex-col items-center leading-tight">
             <span>510(k) Automation</span>
             <span className="text-[0.65rem] text-blue-600">FDA Submission</span>
