@@ -250,4 +250,37 @@ router.get('/workflows/:workflowId', authenticate, async (req, res) => {
   }
 });
 
+/**
+ * @route GET /api/integration/modules/:moduleType/templates
+ * @description Get workflow templates for a specific module type
+ * @access Protected
+ */
+router.get('/modules/:moduleType/templates', authenticate, async (req, res) => {
+  try {
+    const { moduleType } = req.params;
+    
+    // Get templates for this module type
+    const templates = await db.select()
+      .from(workflowTemplates)
+      .where(
+        and(
+          eq(workflowTemplates.moduleType, moduleType),
+          eq(workflowTemplates.isActive, true)
+        )
+      )
+      .orderBy(desc(workflowTemplates.updatedAt));
+    
+    res.json({
+      success: true,
+      templates
+    });
+  } catch (error) {
+    console.error(`Error getting workflow templates: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+});
+
 export default router;
