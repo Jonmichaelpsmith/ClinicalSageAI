@@ -110,8 +110,8 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 overflow-visible">
-        <div className="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-100">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="pt-6 pb-4 overflow-visible">
+        <div className="bg-blue-50 p-4 rounded-lg mb-8 border border-blue-100 shadow-sm">
           <h2 className="text-blue-800 font-medium flex items-center">
             <Info className="h-5 w-5 mr-2" />
             510(k) Device Profile Information
@@ -123,59 +123,26 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
         </div>
         
         <Tabs defaultValue="basic" className="w-full">
-          <TabsList className="grid grid-cols-3 mb-4">
-            <TabsTrigger value="basic" className="text-sm">Basic Information</TabsTrigger>
-            <TabsTrigger value="technical" className="text-sm">Technical Details</TabsTrigger>
-            <TabsTrigger value="regulatory" className="text-sm">Regulatory Context</TabsTrigger>
+          <TabsList className="grid grid-cols-3 mb-6">
+            <TabsTrigger value="basic" className="text-sm font-medium">Basic Information</TabsTrigger>
+            <TabsTrigger value="technical" className="text-sm font-medium">Technical Details</TabsTrigger>
+            <TabsTrigger value="regulatory" className="text-sm font-medium">Regulatory Context</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="basic" className="space-y-6">
-            <FormField
-              control={form.control}
-              name="deviceName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Device Name*</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. CardioMonitor 3000" {...field} />
-                  </FormControl>
-                  <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
-                    The commercial name of the device
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+          <TabsContent value="basic" className="space-y-10">
+            {/* Device Name field - full width */}
+            <div className="bg-white p-6 rounded-md border border-gray-200 shadow-sm">
               <FormField
                 control={form.control}
-                name="modelNumber"
+                name="deviceName"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel htmlFor="model">Model Number</FormLabel>
+                  <FormItem className="mb-0">
+                    <FormLabel className="text-md font-medium text-gray-700">Device Name*</FormLabel>
                     <FormControl>
-                      <Input id="model" placeholder="e.g. CM3000-X" {...field} />
+                      <Input placeholder="e.g. CardioMonitor 3000" className="mt-1" {...field} />
                     </FormControl>
-                    <FormDescription className="text-xs text-slate-600 mt-1 mb-3">
-                      Device model or catalog number
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="manufacturer"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel htmlFor="manufacturer">Manufacturer</FormLabel>
-                    <FormControl>
-                      <Input id="manufacturer" placeholder="e.g. MedTech Industries" {...field} />
-                    </FormControl>
-                    <FormDescription className="text-xs text-slate-600 mt-1 mb-3">
-                      Legal manufacturer of the device
+                    <FormDescription className="text-xs text-gray-500 mt-1.5">
+                      The commercial name of the device
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -183,195 +150,260 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
               />
             </div>
             
-            <FormField
-              control={form.control}
-              name="deviceClass"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Device Class*</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="bg-white">
-                        <SelectValue placeholder="Select device class" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
-                      <SelectItem value="I" className="hover:bg-blue-50">Class I</SelectItem>
-                      <SelectItem value="II" className="hover:bg-blue-50">Class II</SelectItem>
-                      <SelectItem value="III" className="hover:bg-blue-50">Class III</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription className="text-xs text-slate-600 mt-1 mb-3">
-                    FDA regulatory classification of the device
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Model and Manufacturer Card */}
+            <div className="bg-white p-6 rounded-md border border-gray-200 shadow-sm">
+              <h3 className="text-sm font-medium text-gray-700 mb-4">Device Identification</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="modelNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor="model" className="text-gray-700">Model Number</FormLabel>
+                      <FormControl>
+                        <Input id="model" placeholder="e.g. CM3000-X" className="mt-1" {...field} />
+                      </FormControl>
+                      <FormDescription className="text-xs text-gray-500 mt-1.5">
+                        Device model or catalog number
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="manufacturer"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel htmlFor="manufacturer" className="text-gray-700">Manufacturer</FormLabel>
+                      <FormControl>
+                        <Input id="manufacturer" placeholder="e.g. MedTech Industries" className="mt-1" {...field} />
+                      </FormControl>
+                      <FormDescription className="text-xs text-gray-500 mt-1.5">
+                        Legal manufacturer of the device
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
             
-            <div className="h-4"></div>
-            
-            <FormField
-              control={form.control}
-              name="intendedUse"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Intended Use*</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Describe the intended use of the device..." 
-                      className="min-h-24"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
-                    Statement of the device's intended use or indication for use - critical for 510(k) substantial equivalence
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="deviceDescription"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Device Description</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Provide a detailed description of the device including key components, materials, principles of operation..." 
-                      className="min-h-24"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
-                    Comprehensive description of device appearance, components, and how it functions
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </TabsContent>
-          
-          <TabsContent value="technical" className="space-y-6">
-            <FormField
-              control={form.control}
-              name="technologyType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Technology Type</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Electrocardiogram, Bluetooth, AI" {...field} />
-                  </FormControl>
-                  <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
-                    Primary technology used in the device (e.g., imaging, monitoring, diagnostic)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Classification Card */}
+            <div className="bg-white p-6 rounded-md border border-gray-200 shadow-sm">
               <FormField
                 control={form.control}
-                name="sterilization"
+                name="deviceClass"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md">
-                    <FormControl>
-                      <Checkbox 
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>Sterilization Required</FormLabel>
-                      <FormDescription className="text-xs">
-                        Device requires sterilization prior to use
-                      </FormDescription>
-                    </div>
+                  <FormItem className="mb-0">
+                    <FormLabel className="text-md font-medium text-gray-700">Device Class*</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white mt-1">
+                          <SelectValue placeholder="Select device class" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                        <SelectItem value="I" className="hover:bg-blue-50">Class I</SelectItem>
+                        <SelectItem value="II" className="hover:bg-blue-50">Class II</SelectItem>
+                        <SelectItem value="III" className="hover:bg-blue-50">Class III</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription className="text-xs text-gray-500 mt-1.5">
+                      FDA regulatory classification of the device
+                    </FormDescription>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
-              
+            </div>
+            
+            {/* Intended Use Card */}
+            <div className="bg-white p-6 rounded-md border border-gray-200 shadow-sm">
               <FormField
                 control={form.control}
-                name="software"
+                name="intendedUse"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md">
+                  <FormItem className="mb-0">
+                    <FormLabel className="text-md font-medium text-gray-700">Intended Use*</FormLabel>
                     <FormControl>
-                      <Checkbox 
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
+                      <Textarea 
+                        placeholder="Describe the intended use of the device..." 
+                        className="min-h-24 mt-1"
+                        {...field} 
                       />
                     </FormControl>
-                    <div className="space-y-1 leading-none">
-                      <FormLabel>Software Component</FormLabel>
-                      <FormDescription className="text-xs">
-                        Device includes software or firmware
-                      </FormDescription>
-                    </div>
+                    <FormDescription className="text-xs text-gray-500 mt-1.5">
+                      Statement of the device's intended use or indication for use - critical for 510(k) substantial equivalence
+                    </FormDescription>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="contactType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Patient Contact Type</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="bg-white">
-                        <SelectValue placeholder="Select contact type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
-                      <SelectItem value="none" className="hover:bg-blue-50">No patient contact</SelectItem>
-                      <SelectItem value="external" className="hover:bg-blue-50">External contact</SelectItem>
-                      <SelectItem value="implant" className="hover:bg-blue-50">Implant</SelectItem>
-                      <SelectItem value="blood_path" className="hover:bg-blue-50">Blood path</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
-                    How the device contacts the patient (if applicable)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </TabsContent>
-          
-          <TabsContent value="regulatory" className="space-y-6">
-            <FormField
-              control={form.control}
-              name="predicateDevice"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Predicate Device</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. HeartTrack 2.0 (K123456)" {...field} />
-                  </FormControl>
-                  <FormDescription className="text-xs bg-white bg-opacity-90 text-slate-600 rounded px-1 py-0.5">
-                    If known, a legally marketed device to which substantial equivalence will be claimed (including K-number if available)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-8">
+            {/* Device Description Card */}
+            <div className="bg-white p-6 rounded-md border border-gray-200 shadow-sm">
               <FormField
                 control={form.control}
-                name="productCode"
+                name="deviceDescription"
+                render={({ field }) => (
+                  <FormItem className="mb-0">
+                    <FormLabel className="text-md font-medium text-gray-700">Device Description</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Provide a detailed description of the device including key components, materials, principles of operation..." 
+                        className="min-h-24 mt-1"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs text-gray-500 mt-1.5">
+                      Comprehensive description of device appearance, components, and how it functions
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="technical" className="space-y-10">
+            {/* Technology Type Card */}
+            <div className="bg-white p-6 rounded-md border border-gray-200 shadow-sm">
+              <FormField
+                control={form.control}
+                name="technologyType"
+                render={({ field }) => (
+                  <FormItem className="mb-0">
+                    <FormLabel className="text-md font-medium text-gray-700">Technology Type</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Electrocardiogram, Bluetooth, AI" className="mt-1" {...field} />
+                    </FormControl>
+                    <FormDescription className="text-xs text-gray-500 mt-1.5">
+                      Primary technology used in the device (e.g., imaging, monitoring, diagnostic)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            {/* Device Attributes Card */}
+            <div className="bg-white p-6 rounded-md border border-gray-200 shadow-sm">
+              <h3 className="text-sm font-medium text-gray-700 mb-4">Device Attributes</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="sterilization"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md bg-gray-50">
+                      <FormControl>
+                        <Checkbox 
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          className="mt-1"
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="font-medium text-gray-700">Sterilization Required</FormLabel>
+                        <FormDescription className="text-xs text-gray-500">
+                          Device requires sterilization prior to use
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="software"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-start space-x-3 space-y-0 p-4 border rounded-md bg-gray-50">
+                      <FormControl>
+                        <Checkbox 
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          className="mt-1"
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="font-medium text-gray-700">Software Component</FormLabel>
+                        <FormDescription className="text-xs text-gray-500">
+                          Device includes software or firmware
+                        </FormDescription>
+                      </div>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* Patient Contact Card */}
+            <div className="bg-white p-6 rounded-md border border-gray-200 shadow-sm">
+              <FormField
+                control={form.control}
+                name="contactType"
+                render={({ field }) => (
+                  <FormItem className="mb-0">
+                    <FormLabel className="text-md font-medium text-gray-700">Patient Contact Type</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="bg-white mt-1">
+                          <SelectValue placeholder="Select contact type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="bg-white border border-gray-200 shadow-md z-50">
+                        <SelectItem value="none" className="hover:bg-blue-50">No patient contact</SelectItem>
+                        <SelectItem value="external" className="hover:bg-blue-50">External contact</SelectItem>
+                        <SelectItem value="implant" className="hover:bg-blue-50">Implant</SelectItem>
+                        <SelectItem value="blood_path" className="hover:bg-blue-50">Blood path</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription className="text-xs text-gray-500 mt-1.5">
+                      How the device contacts the patient (if applicable)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="regulatory" className="space-y-10">
+            {/* Predicate Device Card */}
+            <div className="bg-white p-6 rounded-md border border-gray-200 shadow-sm">
+              <FormField
+                control={form.control}
+                name="predicateDevice"
+                render={({ field }) => (
+                  <FormItem className="mb-0">
+                    <FormLabel className="text-md font-medium text-gray-700">Predicate Device</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. HeartTrack 2.0 (K123456)" className="mt-1" {...field} />
+                    </FormControl>
+                    <FormDescription className="text-xs text-gray-500 mt-1.5">
+                      If known, a legally marketed device to which substantial equivalence will be claimed (including K-number if available)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            
+            {/* Product Codes Card */}
+            <div className="bg-white p-6 rounded-md border border-gray-200 shadow-sm">
+              <h3 className="text-sm font-medium text-gray-700 mb-4">FDA Classification</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="productCode"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel htmlFor="productCode">Product Code</FormLabel>
