@@ -1,701 +1,626 @@
-/**
- * Unified Workflow Panel
- * 
- * This component provides the main interface for the unified document workflow system,
- * allowing users to view, manage, and interact with cross-module workflows.
- */
-
 import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger 
-} from '@/components/ui/tabs';
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from '@/components/ui/card';
-import { 
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { 
-  PieChart,
-  CircleCheck,
-  CircleX,
-  Clock,
-  AlertCircle,
-  Users,
-  FileText,
-  RefreshCw,
-  Search,
-  Plus,
-  Check,
-  X,
-  FileCheck,
-  History,
-} from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import {
-  getActiveWorkflows,
-  getPendingApprovals,
-  getWorkflowHistory,
-  getWorkflowTemplates,
-  approveWorkflowStep,
-  rejectWorkflowStep,
-  startWorkflow
+  Clock,
+  FileText,
+  CheckCircle2,
+  XCircle,
+  AlertCircle,
+  ArrowRight,
+  RefreshCw,
+  UserCheck,
+  ListChecks,
+  History,
+  MessageCircle,
+  ChevronRight
+} from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
+import { 
+  fetchWorkflowTemplates, 
+  startDocumentWorkflow, 
+  getDocumentWorkflowStatus,
+  transitionWorkflow,
+  getDocumentWorkflowHistory
 } from './WorkflowTemplateService';
+import { addDocumentComment, getDocumentRegistration } from './registerModuleDocument';
 
-// Simulate organization and user ID, would come from auth context in a real app
-const MOCK_ORGANIZATION_ID = 'org-123';
-const MOCK_USER_ID = 'user-456';
+// Status badges for workflow steps
+const StatusBadge = ({ status }) => {
+  const statusConfig = {
+    'pending': { label: 'Pending', color: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-100' },
+    'in_progress': { label: 'In Progress', color: 'bg-blue-100 text-blue-800 hover:bg-blue-100' },
+    'approved': { label: 'Approved', color: 'bg-green-100 text-green-800 hover:bg-green-100' },
+    'rejected': { label: 'Rejected', color: 'bg-red-100 text-red-800 hover:bg-red-100' },
+    'on_hold': { label: 'On Hold', color: 'bg-orange-100 text-orange-800 hover:bg-orange-100' },
+    'changes_requested': { label: 'Changes Requested', color: 'bg-purple-100 text-purple-800 hover:bg-purple-100' }
+  };
 
-const UnifiedWorkflowPanel = ({ moduleType = 'all', showHeader = true }) => {
-  const [selectedTab, setSelectedTab] = useState('active');
-  const [selectedWorkflow, setSelectedWorkflow] = useState(null);
-  const [viewingHistory, setViewingHistory] = useState(false);
-  const [approvalModalOpen, setApprovalModalOpen] = useState(false);
-  const [rejectionModalOpen, setRejectionModalOpen] = useState(false);
-  const [comments, setComments] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  
-  // Query for active workflows
-  const { 
-    data: activeWorkflows = [],
-    isLoading: isLoadingActive,
-    error: activeError 
-  } = useQuery({
-    queryKey: ['/api/module-integration/active-workflows', MOCK_ORGANIZATION_ID],
-    queryFn: () => getActiveWorkflows(MOCK_ORGANIZATION_ID)
-  });
-  
-  // Query for workflows pending approval for the current user
-  const { 
-    data: pendingApprovals = [],
-    isLoading: isLoadingPending,
-    error: pendingError 
-  } = useQuery({
-    queryKey: ['/api/module-integration/pending-approvals', MOCK_ORGANIZATION_ID, MOCK_USER_ID],
-    queryFn: () => getPendingApprovals(MOCK_ORGANIZATION_ID, MOCK_USER_ID)
-  });
-  
-  // Query for workflow history when a workflow is selected
-  const { 
-    data: workflowHistory = [],
-    isLoading: isLoadingHistory,
-    error: historyError,
-    refetch: refetchHistory
-  } = useQuery({
-    queryKey: ['/api/module-integration/workflow-history', selectedWorkflow?.workflow?.id],
-    queryFn: () => selectedWorkflow?.workflow?.id ? getWorkflowHistory(selectedWorkflow.workflow.id) : [],
-    enabled: !!selectedWorkflow?.workflow?.id && viewingHistory
-  });
-  
-  // Mutation to approve a workflow step
-  const approveMutation = useMutation({
-    mutationFn: ({ approvalId, userId, comments }) => 
-      approveWorkflowStep(approvalId, userId, comments),
-    onSuccess: () => {
-      toast({
-        title: "Step approved",
-        description: "The workflow step has been approved successfully.",
-      });
-      setApprovalModalOpen(false);
-      setComments('');
-      queryClient.invalidateQueries({ queryKey: ['/api/module-integration/active-workflows'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/module-integration/pending-approvals'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to approve workflow step: ${error.message}`,
-        variant: "destructive",
-      });
-    }
-  });
-  
-  // Mutation to reject a workflow step
-  const rejectMutation = useMutation({
-    mutationFn: ({ approvalId, userId, comments }) => 
-      rejectWorkflowStep(approvalId, userId, comments),
-    onSuccess: () => {
-      toast({
-        title: "Step rejected",
-        description: "The workflow step has been rejected.",
-      });
-      setRejectionModalOpen(false);
-      setComments('');
-      queryClient.invalidateQueries({ queryKey: ['/api/module-integration/active-workflows'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/module-integration/pending-approvals'] });
-    },
-    onError: (error) => {
-      toast({
-        title: "Error",
-        description: `Failed to reject workflow step: ${error.message}`,
-        variant: "destructive",
-      });
-    }
-  });
-  
-  // Filter workflows by moduleType if specified
-  const filteredActiveWorkflows = activeWorkflows.filter(workflow => 
-    moduleType === 'all' || workflow.template?.moduleType === moduleType
-  );
-  
-  const filteredPendingApprovals = pendingApprovals.filter(approval => 
-    moduleType === 'all' || approval.template?.moduleType === moduleType
-  );
-  
-  // Filter by search query
-  const searchedActiveWorkflows = searchQuery 
-    ? filteredActiveWorkflows.filter(workflow => 
-        workflow.document?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        workflow.template?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : filteredActiveWorkflows;
-    
-  const searchedPendingApprovals = searchQuery
-    ? filteredPendingApprovals.filter(approval => 
-        approval.workflow?.document?.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        approval.template?.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        approval.step?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : filteredPendingApprovals;
-    
-  // Handle submission of approval
-  const handleApprove = () => {
-    if (selectedWorkflow) {
-      approveMutation.mutate({
-        approvalId: selectedWorkflow.approval.id,
-        userId: MOCK_USER_ID,
-        comments
-      });
-    }
-  };
-  
-  // Handle submission of rejection
-  const handleReject = () => {
-    if (selectedWorkflow && comments.trim()) {
-      rejectMutation.mutate({
-        approvalId: selectedWorkflow.approval.id,
-        userId: MOCK_USER_ID,
-        comments
-      });
-    } else {
-      toast({
-        title: "Comments required",
-        description: "Please provide comments explaining the rejection.",
-        variant: "destructive",
-      });
-    }
-  };
-  
-  // Toggle history view
-  const toggleHistory = () => {
-    setViewingHistory(!viewingHistory);
-    if (!viewingHistory && selectedWorkflow?.workflow?.id) {
-      refetchHistory();
-    }
-  };
-  
-  // Format date for display
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleString();
-  };
-  
-  // Get status color for badges
-  const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'active':
-        return 'bg-blue-100 text-blue-800';
-      case 'completed':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      case 'cancelled':
-        return 'bg-gray-100 text-gray-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'approved':
-        return 'bg-green-100 text-green-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
-  
-  // Get icon based on status
-  const getStatusIcon = (status) => {
-    switch (status?.toLowerCase()) {
-      case 'active':
-      case 'pending':
-        return <Clock size={16} />;
-      case 'completed':
-      case 'approved':
-        return <CircleCheck size={16} />;
-      case 'rejected':
-        return <CircleX size={16} />;
-      case 'cancelled':
-        return <AlertCircle size={16} />;
-      default:
-        return <Clock size={16} />;
-    }
-  };
-  
-  // Get module type display name
-  const getModuleTypeName = (type) => {
-    switch (type) {
-      case '510k':
-        return '510(k)';
-      case 'cer':
-        return 'CER';
-      case 'cmc':
-        return 'CMC';
-      case 'ectd':
-        return 'eCTD';
-      case 'study':
-        return 'Clinical Study';
-      case 'vault':
-        return 'Document Vault';
-      default:
-        return type?.toUpperCase() || 'Unknown';
-    }
-  };
-  
-  // Handle workflow selection
-  const handleSelectWorkflow = (workflow) => {
-    setSelectedWorkflow(workflow);
-    setViewingHistory(false);
-  };
-  
+  const config = statusConfig[status] || statusConfig.pending;
+
   return (
-    <div className="w-full">
-      {showHeader && (
-        <div className="mb-6">
-          <h2 className="text-3xl font-bold tracking-tight">Document Workflows</h2>
-          <p className="text-muted-foreground">
-            View and manage document approvals across all regulatory modules
-          </p>
-        </div>
-      )}
+    <Badge variant="outline" className={`${config.color} border-0`}>
+      {config.label}
+    </Badge>
+  );
+};
+
+// Module type friendly names
+const MODULE_NAMES = {
+  'medical_device': 'Medical Device',
+  'cmc': 'CMC Wizard',
+  'ectd': 'eCTD Co-author',
+  'study': 'Study Architect',
+  'vault': 'Vault'
+};
+
+const UnifiedWorkflowPanel = ({
+  organizationId,
+  userId,
+  moduleType,
+  documentId,
+  documentTitle,
+  onWorkflowAction,
+  className = ''
+}) => {
+  const [activeTab, setActiveTab] = useState('status');
+  const [workflowTemplates, setWorkflowTemplates] = useState([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState('');
+  const [workflowStarted, setWorkflowStarted] = useState(false);
+  const [workflowStatus, setWorkflowStatus] = useState(null);
+  const [workflowHistory, setWorkflowHistory] = useState([]);
+  const [documentData, setDocumentData] = useState(null);
+  const [commentText, setCommentText] = useState('');
+  const [actionComment, setActionComment] = useState('');
+  const [isLoading, setIsLoading] = useState({
+    templates: false,
+    status: false,
+    history: false,
+    action: false
+  });
+  
+  // Fetch workflow templates and document data
+  useEffect(() => {
+    if (organizationId && moduleType) {
+      loadWorkflowTemplates();
+      checkDocumentWorkflow();
+      loadDocumentData();
+    }
+  }, [organizationId, moduleType, documentId]);
+  
+  // Load workflow templates
+  const loadWorkflowTemplates = async () => {
+    setIsLoading(prev => ({ ...prev, templates: true }));
+    try {
+      const templates = await fetchWorkflowTemplates(organizationId, moduleType);
+      setWorkflowTemplates(templates);
       
-      <div className="flex items-center mb-4 gap-2">
-        <div className="relative w-full max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search workflows..."
-            className="pl-8"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <Button 
-          variant="outline" 
-          size="icon" 
-          onClick={() => {
-            queryClient.invalidateQueries({ queryKey: ['/api/module-integration/active-workflows'] });
-            queryClient.invalidateQueries({ queryKey: ['/api/module-integration/pending-approvals'] });
-          }}
-        >
-          <RefreshCw className="h-4 w-4" />
-        </Button>
-      </div>
+      // Default to first template if available
+      if (templates.length > 0 && !selectedTemplateId) {
+        const defaultTemplate = templates.find(t => t.isDefault) || templates[0];
+        setSelectedTemplateId(defaultTemplate.id);
+      }
+    } catch (error) {
+      console.error('Error loading workflow templates:', error);
+      toast({
+        title: 'Error loading templates',
+        description: error.message || 'Failed to load workflow templates',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(prev => ({ ...prev, templates: false }));
+    }
+  };
+  
+  // Check if document has an active workflow
+  const checkDocumentWorkflow = async () => {
+    if (!documentId) return;
+    
+    setIsLoading(prev => ({ ...prev, status: true }));
+    try {
+      const status = await getDocumentWorkflowStatus(documentId);
+      setWorkflowStatus(status);
+      setWorkflowStarted(!!status.workflowId);
       
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <div className="md:col-span-2">
-          <Tabs defaultValue="active" value={selectedTab} onValueChange={setSelectedTab}>
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="active">
-                Active Workflows
-                {filteredActiveWorkflows.length > 0 && (
-                  <Badge className="ml-2" variant="secondary">
-                    {filteredActiveWorkflows.length}
-                  </Badge>
-                )}
-              </TabsTrigger>
-              <TabsTrigger value="pending">
-                Pending Approvals
-                {filteredPendingApprovals.length > 0 && (
-                  <Badge className="ml-2" variant="secondary">
-                    {filteredPendingApprovals.length}
-                  </Badge>
-                )}
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="active" className="space-y-4 mt-2">
-              {isLoadingActive ? (
-                <div className="flex justify-center p-4">
-                  <p>Loading active workflows...</p>
-                </div>
-              ) : activeError ? (
-                <div className="flex justify-center p-4 text-red-500">
-                  <p>Error loading workflows: {activeError.message}</p>
-                </div>
-              ) : searchedActiveWorkflows.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8 text-center">
-                  <FileText className="h-10 w-10 text-muted-foreground mb-2" />
-                  <p className="text-muted-foreground">No active workflows found</p>
-                </div>
-              ) : (
-                <ScrollArea className="h-[500px]">
-                  {searchedActiveWorkflows.map((workflow) => (
-                    <Card key={workflow.id} className={`mb-3 hover:bg-slate-50 cursor-pointer ${selectedWorkflow?.workflow?.id === workflow.id ? 'border-primary' : ''}`} onClick={() => handleSelectWorkflow({ 
-                      workflow,
-                      approval: workflow.currentApproval,
-                      template: workflow.template,
-                      step: workflow.template?.steps.find(s => s.order === workflow.currentStep)
-                    })}>
-                      <CardHeader className="p-4 pb-2">
-                        <div className="flex justify-between items-start">
-                          <CardTitle className="text-md">{workflow.document?.title}</CardTitle>
-                          <Badge className={getStatusColor(workflow.status)}>
-                            <span className="flex items-center gap-1">
-                              {getStatusIcon(workflow.status)}
-                              {workflow.status}
-                            </span>
-                          </Badge>
-                        </div>
-                        <CardDescription>
-                          <div className="flex items-center gap-1">
-                            <Badge variant="outline">{getModuleTypeName(workflow.template?.moduleType)}</Badge>
-                            <span className="text-xs">Step {workflow.currentStep}/{workflow.template?.steps.length}</span>
-                          </div>
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-2 pb-2">
-                        <p className="text-sm">Current step: {workflow.template?.steps.find(s => s.order === workflow.currentStep)?.name}</p>
-                      </CardContent>
-                      <CardFooter className="p-4 pt-0 text-xs text-muted-foreground">
-                        Started: {formatDate(workflow.startedAt)}
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </ScrollArea>
-              )}
-            </TabsContent>
-            
-            <TabsContent value="pending" className="space-y-4 mt-2">
-              {isLoadingPending ? (
-                <div className="flex justify-center p-4">
-                  <p>Loading pending approvals...</p>
-                </div>
-              ) : pendingError ? (
-                <div className="flex justify-center p-4 text-red-500">
-                  <p>Error loading pending approvals: {pendingError.message}</p>
-                </div>
-              ) : searchedPendingApprovals.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-8 text-center">
-                  <FileCheck className="h-10 w-10 text-muted-foreground mb-2" />
-                  <p className="text-muted-foreground">No pending approvals found</p>
-                </div>
-              ) : (
-                <ScrollArea className="h-[500px]">
-                  {searchedPendingApprovals.map((approvalData) => (
-                    <Card 
-                      key={approvalData.approval.id} 
-                      className={`mb-3 hover:bg-slate-50 cursor-pointer border-l-4 border-l-yellow-400 ${
-                        selectedWorkflow?.approval?.id === approvalData.approval.id ? 'border border-primary' : ''
-                      }`} 
-                      onClick={() => handleSelectWorkflow(approvalData)}
-                    >
-                      <CardHeader className="p-4 pb-2">
-                        <div className="flex justify-between items-start">
-                          <CardTitle className="text-md">{approvalData.workflow?.document?.title}</CardTitle>
-                          <Badge className={getStatusColor(approvalData.approval.status)}>
-                            <span className="flex items-center gap-1">
-                              {getStatusIcon(approvalData.approval.status)}
-                              Awaiting your review
-                            </span>
-                          </Badge>
-                        </div>
-                        <CardDescription>
-                          <div className="flex items-center gap-1">
-                            <Badge variant="outline">{getModuleTypeName(approvalData.template?.moduleType)}</Badge>
-                            <span className="text-xs">Step {approvalData.step?.order}/{approvalData.template?.steps.length}</span>
-                          </div>
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="p-4 pt-2 pb-2">
-                        <p className="text-sm font-medium">{approvalData.step?.name}</p>
-                        <p className="text-sm text-muted-foreground">{approvalData.step?.description}</p>
-                      </CardContent>
-                      <CardFooter className="p-4 pt-0 text-xs text-muted-foreground">
-                        Required actions: {approvalData.approval.requiredActions?.join(', ')}
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </ScrollArea>
-              )}
-            </TabsContent>
-          </Tabs>
+      // Load workflow history if workflow exists
+      if (status.workflowId) {
+        loadWorkflowHistory();
+      }
+    } catch (error) {
+      console.error('Error checking workflow status:', error);
+      // Not showing toast here as this is expected for new documents
+    } finally {
+      setIsLoading(prev => ({ ...prev, status: false }));
+    }
+  };
+  
+  // Load document data
+  const loadDocumentData = async () => {
+    if (!documentId) return;
+    
+    try {
+      const data = await getDocumentRegistration(documentId);
+      setDocumentData(data);
+    } catch (error) {
+      console.error('Error loading document data:', error);
+      // Not showing toast here as this may be called often
+    }
+  };
+  
+  // Load workflow history
+  const loadWorkflowHistory = async () => {
+    if (!documentId) return;
+    
+    setIsLoading(prev => ({ ...prev, history: true }));
+    try {
+      const history = await getDocumentWorkflowHistory(documentId);
+      setWorkflowHistory(history);
+    } catch (error) {
+      console.error('Error loading workflow history:', error);
+    } finally {
+      setIsLoading(prev => ({ ...prev, history: false }));
+    }
+  };
+  
+  // Handle starting a new workflow
+  const handleStartWorkflow = async () => {
+    if (!selectedTemplateId) {
+      toast({
+        title: 'Template required',
+        description: 'Please select a workflow template to continue',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setIsLoading(prev => ({ ...prev, action: true }));
+    try {
+      const result = await startDocumentWorkflow(
+        documentId,
+        selectedTemplateId,
+        userId,
+        actionComment
+      );
+      
+      setWorkflowStarted(true);
+      checkDocumentWorkflow(); // Refresh workflow status
+      
+      toast({
+        title: 'Workflow started',
+        description: 'The document workflow has been started successfully',
+      });
+      
+      if (onWorkflowAction) {
+        onWorkflowAction('start', result.workflowId);
+      }
+      
+      setActionComment('');
+    } catch (error) {
+      console.error('Error starting workflow:', error);
+      toast({
+        title: 'Error starting workflow',
+        description: error.message || 'An unexpected error occurred while starting the workflow',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(prev => ({ ...prev, action: false }));
+    }
+  };
+  
+  // Handle workflow transitions (approve, reject, etc.)
+  const handleWorkflowAction = async (action) => {
+    if (!workflowStatus?.workflowId) {
+      toast({
+        title: 'No active workflow',
+        description: 'There is no active workflow for this document',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    setIsLoading(prev => ({ ...prev, action: true }));
+    try {
+      await transitionWorkflow(
+        workflowStatus.workflowId,
+        userId,
+        action,
+        actionComment
+      );
+      
+      checkDocumentWorkflow(); // Refresh workflow status
+      
+      toast({
+        title: 'Workflow updated',
+        description: `The workflow step has been ${action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'updated'}`,
+      });
+      
+      if (onWorkflowAction) {
+        onWorkflowAction(action, workflowStatus.workflowId);
+      }
+      
+      setActionComment('');
+    } catch (error) {
+      console.error('Error updating workflow:', error);
+      toast({
+        title: 'Error updating workflow',
+        description: error.message || 'An unexpected error occurred while updating the workflow',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(prev => ({ ...prev, action: false }));
+    }
+  };
+  
+  // Handle adding a comment
+  const handleAddComment = async () => {
+    if (!commentText.trim()) {
+      toast({
+        title: 'Comment text required',
+        description: 'Please enter a comment',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    try {
+      await addDocumentComment(documentId, userId, commentText);
+      
+      toast({
+        title: 'Comment added',
+        description: 'Your comment has been added successfully',
+      });
+      
+      setCommentText('');
+      loadWorkflowHistory(); // Refresh to show new comment
+    } catch (error) {
+      console.error('Error adding comment:', error);
+      toast({
+        title: 'Error adding comment',
+        description: error.message || 'An unexpected error occurred while adding your comment',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  return (
+    <Card className={className}>
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle>Document Workflow</CardTitle>
+            <CardDescription>
+              Manage regulatory workflow for {documentTitle || 'this document'}
+            </CardDescription>
+          </div>
+          <Badge variant="outline" className="bg-blue-50 text-blue-800 border-0">
+            {MODULE_NAMES[moduleType] || moduleType}
+          </Badge>
         </div>
-        
-        <div className="md:col-span-3">
-          {selectedWorkflow ? (
-            <Card>
-              <CardHeader className="pb-2">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle>{selectedWorkflow.workflow.document?.title}</CardTitle>
-                    <CardDescription>
-                      <div className="flex items-center gap-1 mt-1">
-                        <Badge variant="outline">{getModuleTypeName(selectedWorkflow.template?.moduleType)}</Badge>
-                        <Badge variant="outline">{selectedWorkflow.workflow.document?.documentType}</Badge>
+      </CardHeader>
+      <CardContent>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="status">
+              <Clock className="h-4 w-4 mr-2" />
+              Status
+            </TabsTrigger>
+            <TabsTrigger value="history">
+              <History className="h-4 w-4 mr-2" />
+              History
+            </TabsTrigger>
+            <TabsTrigger value="comments">
+              <MessageCircle className="h-4 w-4 mr-2" />
+              Comments
+            </TabsTrigger>
+          </TabsList>
+
+          <div className="py-4">
+            {/* Status Tab */}
+            <TabsContent value="status">
+              {!workflowStarted ? (
+                <>
+                  <Alert variant="info" className="bg-blue-50 mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>No Active Workflow</AlertTitle>
+                    <AlertDescription>
+                      Start a regulatory workflow to manage document approvals.
+                    </AlertDescription>
+                  </Alert>
+                  
+                  <div className="space-y-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="workflow-template">Workflow Template</Label>
+                      <Select 
+                        value={selectedTemplateId} 
+                        onValueChange={setSelectedTemplateId}
+                        disabled={isLoading.templates}
+                      >
+                        <SelectTrigger id="workflow-template">
+                          <SelectValue placeholder="Select template" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {workflowTemplates.map((template) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              {template.name}
+                              {template.isDefault && ' (Default)'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="grid gap-2">
+                      <Label htmlFor="workflow-comment">Initial Comment (Optional)</Label>
+                      <Textarea
+                        id="workflow-comment"
+                        placeholder="Add a comment about this workflow"
+                        value={actionComment}
+                        onChange={(e) => setActionComment(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {isLoading.status ? (
+                    <div className="flex justify-center py-6">
+                      <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+                    </div>
+                  ) : (
+                    <>
+                      <div className="mb-4">
+                        <h3 className="text-sm font-medium mb-1">Current Status</h3>
+                        <div className="flex items-center space-x-2">
+                          <StatusBadge status={workflowStatus?.currentStatus || 'pending'} />
+                          <span className="text-sm text-muted-foreground">
+                            {workflowStatus?.currentStepName || 'Unknown Step'}
+                          </span>
+                        </div>
                       </div>
-                    </CardDescription>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={toggleHistory}
-                    >
-                      {viewingHistory ? (
-                        <span className="flex items-center gap-1">
-                          <FileText className="h-4 w-4" />
-                          View Details
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1">
-                          <History className="h-4 w-4" />
-                          History
-                        </span>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              
-              <CardContent className="p-6">
-                {viewingHistory ? (
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Workflow History</h3>
-                    {isLoadingHistory ? (
-                      <p>Loading history...</p>
-                    ) : historyError ? (
-                      <p className="text-red-500">Error loading history: {historyError.message}</p>
-                    ) : workflowHistory.length === 0 ? (
-                      <p>No history records found</p>
-                    ) : (
+                      
                       <div className="space-y-4">
-                        {workflowHistory.map((entry, index) => (
-                          <div key={entry.id} className="border-l-2 border-gray-200 pl-4 pb-2 relative">
-                            <div className="absolute w-3 h-3 bg-primary rounded-full -left-[6.5px] top-1"></div>
-                            <p className="font-semibold">{entry.action.replace(/_/g, ' ')}</p>
-                            <p className="text-sm text-muted-foreground">
-                              By: {entry.performedBy} • {formatDate(entry.createdAt)}
-                            </p>
-                            {entry.details?.comments && (
-                              <p className="text-sm mt-1 p-2 bg-gray-50 rounded-md">
-                                "{entry.details.comments}"
-                              </p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="text-lg font-semibold">Current Step</h3>
-                        <div className="p-3 bg-gray-50 rounded-md mt-2">
-                          <p className="font-medium">{selectedWorkflow.step?.name} (Step {selectedWorkflow.step?.order} of {selectedWorkflow.template?.steps?.length})</p>
-                          <p className="text-sm text-muted-foreground">{selectedWorkflow.step?.description}</p>
-                          <div className="mt-2 flex items-center gap-2">
-                            <Badge className={getStatusColor(selectedWorkflow.approval?.status)}>
-                              {getStatusIcon(selectedWorkflow.approval?.status)}
-                              <span className="ml-1">{selectedWorkflow.approval?.status}</span>
-                            </Badge>
-                            <span className="text-sm">Assigned to: {selectedWorkflow.step?.approverType} {selectedWorkflow.step?.approverIds?.join(', ')}</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <h3 className="text-lg font-semibold">Workflow Details</h3>
-                        <div className="grid grid-cols-2 gap-4 mt-2">
-                          <div className="p-3 bg-gray-50 rounded-md">
-                            <p className="text-sm font-medium">Template</p>
-                            <p>{selectedWorkflow.template?.name}</p>
-                          </div>
-                          <div className="p-3 bg-gray-50 rounded-md">
-                            <p className="text-sm font-medium">Status</p>
-                            <p>{selectedWorkflow.workflow?.status}</p>
-                          </div>
-                          <div className="p-3 bg-gray-50 rounded-md">
-                            <p className="text-sm font-medium">Started On</p>
-                            <p>{formatDate(selectedWorkflow.workflow?.startedAt)}</p>
-                          </div>
-                          <div className="p-3 bg-gray-50 rounded-md">
-                            <p className="text-sm font-medium">Started By</p>
-                            <p>{selectedWorkflow.workflow?.startedBy}</p>
+                        {/* Workflow steps visualization */}
+                        <div className="border rounded-md p-3">
+                          <h3 className="text-sm font-medium mb-2">Workflow Progress</h3>
+                          <div className="space-y-2">
+                            {workflowStatus?.steps?.map((step, index) => (
+                              <div key={index} className="flex items-center space-x-2">
+                                {step.status === 'approved' ? (
+                                  <CheckCircle2 className="h-5 w-5 text-green-500" />
+                                ) : step.status === 'rejected' ? (
+                                  <XCircle className="h-5 w-5 text-red-500" />
+                                ) : step.status === 'in_progress' ? (
+                                  <Clock className="h-5 w-5 text-blue-500" />
+                                ) : (
+                                  <div className="h-5 w-5 rounded-full border border-gray-300 flex items-center justify-center text-xs">
+                                    {index + 1}
+                                  </div>
+                                )}
+                                <div className="flex-1">
+                                  <div className="flex justify-between">
+                                    <span className="text-sm font-medium">{step.name}</span>
+                                    <StatusBadge status={step.status} />
+                                  </div>
+                                  {step.assignee && (
+                                    <div className="flex items-center mt-1 text-xs text-muted-foreground">
+                                      <UserCheck className="h-3 w-3 mr-1" />
+                                      {step.assignee}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         </div>
-                      </div>
-                      
-                      {selectedWorkflow.approval?.status === 'pending' && 
-                       selectedWorkflow.approval.assignedTo.includes(MOCK_USER_ID) && (
-                        <div className="mt-6">
-                          <h3 className="text-lg font-semibold mb-2">Required Actions</h3>
-                          <div className="space-y-4">
-                            <ul className="list-disc list-inside">
-                              {selectedWorkflow.approval.requiredActions?.map((action, index) => (
-                                <li key={index} className="capitalize">{action}</li>
-                              ))}
-                            </ul>
-                            <div className="flex gap-2 mt-4">
+                        
+                        {/* Action section for current step */}
+                        {workflowStatus?.canTakeAction && (
+                          <div className="border rounded-md p-3 bg-muted/50">
+                            <h3 className="text-sm font-medium mb-2">Action Required</h3>
+                            <div className="grid gap-2 mb-3">
+                              <Label htmlFor="action-comment">Comment (Optional)</Label>
+                              <Textarea
+                                id="action-comment"
+                                placeholder="Add a comment for this action"
+                                value={actionComment}
+                                onChange={(e) => setActionComment(e.target.value)}
+                              />
+                            </div>
+                            <div className="flex space-x-2">
                               <Button 
                                 variant="default" 
-                                className="w-1/2"
-                                onClick={() => setApprovalModalOpen(true)}
+                                size="sm"
+                                onClick={() => handleWorkflowAction('approve')}
+                                disabled={isLoading.action}
                               >
-                                <Check className="mr-2 h-4 w-4" />
+                                <CheckCircle2 className="h-4 w-4 mr-1" />
                                 Approve
                               </Button>
                               <Button 
-                                variant="destructive" 
-                                className="w-1/2"
-                                onClick={() => setRejectionModalOpen(true)}
+                                variant="outline" 
+                                size="sm"
+                                onClick={() => handleWorkflowAction('request_changes')}
+                                disabled={isLoading.action}
                               >
-                                <X className="mr-2 h-4 w-4" />
+                                Request Changes
+                              </Button>
+                              <Button 
+                                variant="destructive" 
+                                size="sm"
+                                onClick={() => handleWorkflowAction('reject')}
+                                disabled={isLoading.action}
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
                                 Reject
                               </Button>
                             </div>
                           </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+            </TabsContent>
+
+            {/* History Tab */}
+            <TabsContent value="history">
+              {isLoading.history ? (
+                <div className="flex justify-center py-6">
+                  <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : !workflowStarted ? (
+                <Alert className="mb-4">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>No Workflow History</AlertTitle>
+                  <AlertDescription>
+                    Start a workflow to begin tracking document history.
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <ScrollArea className="h-[300px] pr-4">
+                  <div className="space-y-4">
+                    {workflowHistory && workflowHistory.length > 0 ? (
+                      workflowHistory.map((entry, index) => (
+                        <div key={index} className="border rounded-md p-3">
+                          <div className="flex justify-between items-start mb-1">
+                            <div className="flex items-center">
+                              {entry.action === 'start' ? (
+                                <Clock className="h-4 w-4 text-blue-500 mr-2" />
+                              ) : entry.action === 'approve' ? (
+                                <CheckCircle2 className="h-4 w-4 text-green-500 mr-2" />
+                              ) : entry.action === 'reject' ? (
+                                <XCircle className="h-4 w-4 text-red-500 mr-2" />
+                              ) : entry.action === 'comment' ? (
+                                <MessageCircle className="h-4 w-4 text-gray-500 mr-2" />
+                              ) : (
+                                <AlertCircle className="h-4 w-4 text-yellow-500 mr-2" />
+                              )}
+                              <span className="font-medium text-sm">
+                                {entry.action === 'start'
+                                  ? 'Workflow Started'
+                                  : entry.action === 'approve'
+                                  ? `Approved: ${entry.stepName || 'Step'}`
+                                  : entry.action === 'reject'
+                                  ? `Rejected: ${entry.stepName || 'Step'}`
+                                  : entry.action === 'request_changes'
+                                  ? `Changes Requested: ${entry.stepName || 'Step'}`
+                                  : entry.action === 'comment'
+                                  ? 'Comment Added'
+                                  : entry.action}
+                              </span>
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(entry.timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="text-xs text-muted-foreground mb-1">
+                            By: {entry.userName || entry.userId}
+                          </div>
+                          {entry.comment && (
+                            <div className="text-sm mt-1 bg-muted/50 p-2 rounded">
+                              {entry.comment}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center text-muted-foreground py-6">
+                        No history entries available
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              )}
+            </TabsContent>
+
+            {/* Comments Tab */}
+            <TabsContent value="comments">
+              <div className="space-y-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="comment">Add Comment</Label>
+                  <Textarea
+                    id="comment"
+                    placeholder="Add a comment about this document"
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  variant="secondary" 
+                  size="sm" 
+                  onClick={handleAddComment}
+                  disabled={!commentText.trim()}
+                >
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Add Comment
+                </Button>
+                
+                <Separator className="my-4" />
+                
+                <div>
+                  <h3 className="text-sm font-medium mb-3">Comments</h3>
+                  <ScrollArea className="h-[200px] pr-4">
+                    <div className="space-y-3">
+                      {workflowHistory
+                        .filter(h => h.action === 'comment')
+                        .map((comment, index) => (
+                          <div key={index} className="border rounded-md p-3">
+                            <div className="flex justify-between items-start mb-1">
+                              <span className="font-medium text-sm">{comment.userName || comment.userId}</span>
+                              <span className="text-xs text-muted-foreground">
+                                {new Date(comment.timestamp).toLocaleString()}
+                              </span>
+                            </div>
+                            <div className="text-sm">
+                              {comment.comment}
+                            </div>
+                          </div>
+                        ))}
+                      
+                      {!workflowHistory.some(h => h.action === 'comment') && (
+                        <div className="text-center text-muted-foreground py-6">
+                          No comments yet
                         </div>
                       )}
                     </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="h-full flex flex-col items-center justify-center p-12 border rounded-lg">
-              <FileText className="h-12 w-12 text-muted-foreground mb-4" />
-              <h3 className="text-lg font-medium">No Workflow Selected</h3>
-              <p className="text-center text-muted-foreground mt-1">
-                Select a workflow from the list to view details and take actions
-              </p>
-            </div>
-          )}
-        </div>
-      </div>
-      
-      {/* Approval Dialog */}
-      <Dialog open={approvalModalOpen} onOpenChange={setApprovalModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Approve Workflow Step</DialogTitle>
-            <DialogDescription>
-              You are approving the "{selectedWorkflow?.step?.name}" step for document "{selectedWorkflow?.workflow?.document?.title}".
-            </DialogDescription>
-          </DialogHeader>
-          <div className="my-4">
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-medium mb-2">Comments (Optional)</p>
-                <Textarea
-                  placeholder="Add any comments or notes about this approval..."
-                  className="min-h-[100px]"
-                  value={comments}
-                  onChange={(e) => setComments(e.target.value)}
-                />
+                  </ScrollArea>
+                </div>
               </div>
-            </div>
+            </TabsContent>
           </div>
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setApprovalModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleApprove}
-              disabled={approveMutation.isPending}
-            >
-              {approveMutation.isPending ? 'Approving...' : 'Confirm Approval'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Rejection Dialog */}
-      <Dialog open={rejectionModalOpen} onOpenChange={setRejectionModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Reject Workflow Step</DialogTitle>
-            <DialogDescription>
-              You are rejecting the "{selectedWorkflow?.step?.name}" step for document "{selectedWorkflow?.workflow?.document?.title}".
-            </DialogDescription>
-          </DialogHeader>
-          <div className="my-4">
-            <div className="space-y-4">
-              <div>
-                <p className="text-sm font-medium mb-2">Reason for Rejection (Required)</p>
-                <Textarea
-                  placeholder="Provide a detailed explanation for the rejection..."
-                  className="min-h-[100px]"
-                  value={comments}
-                  onChange={(e) => setComments(e.target.value)}
-                />
-                {comments.trim() === '' && (
-                  <p className="text-xs text-red-500 mt-1">
-                    Comments are required for rejection
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => setRejectionModalOpen(false)}
-            >
-              Cancel
-            </Button>
-            <Button 
-              variant="destructive"
-              onClick={handleReject}
-              disabled={rejectMutation.isPending || comments.trim() === ''}
-            >
-              {rejectMutation.isPending ? 'Rejecting...' : 'Confirm Rejection'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+        </Tabs>
+      </CardContent>
+      {!workflowStarted && (
+        <CardFooter className="flex justify-end">
+          <Button 
+            onClick={handleStartWorkflow} 
+            disabled={!selectedTemplateId || isLoading.action}
+          >
+            {isLoading.action ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Starting...
+              </>
+            ) : (
+              <>
+                <ArrowRight className="h-4 w-4 mr-2" />
+                Start Workflow
+              </>
+            )}
+          </Button>
+        </CardFooter>
+      )}
+    </Card>
   );
 };
 
