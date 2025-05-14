@@ -37,7 +37,7 @@ router.post('/validate', async (req, res) => {
     console.error('Error validating eSTAR package:', error);
     return res.status(500).json({
       success: false,
-      error: error.message || 'An error occurred during eSTAR validation'
+      errorMessage: error.message || 'An error occurred during eSTAR validation'
     });
   }
 });
@@ -138,7 +138,7 @@ router.post('/submit', async (req, res) => {
       submissionDate: new Date().toISOString(),
       status: 'submitted'
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error submitting eSTAR package:', error);
     return res.status(500).json({
       success: false,
@@ -192,7 +192,7 @@ router.post('/workflow/integrate', async (req, res) => {
       workflowStatus: 'in_progress',
       integratedAt: new Date().toISOString()
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error integrating eSTAR with workflow:', error);
     return res.status(500).json({
       success: false,
@@ -223,7 +223,7 @@ router.get('/download/:projectId', (req, res) => {
       generatedAt: new Date().toISOString(),
       content: 'This is a placeholder for the actual eSTAR package content'
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error serving eSTAR package:', error);
     return res.status(500).json({
       success: false,
