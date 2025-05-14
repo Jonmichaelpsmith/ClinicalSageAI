@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { InfoCircledIcon, DownloadIcon, CheckCircledIcon, ReloadIcon } from '@radix-ui/react-icons';
+import { Info, Download, CheckCircle, RefreshCw } from 'lucide-react';
 
 /**
  * ReportGenerationPanel - A component to generate and download reports
@@ -77,7 +77,7 @@ const ReportGenerationPanel = () => {
     <Card className="w-full shadow-md">
       <CardHeader>
         <CardTitle className="text-xl font-bold flex items-center">
-          <DownloadIcon className="mr-2 h-5 w-5" />
+          <Download className="mr-2 h-5 w-5" />
           Report Generation
         </CardTitle>
         <CardDescription>
@@ -97,7 +97,7 @@ const ReportGenerationPanel = () => {
           <TabsContent value="510k" className="space-y-4">
             <div className="rounded-lg bg-blue-50 p-4">
               <h3 className="text-sm font-medium flex items-center text-blue-900">
-                <InfoCircledIcon className="h-4 w-4 mr-2" />
+                <Info className="h-4 w-4 mr-2" />
                 510(k) Submission Report
               </h3>
               <p className="text-sm text-blue-800 mt-1">
@@ -127,7 +127,7 @@ const ReportGenerationPanel = () => {
           <TabsContent value="cer" className="space-y-4">
             <div className="rounded-lg bg-emerald-50 p-4">
               <h3 className="text-sm font-medium flex items-center text-emerald-900">
-                <InfoCircledIcon className="h-4 w-4 mr-2" />
+                <Info className="h-4 w-4 mr-2" />
                 Clinical Evaluation Report
               </h3>
               <p className="text-sm text-emerald-800 mt-1">
@@ -164,7 +164,7 @@ const ReportGenerationPanel = () => {
         
         {generatedReport && (
           <Alert className="mt-6 bg-green-50 border-green-200">
-            <CheckCircledIcon className="h-4 w-4 text-green-600" />
+            <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertTitle className="text-green-800">Report Generated Successfully</AlertTitle>
             <AlertDescription className="text-green-700">
               Your {reportType.toUpperCase()} report is ready for download or viewing.
@@ -180,7 +180,7 @@ const ReportGenerationPanel = () => {
           className="w-full sm:w-auto"
           variant="default"
         >
-          {loading && <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />}
+          {loading && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
           Generate Example Report
         </Button>
         
@@ -191,7 +191,7 @@ const ReportGenerationPanel = () => {
               variant="outline" 
               className="w-full sm:w-auto"
             >
-              <DownloadIcon className="mr-2 h-4 w-4" />
+              <Download className="mr-2 h-4 w-4" />
               Download Report
             </Button>
             
