@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import queryClient from './lib/queryClient';
 import { TenantProvider } from './contexts/TenantContext';
 import { LumenAiAssistantProvider } from './contexts/LumenAiAssistantContext';
+import { LumenAiAssistant } from '@/components/ai/LumenAiAssistant';
 
 // Import stability utilities
 import freezeDetection from '@/utils/freezeDetection';
@@ -463,6 +464,14 @@ function App() {
             </Switch>
               </div>
             </StabilityEnabledLayout>
+              
+              {/* Render the LumenAiAssistant component here */}
+              <LumenAiAssistant 
+                isOpen={false} 
+                onClose={() => {}} 
+                module="general" 
+                context={{}}
+              />
             </LumenAiAssistantProvider>
           </TenantProvider>
         </QueryClientProvider>
