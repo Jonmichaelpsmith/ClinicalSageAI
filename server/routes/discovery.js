@@ -10,8 +10,11 @@
  */
 
 import express from 'express';
-import { findPredicates, searchLiterature } from '../services/discoveryService.js';
+import discoveryService from '../services/discoveryService.js';
 const router = express.Router();
+
+// Destructure the methods from the imported service
+const { findPredicates, searchLiterature } = discoveryService;
 
 /**
  * @route POST /api/discovery/literature-search

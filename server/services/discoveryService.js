@@ -143,3 +143,11 @@ export async function searchLiterature(query, opts={limit:10}) {
     }
   }
 }
+
+// Default export for ESM compatibility
+export default {
+  findPredicates,
+  searchLiterature,
+  embed,
+  vectorSearch
+};
