@@ -5,14 +5,14 @@
  * for 510(k) medical device submissions.
  */
 
-import express from 'express';
+import { Router } from 'express';
 import { z } from 'zod';
 import { eSTARValidator } from '../services/eSTARValidator';
 import { FDAComplianceTracker } from '../services/FDAComplianceTracker';
 import fs from 'fs';
 import path from 'path';
 
-const router = express.Router();
+const router = Router();
 
 /**
  * Schema for the validation request
@@ -186,7 +186,7 @@ router.post('/build', async (req, res) => {
       filePath,
       message: 'eSTAR package built successfully'
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error building eSTAR package:', error);
     
     return res.status(400).json({
@@ -232,7 +232,7 @@ router.get('/download/:filename', (req, res) => {
     
     // Stream the file to the client
     return fs.createReadStream(filePath).pipe(res);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error downloading eSTAR package:', error);
     
     return res.status(500).json({
@@ -273,7 +273,7 @@ router.post('/submit', async (req, res) => {
       estimatedResponseTime: '45-90 days',
       message: 'eSTAR package submitted successfully to FDA'
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error submitting eSTAR package:', error);
     
     return res.status(400).json({
@@ -325,7 +325,7 @@ router.post('/workflow/integrate', async (req, res) => {
       nextStep: options?.autoRemediate ? 'remediation' : 'review',
       message: 'eSTAR package integrated with workflow successfully'
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error integrating eSTAR package with workflow:', error);
     
     return res.status(400).json({
@@ -335,4 +335,4 @@ router.post('/workflow/integrate', async (req, res) => {
   }
 });
 
-export const router;
+export { router };
