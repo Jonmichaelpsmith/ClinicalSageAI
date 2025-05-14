@@ -31,7 +31,13 @@ import {
   Shield
 } from 'lucide-react';
 
-export default function LitReviewPanel({ deviceProfile = {} }) {
+export default function LitReviewPanel({ 
+  deviceProfile = {}, 
+  deviceName = '',
+  manufacturer = '',
+  cerTitle = '',
+  onAddSection = () => {} 
+}) {
   const [searchQuery, setSearchQuery] = useState('');
   const [deviceDescription, setDeviceDescription] = useState('');
   const [currentTab, setCurrentTab] = useState('search');

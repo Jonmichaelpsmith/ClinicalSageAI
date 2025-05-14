@@ -634,7 +634,7 @@ export default function CERV2Page() {
           </TabsList>
           
           <TabsContent value="search" className="mt-4">
-            <LiteratureSearchPanel
+            <LitReviewPanel
               onAddSection={(newSection) => {
                 setSections([...sections, newSection]);
                 toast({
@@ -643,6 +643,7 @@ export default function CERV2Page() {
                   variant: "success",
                 });
               }}
+              deviceProfile={deviceProfile}
               deviceName={deviceName}
               manufacturer={manufacturer}
               cerTitle={title}
