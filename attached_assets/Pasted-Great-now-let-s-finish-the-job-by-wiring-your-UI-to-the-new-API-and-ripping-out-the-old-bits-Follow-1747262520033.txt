@@ -1,0 +1,106 @@
+Great—now let’s finish the job by wiring your UI to the new API and ripping out the old bits. Follow these exact steps in Replit:
+
+---
+
+## 6. Wire the unified API into both UIs
+
+### 6.1 510(k) Intake panel
+
+1. Open the component that handles your “Device Intake” step. It’s usually under:
+
+   ```
+   client/src/components/510k/DeviceIntake.jsx
+   ```
+2. **Replace** any raw `apiRequest.post('/api/510k/device-profile', …)` or similar with your new service:
+
+   ```diff
+   - import apiRequest from '../../lib/queryClient';
+   + import { DeviceProfileAPI } from '../../services/FDA510kService';
+
+   // instead of:
+   // const saved = await apiRequest.post('/api/510k/device-profile', data);
+
+   + const saved = await DeviceProfileAPI.create(data);
+   ```
+3. Likewise, if you fetch existing profiles here, swap:
+
+   ```diff
+   - const list = await apiRequest.get('/api/510k/device-profiles');
+   + const list = await DeviceProfileAPI.list();
+   ```
+
+### 6.2 CERV2 Dashboard “Device Profiles” tab
+
+1. Open the file where you list/manage profiles. Often under:
+
+   ```
+   client/src/pages/CERV2Page.jsx
+   // or
+   client/src/components/cer/DeviceProfilesTabContent.jsx
+   ```
+2. Import the unified API:
+
+   ```js
+   import { DeviceProfileAPI } from '../../services/FDA510kService';
+   ```
+3. Replace your existing load/save handlers with something like:
+
+   ```js
+   // load once on mount
+   useEffect(() => {
+     DeviceProfileAPI.list().then(setProfiles);
+   }, []);
+
+   // on save (new or update)
+   async function handleSave(profile) {
+     let result;
+     if (profile.id) {
+       result = await DeviceProfileAPI.update(profile.id, profile);
+     } else {
+       result = await DeviceProfileAPI.create(profile);
+     }
+     // reload list
+     DeviceProfileAPI.list().then(setProfiles);
+   }
+   ```
+4. Remove any code that refers to `/api/fda510k/device-profiles` or old `apiRequest.post('…')` calls here.
+
+---
+
+## 7. Remove the legacy code
+
+1. In the **server** folder delete:
+
+   ```
+   server/routes/510kRoutes.ts
+   server/routes/510k-api-routes.ts
+   ```
+2. In `server/index.ts`, remove any `import` or `app.use()` lines for those two files (you already swapped them).
+3. In the **client** folder, if you haven’t already, delete any leftover old methods in `FDA510kService.js` that point to `/api/510k` or `/api/fda510k`.
+4. In Replit’s Files sidebar, run **“Clear Watcher Cache”** again to avoid stale watchers picking up deleted files.
+
+---
+
+## 8. End-to-end verification
+
+1. **Restart** your dev server (`npm run dev` or via the ▶️ button).
+2. **Smoke test** both flows:
+
+   * **510(k) Intake**: create a profile, edit it, delete it.
+   * **Device Profiles dashboard**: same CRUD.
+3. Navigate to **Predicate Finder** and **Compliance Checker** tabs—ensure they no longer error about missing profiles.
+
+---
+
+## 9. Commit and merge
+
+In the Replit shell:
+
+```bash
+git add -u
+git commit -m "🧹 Remove legacy device‐profile routes; wire UI to unified /api/device‐profiles"
+git checkout main
+git merge unify-device-profiles
+```
+
+Once merged, you’ll have **one** clean `/api/device-profiles` system powering both features—no more Replit confusion or orphaned files. Let me know how the final verification goes!
