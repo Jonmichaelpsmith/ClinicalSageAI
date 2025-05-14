@@ -34,6 +34,8 @@ export default function LitReviewPanel() {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedArticles, setSelectedArticles] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [generatingReview, setGeneratingReview] = useState(false);
+  const [reviewGenerated, setReviewGenerated] = useState(false);
   const [filters, setFilters] = useState({
     yearStart: 2020,
     yearEnd: 2025,
@@ -233,11 +235,13 @@ export default function LitReviewPanel() {
     try {
       const cerProjectId = localStorage.getItem('currentCerProjectId');
       if (!cerProjectId) {
-        throw new Error('No active CER project found. Please create or select a project first.');
+        alert('No active CER project found. Please create or select a project first.');
+        return false;
       }
       
       if (selectedArticles.length === 0) {
-        throw new Error('Please select at least one article to save.');
+        alert('Please select at least one article to save.');
+        return false;
       }
       
       // Import the API functions
@@ -252,6 +256,73 @@ export default function LitReviewPanel() {
       return true;
     } catch (error) {
       console.error('Error saving literature selections:', error);
+      alert(`Error saving selections: ${error.message}`);
+      return false;
+    }
+  };
+  
+  // Generate a literature review from the selected articles
+  const handleGenerateLiteratureReview = async () => {
+    try {
+      // First save the current selections
+      const saveResult = await handleSaveSelections();
+      if (!saveResult) {
+        return; // Don't proceed if saving failed
+      }
+      
+      const cerProjectId = localStorage.getItem('currentCerProjectId');
+      if (!cerProjectId) {
+        alert('No active CER project found. Please create or select a project first.');
+        return;
+      }
+      
+      if (selectedArticles.length < 3) {
+        alert('Please select at least 3 articles for a comprehensive literature review.');
+        return;
+      }
+      
+      // Show generating state
+      setGeneratingReview(true);
+      
+      // Import the API functions
+      const cerApi = await import('../../api/cer');
+      
+      // Call the API to generate literature review
+      const response = await fetch('/api/cer/generate-literature-review', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          cerProjectId,
+          articleIds: selectedArticles.map(article => article.id)
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to generate review: ${response.status} ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      
+      // Show success state
+      setGeneratingReview(false);
+      setReviewGenerated(true);
+      
+      // Save the generated review to the CER project
+      await cerApi.saveGeneratedLiteratureReview(cerProjectId, result.review);
+      
+      // Show success message
+      alert('Literature review generated and saved to your CER project!');
+      
+      return true;
+    } catch (error) {
+      console.error('Error generating literature review:', error);
+      setGeneratingReview(false);
+      
+      // Show error message
+      alert(`Error generating literature review: ${error.message}`);
+      
       return false;
     }
   };
@@ -608,9 +679,21 @@ export default function LitReviewPanel() {
                         </p>
                       </div>
                       
-                      <Button>
-                        <FileText className="mr-2 h-4 w-4" />
-                        Generate Literature Review
+                      <Button 
+                        onClick={handleGenerateLiteratureReview}
+                        disabled={generatingReview || selectedArticles.length < 3}
+                      >
+                        {generatingReview ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Generating Review...
+                          </>
+                        ) : (
+                          <>
+                            <FileText className="mr-2 h-4 w-4" />
+                            Generate Literature Review
+                          </>
+                        )}
                       </Button>
                     </div>
                   </div>
