@@ -200,4 +200,38 @@ estarRouter.get('/download/:filename', async (req: express.Request, res: express
   }
 });
 
+/**
+ * Validate an eSTAR package against FDA requirements
+ * POST /api/fda510k/validate-estar/:projectId
+ */
+estarRouter.post('/validate-estar/:projectId', async (req: express.Request, res: express.Response) => {
+  const { projectId } = req.params;
+  const { strictMode = false } = req.body;
+  
+  try {
+    // Validate project ID
+    if (!projectId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Project ID is required' 
+      });
+    }
+    
+    // Perform eSTAR package validation
+    const validationResult = await eSTARPlusBuilder.validatePackage(projectId, strictMode);
+    
+    res.json({
+      success: true,
+      validation: validationResult
+    });
+  } catch (error: unknown) {
+    console.error('Error validating eSTAR package:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to validate eSTAR package';
+    res.status(500).json({
+      success: false,
+      message: errorMessage
+    });
+  }
+});
+
 export default estarRouter;

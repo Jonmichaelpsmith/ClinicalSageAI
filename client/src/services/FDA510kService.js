@@ -69,6 +69,26 @@ class FDA510kService {
   }
   
   /**
+   * Validate an eSTAR package against FDA requirements
+   * 
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {boolean} strictMode - Whether to apply strict validation rules
+   * @returns {Promise<Object>} - Validation result with issues and score
+   */
+  async validateESTARPackage(projectId, strictMode = false) {
+    try {
+      const response = await axios.post(`/api/fda510k/validate-estar/${projectId}`, {
+        strictMode
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error validating eSTAR package:', error);
+      throw new Error(error.response?.data?.message || 'Failed to validate eSTAR package');
+    }
+  }
+  
+  /**
    * Create default sections for a new 510(k) project
    * 
    * @param {string} projectId - The ID of the 510(k) project
