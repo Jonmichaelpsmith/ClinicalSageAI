@@ -9,8 +9,8 @@
  * while maintaining a shared core implementation.
  */
 
-const express = require('express');
-const { findPredicates, searchLiterature } = require('../services/discoveryService');
+import express from 'express';
+import { findPredicates, searchLiterature } from '../services/discoveryService.js';
 const router = express.Router();
 
 /**
@@ -151,4 +151,6 @@ function formatCERPredicateResults(predicates) {
   }));
 }
 
-module.exports = router;
+// Export as both default and named export for ESM compatibility
+export default router;
+export { router };

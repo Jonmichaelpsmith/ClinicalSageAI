@@ -34,6 +34,8 @@ import deviceProfileRouter from './routes/cerDeviceProfileRoutes';
 // FDA 510(k) routes
 // @ts-ignore
 import { router as fda510kRouter } from './routes/fda510kRoutes.js';
+// @ts-ignore
+import { router as discoveryRouter } from './routes/discovery.js';
 // Regulatory-ai router will be imported directly in server/index.ts
 
 export default function registerRoutes(app: Express): void {
@@ -361,6 +363,10 @@ export default function registerRoutes(app: Express): void {
   // Register FDA 510(k) routes
   app.use('/api/fda510k', fda510kRouter);
   console.log('FDA 510(k) routes registered');
+  
+  // Register unified discovery routes for both CER and 510(k) modules
+  app.use('/api/discovery', discoveryRouter);
+  console.log('Unified discovery routes registered');
   
   // Use the updated regulatory-ai.js implementation with no mocks or fallbacks
   // @ts-ignore
