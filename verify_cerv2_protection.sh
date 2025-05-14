@@ -19,6 +19,8 @@ SOURCE_FILE="client/src/pages/CERV2Page.jsx"
 PROTECTED_DIR="./locked_files/cerv2_protected"
 BACKUP_FILE="$PROTECTED_DIR/CERV2Page.jsx"
 CHECKSUM_FILE="$PROTECTED_DIR/CERV2Page.jsx.md5"
+CACHE_FILE="$PROTECTED_DIR/.validation_cache"
+CACHE_FILE="$PROTECTED_DIR/.validation_cache"
 RECOVERY_INSTRUCTIONS="./locked_files/RECOVERY_INSTRUCTIONS.md"
 VALIDATOR_SCRIPT="$PROTECTED_DIR/integrity_validator.sh"
 
