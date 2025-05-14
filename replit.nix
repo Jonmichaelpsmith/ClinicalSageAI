@@ -1,5 +1,6 @@
 {pkgs}: {
   deps = [
+    pkgs.bc
     pkgs.poppler
     pkgs.unzip
     pkgs.jq
