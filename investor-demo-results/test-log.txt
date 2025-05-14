@@ -1,0 +1,11 @@
+[2025-05-14T20:33:33.151Z] Tests started
+[2025-05-14T20:33:33.154Z] TEST 1: API Health Check
+[2025-05-14T20:33:33.181Z] ✓ API Health Check: PASSED
+[2025-05-14T20:33:33.182Z] TEST 2: FDA Compliance Status Check
+[2025-05-14T20:33:33.186Z] ✓ FDA Compliance Status: PASSED (80% compliant)
+[2025-05-14T20:33:33.187Z] TEST 3: 510k PDF Generation Test
+[2025-05-14T20:33:33.228Z] ✗ PDF Generation: FAILED - Creating mock PDF instead
+[2025-05-14T20:33:33.230Z] Mock PDF created at investor-demo-results/510k-submission-mock.pdf
+[2025-05-14T20:33:33.230Z] TEST 4: Creating Investor-Ready Report
+[2025-05-14T20:33:33.252Z] ✓ Investor Report: PASSED (Report saved to investor-demo-results/investor-report.html)
+[2025-05-14T20:33:33.254Z] All tests completed in 0.10 seconds
