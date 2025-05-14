@@ -99,10 +99,10 @@ const DeviceProfileDialog = ({
           )}
         </div>
       </DialogTrigger>
-      <DialogContent className="w-full sm:max-w-3xl max-h-[90vh] overflow-hidden flex flex-col p-6">
-        <DialogHeader className="sticky top-0 z-10 bg-white pb-3 border-b mb-2">
+      <DialogContent className="w-full sm:max-w-4xl max-h-[90vh] overflow-hidden flex flex-col p-0">
+        <DialogHeader className="sticky top-0 z-10 bg-white px-6 pt-6 pb-4 border-b">
           <div className="flex justify-between items-center">
-            <DialogTitle>{dialogTitle}</DialogTitle>
+            <DialogTitle className="text-xl font-semibold text-blue-900">{dialogTitle}</DialogTitle>
             {existingData && (
               <Badge variant="outline" className="flex items-center gap-1 text-blue-600 border-blue-200 px-2 py-1">
                 <Clock className="h-3 w-3" />
@@ -110,7 +110,7 @@ const DeviceProfileDialog = ({
               </Badge>
             )}
           </div>
-          <DialogDescription>
+          <DialogDescription className="mt-2 text-blue-700">
             {dialogDescription}
           </DialogDescription>
           {existingData && (
@@ -120,7 +120,7 @@ const DeviceProfileDialog = ({
             </div>
           )}
         </DialogHeader>
-        <div className="overflow-y-auto flex-grow pr-1">
+        <div className="overflow-y-auto flex-grow px-6">
           <DeviceProfileForm 
             initialData={existingData} 
             onSubmit={handleSubmit} 
