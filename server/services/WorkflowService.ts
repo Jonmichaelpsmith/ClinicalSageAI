@@ -783,4 +783,81 @@ export class WorkflowService {
       .where(eq(workflowHistory.workflowId, workflowId))
       .orderBy(desc(workflowHistory.createdAt));
   }
+  
+  /**
+   * Get active workflow for a document
+   * 
+   * @param documentId The document ID
+   * @returns Active workflow or null
+   */
+  async getDocumentWorkflow(documentId: number) {
+    try {
+      // First try to find a workflow with this document ID
+      const workflow = await this.db
+        .select()
+        .from(documentWorkflows)
+        .where(
+          and(
+            eq(documentWorkflows.documentId, documentId),
+            isNull(documentWorkflows.completedAt),
+            isNull(documentWorkflows.rejectedAt)
+          )
+        )
+        .limit(1);
+        
+      if (!workflow || workflow.length === 0) {
+        return null;
+      }
+      
+      // Get workflow with template and steps
+      const workflowWithDetails = await this.db.query.documentWorkflows.findFirst({
+        where: eq(documentWorkflows.id, workflow[0].id),
+        with: {
+          template: true,
+          steps: {
+            orderBy: [{ orderIndex: 'asc' }]
+          }
+        }
+      });
+      
+      return workflowWithDetails;
+    } catch (error) {
+      console.error('Error getting document workflow:', error);
+      return null;
+    }
+  }
+  
+  /**
+   * Add workflow history entry
+   * 
+   * @param workflowId The workflow ID 
+   * @param actionType The type of action
+   * @param performedBy ID or name of who performed the action
+   * @param metadata Additional metadata for the entry
+   * @returns Created workflow history entry
+   */
+  async addWorkflowHistoryEntry(
+    workflowId: number,
+    actionType: string,
+    performedBy: string,
+    metadata: Record<string, any> = {}
+  ) {
+    try {
+      const entry = await this.db
+        .insert(workflowHistory)
+        .values({
+          workflowId,
+          action: actionType,
+          performedBy,
+          details: metadata,
+          createdAt: new Date()
+        })
+        .returning();
+        
+      return entry[0];
+    } catch (error) {
+      console.error('Error adding workflow history entry:', error);
+      throw new Error(`Failed to add workflow history entry: ${error.message}`);
+    }
+  }
 }
