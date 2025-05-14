@@ -467,6 +467,10 @@ export default function LitReviewPanel({ deviceProfile = {} }) {
                 <Upload className="mr-2 h-4 w-4" />
                 Upload Paper
               </TabsTrigger>
+              <TabsTrigger value="compare" className="flex items-center">
+                <Layers className="mr-2 h-4 w-4" />
+                Compare
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="search">
@@ -946,6 +950,64 @@ export default function LitReviewPanel({ deviceProfile = {} }) {
                     <X className="h-4 w-4 text-red-500 flex-shrink-0" />
                     <p>Do not upload copyrighted content without proper permissions</p>
                   </div>
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="compare">
+              <div className="space-y-6">
+                <div className="bg-gray-50 p-4 rounded-md mb-4">
+                  <h3 className="text-lg font-medium text-gray-800 mb-2">Predicate Device Comparison</h3>
+                  <p className="text-gray-600 mb-4">
+                    Compare your device with selected predicate devices to analyze similarities and differences for regulatory submissions.
+                  </p>
+                  
+                  {selectedPredicates.length === 0 ? (
+                    <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-md">
+                      <Layers className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                      <h4 className="font-medium text-gray-700 mb-1">No Predicate Devices Selected</h4>
+                      <p className="text-gray-500 max-w-md mx-auto mb-3">
+                        Search for and select predicate devices in the Search tab to enable comparison.
+                      </p>
+                      <Button 
+                        onClick={() => {
+                          setCurrentTab('search');
+                          setSearchType('predicates');
+                        }}
+                      >
+                        <Search className="mr-2 h-4 w-4" />
+                        Search Predicates
+                      </Button>
+                    </div>
+                  ) : (
+                    <PredicateDeviceComparison 
+                      deviceProfile={deviceProfile} 
+                      predicateDevices={selectedPredicates}
+                    />
+                  )}
+                </div>
+                
+                <div className="flex justify-between mt-6">
+                  <Button 
+                    variant="outline" 
+                    onClick={() => {
+                      setCurrentTab('search');
+                      setSearchType('predicates');
+                    }}
+                  >
+                    <Search className="mr-2 h-4 w-4" />
+                    Find More Predicates
+                  </Button>
+                  
+                  {selectedPredicates.length > 0 && (
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setSelectedPredicates([])}
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      Clear All Predicates
+                    </Button>
+                  )}
                 </div>
               </div>
             </TabsContent>
