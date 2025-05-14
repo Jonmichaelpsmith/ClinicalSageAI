@@ -324,22 +324,146 @@ const WorkflowEnabledReportGenerator = ({
                       <p><span className="font-medium">Predicate 510(k) Number:</span> {predicateData?.k510Number || 'Not specified'}</p>
                     </div>
                   </div>
+                  
+                  <div className="bg-slate-50 p-4 rounded-md border border-slate-200 mt-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <PackageCheck className="h-5 w-5 text-blue-600" />
+                      <h3 className="font-medium">eSTAR Package Options</h3>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <div className="space-y-0.5">
+                          <Label htmlFor="generate-estar" className="text-sm">Generate eSTAR Package</Label>
+                          <p className="text-xs text-muted-foreground">
+                            Automatically generate an FDA-compliant eSTAR package during the workflow
+                          </p>
+                        </div>
+                        <Switch
+                          id="generate-estar"
+                          checked={generateESTARPackage}
+                          onCheckedChange={setGenerateESTARPackage}
+                        />
+                      </div>
+                      
+                      {generateESTARPackage && (
+                        <div className="flex items-center justify-between pl-4 border-l-2 border-blue-100 ml-2">
+                          <div className="space-y-0.5">
+                            <Label htmlFor="validate-estar" className="text-sm">Validate Before Generation</Label>
+                            <p className="text-xs text-muted-foreground">
+                              Run FDA compliance checks before generating the package
+                            </p>
+                          </div>
+                          <Switch
+                            id="validate-estar"
+                            checked={validateBeforeGeneration}
+                            onCheckedChange={setValidateBeforeGeneration}
+                          />
+                        </div>
+                      )}
+                      
+                      {estarStatus.packageGenerated && (
+                        <div className="mt-3 pt-3 border-t border-slate-200">
+                          <div className="flex items-center gap-2 text-sm text-green-700">
+                            <Check className="h-4 w-4" />
+                            <span>eSTAR package successfully generated</span>
+                          </div>
+                          {estarStatus.downloadUrl && (
+                            <Button variant="outline" size="sm" className="mt-2" asChild>
+                              <a href={estarStatus.downloadUrl} target="_blank" rel="noopener noreferrer">
+                                <Download className="h-4 w-4 mr-1" /> Download eSTAR Package
+                              </a>
+                            </Button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="workflow" className="py-4">
               {generatedReportId ? (
-                <UnifiedWorkflowPanel
-                  organizationId={organizationId}
-                  userId={userId}
-                  moduleType="medical_device"
-                  documentData={{
-                    id: generatedReportId,
-                    title: reportTitle
-                  }}
-                  onWorkflowUpdated={handleWorkflowAction}
-                />
+                <>
+                  <div className="bg-blue-50 p-3 rounded-md mb-4 border border-blue-100">
+                    <div className="flex items-start">
+                      <div className="flex-grow">
+                        <h3 className="text-sm font-medium flex items-center">
+                          <PackageCheck className="h-4 w-4 mr-2 text-blue-600" />
+                          FDA eSTAR Package Generation
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Generate an FDA-compliant eSTAR package for this 510(k) submission
+                        </p>
+                      </div>
+                      <div className="flex-shrink-0">
+                        <Button 
+                          size="sm" 
+                          variant={estarStatus.packageGenerated ? "outline" : "default"}
+                          onClick={handleESTARIntegration}
+                          disabled={isProcessingESTAR || !workflowStarted}
+                        >
+                          {isProcessingESTAR ? (
+                            <>
+                              <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                              Processing...
+                            </>
+                          ) : estarStatus.packageGenerated ? (
+                            <>
+                              <Check className="h-3.5 w-3.5 mr-1.5" />
+                              Package Generated
+                            </>
+                          ) : (
+                            <>
+                              <FileUp className="h-3.5 w-3.5 mr-1.5" />
+                              Generate eSTAR Package
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    {estarStatus.packageGenerated && estarStatus.downloadUrl && (
+                      <div className="mt-2 pt-2 border-t border-blue-100 text-sm">
+                        <a 
+                          href={estarStatus.downloadUrl} 
+                          className="text-blue-600 hover:underline flex items-center"
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                        >
+                          <Download className="h-3.5 w-3.5 mr-1" /> 
+                          Download eSTAR Package
+                        </a>
+                      </div>
+                    )}
+                    
+                    {estarStatus.validationIssues.length > 0 && (
+                      <div className="mt-2 pt-2 border-t border-blue-100">
+                        <p className="text-sm text-red-600 font-medium">Validation Issues:</p>
+                        <ul className="text-xs text-red-600 mt-1 list-disc list-inside">
+                          {estarStatus.validationIssues.slice(0, 3).map((issue, idx) => (
+                            <li key={idx}>{issue.message || issue}</li>
+                          ))}
+                          {estarStatus.validationIssues.length > 3 && (
+                            <li>...and {estarStatus.validationIssues.length - 3} more issues</li>
+                          )}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <UnifiedWorkflowPanel
+                    organizationId={organizationId}
+                    userId={userId}
+                    moduleType="medical_device"
+                    documentData={{
+                      id: generatedReportId,
+                      title: reportTitle
+                    }}
+                    onWorkflowUpdated={handleWorkflowAction}
+                  />
+                </>
               ) : (
                 <div className="flex flex-col items-center justify-center p-6 text-center">
                   <AlertCircle className="h-12 w-12 text-muted-foreground mb-4" />

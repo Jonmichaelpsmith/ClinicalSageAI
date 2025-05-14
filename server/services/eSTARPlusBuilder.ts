@@ -905,7 +905,15 @@ The package contains ${sections.length} sections including: ${sections.map(s => 
   public static async validatePackage(
     projectId: string,
     strictMode: boolean = false
-  ): Promise<any> {
+  ): Promise<{
+    valid: boolean;
+    issues: Array<{
+      severity: 'error' | 'warning';
+      section?: string;
+      message: string;
+    }>;
+    score: number;
+  }> {
     try {
       console.log(`Validating eSTAR package for project ${projectId} with strictMode=${strictMode}`);
       
