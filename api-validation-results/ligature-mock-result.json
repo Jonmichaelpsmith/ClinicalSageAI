@@ -1,0 +1,25 @@
+{
+  "success": true,
+  "validationResults": [
+    {
+      "rule": "aspect_ratio",
+      "passed": true,
+      "message": "Image aspect ratio meets requirements"
+    },
+    {
+      "rule": "resolution",
+      "passed": true,
+      "message": "Image resolution meets minimum requirements"
+    },
+    {
+      "rule": "file_format",
+      "passed": true,
+      "message": "File format is acceptable"
+    }
+  ],
+  "metadata": {
+    "processedAt": "2025-05-14T20:39:14.022Z",
+    "validationVersion": "2.4.1",
+    "processingTime": "234ms"
+  }
+}

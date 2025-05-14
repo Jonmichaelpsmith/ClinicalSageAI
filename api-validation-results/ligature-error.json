@@ -1,0 +1,9 @@
+{
+  "status": 404,
+  "data": {
+    "error": {
+      "message": "API route not found: POST /",
+      "status": 404
+    }
+  }
+}

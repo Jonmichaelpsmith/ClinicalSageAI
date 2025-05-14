@@ -1,0 +1,28 @@
+{
+  "success": true,
+  "results": [
+    {
+      "promptId": "device_description",
+      "output": "The CardioTrack X500 is an advanced cardiac monitoring system designed for continuous use in clinical settings. It features real-time ECG analysis, arrhythmia detection, and wireless connectivity for immediate data transmission to healthcare providers.",
+      "tokens": {
+        "prompt": 14,
+        "completion": 37,
+        "total": 51
+      }
+    },
+    {
+      "promptId": "compliance_check",
+      "output": "The provided device description \"The CardioTrack X500 is a continuous cardiac monitoring system designed for clinical settings\" meets basic FDA requirements but could be enhanced. For full FDA compliance, the description should include: 1) Specific intended use, 2) Primary technological characteristics, 3) Any significant performance specifications. The current description provides a general category and setting but lacks specific functionality and technical details.",
+      "tokens": {
+        "prompt": 29,
+        "completion": 74,
+        "total": 103
+      }
+    }
+  ],
+  "metadata": {
+    "model": "gpt-4o",
+    "requestId": "req_36zjlmqqcpp",
+    "processingTime": "1.45s"
+  }
+}
