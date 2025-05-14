@@ -1714,6 +1714,36 @@ export default function CERV2Page() {
     }
   }, [showSystemHealth, refreshSystemHealth]);
 
+  // Main document type tabs for switching between CER and 510k
+  const renderDocumentTypeTabs = () => {
+    return (
+      <div className="w-full mb-4 mt-2">
+        <Tabs 
+          defaultValue={documentType} 
+          className="w-full"
+          onValueChange={(value) => setDocumentType(value)}
+        >
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger 
+              value="cer"
+              className="flex items-center justify-center"
+            >
+              <FileText className="w-4 h-4 mr-2" />
+              Clinical Evaluation Report
+            </TabsTrigger>
+            <TabsTrigger 
+              value="510k"
+              className="flex items-center justify-center"
+            >
+              <FileCheck className="w-4 h-4 mr-2" />
+              FDA 510(k) Submission
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+      </div>
+    );
+  };
+
   return (
     <div className="max-w-[1200px] mx-auto relative">
       {/* Fixed position Ask Lumen AI button */}
