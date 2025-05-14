@@ -6,8 +6,6 @@
  * device profile data management.
  */
 
-import { v4 as uuid } from 'crypto';
-
 // Define the DeviceProfile type
 export interface DeviceProfile {
   id: string;
@@ -43,10 +41,7 @@ const store = new Map<string, DeviceProfile>();
  * @returns A UUID string
  */
 const generateId = (): string => {
-  // Use crypto.randomBytes as a fallback if uuid is not available
-  if (typeof uuid === 'function') {
-    return uuid();
-  }
+  // Use crypto.randomBytes to generate a unique ID
   return require('crypto').randomBytes(16).toString('hex');
 };
 
