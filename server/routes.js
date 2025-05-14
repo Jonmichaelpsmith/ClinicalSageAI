@@ -17,6 +17,7 @@ const documentRoutes = require('./routes/documentRoutes');
 const { router: sseRoutes, sendEventToJob } = require('./routes/sseRoutes');
 const cerGenerationRoutes = require('./routes/cerGenerationRoutes');
 const discoveryRoutes = require('./routes/discovery');
+const documentAssemblyRoutes = require('./routes/document-assembly');
 
 /**
  * Register routes on the Express app
@@ -77,6 +78,10 @@ function registerRoutes(app) {
   // Register unified discovery routes for both CER and 510(k) modules
   console.log('Registering unified discovery routes');
   app.use('/api/discovery', discoveryRoutes);
+  
+  // Register document assembly routes for formatted regulatory submissions
+  console.log('Registering document assembly routes');
+  app.use('/api/document-assembly', documentAssemblyRoutes);
   
   // Log all routes for debugging
   app._router.stack.forEach(function(r){
