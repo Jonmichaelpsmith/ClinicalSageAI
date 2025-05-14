@@ -1,23 +1,25 @@
 /**
  * Workflow Service
  * 
- * This service handles the management of document workflows.
- * It provides methods for creating workflows, managing approval steps,
- * tracking workflow progress, and maintaining audit records.
+ * This service handles workflow management for the unified document system,
+ * including workflow creation, approval processing, and status tracking.
  */
 
-import { eq, and, desc } from 'drizzle-orm';
-import { db } from '../db/connection';
-import {
-  workflows,
-  workflowTemplates,
-  workflowApprovals,
-  workflowAuditLogs,
-  Workflow,
-  WorkflowApproval,
-  WorkflowAuditLog,
-  WorkflowTemplate,
+import { and, eq, sql, desc } from 'drizzle-orm';
+import { db, unifiedWorkflowSchema } from '../db/connection';
+import { 
+  workflowApprovals, workflowAuditLogs, workflows, workflowTemplates 
 } from '../../shared/schema/unified_workflow';
+import type { 
+  Workflow, WorkflowApproval, WorkflowAuditLog, WorkflowTemplate 
+} from '../../shared/schema/unified_workflow';
+
+interface ApprovalStepInput {
+  stepIndex: number;
+  stepName: string;
+  description?: string;
+  assignedTo?: number;
+}
 
 export class WorkflowService {
   /**
@@ -25,419 +27,402 @@ export class WorkflowService {
    * 
    * @param documentId - The document ID
    * @param templateId - The workflow template ID
-   * @param userId - User ID creating the workflow
+   * @param startedBy - User ID of the workflow initiator
    * @param metadata - Optional workflow metadata
-   * @returns The created workflow record
+   * @returns The created workflow with its approvals
    */
   async createWorkflow(
-    documentId: number,
-    templateId: number,
-    userId: number,
+    documentId: number, 
+    templateId: number, 
+    startedBy: number,
     metadata: Record<string, any> = {}
-  ) {
-    try {
-      // Get the workflow template
-      const template = await db.query.workflowTemplates.findFirst({
-        where: eq(workflowTemplates.id, templateId),
-      });
-      
-      if (!template) {
-        throw new Error('Workflow template not found');
-      }
-      
-      // Begin transaction
-      return await db.transaction(async (tx) => {
-        // Create the workflow
-        const [workflow] = await tx
-          .insert(workflows)
-          .values({
-            documentId,
-            templateId,
-            status: 'in_progress',
-            startedAt: new Date(),
-            startedBy: userId,
-            metadata,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          })
-          .returning();
-        
-        // Create step approvals based on template steps
-        const steps = template.steps || [];
-        
-        for (let i = 0; i < steps.length; i++) {
-          const step = steps[i];
-          
-          await tx.insert(workflowApprovals).values({
-            workflowId: workflow.id,
-            stepIndex: i,
-            stepName: step.name,
-            description: step.description || null,
-            status: i === 0 ? 'pending' : 'waiting',
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          });
-        }
-        
-        // Add audit log entry
-        await this.addAuditRecord(
-          workflow.id,
-          'workflow_created',
-          userId,
-          'Workflow initiated',
-          tx
-        );
-        
-        // Return the workflow with approvals
-        return this.getWorkflowWithApprovals(workflow.id);
-      });
-    } catch (error) {
-      console.error('Error creating workflow:', error);
-      throw new Error('Failed to create workflow');
+  ): Promise<{ workflow: Workflow; approvals: WorkflowApproval[] }> {
+    // Get the workflow template
+    const template = await db.query.workflowTemplates.findFirst({
+      where: eq(workflowTemplates.id, templateId)
+    });
+    
+    if (!template) {
+      throw new Error(`Workflow template with ID ${templateId} not found`);
     }
-  }
-
-  /**
-   * Add an audit record for a workflow
-   * 
-   * @param workflowId - The workflow ID
-   * @param actionType - Type of action taken
-   * @param userId - User ID performing the action
-   * @param actionDetails - Details about the action
-   * @param tx - Optional transaction object
-   * @returns The created audit record
-   */
-  async addAuditRecord(
-    workflowId: number,
-    actionType: string,
-    userId: number,
-    actionDetails: string = null,
-    tx = db
-  ) {
-    try {
-      const [record] = await tx
-        .insert(workflowAuditLogs)
+    
+    // Create the workflow with a transaction
+    const result = await db.transaction(async (tx) => {
+      // Insert the workflow
+      const [workflowResult] = await tx
+        .insert(workflows)
         .values({
-          workflowId,
-          actionType,
-          actionBy: userId,
-          timestamp: new Date(),
-          details: actionDetails,
+          documentId,
+          templateId,
+          startedBy,
+          startedAt: new Date(),
+          status: 'in_progress',
+          metadata
         })
         .returning();
       
-      return record;
-    } catch (error) {
-      console.error('Error adding audit record:', error);
-      throw new Error('Failed to add audit record');
-    }
-  }
-
-  /**
-   * Get a workflow with all its approval steps
-   * 
-   * @param workflowId - The workflow ID
-   * @returns The workflow with approvals and document details
-   */
-  async getWorkflowWithApprovals(workflowId: number) {
-    try {
-      // Get the workflow
-      const workflow = await db.query.workflows.findFirst({
-        where: eq(workflows.id, workflowId),
-        with: {
-          template: true,
-          document: true,
-        },
-      });
-      
-      if (!workflow) {
-        return null;
+      if (!workflowResult) {
+        throw new Error('Failed to create workflow');
       }
       
-      // Get the approvals
-      const approvals = await db.query.workflowApprovals.findMany({
-        where: eq(workflowApprovals.workflowId, workflowId),
-        orderBy: (approvals) => [approvals.stepIndex],
-      });
+      // Create approval steps from template
+      const steps = template.steps as { name: string; description?: string; requiredApprovers?: number }[];
+      const approvalSteps: typeof workflowApprovals.$inferInsert[] = steps.map((step, index) => ({
+        workflowId: workflowResult.id,
+        stepIndex: index,
+        stepName: step.name,
+        description: step.description || '',
+        status: index === 0 ? 'active' : 'waiting'
+      }));
       
-      // Get audit log
-      const auditLogs = await db.query.workflowAuditLogs.findMany({
-        where: eq(workflowAuditLogs.workflowId, workflowId),
-        orderBy: (logs, { desc }) => [desc(logs.timestamp)],
-        limit: 10, // Limit to the most recent 10 logs
-      });
+      // Insert approval steps
+      const approvalResults = await tx
+        .insert(workflowApprovals)
+        .values(approvalSteps)
+        .returning();
       
-      // Format the response
-      const templateName = workflow.template?.name || 'Unknown Template';
-      
-      return {
-        id: workflow.id,
-        documentId: workflow.documentId,
-        templateId: workflow.templateId,
-        templateName,
-        status: workflow.status,
-        startedAt: workflow.startedAt,
-        startedBy: workflow.startedBy,
-        completedAt: workflow.completedAt,
-        completedBy: workflow.completedBy,
-        metadata: workflow.metadata,
-        createdAt: workflow.createdAt,
-        updatedAt: workflow.updatedAt,
-        document: workflow.document,
-        approvals,
-        auditLog: auditLogs,
-      };
-    } catch (error) {
-      console.error('Error getting workflow with approvals:', error);
-      throw new Error('Failed to get workflow with approvals');
-    }
-  }
-
-  /**
-   * Submit an approval for a workflow step
-   * 
-   * @param workflowId - The workflow ID
-   * @param stepIndex - The step index
-   * @param userId - User ID approving the step
-   * @param status - Approval status (approved, rejected)
-   * @param comments - Optional comments
-   * @returns Updated workflow and approval details
-   */
-  async submitApproval(
-    workflowId: number,
-    stepIndex: number,
-    userId: number,
-    status: 'approved' | 'rejected',
-    comments: string = ''
-  ) {
-    try {
-      return await db.transaction(async (tx) => {
-        // Get the workflow
-        const workflow = await tx.query.workflows.findFirst({
-          where: eq(workflows.id, workflowId),
-        });
-        
-        if (!workflow) {
-          throw new Error('Workflow not found');
-        }
-        
-        // Get the approval
-        const [approval] = await tx
-          .select()
-          .from(workflowApprovals)
-          .where(
-            and(
-              eq(workflowApprovals.workflowId, workflowId),
-              eq(workflowApprovals.stepIndex, stepIndex)
-            )
-          );
-        
-        if (!approval) {
-          throw new Error('Approval step not found');
-        }
-        
-        if (approval.status !== 'pending') {
-          throw new Error('This step has already been processed');
-        }
-        
-        // Update the approval
-        await tx
-          .update(workflowApprovals)
-          .set({
-            status,
-            approvedBy: userId,
-            approvedAt: new Date(),
-            comments,
-            updatedAt: new Date(),
-          })
-          .where(eq(workflowApprovals.id, approval.id));
-        
-        // Add audit log
-        await this.addAuditRecord(
-          workflowId,
-          `approval_${status}`,
-          userId,
-          `Step ${stepIndex + 1} (${approval.stepName || 'Unnamed step'}) ${status}${
-            comments ? `: ${comments}` : ''
-          }`,
-          tx
-        );
-        
-        // If approved, activate the next step if available
-        if (status === 'approved') {
-          const nextStepIndex = stepIndex + 1;
-          const [nextStep] = await tx
-            .select()
-            .from(workflowApprovals)
-            .where(
-              and(
-                eq(workflowApprovals.workflowId, workflowId),
-                eq(workflowApprovals.stepIndex, nextStepIndex)
-              )
-            );
-          
-          if (nextStep) {
-            // Activate the next step
-            await tx
-              .update(workflowApprovals)
-              .set({
-                status: 'pending',
-                updatedAt: new Date(),
-              })
-              .where(eq(workflowApprovals.id, nextStep.id));
-            
-            await this.addAuditRecord(
-              workflowId,
-              'next_step_activated',
-              userId,
-              `Step ${nextStepIndex + 1} (${nextStep.stepName || 'Unnamed step'}) is now active`,
-              tx
-            );
-          } else {
-            // No more steps, complete the workflow
-            await this.completeWorkflow(workflowId, 'completed', userId, tx);
-          }
-        } else if (status === 'rejected') {
-          // If rejected, mark the whole workflow as rejected
-          await this.completeWorkflow(workflowId, 'rejected', userId, tx);
-        }
-        
-        // Return the updated workflow
-        return this.getWorkflowWithApprovals(workflowId);
-      });
-    } catch (error) {
-      console.error('Error submitting approval:', error);
-      throw new Error('Failed to submit approval');
-    }
-  }
-
-  /**
-   * Complete a workflow with the given status
-   * 
-   * @param workflowId - The workflow ID
-   * @param status - Final workflow status
-   * @param userId - User ID completing the workflow
-   * @param tx - Optional transaction object
-   * @returns Updated workflow
-   */
-  async completeWorkflow(
-    workflowId: number,
-    status: 'completed' | 'rejected',
-    userId: number,
-    tx = db
-  ) {
-    try {
-      // Update the workflow
+      // Create initial audit log
       await tx
-        .update(workflows)
-        .set({
-          status,
-          completedAt: new Date(),
-          completedBy: userId,
-          updatedAt: new Date(),
-        })
-        .where(eq(workflows.id, workflowId));
+        .insert(workflowAuditLogs)
+        .values({
+          workflowId: workflowResult.id,
+          actionType: 'workflow_created',
+          actionBy: startedBy,
+          details: `Workflow created with ${steps.length} steps`
+        });
       
-      // Add audit log
-      await this.addAuditRecord(
-        workflowId,
-        `workflow_${status}`,
-        userId,
-        `Workflow ${status === 'completed' ? 'completed successfully' : 'rejected'}`,
-        tx
-      );
-      
-      return true;
-    } catch (error) {
-      console.error(`Error completing workflow with status ${status}:`, error);
-      throw new Error(`Failed to complete workflow with status ${status}`);
-    }
+      return { workflow: workflowResult, approvals: approvalResults };
+    });
+    
+    return result;
   }
-
+  
   /**
-   * Assign a user to an approval step
+   * Gets workflow information by ID with its approvals
    * 
-   * @param approvalId - The approval ID
-   * @param userId - User ID to assign
-   * @param assignedById - User ID making the assignment
-   * @returns Updated approval
+   * @param workflowId - The workflow ID
+   * @returns The workflow with approvals and audit logs
    */
-  async assignUserToApproval(
-    approvalId: number,
-    userId: number,
-    assignedById: number
-  ) {
-    try {
-      // Get the approval to make sure it exists and get the workflow ID
-      const approval = await db.query.workflowApprovals.findFirst({
-        where: eq(workflowApprovals.id, approvalId),
-      });
-      
-      if (!approval) {
-        throw new Error('Approval not found');
-      }
-      
+  async getWorkflow(workflowId: number): Promise<{
+    workflow: Workflow;
+    approvals: WorkflowApproval[];
+    auditLogs: WorkflowAuditLog[];
+  }> {
+    const workflow = await db.query.workflows.findFirst({
+      where: eq(workflows.id, workflowId)
+    });
+    
+    if (!workflow) {
+      throw new Error(`Workflow with ID ${workflowId} not found`);
+    }
+    
+    const approvals = await db.query.workflowApprovals.findMany({
+      where: eq(workflowApprovals.workflowId, workflowId),
+      orderBy: workflowApprovals.stepIndex
+    });
+    
+    const auditLogs = await db.query.workflowAuditLogs.findMany({
+      where: eq(workflowAuditLogs.workflowId, workflowId),
+      orderBy: desc(workflowAuditLogs.timestamp)
+    });
+    
+    return { workflow, approvals, auditLogs };
+  }
+  
+  /**
+   * Approves a specific step in a workflow
+   * 
+   * @param approvalId - The approval step ID
+   * @param userId - User performing the approval
+   * @param comments - Optional approval comments
+   * @returns The updated approval and workflow status
+   */
+  async approveStep(
+    approvalId: number, 
+    userId: number, 
+    comments?: string
+  ): Promise<{ 
+    approval: WorkflowApproval; 
+    workflowUpdated: boolean; 
+    workflowCompleted: boolean;
+  }> {
+    // Get the approval to make sure it exists and is active
+    const approval = await db.query.workflowApprovals.findFirst({
+      where: eq(workflowApprovals.id, approvalId)
+    });
+    
+    if (!approval) {
+      throw new Error(`Approval step with ID ${approvalId} not found`);
+    }
+    
+    if (approval.status !== 'active') {
+      throw new Error(`Approval step is not currently active (status: ${approval.status})`);
+    }
+    
+    return await db.transaction(async (tx) => {
       // Update the approval
-      const [updated] = await db
+      const [updatedApproval] = await tx
         .update(workflowApprovals)
         .set({
-          assignedTo: userId,
-          updatedAt: new Date(),
+          status: 'approved',
+          approvedBy: userId,
+          approvedAt: new Date(),
+          comments: comments || null
         })
         .where(eq(workflowApprovals.id, approvalId))
         .returning();
       
-      // Add audit log
-      await this.addAuditRecord(
-        approval.workflowId,
-        'approval_assigned',
-        assignedById,
-        `Step ${approval.stepIndex + 1} (${approval.stepName || 'Unnamed step'}) assigned to user ID: ${userId}`
-      );
+      // Get all approvals to check overall status
+      const allApprovals = await tx
+        .select()
+        .from(workflowApprovals)
+        .where(eq(workflowApprovals.workflowId, approval.workflowId))
+        .orderBy(workflowApprovals.stepIndex);
       
-      return updated;
-    } catch (error) {
-      console.error('Error assigning user to approval:', error);
-      throw new Error('Failed to assign user to approval');
-    }
+      // Find the current index and check if there's a next step
+      const currentIndex = allApprovals.findIndex(a => a.id === approvalId);
+      const nextApproval = allApprovals[currentIndex + 1];
+      
+      // Create audit log entry
+      await tx
+        .insert(workflowAuditLogs)
+        .values({
+          workflowId: approval.workflowId,
+          actionType: 'step_approved',
+          actionBy: userId,
+          details: `Step "${approval.stepName}" approved` + (comments ? `: ${comments}` : '')
+        });
+      
+      let workflowUpdated = false;
+      let workflowCompleted = false;
+      
+      // If this is the last step, complete the workflow
+      if (!nextApproval) {
+        await tx
+          .update(workflows)
+          .set({
+            status: 'completed',
+            completedAt: new Date(),
+            completedBy: userId
+          })
+          .where(eq(workflows.id, approval.workflowId));
+        
+        // Create workflow completion audit log
+        await tx
+          .insert(workflowAuditLogs)
+          .values({
+            workflowId: approval.workflowId,
+            actionType: 'workflow_completed',
+            actionBy: userId,
+            details: 'All steps approved, workflow completed'
+          });
+        
+        workflowUpdated = true;
+        workflowCompleted = true;
+      } else {
+        // Activate the next step
+        await tx
+          .update(workflowApprovals)
+          .set({ status: 'active' })
+          .where(eq(workflowApprovals.id, nextApproval.id));
+        
+        // Create next step activation audit log
+        await tx
+          .insert(workflowAuditLogs)
+          .values({
+            workflowId: approval.workflowId,
+            actionType: 'step_activated',
+            actionBy: userId,
+            details: `Step "${nextApproval.stepName}" activated`
+          });
+        
+        workflowUpdated = true;
+      }
+      
+      return { 
+        approval: updatedApproval, 
+        workflowUpdated, 
+        workflowCompleted 
+      };
+    });
   }
-
+  
   /**
-   * Get workflows for a document
+   * Rejects a specific step in a workflow
+   * 
+   * @param approvalId - The approval step ID
+   * @param userId - User performing the rejection
+   * @param comments - Required rejection comments
+   * @returns The updated approval
+   */
+  async rejectStep(
+    approvalId: number, 
+    userId: number, 
+    comments: string
+  ): Promise<{ 
+    approval: WorkflowApproval; 
+    workflowRejected: boolean;
+  }> {
+    if (!comments) {
+      throw new Error('Comments are required when rejecting a workflow step');
+    }
+    
+    // Get the approval to make sure it exists and is active
+    const approval = await db.query.workflowApprovals.findFirst({
+      where: eq(workflowApprovals.id, approvalId)
+    });
+    
+    if (!approval) {
+      throw new Error(`Approval step with ID ${approvalId} not found`);
+    }
+    
+    if (approval.status !== 'active') {
+      throw new Error(`Approval step is not currently active (status: ${approval.status})`);
+    }
+    
+    return await db.transaction(async (tx) => {
+      // Update the approval
+      const [updatedApproval] = await tx
+        .update(workflowApprovals)
+        .set({
+          status: 'rejected',
+          approvedBy: userId,
+          approvedAt: new Date(),
+          comments
+        })
+        .where(eq(workflowApprovals.id, approvalId))
+        .returning();
+      
+      // Update the workflow status
+      await tx
+        .update(workflows)
+        .set({
+          status: 'rejected',
+          completedAt: new Date(),
+          completedBy: userId
+        })
+        .where(eq(workflows.id, approval.workflowId));
+      
+      // Create audit log entry
+      await tx
+        .insert(workflowAuditLogs)
+        .values({
+          workflowId: approval.workflowId,
+          actionType: 'step_rejected',
+          actionBy: userId,
+          details: `Step "${approval.stepName}" rejected: ${comments}`
+        });
+      
+      // Create workflow rejection audit log
+      await tx
+        .insert(workflowAuditLogs)
+        .values({
+          workflowId: approval.workflowId,
+          actionType: 'workflow_rejected',
+          actionBy: userId,
+          details: `Workflow rejected at step "${approval.stepName}"`
+        });
+      
+      return { 
+        approval: updatedApproval, 
+        workflowRejected: true
+      };
+    });
+  }
+  
+  /**
+   * Gets all workflows for a document
    * 
    * @param documentId - The document ID
-   * @returns Array of workflows with basic details
+   * @returns List of workflows with their current status
    */
-  async getWorkflowsForDocument(documentId: number) {
-    try {
-      const workflowsList = await db.query.workflows.findMany({
-        where: eq(workflows.documentId, documentId),
-        orderBy: (workflows, { desc }) => [desc(workflows.createdAt)],
-        with: {
-          template: {
-            columns: {
-              name: true,
-            },
-          },
-        },
-      });
-      
-      return workflowsList.map(w => ({
-        id: w.id,
-        documentId: w.documentId,
-        templateId: w.templateId,
-        templateName: w.template?.name || 'Unknown Template',
-        status: w.status,
-        startedAt: w.startedAt,
-        startedBy: w.startedBy,
-        completedAt: w.completedAt,
-        completedBy: w.completedBy,
-        createdAt: w.createdAt,
-        updatedAt: w.updatedAt,
-      }));
-    } catch (error) {
-      console.error('Error getting workflows for document:', error);
-      throw new Error('Failed to get workflows for document');
+  async getDocumentWorkflows(documentId: number): Promise<Workflow[]> {
+    const workflowList = await db.query.workflows.findMany({
+      where: eq(workflows.documentId, documentId),
+      orderBy: [desc(workflows.createdAt)]
+    });
+    
+    return workflowList;
+  }
+  
+  /**
+   * Gets all workflow templates for an organization and module type
+   * 
+   * @param organizationId - The organization ID
+   * @param moduleType - The module type
+   * @returns List of available workflow templates
+   */
+  async getWorkflowTemplates(
+    organizationId: number, 
+    moduleType: string
+  ): Promise<WorkflowTemplate[]> {
+    const templates = await db.query.workflowTemplates.findMany({
+      where: and(
+        eq(workflowTemplates.organizationId, organizationId),
+        eq(workflowTemplates.moduleType, moduleType),
+        eq(workflowTemplates.isActive, true)
+      ),
+      orderBy: [desc(workflowTemplates.createdAt)]
+    });
+    
+    return templates;
+  }
+  
+  /**
+   * Creates a new workflow template
+   * 
+   * @param templateData - The template data
+   * @returns The created template
+   */
+  async createWorkflowTemplate(
+    templateData: Omit<typeof workflowTemplates.$inferInsert, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<WorkflowTemplate> {
+    const [template] = await db
+      .insert(workflowTemplates)
+      .values(templateData)
+      .returning();
+    
+    if (!template) {
+      throw new Error('Failed to create workflow template');
     }
+    
+    return template;
+  }
+  
+  /**
+   * Find all workflows needing action by a user
+   * 
+   * @param userId - The user ID
+   * @returns Workflows awaiting action from the user
+   */
+  async findUserPendingApprovals(userId: number): Promise<{
+    workflows: Workflow[];
+    approvals: WorkflowApproval[];
+  }> {
+    // Find all active approvals assigned to the user
+    const pendingApprovals = await db.query.workflowApprovals.findMany({
+      where: and(
+        eq(workflowApprovals.assignedTo, userId),
+        eq(workflowApprovals.status, 'active')
+      )
+    });
+    
+    const workflowIds = [...new Set(pendingApprovals.map(a => a.workflowId))];
+    
+    // Get the corresponding workflows
+    const pendingWorkflows = workflowIds.length > 0 
+      ? await db.query.workflows.findMany({
+          where: sql`${workflows.id} IN (${sql.join(workflowIds, sql`, `)})`,
+          orderBy: [desc(workflows.createdAt)]
+        })
+      : [];
+    
+    return {
+      workflows: pendingWorkflows,
+      approvals: pendingApprovals
+    };
   }
 }
+
+// Export a singleton instance
+export const workflowService = new WorkflowService();
