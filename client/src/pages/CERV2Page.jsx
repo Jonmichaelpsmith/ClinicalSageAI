@@ -27,6 +27,8 @@ import { CERV2TooltipProvider, useCERV2Tooltips } from '@/components/cer/Tooltip
 import TooltipTracker from '@/components/cer/TooltipTracker';
 import ContextualTooltip from '@/components/cer/ContextualTooltip';
 import ComplianceStoryPanel from '@/components/cer/ComplianceStoryPanel';
+import ComplianceStoryExample from '@/components/cer/ComplianceStoryExample';
+import TooltipExample from '@/components/cer/TooltipExample';
 import GuidedWalkthrough, { walkthroughScenarios } from '@/components/cer/GuidedWalkthrough';
 // 510k enhanced components
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
@@ -1177,6 +1179,12 @@ export default function CERV2Page() {
             </TabsContent>
             
             <TabsContent value="reports" className="mt-4">
+              {/* Add Tooltip Examples */}
+              <TooltipExample />
+              
+              {/* Add Compliance Storytelling Example */}
+              <ComplianceStoryExample />
+              
               <ReportGenerator 
                 deviceProfile={deviceProfile || {
                   deviceName: deviceName,
