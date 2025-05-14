@@ -38,6 +38,8 @@ import { router as fda510kRouter } from './routes/fda510kRoutes.js';
 import discoveryRouter from './routes/discovery.js';
 // @ts-ignore
 import literatureReviewGeneratorRouter from './routes/literature-review-generator.js';
+// @ts-ignore
+import documentAssemblyRouter from './routes/document-assembly.js';
 // Regulatory-ai router will be imported directly in server/index.ts
 
 export default function registerRoutes(app: Express): void {
@@ -373,6 +375,10 @@ export default function registerRoutes(app: Express): void {
   // Register literature review generator routes
   app.use('/api/cer', literatureReviewGeneratorRouter);
   console.log('Literature review generator routes registered');
+  
+  // Register document assembly routes
+  app.use('/api/document-assembly', documentAssemblyRouter);
+  console.log('Document assembly routes registered');
   
   // Use the updated regulatory-ai.js implementation with no mocks or fallbacks
   // @ts-ignore
