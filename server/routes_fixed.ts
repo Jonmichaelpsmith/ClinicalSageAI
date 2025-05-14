@@ -42,6 +42,8 @@ import literatureReviewGeneratorRouter from './routes/literature-review-generato
 import { router as documentAssemblyRouter } from './routes/document-assembly-esm.js';
 // @ts-ignore
 import { router as draftGeneratorRouter } from './routes/510k-draft-generator-esm.js';
+// Import our new eSTAR routes
+import { router as estarRouter } from './routes/510kEstarRoutes';
 // Regulatory-ai router will be imported directly in server/index.ts
 
 export default function registerRoutes(app: Express): void {
@@ -385,6 +387,10 @@ export default function registerRoutes(app: Express): void {
   // Register 510(k) draft generator routes
   app.use('/api/510k', draftGeneratorRouter);
   console.log('510(k) draft generator routes registered');
+  
+  // Register our new eSTAR routes
+  app.use('/api/fda510k/estar', estarRouter);
+  console.log('FDA 510(k) eSTAR routes registered');
   
   // Use the updated regulatory-ai.js implementation with no mocks or fallbacks
   // @ts-ignore
