@@ -22,32 +22,34 @@ const SimpleDocumentTreePanel = ({ isOpen, onClose, documentId }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
-  // Simple hardcoded document structure for the file tree
-  const vaultFiles = [
-    {
-      id: 'folder-1',
-      name: '510(k) Submission',
-      type: 'folder',
-      children: [
-        { id: 'doc-1-1', name: 'Device Description.pdf', type: 'document', format: 'pdf' },
-        { id: 'doc-1-2', name: 'Intended Use.docx', type: 'document', format: 'docx' },
-        { id: 'doc-1-3', name: 'Test Results.pdf', type: 'document', format: 'pdf' }
-      ]
-    },
-    {
-      id: 'folder-2',
-      name: 'Predicate Devices',
-      type: 'folder',
-      children: [
-        { id: 'doc-2-1', name: 'Predicate A.pdf', type: 'document', format: 'pdf' },
-        { id: 'doc-2-2', name: 'Predicate B.pdf', type: 'document', format: 'pdf' },
-        { id: 'doc-2-3', name: 'Comparison Table.xlsx', type: 'document', format: 'xlsx' }
-      ]
-    },
-    {
-      id: 'folder-3',
-      name: 'Regulatory Documents',
-      type: 'folder',
+  // State to hold file tree structure
+  const [vaultFiles, setVaultFiles] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Fetch document structure from API
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        setIsLoading(true);
+        // Get folders structure from the DocuShareService
+        const response = await docuShareService.getFolderStructure();
+        if (response?.folders) {
+          setVaultFiles(response.folders);
+        }
+      } catch (error) {
+        console.error('Error fetching document structure:', error);
+        toast({
+          title: "Error Loading Documents",
+          description: "Could not load document structure. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchDocuments();
+  }, [documentId]);
       children: [
         { id: 'doc-3-1', name: 'FDA Guidelines.pdf', type: 'document', format: 'pdf' },
         { id: 'doc-3-2', name: 'Submission Checklist.docx', type: 'document', format: 'docx' }
