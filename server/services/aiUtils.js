@@ -216,7 +216,7 @@ export async function embed(text) {
     // Check if OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
       console.warn('OpenAI API key not configured');
-      return new Array(1536).fill(0); // Return zero vector as fallback
+      throw new Error('OpenAI API key not configured');
     }
     
     const truncatedText = text.length > 8000 ? text.substring(0, 8000) + "..." : text;
@@ -242,7 +242,7 @@ export async function embed(text) {
     return data.data[0].embedding;
   } catch (error) {
     console.error('Error generating embeddings:', error);
-    return new Array(1536).fill(0); // Return zero vector as fallback
+    throw error; // No fallbacks - propagate the error to be handled by UI components
   }
 }
 
