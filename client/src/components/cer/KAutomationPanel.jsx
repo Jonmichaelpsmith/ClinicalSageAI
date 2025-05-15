@@ -976,27 +976,27 @@ export default function KAutomationPanel() {
             
             {/* Workflow Navigation Tabs */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
-                <h3 className="font-medium text-gray-800">Workflow Navigation</h3>
+              <div className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white border-b border-blue-800">
+                <h3 className="font-medium">510(k) Submission Progress</h3>
               </div>
               <div className="p-4">
                 <Tabs value={workflowSubTab} onValueChange={setWorkflowSubTab} className="mb-2">
-                  <TabsList className="w-full bg-slate-100 p-1">
-                    <TabsTrigger value="pipeline" className="flex-1 py-2">
-                      <ListChecks className="h-4 w-4 mr-2" />
-                      Pipeline Steps
-                    </TabsTrigger>
-                    <TabsTrigger value="devices" className="flex-1 py-2">
+                  <TabsList className="w-full bg-blue-50 p-1">
+                    <TabsTrigger value="devices" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-blue-700">
                       <Database className="h-4 w-4 mr-2" />
-                      1. Device Setup
+                      1. Device Profile
                     </TabsTrigger>
-                    <TabsTrigger value="predicates" className="flex-1 py-2">
+                    <TabsTrigger value="predicates" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-blue-700">
                       <Search className="h-4 w-4 mr-2" />
                       2. Predicate Finder
                     </TabsTrigger>
-                    <TabsTrigger value="status" className="flex-1 py-2">
-                      <Activity className="h-4 w-4 mr-2" />
-                      3. Workflow Status
+                    <TabsTrigger value="status" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-blue-700">
+                      <Shield className="h-4 w-4 mr-2" />
+                      3. Compliance Check
+                    </TabsTrigger>
+                    <TabsTrigger value="pipeline" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-blue-700">
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      4. Final Review
                     </TabsTrigger>
                   </TabsList>
                 </Tabs>
@@ -1450,118 +1450,193 @@ export default function KAutomationPanel() {
             )}
             
             {workflowSubTab === 'predicates' && (
-              <div className="space-y-4">
-                <div className="bg-white rounded-md p-4">
-                  {currentDeviceProfile ? (
-                    <PredicateFinderPanel 
-                      deviceProfile={currentDeviceProfile}
-                      organizationId={currentOrganization?.id}
-                      predicates={predicateSearchResults}
-                      recommendations={recommendedPredicates}
-                    />
-                  ) : (
-                    <Alert className="bg-amber-50 border-amber-200">
-                      <AlertTriangle className="h-4 w-4 text-amber-600" />
-                      <AlertTitle>Device Profile Required</AlertTitle>
-                      <AlertDescription>
-                        Please select or create a device profile first to enable predicate search functionality.
-                      </AlertDescription>
-                      <div className="mt-4">
-                        <Button 
-                          variant="outline" 
-                          onClick={() => setWorkflowSubTab('devices')}
-                          className="text-sm"
-                        >
-                          <Database className="h-3.5 w-3.5 mr-1.5" />
-                          Go to Device Profiles
-                        </Button>
-                      </div>
-                    </Alert>
-                  )}
-                </div>
+              <div className="space-y-5">
+                {currentDeviceProfile ? (
+                  <PredicateFinderPanel 
+                    deviceProfile={currentDeviceProfile}
+                    organizationId={currentOrganization?.id}
+                    predicates={predicateSearchResults}
+                    recommendations={recommendedPredicates}
+                  />
+                ) : (
+                  <Card className="shadow-md border-0 overflow-hidden">
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-white">
+                      <h3 className="text-lg font-medium flex items-center">
+                        <Search className="h-5 w-5 mr-2" /> 
+                        Predicate Device Search
+                      </h3>
+                      <p className="text-blue-100 text-sm mt-1">
+                        Find substantially equivalent devices for your 510(k) submission
+                      </p>
+                    </div>
+                    
+                    <div className="p-6 bg-white">
+                      <Alert className="bg-amber-50 border-amber-200">
+                        <AlertTriangle className="h-4 w-4 text-amber-600" />
+                        <AlertTitle>Device Profile Required</AlertTitle>
+                        <AlertDescription>
+                          Please create or select a device profile first to enable predicate search functionality.
+                        </AlertDescription>
+                        <div className="mt-4">
+                          <Button 
+                            variant="default"
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700"
+                            onClick={() => setWorkflowSubTab('devices')}
+                          >
+                            <Database className="h-3.5 w-3.5 mr-1.5" />
+                            Go to Device Profiles
+                          </Button>
+                        </div>
+                      </Alert>
+                    </div>
+                  </Card>
+                )}
               </div>
             )}
             
             {workflowSubTab === 'status' && (
-              <div className="space-y-4">
-                <div className="bg-slate-50 border border-slate-200 rounded-md p-4">
-                  <h3 className="text-lg font-medium text-slate-800 mb-2 flex items-center">
-                    <Activity className="h-5 w-5 mr-2" /> 510(k) Workflow Status
-                  </h3>
-                  <p className="text-sm text-slate-600 mb-4">
-                    Track the status of your submission through the FDA 510(k) process.
-                  </p>
+              <div className="space-y-5">
+                <Card className="shadow-md border-0 overflow-hidden">
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-white">
+                    <h3 className="text-lg font-medium flex items-center">
+                      <Shield className="h-5 w-5 mr-2" /> 
+                      Compliance Verification Status
+                    </h3>
+                    <p className="text-blue-100 text-sm mt-1">
+                      Track and verify your 510(k) submission compliance with FDA requirements
+                    </p>
+                  </div>
                   
-                  <div className="space-y-4 mt-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${currentDeviceProfile ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-400'}`}>
-                          <Check className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="font-medium">Device Profile</div>
-                          <div className="text-sm text-slate-500">
-                            {currentDeviceProfile ? currentDeviceProfile.deviceName : 'Not selected'}
+                  <div className="p-6 bg-white">
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${currentDeviceProfile ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-500'}`}>
+                            {currentDeviceProfile ? (
+                              <Check className="h-6 w-6" />
+                            ) : (
+                              <span className="text-blue-700 font-medium">1</span>
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-800">Device Profile</div>
+                            <div className="text-sm text-gray-500">
+                              {currentDeviceProfile ? `${currentDeviceProfile.deviceName} (Class ${currentDeviceProfile.deviceClass})` : 'Not Started'}
+                            </div>
                           </div>
                         </div>
+                        {currentDeviceProfile ? (
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-medium">
+                            <Check className="h-3.5 w-3.5 mr-1" />
+                            Complete
+                          </Badge>
+                        ) : (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="bg-blue-600 hover:bg-blue-700"
+                            onClick={() => setWorkflowSubTab('devices')}
+                          >
+                            <Database className="h-3.5 w-3.5 mr-1.5" />
+                            Create Device Profile
+                          </Button>
+                        )}
                       </div>
-                      <Badge variant={currentDeviceProfile ? 'success' : 'outline'} className={currentDeviceProfile ? 'bg-green-100 text-green-800 border-green-200' : ''}>
-                        {currentDeviceProfile ? 'Complete' : 'Pending'}
-                      </Badge>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${predicateSearchResults.length > 0 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-400'}`}>
-                          <Search className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <div className="font-medium">Predicate Discovery</div>
-                          <div className="text-sm text-slate-500">
-                            {predicateSearchResults.length > 0 
-                              ? `${predicateSearchResults.length} potential matches found` 
-                              : 'Not started'}
+                      
+                      <div className="h-10 border-l-2 border-dashed border-blue-200 ml-5"></div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${predicateSearchResults.length > 0 ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-500'}`}>
+                            {predicateSearchResults.length > 0 ? (
+                              <Check className="h-6 w-6" />
+                            ) : (
+                              <span className="text-blue-700 font-medium">2</span>
+                            )}
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-800">Predicate Device Search</div>
+                            <div className="text-sm text-gray-500">
+                              {predicateSearchResults.length > 0 
+                                ? `${predicateSearchResults.length} predicates found` 
+                                : 'Find substantially equivalent devices'}
+                            </div>
                           </div>
                         </div>
+                        {predicateSearchResults.length > 0 ? (
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-medium">
+                            <Check className="h-3.5 w-3.5 mr-1" />
+                            Complete
+                          </Badge>
+                        ) : (
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className={currentDeviceProfile ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400"}
+                            onClick={() => setWorkflowSubTab('predicates')}
+                            disabled={!currentDeviceProfile}
+                          >
+                            <Search className="h-3.5 w-3.5 mr-1.5" />
+                            Find Predicates
+                          </Button>
+                        )}
                       </div>
-                      <Badge variant={predicateSearchResults.length > 0 ? 'success' : 'outline'} className={predicateSearchResults.length > 0 ? 'bg-green-100 text-green-800 border-green-200' : ''}>
-                        {predicateSearchResults.length > 0 ? 'Complete' : 'Pending'}
-                      </Badge>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mr-3">
-                          <FileText className="h-5 w-5" />
+                      
+                      <div className="h-10 border-l-2 border-dashed border-blue-200 ml-5"></div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center mr-4 bg-blue-100">
+                            <span className="text-blue-700 font-medium">3</span>
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-800">Compliance Verification</div>
+                            <div className="text-sm text-gray-500">
+                              AI-powered compliance checks with FDA requirements
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-medium">Draft Generation</div>
-                          <div className="text-sm text-slate-500">Not started</div>
-                        </div>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className={currentDeviceProfile && predicateSearchResults.length > 0 ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400"}
+                          disabled={!currentDeviceProfile || predicateSearchResults.length === 0}
+                          onClick={() => handleRunPipeline('runComplianceChecks')}
+                        >
+                          <Shield className="h-3.5 w-3.5 mr-1.5" />
+                          Run Compliance Check
+                        </Button>
                       </div>
-                      <Badge variant="outline">Pending</Badge>
-                    </div>
-                    
-                    <Separator />
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mr-3">
-                          <Shield className="h-5 w-5" />
+                      
+                      <div className="h-10 border-l-2 border-dashed border-blue-200 ml-5"></div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 rounded-full flex items-center justify-center mr-4 bg-blue-100">
+                            <span className="text-blue-700 font-medium">4</span>
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-800">eSTAR Submission Document</div>
+                            <div className="text-sm text-gray-500">
+                              Generate FDA-compliant eSTAR submission package
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-medium">Compliance Check</div>
-                          <div className="text-sm text-slate-500">Not started</div>
-                        </div>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className={currentDeviceProfile && predicateSearchResults.length > 0 ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400"}
+                          disabled={!currentDeviceProfile || predicateSearchResults.length === 0}
+                          onClick={() => handleRunPipeline('generate510kSubmission')}
+                        >
+                          <FileText className="h-3.5 w-3.5 mr-1.5" />
+                          Generate eSTAR Package
+                        </Button>
                       </div>
-                      <Badge variant="outline">Pending</Badge>
                     </div>
                   </div>
-                </div>
+                </Card>
               </div>
             )}
           </div>
