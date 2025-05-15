@@ -993,7 +993,7 @@ export default function CERV2Page() {
                     }
                   ]}
                   logs={[
-                    { timestamp: new Date(Date.now() - 3600000).toISOString(), level: "info", message: "Device profile created successfully" },
+                    { timestamp: new Date(Date.now() - 3600000).toISOString(), level: "info", message: "Device Profile created successfully" },
                     { timestamp: new Date(Date.now() - 1800000).toISOString(), level: "info", message: "Beginning predicate device search" },
                     { timestamp: new Date(Date.now() - 900000).toISOString(), level: "info", message: "Found 12 potential predicate devices" },
                     { timestamp: new Date(Date.now() - 600000).toISOString(), level: "info", message: "Analyzing device compatibility" },

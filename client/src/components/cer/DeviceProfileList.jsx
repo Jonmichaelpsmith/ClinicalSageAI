@@ -147,7 +147,7 @@ const DeviceProfileList = ({ onSelectProfile }) => {
     try {
       await deleteDeviceProfile(profileToDelete.id);
       toast({
-        title: 'Device profile deleted',
+        title: 'Device Profile deleted',
         description: `${profileToDelete.deviceName} has been successfully deleted.`,
       });
       
