@@ -494,11 +494,18 @@ const EquivalenceBuilderPanel = ({
         
         {selectedTab === 'literature' && (
           <LiteratureTab 
-            selectedLiterature={selectedLiterature}
-            predicateDevice={predicateDevices.find(d => d.id === selectedPredicateDevice)}
-            deviceProfile={deviceProfile}
-            features={comparisonFeatures}
-            literatureEvidence={literatureEvidence}
+            deviceFeatures={comparisonFeatures}
+            deviceName={deviceProfile?.deviceName || ''}
+            documentId={documentId}
+            manufacturer={deviceProfile?.manufacturer || ''}
+            onEvidenceUpdated={(updatedEvidence) => {
+              setLiteratureEvidence(updatedEvidence);
+              toast({
+                title: "Literature Evidence Updated",
+                description: "Your feature-literature connections have been saved.",
+                variant: "default"
+              });
+            }}
           />
         )}
         
