@@ -39,6 +39,10 @@ import ProgressTracker from '@/components/510k/ProgressTracker';
 import SubmissionTimeline from '@/components/510k/SubmissionTimeline';
 import ReportGenerator from '@/components/510k/ReportGenerator';
 import About510kDialog from '@/components/510k/About510kDialog';
+import ComplianceChecker from '@/components/510k/ComplianceChecker';
+import WorkflowEnabledReportGenerator from '@/components/510k/WorkflowEnabledReportGenerator';
+import DeviceProfileForm from '@/components/510k/DeviceProfileForm';
+import OneClick510kDraft from '@/components/510k/OneClick510kDraft';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
@@ -939,6 +943,39 @@ export default function CERV2Page() {
             
             <TabsContent value="workflow" className="mt-4">
               <div className="grid grid-cols-1 gap-6">
+                {/* Device Profile Form for 510k workflow */}
+                <Card className="shadow-md border border-blue-100 overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
+                    <CardTitle className="text-xl flex items-center text-blue-800">
+                      <FileText className="h-5 w-5 mr-2" />
+                      Device Profile Information
+                    </CardTitle>
+                    <CardDescription>
+                      Complete all required information about your medical device
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <DeviceProfileForm 
+                      initialData={deviceProfile || {
+                        deviceName: deviceName || '',
+                        manufacturer: manufacturer || '',
+                        deviceClass: deviceType?.includes('II') ? 'II' : deviceType?.includes('III') ? 'III' : 'I',
+                        intendedUse: intendedUse || ''
+                      }}
+                      onSave={(data) => {
+                        console.log("Device profile data saved:", data);
+                        // Update local state
+                        setDeviceProfile(data);
+                        // Show success notification
+                        toast({
+                          title: "Device Profile Saved",
+                          description: "Your device profile has been successfully saved.",
+                        });
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+                
                 <GuidedTooltip
                   title="510(k) Submission Process"
                   steps={[
@@ -1464,11 +1501,84 @@ export default function CERV2Page() {
                   deviceProfile={deviceProfile || {
                     deviceName: deviceName,
                     manufacturer: manufacturer,
-                    deviceClass: deviceType.includes('II') ? 'II' : deviceType.includes('III') ? 'III' : 'I',
+                    deviceClass: deviceType?.includes('II') ? 'II' : deviceType?.includes('III') ? 'III' : 'I',
                     intendedUse: intendedUse
                   }}
-                  organizationId={1}
+                  organizationId={organizationId || 1}
                 />
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="compliance" className="mt-4">
+              <div className="grid grid-cols-1 gap-6">
+                <Card className="shadow-md border border-blue-100 overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
+                    <CardTitle className="text-xl flex items-center text-blue-800">
+                      <CheckSquare className="h-5 w-5 mr-2" />
+                      Compliance Check
+                    </CardTitle>
+                    <CardDescription>
+                      Validate your submission against FDA requirements
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <ComplianceChecker 
+                      projectId={deviceProfile?.id || 'dev-sample-1'}
+                      onComplianceChange={(results) => {
+                        setCompliance(results);
+                        setIsComplianceRunning(false);
+                      }}
+                      isComplianceRunning={isComplianceRunning}
+                      setIsComplianceRunning={setIsComplianceRunning}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="reports" className="mt-4">
+              <div className="grid grid-cols-1 gap-6">
+                <Card className="shadow-md border border-blue-100 overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
+                    <CardTitle className="text-xl flex items-center text-blue-800">
+                      <FileText className="h-5 w-5 mr-2" />
+                      Final eSTAR Review & Generation
+                    </CardTitle>
+                    <CardDescription>
+                      Generate your FDA-compliant 510(k) submission package
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <WorkflowEnabledReportGenerator
+                      deviceData={deviceProfile || {
+                        deviceName: deviceName || 'Medical Device',
+                        manufacturer: manufacturer || 'Medical Device Manufacturer',
+                        deviceClass: deviceType?.includes('II') ? 'II' : deviceType?.includes('III') ? 'III' : 'I',
+                        intendedUse: intendedUse || 'Clinical use',
+                        id: 'dev-sample-1'
+                      }}
+                      predicateData={{
+                        deviceName: 'Predicate Device',
+                        k510Number: 'K123456',
+                        manufacturer: 'Predicate Manufacturer',
+                        clearanceDate: '2023-05-15',
+                        deviceClass: 'Class II',
+                        productCode: 'ABC',
+                        regulationNumber: '870.1234'
+                      }}
+                      validationResults={compliance || null}
+                      onReportGenerated={(reportId) => {
+                        console.log("Report generated:", reportId);
+                        toast({
+                          title: 'FDA 510(k) report generated',
+                          description: 'Your FDA-compliant 510(k) submission report has been generated successfully.',
+                        });
+                      }}
+                      organizationId={organizationId || 1}
+                      userId={userId || 1}
+                    />
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
             
