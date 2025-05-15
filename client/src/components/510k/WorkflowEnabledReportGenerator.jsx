@@ -44,7 +44,10 @@ const WorkflowEnabledReportGenerator = ({
   deviceData,
   predicateData,
   reportType = "510k",
-  className = ''
+  className = '',
+  isWorkflowEnabled = false,
+  onComplete = () => {},
+  workflowData = {}
 }) => {
   const [activeTab, setActiveTab] = useState('generator');
   const [reportFormat, setReportFormat] = useState('pdf');
@@ -232,6 +235,31 @@ const WorkflowEnabledReportGenerator = ({
       // If eSTAR package generation is enabled, proceed with integration
       if (generateESTARPackage && generatedReportId) {
         handleESTARIntegration();
+      }
+    } else if (action === 'complete' || action === 'approve') {
+      // Call the onComplete callback if in workflow mode
+      if (isWorkflowEnabled && generatedReportId) {
+        // Prepare workflow completion data
+        const completionData = {
+          reportId: generatedReportId,
+          reportUrl: generatedReportUrl,
+          title: reportTitle,
+          format: reportFormat,
+          generatedOn: new Date().toISOString(),
+          estarPackage: estarStatus.packageGenerated ? {
+            downloadUrl: estarStatus.downloadUrl,
+            validated: estarStatus.validated,
+            validationIssues: estarStatus.validationIssues,
+          } : null
+        };
+        
+        // Notify the parent component
+        onComplete(completionData);
+        
+        toast({
+          title: 'Submission Process Completed',
+          description: 'The 510(k) submission has been completed and is ready for FDA review.',
+        });
       }
     }
   };
