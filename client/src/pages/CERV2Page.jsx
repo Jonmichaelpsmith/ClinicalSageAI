@@ -11,6 +11,7 @@ import CerDataRetrievalPanel from '@/components/cer/CerDataRetrievalPanel';
 // Using 510k specific components instead of CER ones
 import EquivalenceBuilderPanel from '@/components/510k/EquivalenceBuilderPanel';
 import ComplianceCheckPanel from '@/components/510k/ComplianceCheckPanel';
+import LiteratureVisualizationPanel from '@/components/510k/LiteratureVisualizationPanel';
 import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
 import ClinicalEvaluationPlanPanel from '@/components/cer/ClinicalEvaluationPlanPanel';
 import QualityManagementPlanPanel from '@/components/cer/QualityManagementPlanPanel';
