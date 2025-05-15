@@ -1,0 +1,93 @@
+Here’s an enhanced **Mermaid canvas** that shows not only your module blocks, but also the key **API calls** and **AI touch-points** in the workflow:
+
+```mermaid
+flowchart TD
+  %% UI Layer
+  subgraph UI [Client-Side (CER2V Page)]
+    direction TB
+    A[📋 Device Profile Manager]
+    B[🔍 Semantic Search Panel]
+    C[📑 Predicate Recommendations View]
+    D[📚 Literature Review Panel]
+    E[🔄 Pathway Advisor]
+    F[✍️ Equivalence Co-Author]
+    G[✅ QA & Compliance Checker]
+    H[📦 eSTAR Package Builder]
+  end
+
+  %% API Layer
+  subgraph API [Backend API Endpoints]
+    direction LR
+    API_DP[/POST /api/cerv2/device-profile/validate/]
+    API_SS[/POST /api/fda510k/semantic-search/]
+    API_FP[/POST /api/fda510k/find-predicates/]
+    API_LS[/POST /api/cer/literature-search/]
+    API_PA[/GET  /api/fda510k/compare-pathways/]
+    API_EQ[/POST /api/fda510k/draft-equivalence/]
+    API_QA[/POST /api/fda510k/compliance-check/]
+    API_ES[/POST /api/fda510k/estar-package/]
+  end
+
+  %% AI & External Services
+  subgraph AI [AI & External Services]
+    direction LR
+    AI_EMB[(OpenAI Embeddings)]
+    AI_SUM[(OpenAI Summarization)]
+    AI_CHAT[(OpenAI Chat Completion)]
+    EXT_PUBMED[(PubMed API)]
+    EXT_IEEE[(IEEE Xplore API)]
+    EXT_FAERS[(FAERS Database)]
+    EXT_S3[(Vault S3 Storage)]
+  end
+
+  %% Database Layer
+  subgraph DB [Data Stores]
+    direction LR
+    DB_CER[(PostgreSQL CER tables + pgvector)]
+    DB_510[(PostgreSQL 510k tables + pgvector)]
+  end
+
+  %% Flows
+  A -->|validate & save| API_DP --> DB_CER
+  B -->|query text| API_SS --> AI_EMB --> DB_510
+  B -->|query text| API_SS --> AI_EMB
+  API_SS -->|results| B
+
+  C -->|profile info| API_FP --> AI_EMB
+  API_FP -->|predicate list| C
+
+  D -->|search terms| API_LS --> EXT_PUBMED & EXT_IEEE & EXT_FAERS
+  API_LS --> AI_SUM
+  API_LS -->|lit results| D
+
+  E -->|device data| API_PA --> DB_510
+  API_PA -->|pathway data| E
+
+  F -->|equivalence data| API_EQ --> AI_CHAT
+  API_EQ -->|draft text| F
+
+  G -->|submission data| API_QA --> AI_CHAT
+  API_QA -->|compliance report| G
+
+  H -->|package spec| API_ES --> EXT_S3 & AI_CHAT
+  API_ES -->|eSTAR ZIP| H
+
+  %% Styling
+  style UI fill:#eef,stroke:#777,stroke-width:1px
+  style API fill:#fee,stroke:#777,stroke-width:1px
+  style AI fill:#efe,stroke:#777,stroke-width:1px
+  style DB fill:#ffe,stroke:#777,stroke-width:1px
+```
+
+**How to use:**
+
+1. Paste the snippet into any Markdown-oriented canvas (e.g., GitHub, Confluence).
+2. It will render a flowchart showing:
+
+   * **UI blocks** (left) under your `CERV2Page.jsx`.
+   * **API endpoints** in the middle.
+   * **AI & external** services on the right.
+   * **Data stores** at the bottom.
+3. Modify labels or endpoint paths to match your exact routes, and adjust colors if desired.
+
+This makes your end-to-end 510(k) automation workflow—with all API calls and AI integrations—visible at a glance.
