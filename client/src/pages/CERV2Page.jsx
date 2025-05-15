@@ -1033,8 +1033,8 @@ export default function CERV2Page() {
                 </div>
                 
                 {/* 510k Workflow Panel with Microsoft 365-style interface */}
-                <div id="device-profile-section">
-                  <Card className="border rounded-sm overflow-hidden shadow-sm mb-6">
+                <div id="device-profile-section" className="w-full px-0 mt-2">
+                  <Card className="border rounded-sm overflow-hidden shadow-sm mb-3">
                     <div className="flex flex-col">
                       {/* Top navigation bar - Similar to Outlook's top bar */}
                       <div className="bg-white border-b border-gray-200 flex items-center p-2 gap-2">
