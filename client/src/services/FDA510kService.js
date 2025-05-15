@@ -587,6 +587,60 @@ const FDA510kService = {
         }
       };
     }
+  },
+
+  /**
+   * Generate a completed eSTAR package for submission to FDA
+   * 
+   * This function creates a complete eSTAR package that meets FDA submission
+   * requirements, based on the provided project data and options.
+   * 
+   * @param {string} projectId The project ID to generate the eSTAR package for
+   * @param {Object} options Configuration options for the package generation
+   * @returns {Promise<Object>} Result containing download information or validation issues
+   */
+  async generateESTARPackage(projectId, options = {}) {
+    try {
+      // First check if we need to validate before generation
+      if (options.validateFirst) {
+        const validationResult = await this.validateESTARPackage(projectId, options.strictValidation || false);
+        
+        // If validation fails in strict mode, return the validation issues
+        if (options.strictValidation && validationResult && !validationResult.valid) {
+          return {
+            success: false,
+            validated: true,
+            packageGenerated: false,
+            validationResult,
+            message: 'eSTAR package validation failed. Please resolve the issues before proceeding.'
+          };
+        }
+      }
+      
+      // Then build the eSTAR package
+      const result = await this.buildESTARPackage(projectId, {
+        format: options.format || 'pdf',
+        includePredicates: options.includePredicates !== false,
+        includeStandards: options.includeStandards !== false,
+        ...options
+      });
+      
+      // Return the result with a more semantic naming convention
+      return {
+        success: true,
+        downloadUrl: result.downloadUrl,
+        packageId: result.packageId,
+        validationResult: result.validationResult,
+        message: 'eSTAR package successfully generated'
+      };
+    } catch (error) {
+      console.error(`Error generating eSTAR package for project ${projectId}:`, error);
+      return {
+        success: false,
+        error: error.message || 'Failed to generate eSTAR package',
+        details: error.response?.data || null
+      };
+    }
   }
 };
 
