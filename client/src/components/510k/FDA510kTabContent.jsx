@@ -62,7 +62,11 @@ const FDA510kTabContent = ({
   userId,
   activeTab = 'drafting',
   onTabChange,
-  className = ''
+  className = '',
+  isWorkflowEnabled = false,
+  onWorkflowComplete = () => {},
+  onWorkflowStepComplete = () => {},
+  workflowState = {}
 }) => {
   const [activeSection, setActiveSection] = useState(activeTab);
   const [deviceData, setDeviceData] = useState(DEFAULT_DEVICE_DATA);

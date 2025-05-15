@@ -686,36 +686,75 @@ const WorkflowEnabledReportGenerator = ({
           </Tabs>
         </CardContent>
         <CardFooter className={activeTab === 'generator' ? 'flex justify-between' : 'hidden'}>
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2">
             {generatedReportUrl && (
-              <Button variant="outline" size="sm" className="mr-2" asChild>
+              <Button variant="outline" size="sm" asChild>
                 <a href={generatedReportUrl} target="_blank" rel="noopener noreferrer">
                   <Download className="h-4 w-4 mr-1" /> Download Report
                 </a>
               </Button>
             )}
-          </div>
-          <Button 
-            onClick={handleGenerateReport} 
-            disabled={isGenerating || !reportTitle.trim()}
-          >
-            {isGenerating ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                Generating...
-              </>
-            ) : generatedReportId ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Regenerate Report
-              </>
-            ) : (
-              <>
-                <FileUp className="h-4 w-4 mr-2" />
-                Generate Report
-              </>
+            
+            {isWorkflowEnabled && generatedReportId && (
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setActiveTab('workflow')}
+              >
+                <Clock className="h-4 w-4 mr-1" /> View Workflow
+              </Button>
             )}
-          </Button>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            {isWorkflowEnabled && generatedReportId && (
+              <Button 
+                className="bg-green-600 hover:bg-green-700"
+                onClick={() => {
+                  // Prepare completion data
+                  const completionData = {
+                    reportId: generatedReportId,
+                    reportUrl: generatedReportUrl,
+                    title: reportTitle,
+                    format: reportFormat,
+                    generatedOn: new Date().toISOString()
+                  };
+                  
+                  // Call the completion handler
+                  onComplete(completionData);
+                  
+                  toast({
+                    title: "Continuing Workflow",
+                    description: "Moving to the next step in the 510(k) submission process.",
+                  });
+                }}
+              >
+                <PackageCheck className="h-4 w-4 mr-1" /> Continue to Submission
+              </Button>
+            )}
+            
+            <Button 
+              onClick={handleGenerateReport} 
+              disabled={isGenerating || !reportTitle.trim()}
+            >
+              {isGenerating ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                  Generating...
+                </>
+              ) : generatedReportId ? (
+                <>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Regenerate Report
+                </>
+              ) : (
+                <>
+                  <FileUp className="h-4 w-4 mr-2" />
+                  Generate Report
+                </>
+              )}
+            </Button>
+          </div>
         </CardFooter>
       </Card>
     </div>
