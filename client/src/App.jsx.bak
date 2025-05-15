@@ -114,8 +114,8 @@ const TenantManagement = lazy(() => import('./pages/TenantManagement'));
 const ClientManagement = lazy(() => import('./pages/ClientManagement'));
 const Settings = lazy(() => import('./pages/Settings'));
 
-// 510(k) Automation is now fully integrated into CERV2Page
-// Standalone FDA510k pages have been permanently removed
+// FDA 510(k) Automation Pages are now integrated into CERV2Page
+// These standalone pages have been removed
 
 function App() {
   // Default tab for the UnifiedTopNavV3 component
