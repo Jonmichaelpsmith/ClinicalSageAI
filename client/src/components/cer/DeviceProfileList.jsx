@@ -262,17 +262,15 @@ const DeviceProfileList = ({ onSelectProfile }) => {
             Available Device Profiles
           </CardTitle>
           <CardDescription>
-            Select an existing device profile or create a new one
+            Choose an existing profile or use the "Create New Profile" button to add one
           </CardDescription>
         </div>
         <div className="flex space-x-2 items-center">
-          <Button variant="outline" size="sm" onClick={handleRefresh}>
-            <RefreshCw className="h-4 w-4 mr-1" />
-            Refresh
-          </Button>
           <DeviceProfileDialog 
             buttonText="+ Create New Profile"
             buttonIcon={<PlusCircle className="h-4 w-4 mr-1" />}
+            buttonVariant="default"
+            buttonClassName="bg-blue-600 hover:bg-blue-700 text-white" 
             onSuccessfulSubmit={(profile) => {
               refetch();
               // Automatically select the newly created profile
@@ -280,7 +278,14 @@ const DeviceProfileList = ({ onSelectProfile }) => {
               if (onSelectProfile) onSelectProfile(profile);
             }}
             showBadge={true}
+            isStartingPoint={true}
+            dialogTitle="Step 1: Create Device Profile"
+            dialogDescription="Enter the details of your medical device to begin the 510(k) submission process. This information will be used throughout the FDA submission workflow."
           />
+          <Button variant="outline" size="sm" onClick={handleRefresh} className="ml-2">
+            <RefreshCw className="h-4 w-4 mr-1" />
+            Refresh List
+          </Button>
         </div>
       </CardHeader>
       

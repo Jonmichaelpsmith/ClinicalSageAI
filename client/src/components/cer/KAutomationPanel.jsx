@@ -1062,17 +1062,8 @@ export default function KAutomationPanel() {
                     <Database className="h-5 w-5 mr-2" /> Step 1: Device Profile Management
                   </h3>
                   <p className="text-sm text-blue-700 mb-4">
-                    Start here: Create or select a medical device profile for your 510(k) submission workflow.
+                    Start here: Select an existing device profile or create a new one using the list below.
                   </p>
-                  <div className="flex items-center">
-                    <Button
-                      onClick={() => handleRunPipeline('ingestDeviceProfile')}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Create New Device Profile
-                    </Button>
-                  </div>
                 </div>
                 
                 {isLoadingProfiles ? (
