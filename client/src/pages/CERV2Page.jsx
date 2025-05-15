@@ -908,17 +908,50 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       <div className="container mx-auto px-6 mt-4">
         {renderNavigation()}
         
-        <div className="bg-white rounded-lg border shadow-sm">
-          {renderContent()}
+        <div className="flex">
+          {/* Embedded Document Tree Panel */}
+          {showDocumentTree && (
+            <div className="w-[280px] bg-white border-r mr-4 rounded-l-lg shadow-sm overflow-y-auto">
+              <div className="p-3 border-b bg-gray-50 flex items-center justify-between">
+                <div className="flex items-center">
+                  <FolderTree className="h-4 w-4 text-blue-600 mr-2" />
+                  <h3 className="font-medium text-sm">Document Vault</h3>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowDocumentTree(false)}
+                  className="h-6 w-6 p-0"
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+              
+              <div className="p-2">
+                <ul className="space-y-1">
+                  {['Device Description.pdf', 'Substantial Equivalence.docx', 'Test Reports', 'FDA Guidance', 'Predicate Devices', '510(k) Submission.pdf'].map((doc, i) => (
+                    <li 
+                      key={i}
+                      className="flex items-center p-1.5 text-sm hover:bg-gray-100 rounded cursor-pointer"
+                    >
+                      {i % 2 === 1 ? (
+                        <FolderOpen className="w-3.5 h-3.5 text-yellow-500 mr-1.5" />
+                      ) : (
+                        <FileText className="w-3.5 h-3.5 text-blue-500 mr-1.5" />
+                      )}
+                      <span className="text-sm truncate">{doc}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          )}
+          
+          <div className={`bg-white rounded-lg border shadow-sm flex-1 ${showDocumentTree ? 'rounded-l-none' : ''}`}>
+            {renderContent()}
+          </div>
         </div>
       </div>
-      
-      {/* Document Tree Panel (slides in from the right) */}
-      <SimpleDocumentTreePanel 
-        isOpen={showDocumentTree}
-        onClose={() => setShowDocumentTree(false)}
-        documentId={documentType === 'cer' ? cerDocumentId : k510DocumentId}
-      />
     </div>
   );
 }
