@@ -1,0 +1,82 @@
+------------------------------------------------------------------------------------
+**DIRECTIVES FOR REPLIT AI AGENT**
+
+**Objective:** Forcibly restore the entire project (focusing on the `/CER2V/` directory if that's where all relevant application code for the desired UI resides) to the precise Git state from May 14th (or the specific commit hash representing the old, working UI). Then, ensure `CERV2Page.jsx` and its critical dependency `FDA510kTabContent.jsx` (or its equivalent) are correctly present and configured from that restored state.
+
+**Assumptions:**
+* The user has identified a **TARGET_COMMIT_HASH** from May 14th (or earlier) that represents the old, working UI. **Agent: Please ask the user for this specific commit hash if you don't have it stored from our previous interactions.**
+* The user has a **MAIN_DEVELOPMENT_BRANCH** (e.g., `main`, `master`). **Agent: Please ask the user for this branch name if you don't have it.**
+* All critical UI code for the desired old UI is expected to be within the `/CER2V/` subfolder structure (e.g., `/CER2V/client/src/...`). If other top-level project files (like `package.json`, config files) also need to be from that commit, the reset should cover the whole project.
+
+---
+
+**Step 1: Confirm Target Commit Hash and Main Branch Name with User (Re-confirm if necessary)**
+
+* **Action:**
+    1.  Politely ask the user: "To ensure we restore to the exact correct point, could you please re-confirm the **TARGET_COMMIT_HASH** from May 14th (or earlier) that had the old, working UI?"
+    2.  Also ask: "And please re-confirm the name of your **MAIN_DEVELOPMENT_BRANCH** (e.g., `main` or `master`)?"
+* **Instruction to Agent:** Wait for these two values from the user. Store them as `TARGET_COMMIT_HASH` and `MAIN_DEVELOPMENT_BRANCH`. Do not proceed without them.
+
+---
+
+**Step 2: Perform a Forceful Git Reset (This will affect the entire repository)**
+
+* **Action:** Once you have the `TARGET_COMMIT_HASH` and `MAIN_DEVELOPMENT_BRANCH` from the user, execute the following commands **in the Replit Shell**:
+    1.  Ensure you are on the correct main development branch:
+        ```bash
+        git checkout [MAIN_DEVELOPMENT_BRANCH]
+        ```
+    2.  Perform a hard reset to the target commit. This will discard ALL uncommitted changes and any commits made after this target commit on this branch:
+        ```bash
+        git reset --hard [TARGET_COMMIT_HASH]
+        ```
+    3.  Clean the working directory of ANY untracked files and directories that are not part of the `TARGET_COMMIT_HASH`. **This is crucial to remove remnants of the unwanted UI.**
+        ```bash
+        git clean -f -d -x
+        ```
+* **Explanation to User (by the agent):** "I have performed a `git checkout` to branch `[MAIN_DEVELOPMENT_BRANCH]`, a `git reset --hard` to commit `[TARGET_COMMIT_HASH]`, and a `git clean -f -d -x`. This should have forcibly reset all project files (including everything in `/CER2V/`) to the exact state of that commit and removed any other files that didn't belong to that version. The '133 current changes' you saw earlier should now be gone."
+* **Verification (Agent to perform and report to user):**
+    * Execute `git status`. Report the output. (It MUST say "nothing to commit, working tree clean" and indicate it's on `[MAIN_DEVELOPMENT_BRANCH]` at `[TARGET_COMMIT_HASH]` or that the branch is now at this commit).
+    * Execute `git log --oneline -n 1`. Report the output. (The commit hash shown should match `TARGET_COMMIT_HASH`).
+
+---
+
+**Step 3: Verify Critical File Presence within `/CER2V/` (Post-Reset)**
+
+* **File to Inspect:** The file system within the `/CER2V/` directory.
+* **Action:** Now that the Git state is supposedly clean and correct:
+    1.  Check if `/CER2V/client/src/pages/CERV2Page.jsx` exists and inspect its import statements, specifically for `FDA510kTabContent.jsx` (or a similar name).
+    2.  Based on that import path, verify if `FDA510kTabContent.jsx` (or its equivalent, e.g., `/CER2V/client/src/components/FDA510kTabContent.jsx`) now exists.
+* **Instruction to Agent:** "After the `git reset` and `git clean`, please verify the existence and check the import statements of `/CER2V/client/src/pages/CERV2Page.jsx`. Specifically, what path is it trying to import `FDA510kTabContent.jsx` (or a similar tab container component) from? Then, verify if that imported file now exists at that path."
+* **Verification:**
+    * Agent reports the import path for `FDA510kTabContent` found within the restored `CERV2Page.jsx`.
+    * Agent confirms whether `FDA510kTabContent.jsx` (or equivalent) exists at that specified path.
+
+---
+
+**Step 4: Address `FDA510kTabContent.jsx` if STILL Missing (Unlikely if Git Reset was successful)**
+
+* **Action (Only if Step 3 shows `FDA510kTabContent.jsx` is *still* not found at the path `CERV2Page.jsx` expects, which would be very strange after a hard reset to a commit where it supposedly existed):**
+    * Re-attempt searching specific backup locations *you (the user) know are reliable for May 14th versions of files within `CER2V`*.
+    * Example paths to check (user can confirm/correct these):
+        * `./may14_complete_restore/CER2V/client/src/components/FDA510kTabContent.jsx`
+        * `./backups/CER2V/client/src/components/FDA510kTabContent.jsx`
+    * If found, copy it to the correct location that `CERV2Page.jsx` expects.
+* **Instruction to Agent:** "If, after the successful Git reset, `FDA510kTabContent.jsx` is *still* not found where `CERV2Page.jsx` is trying to import it from, please search again ONLY in user-specified May 14th backup directories (e.g., `may14_complete_restore`) specifically within their `/CER2V/` structure for this file. If found, copy it to the correct destination within `/CER2V/client/src/...`."
+
+---
+
+**Step 5: Environment Refresh and Application Test (User to Perform)**
+
+* **Action (Agent to instruct user):** "The Git repository should now be fully restored to the state of commit `[TARGET_COMMIT_HASH]`. Please perform the following:
+    1.  In the Replit Shell, run `npm install` (or `yarn install`).
+    2.  Stop your development server if it's running.
+    3.  Restart your development server (e.g., `npm run dev`).
+    4.  In your web browser, perform a hard refresh of your TrialSage application (usually Ctrl+Shift+R or Cmd+Shift+R) and clear the browser cache for this site."
+* **Verification (User to perform and report back to me/agent):**
+    * Does the application now load with the OLD UI that you expect from May 14th (similar to `image_d84720.jpg` and `image_d84a06.jpg`)?
+    * Are there any import errors for `FDA510kTabContent.jsx` or other components in the browser console?
+    * Are there any errors in the backend logs?
+    * Is the "unwanted UI" gone?
+
+------------------------------------------------------------------------------------
