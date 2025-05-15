@@ -25,13 +25,14 @@ import KAutomationPanel from '@/components/cer/KAutomationPanel';
 // 510k components - directly importing only what we need
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import ReportGenerator from '@/components/510k/ReportGenerator';
+import DocumentTreePanel from '@/components/510k/DocumentTreePanel';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, ArrowRight, AlertTriangle } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, ArrowRight, AlertTriangle, Files, FolderTree } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -102,6 +103,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [showWizard, setShowWizard] = useState(false);
   const [showEvidenceReminder, setShowEvidenceReminder] = useState(true);
   const [showSystemHealth, setShowSystemHealth] = useState(false);
+  const [showDocumentTree, setShowDocumentTree] = useState(false);
   const [systemInfo, setSystemInfo] = useState({
     memory: { used: 0, total: 0, percentage: 0 },
     api: { status: 'unknown', latency: 0 },
@@ -856,6 +858,16 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                 Device Info
               </Button>
               
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowDocumentTree(true)}
+                className="flex items-center text-gray-600"
+              >
+                <FolderTree className="mr-1.5 h-4 w-4" />
+                Document Vault
+              </Button>
+              
               {documentType === '510k' && (
                 <Button 
                   variant="outline" 
@@ -900,6 +912,13 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           {renderContent()}
         </div>
       </div>
+      
+      {/* Document Tree Panel (slides in from the right) */}
+      <DocumentTreePanel 
+        isOpen={showDocumentTree}
+        onClose={() => setShowDocumentTree(false)}
+        documentId={documentType === 'cer' ? cerDocumentId : k510DocumentId}
+      />
     </div>
   );
 }
