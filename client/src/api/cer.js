@@ -205,65 +205,433 @@ export const getSavedLiterature = async (cerProjectId) => {
 };
 
 /**
- * Search literature using the unified discovery service
+ * Search literature using the unified discovery service with semantic search capabilities
+ * 
+ * This enhanced implementation provides vector-based semantic search with multiple fallback mechanisms
+ * to ensure reliable literature retrieval even if the primary vector search fails.
  * 
  * @param {string} query - The search query
  * @param {Object} options - Search options (limit, module context)
  * @returns {Promise<Array>} - Array of literature results
  */
 export const searchUnifiedLiterature = async (query, options = { limit: 10, module: 'cer' }) => {
+  // Validate input
+  if (!query || query.trim().length === 0) {
+    console.warn('Empty query provided to searchUnifiedLiterature');
+    return [];
+  }
+  
+  // Track attempt timings for observability/debugging
+  const startTime = Date.now();
+  let attemptedApproaches = [];
+  
+  // Configure timeout for vector search to ensure responsiveness
+  const VECTOR_SEARCH_TIMEOUT = 5000; // 5 seconds timeout for vector search
+  
   try {
-    console.log('Searching literature with unified discovery service:', { query, options });
-    const response = await axios.post('/api/discovery/literature-search', {
-      query,
-      limit: options.limit || 10,
-      module: options.module || 'cer'
-    });
-    console.log('Unified literature search response:', response.data);
-    return response.data.results || [];
+    console.log('Initiating semantic literature search:', { query, options });
+    
+    // First attempt: Vector-based semantic search through unified discovery service
+    attemptedApproaches.push('vector_search');
+    try {
+      // Create timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Vector search timeout')), VECTOR_SEARCH_TIMEOUT);
+      });
+      
+      // Create vector search promise
+      const vectorSearchPromise = axios.post('/api/discovery/literature-search', {
+        query,
+        limit: options.limit || 10,
+        module: options.module || 'cer',
+        useVectorSearch: true // Flag to explicitly request vector semantic search
+      });
+      
+      // Race the vector search against the timeout
+      const response = await Promise.race([vectorSearchPromise, timeoutPromise]);
+      
+      // Check if we have valid results
+      if (response?.data?.results && response.data.results.length > 0) {
+        const timeElapsed = Date.now() - startTime;
+        console.log(`Vector search successful in ${timeElapsed}ms with ${response.data.results.length} results`);
+        
+        // Annotate results with metadata about how they were retrieved
+        const enhancedResults = response.data.results.map(result => ({
+          ...result,
+          retrievalMethod: 'semantic_vector',
+          searchType: 'semantic',
+          queryMatchScore: result.similarity || 0.85
+        }));
+        
+        return enhancedResults;
+      } else {
+        console.log('Vector search returned no results, falling back...');
+      }
+    } catch (vectorError) {
+      // Log vector search failure
+      console.warn('Vector semantic search failed:', vectorError.message);
+      // Continue to next approach
+    }
+    
+    // Second attempt: Keyword-enhanced semantic search through discovery service
+    attemptedApproaches.push('keyword_enhanced');
+    try {
+      const response = await axios.post('/api/discovery/literature-search', {
+        query,
+        limit: options.limit || 10,
+        module: options.module || 'cer',
+        useVectorSearch: false,
+        enhanceWithKeywords: true // Flag to use keyword enhancement
+      });
+      
+      if (response?.data?.results && response.data.results.length > 0) {
+        const timeElapsed = Date.now() - startTime;
+        console.log(`Keyword-enhanced search successful in ${timeElapsed}ms with ${response.data.results.length} results`);
+        
+        // Annotate results with metadata
+        const enhancedResults = response.data.results.map(result => ({
+          ...result,
+          retrievalMethod: 'keyword_enhanced',
+          searchType: 'hybrid',
+          queryMatchScore: result.relevance || 0.75
+        }));
+        
+        return enhancedResults;
+      } else {
+        console.log('Keyword-enhanced search returned no results, falling back...');
+      }
+    } catch (keywordError) {
+      console.warn('Keyword-enhanced search failed:', keywordError.message);
+      // Continue to next approach
+    }
+    
+    // Third attempt: Traditional literature search API
+    attemptedApproaches.push('traditional_api');
+    try {
+      console.log('Falling back to traditional literature search');
+      const results = await searchLiterature(query);
+      
+      if (results && results.length > 0) {
+        const timeElapsed = Date.now() - startTime;
+        console.log(`Traditional literature search successful in ${timeElapsed}ms with ${results.length} results`);
+        
+        // Annotate results with metadata
+        const enhancedResults = results.map(result => ({
+          ...result,
+          retrievalMethod: 'traditional_api',
+          searchType: 'keyword',
+          queryMatchScore: 0.7 // Default score for traditional search
+        }));
+        
+        return enhancedResults;
+      } else {
+        console.log('Traditional search returned no results, falling back...');
+      }
+    } catch (traditionalError) {
+      console.warn('Traditional literature search failed:', traditionalError.message);
+      // Continue to final approach
+    }
+    
+    // Final attempt: Direct database sources (PubMed, IEEE)
+    attemptedApproaches.push('direct_sources');
+    try {
+      console.log('Falling back to direct source APIs (PubMed, IEEE)');
+      
+      // Try to fetch from multiple sources in parallel
+      const [pubmedResults, ieeeResults] = await Promise.allSettled([
+        searchPubMed(query).catch(err => {
+          console.warn('PubMed search error in fallback:', err.message);
+          return [];
+        }),
+        searchIEEE(query).catch(err => {
+          console.warn('IEEE search error in fallback:', err.message);
+          return [];
+        })
+      ]);
+      
+      // Combine results from successful queries
+      const combinedResults = [
+        ...(pubmedResults.status === 'fulfilled' ? pubmedResults.value : []),
+        ...(ieeeResults.status === 'fulfilled' ? ieeeResults.value : [])
+      ];
+      
+      if (combinedResults.length > 0) {
+        const timeElapsed = Date.now() - startTime;
+        console.log(`Direct source search successful in ${timeElapsed}ms with ${combinedResults.length} results`);
+        
+        // Annotate results with metadata and sort by most recent
+        const enhancedResults = combinedResults
+          .map(result => ({
+            ...result,
+            retrievalMethod: 'direct_source',
+            searchType: 'direct',
+            queryMatchScore: 0.6 // Lower base score for direct source results
+          }))
+          .sort((a, b) => {
+            // Sort by publication date if available, most recent first
+            const dateA = a.publication_date || a.publicationDate || '1900';
+            const dateB = b.publication_date || b.publicationDate || '1900';
+            return dateB.localeCompare(dateA);
+          });
+        
+        // Limit to requested number
+        return enhancedResults.slice(0, options.limit || 10);
+      }
+    } catch (directError) {
+      console.error('Direct source search failed:', directError.message);
+    }
+    
+    // If we get here, all approaches failed
+    console.error(`All literature search approaches failed for query: "${query}"`);
+    console.log('Attempted approaches:', attemptedApproaches.join(', '));
+    
+    // Return empty array as graceful fallback
+    return [];
   } catch (error) {
-    console.error('Error using unified literature search:', error);
-    // Fallback to traditional literature search
-    console.log('Falling back to traditional literature search');
-    return searchLiterature(query);
+    // Capture overall error metrics
+    const timeElapsed = Date.now() - startTime;
+    console.error(`Literature search failed after ${timeElapsed}ms:`, error);
+    console.error('Attempted approaches:', attemptedApproaches.join(', '));
+    
+    // Return empty array instead of throwing to improve UX resilience
+    return [];
   }
 };
 
 /**
- * Find predicate devices using the unified discovery service
+ * Find predicate devices using the unified discovery service with comprehensive
+ * error handling and fallback mechanisms for production reliability
  * 
  * @param {string} deviceDescription - The device description to search for predicates
  * @param {Object} options - Search options (limit, module context)
  * @returns {Promise<Array>} - Array of predicate device results
  */
 export const findPredicateDevices = async (deviceDescription, options = { limit: 8, module: '510k' }) => {
+  // Validate input
+  if (!deviceDescription || deviceDescription.trim().length === 0) {
+    console.warn('Empty device description provided to findPredicateDevices');
+    return [];
+  }
+  
+  // Track metrics for observability
+  const startTime = Date.now();
+  let attemptedApproaches = [];
+  
+  // Configure timeout for semantic search to ensure responsiveness
+  const SEMANTIC_SEARCH_TIMEOUT = 8000; // 8 seconds timeout for semantic search
+  
   try {
-    console.log('Finding predicates with unified discovery service:', { deviceDescription, options });
+    console.log('Initiating predicate device search:', { deviceDescription, options });
     
-    // Build query parameters
-    const queryParams = new URLSearchParams({
-      query: deviceDescription,
-      limit: options.limit || 8,
-      context: options.module || '510k'
-    });
-    
-    // Call the correct GET endpoint with query parameters
-    const response = await axios.get(`${DISCOVERY_API_URL}/predicates?${queryParams.toString()}`);
-    
-    console.log('Unified predicate search response:', response.data);
-    return response.data.data || [];
-  } catch (error) {
-    console.error('Error using unified predicate search:', error);
-    
-    // Provide more detailed error logging
-    if (error.response) {
-      console.error('Server response:', error.response.data);
+    // First approach: Unified discovery service with semantic matching
+    attemptedApproaches.push('unified_semantic');
+    try {
+      // Create timeout promise
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Semantic predicate search timeout')), SEMANTIC_SEARCH_TIMEOUT);
+      });
+      
+      // Build query parameters for semantic search
+      const semanticQueryParams = new URLSearchParams({
+        query: deviceDescription,
+        limit: options.limit || 8,
+        context: options.module || '510k',
+        semantic: 'true' // Explicit flag for semantic search
+      });
+      
+      // Create semantic search promise
+      const semanticSearchPromise = axios.get(`${DISCOVERY_API_URL}/predicates?${semanticQueryParams.toString()}`);
+      
+      // Race the semantic search against the timeout
+      const response = await Promise.race([semanticSearchPromise, timeoutPromise]);
+      
+      // Check if we have valid results
+      if (response?.data?.data && response.data.data.length > 0) {
+        const timeElapsed = Date.now() - startTime;
+        console.log(`Semantic predicate search successful in ${timeElapsed}ms with ${response.data.data.length} results`);
+        
+        // Enhance results with metadata about how they were retrieved
+        const enhancedResults = response.data.data.map(result => ({
+          ...result,
+          retrievalMethod: 'semantic',
+          matchScore: result.similarity || result.score || 0.8,
+          matchType: 'semantic'
+        }));
+        
+        return enhancedResults;
+      } else {
+        console.log('Semantic predicate search returned no results, falling back...');
+      }
+    } catch (semanticError) {
+      console.warn('Semantic predicate search failed:', semanticError.message);
+      // Continue to next approach
     }
     
-    // Return empty array as fallback for smoother UX
+    // Second approach: Keyword-based search through unified discovery service
+    attemptedApproaches.push('unified_keyword');
+    try {
+      // Build query parameters for keyword search
+      const keywordQueryParams = new URLSearchParams({
+        query: deviceDescription,
+        limit: options.limit || 8,
+        context: options.module || '510k',
+        semantic: 'false', // Explicit flag to disable semantic search
+        method: 'keyword'
+      });
+      
+      // Call the GET endpoint with keyword parameters
+      const response = await axios.get(`${DISCOVERY_API_URL}/predicates?${keywordQueryParams.toString()}`);
+      
+      // Check if we have valid results
+      if (response?.data?.data && response.data.data.length > 0) {
+        const timeElapsed = Date.now() - startTime;
+        console.log(`Keyword predicate search successful in ${timeElapsed}ms with ${response.data.data.length} results`);
+        
+        // Enhance results with metadata
+        const enhancedResults = response.data.data.map(result => ({
+          ...result,
+          retrievalMethod: 'keyword',
+          matchScore: result.score || 0.7,
+          matchType: 'keyword'
+        }));
+        
+        return enhancedResults;
+      } else {
+        console.log('Keyword predicate search returned no results, falling back...');
+      }
+    } catch (keywordError) {
+      console.warn('Keyword predicate search failed:', keywordError.message);
+      // Continue to next approach
+    }
+    
+    // Third approach: Direct FDA 510k database search
+    attemptedApproaches.push('fda_510k_direct');
+    try {
+      console.log('Attempting direct FDA 510k database search');
+      
+      // Extract key terms from device description for more targeted search
+      const keyTerms = extractKeyTerms(deviceDescription);
+      
+      // Query direct FDA 510k endpoint
+      const response = await axios.get('/api/fda510k/search', {
+        params: {
+          terms: keyTerms.join(','),
+          limit: options.limit || 8
+        }
+      });
+      
+      if (response?.data && response.data.length > 0) {
+        const timeElapsed = Date.now() - startTime;
+        console.log(`Direct FDA 510k search successful in ${timeElapsed}ms with ${response.data.length} results`);
+        
+        // Format results to match expected structure
+        const formattedResults = response.data.map(result => ({
+          id: result.k_number || `fda-510k-${result.id || Date.now()}`,
+          name: result.device_name || 'Unknown Device',
+          manufacturer: result.applicant || 'Unknown Manufacturer',
+          description: result.statement_or_summary || result.device_description || '',
+          decisionDate: result.decision_date || result.date_received || '',
+          type: '510k',
+          status: result.decision_code || 'UNKNOWN',
+          retrievalMethod: 'direct_fda',
+          matchScore: 0.6, // Lower confidence for direct search results
+          matchType: 'direct'
+        }));
+        
+        return formattedResults;
+      } else {
+        console.log('Direct FDA 510k search returned no results, falling back...');
+      }
+    } catch (fdaError) {
+      console.warn('Direct FDA 510k search failed:', fdaError.message);
+      // Fall through to cached results
+    }
+    
+    // Final fallback: Check for cached predicate devices
+    attemptedApproaches.push('local_cache');
+    try {
+      const cachedPredicates = localStorage.getItem('recent_predicate_devices');
+      
+      if (cachedPredicates) {
+        const parsedCache = JSON.parse(cachedPredicates);
+        
+        if (Array.isArray(parsedCache) && parsedCache.length > 0) {
+          const timeElapsed = Date.now() - startTime;
+          console.log(`Using cached predicates as fallback in ${timeElapsed}ms with ${parsedCache.length} results`);
+          
+          // Mark results as coming from cache
+          const cachedResults = parsedCache.map(result => ({
+            ...result,
+            retrievalMethod: 'cache',
+            matchScore: 0.5, // Lowest confidence for cached results
+            matchType: 'cache',
+            isCached: true
+          }));
+          
+          return cachedResults;
+        }
+      }
+    } catch (cacheError) {
+      console.warn('Error accessing cached predicates:', cacheError.message);
+    }
+    
+    // If we get here, all search approaches failed
+    console.error(`All predicate device search approaches failed for: "${deviceDescription}"`);
+    console.log('Attempted approaches:', attemptedApproaches.join(', '));
+    
+    // Return empty array for consistent response
+    return [];
+  } catch (error) {
+    // Capture overall error metrics
+    const timeElapsed = Date.now() - startTime;
+    console.error(`Predicate device search failed after ${timeElapsed}ms:`, error);
+    console.error('Attempted approaches:', attemptedApproaches.join(', '));
+    
+    // Return empty array for consistent response
     return [];
   }
 };
+
+/**
+ * Helper function to extract key terms from a device description for targeted search
+ * @private
+ * @param {string} description - The device description text
+ * @returns {string[]} - Array of key terms
+ */
+function extractKeyTerms(description) {
+  if (!description) return [];
+  
+  // Remove common stop words and punctuation
+  const cleanDescription = description.toLowerCase()
+    .replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ' ')
+    .replace(/\s{2,}/g, ' ');
+  
+  // Common medical/device stop words to filter out
+  const stopWords = [
+    'the', 'and', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'this', 'that', 'these', 'those',
+    'with', 'for', 'device', 'medical', 'system', 'designed', 'used', 'uses', 'using', 'includes',
+    'consisting', 'consists', 'method', 'functionality', 'function', 'provides', 'provide'
+  ];
+  
+  // Split into words and filter
+  const words = cleanDescription.split(' ')
+    .filter(word => word.length > 2) // Only words longer than 2 chars
+    .filter(word => !stopWords.includes(word));
+  
+  // Count word frequency
+  const wordFrequency = {};
+  words.forEach(word => {
+    wordFrequency[word] = (wordFrequency[word] || 0) + 1;
+  });
+  
+  // Sort by frequency and take top terms
+  const sortedTerms = Object.entries(wordFrequency)
+    .sort((a, b) => b[1] - a[1])
+    .map(entry => entry[0]);
+  
+  // Return top 5 terms or fewer if not available
+  return sortedTerms.slice(0, 5);
+}
 
 /**
  * Generate a literature review from selected articles

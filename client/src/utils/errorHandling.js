@@ -1,207 +1,272 @@
 /**
- * Error Handling Utility
+ * TrialSage Error Handling Utilities
  * 
- * This module provides standardized error handling, fallback mechanisms,
- * and error recovery strategies for API calls.
+ * This module provides enhanced error handling utilities for the TrialSage application, 
+ * ensuring production-ready error resilience, graceful failure modes, and proper
+ * user feedback for API and service operations.
  */
 
 /**
- * Creates a wrapped version of an async function with enhanced error handling
+ * Default friendly messages for common error types
+ */
+export const defaultFriendlyMessages = {
+  network: 'Network connection issue. Please check your internet connection and try again.',
+  timeout: 'The operation timed out. The server might be experiencing high load.',
+  unauthorized: 'Authentication error. Please sign in again.',
+  forbidden: 'You don\'t have permission to perform this action.',
+  notFound: 'The requested resource was not found.',
+  unavailable: 'This service is temporarily unavailable. Please try again later.',
+  rateLimit: 'Too many requests. Please wait and try again later.',
+  server: 'The server encountered an error. Our team has been notified.',
+  unknown: 'An unexpected error occurred. Please try again.'
+};
+
+/**
+ * Add a timeout to a Promise
  * 
- * @param {Function} asyncFn - The async function to wrap
- * @param {Object} options - Error handling options
- * @param {Function} options.fallback - Optional fallback function if main function fails
- * @param {number} options.retries - Number of retry attempts (default: 1)
+ * @param {Promise} promise - The promise to add timeout to
+ * @param {number} timeoutMs - Timeout in milliseconds
+ * @param {string} message - Custom timeout message
+ * @returns {Promise} - Promise with timeout
+ */
+export const withTimeout = (promise, timeoutMs, message = 'Operation timed out') => {
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => {
+      reject(new Error(message));
+    }, timeoutMs);
+  });
+  
+  return Promise.race([promise, timeoutPromise]);
+};
+
+/**
+ * Format an error for display with consistent structure and friendly messages
+ * 
+ * @param {Error} error - The error to format
+ * @param {Object} options - Formatting options
+ * @param {Object} options.friendlyMessages - Custom friendly messages for error types
+ * @returns {Object} - Formatted error object
+ */
+export const formatErrorForDisplay = (error, options = {}) => {
+  const { friendlyMessages = {} } = options;
+  
+  // Combine default and custom friendly messages
+  const messages = {
+    ...defaultFriendlyMessages,
+    ...friendlyMessages
+  };
+  
+  // Default formatted error
+  const formattedError = {
+    message: messages.unknown,
+    code: 'UNKNOWN_ERROR',
+    technical: error?.message || 'Unknown error',
+    timestamp: new Date().toISOString(),
+    status: null
+  };
+  
+  // Extract HTTP status from Axios errors
+  if (error?.response?.status) {
+    formattedError.status = error.response.status;
+    
+    // Set error code and message based on status code
+    switch (error.response.status) {
+      case 400:
+        formattedError.code = 'INVALID_REQUEST';
+        formattedError.message = error.response.data?.message || 'The request was invalid. Please check your input.';
+        break;
+      case 401:
+        formattedError.code = 'UNAUTHORIZED';
+        formattedError.message = messages.unauthorized;
+        break;
+      case 403:
+        formattedError.code = 'FORBIDDEN';
+        formattedError.message = messages.forbidden;
+        break;
+      case 404:
+        formattedError.code = 'NOT_FOUND';
+        formattedError.message = messages.notFound;
+        break;
+      case 408:
+        formattedError.code = 'REQUEST_TIMEOUT';
+        formattedError.message = messages.timeout;
+        break;
+      case 429:
+        formattedError.code = 'RATE_LIMITED';
+        formattedError.message = messages.rateLimit;
+        break;
+      case 500:
+        formattedError.code = 'SERVER_ERROR';
+        formattedError.message = messages.server;
+        break;
+      case 503:
+        formattedError.code = 'SERVICE_UNAVAILABLE';
+        formattedError.message = messages.unavailable;
+        break;
+      default:
+        if (error.response.status >= 500) {
+          formattedError.code = 'SERVER_ERROR';
+          formattedError.message = messages.server;
+        } else {
+          formattedError.code = 'CLIENT_ERROR';
+          formattedError.message = error.response.data?.message || 'The request could not be completed.';
+        }
+    }
+    
+    // Include server error details for debugging if available
+    if (error.response.data) {
+      formattedError.serverDetails = error.response.data;
+    }
+  } else if (error.request) {
+    // Network error (no response received)
+    formattedError.code = 'NETWORK_ERROR';
+    formattedError.message = messages.network;
+  } else if (error.message?.includes('timeout')) {
+    // Timeout error
+    formattedError.code = 'TIMEOUT';
+    formattedError.message = messages.timeout;
+  }
+  
+  return formattedError;
+};
+
+/**
+ * Higher-order function that adds retry logic, fallbacks, and error handling
+ * 
+ * @param {Function} fn - Async function to execute
+ * @param {Object} options - Options for error handling
+ * @param {Function} options.fallback - Fallback function to run if main function fails after retries
+ * @param {number} options.retries - Number of retries (default: 0)
  * @param {number} options.retryDelay - Delay between retries in ms (default: 1000)
- * @param {Function} options.onError - Error callback function
- * @param {Function} options.beforeRetry - Function to call before retry
- * @param {boolean} options.silent - Whether to suppress error logging
+ * @param {Function} options.onError - Function to call when an error occurs
  * @returns {Function} - Wrapped function with error handling
  */
-export const withErrorHandling = (asyncFn, options = {}) => {
+export const withErrorHandling = (fn, options = {}) => {
   const {
     fallback = null,
-    retries = 1,
+    retries = 0,
     retryDelay = 1000,
-    onError = null,
-    beforeRetry = null,
-    silent = false
+    onError = null
   } = options;
   
   return async (...args) => {
-    let lastError = null;
-    let attempt = 0;
+    let lastError;
     
-    // Try the main function with retries
-    while (attempt <= retries) {
+    // Try the original function with retries
+    for (let attempt = 0; attempt <= retries; attempt++) {
       try {
-        return await asyncFn(...args);
+        // Execute the function
+        return await fn(...args);
       } catch (error) {
         lastError = error;
-        attempt++;
         
-        if (!silent) {
-          console.error(`Error in ${asyncFn.name || 'async function'} (attempt ${attempt}/${retries + 1}):`, error);
+        // Call onError callback if provided
+        if (onError && typeof onError === 'function') {
+          onError(error, { attempt, isLastAttempt: attempt === retries });
         }
         
-        // Call error callback if provided
-        if (onError) {
-          onError(error, attempt);
-        }
-        
-        // If we have remaining retries, wait and try again
-        if (attempt <= retries) {
-          if (beforeRetry) {
-            await beforeRetry(attempt);
-          }
-          
-          // Wait before retry
+        // Don't wait on the last attempt
+        if (attempt < retries) {
+          // Wait for retry delay
           await new Promise(resolve => setTimeout(resolve, retryDelay));
+          
+          // Log retry attempt
+          console.log(`Retrying operation (${attempt + 1}/${retries})...`);
         }
       }
     }
     
-    // If fallback is provided, try it after all retries have failed
-    if (fallback) {
+    // If we get here, all attempts failed
+    
+    // If fallback is provided, try it
+    if (fallback && typeof fallback === 'function') {
       try {
         return await fallback(...args, lastError);
       } catch (fallbackError) {
-        if (!silent) {
-          console.error('Fallback function also failed:', fallbackError);
-        }
-        throw fallbackError;
+        // If even fallback fails, throw enhanced error
+        const enhancedError = new Error(`Main and fallback operations failed: ${lastError.message}; Fallback error: ${fallbackError.message}`);
+        enhancedError.originalError = lastError;
+        enhancedError.fallbackError = fallbackError;
+        throw enhancedError;
       }
     }
     
-    // If we get here, all retries failed and we have no fallback
+    // No fallback, throw the last error
     throw lastError;
   };
 };
 
 /**
- * Apply timeout to any promise
+ * Safe JSON parsing with graceful fallback
  * 
- * @param {Promise} promise - The promise to apply timeout to
- * @param {number} ms - Timeout in milliseconds
- * @param {string} errorMessage - Optional custom error message
- * @returns {Promise} Promise with timeout
+ * @param {string} jsonString - JSON string to parse
+ * @param {*} fallbackValue - Value to return if parsing fails
+ * @returns {*} - Parsed JSON or fallback value
  */
-export const withTimeout = (promise, ms, errorMessage = 'Operation timed out') => {
-  const timeout = new Promise((_, reject) => {
-    const id = setTimeout(() => {
-      clearTimeout(id);
-      reject(new Error(errorMessage));
-    }, ms);
+export const safeJsonParse = (jsonString, fallbackValue = null) => {
+  try {
+    return JSON.parse(jsonString);
+  } catch (error) {
+    console.warn('JSON parse error:', error.message);
+    return fallbackValue;
+  }
+};
+
+/**
+ * Capture and log errors to console and optionally to monitoring service
+ * 
+ * @param {Error} error - Error to capture
+ * @param {Object} context - Additional context information
+ * @param {boolean} sendToMonitoring - Whether to send to monitoring service
+ */
+export const captureError = (error, context = {}, sendToMonitoring = true) => {
+  // Console logging for immediate visibility
+  console.error('Error captured:', error.message, {
+    error,
+    context,
+    timestamp: new Date().toISOString()
   });
   
-  return Promise.race([promise, timeout]);
-};
-
-/**
- * Formats error messages for user display
- * 
- * @param {Error} error - The error object
- * @param {Object} options - Formatting options
- * @param {boolean} options.includeStack - Whether to include stack trace for developers
- * @param {Object} options.friendlyMessages - Map of error types to user-friendly messages
- * @returns {Object} Formatted error object for display
- */
-export const formatErrorForDisplay = (error, options = {}) => {
-  const {
-    includeStack = false,
-    friendlyMessages = {}
-  } = options;
-  
-  // Default error type
-  let errorType = 'unknown';
-  
-  // Determine error type
-  if (error.name === 'TypeError') {
-    errorType = 'type';
-  } else if (error.name === 'SyntaxError') {
-    errorType = 'syntax';
-  } else if (error.name === 'ReferenceError') {
-    errorType = 'reference';
-  } else if (error.message && error.message.includes('Network')) {
-    errorType = 'network';
-  } else if (error.message && error.message.includes('timeout')) {
-    errorType = 'timeout';
-  } else if (error.status || error.statusCode) {
-    const status = error.status || error.statusCode;
-    if (status === 401 || status === 403) {
-      errorType = 'auth';
-    } else if (status === 404) {
-      errorType = 'not_found';
-    } else if (status >= 500) {
-      errorType = 'server';
-    }
+  // In a production app, would send to monitoring service
+  if (sendToMonitoring && window.errorMonitoring) {
+    window.errorMonitoring.captureException(error, { context });
   }
-  
-  // Get friendly message based on error type
-  const friendlyMessage = friendlyMessages[errorType] || 
-    friendlyMessages.default || 
-    'An unexpected error occurred. Please try again.';
-  
-  return {
-    message: friendlyMessage,
-    originalMessage: error.message,
-    type: errorType,
-    status: error.status || error.statusCode,
-    stack: includeStack ? error.stack : undefined,
-    timestamp: new Date().toISOString()
-  };
 };
 
 /**
- * Generic API error handler with fallback strategy
+ * Create a guard function that captures errors from event handlers
  * 
- * @param {Error} error - The caught error
- * @param {string} operation - Description of the operation that failed
- * @param {Function} fallbackFn - Optional fallback function
- * @param {boolean} rethrow - Whether to rethrow the error after handling
- * @returns {Object|null} Fallback result or null
+ * @param {Function} fn - Function to guard
+ * @param {Object} options - Error handling options
+ * @returns {Function} - Guarded function
  */
-export const handleApiError = async (error, operation, fallbackFn = null, rethrow = true) => {
-  console.error(`Error during ${operation}:`, error);
-  
-  let result = null;
-  
-  // Try fallback if provided
-  if (fallbackFn) {
+export const guardEventHandler = (fn, options = {}) => {
+  return (...args) => {
     try {
-      console.log(`Attempting fallback for ${operation}...`);
-      result = await fallbackFn();
-      console.log(`Fallback for ${operation} succeeded`);
-    } catch (fallbackError) {
-      console.error(`Fallback for ${operation} also failed:`, fallbackError);
-      if (rethrow) {
-        throw fallbackError;
+      const result = fn(...args);
+      
+      // Handle promise returns
+      if (result instanceof Promise) {
+        return result.catch(error => {
+          captureError(error, { handler: fn.name, args }, options.sendToMonitoring);
+          
+          // Show user feedback if specified
+          if (options.showFeedback) {
+            // In a real app, would show a toast notification
+            console.error('An error occurred:', formatErrorForDisplay(error).message);
+          }
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      captureError(error, { handler: fn.name, args }, options.sendToMonitoring);
+      
+      // Show user feedback if specified
+      if (options.showFeedback) {
+        // In a real app, would show a toast notification
+        console.error('An error occurred:', formatErrorForDisplay(error).message);
       }
     }
-  } else if (rethrow) {
-    throw error;
-  }
-  
-  return result;
-};
-
-/**
- * Default friendly error messages for common error types
- */
-export const defaultFriendlyMessages = {
-  network: 'Unable to connect to the server. Please check your internet connection and try again.',
-  auth: 'You are not authorized to perform this action. Please log in and try again.',
-  not_found: 'The requested resource could not be found. It may have been moved or deleted.',
-  server: 'Our server is experiencing issues. Please try again later.',
-  timeout: 'The request took too long to complete. Please try again.',
-  default: 'An unexpected error occurred. Our team has been notified.',
-  openai: 'The AI service is currently unavailable. A simplified version is being used instead.'
-};
-
-export default {
-  withErrorHandling,
-  withTimeout,
-  formatErrorForDisplay,
-  handleApiError,
-  defaultFriendlyMessages
+  };
 };
