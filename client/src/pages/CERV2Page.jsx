@@ -3,7 +3,6 @@ import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
 import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
 import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
-import LitReviewPanel from '@/components/cer/LitReviewPanel';
 import LiteratureMethodologyPanel from '@/components/cer/LiteratureMethodologyPanel';
 import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
 import CerAssistantPanel from '@/components/cer/CerAssistantPanel';
@@ -21,16 +20,6 @@ import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPane
 import ExportModule from '@/components/cer/ExportModule';
 import CerComprehensiveReportsPanel from '@/components/cer/CerComprehensiveReportsPanel';
 import MAUDIntegrationPanel from '@/components/cer/MAUDIntegrationPanel';
-import ReportGenerationPanel from '@/components/cer/ReportGenerationPanel';
-import UnifiedWorkflowPanel from '@/components/unified-workflow/UnifiedWorkflowPanel';
-// Contextual tooltip system components
-import { CERV2TooltipProvider, useCERV2Tooltips } from '@/components/cer/TooltipTracker';
-import TooltipTracker from '@/components/cer/TooltipTracker';
-import ContextualTooltip from '@/components/cer/ContextualTooltip';
-import ComplianceStoryPanel from '@/components/cer/ComplianceStoryPanel';
-import ComplianceStoryExample from '@/components/cer/ComplianceStoryExample';
-import TooltipExample from '@/components/cer/TooltipExample';
-import GuidedWalkthrough, { walkthroughScenarios } from '@/components/cer/GuidedWalkthrough';
 // 510k enhanced components
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import GuidedTooltip from '@/components/510k/GuidedTooltip';
@@ -44,7 +33,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, GraduationCap, HelpCircle, Circle, Home, Menu, Filter, FolderPlus, Edit, ArrowRight, CheckCircle2, Cog, Trash2, Plus, Folder, File } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -52,10 +41,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Progress } from '@/components/ui/progress';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 import KAutomationPanel from '@/components/cer/KAutomationPanel';
 
 export default function CERV2Page() {
@@ -199,11 +184,7 @@ export default function CERV2Page() {
             { id: "submission", label: <div className="flex items-center">
               <span>Final Submission</span>
               <span className="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full shadow-sm">New</span>
-            </div>, icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-            { id: "workflow", label: <div className="flex flex-col items-center leading-tight">
-              <span>Document Workflow</span>
-              <span className="text-[0.65rem] text-blue-600">Approval Process</span>
-            </div>, icon: <Clock className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
+            </div>, icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
           ]
         },
         {
@@ -286,10 +267,6 @@ export default function CERV2Page() {
             <span className="text-[0.65rem] text-blue-600">Validated for GxP</span>
           </div>, icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
           { id: "data-retrieval", label: "Data Retrieval", icon: <Database className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-          { id: "workflow", label: <div className="flex flex-col items-center leading-tight">
-            <span>Document Workflow</span>
-            <span className="text-[0.65rem] text-blue-600">Approval Process</span>
-          </div>, icon: <Clock className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
           { id: "510k", label: <div className="flex flex-col items-center leading-tight">
             <span>510(k) Automation</span>
             <span className="text-[0.65rem] text-blue-600">FDA Submission</span>
@@ -656,7 +633,7 @@ export default function CERV2Page() {
           </TabsList>
           
           <TabsContent value="search" className="mt-4">
-            <LitReviewPanel
+            <LiteratureSearchPanel
               onAddSection={(newSection) => {
                 setSections([...sections, newSection]);
                 toast({
@@ -665,7 +642,6 @@ export default function CERV2Page() {
                   variant: "success",
                 });
               }}
-              deviceProfile={deviceProfile}
               deviceName={deviceName}
               manufacturer={manufacturer}
               cerTitle={title}
@@ -954,411 +930,7 @@ export default function CERV2Page() {
                   <span>Click here for a guided walkthrough of the 510(k) submission process</span>
                 </GuidedTooltip>
                 
-                {/* FDA 510(k) Submission Workflow Start - Prominent Setup Card */}
-                <div className="bg-white rounded-lg shadow-lg border border-blue-100 mb-6 overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h2 className="text-2xl font-semibold flex items-center">
-                          <FileCheck className="h-6 w-6 mr-2" />
-                          FDA 510(k) Submission Process
-                        </h2>
-                        <p className="text-blue-100 mt-1">
-                          To begin your FDA 510(k) submission, you must first create a device profile with essential information about your medical device.
-                        </p>
-                      </div>
-                      <Button 
-                        className="bg-white text-blue-600 hover:bg-blue-50"
-                        onClick={() => {
-                          document.getElementById('device-profile-section')?.scrollIntoView({
-                            behavior: 'smooth'
-                          });
-                          // Force the device creation dialog to open
-                          const createDeviceBtn = document.getElementById('create-device-profile-btn');
-                          if (createDeviceBtn) {
-                            createDeviceBtn.click();
-                          } else {
-                            toast({
-                              title: "Getting Started",
-                              description: "Please create a device profile to begin your 510(k) submission.",
-                            });
-                          }
-                        }}
-                      >
-                        Get Started
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="p-5 bg-blue-50">
-                    <div className="flex items-center gap-4">
-                      <div className="bg-blue-100 h-14 w-14 flex items-center justify-center rounded-full text-blue-700 font-semibold text-xl">
-                        1
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-medium text-blue-800">Create Device Profile</h3>
-                        <p className="text-blue-700">Enter basic device information to begin the submission process</p>
-                      </div>
-                    </div>
-                    <div className="w-1 h-8 bg-blue-200 mx-auto my-1"></div>
-                    <div className="flex items-center gap-4">
-                      <div className="bg-blue-100 h-14 w-14 flex items-center justify-center rounded-full text-blue-700 font-semibold text-xl">
-                        2
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-medium text-blue-800">Find Predicate Devices</h3>
-                        <p className="text-blue-700">Compare your device with similar FDA-cleared devices</p>
-                      </div>
-                    </div>
-                    <div className="w-1 h-8 bg-blue-200 mx-auto my-1"></div>
-                    <div className="flex items-center gap-4">
-                      <div className="bg-blue-100 h-14 w-14 flex items-center justify-center rounded-full text-blue-700 font-semibold text-xl">
-                        3
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-medium text-blue-800">Complete Compliance Check</h3>
-                        <p className="text-blue-700">Ensure your submission meets all FDA requirements</p>
-                      </div>
-                    </div>
-                    <div className="w-1 h-8 bg-blue-200 mx-auto my-1"></div>
-                    <div className="flex items-center gap-4">
-                      <div className="bg-blue-100 h-14 w-14 flex items-center justify-center rounded-full text-blue-700 font-semibold text-xl">
-                        4
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-medium text-blue-800">Generate eSTAR Submission</h3>
-                        <p className="text-blue-700">Create your final FDA-compliant submission package</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* 510k Workflow Panel with Microsoft 365-style interface */}
-                <div id="device-profile-section" className="w-full px-0 mt-2">
-                  <Card className="border rounded-sm overflow-hidden shadow-sm mb-3">
-                    <div className="flex flex-col">
-                      {/* Top navigation bar - Similar to Outlook's top bar */}
-                      <div className="bg-white border-b border-gray-200 flex items-center p-2 gap-2">
-                        <Button variant="ghost" size="sm" className="h-8 gap-1 text-gray-700">
-                          <Home className="h-4 w-4" />
-                          <span>Home</span>
-                        </Button>
-                        
-                        <Button variant="ghost" size="sm" className="h-8 gap-1 text-gray-700">
-                          <FileCheck className="h-4 w-4" />
-                          <span>View</span>
-                        </Button>
-                        
-                        <Button variant="ghost" size="sm" className="h-8 gap-1 text-gray-700">
-                          <HelpCircle className="h-4 w-4" />
-                          <span>Help</span>
-                        </Button>
-                        
-                        <div className="ml-auto flex items-center gap-2">
-                          <Input 
-                            type="search" 
-                            placeholder="Search" 
-                            className="h-8 w-48 bg-gray-50" 
-                          />
-                          <Avatar className="h-8 w-8">
-                            <AvatarFallback className="bg-blue-600 text-white text-xs">TS</AvatarFallback>
-                          </Avatar>
-                        </div>
-                      </div>
-                      
-                      {/* Action buttons toolbar - Similar to Outlook's action buttons */}
-                      <div className="bg-white border-b border-gray-200 flex items-center p-2 gap-2">
-                        <div className="flex items-center">
-                          <Button size="sm" className="h-8 gap-1 bg-blue-500 hover:bg-blue-600 text-white">
-                            <FilePlus className="h-4 w-4" />
-                            <span>New</span>
-                          </Button>
-                          
-                          <div className="h-6 mx-2 border-l border-gray-200"></div>
-                          
-                          <Button variant="outline" size="sm" className="h-8 gap-1">
-                            <Archive className="h-4 w-4" />
-                            <span>Archive</span>
-                          </Button>
-                          
-                          <div className="h-6 mx-2 border-l border-gray-200"></div>
-                          
-                          <Button variant="outline" size="sm" className="h-8 gap-1">
-                            <CheckCircle2 className="h-4 w-4" />
-                            <span>Mark all as read</span>
-                          </Button>
-                        </div>
-                      </div>
-                    
-                      {/* Main content area with sidebar, items list, and details pane */}
-                      <div className="flex bg-white h-[calc(100vh-14rem)]">
-                        {/* Left sidebar - Folders list */}
-                        <div className="w-60 border-r border-gray-200 bg-white flex flex-col">
-                          <div className="p-2">
-                            <h3 className="font-medium text-sm text-gray-500 mb-2 px-2">Favorites</h3>
-                            
-                            <Button 
-                              variant="subtle"
-                              className="w-full justify-start mb-1 text-sm h-8"
-                            >
-                              <FileCheck className="h-4 w-4 mr-2" />
-                              <span>510(k) Workflow</span>
-                              <Badge className="ml-auto bg-blue-100 text-blue-800 hover:bg-blue-200">
-                                3
-                              </Badge>
-                            </Button>
-                            
-                            <Button 
-                              variant="ghost"
-                              className="w-full justify-start mb-1 text-sm h-8"
-                            >
-                              <ClipboardList className="h-4 w-4 mr-2" />
-                              <span>CER Generator</span>
-                            </Button>
-                          </div>
-                          
-                          <div className="my-2 border-t border-gray-200"></div>
-                          
-                          <div className="p-2">
-                            <h3 className="font-medium text-sm text-gray-500 mb-2 px-2">Folders</h3>
-                            
-                            <div className="space-y-1">
-                              <div>
-                                <button 
-                                  className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
-                                >
-                                  <ChevronRight className="h-4 w-4 mr-1 transition-transform rotate-90" />
-                                  <Folder className="h-4 w-4 mr-2 text-yellow-500" />
-                                  <span className="text-sm">Device Profiles</span>
-                                </button>
-                                
-                                <div className="ml-7 mt-1">
-                                  <button
-                                    className="w-full text-left px-2 py-1.5 rounded bg-blue-50 text-blue-700 text-sm flex items-center mb-1"
-                                  >
-                                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                                    <span className="truncate">Cardiac Monitor</span>
-                                  </button>
-                                  
-                                  <button
-                                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                                  >
-                                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                                    <span className="truncate">Glucose Monitor</span>
-                                  </button>
-                                  
-                                  <button
-                                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center text-blue-600"
-                                  >
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    <span>Add New Profile</span>
-                                  </button>
-                                </div>
-                              </div>
-                              
-                              <button 
-                                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
-                              >
-                                <ChevronRight className="h-4 w-4 mr-1" />
-                                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
-                                <span className="text-sm">Templates</span>
-                              </button>
-                              
-                              <button 
-                                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
-                              >
-                                <ChevronRight className="h-4 w-4 mr-1" />
-                                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
-                                <span className="text-sm">Reports</span>
-                              </button>
-                              
-                              <button 
-                                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
-                              >
-                                <ChevronRight className="h-4 w-4 mr-1" />
-                                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
-                                <span className="text-sm">Submissions</span>
-                              </button>
-                            </div>
-                          </div>
-                          
-                          <div className="mt-auto p-2">
-                            <Button variant="outline" className="w-full justify-start text-sm">
-                              <FolderPlus className="h-4 w-4 mr-2" />
-                              <span>New Folder</span>
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {/* Middle section - Items list */}
-                        <div className="flex-1 border-r border-gray-200 flex flex-col">
-                          {/* Items list header */}
-                          <div className="flex items-center justify-between border-b border-gray-200 p-2">
-                            <div className="flex items-center">
-                              <TabsList>
-                                <TabsTrigger value="focused" className="text-sm">Focused</TabsTrigger>
-                                <TabsTrigger value="other" className="text-sm">Other</TabsTrigger>
-                              </TabsList>
-                            </div>
-                            
-                            <div className="flex items-center gap-2">
-                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                <Filter className="h-4 w-4" />
-                              </Button>
-                              
-                              <Select defaultValue="date">
-                                <SelectTrigger className="h-8 w-32">
-                                  <SelectValue placeholder="Sort by" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="date">By Date</SelectItem>
-                                  <SelectItem value="name">By Name</SelectItem>
-                                  <SelectItem value="type">By Type</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          
-                          {/* Items list */}
-                          <ScrollArea className="flex-1">
-                            <div className="p-0">
-                              <div className="border-b border-gray-100 px-4 py-2 hover:bg-gray-50 cursor-pointer">
-                                <div className="flex items-center gap-3">
-                                  <div className="bg-blue-100 rounded-full p-2">
-                                    <FileCheck className="h-4 w-4 text-blue-600" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <div className="flex items-center justify-between mb-1">
-                                      <h4 className="font-medium text-sm">Cardiac Monitor</h4>
-                                      <span className="text-xs text-gray-500">Today</span>
-                                    </div>
-                                    <p className="text-sm text-gray-700 line-clamp-1">
-                                      Device profile created and ready for 510(k) submission workflow
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div className="border-b border-gray-100 px-4 py-2 hover:bg-gray-50 cursor-pointer">
-                                <div className="flex items-center gap-3">
-                                  <div className="bg-green-100 rounded-full p-2">
-                                    <Shield className="h-4 w-4 text-green-600" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <div className="flex items-center justify-between mb-1">
-                                      <h4 className="font-medium text-sm">Compliance Check</h4>
-                                      <span className="text-xs text-gray-500">Yesterday</span>
-                                    </div>
-                                    <p className="text-sm text-gray-700 line-clamp-1">
-                                      Complete compliance validation for your device submission
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div className="border-b border-gray-100 px-4 py-2 hover:bg-gray-50 cursor-pointer">
-                                <div className="flex items-center gap-3">
-                                  <div className="bg-purple-100 rounded-full p-2">
-                                    <Search className="h-4 w-4 text-purple-600" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <div className="flex items-center justify-between mb-1">
-                                      <h4 className="font-medium text-sm">Predicate Analysis</h4>
-                                      <span className="text-xs text-gray-500">2 days ago</span>
-                                    </div>
-                                    <p className="text-sm text-gray-700 line-clamp-1">
-                                      Find and analyze predicate devices for your submission
-                                    </p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          </ScrollArea>
-                        </div>
-                        
-                        {/* Right section - Details pane */}
-                        <div className="w-[400px] bg-gray-50 flex flex-col">
-                          <div className="p-6">
-                            <div className="flex items-center justify-between mb-6">
-                              <h2 className="text-xl font-semibold text-gray-800">
-                                Cardiac Monitor
-                              </h2>
-                              
-                              <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm">
-                                  <Edit className="h-4 w-4 mr-1" />
-                                  <span>Edit</span>
-                                </Button>
-                                <Button size="sm">
-                                  <CheckCircle className="h-4 w-4 mr-1" />
-                                  <span>Review</span>
-                                </Button>
-                              </div>
-                            </div>
-                            
-                            <div className="space-y-4">
-                              <div className="bg-white p-4 rounded border border-gray-200">
-                                <h3 className="font-medium text-sm text-gray-500 mb-2">Device Information</h3>
-                                <div className="space-y-2">
-                                  <div className="flex justify-between">
-                                    <span className="text-sm text-gray-500">Device Class:</span>
-                                    <span className="text-sm font-medium">Class II</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-sm text-gray-500">Manufacturer:</span>
-                                    <span className="text-sm font-medium">MedTech Industries</span>
-                                  </div>
-                                  <div className="flex justify-between">
-                                    <span className="text-sm text-gray-500">510(k) Status:</span>
-                                    <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">
-                                      In Progress
-                                    </Badge>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div className="bg-white p-4 rounded border border-gray-200">
-                                <h3 className="font-medium text-sm text-gray-500 mb-2">Workflow Progress</h3>
-                                <div className="space-y-2">
-                                  <div className="flex items-center">
-                                    <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                                    <span className="text-sm">Device Profile Created</span>
-                                  </div>
-                                  <div className="flex items-center">
-                                    <Circle className="h-4 w-4 text-gray-300 mr-2" />
-                                    <span className="text-sm text-gray-500">Predicate Device Analysis</span>
-                                  </div>
-                                  <div className="flex items-center">
-                                    <Circle className="h-4 w-4 text-gray-300 mr-2" />
-                                    <span className="text-sm text-gray-500">Compliance Check</span>
-                                  </div>
-                                  <div className="flex items-center">
-                                    <Circle className="h-4 w-4 text-gray-300 mr-2" />
-                                    <span className="text-sm text-gray-500">Final Review & Generation</span>
-                                  </div>
-                                </div>
-                                
-                                <div className="mt-4">
-                                  <Progress value={25} className="h-2" />
-                                  <div className="flex justify-between mt-1">
-                                    <span className="text-xs text-gray-500">25% Complete</span>
-                                    <span className="text-xs text-gray-500">3 steps remaining</span>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            
-                            <div className="mt-6">
-                              <Button className="w-full">
-                                <Play className="h-4 w-4 mr-2" />
-                                Continue Workflow
-                              </Button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                </div>
+                <KAutomationPanel />
                 
                 <ProgressTracker
                   currentStep={2}
@@ -1401,7 +973,7 @@ export default function CERV2Page() {
                     }
                   ]}
                   logs={[
-                    { timestamp: new Date(Date.now() - 3600000).toISOString(), level: "info", message: "Device Profile created successfully" },
+                    { timestamp: new Date(Date.now() - 3600000).toISOString(), level: "info", message: "Device profile created successfully" },
                     { timestamp: new Date(Date.now() - 1800000).toISOString(), level: "info", message: "Beginning predicate device search" },
                     { timestamp: new Date(Date.now() - 900000).toISOString(), level: "info", message: "Found 12 potential predicate devices" },
                     { timestamp: new Date(Date.now() - 600000).toISOString(), level: "info", message: "Analyzing device compatibility" },
@@ -1596,12 +1168,6 @@ export default function CERV2Page() {
             </TabsContent>
             
             <TabsContent value="reports" className="mt-4">
-              {/* Add Tooltip Examples */}
-              <TooltipExample />
-              
-              {/* Add Compliance Storytelling Example */}
-              <ComplianceStoryExample />
-              
               <ReportGenerator 
                 deviceProfile={deviceProfile || {
                   deviceName: deviceName,
@@ -1651,18 +1217,15 @@ export default function CERV2Page() {
 
     if (activeTab === 'reports') {
       return (
-        <div className="space-y-6">
-          <ReportGenerationPanel />
-          <CerComprehensiveReportsPanel 
-            deviceName={deviceName}
-            deviceType={deviceType}
-            manufacturer={manufacturer}
-            cerData={{
-              title: title,
-              sections: sections
-            }}
-          />
-        </div>
+        <CerComprehensiveReportsPanel 
+          deviceName={deviceName}
+          deviceType={deviceType}
+          manufacturer={manufacturer}
+          cerData={{
+            title: title,
+            sections: sections
+          }}
+        />
       );
     }
     
@@ -1725,64 +1288,6 @@ export default function CERV2Page() {
               lastModified={new Date().toISOString()}
               onExport={handleExport}
             />
-          </div>
-        </div>
-      );
-    }
-    
-    // Unified Workflow Panel for both 510k and CER documents
-    if (activeTab === 'workflow') {
-      // Create the appropriate document data for the UnifiedWorkflowPanel
-      const currentDocumentId = documentType === 'cer' ? cerDocumentId : k510DocumentId;
-      const currentDocumentData = {
-        id: currentDocumentId || `temp-${Date.now()}`, // Fallback if no ID available yet
-        title: documentType === 'cer' ? title : `${deviceName} 510(k) Submission`,
-        type: documentType === 'cer' ? 'cer_report' : 'report_510k',
-        status: draftStatus || 'draft',
-        version: '1.0'
-      };
-      
-      // Define module type based on document type
-      const moduleType = documentType === 'cer' ? 'cer' : 'medical_device';
-      
-      // Get organization and user ID from context or local state
-      // In production, these would come from auth context
-      const organizationId = 1; 
-      const userId = 1;
-      
-      return (
-        <div className="bg-[#F9F9F9] py-4">
-          <div className="px-4">
-            <h2 className="text-xl font-semibold text-[#323130] mb-4">
-              {documentType === 'cer' 
-                ? 'Clinical Evaluation Report Workflow' 
-                : '510(k) Submission Workflow'}
-            </h2>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle>Document Workflow Management</CardTitle>
-                <p className="text-sm text-muted-foreground">
-                  {documentType === 'cer' 
-                    ? 'Manage Clinical Evaluation Report workflows and approvals' 
-                    : 'Manage 510(k) Submission workflows and approvals'}
-                </p>
-              </CardHeader>
-              <CardContent>
-                <UnifiedWorkflowPanel
-                  documentData={currentDocumentData}
-                  moduleType={moduleType}
-                  organizationId={organizationId}
-                  userId={userId}
-                  onWorkflowUpdated={() => {
-                    toast({
-                      title: "Workflow Updated",
-                      description: "The document workflow has been updated successfully",
-                      variant: "success"
-                    });
-                  }}
-                />
-              </CardContent>
-            </Card>
           </div>
         </div>
       );
@@ -2098,10 +1603,7 @@ export default function CERV2Page() {
           };
           
           // Set the context and open the AI assistant
-          setModuleContext({
-            module: 'regulatory',
-            context: context
-          });
+          setModuleContext('regulatory', context);
           openAssistant();
         }
       }, [activeTab, setModuleContext, openAssistant, documentType, deviceName, deviceType, manufacturer, sections, selectedPredicate]);
@@ -2121,15 +1623,12 @@ export default function CERV2Page() {
             <Button 
               className="mt-6" 
               onClick={() => {
-                setModuleContext({
-                  module: 'regulatory',
-                  context: {
+                setModuleContext('regulatory', {
                   documentType,
                   deviceName,
                   deviceType,
                   manufacturer,
                   sections: sections.map(s => ({ title: s.title, content: s.content })),
-                  }
                 });
                 openAssistant();
               }}
@@ -2215,18 +1714,8 @@ export default function CERV2Page() {
     }
   }, [showSystemHealth, refreshSystemHealth]);
 
-  // Document type is set to CER by default
-  const renderDocumentTypeTabs = () => {
-    return null;
-  };
-
   return (
     <div className="max-w-[1200px] mx-auto relative">
-      {/* Top-level Module Selection Tabs */}
-      <div className="sticky top-0 z-40 bg-white border-b border-gray-200 shadow-sm py-3 px-3 mb-5">
-        {renderDocumentTypeTabs()}
-      </div>
-      
       {/* Fixed position Ask Lumen AI button */}
       <div className="fixed bottom-4 right-4 z-50">
         <Button
@@ -2555,7 +2044,7 @@ export default function CERV2Page() {
           <KAutomationPanel />
         </div>
       </div>
-      
+    
       <div className="flex flex-col md:flex-row justify-between items-start p-6 pb-2 bg-gradient-to-r from-blue-50 to-white rounded-t-lg shadow-sm">
         <div>
           <div className="flex items-center gap-2 mb-1">
