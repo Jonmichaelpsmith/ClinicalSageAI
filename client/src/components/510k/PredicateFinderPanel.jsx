@@ -109,20 +109,49 @@ const PredicateFinderPanel = ({
     setProfileEditing(true);
   };
   
-  // Search for predicate devices
+  // Search for predicate devices using the integrated Document Vault profile
   const searchForPredicates = async () => {
     setIsSearching(true);
     
     try {
-      const results = await FDA510kService.findPredicatesAndLiterature({
-        deviceName: formData.deviceName,
-        manufacturer: formData.manufacturer,
-        productCode: formData.productCode,
-        intendedUse: formData.intendedUse
-      });
+      // Use device profile from vault if available, otherwise use form data
+      const searchProfile = deviceProfile?.documentVaultId ? deviceProfile : formData;
+      
+      console.log('Searching for predicates with device profile:', searchProfile);
+      
+      // Log if we're using the Document Vault integrated profile
+      if (deviceProfile?.documentVaultId) {
+        console.log('Using Document Vault integrated profile with ID:', deviceProfile.documentVaultId);
+      }
+      
+      // Get organization context if available
+      const organizationId = deviceProfile?.organizationId;
+      
+      // Use the enhanced service to search with the proper context
+      const results = await FDA510kService.findPredicatesAndLiterature(
+        searchProfile,
+        organizationId
+      );
       
       if (results.success && results.predicateDevices?.length > 0) {
+        // Store search results
         setSearchResults(results.predicateDevices);
+        
+        // If we have a valid device profile with Document Vault integration, save the search results
+        if (deviceProfile?.folderStructure?.predicatesFolderId) {
+          try {
+            // Save the predicate search results to the Document Vault
+            await savePredicateSearchResults(
+              deviceProfile.folderStructure.predicatesFolderId,
+              results.predicateDevices,
+              results.searchQueries
+            );
+          } catch (vaultError) {
+            console.error('Error saving predicate results to vault:', vaultError);
+            // Non-fatal error, just log it and continue
+          }
+        }
+        
         toast({
           title: "Predicate Devices Found",
           description: `Found ${results.predicateDevices.length} potential predicate devices that match your criteria.`,
@@ -146,6 +175,42 @@ const PredicateFinderPanel = ({
       setSearchResults([]);
     } finally {
       setIsSearching(false);
+    }
+  };
+  
+  // Save predicate search results to Document Vault
+  const savePredicateSearchResults = async (folderId, predicates, searchQueries) => {
+    try {
+      // Create search results JSON
+      const searchResultsData = {
+        predicates: predicates,
+        searchQueries: searchQueries,
+        searchDate: new Date().toISOString(),
+        deviceProfile: deviceProfile
+      };
+      
+      // Create a blob from the search results
+      const jsonBlob = new Blob([JSON.stringify(searchResultsData, null, 2)], { 
+        type: 'application/json' 
+      });
+      
+      // Create a file from the blob
+      const jsonFile = new File([jsonBlob], 'predicate-search-results.json', { 
+        type: 'application/json' 
+      });
+      
+      // Upload the file to the Document Vault using FDA510kService
+      const result = await FDA510kService.savePredicateSearchResults(
+        folderId,
+        jsonFile,
+        deviceProfile.id
+      );
+      
+      console.log('Predicate search results saved to vault:', result);
+      return result;
+    } catch (error) {
+      console.error('Error saving predicate search results:', error);
+      throw error;
     }
   };
   
