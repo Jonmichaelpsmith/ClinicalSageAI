@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { toast } from "@/hooks/use-toast";
-import { FDA510kService } from "@/services/FDA510kService";
+import FDA510kService from "@/services/FDA510kService";
 import { 
   FileText, 
   CheckCircle, 
