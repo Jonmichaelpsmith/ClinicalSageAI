@@ -4,9 +4,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { 
   FolderOpen, File, ChevronRight, ChevronDown, 
-  FilePlus, FolderPlus, FileText, X, Search, FolderTree
+  FilePlus, FolderPlus, FileText, X, Search, FolderTree,
+  Loader2
 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
+import docuShareService from '@/services/DocuShareService';
+import { apiRequest } from '@/lib/queryClient';
 
 /**
  * Document Tree Panel
@@ -14,11 +17,7 @@ import { Input } from "@/components/ui/input";
  * A sliding panel that displays a hierarchical tree of documents in the vault.
  */
 const SimpleDocumentTreePanel = ({ isOpen, onClose, documentId }) => {
-  const [expandedFolders, setExpandedFolders] = useState({
-    'folder-1': true, // Start with the first folder expanded
-    'folder-2': false,
-    'folder-3': false
-  });
+  const [expandedFolders, setExpandedFolders] = useState({});
   const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
 
@@ -35,12 +34,57 @@ const SimpleDocumentTreePanel = ({ isOpen, onClose, documentId }) => {
         const response = await docuShareService.getFolderStructure();
         if (response?.folders) {
           setVaultFiles(response.folders);
+          
+          // Initialize expanded state for root folders
+          const initialExpandedState = {};
+          if (response.folders && response.folders.length > 0) {
+            response.folders.forEach((folder, index) => {
+              initialExpandedState[folder.id] = index === 0; // Expand first folder by default
+            });
+            setExpandedFolders(initialExpandedState);
+          }
+        } else {
+          // API request worked but no folders were returned
+          console.log('No folders returned from the API');
+          
+          // Inform server admin about the missing data
+          try {
+            await apiRequest.post('/api/system/logs', {
+              level: 'warn',
+              message: 'Document vault API returned no folders',
+              context: { component: 'SimpleDocumentTreePanel', user: 'active-user' }
+            });
+          } catch (loggingError) {
+            console.warn('Failed to log the empty folders warning:', loggingError);
+          }
+          
+          toast({
+            title: "No Documents Found",
+            description: "The system found no documents in the vault. You may need to upload some documents.",
+            variant: "default"
+          });
         }
       } catch (error) {
         console.error('Error fetching document structure:', error);
+        
+        // Log the error to the server
+        try {
+          await apiRequest.post('/api/system/logs', {
+            level: 'error',
+            message: 'Failed to fetch document structure',
+            context: { 
+              component: 'SimpleDocumentTreePanel',
+              error: error.message,
+              stack: error.stack
+            }
+          });
+        } catch (loggingError) {
+          console.warn('Failed to log the document structure error:', loggingError);
+        }
+        
         toast({
           title: "Error Loading Documents",
-          description: "Could not load document structure. Please try again.",
+          description: "Could not load document structure. Please try again later.",
           variant: "destructive"
         });
       } finally {
@@ -50,12 +94,6 @@ const SimpleDocumentTreePanel = ({ isOpen, onClose, documentId }) => {
     
     fetchDocuments();
   }, [documentId]);
-      children: [
-        { id: 'doc-3-1', name: 'FDA Guidelines.pdf', type: 'document', format: 'pdf' },
-        { id: 'doc-3-2', name: 'Submission Checklist.docx', type: 'document', format: 'docx' }
-      ]
-    }
-  ];
   
   // Toggle a folder's expanded state
   const toggleFolder = (folderId) => {
@@ -101,37 +139,24 @@ const SimpleDocumentTreePanel = ({ isOpen, onClose, documentId }) => {
           }`}
           onClick={() => isFolder ? toggleFolder(doc.id) : handleDocumentClick(doc)}
         >
-          {isFolder ? (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="h-6 w-6 mr-1 p-0"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleFolder(doc.id);
-              }}
-            >
-              {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            </Button>
-          ) : (
-            <span className="ml-7 mr-1">{renderDocumentIcon(doc.format)}</span>
-          )}
-          
-          {isFolder ? (
-            <FolderOpen size={16} className="text-yellow-500 mr-1.5" />
-          ) : null}
-          
-          <span className="text-sm truncate flex-grow">{doc.name}</span>
-          
           {isFolder && (
-            <span className="text-xs text-gray-500 ml-1">
-              ({doc.children?.length || 0})
+            <span className="mr-1 text-gray-500">
+              {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
             </span>
           )}
+          
+          <span className="mr-2">
+            {isFolder ? 
+              <FolderOpen size={16} className="text-amber-500" /> : 
+              renderDocumentIcon(doc.format)
+            }
+          </span>
+          
+          <span className="text-sm truncate">{doc.name}</span>
         </div>
         
-        {isFolder && isExpanded && doc.children && (
-          <div className="mt-1">
+        {isFolder && isExpanded && doc.children && doc.children.length > 0 && (
+          <div className="folder-children">
             {doc.children.map(child => renderDocumentItem(child, depth + 1))}
           </div>
         )}
@@ -139,66 +164,82 @@ const SimpleDocumentTreePanel = ({ isOpen, onClose, documentId }) => {
     );
   };
   
-  // Log for debugging purposes only
-  useEffect(() => {
-    console.log("DocumentTreePanel mounted with isOpen:", isOpen);
-    return () => console.log("DocumentTreePanel unmounted");
-  }, [isOpen]);
+  // Search documents
+  const handleSearch = () => {
+    if (!searchQuery.trim()) {
+      return;
+    }
+    
+    toast({
+      title: "Searching Documents",
+      description: `Searching for "${searchQuery}"...`,
+      variant: "default"
+    });
+  };
+  
+  // Filter documents based on search query
+  const filteredFiles = searchQuery.trim() ? 
+    // Simple client-side filtering
+    vaultFiles.filter(file => 
+      file.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ) : 
+    vaultFiles;
+  
+  if (!isOpen) return null;
   
   return (
-    <div 
-      className={`fixed inset-y-0 right-0 w-[350px] bg-white border-l shadow-xl z-[100] transition-transform duration-300 ease-in-out ${
-        isOpen ? 'translate-x-0' : 'translate-x-full'
-      }`}
-    >
-      <div className="h-full flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b flex items-center justify-between bg-gray-50">
-          <div className="flex items-center">
-            <FolderTree className="h-5 w-5 text-blue-600 mr-2" />
-            <h2 className="font-semibold text-lg">Document Vault</h2>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon"
-            className="h-8 w-8"
-            onClick={onClose}
-          >
-            <X size={16} />
+    <div className="document-tree-panel fixed right-0 top-0 h-full w-72 bg-white shadow-lg z-50 flex flex-col">
+      {/* Header */}
+      <div className="flex items-center justify-between p-4 border-b">
+        <h3 className="text-lg font-medium flex items-center">
+          <FolderTree className="mr-2 h-5 w-5" /> Document Vault
+        </h3>
+        <Button variant="ghost" size="icon" onClick={onClose}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      {/* Search input */}
+      <div className="p-4 border-b">
+        <div className="flex space-x-2">
+          <Input
+            placeholder="Search documents..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <Button variant="secondary" size="icon" onClick={handleSearch}>
+            <Search className="h-4 w-4" />
           </Button>
         </div>
-        
-        {/* Search Box */}
-        <div className="p-3 border-b">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search files..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+      </div>
+      
+      {/* Document tree */}
+      <ScrollArea className="flex-1 p-4">
+        {isLoading ? (
+          <div className="flex justify-center items-center h-full">
+            <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+            <span className="ml-2 text-gray-500">Loading documents...</span>
           </div>
-        </div>
-        
-        {/* File Tree */}
-        <div className="flex-grow overflow-auto">
-          <ScrollArea className="h-full">
-            <div className="p-3">
-              {vaultFiles.map(file => renderDocumentItem(file))}
-            </div>
-          </ScrollArea>
-        </div>
-        
-        {/* Footer */}
-        <div className="p-3 border-t bg-gray-50 flex justify-between">
-          <Button variant="outline" size="sm" className="text-xs">
-            <FolderPlus size={14} className="mr-1" />
-            New Folder
+        ) : vaultFiles.length > 0 ? (
+          <div className="document-tree">
+            {filteredFiles.map(doc => renderDocumentItem(doc))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <FolderOpen className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>No documents found</p>
+          </div>
+        )}
+      </ScrollArea>
+      
+      {/* Action buttons */}
+      <div className="p-4 border-t">
+        <div className="flex space-x-2">
+          <Button variant="outline" className="flex-1" onClick={() => {}}>
+            <FilePlus className="mr-2 h-4 w-4" /> New Doc
           </Button>
-          <Button variant="outline" size="sm" className="text-xs">
-            <FilePlus size={14} className="mr-1" />
-            Upload File
+          <Button variant="outline" className="flex-1" onClick={() => {}}>
+            <FolderPlus className="mr-2 h-4 w-4" /> New Folder
           </Button>
         </div>
       </div>
