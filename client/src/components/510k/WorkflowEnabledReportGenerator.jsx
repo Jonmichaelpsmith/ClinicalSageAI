@@ -30,7 +30,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 
 import UnifiedWorkflowPanel from '../unified-workflow/UnifiedWorkflowPanel';
-import { registerModuleDocument, addDocumentComment } from '../unified-workflow/registerModuleDocument';
+import { registerModuleDocument } from '../unified-workflow/registerModuleDocument';
 import FDA510kService from '../../services/FDA510kService';
 
 const REPORT_FORMATS = [
@@ -249,26 +249,22 @@ const WorkflowEnabledReportGenerator = ({
     
     setIsProcessingESTAR(true);
     try {
-      // Get project data from device data
+      // Use the FDA510kService to integrate with eSTAR
       const projectId = deviceData?.id || 'default-project-id';
       
       // First validate the eSTAR package if requested
       let validationResult = null;
       if (validateBeforeGeneration) {
         try {
-          // Log the validation start
-          console.log(`Starting validation for project ${projectId} before eSTAR generation`);
-          
           validationResult = await FDA510kService.validateESTARPackage(projectId, false);
           
           // If validation failed with critical errors, show alert but continue unless strict mode
           if (validationResult && !validationResult.valid) {
             const criticalErrors = validationResult.issues.filter(issue => issue.severity === 'error').length;
-            const warningCount = validationResult.issues.length - criticalErrors;
             
             toast({
               title: criticalErrors > 0 ? 'eSTAR Validation Failed' : 'eSTAR Validation Warnings',
-              description: `Package validated with ${criticalErrors} critical issues and ${warningCount} warnings.`,
+              description: `Package validated with ${criticalErrors} critical issues and ${validationResult.issues.length - criticalErrors} warnings.`,
               variant: criticalErrors > 0 ? 'destructive' : 'warning',
             });
             
@@ -286,69 +282,22 @@ const WorkflowEnabledReportGenerator = ({
         }
       }
       
-      // Now proceed with eSTAR integration which connects to the workflow
-      console.log(`Integrating report ${generatedReportId} for project ${projectId} with eSTAR workflow`);
-      
-      // First, build the eSTAR package if it doesn't exist
-      const packageBuildResult = await FDA510kService.buildESTARPackage(projectId, {
-        validateFirst: false, // Already validated above if needed
-        format: reportFormat
-      });
-      
-      if (!packageBuildResult.success) {
-        toast({
-          title: 'eSTAR Package Build Failed',
-          description: packageBuildResult.message || 'Failed to build eSTAR package. Check console for details.',
-          variant: 'destructive',
-        });
-        setIsProcessingESTAR(false);
-        return;
-      }
-      
-      // Now proceed with workflow integration
+      // Now proceed with integration
       const result = await FDA510kService.integrateWithESTAR(
         generatedReportId,
         projectId,
         { 
-          validateFirst: false, // Already validated above if needed
-          strictValidation: false,  // Default to non-strict validation
-          workflowTemplate: '510k_submission' // Specify the workflow template to use
+          validateFirst: validateBeforeGeneration,
+          strictValidation: false  // Default to non-strict validation
         }
       );
-      
-      // Register the document with the unified workflow system
-      if (result.success && organizationId && userId) {
-        try {
-          await registerModuleDocument(
-            organizationId,
-            userId,
-            'medical_device',
-            {
-              id: generatedReportId,
-              title: deviceData?.deviceName || 'FDA 510(k) Submission',
-              type: '510k_estar',
-              format: reportFormat,
-              packageUrl: result.downloadUrl,
-              workflowId: result.workflowId,
-              validationStatus: validationResult?.valid ? 'passed' : 'warning'
-            }
-          );
-          
-          console.log('Successfully registered document with unified workflow system');
-        } catch (registrationError) {
-          console.error('Error registering document with workflow:', registrationError);
-          // Don't fail the overall process if registration fails
-        }
-      }
       
       // Update eSTAR status
       setEstarStatus({
         packageGenerated: result.packageGenerated || false,
         validated: result.validated || false,
         downloadUrl: result.downloadUrl || null,
-        validationIssues: result.validationResult?.issues || [],
-        workflowId: result.workflowId,
-        workflowStatus: result.workflowStatus || 'pending'
+        validationIssues: result.validationResult?.issues || []
       });
       
       // Show appropriate toast message
@@ -357,9 +306,6 @@ const WorkflowEnabledReportGenerator = ({
           title: 'eSTAR Package Generated',
           description: 'FDA-compliant eSTAR package has been successfully generated and integrated with the workflow.',
         });
-        
-        // Set workflow started to trigger workflow panel refresh
-        setWorkflowStarted(true);
       } else if (result.validated && result.validationResult && !result.validationResult.valid) {
         toast({
           title: 'eSTAR Integration Issues',
