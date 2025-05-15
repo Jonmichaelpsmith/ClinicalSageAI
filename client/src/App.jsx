@@ -207,8 +207,12 @@ function App() {
               <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
               <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
               {/* 510k functionality is now integrated in CERV2Page */}
-              <Route path="/client-portal/510k" component={CERV2Page} />
-              <Route path="/client-portal/510k-dashboard" component={CERV2Page} />
+              <Route path="/client-portal/510k">
+                {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
+              </Route>
+              <Route path="/client-portal/510k-dashboard">
+                {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
+              </Route>
               <Route path="/client-portal/client-management">
                 {() => (
                   <Suspense fallback={<LoadingPage />}>
@@ -250,8 +254,12 @@ function App() {
               <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}
               <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
               {/* All 510k functionality is integrated in CERV2Page */}
-              <Route path="/510k" component={CERV2Page} /> {/* Direct to CERV2 */}
-              <Route path="/510k-dashboard" component={CERV2Page} /> {/* Direct to CERV2 */}
+              <Route path="/510k">
+                {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
+              </Route>
+              <Route path="/510k-dashboard">
+                {() => <CERV2Page initialDocumentType="510k" initialActiveTab="predicates" />}
+              </Route>
               <Route path="/csr" component={CSRPage} /> {/* CSR Deep Intelligence page route */}
               <Route path="/csr-library" component={CSRLibraryPage} /> {/* CSR Library page route */}
               <Route path="/cmc" component={CMCPage} /> {/* CMC Module page route */}
