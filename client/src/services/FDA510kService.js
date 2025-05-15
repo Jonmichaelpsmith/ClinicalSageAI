@@ -7,8 +7,7 @@
 
 import { apiRequest } from '../lib/queryClient';
 
-// Export as a singleton object
-const FDA510kService = {
+class FDA510kService {
   /**
    * Fetch a list of all 510(k) projects
    * 
@@ -22,7 +21,7 @@ const FDA510kService = {
       console.error('Error fetching 510(k) projects:', error);
       throw error;
     }
-  },
+  }
 
   /**
    * Fetch a specific 510(k) project by ID
@@ -38,7 +37,7 @@ const FDA510kService = {
       console.error(`Error fetching 510(k) project ${projectId}:`, error);
       throw error;
     }
-  },
+  }
 
   /**
    * Validate an eSTAR package for FDA compliance
@@ -58,7 +57,7 @@ const FDA510kService = {
       console.error(`Error validating eSTAR package for project ${projectId}:`, error);
       throw error;
     }
-  },
+  }
 
   /**
    * Build an eSTAR package for submission
@@ -78,7 +77,7 @@ const FDA510kService = {
       console.error(`Error building eSTAR package for project ${projectId}:`, error);
       throw error;
     }
-  },
+  }
 
   /**
    * Submit an eSTAR package to FDA
@@ -98,7 +97,7 @@ const FDA510kService = {
       console.error(`Error submitting eSTAR package for project ${projectId}:`, error);
       throw error;
     }
-  },
+  }
 
   /**
    * Integrate an eSTAR package with workflow
@@ -152,7 +151,7 @@ const FDA510kService = {
       console.error(`Error integrating eSTAR with workflow for project ${projectId}:`, error);
       throw error;
     }
-  },
+  }
 
   /**
    * Fetch predicate devices for comparison
@@ -170,7 +169,7 @@ const FDA510kService = {
       console.error('Error fetching predicate devices:', error);
       throw error;
     }
-  },
+  }
 
   /**
    * Advanced predicate device search with semantic matching
@@ -223,7 +222,7 @@ const FDA510kService = {
         };
       }
     }
-  },
+  }
 
   /**
    * Add a predicate device to a 510(k) project
@@ -240,7 +239,7 @@ const FDA510kService = {
       console.error(`Error adding predicate device to project ${projectId}:`, error);
       throw error;
     }
-  },
+  }
 
   /**
    * Generate a FDA-compliant PDF for a 510(k) section
@@ -260,7 +259,7 @@ const FDA510kService = {
       console.error(`Error generating PDF for section ${sectionId}:`, error);
       throw error;
     }
-  },
+  }
 
   /**
    * Generate a complete FDA-compliant 510(k) submission PDF
@@ -278,7 +277,7 @@ const FDA510kService = {
       console.error(`Error generating submission PDF for project ${projectId}:`, error);
       throw error;
     }
-  },
+  }
 
   /**
    * Fetch FDA requirements for a specific section
@@ -294,7 +293,7 @@ const FDA510kService = {
       console.error(`Error fetching requirements for section ${sectionId}:`, error);
       throw error;
     }
-  },
+  }
 
   /**
    * Get FDA compliance status and implementation progress
@@ -331,7 +330,7 @@ const FDA510kService = {
         }
       };
     }
-  },
+  }
 
   /**
    * Run a comprehensive compliance check for a 510(k) submission
@@ -357,7 +356,7 @@ const FDA510kService = {
       console.error(`Error running 510(k) compliance check for project ${projectId}:`, error);
       throw error;
     }
-  },
+  }
 
   /**
    * Apply an automatic fix for a specific compliance issue
@@ -383,7 +382,7 @@ const FDA510kService = {
       console.error(`Error applying auto-fix for compliance issue in project ${projectId}:`, error);
       throw error;
     }
-  },
+  }
 
   /**
    * Get compliance check results for a 510(k) project
@@ -402,7 +401,7 @@ const FDA510kService = {
       console.error(`Error getting compliance results for project ${projectId}:`, error);
       throw error;
     }
-  },
+  }
 
   /**
    * Device Profile API methods
@@ -410,7 +409,7 @@ const FDA510kService = {
    * These methods handle all interactions with Device Profiles from both
    * the 510(k) and CER interfaces using the unified API
    */
-  DeviceProfileAPI: {
+  DeviceProfileAPI = {
     /**
      * Create a new Device Profile
      * 
@@ -418,7 +417,7 @@ const FDA510kService = {
      * @param {string} organizationId Optional organization ID
      * @returns {Promise<Object>} The created Device Profile
      */
-    async create(profileData, organizationId) {
+    create: async (profileData, organizationId) => {
       try {
         const response = await apiRequest.post('/api/device-profiles', profileData, {
           params: organizationId ? { organizationId } : undefined
@@ -438,7 +437,7 @@ const FDA510kService = {
      * @param {string} organizationId Optional organization ID
      * @returns {Promise<Object>} The updated Device Profile
      */
-    async update(profileId, profileData, organizationId) {
+    update: async (profileId, profileData, organizationId) => {
       try {
         const response = await apiRequest.put(`/api/device-profiles/${profileId}`, profileData, {
           params: organizationId ? { organizationId } : undefined
@@ -456,7 +455,7 @@ const FDA510kService = {
      * @param {string} organizationId Optional organization ID to filter profiles
      * @returns {Promise<Array>} Array of Device Profiles
      */
-    async list(organizationId) {
+    list: async (organizationId) => {
       try {
         const response = await apiRequest.get('/api/device-profiles', {
           params: organizationId ? { organizationId } : undefined
@@ -475,7 +474,7 @@ const FDA510kService = {
      * @param {string} organizationId Optional organization ID for tenant context
      * @returns {Promise<Object>} The Device Profile
      */
-    async get(profileId, organizationId) {
+    get: async (profileId, organizationId) => {
       try {
         const response = await apiRequest.get(`/api/device-profiles/${profileId}`, {
           params: organizationId ? { organizationId } : undefined
@@ -494,7 +493,7 @@ const FDA510kService = {
      * @param {string} organizationId Optional organization ID for tenant context
      * @returns {Promise<boolean>} True if successful
      */
-    async delete(profileId, organizationId) {
+    delete: async (profileId, organizationId) => {
       try {
         await apiRequest.delete(`/api/device-profiles/${profileId}`, {
           params: organizationId ? { organizationId } : undefined
@@ -505,7 +504,7 @@ const FDA510kService = {
         throw error;
       }
     }
-  },
+  };
   
   // Legacy device profile methods have been removed.
   // Use DeviceProfileAPI instead for all device profile operations.
@@ -519,129 +518,16 @@ const FDA510kService = {
    */
   async getRequirements(deviceClass, organizationId) {
     try {
-      const response = await apiRequest.get('/api/fda510k/device-requirements', {
-        params: { 
-          deviceClass,
-          organizationId
-        }
+      const response = await apiRequest.get(`/api/fda510k/requirements/${deviceClass}`, {
+        params: organizationId ? { organizationId } : undefined
       });
       return response.data;
     } catch (error) {
-      console.error(`Error fetching requirements for device class ${deviceClass}:`, error);
+      console.error(`Error fetching FDA requirements for device class ${deviceClass}:`, error);
       throw error;
     }
-  },
-  
-  /**
-   * Generate a comparison table between a subject device and predicate devices
-   * 
-   * This function creates an FDA-compliant comparison table for 510(k) submissions
-   * that highlights substantial equivalence between a subject device and selected
-   * predicate devices. The comparison focuses on technological characteristics,
-   * intended use, and other relevant parameters.
-   * 
-   * @param {Object} subjectDevice The subject device profile object
-   * @param {Array<Object>} predicateDevices Array of predicate device objects
-   * @param {Object} options Optional configuration parameters
-   * @returns {Promise<Object>} The formatted comparison data
-   */
-  async comparePredicateDevices(subjectDevice, predicateDevices, options = {}) {
-    try {
-      if (!subjectDevice) {
-        throw new Error('Subject device is required for comparison');
-      }
-      
-      if (!predicateDevices || !Array.isArray(predicateDevices) || predicateDevices.length === 0) {
-        throw new Error('At least one predicate device is required for comparison');
-      }
-      
-      // Prepare the request payload
-      const payload = {
-        subjectDevice,
-        predicateDevices,
-        options: {
-          includeRegulatoryContext: options.includeRegulatoryContext !== false,
-          includeTestingRequirements: options.includeTestingRequirements !== false,
-          formatForFDASubmission: options.formatForFDASubmission !== false,
-          includeStandards: options.includeStandards !== false,
-          highlightDifferences: options.highlightDifferences !== false,
-          ...options
-        }
-      };
-      
-      // Call the API endpoint for predicate comparison
-      const response = await apiRequest.post('/api/fda510k/compare-predicates', payload);
-      
-      // Return the formatted comparison data
-      return {
-        success: true,
-        data: response.data
-      };
-    } catch (error) {
-      console.error('Error generating predicate device comparison:', error);
-      return {
-        success: false,
-        error: {
-          message: error.message || 'Failed to generate predicate comparison',
-          details: error.response?.data || null
-        }
-      };
-    }
-  },
-
-  /**
-   * Generate a completed eSTAR package for submission to FDA
-   * 
-   * This function creates a complete eSTAR package that meets FDA submission
-   * requirements, based on the provided project data and options.
-   * 
-   * @param {string} projectId The project ID to generate the eSTAR package for
-   * @param {Object} options Configuration options for the package generation
-   * @returns {Promise<Object>} Result containing download information or validation issues
-   */
-  async generateESTARPackage(projectId, options = {}) {
-    try {
-      // First check if we need to validate before generation
-      if (options.validateFirst) {
-        const validationResult = await this.validateESTARPackage(projectId, options.strictValidation || false);
-        
-        // If validation fails in strict mode, return the validation issues
-        if (options.strictValidation && validationResult && !validationResult.valid) {
-          return {
-            success: false,
-            validated: true,
-            packageGenerated: false,
-            validationResult,
-            message: 'eSTAR package validation failed. Please resolve the issues before proceeding.'
-          };
-        }
-      }
-      
-      // Then build the eSTAR package
-      const result = await this.buildESTARPackage(projectId, {
-        format: options.format || 'pdf',
-        includePredicates: options.includePredicates !== false,
-        includeStandards: options.includeStandards !== false,
-        ...options
-      });
-      
-      // Return the result with a more semantic naming convention
-      return {
-        success: true,
-        downloadUrl: result.downloadUrl,
-        packageId: result.packageId,
-        validationResult: result.validationResult,
-        message: 'eSTAR package successfully generated'
-      };
-    } catch (error) {
-      console.error(`Error generating eSTAR package for project ${projectId}:`, error);
-      return {
-        success: false,
-        error: error.message || 'Failed to generate eSTAR package',
-        details: error.response?.data || null
-      };
-    }
   }
-};
+}
 
-export default FDA510kService;
+// Export a singleton instance
+export default new FDA510kService();
