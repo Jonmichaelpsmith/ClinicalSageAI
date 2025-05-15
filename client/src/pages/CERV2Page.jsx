@@ -403,6 +403,7 @@ export default function CERV2Page() {
   // Render content based on active tab
   // Import 510k tab content component
   const FDA510kTabContent = React.lazy(() => import('@/components/510k/FDA510kTabContent'));
+  const WorkflowPanel = React.lazy(() => import('@/components/510k/WorkflowPanel'));
   
   const renderContent = () => {
     // If 510k document type is selected, show FDA510k content
