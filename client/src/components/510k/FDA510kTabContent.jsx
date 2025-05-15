@@ -213,19 +213,19 @@ const FDA510kTabContent = ({
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="drafting">
             <FilePlus2 className="h-4 w-4 mr-2" /> 
-            Drafting
+            1. Document Creation
           </TabsTrigger>
           <TabsTrigger value="submission">
             <FileUp className="h-4 w-4 mr-2" /> 
-            Submission
+            2. eSTAR Generation
           </TabsTrigger>
           <TabsTrigger value="testing">
             <CheckSquare className="h-4 w-4 mr-2" /> 
-            Testing
+            3. Validation
           </TabsTrigger>
           <TabsTrigger value="documentation">
             <BookOpen className="h-4 w-4 mr-2" /> 
-            Documentation
+            4. Guidelines
           </TabsTrigger>
         </TabsList>
         
@@ -279,13 +279,18 @@ const FDA510kTabContent = ({
                       <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-2">
                           <CheckSquare className="h-5 w-5 text-primary" />
-                          <h3 className="text-lg font-medium">eSTAR Package Validation</h3>
+                          <h3 className="text-lg font-medium">FDA eSTAR Package Validation</h3>
                         </div>
                         
-                        <p className="text-muted-foreground">
-                          Run validation checks on your 510(k) submission to ensure it meets FDA requirements. 
-                          This will analyze your document for completeness, formatting issues, and regulatory compliance.
-                        </p>
+                        <div className="bg-blue-50 p-4 rounded-md border border-blue-100 mb-4">
+                          <p className="text-blue-800 text-sm">
+                            <strong>Step 3:</strong> Run validation checks on your 510(k) eSTAR submission to ensure it meets all FDA requirements.
+                            This step performs comprehensive verification of your document against the official FDA eSTAR specifications.
+                          </p>
+                          <p className="text-blue-700 text-sm mt-2">
+                            Select between Standard validation for basic checks, or Strict validation for the full FDA compliance review.
+                          </p>
+                        </div>
                         
                         <div className="flex flex-col gap-4 mt-4">
                           <div className="flex items-center gap-2">
