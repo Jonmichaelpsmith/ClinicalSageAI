@@ -997,9 +997,9 @@ export default function KAutomationPanel() {
                     {!currentDeviceProfile && (
                       <Alert variant="warning" className="mb-4 bg-amber-50 text-amber-800 border-amber-200">
                         <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Device profile required</AlertTitle>
+                        <AlertTitle>Device Profile required</AlertTitle>
                         <AlertDescription>
-                          Please select or create a device profile before generating a draft.
+                          Please select or create a Device Profile before generating a draft.
                         </AlertDescription>
                       </Alert>
                     )}
@@ -1034,9 +1034,9 @@ export default function KAutomationPanel() {
                     {!currentDeviceProfile && (
                       <Alert variant="warning" className="mb-4 bg-amber-50 text-amber-800 border-amber-200">
                         <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Device profile required</AlertTitle>
+                        <AlertTitle>Device Profile required</AlertTitle>
                         <AlertDescription>
-                          Please select or create a device profile first.
+                          Please select or create a Device Profile first.
                         </AlertDescription>
                       </Alert>
                     )}
