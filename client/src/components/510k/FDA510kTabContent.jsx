@@ -27,6 +27,7 @@ import { Badge } from '@/components/ui/badge';
 import OneClick510kDraft from './OneClick510kDraft';
 import WorkflowEnabledReportGenerator from './WorkflowEnabledReportGenerator';
 import ComplianceChecker from './ComplianceChecker';
+import eSTARAssembly from './eSTARAssembly';
 import FDA510kService from '../../services/FDA510kService';
 
 const DEFAULT_DEVICE_DATA = {
@@ -226,7 +227,7 @@ const FDA510kTabContent = ({
       </Card>
     
       <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-blue-50 p-1">
+        <TabsList className="grid w-full grid-cols-5 bg-blue-50 p-1">
           <TabsTrigger value="drafting" className="data-[state=active]:bg-white">
             <FilePlus2 className="h-4 w-4 mr-2" /> 
             1. Device Profile
@@ -239,9 +240,13 @@ const FDA510kTabContent = ({
             <CheckSquare className="h-4 w-4 mr-2" /> 
             3. Compliance Check
           </TabsTrigger>
+          <TabsTrigger value="estar" className="data-[state=active]:bg-white">
+            <FileText className="h-4 w-4 mr-2" /> 
+            4. eSTAR Assembly
+          </TabsTrigger>
           <TabsTrigger value="documentation" className="data-[state=active]:bg-white">
             <BookOpen className="h-4 w-4 mr-2" /> 
-            4. Final Review
+            5. Final Review
           </TabsTrigger>
         </TabsList>
         
@@ -445,6 +450,47 @@ const FDA510kTabContent = ({
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="estar">
+            {(hasDraftedDocument || draftDocumentId) && complianceStatus ? (
+              <eSTARAssembly 
+                projectId={deviceData?.id || 'dev-sample-1'}
+                isWorkflowEnabled={isWorkflowEnabled}
+                onComplete={(estarData) => {
+                  if (isWorkflowEnabled && onWorkflowStepComplete) {
+                    onWorkflowStepComplete('estar', estarData);
+                    // Automatically proceed to final step
+                    setActiveSection('documentation');
+                    if (onTabChange) onTabChange('documentation');
+                  }
+                  
+                  toast({
+                    title: "eSTAR Assembly Complete",
+                    description: "Your 510(k) eSTAR package has been successfully assembled and is ready for final review.",
+                  });
+                }}
+                workflowData={workflowState?.estar || {}}
+              />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>eSTAR Assembly & Submission</CardTitle>
+                  <CardDescription>
+                    Assemble your 510(k) eSTAR package for FDA submission
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Alert variant="warning" className="bg-amber-50">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Required steps not completed</AlertTitle>
+                    <AlertDescription>
+                      Please complete the device profile drafting and compliance checking steps before proceeding to eSTAR assembly.
+                    </AlertDescription>
+                  </Alert>
+                </CardContent>
+              </Card>
+            )}
           </TabsContent>
           
           <TabsContent value="documentation">
