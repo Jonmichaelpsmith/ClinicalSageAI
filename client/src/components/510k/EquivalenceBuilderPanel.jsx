@@ -848,6 +848,7 @@ const EquivalenceBuilderPanel = ({
         
         {selectedTab === 'overview' && renderOverviewTab()}
         {selectedTab === 'comparison' && renderComparisonTab()}
+        {selectedTab === 'literature' && renderLiteratureTab()}
         {selectedTab === 'summary' && renderSummaryTab()}
       </CardContent>
       
