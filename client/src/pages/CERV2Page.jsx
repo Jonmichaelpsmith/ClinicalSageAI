@@ -125,6 +125,14 @@ export default function CERV2Page() {
   // Device profile creation state
   const [showNewProfileInput, setShowNewProfileInput] = useState(false);
   const [newProfileName, setNewProfileName] = useState('');
+  
+  // States for Device Intake
+  const [showNewDeviceIntakeInput, setShowNewDeviceIntakeInput] = useState(false);
+  const [newDeviceIntakeName, setNewDeviceIntakeName] = useState('');
+  
+  // States for Device
+  const [showNewDeviceInput, setShowNewDeviceInput] = useState(false);
+  const [newDeviceName, setNewDeviceName] = useState('');
   const { toast } = useToast();
   
   // Function to handle workflow tab navigation
