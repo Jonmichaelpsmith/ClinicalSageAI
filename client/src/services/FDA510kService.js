@@ -412,6 +412,67 @@ export const FDA510kService = {
   async validateSubmission(projectId) {
     const response = await apiRequest.post(`/api/fda510k/validate-submission/${projectId}`);
     return response.data;
+  },
+  
+  /**
+   * Find predicate devices and literature references for a given device profile
+   * 
+   * This method performs a comprehensive search for predicate devices and 
+   * relevant literature references that can support a 510(k) submission.
+   * 
+   * @param {Object} deviceProfile The device profile to search with
+   * @param {string|number} organizationId Optional organization ID for data access control
+   * @returns {Promise<Object>} Combined search results including predicate devices and literature
+   */
+  async findPredicatesAndLiterature(deviceProfile, organizationId) {
+    try {
+      // Prepare search parameters based on device profile
+      const searchParams = {
+        deviceName: deviceProfile.deviceName,
+        productCode: deviceProfile.productCode,
+        deviceClass: deviceProfile.deviceClass,
+        intendedUse: deviceProfile.intendedUse,
+        manufacturer: deviceProfile.manufacturer,
+        organizationId: organizationId || ''
+      };
+      
+      // Make API request to the combined search endpoint
+      const response = await apiRequest.post('/api/fda510k/search-predicates-literature', searchParams);
+      
+      // If the response doesn't have the expected structure, create it
+      if (!response.data.predicateDevices) {
+        console.warn('API response missing predicate devices, performing fallback search');
+        
+        // Fallback to separate searches if the combined endpoint fails
+        const predicatesResponse = await this.searchPredicateDevices({
+          query: deviceProfile.deviceName,
+          productCode: deviceProfile.productCode,
+          limit: 10
+        });
+        
+        return {
+          success: true,
+          predicateDevices: predicatesResponse.results || [],
+          literatureReferences: [],
+          searchQueries: [deviceProfile.deviceName, deviceProfile.productCode].filter(Boolean)
+        };
+      }
+      
+      return {
+        success: true,
+        ...response.data
+      };
+    } catch (error) {
+      console.error('Error in findPredicatesAndLiterature:', error);
+      
+      // Return a structured error response
+      return {
+        success: false,
+        error: error.message || 'Failed to search for predicates and literature',
+        predicateDevices: [],
+        literatureReferences: []
+      };
+    }
   }
 };
 
