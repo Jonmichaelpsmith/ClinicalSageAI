@@ -42,7 +42,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTenant } from '@/contexts/TenantContext';
+import { useTenant } from '@/contexts/TenantContext.tsx';
 import { formatDistanceToNow } from 'date-fns';
 import DeviceProfileDialog from './DeviceProfileDialog';
 import { getDeviceProfiles, deleteDeviceProfile } from '@/api/cer';

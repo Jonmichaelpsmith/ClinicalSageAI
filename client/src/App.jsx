@@ -5,7 +5,7 @@ import { Switch, Route, useLocation } from 'wouter';
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import queryClient from './lib/queryClient';
-import { TenantProvider } from './contexts/TenantContext';
+import { TenantProvider } from './contexts/TenantContext.tsx';
 import { LumenAiAssistantProvider } from './contexts/LumenAiAssistantContext';
 import { LumenAiAssistantContainer } from '@/components/ai/LumenAiAssistantContainer';
 
