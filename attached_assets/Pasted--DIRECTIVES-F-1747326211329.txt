@@ -1,0 +1,35 @@
+------------------------------------------------------------------------------------
+**DIRECTIVES FOR REPLIT AI AGENT**
+
+**Objective:** Modify the React frontend component responsible for "Device Profiles" **within the `/CER2V/` folder** to allow a user to input a name for a new device profile and trigger a console log attempt when a "Create" button is clicked.
+
+**Assumptions:**
+* All relevant frontend code for this task is located within the `/CER2V/` directory structure.
+* The user has a main component for the 510(k) workflow, possibly named `FDA510kTabContent.jsx` or similar, located within `/CER2V/`, as indicated in their technical assessment.
+* Within this main component, or a child component it renders (also within `/CER2V/`), there is a section related to "Device Profiles" which should contain an "+ Add New Profile" button (as seen in the user's screenshot: `image_d69786.png`).
+
+---
+
+**Step 1.1: Identify or Create the Target React Component (within `/CER2V/`)**
+
+* **File to Inspect/Locate:** The React component file **within the `/CER2V/` directory structure** that renders the "Device Profiles" section and the "+ Add New Profile" functionality. This might be `/CER2V/components/FDA510kTabContent.jsx` or a more specific child component like `/CER2V/components/DeviceProfileManager.jsx` or `/CER2V/sections/DeviceProfileSection.jsx` (actual path may vary, but it must be under `/CER2V/`).
+    * **Action:** If such a component exists and is clearly identifiable, open it.
+    * **Action:** If it's part of a larger monolithic component (e.g., directly within a file like `/CER2V/components/FDA510kTabContent.jsx`), identify the JSX block related to "Device Profiles."
+    * **Action (If no suitable component/section exists):** Create a new basic React functional component (e.g., `/CER2V/components/DeviceProfileCreator.jsx`) and instruct the user on where to import and render this new component within their existing UI structure (e.g., within the "Device Profiles" area of a component in `/CER2V/`). For now, let's assume a relevant section/component exists.
+
+---
+
+**Step 1.2: Implement Input Field and State for New Profile Name (within the identified `/CER2V/` component)**
+
+* **File to Modify:** The React component identified or focused on in Step 1.1 (located within `/CER2V/`).
+* **Action:** Add state to manage the input for the new profile name and to control the visibility of the input field.
+* **Action:** Modify the UI to include:
+    1.  An "+ Add New Profile" button.
+    2.  When this button is clicked, an input field and a "Create" button (and a "Cancel" button) should appear.
+    3.  The input field should update the `profileName` state.
+* **Code Snippet (Conceptual - adapt to existing structure and Shadcn/UI if used, ensure all paths are relative to `/CER2V/` if importing local components):**
+    ```javascript
+    // Example: /CER2V/components/DeviceProfileSection.jsx (or similar)
+    import React, { useState } from 'react';
+    // If using Shadcn/UI, ensure imports are correct, e.g.,
+    // import { Button } from '@/
