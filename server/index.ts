@@ -120,8 +120,10 @@ console.log('Unified Device Profile routes registered at /api/device-profiles');
 // Legacy device profile routes have been removed
 // All device profile operations now use /api/device-profiles
 
-// The eSTAR routes are now registered in routes_fixed.ts
-console.log('FDA 510(k) eSTAR routes registered via routes_fixed.ts');
+// Import and register 510(k) eSTAR routes directly
+import { router as estar510kRouter } from './routes/510kEstarRoutes';
+app.use('/api/fda510k/estar', estar510kRouter);
+console.log('FDA 510(k) eSTAR routes registered at /api/fda510k/estar');
 
 // We'll register the regulatory AI routes below with FDA 510(k) routes
 
