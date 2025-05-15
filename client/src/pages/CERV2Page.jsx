@@ -3350,6 +3350,21 @@ export default function CERV2Page() {
         </DialogContent>
       </Dialog>
       
+      {/* DIAGNOSTIC TEST BUTTON */}
+      <div className="bg-red-100 mb-6 p-4 border border-red-400 rounded-lg shadow-md">
+        <h2 className="text-lg font-bold text-red-800 mb-2">UI DIAGNOSTIC TEST</h2>
+        <p className="text-sm text-red-700 mb-3">Click the button below to test if basic UI interactions are working:</p>
+        <Button 
+          className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded shadow-lg"
+          onClick={() => {
+            console.log('UI Test button clicked!');
+            alert('UI Test Button Clicked! If you see this alert, basic UI interactions are working.');
+          }}
+        >
+          TEST UI INTERACTIONS
+        </Button>
+      </div>
+      
       {/* Direct 510(k) Automation Panel */}
       <div className="bg-white mb-6 p-6 border border-blue-200 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-4">
