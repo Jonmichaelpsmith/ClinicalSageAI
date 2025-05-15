@@ -226,24 +226,23 @@ export default function KAutomationPanel() {
                   )}
                 </div>
                 
-                <Button 
-                  id="create-device-profile-btn"
-                  size="sm" 
-                  className="w-full bg-blue-600 hover:bg-blue-700"
-                  onClick={() => {
-                    // Open the device profile dialog for creating a new device
-                    setDeviceProfileDialogOpen(true);
-                    
+                <DeviceProfileDialog 
+                  buttonText="Create Device Profile"
+                  buttonClassName="w-full bg-blue-600 hover:bg-blue-700"
+                  buttonVariant="default"
+                  dialogTitle="Create New Device Profile"
+                  dialogDescription="Enter your device information to begin the 510(k) submission process"
+                  onSuccessfulSubmit={(profile) => {
+                    handleSubmitDeviceProfile(profile);
                     toast({
-                      title: "Create Device Profile",
-                      description: "Please enter your device information to begin the 510(k) process",
-                      duration: 3000
+                      title: "Device Profile Created",
+                      description: "Your device profile has been created successfully",
+                      variant: "success"
                     });
                   }}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Device Profile
-                </Button>
+                  buttonIcon={<Plus className="h-4 w-4 mr-2" />}
+                  isStartingPoint={true}
+                />
               </div>
               
               {/* COLUMN 2: Device Setup */}
