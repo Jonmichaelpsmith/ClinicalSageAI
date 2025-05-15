@@ -8,6 +8,7 @@ import {
   ChevronDown, ExternalLink, Bug, AlertCircle, BookmarkPlus, Calendar,
   ChevronUp, ListPlus, Settings, PlusCircle, RefreshCw, ChevronRight, CheckCircle
 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
