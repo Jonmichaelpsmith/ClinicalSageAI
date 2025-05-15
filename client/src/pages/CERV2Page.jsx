@@ -1410,19 +1410,31 @@ export default function CERV2Page() {
                                       </div>
                                     </div>
                                   ) : (
-                                    <button
-                                      id="addNewProfileButton"
-                                      type="button"
-                                      className="w-full text-left px-3 py-2 rounded bg-blue-50 text-blue-700 text-sm flex items-center hover:bg-blue-100"
-                                      onClick={() => {
-                                        console.log('DEBUG: "+ Add New Profile" button clicked! Timestamp:', new Date().toISOString());
-                                        alert('Add New Profile button clicked!'); // Direct user feedback
+                                    <div
+                                      id="addNewProfileWrapper"
+                                      className="w-full cursor-pointer"
+                                      onClick={(e) => {
+                                        e.stopPropagation(); // Prevent event bubbling
+                                        console.log('DEBUG: "Add New Profile" wrapper clicked! Timestamp:', new Date().toISOString());
+                                        alert('Add New Profile area clicked!');
                                         setShowNewProfileInput(true);
                                       }}
                                     >
-                                      <Plus className="h-4 w-4 mr-2" />
-                                      <span>Add New Profile</span>
-                                    </button>
+                                      <button
+                                        id="addNewProfileButton"
+                                        type="button"
+                                        className="w-full text-left px-3 py-2 rounded bg-red-100 text-red-700 text-sm flex items-center hover:bg-red-200 border-2 border-red-300 font-semibold"
+                                        onClick={(e) => {
+                                          e.stopPropagation(); // Prevent event bubbling
+                                          console.log('DEBUG: "Add New Profile" button clicked! Timestamp:', new Date().toISOString());
+                                          alert('Add New Profile button clicked!');
+                                          setShowNewProfileInput(true);
+                                        }}
+                                      >
+                                        <Plus className="h-4 w-4 mr-2" />
+                                        <span>Add New Profile</span>
+                                      </button>
+                                    </div>
                                   )}
                                 </div>
                               </div>
