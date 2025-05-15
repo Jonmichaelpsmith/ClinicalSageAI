@@ -114,6 +114,7 @@ export default function CERV2Page() {
   const [showWizard, setShowWizard] = useState(false);
   const [showEvidenceReminder, setShowEvidenceReminder] = useState(true);
   const [showSystemHealth, setShowSystemHealth] = useState(false);
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [systemInfo, setSystemInfo] = useState({
     memory: { used: 0, total: 0, percentage: 0 },
     api: { status: 'unknown', latency: 0 },
