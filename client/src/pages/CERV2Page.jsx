@@ -1557,17 +1557,350 @@ export default function CERV2Page() {
               </div>
             </TabsContent>
             
-            <TabsContent value="discovery" className="mt-4">
+            <TabsContent value="predicate-discovery" className="mt-4">
               <div className="grid grid-cols-1 gap-6">
-                <PredicateFinderPanel 
-                  deviceProfile={deviceProfile || {
-                    deviceName: deviceName,
-                    manufacturer: manufacturer,
-                    deviceClass: deviceType?.includes('II') ? 'II' : deviceType?.includes('III') ? 'III' : 'I',
-                    intendedUse: intendedUse
-                  }}
-                  organizationId={organizationId || 1}
-                />
+                <Card className="shadow-md border border-blue-100 overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
+                    <CardTitle className="text-xl flex items-center text-blue-800">
+                      <Search className="h-5 w-5 mr-2" />
+                      Predicate Device Discovery
+                    </CardTitle>
+                    <CardDescription>
+                      Search for and select predicate devices for your 510(k) submission
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <PredicateFinderPanel 
+                      deviceProfile={deviceProfile || {
+                        deviceName: deviceName,
+                        manufacturer: manufacturer,
+                        deviceClass: deviceType?.includes('II') ? 'II' : deviceType?.includes('III') ? 'III' : 'I',
+                        intendedUse: intendedUse
+                      }}
+                      organizationId={organizationId || 1}
+                      onPredicateSelected={(predicates) => {
+                        console.log("Selected predicates:", predicates);
+                        setComparators(predicates);
+                        toast({
+                          title: "Predicates Selected",
+                          description: `${predicates.length} predicate device(s) have been selected for comparison.`,
+                        });
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            {/* Pathway Advisor Tab */}
+            <TabsContent value="pathway-advisor" className="mt-4">
+              <div className="grid grid-cols-1 gap-6">
+                <Card className="shadow-md border border-blue-100 overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
+                    <CardTitle className="text-xl flex items-center text-blue-800">
+                      <GraduationCap className="h-5 w-5 mr-2" />
+                      510(k) Pathway Advisor
+                    </CardTitle>
+                    <CardDescription>
+                      Receive guidance on the most appropriate 510(k) submission pathway
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <div className="space-y-6">
+                      {/* Pathway Recommendation Card */}
+                      <div className="bg-green-50 border border-green-100 rounded-lg p-4">
+                        <div className="flex items-start">
+                          <div className="bg-green-100 rounded-full p-2 mr-4">
+                            <CheckCircle className="h-5 w-5 text-green-600" />
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-medium text-green-800">Recommended Pathway: Traditional 510(k)</h3>
+                            <p className="text-green-700 mt-1">
+                              Based on your device profile and selected predicates, a Traditional 510(k) is the most appropriate pathway.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Pathway Comparison Table */}
+                      <div className="border rounded-lg overflow-hidden">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pathway Type</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timeline</th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Suitability</th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            <tr className="bg-green-50">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Traditional 510(k)</td>
+                              <td className="px-6 py-4 text-sm text-gray-500">Standard pathway requiring demonstration of substantial equivalence</td>
+                              <td className="px-6 py-4 text-sm text-gray-500">90-day review period</td>
+                              <td className="px-6 py-4 text-sm text-green-600 font-medium">Recommended</td>
+                            </tr>
+                            <tr>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Abbreviated 510(k)</td>
+                              <td className="px-6 py-4 text-sm text-gray-500">Uses guidance documents, special controls, or recognized standards</td>
+                              <td className="px-6 py-4 text-sm text-gray-500">90-day review period</td>
+                              <td className="px-6 py-4 text-sm text-gray-500">Possible alternative</td>
+                            </tr>
+                            <tr>
+                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Special 510(k)</td>
+                              <td className="px-6 py-4 text-sm text-gray-500">For modifications to your own legally marketed device</td>
+                              <td className="px-6 py-4 text-sm text-gray-500">30-day review period</td>
+                              <td className="px-6 py-4 text-sm text-gray-500">Not applicable</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                      
+                      <div className="flex justify-end space-x-2 pt-4">
+                        <Button variant="outline">
+                          Request Consultation
+                        </Button>
+                        <Button>
+                          Confirm Pathway
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            {/* Equivalence Drafting Tab */}
+            <TabsContent value="equivalence-drafting" className="mt-4">
+              <div className="grid grid-cols-1 gap-6">
+                <Card className="shadow-md border border-blue-100 overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
+                    <CardTitle className="text-xl flex items-center text-blue-800">
+                      <GitCompare className="h-5 w-5 mr-2" />
+                      Substantial Equivalence Analysis
+                    </CardTitle>
+                    <CardDescription>
+                      Document and analyze substantial equivalence to predicate devices
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <EquivalenceBuilderPanel
+                      onEquivalenceDataChange={(data) => {
+                        console.log("Equivalence data updated:", data);
+                        setEquivalenceData(data);
+                      }}
+                      onAddToCER={(data) => {
+                        console.log("Equivalence data added to report:", data);
+                        toast({
+                          title: "Equivalence Analysis Added",
+                          description: "Your substantial equivalence analysis has been added to the report.",
+                        });
+                      }}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="compliance-check" className="mt-4">
+              <div className="grid grid-cols-1 gap-6">
+                <Card className="shadow-md border border-blue-100 overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
+                    <CardTitle className="text-xl flex items-center text-blue-800">
+                      <CheckSquare className="h-5 w-5 mr-2" />
+                      FDA Compliance Check
+                    </CardTitle>
+                    <CardDescription>
+                      Verify regulatory compliance of your 510(k) submission
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <ComplianceChecker
+                      projectId={deviceProfile?.id || 'dev-sample-1'}
+                      onComplianceChange={(results) => {
+                        setCompliance(results);
+                        setIsComplianceRunning(false);
+                      }}
+                      isComplianceRunning={isComplianceRunning}
+                      setIsComplianceRunning={setIsComplianceRunning}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            {/* eSTAR Assembly Tab */}
+            <TabsContent value="estar-assembly" className="mt-4">
+              <div className="grid grid-cols-1 gap-6">
+                <Card className="shadow-md border border-blue-100 overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
+                    <CardTitle className="text-xl flex items-center text-blue-800">
+                      <Layers className="h-5 w-5 mr-2" />
+                      eSTAR Assembly
+                    </CardTitle>
+                    <CardDescription>
+                      Compile your submission into the FDA eSTAR format
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <div className="space-y-6">
+                      {/* eSTAR Sections Display */}
+                      <div className="border rounded-lg overflow-hidden">
+                        <div className="bg-gray-50 px-4 py-3 border-b">
+                          <h3 className="text-sm font-medium text-gray-700">eSTAR Submission Assembly</h3>
+                        </div>
+                        <div className="divide-y divide-gray-200">
+                          {[
+                            { name: "Administrative Information", status: "complete", percent: 100 },
+                            { name: "Device Description", status: "complete", percent: 100 },
+                            { name: "Substantial Equivalence Discussion", status: "complete", percent: 100 },
+                            { name: "Sterilization", status: "in-progress", percent: 60 },
+                            { name: "Biocompatibility", status: "in-progress", percent: 75 },
+                            { name: "Software", status: "not-started", percent: 0 },
+                            { name: "Electromagnetic Compatibility", status: "not-started", percent: 0 },
+                            { name: "Performance Testing", status: "not-started", percent: 0 },
+                            { name: "Clinical Evidence", status: "not-started", percent: 0 },
+                            { name: "Labeling", status: "in-progress", percent: 40 },
+                          ].map((section, index) => (
+                            <div key={index} className="px-4 py-3 flex items-center justify-between">
+                              <div className="flex items-center">
+                                {section.status === "complete" ? (
+                                  <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
+                                ) : section.status === "in-progress" ? (
+                                  <Circle className="h-5 w-5 text-yellow-500 mr-3" />
+                                ) : (
+                                  <Circle className="h-5 w-5 text-gray-300 mr-3" />
+                                )}
+                                <span className="text-sm text-gray-700">{section.name}</span>
+                              </div>
+                              <div className="flex items-center space-x-4">
+                                <div className="w-32 bg-gray-200 rounded-full h-2.5">
+                                  <div 
+                                    className={`h-2.5 rounded-full ${
+                                      section.status === "complete" 
+                                        ? "bg-green-500" 
+                                        : section.status === "in-progress" 
+                                          ? "bg-yellow-500" 
+                                          : "bg-gray-300"
+                                    }`}
+                                    style={{ width: `${section.percent}%` }}
+                                  ></div>
+                                </div>
+                                <span className="text-xs text-gray-500">{section.percent}%</span>
+                                <Button variant="ghost" size="sm" className="h-8 px-2">
+                                  <Edit className="h-4 w-4 text-gray-500" />
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-end space-x-2 pt-4">
+                        <Button variant="outline">
+                          Save Draft
+                        </Button>
+                        <Button>
+                          Complete Assembly
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            {/* Submission Tab */}
+            <TabsContent value="submission" className="mt-4">
+              <div className="grid grid-cols-1 gap-6">
+                <Card className="shadow-md border border-blue-100 overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
+                    <CardTitle className="text-xl flex items-center text-blue-800">
+                      <Upload className="h-5 w-5 mr-2" />
+                      FDA Submission
+                    </CardTitle>
+                    <CardDescription>
+                      Finalize and submit your 510(k) to the FDA
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <div className="space-y-6">
+                      {/* Pre-submission Checklist */}
+                      <div className="bg-white border rounded-lg overflow-hidden">
+                        <div className="bg-gray-50 px-4 py-3 border-b">
+                          <h3 className="text-sm font-medium text-gray-700">Pre-submission Checklist</h3>
+                        </div>
+                        <div className="p-4 space-y-3">
+                          {[
+                            { check: "Device information complete", done: true },
+                            { check: "Predicate devices identified", done: true },
+                            { check: "Substantial equivalence documented", done: true },
+                            { check: "Compliance verification complete", done: true },
+                            { check: "eSTAR package assembled", done: false },
+                            { check: "Submission fee payment prepared", done: false },
+                            { check: "Final review completed", done: false },
+                          ].map((item, i) => (
+                            <div key={i} className="flex items-start">
+                              <div className={`flex-shrink-0 h-5 w-5 ${item.done ? 'text-green-500' : 'text-gray-300'}`}>
+                                <CheckSquare className="h-5 w-5" />
+                              </div>
+                              <div className="ml-3">
+                                <p className={`text-sm ${item.done ? 'text-gray-700' : 'text-gray-500'}`}>{item.check}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {/* Submission Details */}
+                      <div className="bg-white border rounded-lg overflow-hidden">
+                        <div className="bg-gray-50 px-4 py-3 border-b">
+                          <h3 className="text-sm font-medium text-gray-700">Submission Details</h3>
+                        </div>
+                        <div className="p-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="submission-id">Submission ID</Label>
+                              <Input id="submission-id" value={k510DocumentId} disabled className="bg-gray-50" />
+                            </div>
+                            <div>
+                              <Label htmlFor="submission-date">Submission Date</Label>
+                              <Input id="submission-date" type="date" defaultValue="2025-07-15" />
+                            </div>
+                            <div>
+                              <Label htmlFor="fda-contact">FDA Contact Person</Label>
+                              <Input id="fda-contact" placeholder="Optional" />
+                            </div>
+                            <div>
+                              <Label htmlFor="submission-fee">Submission Fee</Label>
+                              <Input id="submission-fee" value="$13,123" disabled className="bg-gray-50" />
+                            </div>
+                          </div>
+                          
+                          <div className="mt-4">
+                            <Label htmlFor="submission-notes">Additional Notes</Label>
+                            <textarea 
+                              id="submission-notes" 
+                              rows={3} 
+                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" 
+                              placeholder="Any special notes for the FDA reviewer..."
+                            ></textarea>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-end space-x-2 pt-4">
+                        <Button variant="outline">
+                          Save for Later
+                        </Button>
+                        <Button className="bg-green-600 hover:bg-green-700">
+                          <Upload className="h-4 w-4 mr-2" />
+                          Submit to FDA
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
             
