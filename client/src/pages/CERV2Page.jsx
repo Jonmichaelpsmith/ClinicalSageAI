@@ -212,20 +212,19 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     }
   };
   
-  const handleEquivalenceComplete = async (data) => {
+  const handleEquivalenceComplete = (data) => {
     setEquivalenceCompleted(true);
     setEquivalenceData(data); // Store the equivalence data including literature evidence
     
     // Save literature-feature connections if available
     if (data && data.literatureEvidence && Object.keys(data.literatureEvidence).length > 0) {
-      try {
-        // Save to the server via the LiteratureFeatureService
-        await LiteratureFeatureService.saveLiteratureFeatureConnections({
-          documentId: deviceProfile?.id || data.documentId,
-          featureEvidence: data.literatureEvidence,
-          organizationId: deviceProfile?.organizationId
-        });
-        
+      // Save to the server via the LiteratureFeatureService
+      LiteratureFeatureService.saveLiteratureFeatureConnections({
+        documentId: deviceProfile?.id || data.documentId,
+        featureEvidence: data.literatureEvidence,
+        organizationId: deviceProfile?.organizationId
+      })
+      .then(() => {
         // Log successful connection
         const connectionCount = Object.values(data.literatureEvidence).reduce((acc, papers) => acc + papers.length, 0);
         console.log(`Saved ${connectionCount} literature evidence connections for ${Object.keys(data.literatureEvidence).length} features`);
@@ -236,7 +235,8 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           description: `Substantial equivalence documentation has been prepared with ${connectionCount} literature evidence connections.`,
           variant: "success"
         });
-      } catch (error) {
+      })
+      .catch(error => {
         console.error('Error saving literature evidence connections:', error);
         
         // Show error toast
@@ -245,7 +245,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           description: "Equivalence analysis saved, but there was an issue connecting literature evidence. This won't affect your submission.",
           variant: "warning"
         });
-      }
+      });
     } else {
       // Standard completion toast when no literature evidence
       toast({
