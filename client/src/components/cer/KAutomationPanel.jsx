@@ -728,23 +728,18 @@ export default function KAutomationPanel() {
                 </div>
                 
                 <div className="space-y-4">
-                  {/* Device profile creation or selection UI */}
+                  {/* Device profile data entry workspace */}
                   {!currentDeviceProfile ? (
-                    <div className="border rounded-lg p-6 bg-blue-50 border-blue-100 text-center">
-                      <FileText className="h-12 w-12 text-blue-500 mx-auto mb-3" />
+                    <div className="border rounded-lg p-6 bg-blue-50 border-blue-100">
+                      <FileText className="h-12 w-12 text-blue-500 mb-3" />
                       <h3 className="text-lg font-medium text-gray-800 mb-2">No Device Profile Selected</h3>
-                      <p className="text-gray-600 mb-4 max-w-md mx-auto">
-                        Create or select a device profile to begin the 510(k) submission process. 
-                        This will be the basis for your regulatory submission.
+                      <p className="text-gray-600 mb-4">
+                        Please select a device profile from the file tree on the left or create a new one to begin the 510(k) submission process.
                       </p>
-                      <Button 
-                        id="create-profile-button" 
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
-                        onClick={() => setShowDeviceProfileDialog(true)}
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Create New Device Profile
-                      </Button>
+                      <div className="flex items-center text-blue-600">
+                        <Info className="h-4 w-4 mr-2" />
+                        <span className="text-sm">Select "Device Profiles" in the left panel to see available profiles or create a new one</span>
+                      </div>
                     </div>
                   ) : (
                     <div>
