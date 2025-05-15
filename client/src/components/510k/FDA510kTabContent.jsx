@@ -209,23 +209,35 @@ const FDA510kTabContent = ({
 
   return (
     <div className={className}>
+      <Card className="shadow-md border-0 overflow-hidden mb-6">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-white">
+          <h3 className="text-lg font-medium flex items-center">
+            <CheckSquare className="h-5 w-5 mr-2" /> 
+            FDA 510(k) Submission Workflow
+          </h3>
+          <p className="text-blue-100 text-sm mt-1">
+            Complete FDA-compliant 510(k) documentation with intelligent workflow automation
+          </p>
+        </div>
+      </Card>
+    
       <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="drafting">
+        <TabsList className="grid w-full grid-cols-4 bg-blue-50 p-1">
+          <TabsTrigger value="drafting" className="data-[state=active]:bg-white">
             <FilePlus2 className="h-4 w-4 mr-2" /> 
-            1. Document Creation
+            1. Device Profile
           </TabsTrigger>
-          <TabsTrigger value="submission">
+          <TabsTrigger value="submission" className="data-[state=active]:bg-white">
             <FileUp className="h-4 w-4 mr-2" /> 
-            2. eSTAR Generation
+            2. Predicate Finder
           </TabsTrigger>
-          <TabsTrigger value="testing">
+          <TabsTrigger value="testing" className="data-[state=active]:bg-white">
             <CheckSquare className="h-4 w-4 mr-2" /> 
-            3. Validation
+            3. Compliance Check
           </TabsTrigger>
-          <TabsTrigger value="documentation">
+          <TabsTrigger value="documentation" className="data-[state=active]:bg-white">
             <BookOpen className="h-4 w-4 mr-2" /> 
-            4. Guidelines
+            4. Final Review
           </TabsTrigger>
         </TabsList>
         
