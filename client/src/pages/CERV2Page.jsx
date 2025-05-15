@@ -48,7 +48,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, GraduationCap, HelpCircle, Circle, Home, Menu, Filter, FolderPlus, Edit, ArrowRight, CheckCircle2, Cog, Trash2, Plus, Folder, File } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, GraduationCap, HelpCircle, Circle, Home, Menu, Filter, FolderPlus, Edit, ArrowRight, CheckCircle2, Cog, Trash2, Plus, Folder, File, Upload } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -887,38 +887,125 @@ export default function CERV2Page() {
       
       return (
         <div className="bg-white p-6 rounded-md shadow-sm border border-blue-100">
-          <div className="mb-4">
-            <h2 className="text-2xl font-semibold text-blue-800">510(k) Submission Builder</h2>
-            <p className="text-gray-600">Complete your FDA 510(k) submission using our guided workflow</p>
+          <div className="mb-4 flex items-center justify-between">
+            <div>
+              <h2 className="text-2xl font-semibold text-blue-800">510(k) Submission Builder</h2>
+              <p className="text-gray-600">Complete your FDA 510(k) submission using our guided workflow</p>
+            </div>
+            <ProgressTracker 
+              currentStep={3} 
+              totalSteps={8}
+              steps={[
+                { name: "Setup", completed: true },
+                { name: "Device Profile", completed: true },
+                { name: "Predicate Discovery", completed: true },
+                { name: "Pathway Advisor", completed: false },
+                { name: "Equivalence Drafting", completed: false },
+                { name: "Compliance Check", completed: false },
+                { name: "eSTAR Assembly", completed: false },
+                { name: "Submission", completed: false }
+              ]}
+            />
           </div>
           
-          <Tabs defaultValue="workflow" className="w-full">
-            <TabsList className="mb-4 bg-blue-50 w-full flex justify-start gap-2 p-1 border-b">
-              <TabsTrigger value="workflow" className="data-[state=active]:bg-blue-600">
+          <Tabs defaultValue="setup" className="w-full">
+            <TabsList className="mb-4 bg-blue-50 w-full flex justify-start gap-2 p-1 border-b overflow-x-auto">
+              <TabsTrigger value="setup" className="data-[state=active]:bg-blue-600">
+                <Cog className="h-4 w-4 mr-2" />
+                Setup
+              </TabsTrigger>
+              <TabsTrigger value="device-profile" className="data-[state=active]:bg-blue-600">
                 <FileText className="h-4 w-4 mr-2" />
                 Device Profile
               </TabsTrigger>
-              <TabsTrigger value="discovery" className="data-[state=active]:bg-blue-600">
+              <TabsTrigger value="predicate-discovery" className="data-[state=active]:bg-blue-600">
                 <Search className="h-4 w-4 mr-2" />
-                Predicate Finder
+                Predicate Discovery
               </TabsTrigger>
-              <TabsTrigger value="compliance" className="data-[state=active]:bg-blue-600">
+              <TabsTrigger value="pathway-advisor" className="data-[state=active]:bg-blue-600">
+                <GraduationCap className="h-4 w-4 mr-2" />
+                Pathway Advisor
+              </TabsTrigger>
+              <TabsTrigger value="equivalence-drafting" className="data-[state=active]:bg-blue-600">
+                <GitCompare className="h-4 w-4 mr-2" />
+                Equivalence Drafting
+              </TabsTrigger>
+              <TabsTrigger value="compliance-check" className="data-[state=active]:bg-blue-600">
                 <CheckSquare className="h-4 w-4 mr-2" />
                 Compliance Check
               </TabsTrigger>
-              <TabsTrigger value="reports" className="data-[state=active]:bg-blue-600">
-                <FileText className="h-4 w-4 mr-2" />
-                Final Review
+              <TabsTrigger value="estar-assembly" className="data-[state=active]:bg-blue-600">
+                <Layers className="h-4 w-4 mr-2" />
+                eSTAR Assembly
               </TabsTrigger>
-              <TabsTrigger value="insights" className="data-[state=active]:bg-blue-600">
-                <Lightbulb className="h-4 w-4 mr-2" />
-                Insights
+              <TabsTrigger value="submission" className="data-[state=active]:bg-blue-600">
+                <Upload className="h-4 w-4 mr-2" />
+                Submission
               </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="workflow" className="mt-4">
+            {/* Setup Tab */}
+            <TabsContent value="setup" className="mt-4">
               <div className="grid grid-cols-1 gap-6">
-                {/* Device Profile Form for 510k workflow */}
+                <Card className="shadow-md border border-blue-100 overflow-hidden">
+                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
+                    <CardTitle className="text-xl flex items-center text-blue-800">
+                      <Cog className="h-5 w-5 mr-2" />
+                      510(k) Submission Setup
+                    </CardTitle>
+                    <CardDescription>
+                      Configure your 510(k) submission parameters and journey
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="pt-4">
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="document-id">510(k) Document ID</Label>
+                          <Input id="document-id" value={k510DocumentId} disabled className="bg-gray-50" />
+                        </div>
+                        <div>
+                          <Label htmlFor="submission-date">Target Submission Date</Label>
+                          <Input id="submission-date" type="date" defaultValue="2025-07-15" />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <Label htmlFor="submission-type">510(k) Submission Type</Label>
+                        <Select defaultValue="traditional">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="traditional">Traditional 510(k)</SelectItem>
+                            <SelectItem value="abbreviated">Abbreviated 510(k)</SelectItem>
+                            <SelectItem value="special">Special 510(k)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="flex items-center space-x-2 mt-4">
+                        <Switch id="estar-format" defaultChecked />
+                        <Label htmlFor="estar-format">Use eSTAR format for submission</Label>
+                      </div>
+                      
+                      <div className="pt-4">
+                        <Button className="mr-2">
+                          Save Setup
+                        </Button>
+                        <Button variant="outline">
+                          Reset to Defaults
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+            
+            {/* Device Profile Tab */}
+            <TabsContent value="device-profile" className="mt-4">
+              <div className="grid grid-cols-1 gap-6">
                 <Card className="shadow-md border border-blue-100 overflow-hidden">
                   <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
                     <CardTitle className="text-xl flex items-center text-blue-800">
