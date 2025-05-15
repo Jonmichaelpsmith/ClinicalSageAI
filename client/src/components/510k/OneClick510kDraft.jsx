@@ -55,6 +55,7 @@ const OneClick510kDraft = ({
   onDraftCreated,
   className = ''
 }) => {
+  // Tab and form state
   const [activeTab, setActiveTab] = useState('device-info');
   const [deviceType, setDeviceType] = useState('cardio');
   const [riskClass, setRiskClass] = useState('class_ii');
@@ -71,6 +72,31 @@ const OneClick510kDraft = ({
   const [isClinicalData, setIsClinicalData] = useState(false);
   const [draftId, setDraftId] = useState(null);
   const [draftUrl, setDraftUrl] = useState(null);
+  
+  // Modal states
+  const [deviceProfileDialogOpen, setDeviceProfileDialogOpen] = useState(false);
+  const [deviceIntakeDialogOpen, setDeviceIntakeDialogOpen] = useState(false);
+  const [newDeviceDialogOpen, setNewDeviceDialogOpen] = useState(false);
+  
+  // Handle device profile submission
+  const handleDeviceProfileSubmit = (data) => {
+    toast({
+      title: "Device Profile Created",
+      description: `Successfully created profile for ${data.deviceName}`,
+    });
+    setDeviceProfileDialogOpen(false);
+    
+    // Update form with new device profile data
+    if (data.deviceName) {
+      setTitle(`${data.deviceName} 510(k) Draft`);
+    }
+    if (data.intendedUse) {
+      setIntendedUse(data.intendedUse);
+    }
+    if (data.description) {
+      setDescription(data.description);
+    }
+  };
   
   // Set default values based on device data
   React.useEffect(() => {
@@ -264,12 +290,7 @@ const OneClick510kDraft = ({
             <Button 
               type="button" 
               className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              onClick={() => {
-                toast({
-                  title: "Add Device Profile",
-                  description: "Device profile creation function activated",
-                });
-              }}
+              onClick={() => setDeviceProfileDialogOpen(true)}
             >
               <FilePlus className="h-4 w-4" />
               <span>Add New Device Profile</span>
@@ -279,12 +300,7 @@ const OneClick510kDraft = ({
               type="button" 
               variant="outline"
               className="border-blue-300 text-blue-700 hover:bg-blue-50 flex items-center gap-2"
-              onClick={() => {
-                toast({
-                  title: "Add Device Intake",
-                  description: "Device intake creation initiated",
-                });
-              }}
+              onClick={() => setDeviceIntakeDialogOpen(true)}
             >
               <FileText className="h-4 w-4" />
               <span>Add New Device Intake</span>
@@ -294,12 +310,7 @@ const OneClick510kDraft = ({
               type="button" 
               variant="secondary"
               className="bg-gray-100 hover:bg-gray-200 text-gray-800 flex items-center gap-2"
-              onClick={() => {
-                toast({
-                  title: "Add Device",
-                  description: "New device creation started",
-                });
-              }}
+              onClick={() => setNewDeviceDialogOpen(true)}
             >
               <Plus className="h-4 w-4" />
               <span>Add New Device</span>
