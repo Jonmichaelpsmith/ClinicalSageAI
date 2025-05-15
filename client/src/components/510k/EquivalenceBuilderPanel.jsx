@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GitCompare, ArrowRight, Check, Loader2, FileCheck, X, ChevronDown, ChevronUp, Info, Save } from 'lucide-react';
+import { GitCompare, ArrowRight, Check, Loader2, FileCheck, X, ChevronDown, ChevronUp, Info, Save, FileText, BookOpen, Calendar, BarChart2 } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
@@ -42,6 +42,8 @@ const EquivalenceBuilderPanel = ({
   const [selectedPredicateDevice, setSelectedPredicateDevice] = useState(predicateDevices?.[0]?.id || '');
   const [summaryStatement, setSummaryStatement] = useState('');
   const [equivalenceComplete, setEquivalenceComplete] = useState(false);
+  const [literatureEvidence, setLiteratureEvidence] = useState({});
+  const [activeFeatureForEvidence, setActiveFeatureForEvidence] = useState(null);
   const { toast } = useToast();
   
   // Initialize with predicate devices data
@@ -50,6 +52,27 @@ const EquivalenceBuilderPanel = ({
       setSelectedPredicateDevice(predicateDevices[0].id);
     }
   }, [predicateDevices, selectedPredicateDevice]);
+  
+  // Process selected literature
+  useEffect(() => {
+    if (selectedLiterature?.length > 0) {
+      const evidenceMap = {};
+      
+      // Organize literature evidence by relevant feature
+      selectedLiterature.forEach(paper => {
+        if (paper.relevantFeatures) {
+          paper.relevantFeatures.forEach(feature => {
+            if (!evidenceMap[feature]) {
+              evidenceMap[feature] = [];
+            }
+            evidenceMap[feature].push(paper);
+          });
+        }
+      });
+      
+      setLiteratureEvidence(evidenceMap);
+    }
+  }, [selectedLiterature]);
   
   // Load saved analysis from Document Vault if available
   useEffect(() => {
@@ -777,6 +800,18 @@ const EquivalenceBuilderPanel = ({
           disabled={predicateDevices.length === 0 || !selectedPredicateDevice}
         >
           Feature Comparison
+        </Button>
+        <Button 
+          variant={selectedTab === 'literature' ? 'subtle' : 'ghost'} 
+          className={`rounded-none border-b-2 ${
+            selectedTab === 'literature' 
+              ? 'border-blue-600 text-blue-600' 
+              : 'border-transparent text-gray-600'
+          }`}
+          onClick={() => setSelectedTab('literature')}
+          disabled={selectedLiterature.length === 0}
+        >
+          Supporting Literature
         </Button>
         <Button 
           variant={selectedTab === 'summary' ? 'subtle' : 'ghost'} 
