@@ -26,6 +26,8 @@ import KAutomationPanel from '@/components/cer/KAutomationPanel';
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import ReportGenerator from '@/components/510k/ReportGenerator';
 import SimpleDocumentTreePanel from '@/components/510k/SimpleDocumentTreePanel';
+import WelcomeDialog from '@/components/510k/WelcomeDialog';
+import DeviceIntakeForm from '@/components/510k/DeviceIntakeForm';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -45,9 +47,12 @@ import { Progress } from '@/components/ui/progress';
 export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // Hook into the Lumen AI Assistant context
   const { openAssistant, setModuleContext } = useLumenAiAssistant();
+  const { toast } = useToast();
   
   // State variables
   const [title, setTitle] = useState('FDA 510(k) Submission');
+  const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
+  const [showDeviceIntakeForm, setShowDeviceIntakeForm] = useState(false);
   const [deviceType, setDeviceType] = useState('Class II Medical Device');
   const [documentType, setDocumentType] = useState(initialDocumentType || '510k'); // Options: 'cer' or '510k'
   const [deviceName, setDeviceName] = useState('');
