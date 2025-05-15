@@ -1051,9 +1051,11 @@ const EquivalenceBuilderPanel = ({
         </div>
       </CardFooter>
     </Card>
-
-    {/* Literature Evidence Selection Dialog */}
-    <Dialog open={activeFeatureForEvidence !== null} onOpenChange={(open) => !open && setActiveFeatureForEvidence(null)}>
+    
+    <Dialog 
+      open={activeFeatureForEvidence !== null} 
+      onOpenChange={(open) => !open && setActiveFeatureForEvidence(null)}
+    >
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>Assign Literature Evidence</DialogTitle>
@@ -1061,7 +1063,7 @@ const EquivalenceBuilderPanel = ({
             Select literature to associate with this feature to strengthen your substantial equivalence argument.
           </DialogDescription>
         </DialogHeader>
-
+        
         <div className="py-4">
           {activeFeatureForEvidence && (
             <div className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-100">
@@ -1069,7 +1071,7 @@ const EquivalenceBuilderPanel = ({
               <p>{comparisonFeatures.find(f => f.id === activeFeatureForEvidence)?.name}</p>
             </div>
           )}
-
+          
           <ScrollArea className="h-[320px]">
             <div className="space-y-3">
               {selectedLiterature.map((paper) => {
@@ -1117,7 +1119,7 @@ const EquivalenceBuilderPanel = ({
             </div>
           </ScrollArea>
         </div>
-
+        
         <DialogFooter className="flex justify-between">
           <Button
             variant="outline"
@@ -1134,9 +1136,9 @@ const EquivalenceBuilderPanel = ({
       </DialogContent>
     </Dialog>
   );
-
+  
   // Helper function to toggle literature associations for a feature
-  const toggleLiteratureForFeature = (featureId, paper, isChecked) => {
+  function toggleLiteratureForFeature(featureId, paper, isChecked) {
     if (!featureId) return;
     
     setLiteratureEvidence(prev => {
@@ -1173,7 +1175,7 @@ const EquivalenceBuilderPanel = ({
         : `Paper removed from feature evidence.`,
       variant: isChecked ? "default" : "destructive"
     });
-  };
+  }
 };
 
 export default EquivalenceBuilderPanel;
