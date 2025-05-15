@@ -7,7 +7,10 @@
 
 import { apiRequest } from '../lib/queryClient';
 
-export class FDA510kService {
+/**
+ * FDA510kService - singleton service for 510(k) related operations
+ */
+const FDA510kService = {
   /**
    * Fetch a list of all 510(k) projects
    * 

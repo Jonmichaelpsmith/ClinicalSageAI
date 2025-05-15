@@ -9,7 +9,8 @@ import {
   FolderPlus, FilePlus2, Inbox, SendHorizontal, Archive, Book, ClipboardList,
   Bookmark, BookOpen, CheckSquare, Download, PlusCircle, Filter, Layers,
   Paperclip, Share2, HelpCircle, Menu, LogOut, Info, Grid, LayoutDashboard,
-  Circle, ArrowRight, Edit, Play, Loader2
+  Circle, ArrowRight, Edit, Play, Loader2, ArrowLeft, ClipboardCheck,
+  Check, FileDigit, Send, X, AlignJustify
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
