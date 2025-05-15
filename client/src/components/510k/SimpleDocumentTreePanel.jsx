@@ -4,18 +4,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { 
   FolderOpen, File, ChevronRight, ChevronDown, 
-  FilePlus, FolderPlus, Download, FileText, 
-  X, Search, FolderTree, AlertCircle
+  FilePlus, FolderPlus, FileText, X, Search, FolderTree
 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
-import docuShareService from "@/services/DocuShareService";
 
 /**
  * Document Tree Panel
  * 
  * A sliding panel that displays a hierarchical tree of documents in the vault.
  */
-const DocumentTreePanel = ({ isOpen, onClose, documentId }) => {
+const SimpleDocumentTreePanel = ({ isOpen, onClose, documentId }) => {
   const [expandedFolders, setExpandedFolders] = useState({
     'folder-1': true, // Start with the first folder expanded
     'folder-2': false,
@@ -139,16 +137,10 @@ const DocumentTreePanel = ({ isOpen, onClose, documentId }) => {
     );
   };
   
-  console.log("DocumentTreePanel rendering with isOpen:", isOpen);
-  
-  // Always display this debug info in dev
+  // Log for debugging purposes only
   useEffect(() => {
     console.log("DocumentTreePanel mounted with isOpen:", isOpen);
-    
-    // Cleanup
-    return () => {
-      console.log("DocumentTreePanel unmounted");
-    };
+    return () => console.log("DocumentTreePanel unmounted");
   }, [isOpen]);
   
   return (
@@ -181,6 +173,8 @@ const DocumentTreePanel = ({ isOpen, onClose, documentId }) => {
             <Input
               placeholder="Search files..."
               className="pl-8"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
         </div>
@@ -206,156 +200,8 @@ const DocumentTreePanel = ({ isOpen, onClose, documentId }) => {
           </Button>
         </div>
       </div>
-      <div className="h-full flex flex-col">
-        <div className="p-4 border-b flex items-center justify-between">
-          <div className="flex items-center">
-            <FolderTree className="h-5 w-5 text-blue-600 mr-2" />
-            <h2 className="font-semibold text-lg">Document Vault</h2>
-          </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onClose}
-            className="h-8 w-8"
-          >
-            <X size={18} />
-          </Button>
-        </div>
-        
-        <div className="p-3 border-b">
-          <div className="relative">
-            <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search documents..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8"
-            />
-            {searchTerm && (
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="absolute right-0 top-0 h-9 w-9"
-                onClick={() => setSearchTerm('')}
-              >
-                <X size={14} />
-              </Button>
-            )}
-          </div>
-        </div>
-        
-        <div className="flex-grow overflow-auto">
-          {isLoading ? (
-            <div className="p-4 text-center text-gray-500">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-              <p>Loading documents...</p>
-            </div>
-          ) : filteredDocuments.length > 0 ? (
-            <ScrollArea className="h-full">
-              <div className="p-2">
-                {filteredDocuments.map(doc => renderDocumentItem(doc))}
-              </div>
-            </ScrollArea>
-          ) : (
-            <div className="p-4 text-center text-gray-500">
-              <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-              <p>No documents found</p>
-              {searchTerm && (
-                <p className="text-sm mt-1">Try adjusting your search terms</p>
-              )}
-            </div>
-          )}
-        </div>
-        
-        <div className="p-3 border-t flex justify-between">
-          <Button variant="outline" size="sm">
-            <FolderPlus size={14} className="mr-1" />
-            New Folder
-          </Button>
-          <Button variant="outline" size="sm">
-            <FilePlus size={14} className="mr-1" />
-            Upload
-          </Button>
-        </div>
-      </div>
-      
-      {/* Document Preview Dialog */}
-      <Dialog open={showDocumentPreview} onOpenChange={setShowDocumentPreview}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>{selectedDocument?.name}</DialogTitle>
-            <DialogDescription>
-              Document preview
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="border rounded-md p-4 text-center my-4">
-            {selectedDocument?.format === 'pdf' ? (
-              <div className="text-center">
-                <FileText size={48} className="text-red-500 mx-auto mb-2" />
-                <p className="text-gray-700 mb-2">PDF Document Preview</p>
-                <p className="text-sm text-gray-500">
-                  PDF preview is not available in this version.
-                </p>
-              </div>
-            ) : selectedDocument?.format === 'docx' ? (
-              <div className="text-center">
-                <FileText size={48} className="text-blue-500 mx-auto mb-2" />
-                <p className="text-gray-700 mb-2">Word Document Preview</p>
-                <p className="text-sm text-gray-500">
-                  Word document preview is not available in this version.
-                </p>
-              </div>
-            ) : (
-              <div className="text-center">
-                <FileText size={48} className="text-gray-400 mx-auto mb-2" />
-                <p className="text-gray-500">Preview not available</p>
-              </div>
-            )}
-          </div>
-          
-          <div className="flex flex-col space-y-2 text-sm mb-2">
-            <div className="flex justify-between">
-              <span className="text-gray-500">File Type:</span>
-              <span className="font-medium">
-                {selectedDocument?.format === 'pdf' ? 'PDF Document' : 
-                 selectedDocument?.format === 'docx' ? 'Word Document' : 
-                 'Unknown'}
-              </span>
-            </div>
-            
-            {selectedDocument?.date && (
-              <div className="flex justify-between">
-                <span className="text-gray-500">Last Modified:</span>
-                <span className="font-medium">
-                  {new Date(selectedDocument.date).toLocaleString()}
-                </span>
-              </div>
-            )}
-            
-            {selectedDocument?.status && (
-              <div className="flex justify-between">
-                <span className="text-gray-500">Status:</span>
-                <span>
-                  {renderStatusBadge(selectedDocument.status)}
-                </span>
-              </div>
-            )}
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setShowDocumentPreview(false)}>
-              Close
-            </Button>
-            <Button size="sm">
-              <Download size={14} className="mr-1" />
-              Download
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
 
-export default DocumentTreePanel;
+export default SimpleDocumentTreePanel;
