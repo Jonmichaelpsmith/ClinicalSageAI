@@ -151,8 +151,13 @@ const PredicateFinderPanel = ({
       );
       
       if (results.success && results.predicateDevices?.length > 0) {
-        // Store search results
+        // Store predicate search results
         setSearchResults(results.predicateDevices);
+        
+        // Store literature results if they exist
+        if (results.literatureReferences && results.literatureReferences.length > 0) {
+          setLiteratureResults(results.literatureReferences);
+        }
         
         // If we have a valid device profile with Document Vault integration, save the search results
         if (deviceProfile?.folderStructure?.predicatesFolderId) {
@@ -171,7 +176,7 @@ const PredicateFinderPanel = ({
         
         toast({
           title: "Predicate Devices Found",
-          description: `Found ${results.predicateDevices.length} potential predicate devices that match your criteria.`,
+          description: `Found ${results.predicateDevices.length} potential predicate devices and ${results.literatureReferences?.length || 0} literature references.`,
           variant: "success"
         });
       } else {
@@ -192,6 +197,64 @@ const PredicateFinderPanel = ({
       setSearchResults([]);
     } finally {
       setIsSearching(false);
+    }
+  };
+  
+  // Search for literature specifically related to the device
+  const searchForLiterature = async () => {
+    setIsSearchingLiterature(true);
+    
+    try {
+      // Use device profile from vault if available, otherwise use form data
+      const searchProfile = deviceProfile?.documentVaultId ? deviceProfile : formData;
+      
+      // Prepare advanced search criteria including filters
+      const searchCriteria = {
+        query: searchProfile.deviceName || '',
+        productCode: searchProfile.productCode || '',
+        intendedUse: searchProfile.intendedUse || '',
+        deviceClass: searchProfile.deviceClass || '',
+        filters: literatureFilters,
+        useVectorSearch: true, // Enable semantic vector search
+        limit: 20
+      };
+      
+      // Get organization context if available
+      const organizationId = deviceProfile?.organizationId;
+      
+      // Use the literature API service for the search
+      const results = await literatureAPIService.searchLiterature(
+        searchCriteria,
+        organizationId
+      );
+      
+      if (results.success && results.data?.length > 0) {
+        // Store literature search results
+        setLiteratureResults(results.data);
+        
+        toast({
+          title: "Literature Found",
+          description: `Found ${results.data.length} relevant academic publications for your device.`,
+          variant: "success"
+        });
+      } else {
+        toast({
+          title: "Literature Search Results",
+          description: "No matching academic literature found. Try adjusting your search terms or filters.",
+          variant: "warning"
+        });
+        setLiteratureResults([]);
+      }
+    } catch (error) {
+      console.error("Error searching for literature:", error);
+      toast({
+        title: "Literature Search Error",
+        description: "We encountered an error while searching for academic literature. Please try again.",
+        variant: "destructive"
+      });
+      setLiteratureResults([]);
+    } finally {
+      setIsSearchingLiterature(false);
     }
   };
   
@@ -599,6 +662,431 @@ const PredicateFinderPanel = ({
     </div>
   );
   
+  // Function to view literature details
+  const viewLiteratureDetails = (item) => {
+    setSelectedLiteratureItem(item);
+    setShowLiteratureDetails(true);
+  };
+  
+  // Handler for selecting literature
+  const toggleLiteratureSelection = (item) => {
+    if (selectedLiterature.some(lit => lit.id === item.id)) {
+      setSelectedLiterature(prev => prev.filter(lit => lit.id !== item.id));
+    } else {
+      setSelectedLiterature(prev => [...prev, item]);
+    }
+  };
+  
+  // Handle changes to literature filters
+  const handleFilterChange = (field, value) => {
+    setLiteratureFilters(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+  
+  // Component to render literature search results
+  const renderLiteratureSearch = () => {
+    return (
+      <div className="space-y-6">
+        <div className="flex flex-col space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-medium">Academic Literature</h3>
+              <p className="text-sm text-gray-500">
+                Discover relevant academic publications for your medical device
+              </p>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  searchForLiterature();
+                }}
+                disabled={isSearchingLiterature}
+              >
+                {isSearchingLiterature ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Searching...
+                  </>
+                ) : (
+                  <>
+                    <Search className="mr-2 h-4 w-4" />
+                    Semantic Search
+                  </>
+                )}
+              </Button>
+              
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filters
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Publication Filters</DialogTitle>
+                    <DialogDescription>
+                      Refine search results by publication date, impact factor, and study type
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="yearFrom">Year From</Label>
+                        <Select
+                          value={literatureFilters.yearFrom.toString()}
+                          onValueChange={(val) => handleFilterChange('yearFrom', parseInt(val))}
+                        >
+                          <SelectTrigger id="yearFrom">
+                            <SelectValue placeholder="From Year" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - 19 + i).map(year => (
+                              <SelectItem key={year} value={year.toString()}>
+                                {year}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="yearTo">Year To</Label>
+                        <Select
+                          value={literatureFilters.yearTo.toString()}
+                          onValueChange={(val) => handleFilterChange('yearTo', parseInt(val))}
+                        >
+                          <SelectTrigger id="yearTo">
+                            <SelectValue placeholder="To Year" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - 19 + i).map(year => (
+                              <SelectItem key={year} value={year.toString()}>
+                                {year}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="journalImpactFactor">Journal Impact Factor</Label>
+                      <Select
+                        value={literatureFilters.journalImpactFactor}
+                        onValueChange={(val) => handleFilterChange('journalImpactFactor', val)}
+                      >
+                        <SelectTrigger id="journalImpactFactor">
+                          <SelectValue placeholder="Any Impact Factor" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Any Impact Factor</SelectItem>
+                          <SelectItem value="high">High Impact (5+)</SelectItem>
+                          <SelectItem value="medium">Medium Impact (2-5)</SelectItem>
+                          <SelectItem value="low">Low Impact (0-2)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div>
+                      <Label htmlFor="studyType">Study Type</Label>
+                      <Select
+                        value={literatureFilters.studyType}
+                        onValueChange={(val) => handleFilterChange('studyType', val)}
+                      >
+                        <SelectTrigger id="studyType">
+                          <SelectValue placeholder="Any Study Type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Study Types</SelectItem>
+                          <SelectItem value="rct">Randomized Controlled Trials</SelectItem>
+                          <SelectItem value="meta">Meta-Analyses & Systematic Reviews</SelectItem>
+                          <SelectItem value="cohort">Cohort Studies</SelectItem>
+                          <SelectItem value="case">Case Studies</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  
+                  <DialogFooter>
+                    <Button type="submit" onClick={() => searchForLiterature()}>
+                      Apply Filters
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
+          </div>
+          
+          {/* Literature results list */}
+          {literatureResults.length > 0 ? (
+            <ScrollArea className="h-[400px] border rounded-md p-2">
+              <div className="space-y-2">
+                {literatureResults.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`p-3 border rounded-md hover:bg-blue-50 transition-colors cursor-pointer ${
+                      selectedLiterature.some(lit => lit.id === item.id) ? 'border-blue-400 bg-blue-50' : 'border-gray-200'
+                    }`}
+                    onClick={() => toggleLiteratureSelection(item)}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-1 flex-1">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <h4 className="font-medium text-gray-900">{item.title}</h4>
+                            {item.source === 'PubMed' && (
+                              <Badge variant="outline" className="ml-2 bg-green-50 text-green-700 border-green-200">
+                                PubMed
+                              </Badge>
+                            )}
+                            {item.source === 'Google Scholar' && (
+                              <Badge variant="outline" className="ml-2 bg-blue-50 text-blue-700 border-blue-200">
+                                Scholar
+                              </Badge>
+                            )}
+                          </div>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="ml-2 h-8 w-8 p-0" 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    viewLiteratureDetails(item);
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                  <span className="sr-only">View details</span>
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>View publication details</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        </div>
+                        
+                        <p className="text-sm text-gray-600">
+                          {item.authors.slice(0, 3).join(', ')}
+                          {item.authors.length > 3 && ' et al.'}
+                        </p>
+                        
+                        <p className="text-sm text-gray-700 mt-1">
+                          {item.journal}
+                          {item.publicationDate && ` (${item.publicationDate.split(' ')[0]})`}
+                        </p>
+                        
+                        <div className="flex items-center space-x-3 mt-1 text-xs text-gray-500">
+                          {item.publicationType && (
+                            <span className="flex items-center">
+                              <FileText className="h-3 w-3 mr-1" />
+                              {Array.isArray(item.publicationType) 
+                                ? item.publicationType[0] 
+                                : item.publicationType}
+                            </span>
+                          )}
+                          
+                          {item.citationCount !== undefined && (
+                            <span className="flex items-center">
+                              <BarChart className="h-3 w-3 mr-1" />
+                              {item.citationCount} citations
+                            </span>
+                          )}
+                          
+                          {item.doi && (
+                            <a 
+                              href={`https://doi.org/${item.doi}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center text-blue-600 hover:underline"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              DOI
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex flex-col items-center pt-1 pl-2">
+                        <div className={`rounded-full h-6 w-6 flex items-center justify-center ${
+                          selectedLiterature.some(lit => lit.id === item.id) 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-100 text-gray-400'
+                        }`}>
+                          {selectedLiterature.some(lit => lit.id === item.id) ? (
+                            <Check className="h-3 w-3" />
+                          ) : null}
+                        </div>
+                        
+                        {item.relevanceScore && (
+                          <span className={`text-xs font-medium mt-1 ${
+                            item.relevanceScore >= 0.8 ? 'text-green-600' :
+                            item.relevanceScore >= 0.6 ? 'text-blue-600' :
+                            'text-gray-600'
+                          }`}>
+                            {Math.round(item.relevanceScore * 100)}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
+          ) : (
+            <div className="text-center p-8 border rounded-md bg-gray-50">
+              <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No Literature Found</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Use the search button above to find relevant academic publications.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  {/* Literature details dialog */}
+  const literatureDetailsDialog = (
+    <Dialog open={showLiteratureDetails} onOpenChange={setShowLiteratureDetails}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        {selectedLiteratureItem && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="text-xl">{selectedLiteratureItem.title}</DialogTitle>
+              <DialogDescription>
+                {selectedLiteratureItem.authors.join(', ')}
+                <div className="flex items-center mt-1 text-sm">
+                  <Calendar className="h-4 w-4 mr-1" />
+                  {selectedLiteratureItem.publicationDate || 'Publication date not available'}
+                  {selectedLiteratureItem.journal && (
+                    <span className="ml-2">• {selectedLiteratureItem.journal}</span>
+                  )}
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 py-4">
+              {selectedLiteratureItem.abstract && (
+                <div>
+                  <h4 className="text-sm font-medium mb-1">Abstract</h4>
+                  <p className="text-sm text-gray-700">{selectedLiteratureItem.abstract}</p>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <h4 className="font-medium mb-1">Publication Type</h4>
+                  <p className="text-gray-700">
+                    {Array.isArray(selectedLiteratureItem.publicationType) 
+                      ? selectedLiteratureItem.publicationType.join(', ') 
+                      : selectedLiteratureItem.publicationType || 'Not specified'}
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="font-medium mb-1">Citation Count</h4>
+                  <p className="text-gray-700">
+                    {selectedLiteratureItem.citationCount !== undefined 
+                      ? `${selectedLiteratureItem.citationCount} citations` 
+                      : 'Not available'}
+                  </p>
+                </div>
+                
+                {selectedLiteratureItem.keywords && selectedLiteratureItem.keywords.length > 0 && (
+                  <div className="col-span-2">
+                    <h4 className="font-medium mb-1">Keywords</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {selectedLiteratureItem.keywords.map((keyword, index) => (
+                        <Badge key={index} variant="secondary" className="text-xs">
+                          {keyword}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {selectedLiteratureItem.doi && (
+                  <div className="col-span-2">
+                    <h4 className="font-medium mb-1">DOI</h4>
+                    <a 
+                      href={`https://doi.org/${selectedLiteratureItem.doi}`} 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline flex items-center"
+                    >
+                      {selectedLiteratureItem.doi}
+                      <ExternalLink className="h-3 w-3 ml-1" />
+                    </a>
+                  </div>
+                )}
+                
+                {selectedLiteratureItem.url && !selectedLiteratureItem.url.includes(selectedLiteratureItem.doi || '') && (
+                  <div className="col-span-2">
+                    <h4 className="font-medium mb-1">Source URL</h4>
+                    <a 
+                      href={selectedLiteratureItem.url} 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline flex items-center"
+                    >
+                      View Publication
+                      <ExternalLink className="h-3 w-3 ml-1" />
+                    </a>
+                  </div>
+                )}
+              </div>
+              
+              {selectedLiteratureItem.relevanceScore && (
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium mb-1">Relevance to Your Device</h4>
+                  <div className="flex items-center">
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
+                      <div 
+                        className={`h-2.5 rounded-full ${
+                          selectedLiteratureItem.relevanceScore >= 0.8 ? 'bg-green-600' :
+                          selectedLiteratureItem.relevanceScore >= 0.6 ? 'bg-blue-600' :
+                          'bg-amber-500'
+                        }`}
+                        style={{ width: `${Math.round(selectedLiteratureItem.relevanceScore * 100)}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm font-medium">{Math.round(selectedLiteratureItem.relevanceScore * 100)}%</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            <DialogFooter>
+              <Button 
+                variant="outline" 
+                onClick={() => toggleLiteratureSelection(selectedLiteratureItem)}
+              >
+                {selectedLiterature.some(lit => lit.id === selectedLiteratureItem.id) ? 'Unselect' : 'Select'} Publication
+              </Button>
+              {selectedLiteratureItem.fullTextAvailable && (
+                <Button>
+                  <FileText className="mr-2 h-4 w-4" />
+                  View Full Text
+                </Button>
+              )}
+            </DialogFooter>
+          </>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+
   return (
     <Card className="shadow-sm">
       <CardHeader className="bg-blue-50 border-b">
@@ -607,12 +1095,24 @@ const PredicateFinderPanel = ({
           Predicate Device Finder
         </CardTitle>
         <CardDescription>
-          Find suitable predicate devices to establish substantial equivalence for your 510(k) submission
+          Find suitable predicate devices and supporting literature for your 510(k) submission
         </CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
-        {profileEditing ? renderProfileForm() : renderPredicateSearch()}
+        {profileEditing ? (
+          renderProfileForm()
+        ) : (
+          <Tabs defaultValue="predicates" value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="predicates">Predicate Devices</TabsTrigger>
+              <TabsTrigger value="literature">Academic Literature</TabsTrigger>
+            </TabsList>
+            <TabsContent value="predicates">{renderPredicateSearch()}</TabsContent>
+            <TabsContent value="literature">{renderLiteratureSearch()}</TabsContent>
+          </Tabs>
+        )}
       </CardContent>
+      {literatureDetailsDialog}
     </Card>
   );
 };
