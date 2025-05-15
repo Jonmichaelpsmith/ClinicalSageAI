@@ -30,7 +30,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 
 import UnifiedWorkflowPanel from '../unified-workflow/UnifiedWorkflowPanel';
-import { registerModuleDocument } from '../unified-workflow/registerModuleDocument';
+import { registerModuleDocument, addDocumentComment } from '../unified-workflow/registerModuleDocument';
 import FDA510kService from '../../services/FDA510kService';
 
 const REPORT_FORMATS = [
@@ -319,22 +319,20 @@ const WorkflowEnabledReportGenerator = ({
       // Register the document with the unified workflow system
       if (result.success && organizationId && userId) {
         try {
-          await import('../unified-workflow/registerModuleDocument').then(module => {
-            return module.registerModuleDocument(
-              organizationId,
-              userId,
-              'medical_device',
-              {
-                id: generatedReportId,
-                title: deviceData?.deviceName || 'FDA 510(k) Submission',
-                type: '510k_estar',
-                format: reportFormat,
-                packageUrl: result.downloadUrl,
-                workflowId: result.workflowId,
-                validationStatus: validationResult?.valid ? 'passed' : 'warning'
-              }
-            );
-          });
+          await registerModuleDocument(
+            organizationId,
+            userId,
+            'medical_device',
+            {
+              id: generatedReportId,
+              title: deviceData?.deviceName || 'FDA 510(k) Submission',
+              type: '510k_estar',
+              format: reportFormat,
+              packageUrl: result.downloadUrl,
+              workflowId: result.workflowId,
+              validationStatus: validationResult?.valid ? 'passed' : 'warning'
+            }
+          );
           
           console.log('Successfully registered document with unified workflow system');
         } catch (registrationError) {
