@@ -27,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 export default function KAutomationPanel() {
   const [selectedModule, setSelectedModule] = useState('510k');
   const [workflowSubTab, setWorkflowSubTab] = useState('device-profile');
+  const [cerWorkflowTab, setCerWorkflowTab] = useState('builder');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [deviceProfiles, setDeviceProfiles] = useState([]);
   const [currentDeviceProfile, setCurrentDeviceProfile] = useState(null);
@@ -38,16 +39,39 @@ export default function KAutomationPanel() {
     reports: false,
     submissions: false
   });
+  const [cerSections, setCerSections] = useState(0);
+  const [reportTitle, setReportTitle] = useState('Clinical Evaluation Report');
+  const [cerCompliant, setCerCompliant] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
-    // Fetch device profiles
-    const mockProfiles = [
-      { id: '1', deviceName: 'Cardiac Monitor', deviceClass: 'Class II', manufacturer: 'MedTech Industries', deviceType: 'Monitoring Device' },
-      { id: '2', deviceName: 'Glucose Monitor', deviceClass: 'Class II', manufacturer: 'DiaTech', deviceType: 'Diagnostic Device' }
-    ];
+    // Fetch device profiles from API
+    const fetchDeviceProfiles = async () => {
+      try {
+        // In a real implementation, this would be an API call
+        const response = await fetch('/api/device-profiles');
+        if (response.ok) {
+          const data = await response.json();
+          setDeviceProfiles(data.profiles);
+        } else {
+          // If API fails, use fallback data
+          const fallbackProfiles = [
+            { id: '1', deviceName: 'Cardiac Monitor', deviceClass: 'Class II', manufacturer: 'MedTech Industries', deviceType: 'Monitoring Device' },
+            { id: '2', deviceName: 'Glucose Monitor', deviceClass: 'Class II', manufacturer: 'DiaTech', deviceType: 'Diagnostic Device' }
+          ];
+          setDeviceProfiles(fallbackProfiles);
+        }
+      } catch (error) {
+        console.error("Error fetching device profiles:", error);
+        const fallbackProfiles = [
+          { id: '1', deviceName: 'Cardiac Monitor', deviceClass: 'Class II', manufacturer: 'MedTech Industries', deviceType: 'Monitoring Device' },
+          { id: '2', deviceName: 'Glucose Monitor', deviceClass: 'Class II', manufacturer: 'DiaTech', deviceType: 'Diagnostic Device' }
+        ];
+        setDeviceProfiles(fallbackProfiles);
+      }
+    };
     
-    setDeviceProfiles(mockProfiles);
+    fetchDeviceProfiles();
   }, []);
 
   const toggleFolder = (folderName) => {
