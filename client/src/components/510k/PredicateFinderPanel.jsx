@@ -1475,13 +1475,13 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
   };
   
   return (
-    <Card className="mb-6">
-      <CardHeader className="bg-gradient-to-r from-indigo-50 to-slate-50 pb-4">
-        <CardTitle className="text-blue-700 flex items-center">
-          <Search className="h-5 w-5 mr-2 text-blue-600" />
-          Predicate Finder & Literature Review
+    <Card className="mb-6 border-0 shadow-md overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 pb-4">
+        <CardTitle className="text-white flex items-center">
+          <Search className="h-5 w-5 mr-2" />
+          Predicate Finder
         </CardTitle>
-        <CardDescription>
+        <CardDescription className="text-blue-100">
           Find potential predicate devices and relevant literature for your 510(k) submission. Analyze 
           predicate devices for substantial equivalence and discover supporting scientific literature.
         </CardDescription>
