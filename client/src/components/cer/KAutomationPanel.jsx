@@ -12,6 +12,12 @@ import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Separator } from "@/components/ui/separator";
@@ -814,8 +820,20 @@ export default function KAutomationPanel() {
                     Pipeline Steps
                   </TabsTrigger>
                   <TabsTrigger value="devices" className="flex-1">
-                    <Database className="h-4 w-4 mr-2" />
-                    1. Device Setup
+                    <TooltipProvider>
+                      <Tooltip delayDuration={300}>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center">
+                            <Database className="h-4 w-4 mr-2" />
+                            1. Device Setup
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="max-w-xs bg-black text-white p-3 rounded-md">
+                          <p className="text-sm font-medium">Device Setup</p>
+                          <p className="text-xs mt-1">Configure your device's technical parameters and system preferences. This is where you manage how your device is configured in the platform.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </TabsTrigger>
                   <TabsTrigger value="predicates" className="flex-1">
                     <Search className="h-4 w-4 mr-2" />
