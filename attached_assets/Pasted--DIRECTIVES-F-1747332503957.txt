@@ -1,0 +1,67 @@
+------------------------------------------------------------------------------------
+**DIRECTIVES FOR REPLIT AI AGENT**
+
+**Objective:** Locate and correctly restore the `FDA510kTabContent.jsx` component from the May 14th backup period and ensure it is correctly placed within the `/CER2V/` project structure so that `CERV2Page.jsx` can import and use it. Then, revert the changes made to `CERV2Page.jsx` that commented out its usage.
+
+**Assumptions:**
+* The file `FDA510kTabContent.jsx` (or a similarly named file like `FDA510kTabs.jsx`, `TabContent510k.jsx`) *did exist* in the project structure around May 14th and was essential for the `CERV2Page.jsx` to function.
+* Backups or previous versions of files from around May 14th are accessible to you or the agent (e.g., in a `backups` folder, or through Git history if the Git reset wasn't fully effective initially).
+* All relevant files are within the `/CER2V/` directory structure.
+
+---
+
+**Step 1: Thoroughly Search for `FDA510kTabContent.jsx` in Backups/History**
+
+* **Action:**
+    1.  Re-examine any `backups` directory, specifically looking for `FDA510kTabContent.jsx` or files with similar names that might have been created around May 14th.
+    2.  If Git history is still being used for restoration (and the previous `git reset --hard` directives I gave were not fully completed or were overridden by agent actions), use Git commands to explore the file state around the target commit hash for `FDA510kTabContent.jsx`.
+        * `git log --pretty=format:"%h - %ar : %s" -- client/src/pages/FDA510kTabContent.jsx` (Adjust path if it was different, e.g., `client/src/components/FDA510kTabContent.jsx`). This will show commits affecting this specific file.
+        * `git checkout [COMMIT_HASH_BEFORE_DELETION_OR_PROBLEM] -- path/to/FDA510kTabContent.jsx` to restore it from a specific commit.
+* **Instruction to Agent:** "You previously noted `FDA510kTabContent.jsx` is missing. It's critical for `CERV2Page.jsx`. Please conduct a more thorough search for this file (or a similarly named primary tab/content container component for the 510k workflow) in any available backups from around May 14th, or try to restore it from a Git commit hash known to be stable from that period. Its likely original path might have been within `client/src/components/` or `client/src/pages/` within the `CER2V` structure."
+* **Verification:** Confirm if the file `FDA510kTabContent.jsx` (or its correct equivalent) has been found and its content seems appropriate for a tab container.
+
+---
+
+**Step 2: Place/Restore `FDA510kTabContent.jsx` to the Correct Location**
+
+* **Action:** Once the correct version of `FDA510kTabContent.jsx` is found/retrieved:
+    1.  Determine its correct original path within the `/CER2V/client/src/...` structure based on how `CERV2Page.jsx` (the May 14th version) was trying to import it (e.g., `React.lazy(() => import('@/components/FDA510kTabContent'))` implies it might be in `/CER2V/client/src/components/FDA510kTabContent.jsx`).
+    2.  Place the restored file in that exact location.
+* **Instruction to Agent:** "If you have found the May 14th version of `FDA510kTabContent.jsx`, please ensure it is placed at the correct path where `CERV2Page.jsx` expects to import it from. For example, if the import path in `CERV2Page.jsx` (the restored version) is `@/components/FDA510kTabContent`, then the file should likely be at `/CER2V/client/src/components/FDA510kTabContent.jsx`."
+* **Verification:** The file `FDA510kTabContent.jsx` should now exist at the expected path in the file tree.
+
+---
+
+**Step 3: Revert Previous Modifications to `CERV2Page.jsx`**
+
+* **File to Modify:** `client/src/pages/CERV2Page.jsx` (within `/CER2V/`)
+* **Action:**
+    1.  Uncomment the lazy import for `FDA510kTabContent`.
+    2.  Restore the `renderContent` function (or equivalent JSX rendering logic) to use `FDA510kTabContent` as it did in the May 14th version. *Effectively, undo the changes the agent just made to this file in its last set of actions.*
+* **Instruction to Agent:** "Now that we aim to have `FDA510kTabContent.jsx` restored, please revert the changes you made to `/CER2V/client/src/pages/CERV2Page.jsx` where you commented out the `FDA510kTabContent` import and modified the `renderContent` function. Restore `CERV2Page.jsx` to use `FDA510kTabContent` as it was intended in the May 14th version."
+* **Verification:** Open `/CER2V/client/src/pages/CERV2Page.jsx` and confirm the import for `FDA510kTabContent` is active and it's being used in the rendering logic.
+
+---
+
+**Step 4: Check for Dependencies of `FDA510kTabContent.jsx`**
+
+* **File to Inspect:** The newly restored `FDA510kTabContent.jsx`.
+* **Action:** Examine the import statements at the top of `FDA510kTabContent.jsx`.
+* **Instruction to Agent:** "Open the restored `/CER2V/.../FDA510kTabContent.jsx`. List all the local components it imports (e.g., from other files within `/CER2V/components/` or `/CER2V/sections/`). We need to ensure these child components also exist and are the correct versions from May 14th."
+* **Verification:** The agent should list the dependencies. You (the user) will need to have a sense if these listed child components were also part of the old UI and if they too might need checking or restoring.
+
+---
+
+**Step 5: Restart and Test**
+
+* **Action (Agent to instruct user OR attempt itself):**
+    1.  Ensure all files are saved.
+    2.  Run `npm install` in the Replit Shell (if any dependencies might have changed or to be safe).
+    3.  Restart the development server (`npm run dev`).
+    4.  User to perform a hard refresh in the browser.
+* **Verification (User to perform):**
+    * Does the `CERV2Page.jsx` now load without crashing?
+    * Does it appear to render the structure that `FDA510kTabContent.jsx` was supposed to provide (e.g., a tab layout, initial content)?
+    * Check the browser console for any new import errors or runtime errors related to `FDA510kTabContent` or its children.
+
+------------------------------------------------------------------------------------
