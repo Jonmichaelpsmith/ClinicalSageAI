@@ -333,21 +333,25 @@ const WorkflowEnabledReportGenerator = ({
 
   return (
     <div className={className}>
-      <Card>
-        <CardHeader>
-          <CardTitle>FDA 510(k) eSTAR Generator</CardTitle>
-          <CardDescription>
-            Step 2: Generate FDA-compliant 510(k) eSTAR packages for submission to the FDA
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <Card className="shadow-md border-0 overflow-hidden">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-white">
+          <h3 className="text-lg font-medium flex items-center">
+            <FileText className="h-5 w-5 mr-2" /> 
+            FDA 510(k) eSTAR Generator
+          </h3>
+          <p className="text-blue-100 text-sm mt-1">
+            Step 4: Generate FDA-compliant 510(k) eSTAR packages for regulatory submission
+          </p>
+        </div>
+        
+        <CardContent className="p-6 bg-white">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="generator">
+            <TabsList className="grid w-full grid-cols-2 bg-blue-50 p-1">
+              <TabsTrigger value="generator" className="data-[state=active]:bg-white">
                 <FileText className="h-4 w-4 mr-2" /> 
                 eSTAR Configuration
               </TabsTrigger>
-              <TabsTrigger value="workflow" disabled={!generatedReportId}>
+              <TabsTrigger value="workflow" disabled={!generatedReportId} className="data-[state=active]:bg-white">
                 <Clock className="h-4 w-4 mr-2" /> 
                 FDA Submission Workflow
               </TabsTrigger>
@@ -355,10 +359,10 @@ const WorkflowEnabledReportGenerator = ({
 
             <TabsContent value="generator" className="py-4">
               <div className="space-y-6">
-                <Alert variant="info" className="bg-blue-50">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>FDA Compliance Note</AlertTitle>
-                  <AlertDescription>
+                <Alert className="bg-blue-50 border-blue-200">
+                  <AlertCircle className="h-4 w-4 text-blue-600" />
+                  <AlertTitle className="text-blue-700">FDA Compliance Note</AlertTitle>
+                  <AlertDescription className="text-blue-600">
                     This generator creates FDA-compliant 510(k) documentation following the latest regulatory guidelines.
                   </AlertDescription>
                 </Alert>
