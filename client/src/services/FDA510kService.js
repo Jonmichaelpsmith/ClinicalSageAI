@@ -508,6 +508,25 @@ class FDA510kService {
   
   // Legacy device profile methods have been removed.
   // Use DeviceProfileAPI instead for all device profile operations.
+  
+  /**
+   * Fetch FDA requirements for a specific device class
+   * 
+   * @param {string} deviceClass The device class (I, II, or III)
+   * @param {string} organizationId Optional organization ID for tenant context
+   * @returns {Promise<Object>} The requirements for the device class
+   */
+  async getRequirements(deviceClass, organizationId) {
+    try {
+      const response = await apiRequest.get(`/api/fda510k/requirements/${deviceClass}`, {
+        params: organizationId ? { organizationId } : undefined
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching FDA requirements for device class ${deviceClass}:`, error);
+      throw error;
+    }
+  }
 }
 
 // Export a singleton instance
