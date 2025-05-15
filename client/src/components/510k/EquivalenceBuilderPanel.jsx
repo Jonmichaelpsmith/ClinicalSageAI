@@ -167,13 +167,20 @@ const EquivalenceBuilderPanel = ({
     const totalFeatures = comparisonFeatures.length;
     const equivalencePercentage = Math.round((substantialCount / totalFeatures) * 100);
     
+    // Count literature evidence
+    const literatureCount = Object.keys(literatureEvidence).length;
+    const totalPapers = selectedLiterature.length;
+    const literatureStatement = totalPapers > 0 
+      ? ` This determination is supported by ${totalPapers} academic publication${totalPapers > 1 ? 's' : ''} providing evidence for ${literatureCount} key device characteristics.`
+      : '';
+    
     // Generate a summary statement
     if (equivalencePercentage >= 80) {
-      return `${subjectDeviceName} has demonstrated substantial equivalence to ${predicateDeviceName} (${predicateDevice?.id || ''}) in ${substantialCount} out of ${totalFeatures} key characteristics (${equivalencePercentage}%), including intended use and technological characteristics. Any differences between the devices do not raise new questions of safety and effectiveness.`;
+      return `${subjectDeviceName} has demonstrated substantial equivalence to ${predicateDeviceName} (${predicateDevice?.id || ''}) in ${substantialCount} out of ${totalFeatures} key characteristics (${equivalencePercentage}%), including intended use and technological characteristics. Any differences between the devices do not raise new questions of safety and effectiveness.${literatureStatement}`;
     } else if (equivalencePercentage >= 50) {
-      return `${subjectDeviceName} is partially equivalent to ${predicateDeviceName} (${predicateDevice?.id || ''}) with ${substantialCount} out of ${totalFeatures} key characteristics (${equivalencePercentage}%) being substantially equivalent. Additional testing and documentation may be required to fully establish substantial equivalence.`;
+      return `${subjectDeviceName} is partially equivalent to ${predicateDeviceName} (${predicateDevice?.id || ''}) with ${substantialCount} out of ${totalFeatures} key characteristics (${equivalencePercentage}%) being substantially equivalent. Additional testing and documentation may be required to fully establish substantial equivalence.${literatureStatement}`;
     } else {
-      return `${subjectDeviceName} shows limited equivalence to ${predicateDeviceName} (${predicateDevice?.id || ''}) with only ${substantialCount} out of ${totalFeatures} key characteristics (${equivalencePercentage}%) being substantially equivalent. Consider choosing a different predicate device or addressing the differences through additional testing and documentation.`;
+      return `${subjectDeviceName} shows limited equivalence to ${predicateDeviceName} (${predicateDevice?.id || ''}) with only ${substantialCount} out of ${totalFeatures} key characteristics (${equivalencePercentage}%) being substantially equivalent. Consider choosing a different predicate device or addressing the differences through additional testing and documentation.${literatureStatement}`;
     }
   };
   
