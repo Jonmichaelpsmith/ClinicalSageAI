@@ -50,6 +50,87 @@ const EquivalenceBuilderPanel = ({
     }
   }, [predicateDevices, selectedPredicateDevice]);
   
+  // Load saved analysis from Document Vault if available
+  useEffect(() => {
+    async function loadSavedAnalysis() {
+      if (!deviceProfile?.folderStructure?.equivalenceFolderId) {
+        return;
+      }
+      
+      try {
+        setIsAnalyzing(true);
+        setProgress(30);
+        
+        // Fetch the latest analysis
+        const result = await FDA510kService.getLatestEquivalenceAnalysis(
+          deviceProfile.folderStructure.equivalenceFolderId,
+          deviceProfile.id
+        );
+        
+        setProgress(70);
+        
+        if (result?.success && result.analysis) {
+          // Update state with saved analysis data
+          const savedAnalysis = result.analysis;
+          
+          // If there's a predicate device ID, set it
+          if (savedAnalysis.predicateDeviceId) {
+            setSelectedPredicateDevice(savedAnalysis.predicateDeviceId);
+          }
+          
+          // If there are comparison features, merge them with the current ones
+          if (savedAnalysis.features && savedAnalysis.features.length > 0) {
+            setComparisonFeatures(prev => {
+              // Create a map of existing features
+              const featureMap = new Map(prev.map(f => [f.id, f]));
+              
+              // Update with saved features where IDs match
+              savedAnalysis.features.forEach(savedFeature => {
+                if (featureMap.has(savedFeature.id)) {
+                  const existingFeature = featureMap.get(savedFeature.id);
+                  featureMap.set(savedFeature.id, {
+                    ...existingFeature,
+                    ...savedFeature
+                  });
+                }
+              });
+              
+              return Array.from(featureMap.values());
+            });
+          }
+          
+          // Set summary statement if available
+          if (savedAnalysis.summary) {
+            setSummaryStatement(savedAnalysis.summary);
+          }
+          
+          // Set completion status if this is a completed analysis
+          if (savedAnalysis.status === 'completed' || savedAnalysis.completedAt) {
+            setEquivalenceComplete(true);
+          }
+          
+          toast({
+            title: "Analysis Loaded",
+            description: "Previously saved equivalence analysis has been loaded.",
+            variant: "success"
+          });
+        }
+      } catch (error) {
+        console.error('Error loading saved analysis:', error);
+        toast({
+          title: "Load Error",
+          description: "Unable to load previously saved analysis.",
+          variant: "warning"
+        });
+      } finally {
+        setIsAnalyzing(false);
+        setProgress(0);
+      }
+    }
+    
+    loadSavedAnalysis();
+  }, [deviceProfile?.id, deviceProfile?.folderStructure?.equivalenceFolderId, toast]);
+  
   // Generate a summary statement based on the comparison
   const generateSummaryStatement = () => {
     const subjectDeviceName = deviceProfile?.deviceName || 'Subject Device';
