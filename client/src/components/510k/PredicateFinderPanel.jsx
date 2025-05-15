@@ -389,7 +389,8 @@ const PredicateFinderPanel = ({
       
       // Still call the parent callback to continue the workflow
       if (onPredicatesFound) {
-        onPredicatesFound(selectedPredicates);
+        // Also pass literature results along with predicate devices
+        onPredicatesFound(selectedPredicates, literatureResults);
       }
     } finally {
       setIsSearching(false);
