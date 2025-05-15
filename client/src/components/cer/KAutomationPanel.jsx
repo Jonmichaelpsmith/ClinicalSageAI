@@ -220,6 +220,7 @@ export default function KAutomationPanel() {
                 </div>
                 
                 <Button 
+                  id="create-device-profile-btn"
                   size="sm" 
                   className="w-full bg-blue-600 hover:bg-blue-700"
                   onClick={() => setDeviceProfileDialogOpen(true)}
@@ -359,13 +360,34 @@ export default function KAutomationPanel() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
-                  <DeviceProfileList
-                    deviceProfiles={deviceProfiles || []}
-                    isLoading={isLoadingProfiles}
-                    onSelect={handleSelectDeviceProfile}
-                    selectedProfileId={currentDeviceProfile?.id}
-                    onCreateNew={() => setDeviceProfileDialogOpen(true)}
-                  />
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
+                      <h3 className="text-lg font-semibold text-blue-700 flex items-center mb-2">
+                        <FileText className="h-5 w-5 mr-2" />
+                        Device Profile Required
+                      </h3>
+                      <p className="text-sm text-blue-700">
+                        A device profile is required to proceed with your 510(k) submission. 
+                        This profile will be used throughout the process for predicate device comparisons, 
+                        testing requirements, and final submission documents.
+                      </p>
+                      <Button 
+                        className="mt-3 bg-blue-600 hover:bg-blue-700"
+                        onClick={() => setDeviceProfileDialogOpen(true)}
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create New Device Profile
+                      </Button>
+                    </div>
+                    
+                    <DeviceProfileList
+                      deviceProfiles={deviceProfiles || []}
+                      isLoading={isLoadingProfiles}
+                      onSelect={handleSelectDeviceProfile}
+                      selectedProfileId={currentDeviceProfile?.id}
+                      onCreateNew={() => setDeviceProfileDialogOpen(true)}
+                    />
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -454,7 +476,7 @@ export default function KAutomationPanel() {
                       </AlertDescription>
                     </Alert>
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-md">
                         <div className="flex items-center">
                           <CheckCircle className="h-5 w-5 text-blue-600 mr-2" />
@@ -466,6 +488,81 @@ export default function KAutomationPanel() {
                         <Button className="bg-blue-600 hover:bg-blue-700">
                           Generate 510(k) Package
                         </Button>
+                      </div>
+                      
+                      {/* FDA eSTAR Generation Section */}
+                      <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+                        <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-4 text-white">
+                          <h3 className="font-medium flex items-center">
+                            <FileCheck className="h-5 w-5 mr-2" />
+                            FDA eSTAR Submission Package
+                          </h3>
+                          <p className="text-blue-100 text-sm">
+                            Generate your FDA-compliant eSTAR submission package
+                          </p>
+                        </div>
+                        
+                        <div className="p-4 space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="p-3 border rounded-md bg-blue-50">
+                              <h4 className="font-medium text-blue-800 mb-1">Device Profile</h4>
+                              <div className="text-sm text-gray-600">
+                                <p><span className="font-medium">Name:</span> {currentDeviceProfile.deviceName}</p>
+                                <p><span className="font-medium">Class:</span> {currentDeviceProfile.deviceClass || 'Class II'}</p>
+                                <p><span className="font-medium">Manufacturer:</span> {currentDeviceProfile.manufacturer}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="p-3 border rounded-md bg-green-50">
+                              <h4 className="font-medium text-green-800 mb-1">Predicate Comparison</h4>
+                              <div className="text-sm text-gray-600">
+                                <p><span className="font-medium">Status:</span> <Badge className="bg-green-100 text-green-800">Complete</Badge></p>
+                                <p><span className="font-medium">Predicates:</span> 2 predicate devices found</p>
+                                <p><span className="font-medium">Similarity:</span> 94% match with K123456</p>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 gap-4">
+                            <div className="p-3 border rounded-md">
+                              <h4 className="font-medium mb-2">eSTAR Package Options</h4>
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <span className="font-medium mr-2">Include Testing Data:</span>
+                                    <Badge>Recommended</Badge>
+                                  </div>
+                                  <Switch defaultChecked={true} />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <span className="font-medium mr-2">Include Predicate Comparisons:</span>
+                                    <Badge>Required</Badge>
+                                  </div>
+                                  <Switch defaultChecked={true} />
+                                </div>
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <span className="font-medium mr-2">Generate FDA Cover Letter:</span>
+                                    <Badge>Recommended</Badge>
+                                  </div>
+                                  <Switch defaultChecked={true} />
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex justify-end space-x-2 mt-4">
+                            <Button variant="outline">
+                              <Shield className="h-4 w-4 mr-2" />
+                              Validate Submission
+                            </Button>
+                            <Button className="bg-blue-600 hover:bg-blue-700">
+                              <FileText className="h-4 w-4 mr-2" />
+                              Generate eSTAR Package
+                            </Button>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   )}

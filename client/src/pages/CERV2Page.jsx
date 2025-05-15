@@ -950,7 +950,88 @@ export default function CERV2Page() {
                   <span>Click here for a guided walkthrough of the 510(k) submission process</span>
                 </GuidedTooltip>
                 
-                <KAutomationPanel />
+                {/* FDA 510(k) Submission Workflow Start - Prominent Setup Card */}
+                <div className="bg-white rounded-lg shadow-lg border border-blue-100 mb-6 overflow-hidden">
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-6 text-white">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h2 className="text-2xl font-semibold flex items-center">
+                          <FileCheck className="h-6 w-6 mr-2" />
+                          FDA 510(k) Submission Process
+                        </h2>
+                        <p className="text-blue-100 mt-1">
+                          To begin your FDA 510(k) submission, you must first create a device profile with essential information about your medical device.
+                        </p>
+                      </div>
+                      <Button 
+                        className="bg-white text-blue-600 hover:bg-blue-50"
+                        onClick={() => {
+                          document.getElementById('device-profile-section')?.scrollIntoView({
+                            behavior: 'smooth'
+                          });
+                          // Force the device creation dialog to open
+                          const createDeviceBtn = document.getElementById('create-device-profile-btn');
+                          if (createDeviceBtn) {
+                            createDeviceBtn.click();
+                          } else {
+                            toast({
+                              title: "Getting Started",
+                              description: "Please create a device profile to begin your 510(k) submission.",
+                            });
+                          }
+                        }}
+                      >
+                        Get Started
+                      </Button>
+                    </div>
+                  </div>
+                  <div className="p-5 bg-blue-50">
+                    <div className="flex items-center gap-4">
+                      <div className="bg-blue-100 h-14 w-14 flex items-center justify-center rounded-full text-blue-700 font-semibold text-xl">
+                        1
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-medium text-blue-800">Create Device Profile</h3>
+                        <p className="text-blue-700">Enter basic device information to begin the submission process</p>
+                      </div>
+                    </div>
+                    <div className="w-1 h-8 bg-blue-200 mx-auto my-1"></div>
+                    <div className="flex items-center gap-4">
+                      <div className="bg-blue-100 h-14 w-14 flex items-center justify-center rounded-full text-blue-700 font-semibold text-xl">
+                        2
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-medium text-blue-800">Find Predicate Devices</h3>
+                        <p className="text-blue-700">Compare your device with similar FDA-cleared devices</p>
+                      </div>
+                    </div>
+                    <div className="w-1 h-8 bg-blue-200 mx-auto my-1"></div>
+                    <div className="flex items-center gap-4">
+                      <div className="bg-blue-100 h-14 w-14 flex items-center justify-center rounded-full text-blue-700 font-semibold text-xl">
+                        3
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-medium text-blue-800">Complete Compliance Check</h3>
+                        <p className="text-blue-700">Ensure your submission meets all FDA requirements</p>
+                      </div>
+                    </div>
+                    <div className="w-1 h-8 bg-blue-200 mx-auto my-1"></div>
+                    <div className="flex items-center gap-4">
+                      <div className="bg-blue-100 h-14 w-14 flex items-center justify-center rounded-full text-blue-700 font-semibold text-xl">
+                        4
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-lg font-medium text-blue-800">Generate eSTAR Submission</h3>
+                        <p className="text-blue-700">Create your final FDA-compliant submission package</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* 510k Workflow Panel with ID for scrolling */}
+                <div id="device-profile-section">
+                  <KAutomationPanel />
+                </div>
                 
                 <ProgressTracker
                   currentStep={2}
