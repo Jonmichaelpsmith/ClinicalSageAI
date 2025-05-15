@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { FDA510kService } from "@/services/FDA510kService";
+import LiteratureTab from "./LiteratureTab";
 
 /**
  * Equivalence Builder Panel for 510(k) Submissions
@@ -848,7 +849,7 @@ const EquivalenceBuilderPanel = ({
         
         {selectedTab === 'overview' && renderOverviewTab()}
         {selectedTab === 'comparison' && renderComparisonTab()}
-        {selectedTab === 'literature' && renderLiteratureTab()}
+        {selectedTab === 'literature' && <LiteratureTab selectedLiterature={selectedLiterature} literatureEvidence={literatureEvidence} />}
         {selectedTab === 'summary' && renderSummaryTab()}
       </CardContent>
       
