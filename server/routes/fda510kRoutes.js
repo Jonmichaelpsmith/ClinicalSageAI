@@ -24,6 +24,76 @@ router.get('/device-profile/:id', async (req, res) => {
   }
 });
 
+// PUT update existing profile
+router.put('/device-profile/:id', async (req, res) => {
+  const { id } = req.params;
+  const updateData = req.body;
+  
+  try {
+    // Create updatable fields array from the request body
+    const updateableFields = [
+      'device_name', 
+      'device_class', 
+      'intended_use', 
+      'device_description', 
+      'manufacturer', 
+      'model_number',
+      'technical_characteristics',
+      'document_vault_id',
+      'folder_structure'
+    ];
+    
+    // Build the SET clause dynamically
+    let setClauses = [];
+    let paramValues = [];
+    let paramCounter = 1;
+    
+    // Add updated_at timestamp
+    setClauses.push(`updated_at = $${paramCounter}`);
+    paramValues.push(new Date());
+    paramCounter++;
+    
+    // Add other fields if they exist in the request body
+    for (const field of updateableFields) {
+      if (updateData[field] !== undefined) {
+        setClauses.push(`${field} = $${paramCounter}`);
+        
+        // Handle JSON fields
+        if (field === 'technical_characteristics' || field === 'folder_structure') {
+          paramValues.push(JSON.stringify(updateData[field]));
+        } else {
+          paramValues.push(updateData[field]);
+        }
+        
+        paramCounter++;
+      }
+    }
+    
+    // Add the ID as the last parameter
+    paramValues.push(id);
+    
+    // Execute the update query
+    const query = `
+      UPDATE device_profiles 
+      SET ${setClauses.join(', ')} 
+      WHERE id = $${paramCounter}
+      RETURNING *
+    `;
+    
+    const result = await db.query(query, paramValues);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Device profile not found' });
+    }
+    
+    // Return the updated profile
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating device profile:', error);
+    res.status(500).json({ error: 'Failed to update device profile: ' + error.message });
+  }
+});
+
 // POST save/update profile
 router.post('/device-profile', async (req, res) => {
   try {
