@@ -1816,6 +1816,23 @@ export default function CERV2Page() {
                           description: "Your substantial equivalence analysis has been added to the report.",
                         });
                       }}
+                      additionalButtons={
+                        <Button 
+                          className="bg-blue-600 hover:bg-blue-700 mt-4"
+                          onClick={() => {
+                            const nextTabId = completeWorkflowStep();
+                            if (nextTabId) {
+                              toast({
+                                title: "Equivalence Analysis Complete",
+                                description: "Moving to Compliance Check section.",
+                              });
+                            }
+                          }}
+                        >
+                          Continue to Compliance Check
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
+                      }
                     />
                   </CardContent>
                 </Card>
@@ -1843,6 +1860,23 @@ export default function CERV2Page() {
                       }}
                       isComplianceRunning={isComplianceRunning}
                       setIsComplianceRunning={setIsComplianceRunning}
+                      additionalButtons={
+                        <Button 
+                          className="bg-blue-600 hover:bg-blue-700 mt-4"
+                          onClick={() => {
+                            const nextTabId = completeWorkflowStep();
+                            if (nextTabId) {
+                              toast({
+                                title: "Compliance Check Complete",
+                                description: "Moving to eSTAR Assembly section.",
+                              });
+                            }
+                          }}
+                        >
+                          Continue to eSTAR Assembly
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
+                      }
                     />
                   </CardContent>
                 </Card>
@@ -1920,8 +1954,30 @@ export default function CERV2Page() {
                         <Button variant="outline">
                           Save Draft
                         </Button>
-                        <Button>
+                        <Button
+                          onClick={() => {
+                            toast({
+                              title: "eSTAR Assembly Completed",
+                              description: "Your eSTAR package has been successfully assembled.",
+                            });
+                          }}
+                        >
                           Complete Assembly
+                        </Button>
+                        <Button 
+                          className="bg-blue-600 hover:bg-blue-700"
+                          onClick={() => {
+                            const nextTabId = completeWorkflowStep();
+                            if (nextTabId) {
+                              toast({
+                                title: "eSTAR Assembly Complete",
+                                description: "Moving to Final Submission section.",
+                              });
+                            }
+                          }}
+                        >
+                          Continue to Submission
+                          <ArrowRight className="h-4 w-4 ml-2" />
                         </Button>
                       </div>
                     </div>
@@ -2013,11 +2069,58 @@ export default function CERV2Page() {
                         <Button variant="outline">
                           Save for Later
                         </Button>
-                        <Button className="bg-green-600 hover:bg-green-700">
+                        <Button 
+                          className="bg-green-600 hover:bg-green-700"
+                          onClick={() => {
+                            completeWorkflowStep();
+                            toast({
+                              title: "510(k) Submission Complete",
+                              description: "Your submission has been successfully sent to the FDA.",
+                              variant: "success"
+                            });
+                            
+                            // Show success dialog
+                            setSuccessDialogOpen(true);
+                          }}
+                        >
                           <Upload className="h-4 w-4 mr-2" />
                           Submit to FDA
                         </Button>
                       </div>
+                      
+                      {/* Final Success Dialog */}
+                      <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+                        <DialogContent className="sm:max-w-md">
+                          <DialogHeader>
+                            <DialogTitle className="flex items-center text-xl">
+                              <CheckCircle className="h-6 w-6 text-green-600 mr-2" />
+                              510(k) Submission Complete
+                            </DialogTitle>
+                            <DialogDescription>
+                              Your 510(k) submission has been successfully completed and sent to the FDA.
+                            </DialogDescription>
+                          </DialogHeader>
+                          <div className="flex flex-col gap-4 py-4">
+                            <div className="bg-green-50 p-4 rounded-lg border border-green-100">
+                              <h3 className="font-medium text-green-800 mb-2">Submission Details</h3>
+                              <p className="text-sm text-green-700 mb-1">Submission ID: {k510DocumentId}</p>
+                              <p className="text-sm text-green-700 mb-1">Submitted: {new Date().toLocaleDateString()}</p>
+                              <p className="text-sm text-green-700">Estimated Review Time: 90 days</p>
+                            </div>
+                            <p className="text-sm text-gray-600">
+                              You will receive confirmation from the FDA shortly. You can track the status of your submission in the Regulatory Dashboard.
+                            </p>
+                          </div>
+                          <DialogFooter>
+                            <Button type="button" variant="secondary" onClick={() => setSuccessDialogOpen(false)}>
+                              Close
+                            </Button>
+                            <Button type="button" onClick={() => setSuccessDialogOpen(false)}>
+                              View Submission
+                            </Button>
+                          </DialogFooter>
+                        </DialogContent>
+                      </Dialog>
                     </div>
                   </CardContent>
                 </Card>
