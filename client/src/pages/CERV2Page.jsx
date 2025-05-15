@@ -212,7 +212,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     }
   };
   
-  const handleEquivalenceComplete = (data) => {
+  const handleEquivalenceComplete = async (data) => {
     setEquivalenceCompleted(true);
     setEquivalenceData(data); // Store the equivalence data including literature evidence
     
@@ -220,22 +220,40 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     if (data && data.literatureEvidence && Object.keys(data.literatureEvidence).length > 0) {
       try {
         // Save to the server via the LiteratureFeatureService
-        LiteratureFeatureService.saveLiteratureFeatureConnections({
-          documentId: deviceProfile?.id,
-          featureEvidence: data.literatureEvidence
+        await LiteratureFeatureService.saveLiteratureFeatureConnections({
+          documentId: deviceProfile?.id || data.documentId,
+          featureEvidence: data.literatureEvidence,
+          organizationId: deviceProfile?.organizationId
         });
         
-        console.log('Saved literature evidence connections:', Object.keys(data.literatureEvidence).length);
+        // Log successful connection
+        const connectionCount = Object.values(data.literatureEvidence).reduce((acc, papers) => acc + papers.length, 0);
+        console.log(`Saved ${connectionCount} literature evidence connections for ${Object.keys(data.literatureEvidence).length} features`);
+        
+        // Update toast message to include literature connections
+        toast({
+          title: "Equivalence Analysis Complete",
+          description: `Substantial equivalence documentation has been prepared with ${connectionCount} literature evidence connections.`,
+          variant: "success"
+        });
       } catch (error) {
         console.error('Error saving literature evidence connections:', error);
+        
+        // Show error toast
+        toast({
+          title: "Warning",
+          description: "Equivalence analysis saved, but there was an issue connecting literature evidence. This won't affect your submission.",
+          variant: "warning"
+        });
       }
+    } else {
+      // Standard completion toast when no literature evidence
+      toast({
+        title: "Equivalence Analysis Complete",
+        description: "Substantial equivalence documentation has been prepared.",
+        variant: "success"
+      });
     }
-    
-    toast({
-      title: "Equivalence Analysis Complete",
-      description: "Substantial equivalence documentation has been prepared.",
-      variant: "success"
-    });
     
     // Automatically advance to compliance check
     setWorkflowStep(4);
