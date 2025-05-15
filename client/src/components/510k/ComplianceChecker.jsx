@@ -235,13 +235,22 @@ const ComplianceChecker = ({ projectId }) => {
   }
 
   return (
-    <Card className="border-t-4 border-t-primary">
+    <Card className="shadow-md border-0 overflow-hidden">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-white">
+        <h3 className="text-lg font-medium flex items-center">
+          <FaClipboardCheck className="h-5 w-5 mr-2" /> 
+          Pre-Submission Compliance Check
+        </h3>
+        <p className="text-blue-100 text-sm mt-1">
+          Step 3: Validate that your 510(k) submission meets all FDA requirements
+        </p>
+      </div>
+      
       <CardHeader>
         <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
           <div>
-            <CardTitle className="text-2xl">Pre-Submission Compliance Check</CardTitle>
-            <CardDescription>
-              Validate that your 510(k) submission meets all FDA requirements
+            <CardDescription className="text-gray-600">
+              Automated regulatory validation for your 510(k) submission
             </CardDescription>
           </div>
           <div className="flex gap-2">
