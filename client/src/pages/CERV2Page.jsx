@@ -475,6 +475,26 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           <div className="p-4 space-y-4">
             <DeviceProfileForm 
               projectId={k510DocumentId || 'new-device'} 
+              initialData={deviceProfile}
+              onSubmit={(savedProfile) => {
+                console.log('Device profile saved with vault integration:', savedProfile);
+                // Update the device profile in state
+                setDeviceProfile(savedProfile);
+                
+                // If the profile has a Document Vault structure, we can proceed to next steps
+                if (savedProfile.folderStructure && savedProfile.folderStructure.rootFolderId) {
+                  // Set the document ID from the saved profile
+                  setK510DocumentId(savedProfile.id);
+                  
+                  // Transition to the predicate finder step with the new profile
+                  setActiveTab('predicates');
+                  setWorkflowStep(1);
+                }
+              }}
+              onCancel={() => {
+                // Return to previous tab or dashboard
+                setActiveTab('dashboard');
+              }}
             />
           </div>
         );
