@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { lazy, Suspense } from 'react';
 import DocTypeSwitcher from '@/components/510k/DocTypeSwitcher';
-import { DocumentContextProvider } from '@/components/510k/About510kDialog';
+import { DocumentContextProvider } from '@/contexts/DocumentContext';
 
 // Import the original CERV2Page
 const OriginalCERV2Page = lazy(() => import('./CERV2Page'));
