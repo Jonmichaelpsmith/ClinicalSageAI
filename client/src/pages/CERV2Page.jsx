@@ -48,7 +48,6 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import FDA510kService from '@/services/FDA510kService';
 import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, GraduationCap, HelpCircle, Circle, Home, Menu, Filter, FolderPlus, Edit, ArrowRight, CheckCircle2, Cog, Trash2, Plus, Folder, File, Upload, ChevronRight, FilePlus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -126,6 +125,7 @@ export default function CERV2Page() {
   // Device profile creation state
   const [showNewProfileInput, setShowNewProfileInput] = useState(false);
   const [newProfileName, setNewProfileName] = useState('');
+  console.log('DEBUG: Initial state - showNewProfileInput:', showNewProfileInput);
   const { toast } = useToast();
   
   // Function to handle workflow tab navigation
@@ -1364,82 +1364,66 @@ export default function CERV2Page() {
                                   
                                   {/* Add New Profile Button with state-based visibility */}
                                   {showNewProfileInput ? (
-                                    <div className="p-2 border rounded shadow-sm bg-white">
-                                      <Label htmlFor="newProfileName" className="sr-only">Profile Name</Label>
+                                    <div className="p-3 border-2 border-blue-500 rounded shadow-lg bg-white my-2">
+                                      {console.log('DEBUG: Attempting to render profile creation form. showNewProfileInput is:', showNewProfileInput)}
+                                      <Label htmlFor="newProfileName" className="block mb-1 font-medium text-sm">New Profile Name:</Label>
                                       <Input 
                                         id="newProfileName"
                                         value={newProfileName}
                                         onChange={(e) => setNewProfileName(e.target.value)}
                                         placeholder="Enter profile name"
-                                        className="mb-2 text-sm"
+                                        className="mb-2 text-sm border-2"
                                       />
                                       <div className="flex gap-2">
-                                        <Button 
-                                          size="sm" 
-                                          className="bg-blue-600 hover:bg-blue-700 text-xs"
-                                          onClick={async () => {
+                                        <button 
+                                          type="button"
+                                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded shadow-sm"
+                                          onClick={() => {
+                                            console.log("Create button clicked!");
+                                            alert("Create button clicked!");
+                                            
                                             if (!newProfileName.trim()) {
-                                              toast({
-                                                title: "Error",
-                                                description: "Profile name cannot be empty",
-                                                variant: "destructive"
-                                              });
+                                              alert("Profile name cannot be empty");
                                               return;
                                             }
 
-                                            console.log("Creating new device profile:", newProfileName);
-                                            try {
-                                              // Make actual API request to create profile
-                                              const response = await FDA510kService.DeviceProfileAPI.create({
-                                                deviceName: newProfileName,
-                                                deviceClass: 'II', // Default to Class II
-                                                intendedUse: 'Not specified' // Required field
-                                              });
-                                              
-                                              console.log("Profile created successfully:", response);
-                                              toast({
-                                                title: "Profile Created",
-                                                description: `Created new device profile: ${newProfileName}`,
-                                                variant: "success"
-                                              });
-                                              setNewProfileName("");
-                                              setShowNewProfileInput(false);
-                                              
-                                              // Here you would refresh the list of profiles
-                                            } catch (error) {
-                                              console.error("Error creating device profile:", error);
-                                              toast({
-                                                title: "Error Creating Profile",
-                                                description: error.message || "An error occurred while creating the profile",
-                                                variant: "destructive"
-                                              });
-                                            }
+                                            console.log("Creating profile:", newProfileName);
+                                            // Simplified implementation without API call for testing
+                                            setNewProfileName("");
+                                            setShowNewProfileInput(false);
+                                            alert("Profile would be created: " + newProfileName);
                                           }}
                                         >
-                                          Create
-                                        </Button>
-                                        <Button 
-                                          size="sm" 
-                                          variant="outline" 
-                                          className="text-xs"
+                                          Create Profile
+                                        </button>
+                                        <button 
+                                          type="button"
+                                          className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded shadow-sm"
                                           onClick={() => {
+                                            console.log("Cancel button clicked!");
+                                            alert("Cancel button clicked!");
                                             setNewProfileName("");
                                             setShowNewProfileInput(false);
                                           }}
                                         >
                                           Cancel
-                                        </Button>
+                                        </button>
                                       </div>
                                     </div>
                                   ) : (
-                                    <Button
-                                      variant="ghost"
-                                      className="w-full justify-start px-2 py-1.5 h-auto text-sm text-blue-600 hover:bg-gray-50 hover:text-blue-700"
-                                      onClick={() => setShowNewProfileInput(true)}
+                                    <button
+                                      id="addNewProfileButton"
+                                      type="button"
+                                      className="w-full text-left px-3 py-2 rounded bg-blue-50 text-blue-700 text-sm flex items-center hover:bg-blue-100"
+                                      onClick={() => {
+                                        console.log('DEBUG: "+ Add New Profile" button clicked! Timestamp:', new Date().toISOString());
+                                        alert('Add New Profile button clicked!'); // Direct user feedback
+                                        setShowNewProfileInput(true);
+                                      }}
                                     >
                                       <Plus className="h-4 w-4 mr-2" />
                                       <span>Add New Profile</span>
-                                    </Button>
+                                    </button>
                                   )}
                                 </div>
                               </div>
