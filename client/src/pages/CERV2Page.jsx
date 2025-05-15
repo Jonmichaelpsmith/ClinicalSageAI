@@ -880,29 +880,60 @@ export default function CERV2Page() {
     
     if (activeTab === '510k') {
       console.log("Rendering enhanced 510k tab content");
+      
+      // Use the FDA510kTabContent component directly for the dedicated 510k workflow
+      if (documentType === '510k') {
+        return (
+          <React.Suspense fallback={<div className="p-4 flex items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              <span>Loading 510(k) submission tools...</span>
+            </div>}>
+            <FDA510kTabContent 
+              deviceProfile={deviceProfile || {
+                deviceName: deviceName,
+                manufacturer: manufacturer,
+                deviceClass: deviceType.includes('II') ? 'II' : deviceType.includes('III') ? 'III' : 'I',
+                intendedUse: intendedUse
+              }}
+              activeTab="drafting"
+              onTabChange={(newTab) => console.log("FDA 510k tab changed:", newTab)}
+              onComplianceChange={setCompliance}
+              onComplianceStatusChange={setDraftStatus}
+              isComplianceRunning={isComplianceRunning}
+              setIsComplianceRunning={setIsComplianceRunning}
+              compliance={compliance}
+              sections={sections}
+              organizationId={organizationId || 1}
+              userId={userId || 1}
+            />
+          </React.Suspense>
+        );
+      }
+      
+      // Otherwise use the built-in tabs approach (maintaining backward compatibility)
       return (
         <div className="bg-white p-6 rounded-md shadow-sm border border-blue-100">
           <Tabs defaultValue="workflow" className="w-full">
             <TabsList className="mb-4 bg-blue-50 w-full flex justify-start gap-2 p-1 border-b">
               <TabsTrigger value="workflow" className="data-[state=active]:bg-blue-600">
                 <FileText className="h-4 w-4 mr-2" />
-                Workflow
+                Device Profile
               </TabsTrigger>
               <TabsTrigger value="discovery" className="data-[state=active]:bg-blue-600">
                 <Search className="h-4 w-4 mr-2" />
-                Predicate Discovery
+                Predicate Finder
+              </TabsTrigger>
+              <TabsTrigger value="compliance" className="data-[state=active]:bg-blue-600">
+                <CheckSquare className="h-4 w-4 mr-2" />
+                Compliance Check
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="data-[state=active]:bg-blue-600">
+                <FileText className="h-4 w-4 mr-2" />
+                Final Review
               </TabsTrigger>
               <TabsTrigger value="insights" className="data-[state=active]:bg-blue-600">
                 <Lightbulb className="h-4 w-4 mr-2" />
                 Insights
-              </TabsTrigger>
-              <TabsTrigger value="timeline" className="data-[state=active]:bg-blue-600">
-                <Calendar className="h-4 w-4 mr-2" />
-                Timeline
-              </TabsTrigger>
-              <TabsTrigger value="reports" className="data-[state=active]:bg-blue-600">
-                <FileText className="h-4 w-4 mr-2" />
-                Reports
               </TabsTrigger>
             </TabsList>
             
