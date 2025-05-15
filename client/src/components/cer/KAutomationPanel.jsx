@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { 
-  Upload, Search, FilePlus, BarChart, ArrowRight, Shield, Zap, 
-  FileCheck, CheckCircle2, AlertTriangle, Lightbulb, Bot, Star, ListChecks, BookOpen, 
-  Clock, Info, Check, Brain, Activity, FileText, Undo2, Users, Plus, Database,
-  ChevronDown, ExternalLink, Bug, AlertCircle, BookmarkPlus, Calendar,
-  ChevronUp, ListPlus, Settings, PlusCircle, RefreshCw, ChevronRight, CheckCircle
+  Upload, Search, FilePlus, Shield, 
+  FileCheck, CheckCircle2, AlertTriangle, CheckCircle,
+  FileText, Plus, Database, AlertCircle, Settings
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -26,45 +24,19 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ToastAction } from "@/components/ui/toast";
-import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { formatDistanceToNow } from 'date-fns';
-import DeviceProfileForm from './DeviceProfileForm';
+
 import DeviceProfileList from './DeviceProfileList';
 import DeviceProfileDialog from './DeviceProfileDialog';
 import { postDeviceProfile, getDeviceProfiles } from '../../api/cer';
-// Import the service directly
-import FDA510kService from '../../services/FDA510kService';
 import { useTenant } from '@/contexts/TenantContext';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 
 export default function KAutomationPanel() {
-  const [activeTab, setActiveTab] = useState('workflow');
-  const [workflowSubTab, setWorkflowSubTab] = useState('devices');
+  const [workflowStep, setWorkflowStep] = useState('devices');
   const [aiProcessing, setAiProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [aiInsights, setAiInsights] = useState([]);
-  const [requirements, setRequirements] = useState([]);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [deviceProfileDialogOpen, setDeviceProfileDialogOpen] = useState(false);
-  const [deviceProfileSubmitted, setDeviceProfileSubmitted] = useState(false);
   const [currentDeviceProfile, setCurrentDeviceProfile] = useState(null);
-  const [predicateSearchResults, setPredicateSearchResults] = useState([]);
-  const [isSearchingPredicates, setIsSearchingPredicates] = useState(false);
-  const [recommendedPredicates, setRecommendedPredicates] = useState([]);
-  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
-  const [showDeviceProfileDialog, setShowDeviceProfileDialog] = useState(false);
   const [showDeviceSetupDialog, setShowDeviceSetupDialog] = useState(false);
   const { currentOrganization } = useTenant();
   const { toast } = useToast();
@@ -73,66 +45,36 @@ export default function KAutomationPanel() {
   const { 
     data: deviceProfiles, 
     isLoading: isLoadingProfiles, 
-    isError: isProfileError, 
     refetch: refetchProfiles 
   } = useQuery({
     queryKey: ['/api/cer/device-profile/organization', currentOrganization?.id],
     queryFn: () => getDeviceProfiles(currentOrganization?.id),
     enabled: !!currentOrganization?.id,
-    staleTime: 30000, // 30 seconds
-    onSuccess: (data) => {
-      // If there's a current device and it's in the returned data, update it
-      if (currentDeviceProfile && data.some(profile => profile.id === currentDeviceProfile.id)) {
-        const updated = data.find(profile => profile.id === currentDeviceProfile.id);
-        setCurrentDeviceProfile(updated);
-      }
-    }
+    staleTime: 30000
   });
 
   // Handle device profile form submission
   const handleSubmitDeviceProfile = async (data) => {
     try {
-      // Show progress and clear errors
       setAiProcessing(true);
-      setErrorMessage('');
       
-      // Call API to save the device profile
       const response = await postDeviceProfile(data);
-      
-      // Update state with the new device profile
       setCurrentDeviceProfile(response);
-      setDeviceProfileSubmitted(true);
-      
-      // Close the dialog
-      setDeviceProfileDialogOpen(false);
       
       // Refresh the device profiles list
       refetchProfiles();
       
-      // Show success toast
       toast({
         title: "Device Profile Saved",
         description: `${data.deviceName} has been successfully saved.`,
+        variant: "success"
       });
       
-      // Show success insights
-      setAiInsights([
-        {
-          id: 'device-profile-1',
-          type: 'device',
-          name: data.deviceName,
-          deviceClass: data.deviceClass,
-          timestamp: new Date().toISOString()
-        },
-        ...aiInsights
-      ]);
-      
-      // Auto-navigate to pipeline view
-      setWorkflowSubTab('pipeline');
+      // Move to next step automatically
+      setWorkflowStep('setup');
       
     } catch (error) {
       console.error('Error saving device profile:', error);
-      setErrorMessage(error.message || 'Failed to save device profile');
       toast({
         title: "Error Saving Profile",
         description: error.message || 'Failed to save device profile',
@@ -147,29 +89,54 @@ export default function KAutomationPanel() {
   const handleSelectDeviceProfile = (profile) => {
     setCurrentDeviceProfile(profile);
     
-    // Show success toast
     toast({
       title: "Device Profile Selected",
       description: `${profile.deviceName} is now the active device for your 510(k) submission.`,
+      variant: "success"
+    });
+  };
+  
+  // Handle device intake process
+  const handleDeviceIntake = () => {
+    if (!currentDeviceProfile) {
+      toast({
+        title: "Device Required",
+        description: "Please create or select a device profile first",
+        variant: "warning"
+      });
+      setWorkflowStep('devices');
+      return;
+    }
+    
+    toast({
+      title: "Intake Wizard Started",
+      description: `Starting step-by-step intake for ${currentDeviceProfile.deviceName}`,
+      duration: 3000
     });
     
-    // Update insights
-    const existingInsight = aiInsights.find(insight => 
-      insight.type === 'device' && insight.name === profile.deviceName
-    );
+    setAiProcessing(true);
     
-    if (!existingInsight) {
-      setAiInsights([
-        {
-          id: `device-profile-${Date.now()}`,
-          type: 'device',
-          name: profile.deviceName,
-          deviceClass: profile.deviceClass,
-          timestamp: new Date().toISOString()
-        },
-        ...aiInsights
-      ]);
-    }
+    // Simulate progress
+    let currentProgress = 0;
+    const interval = setInterval(() => {
+      currentProgress += 5;
+      setProgress(currentProgress);
+      
+      if (currentProgress >= 100) {
+        clearInterval(interval);
+        setAiProcessing(false);
+        setProgress(0);
+        
+        toast({
+          title: "Device Intake Complete",
+          description: `${currentDeviceProfile.deviceName} has been successfully onboarded`,
+          variant: "success"
+        });
+        
+        // Move to next step
+        setWorkflowStep('predicates');
+      }
+    }, 200);
   };
 
   return (
@@ -186,21 +153,21 @@ export default function KAutomationPanel() {
       
       <CardContent className="p-6">
         <div className="space-y-6">
-          {/* Device Management System - Unified Navigation Card */}
+          {/* Device Management System - Simplified Card Layout */}
           <div className="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden mb-6">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-white">
-              <h3 className="text-xl font-semibold flex items-center">
+            <div className="bg-blue-50 px-6 py-4">
+              <h3 className="text-xl font-semibold flex items-center text-blue-700">
                 <Database className="h-5 w-5 mr-2" />
                 Medical Device Management
               </h3>
-              <p className="text-blue-100 text-sm mt-1">
-                Unified system for managing your 510(k) device submission process
+              <p className="text-blue-600 text-sm mt-1">
+                Configure and prepare your device for 510(k) submission
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-x divide-gray-100">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5">
               {/* COLUMN 1: Device Profile */}
-              <div className="p-4 bg-gradient-to-b from-blue-50 to-white">
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex items-center mb-3">
                   <div className="bg-blue-100 rounded-full p-2 mr-3">
                     <FileText className="h-5 w-5 text-blue-700" />
@@ -210,11 +177,12 @@ export default function KAutomationPanel() {
                     <p className="text-xs text-blue-700">FDA Regulatory Information</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-3 border-l-2 border-blue-300 pl-3">
-                  Create and manage your device profiles and their associated regulatory information.
+                
+                <p className="text-sm text-gray-600 mb-4 border-l-2 border-blue-300 pl-3">
+                  Create and manage your device profiles for regulatory submission.
                 </p>
                 
-                <div className="flex items-center mb-3">
+                <div className="flex items-center mb-4">
                   <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
                     {deviceProfiles?.length || 0} Profiles
                   </Badge>
@@ -246,7 +214,7 @@ export default function KAutomationPanel() {
               </div>
               
               {/* COLUMN 2: Device Setup */}
-              <div className="p-4 bg-gradient-to-b from-green-50 to-white relative">
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex items-center mb-3">
                   <div className="bg-green-100 rounded-full p-2 mr-3">
                     <Settings className="h-5 w-5 text-green-700" />
@@ -256,11 +224,12 @@ export default function KAutomationPanel() {
                     <p className="text-xs text-green-700">System Configuration</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-3 border-l-2 border-green-300 pl-3">
-                  System-level parameters and configuration that control how your device is processed in the platform.
+                
+                <p className="text-sm text-gray-600 mb-4 border-l-2 border-green-300 pl-3">
+                  Configure system parameters for your device submission workflow.
                 </p>
                 
-                <div className="flex items-center mb-3">
+                <div className="flex items-center mb-4">
                   {currentDeviceProfile ? (
                     <Badge variant="outline" className="text-green-600 border-green-200 bg-green-50">
                       {currentDeviceProfile.deviceClass ? `Class ${currentDeviceProfile.deviceClass}` : 'Class II'} Device
@@ -278,14 +247,11 @@ export default function KAutomationPanel() {
                   disabled={!currentDeviceProfile}
                   onClick={() => {
                     if (currentDeviceProfile) {
-                      // Open a device setup dialog instead of just changing tabs
                       toast({
                         title: "Device Setup Started",
                         description: `Opening configuration for ${currentDeviceProfile.deviceName}`,
                         duration: 2000
                       });
-                      
-                      // Set a "device setup" dialog state
                       setShowDeviceSetupDialog(true);
                     }
                   }}
@@ -295,7 +261,7 @@ export default function KAutomationPanel() {
               </div>
               
               {/* COLUMN 3: Device Intake */}
-              <div className="p-4 bg-gradient-to-b from-purple-50 to-white">
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm">
                 <div className="flex items-center mb-3">
                   <div className="bg-purple-100 rounded-full p-2 mr-3">
                     <Upload className="h-5 w-5 text-purple-700" />
@@ -305,11 +271,12 @@ export default function KAutomationPanel() {
                     <p className="text-xs text-purple-700">Onboarding Wizard</p>
                   </div>
                 </div>
-                <p className="text-sm text-gray-600 mb-3 border-l-2 border-purple-300 pl-3">
-                  Step-by-step wizard for bringing a new device into the system, including data validation and enhancement.
+                
+                <p className="text-sm text-gray-600 mb-4 border-l-2 border-purple-300 pl-3">
+                  Start the guided device intake process with validation and enhancement.
                 </p>
                 
-                <div className="flex items-center mb-3">
+                <div className="flex items-center mb-4">
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -331,7 +298,6 @@ export default function KAutomationPanel() {
                   className="w-full bg-purple-600 hover:bg-purple-700"
                   onClick={() => {
                     if (!currentDeviceProfile) {
-                      // If no device is selected, first prompt to create one
                       toast({
                         title: "Device Required",
                         description: "Please create or select a device profile first",
@@ -339,17 +305,14 @@ export default function KAutomationPanel() {
                       });
                       setWorkflowSubTab('devices');
                     } else {
-                      // Show the device intake wizard with current device selected
                       toast({
                         title: "Intake Wizard Started",
                         description: `Starting step-by-step intake for ${currentDeviceProfile.deviceName}`,
                         duration: 3000
                       });
                       
-                      // Set wizard states
                       setAiProcessing(true);
                       
-                      // Simulate progress
                       let progress = 0;
                       const interval = setInterval(() => {
                         progress += 5;
@@ -366,7 +329,6 @@ export default function KAutomationPanel() {
                             variant: "success"
                           });
                           
-                          // Move to predicate finder tab
                           setWorkflowSubTab('predicates');
                         }
                       }, 200);
