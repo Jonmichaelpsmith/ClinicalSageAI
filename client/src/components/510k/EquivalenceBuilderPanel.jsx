@@ -8,10 +8,12 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GitCompare, ArrowRight, Check, Loader2, FileCheck, X, ChevronDown, ChevronUp, Info, Save, FileText, BookOpen, Calendar, BarChart2 } from 'lucide-react';
+import { GitCompare, ArrowRight, Check, Loader2, FileCheck, X, ChevronDown, ChevronUp, Info, Save, FileText, BookOpen, Calendar, BarChart2, PlusCircle, MinusCircle, File, Link } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import { FDA510kService } from "@/services/FDA510kService";
 import LiteratureTab from "./LiteratureTab";
 
