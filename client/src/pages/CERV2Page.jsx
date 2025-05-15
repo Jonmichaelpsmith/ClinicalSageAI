@@ -34,7 +34,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, ArrowRight, AlertTriangle, Files, FolderTree, X, FilePlus, FolderPlus } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, ArrowRight, AlertTriangle, Files, FolderTree, X, FilePlus, FolderPlus, PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -885,6 +885,15 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
             </div>
             
             <div className="flex items-center space-x-3">
+              <Button
+                variant="default"
+                size="sm"
+                className="bg-green-600 text-white hover:bg-green-700"
+                onClick={startNewClientOnboarding}
+              >
+                <PlusCircle className="h-4 w-4 mr-1" />
+                New Device Submission
+              </Button>
               <Button 
                 variant="outline" 
                 size="sm"
@@ -1079,6 +1088,22 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           </div>
         </div>
       </div>
+      
+      {/* Welcome Dialog for new client onboarding */}
+      <WelcomeDialog 
+        open={showWelcomeDialog} 
+        onOpenChange={setShowWelcomeDialog}
+        onContinue={handleWelcomeContinue}
+        documentType={documentType}
+      />
+      
+      {/* Device Intake Form */}
+      <DeviceIntakeForm
+        open={showDeviceIntakeForm}
+        onOpenChange={setShowDeviceIntakeForm}
+        onSubmit={handleDeviceIntakeSubmit}
+        onCancel={() => setShowDeviceIntakeForm(false)}
+      />
     </div>
   );
 }
