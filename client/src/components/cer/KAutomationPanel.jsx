@@ -825,6 +825,29 @@ export default function KAutomationPanel() {
                 <div className="space-y-4">
                   {currentDeviceProfile ? (
                     <div>
+                      {/* AI Assistant Panel */}
+                      <div className="border rounded-lg bg-blue-50 border-blue-100 p-4 mb-6">
+                        <div className="flex">
+                          <div className="mr-4 shrink-0">
+                            <HelpCircle className="h-8 w-8 text-blue-500" />
+                          </div>
+                          <div>
+                            <h3 className="font-medium text-blue-800 mb-1">AI Co-authoring Assistant</h3>
+                            <p className="text-sm text-blue-700 mb-2">
+                              Our AI can help identify the most appropriate predicate devices for your submission based on your device's characteristics.
+                            </p>
+                            <div className="text-sm text-blue-700">
+                              <span className="font-medium">Predicate Selection Tips:</span>
+                              <ul className="list-disc pl-5 mt-1 space-y-1">
+                                <li>Choose devices with similar technological characteristics</li>
+                                <li>Select predicates with matching indications for use</li>
+                                <li>Higher match scores indicate better substantial equivalence</li>
+                              </ul>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
                       <div className="flex items-center mb-4">
                         <div className="flex-1">
                           <h3 className="text-md font-medium text-gray-700">Finding predicates for:</h3>
@@ -837,13 +860,19 @@ export default function KAutomationPanel() {
                             Searching...
                           </Button>
                         ) : (
-                          <Button 
-                            onClick={handleFindPredicateDevices}
-                            className="bg-blue-600 hover:bg-blue-700 text-white ml-4"
-                          >
-                            <Search className="h-4 w-4 mr-2" />
-                            Find Predicate Devices
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button variant="outline">
+                              <Settings className="h-4 w-4 mr-2" />
+                              Search Options
+                            </Button>
+                            <Button 
+                              onClick={handleFindPredicateDevices}
+                              className="bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                              <Search className="h-4 w-4 mr-2" />
+                              Find Predicate Devices
+                            </Button>
+                          </div>
                         )}
                       </div>
                       
