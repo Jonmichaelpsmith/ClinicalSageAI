@@ -410,16 +410,9 @@ export default function CERV2Page() {
     if (documentType === '510k') {
       return (
         <React.Suspense fallback={<div className="p-4">Loading 510(k) submission tools...</div>}>
-          <FDA510kTabContent 
-            deviceProfile={deviceProfile}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            onComplianceChange={setCompliance}
-            onComplianceStatusChange={setDraftStatus}
-            isComplianceRunning={isComplianceRunning}
-            setIsComplianceRunning={setIsComplianceRunning}
-            compliance={compliance}
-            sections={sections}
+          <WorkflowPanel
+            projectId={projectId || "demo-project-id"} 
+            organizationId={organizationId || 1}
           />
         </React.Suspense>
       );
