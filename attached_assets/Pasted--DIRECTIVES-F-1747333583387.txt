@@ -1,0 +1,64 @@
+------------------------------------------------------------------------------------
+**DIRECTIVES FOR REPLIT AI AGENT**
+
+**Objective:** Restore the application to its May 14th working state (referenced by commit `c3557c6`) by meticulously copying files from the `./may14_complete_restore/` backup directory and deleting any current files in the active project that are *not* present in that backup (especially those related to the new, non-functional UI). All relevant application code is within the `/CER2V/` folder.
+
+**Assumptions:**
+* The directory `./may14_complete_restore/CER2V/` (or a similar path if `CER2V` is the root of the backup) contains a complete and correct snapshot of all necessary application files (frontend and backend) from the May 14th working state.
+* The primary goal is to make the application's `/CER2V/` directory exactly match the contents of `./may14_complete_restore/CER2V/`.
+
+---
+
+**Step 1: User Confirmation of Backup Integrity and Scope**
+
+* **Action (Agent to ask User):**
+    1.  "Please confirm: Is the `./may14_complete_restore/` directory a **complete backup** of your entire project, or specifically of the `/CER2V/` folder, as it was on May 14th in its working state (corresponding to commit `c3557c6`)?"
+    2.  "Should I aim to make the live `/CER2V/` folder an exact mirror of what's inside `./may14_complete_restore/CER2V/` (or the relevant sub-path if `CER2V` is not the root of the backup)?"
+* **Instruction to Agent:** Wait for the user's confirmation on these points before proceeding. This ensures you are restoring the correct scope.
+
+---
+
+**Step 2: Prepare for Restoration - Focus on `/CER2V/`**
+
+* **Action (Agent to perform):**
+    1.  List the top-level contents of the live `/CER2V/` folder.
+    2.  List the top-level contents of the backup equivalent (e.g., `./may14_complete_restore/CER2V/` or `./may14_complete_restore/` if `CER2V` is the project root in the backup).
+* **Instruction to Agent:** "Please show me the top-level file and directory listing for both the current live `/CER2V/` folder and the corresponding folder in the `./may14_complete_restore/` backup. This will help us see what needs to be added, deleted, or replaced."
+
+---
+
+**Step 3: Meticulous File and Folder Replacement within `/CER2V/`**
+
+* **Instruction to Agent:** "Based on our goal to make the live `/CER2V/` folder match the backup from `./may14_complete_restore/CER2V/` (adjust path as per user confirmation):
+    1.  **For every file and folder currently in the live `/CER2V/` directory that does NOT exist in the corresponding `./may14_complete_restore/CER2V/` backup, please DELETE it from the live `/CER2V/` directory.** (Ask for user confirmation before deleting any major directories if you are unsure). This is to remove remnants of the new, unwanted UI.
+    2.  **For every file and folder that exists in the `./may14_complete_restore/CER2V/` backup, COPY it to the live `/CER2V/` directory, OVERWRITING any existing file or folder with the same name in the live `/CER2V/` directory.** Ensure you copy recursively for directories.
+* **Action (Agent to perform, with user confirmation steps for major deletions):**
+    * The agent should systematically go through the live `/CER2V/` directory.
+    * For each item, check if a corresponding item exists in the backup.
+    * If not in backup -> delete from live (after potential confirmation).
+    * Then, go through the backup `/CER2V/` directory.
+    * For each item, copy it to the live `/CER2V/`, overwriting.
+* **Logging:** "Please log the major actions you take (e.g., 'Deleting /CER2V/client/src/new-ui-component/', 'Copying ./may14_complete_restore/CER2V/client/src/pages/CERV2Page.jsx to /CER2V/client/src/pages/CERV2Page.jsx')."
+* **Verification:** After this process, the file and folder structure of the live `/CER2V/` should exactly mirror that of `./may14_complete_restore/CER2V/`.
+
+---
+
+**Step 4: Verify Critical File Content (Example: `CERV2Page.jsx`)**
+
+* **Action (Agent to perform):**
+    1.  After the file restoration, open the live `/CER2V/client/src/pages/CERV2Page.jsx`.
+    2.  Verify that its content now matches the version from `./may14_complete_restore/CER2V/client/src/pages/CERV2Page.jsx`.
+    3.  Specifically, check its import statements. Does it now correctly import `FDA510kTabContent.jsx` (or its equivalent from that period) from a path that should now exist due to the full `/CER2V/` restoration?
+    4.  Confirm that `/CER2V/client/src/components/FDA510kTabContent.jsx` (or the path `CERV2Page.jsx` expects) now exists and also contains the May 14th version.
+* **Instruction to Agent:** "After restoring all files in `/CER2V/` from the backup, please open the live `/CER2V/client/src/pages/CERV2Page.jsx`. Confirm its content is from the backup. Then, check its import statement for `FDA510kTabContent.jsx`. Verify that `FDA510kTabContent.jsx` now exists at that imported path and is also the version from the backup."
+
+---
+
+**Step 5: Environment Refresh and Application Test (User to Perform)**
+
+* **Action (Agent to instruct user):** "The manual file restoration for the `/CER2V/` folder should now be complete, aiming to match the May 14th backup. Please perform the following:
+    1.  In the Replit Shell, run `npm install` (or `yarn install`) to ensure all project dependencies are correctly installed according to the `package.json` that should have been restored from the backup.
+    2.  Stop your development server if it's running.
+    3.  Restart your development server (e.g., `npm run dev`).
+    4.  In your web browser, perform a hard refresh of your TrialSage application (usually Ctrl+Shift+R or Cmd+Shift+R) AND clear the browser cache and cookies for this site (this is very important to avoid seeing old UI elements)."
+* **
