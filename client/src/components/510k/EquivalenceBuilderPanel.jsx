@@ -129,6 +129,17 @@ const EquivalenceBuilderPanel = ({
             setSummaryStatement(savedAnalysis.summary);
           }
           
+          // Load literature data if available
+          if (savedAnalysis.literature) {
+            if (savedAnalysis.literature.selectedPapers) {
+              setSelectedLiterature(savedAnalysis.literature.selectedPapers);
+            }
+            
+            if (savedAnalysis.literature.featureEvidence) {
+              setLiteratureEvidence(savedAnalysis.literature.featureEvidence);
+            }
+          }
+          
           // Set completion status if this is a completed analysis
           if (savedAnalysis.status === 'completed' || savedAnalysis.completedAt) {
             setEquivalenceComplete(true);
@@ -327,11 +338,23 @@ const EquivalenceBuilderPanel = ({
           features: comparisonFeatures,
           summary: finalSummary,
           completedAt: new Date().toISOString(),
+          // Include literature evidence in completed analysis
+          literature: {
+            selectedPapers: selectedLiterature,
+            featureEvidence: literatureEvidence,
+            count: selectedLiterature.length
+          },
           analysis: {
             substantiallyEquivalent: comparisonFeatures.every(f => f.substantial === true),
             featuresCount: comparisonFeatures.length,
             equivalentFeaturesCount: comparisonFeatures.filter(f => f.substantial === true).length,
-            nonEquivalentFeaturesCount: comparisonFeatures.filter(f => f.substantial === false).length
+            nonEquivalentFeaturesCount: comparisonFeatures.filter(f => f.substantial === false).length,
+            // Add literature statistics to analysis
+            literaturesCount: selectedLiterature.length,
+            featureWithEvidenceCount: Object.keys(literatureEvidence).length,
+            literatureEvidenceRatio: selectedLiterature.length > 0 
+              ? (Object.keys(literatureEvidence).length / comparisonFeatures.length).toFixed(2) 
+              : 0
           }
         };
         
@@ -894,9 +917,17 @@ const EquivalenceBuilderPanel = ({
                     summary: summaryStatement || generateSummaryStatement(),
                     savedAt: new Date().toISOString(),
                     status: 'draft',
+                    // Include literature evidence in saved data
+                    literature: {
+                      selectedPapers: selectedLiterature,
+                      featureEvidence: literatureEvidence,
+                      count: selectedLiterature.length
+                    },
                     analysis: {
                       featuresCount: comparisonFeatures.length,
-                      completedFeaturesCount: comparisonFeatures.filter(f => f.substantial !== null).length
+                      completedFeaturesCount: comparisonFeatures.filter(f => f.substantial !== null).length,
+                      literaturesCount: selectedLiterature.length,
+                      featureWithEvidenceCount: Object.keys(literatureEvidence).length
                     }
                   };
                   
