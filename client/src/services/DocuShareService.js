@@ -113,6 +113,77 @@ class DocuShareService {
       throw error;
     }
   }
+  
+  /**
+   * Upload a file to a specific folder in the vault
+   * 
+   * @param {string} folderId Parent folder ID
+   * @param {FormData} formData Form data with file and metadata
+   * @returns {Promise<Object>} Uploaded file metadata
+   */
+  async uploadFile(folderId, formData) {
+    try {
+      // Ensure folderId is included in the formData
+      if (!formData.has('folderId')) {
+        formData.append('folderId', folderId);
+      }
+      
+      const response = await apiRequest.post('/api/vault/files', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error(`Error uploading file to folder ${folderId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get file content by document ID
+   * 
+   * @param {string} documentId Document ID
+   * @returns {Promise<any>} File content
+   */
+  async getFileContent(documentId) {
+    try {
+      const response = await apiRequest.get(`/api/vault/files/${documentId}/content`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error retrieving file content for document ${documentId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * List files in a folder with optional filters
+   * 
+   * @param {string} folderId Folder ID
+   * @param {Object} filters Optional filters for the file listing
+   * @returns {Promise<Array>} List of files in the folder
+   */
+  async listFiles(folderId, filters = {}) {
+    try {
+      // Build query parameters
+      const params = new URLSearchParams();
+      params.append('folderId', folderId);
+      
+      // Add filter parameters
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== null && value !== undefined) {
+          params.append(key, value);
+        }
+      });
+      
+      const response = await apiRequest.get(`/api/vault/files?${params.toString()}`);
+      return response.data.files || [];
+    } catch (error) {
+      console.error(`Error listing files in folder ${folderId}:`, error);
+      throw error;
+    }
+  }
 }
 
 // Create and export singleton instance
