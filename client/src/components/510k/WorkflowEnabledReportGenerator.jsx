@@ -335,9 +335,9 @@ const WorkflowEnabledReportGenerator = ({
     <div className={className}>
       <Card>
         <CardHeader>
-          <CardTitle>FDA 510(k) Report Generator</CardTitle>
+          <CardTitle>FDA 510(k) eSTAR Generator</CardTitle>
           <CardDescription>
-            Generate FDA-compliant 510(k) submission reports with regulatory workflow management
+            Step 2: Generate FDA-compliant 510(k) eSTAR packages for submission to the FDA
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -345,11 +345,11 @@ const WorkflowEnabledReportGenerator = ({
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="generator">
                 <FileText className="h-4 w-4 mr-2" /> 
-                Report Generator
+                eSTAR Configuration
               </TabsTrigger>
               <TabsTrigger value="workflow" disabled={!generatedReportId}>
                 <Clock className="h-4 w-4 mr-2" /> 
-                Regulatory Workflow
+                FDA Submission Workflow
               </TabsTrigger>
             </TabsList>
 
@@ -418,17 +418,26 @@ const WorkflowEnabledReportGenerator = ({
                     </div>
                   </div>
                   
-                  <div className="bg-slate-50 p-4 rounded-md border border-slate-200 mt-4">
+                  <div className="bg-blue-50 p-4 rounded-md border border-blue-200 mt-4">
                     <div className="flex items-center gap-2 mb-3">
                       <PackageCheck className="h-5 w-5 text-blue-600" />
-                      <h3 className="font-medium">eSTAR Package Options</h3>
+                      <h3 className="font-medium text-blue-800">FDA eSTAR Package Configuration</h3>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div className="mb-3">
+                      <p className="text-blue-800 text-sm">
+                        <strong>Step 2:</strong> Configure and generate an FDA-compliant eSTAR (electronic Submission Template And Resource) package for your 510(k) submission.
+                      </p>
+                      <p className="text-blue-700 text-sm mt-2">
+                        The eSTAR system is the FDA's preferred format for 510(k) submissions and ensures your application follows all current regulatory requirements.
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-4 mt-4">
                       <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
-                          <Label htmlFor="generate-estar" className="text-sm">Generate eSTAR Package</Label>
-                          <p className="text-xs text-muted-foreground">
+                          <Label htmlFor="generate-estar" className="text-sm font-medium">Enable eSTAR Generation</Label>
+                          <p className="text-xs text-blue-700">
                             Automatically generate an FDA-compliant eSTAR package during the workflow
                           </p>
                         </div>
@@ -440,11 +449,14 @@ const WorkflowEnabledReportGenerator = ({
                       </div>
                       
                       {generateESTARPackage && (
-                        <div className="flex items-center justify-between pl-4 border-l-2 border-blue-100 ml-2">
+                        <div className="flex items-center justify-between pl-4 border-l-2 border-blue-300 ml-2 py-3">
                           <div className="space-y-0.5">
-                            <Label htmlFor="validate-estar" className="text-sm">Validate Before Generation</Label>
-                            <p className="text-xs text-muted-foreground">
-                              Run FDA compliance checks before generating the package
+                            <Label htmlFor="validate-estar" className="text-sm font-medium flex items-center">
+                              <CheckSquare className="h-4 w-4 mr-1 text-blue-600" />
+                              Pre-Validate Package
+                            </Label>
+                            <p className="text-xs text-blue-700">
+                              Automatically validate against FDA requirements before generating the eSTAR package (recommended)
                             </p>
                           </div>
                           <Switch
