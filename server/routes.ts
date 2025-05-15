@@ -374,6 +374,121 @@ export default function registerRoutes(app: Express): void {
   app.use('/api/cer', cerValidationRouter);
   console.log('Temporary CER validation routes registered');
   
+  // Document Vault API Routes
+  const vaultRouter = express.Router();
+  
+  // Get folder structure endpoint
+  vaultRouter.get('/structure', (req, res) => {
+    try {
+      const { rootFolderId, maxDepth, includeFiles, fileTypes } = req.query;
+      
+      // Initialize folder structure for regulatory documentation
+      const folders = [
+        {
+          id: 'folder-510k',
+          name: '510(k) Submission',
+          type: 'folder',
+          children: [
+            { id: 'doc-device', name: 'Device Description.pdf', type: 'document', format: 'pdf' },
+            { id: 'doc-intended', name: 'Intended Use.docx', type: 'document', format: 'docx' },
+            { id: 'doc-results', name: 'Test Results.pdf', type: 'document', format: 'pdf' }
+          ]
+        },
+        {
+          id: 'folder-predicate',
+          name: 'Predicate Devices',
+          type: 'folder',
+          children: [
+            { id: 'doc-predA', name: 'Predicate A.pdf', type: 'document', format: 'pdf' },
+            { id: 'doc-predB', name: 'Predicate B.pdf', type: 'document', format: 'pdf' },
+            { id: 'doc-comparison', name: 'Comparison Table.xlsx', type: 'document', format: 'xlsx' }
+          ]
+        },
+        {
+          id: 'folder-regulatory',
+          name: 'Regulatory Documents',
+          type: 'folder',
+          children: [
+            { id: 'doc-fda', name: 'FDA Guidelines.pdf', type: 'document', format: 'pdf' },
+            { id: 'doc-checklist', name: 'Submission Checklist.docx', type: 'document', format: 'docx' }
+          ]
+        },
+        {
+          id: 'folder-estar',
+          name: 'eSTAR Documents',
+          type: 'folder',
+          children: [
+            { id: 'doc-estar-template', name: 'eSTAR Template.xlsx', type: 'document', format: 'xlsx' },
+            { id: 'doc-estar-guidance', name: 'eSTAR Guidance.pdf', type: 'document', format: 'pdf' }
+          ]
+        }
+      ];
+      
+      // Return structured response
+      res.json({
+        folders,
+        metadata: {
+          totalCount: folders.length,
+          timestamp: new Date().toISOString()
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error getting vault structure:', error);
+      res.status(500).json({ error: 'Failed to retrieve folder structure' });
+    }
+  });
+  
+  // Get documents listing endpoint
+  vaultRouter.get('/documents', (req, res) => {
+    try {
+      const { page = 1, limit = 20, type, format } = req.query;
+      
+      // Sample documents list
+      const documents = [
+        { id: 'doc-device', name: 'Device Description.pdf', type: 'document', format: 'pdf', createdAt: '2025-04-15T14:30:00Z' },
+        { id: 'doc-intended', name: 'Intended Use.docx', type: 'document', format: 'docx', createdAt: '2025-04-16T10:15:00Z' },
+        { id: 'doc-results', name: 'Test Results.pdf', type: 'document', format: 'pdf', createdAt: '2025-04-17T09:45:00Z' },
+        { id: 'doc-predA', name: 'Predicate A.pdf', type: 'document', format: 'pdf', createdAt: '2025-04-18T11:20:00Z' },
+        { id: 'doc-predB', name: 'Predicate B.pdf', type: 'document', format: 'pdf', createdAt: '2025-04-19T13:10:00Z' }
+      ];
+      
+      // Filter by type and format if provided
+      let filteredDocs = [...documents];
+      if (type) {
+        filteredDocs = filteredDocs.filter(doc => doc.type === type);
+      }
+      if (format) {
+        filteredDocs = filteredDocs.filter(doc => doc.format === format);
+      }
+      
+      // Apply pagination
+      const pageNum = parseInt(page as string, 10);
+      const limitNum = parseInt(limit as string, 10);
+      const startIndex = (pageNum - 1) * limitNum;
+      const endIndex = pageNum * limitNum;
+      const paginatedDocs = filteredDocs.slice(startIndex, endIndex);
+      
+      res.json({
+        documents: paginatedDocs,
+        pagination: {
+          total: filteredDocs.length,
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(filteredDocs.length / limitNum)
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error getting documents:', error);
+      res.status(500).json({ error: 'Failed to retrieve documents' });
+    }
+  });
+  
+  // Register the vault router
+  app.use('/api/vault', vaultRouter);
+  console.log('Document vault API routes registered');
+  
   // Register module integration routes
   app.use('/api/integration', moduleIntegrationRoutes);
   console.log('Module integration routes registered');
