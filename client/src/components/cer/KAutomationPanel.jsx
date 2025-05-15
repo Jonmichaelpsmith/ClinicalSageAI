@@ -48,31 +48,24 @@ export default function KAutomationPanel() {
     // Fetch device profiles from API
     const fetchDeviceProfiles = async () => {
       try {
-        // In a real implementation, this would be an API call
-        const response = await fetch('/api/device-profiles');
-        if (response.ok) {
-          const data = await response.json();
-          setDeviceProfiles(data.profiles);
-        } else {
-          // If API fails, use fallback data
-          const fallbackProfiles = [
-            { id: '1', deviceName: 'Cardiac Monitor', deviceClass: 'Class II', manufacturer: 'MedTech Industries', deviceType: 'Monitoring Device' },
-            { id: '2', deviceName: 'Glucose Monitor', deviceClass: 'Class II', manufacturer: 'DiaTech', deviceType: 'Diagnostic Device' }
-          ];
-          setDeviceProfiles(fallbackProfiles);
-        }
+        // Use KAutomationController to fetch device profiles
+        const profiles = await import('../../controllers/KAutomationController').then(module => {
+          return module.default.fetchDeviceProfiles();
+        });
+        
+        setDeviceProfiles(profiles);
       } catch (error) {
         console.error("Error fetching device profiles:", error);
-        const fallbackProfiles = [
-          { id: '1', deviceName: 'Cardiac Monitor', deviceClass: 'Class II', manufacturer: 'MedTech Industries', deviceType: 'Monitoring Device' },
-          { id: '2', deviceName: 'Glucose Monitor', deviceClass: 'Class II', manufacturer: 'DiaTech', deviceType: 'Diagnostic Device' }
-        ];
-        setDeviceProfiles(fallbackProfiles);
+        toast({
+          title: "Error",
+          description: "Failed to fetch device profiles. Please try again later.",
+          variant: "destructive"
+        });
       }
     };
     
     fetchDeviceProfiles();
-  }, []);
+  }, [toast]);
 
   const toggleFolder = (folderName) => {
     setExpandedFolders(prev => ({
