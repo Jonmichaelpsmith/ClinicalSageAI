@@ -507,10 +507,14 @@ export const FDA510kService = {
       
       // First attempt to save to document vault if folders are available
       if (equivalenceData.folderStructure && equivalenceData.folderStructure.equivalenceFolderId) {
-        await this.saveEquivalenceDetermination(
-          equivalenceData,
-          equivalenceData.folderStructure.equivalenceFolderId
-        );
+        try {
+          await this.saveEquivalenceDetermination(
+            equivalenceData,
+            equivalenceData.folderStructure.equivalenceFolderId
+          );
+        } catch (vaultError) {
+          console.warn('Error saving to document vault, continuing with API save:', vaultError);
+        }
       }
       
       // Then save to the API
@@ -518,16 +522,28 @@ export const FDA510kService = {
       
       // Additionally save literature evidence connections if present
       if (equivalenceData.literatureEvidence && Object.keys(equivalenceData.literatureEvidence).length > 0) {
-        await apiRequest.post(`/api/510k-literature/connections`, {
-          documentId: deviceId,
-          featureEvidence: equivalenceData.literatureEvidence
-        });
+        try {
+          await apiRequest.post(`/api/510k-literature/connections`, {
+            documentId: deviceId,
+            featureEvidence: equivalenceData.literatureEvidence
+          });
+        } catch (literatureError) {
+          console.warn('Error saving literature connections, continuing:', literatureError);
+        }
       }
       
       return response.data;
     } catch (error) {
       console.error('Error saving equivalence analysis:', error);
-      throw error;
+      
+      // Return the original data with temporary IDs to prevent error propagation
+      return {
+        ...equivalenceData,
+        id: equivalenceData.id || 'temp-' + Math.random().toString(36).substring(2, 15),
+        saved: false,
+        error: error.message,
+        createdAt: new Date().toISOString()
+      };
     }
   },
 
