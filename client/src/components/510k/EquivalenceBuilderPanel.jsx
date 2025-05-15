@@ -14,7 +14,7 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FDA510kService } from "@/services/FDA510kService";
+import FDA510kService from "@/services/FDA510kService";
 import LiteratureTab from "./LiteratureTab";
 
 /**
