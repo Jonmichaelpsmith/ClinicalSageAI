@@ -144,6 +144,9 @@ export default function KAutomationPanel() {
       // Navigate to predicate finder tab
       setWorkflowSubTab('predicate-finder');
       
+      // Set searching state
+      setSearchingPredicates(true);
+      
       toast({
         title: "Searching for Predicates",
         description: "Finding similar predicate devices for your submission...",
@@ -164,8 +167,14 @@ export default function KAutomationPanel() {
       const result = await kAutomationController.findPredicateDevices(searchCriteria);
       
       if (result.success && result.predicates && result.predicates.length > 0) {
-        // Set predicate devices in state (need to add state for this)
-        // setPredicateDevices(result.predicates);
+        // Store the found predicate devices
+        setPredicateDevices(result.predicates);
+        
+        // Reset selected predicates
+        setSelectedPredicates([]);
+        
+        // Set comparison not ready yet (until user selects predicates)
+        setPredicateComparisonReady(false);
         
         toast({
           title: "Predicates Found",
@@ -173,6 +182,10 @@ export default function KAutomationPanel() {
           duration: 3000
         });
       } else {
+        setPredicateDevices([]);
+        setSelectedPredicates([]);
+        setPredicateComparisonReady(false);
+        
         toast({
           title: "No Predicates Found",
           description: "No matching predicate devices were found. Try adjusting your device profile.",
@@ -186,6 +199,157 @@ export default function KAutomationPanel() {
       toast({
         title: "Search Error",
         description: "Failed to search for predicate devices. Please try again.",
+        variant: "destructive",
+        duration: 3000
+      });
+    } finally {
+      setSearchingPredicates(false);
+    }
+  };
+  
+  // Handler for selecting a predicate device for comparison
+  const handleSelectPredicate = (predicateDevice) => {
+    setSelectedPredicates(prev => {
+      // Check if already selected
+      const isAlreadySelected = prev.some(p => p.id === predicateDevice.id);
+      
+      if (isAlreadySelected) {
+        // Remove from selection
+        const updated = prev.filter(p => p.id !== predicateDevice.id);
+        setPredicateComparisonReady(updated.length > 0);
+        return updated;
+      } else {
+        // Add to selection
+        const updated = [...prev, predicateDevice];
+        setPredicateComparisonReady(true);
+        return updated;
+      }
+    });
+  };
+  
+  // Handler for running a compliance check
+  const handleRunComplianceCheck = async () => {
+    if (!currentDeviceProfile) {
+      toast({
+        title: "No Device Selected",
+        description: "Please select or create a device profile first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (selectedPredicates.length === 0) {
+      toast({
+        title: "No Predicates Selected",
+        description: "Please select at least one predicate device for comparison.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      // Navigate to compliance tab
+      setWorkflowSubTab('compliance');
+      
+      toast({
+        title: "Running Compliance Check",
+        description: "Analyzing submission for FDA requirements and standards...",
+        duration: 2000
+      });
+      
+      // Create project ID from device profile
+      const projectId = currentDeviceProfile.id;
+      
+      // Run compliance check
+      const result = await kAutomationController.runComplianceCheck(projectId, {
+        predicateDevices: selectedPredicates,
+        strictValidation: true,
+        includeStandards: true
+      });
+      
+      if (result && result.valid) {
+        toast({
+          title: "Compliance Check Passed",
+          description: "Your submission meets all FDA requirements.",
+          duration: 3000
+        });
+      } else if (result && result.issues) {
+        toast({
+          title: "Compliance Issues Found",
+          description: `Found ${result.issues.length} issues that need addressing.`,
+          variant: "destructive",
+          duration: 3000
+        });
+      } else {
+        toast({
+          title: "Compliance Check Failed",
+          description: "Could not complete compliance check. Please try again.",
+          variant: "destructive",
+          duration: 3000
+        });
+      }
+    } catch (error) {
+      console.error("Error running compliance check:", error);
+      
+      toast({
+        title: "Error",
+        description: "Failed to run compliance check. Please try again.",
+        variant: "destructive",
+        duration: 3000
+      });
+    }
+  };
+  
+  // Handler for generating eSTAR package
+  const handleGenerateESTAR = async () => {
+    if (!currentDeviceProfile) {
+      toast({
+        title: "No Device Selected",
+        description: "Please select or create a device profile first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      // Navigate to final review tab
+      setWorkflowSubTab('final-review');
+      
+      toast({
+        title: "Generating eSTAR Package",
+        description: "Creating FDA-ready submission package...",
+        duration: 3000
+      });
+      
+      // Create project ID from device profile
+      const projectId = currentDeviceProfile.id;
+      
+      // Generate eSTAR package
+      const result = await kAutomationController.generateESTARPackage(projectId, {
+        includePredicates: selectedPredicates.length > 0,
+        format: 'pdf'
+      });
+      
+      if (result && result.success && result.downloadUrl) {
+        toast({
+          title: "eSTAR Package Generated",
+          description: "Your FDA submission package is ready for download.",
+          duration: 3000
+        });
+      } else {
+        toast({
+          title: "Generation Failed",
+          description: "Could not generate eSTAR package. Please try again.",
+          variant: "destructive",
+          duration: 3000
+        });
+      }
+    } catch (error) {
+      console.error("Error generating eSTAR package:", error);
+      
+      toast({
+        title: "Error",
+        description: "Failed to generate eSTAR package. Please try again.",
         variant: "destructive",
         duration: 3000
       });
@@ -553,6 +717,7 @@ export default function KAutomationPanel() {
         
         {/* Main workflow panel */}
         <div className="flex-1 overflow-auto p-4">
+          {/* 1. Device Profile Tab */}
           {selectedModule === '510k' && workflowSubTab === 'device-profile' && (
             <div className="grid gap-4">
               <div className="bg-white border rounded-lg p-6 shadow-sm">
