@@ -1031,11 +1031,34 @@ export default function CERV2Page() {
                       </div>
                       
                       <div className="pt-4">
-                        <Button className="mr-2">
+                        <Button 
+                          className="mr-2"
+                          onClick={() => {
+                            toast({
+                              title: "Setup Saved",
+                              description: "Your 510(k) submission setup has been saved.",
+                            });
+                          }}
+                        >
                           Save Setup
                         </Button>
-                        <Button variant="outline">
+                        <Button variant="outline" className="mr-2">
                           Reset to Defaults
+                        </Button>
+                        <Button 
+                          className="bg-blue-600 hover:bg-blue-700"
+                          onClick={() => {
+                            const nextTabId = completeWorkflowStep();
+                            if (nextTabId) {
+                              toast({
+                                title: "Setup Complete",
+                                description: "Moving to Device Profile section.",
+                              });
+                            }
+                          }}
+                        >
+                          Continue to Device Profile
+                          <ArrowRight className="h-4 w-4 ml-2" />
                         </Button>
                       </div>
                     </div>
@@ -1075,6 +1098,23 @@ export default function CERV2Page() {
                           description: "Your device profile has been successfully saved.",
                         });
                       }}
+                      additionalButtons={
+                        <Button 
+                          className="bg-blue-600 hover:bg-blue-700 mt-4"
+                          onClick={() => {
+                            const nextTabId = completeWorkflowStep();
+                            if (nextTabId) {
+                              toast({
+                                title: "Device Profile Complete",
+                                description: "Moving to Predicate Discovery section.",
+                              });
+                            }
+                          }}
+                        >
+                          Continue to Predicate Discovery
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
+                      }
                     />
                   </CardContent>
                 </Card>
@@ -1627,6 +1667,23 @@ export default function CERV2Page() {
                           description: `${predicates.length} predicate device(s) have been selected for comparison.`,
                         });
                       }}
+                      additionalButtons={
+                        <Button 
+                          className="bg-blue-600 hover:bg-blue-700 mt-4"
+                          onClick={() => {
+                            const nextTabId = completeWorkflowStep();
+                            if (nextTabId) {
+                              toast({
+                                title: "Predicate Discovery Complete",
+                                description: "Moving to Pathway Advisor section.",
+                              });
+                            }
+                          }}
+                        >
+                          Continue to Pathway Advisor
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
+                      }
                     />
                   </CardContent>
                 </Card>
@@ -1701,8 +1758,30 @@ export default function CERV2Page() {
                         <Button variant="outline">
                           Request Consultation
                         </Button>
-                        <Button>
+                        <Button 
+                          onClick={() => {
+                            toast({
+                              title: "Pathway Confirmed",
+                              description: "Traditional 510(k) pathway has been confirmed.",
+                            });
+                          }}
+                        >
                           Confirm Pathway
+                        </Button>
+                        <Button 
+                          className="bg-blue-600 hover:bg-blue-700"
+                          onClick={() => {
+                            const nextTabId = completeWorkflowStep();
+                            if (nextTabId) {
+                              toast({
+                                title: "Pathway Analysis Complete",
+                                description: "Moving to Equivalence Drafting section.",
+                              });
+                            }
+                          }}
+                        >
+                          Continue to Equivalence Drafting
+                          <ArrowRight className="h-4 w-4 ml-2" />
                         </Button>
                       </div>
                     </div>
