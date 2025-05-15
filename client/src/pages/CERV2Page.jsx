@@ -122,6 +122,9 @@ export default function CERV2Page() {
     errorCount: 0,
     lastChecked: null
   });
+  // Device profile creation state
+  const [showNewProfileInput, setShowNewProfileInput] = useState(false);
+  const [newProfileName, setNewProfileName] = useState('');
   const { toast } = useToast();
   
   // Function to handle workflow tab navigation
@@ -1358,12 +1361,56 @@ export default function CERV2Page() {
                                     <span className="truncate">Glucose Monitor</span>
                                   </button>
                                   
-                                  <button
-                                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center text-blue-600"
-                                  >
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    <span>Add New Profile</span>
-                                  </button>
+                                  {/* Add New Profile Button with state-based visibility */}
+                                  {showNewProfileInput ? (
+                                    <div className="p-2 border rounded shadow-sm bg-white">
+                                      <Label htmlFor="newProfileName" className="sr-only">Profile Name</Label>
+                                      <Input 
+                                        id="newProfileName"
+                                        value={newProfileName}
+                                        onChange={(e) => setNewProfileName(e.target.value)}
+                                        placeholder="Enter profile name"
+                                        className="mb-2 text-sm"
+                                      />
+                                      <div className="flex gap-2">
+                                        <Button 
+                                          size="sm" 
+                                          className="bg-blue-600 hover:bg-blue-700 text-xs"
+                                          onClick={() => {
+                                            console.log("Creating new device profile:", newProfileName);
+                                            // Here you would call the API to create a new profile
+                                            toast({
+                                              title: "Profile Created",
+                                              description: `Created new device profile: ${newProfileName}`,
+                                            });
+                                            setNewProfileName("");
+                                            setShowNewProfileInput(false);
+                                          }}
+                                        >
+                                          Create
+                                        </Button>
+                                        <Button 
+                                          size="sm" 
+                                          variant="outline" 
+                                          className="text-xs"
+                                          onClick={() => {
+                                            setNewProfileName("");
+                                            setShowNewProfileInput(false);
+                                          }}
+                                        >
+                                          Cancel
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <button
+                                      className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center text-blue-600"
+                                      onClick={() => setShowNewProfileInput(true)}
+                                    >
+                                      <Plus className="h-4 w-4 mr-2" />
+                                      <span>Add New Profile</span>
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                               
