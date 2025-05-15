@@ -6,13 +6,11 @@
  * calls and managing state.
  */
 
-import FDA510kService from '../services/FDA510kService';
+import fda510kService from '../services/FDA510kService';
 import * as CERService from '../services/cerService';
 import SemanticSearchService from '../services/SemanticSearchService';
 import VaultService from '../services/DocuShareService';
 import { apiRequest } from '../lib/queryClient';
-
-const fda510kService = new FDA510kService();
 
 class KAutomationController {
   /**

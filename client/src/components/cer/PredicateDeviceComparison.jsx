@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { findPredicateDevices, comparePredicateDevices } from '../../api/cer';
+import FDA510kService from '../../services/FDA510kService';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, X, Check, Search, FileText, Download, Copy, Plus } from "lucide-react";
@@ -130,20 +130,26 @@ const PredicateDeviceComparison = ({ deviceProfile, predicateDevices = [], onCom
     setIsSearching(true);
     
     try {
-      // Use the unified discovery service to find predicates
-      const predicates = await findPredicateDevices(searchQuery, { 
-        limit: 10, 
-        module: '510k' 
-      });
+      // Use FDA510kService to find predicates
+      const searchCriteria = {
+        deviceName: searchQuery,
+        limit: 10
+      };
       
-      setPredicateResults(predicates || []);
+      const result = await FDA510kService.findPredicateDevices(searchCriteria);
       
-      if (!predicates || predicates.length === 0) {
-        toast({
-          variant: "default",
-          title: "No predicates found",
-          description: "Try adjusting your search query for better results."
-        });
+      if (result.success && result.predicates) {
+        setPredicateResults(result.predicates);
+        
+        if (result.predicates.length === 0) {
+          toast({
+            variant: "default",
+            title: "No predicates found",
+            description: "Try adjusting your search query for better results."
+          });
+        }
+      } else {
+        throw new Error(result.error || 'Failed to find predicate devices');
       }
     } catch (error) {
       console.error('Error searching for predicates:', error);
@@ -218,9 +224,9 @@ const PredicateDeviceComparison = ({ deviceProfile, predicateDevices = [], onCom
         ...deviceProfile // Include all other properties
       };
       
-      // Call the server-side API for predicate comparison
+      // Call the server-side API for predicate comparison using the FDA510kService
       const response = await errorHandling.withTimeout(
-        comparePredicateDevices(deviceDescription, selectedPredicates),
+        FDA510kService.comparePredicateDevices(deviceDescription, selectedPredicates),
         120000, // 2 minute timeout
         'Predicate device comparison generation timed out'
       );
