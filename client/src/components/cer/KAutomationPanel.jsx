@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { 
-  Upload, Search, FilePlus, Shield, 
-  FileCheck, CheckCircle2, AlertTriangle, CheckCircle,
-  FileText, Plus, Database, AlertCircle, Settings
+  Upload, Search, FilePlus, Shield, File, Folder, FolderOpen,
+  FileCheck, CheckCircle2, AlertTriangle, CheckCircle, ChevronRight,
+  FileText, Plus, Database, AlertCircle, Settings, Users, Cog,
+  Calendar, Mail, Clock, ChevronDown, Trash2, Star, PenTool, 
+  FolderPlus, FilePlus2, Inbox, SendHorizontal, Archive, Book, ClipboardList,
+  Bookmark, BookOpen, CheckSquare, Download, PlusCircle, Filter, Layers,
+  Paperclip, Share2, HelpCircle, Menu, LogOut, Info, Grid, LayoutDashboard
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -24,6 +28,10 @@ import {
   TooltipTrigger
 } from '@/components/ui/tooltip';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import DeviceProfileList from './DeviceProfileList';
 import DeviceProfileDialog from './DeviceProfileDialog';
@@ -33,13 +41,37 @@ import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 
 export default function KAutomationPanel() {
+  // Main state management
   const [workflowStep, setWorkflowStep] = useState('devices');
+  const [selectedModule, setSelectedModule] = useState('510k'); // '510k' or 'cer'
+  const [workflowSubTab, setWorkflowSubTab] = useState('devices'); // For compatibility with existing code
   const [aiProcessing, setAiProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentDeviceProfile, setCurrentDeviceProfile] = useState(null);
   const [showDeviceSetupDialog, setShowDeviceSetupDialog] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { currentOrganization } = useTenant();
   const { toast } = useToast();
+  
+  // File tree state
+  const [expandedFolders, setExpandedFolders] = useState({
+    'devices': true,
+    'templates': false,
+    'reports': false,
+    'submissions': false
+  });
+  
+  // Synchronize workflowStep and workflowSubTab for compatibility
+  useEffect(() => {
+    setWorkflowSubTab(workflowStep);
+  }, [workflowStep]);
+  
+  const toggleFolder = (folderName) => {
+    setExpandedFolders({
+      ...expandedFolders,
+      [folderName]: !expandedFolders[folderName]
+    });
+  };
   
   // Query to fetch device profiles
   const { 
@@ -140,17 +172,364 @@ export default function KAutomationPanel() {
   };
 
   return (
-    <Card className="mb-6 border-0 shadow-md overflow-hidden">
-      <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 pb-4">
-        <CardTitle className="text-white flex items-center">
-          <FileCheck className="h-5 w-5 mr-2" />
-          510(k) Submission Workflow
-        </CardTitle>
-        <CardDescription className="text-blue-100">
-          Complete your FDA 510(k) submission with our streamlined, intelligent workflow process
-        </CardDescription>
-      </CardHeader>
+    <div className="flex h-[calc(100vh-6rem)] overflow-hidden border rounded-lg bg-white">
+      {/* Left app sidebar - Microsoft 365 style main navigation */}
+      <div className={`bg-[#f3f2f1] border-r flex flex-col ${sidebarCollapsed ? 'w-16' : 'w-16 md:w-60'} transition-all duration-300`}>
+        {/* Top app navigation */}
+        <div className="flex justify-between items-center p-3 border-b border-gray-200">
+          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center w-full' : ''}`}>
+            {!sidebarCollapsed && <span className="font-semibold text-gray-800 ml-2">TrialSage</span>}
+            {sidebarCollapsed && <LayoutDashboard className="h-5 w-5 text-blue-700" />}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="p-1"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        {/* Main app navigation */}
+        <div className="flex flex-col py-2">
+          <Button
+            variant={selectedModule === '510k' ? "subtle" : "ghost"}
+            className={`flex items-center justify-${sidebarCollapsed ? 'center' : 'start'} mb-1 ${selectedModule === '510k' ? 'bg-blue-100 text-blue-800' : ''}`}
+            onClick={() => setSelectedModule('510k')}
+          >
+            <FileCheck className="h-5 w-5 min-w-5" />
+            {!sidebarCollapsed && <span className="ml-3 text-sm">510(k) Workflow</span>}
+          </Button>
+          
+          <Button
+            variant={selectedModule === 'cer' ? "subtle" : "ghost"}
+            className={`flex items-center justify-${sidebarCollapsed ? 'center' : 'start'} mb-1 ${selectedModule === 'cer' ? 'bg-blue-100 text-blue-800' : ''}`}
+            onClick={() => setSelectedModule('cer')}
+          >
+            <ClipboardList className="h-5 w-5 min-w-5" />
+            {!sidebarCollapsed && <span className="ml-3 text-sm">CER Generator</span>}
+          </Button>
+          
+          <Button
+            variant="ghost"
+            className={`flex items-center justify-${sidebarCollapsed ? 'center' : 'start'} mb-1`}
+          >
+            <BookOpen className="h-5 w-5 min-w-5" />
+            {!sidebarCollapsed && <span className="ml-3 text-sm">Knowledge Base</span>}
+          </Button>
+          
+          <Button
+            variant="ghost"
+            className={`flex items-center justify-${sidebarCollapsed ? 'center' : 'start'} mb-1`}
+          >
+            <Archive className="h-5 w-5 min-w-5" />
+            {!sidebarCollapsed && <span className="ml-3 text-sm">Archives</span>}
+          </Button>
+        </div>
+        
+        {/* Bottom options */}
+        <div className="mt-auto border-t border-gray-200 pt-2 pb-4">
+          <Button
+            variant="ghost"
+            className={`flex items-center justify-${sidebarCollapsed ? 'center' : 'start'} mb-1 w-full`}
+            size="sm"
+          >
+            <Cog className="h-5 w-5 min-w-5" />
+            {!sidebarCollapsed && <span className="ml-3 text-sm">Settings</span>}
+          </Button>
+          
+          <Button
+            variant="ghost"
+            className={`flex items-center justify-${sidebarCollapsed ? 'center' : 'start'} mb-1 w-full`}
+            size="sm"
+          >
+            <HelpCircle className="h-5 w-5 min-w-5" />
+            {!sidebarCollapsed && <span className="ml-3 text-sm">Help</span>}
+          </Button>
+        </div>
+      </div>
       
+      {/* File tree sidebar - Similar to Microsoft 365 Outlook folders */}
+      <div className={`${selectedModule === '510k' ? 'block' : 'hidden'} w-60 border-r border-gray-200 bg-white`}>
+        <div className="p-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-800 flex items-center">
+            <FileCheck className="h-5 w-5 mr-2 text-blue-600" />
+            510(k) Workflow
+          </h2>
+        </div>
+        
+        <div className="p-2">
+          <Input
+            type="search"
+            placeholder="Search files..."
+            className="mb-2 bg-gray-50"
+          />
+        </div>
+        
+        <ScrollArea className="h-[calc(100vh-12rem)]">
+          <div className="p-2">
+            {/* Devices folder */}
+            <div className="mb-1">
+              <button 
+                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
+                onClick={() => toggleFolder('devices')}
+              >
+                <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.devices ? 'rotate-90' : ''}`} />
+                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
+                <span className="text-sm font-medium">Device Profiles</span>
+                <Badge className="ml-auto text-xs bg-blue-100 text-blue-800 hover:bg-blue-200">
+                  {deviceProfiles?.length || 0}
+                </Badge>
+              </button>
+              
+              {expandedFolders.devices && deviceProfiles && (
+                <div className="ml-7 mt-1">
+                  {deviceProfiles.map(profile => (
+                    <button
+                      key={profile.id}
+                      className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center mb-1 ${
+                        currentDeviceProfile?.id === profile.id 
+                          ? 'bg-blue-50 text-blue-700' 
+                          : 'hover:bg-gray-50'
+                      }`}
+                      onClick={() => handleSelectDeviceProfile(profile)}
+                    >
+                      <File className="h-4 w-4 mr-2 text-gray-500" />
+                      <span className="truncate">{profile.deviceName}</span>
+                    </button>
+                  ))}
+                  
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center text-blue-600"
+                    onClick={() => {
+                      // Open the device profile dialog
+                      document.getElementById('create-profile-button')?.click();
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    <span>Add New Profile</span>
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Templates folder */}
+            <div className="mb-1">
+              <button 
+                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
+                onClick={() => toggleFolder('templates')}
+              >
+                <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.templates ? 'rotate-90' : ''}`} />
+                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
+                <span className="text-sm font-medium">Templates</span>
+              </button>
+              
+              {expandedFolders.templates && (
+                <div className="ml-7 mt-1">
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
+                  >
+                    <File className="h-4 w-4 mr-2 text-gray-500" />
+                    <span className="truncate">510(k) Template</span>
+                  </button>
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
+                  >
+                    <File className="h-4 w-4 mr-2 text-gray-500" />
+                    <span className="truncate">eSTAR Template</span>
+                  </button>
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
+                  >
+                    <File className="h-4 w-4 mr-2 text-gray-500" />
+                    <span className="truncate">Predicate Comparison</span>
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Reports folder */}
+            <div className="mb-1">
+              <button 
+                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
+                onClick={() => toggleFolder('reports')}
+              >
+                <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.reports ? 'rotate-90' : ''}`} />
+                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
+                <span className="text-sm font-medium">Reports</span>
+              </button>
+              
+              {expandedFolders.reports && (
+                <div className="ml-7 mt-1">
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
+                  >
+                    <File className="h-4 w-4 mr-2 text-gray-500" />
+                    <span className="truncate">Compliance Report</span>
+                  </button>
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
+                  >
+                    <File className="h-4 w-4 mr-2 text-gray-500" />
+                    <span className="truncate">Validation Report</span>
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* Submissions folder */}
+            <div className="mb-1">
+              <button 
+                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
+                onClick={() => toggleFolder('submissions')}
+              >
+                <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.submissions ? 'rotate-90' : ''}`} />
+                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
+                <span className="text-sm font-medium">Submissions</span>
+              </button>
+              
+              {expandedFolders.submissions && (
+                <div className="ml-7 mt-1">
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
+                  >
+                    <File className="h-4 w-4 mr-2 text-gray-500" />
+                    <span className="truncate">Draft Submissions</span>
+                  </button>
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
+                  >
+                    <File className="h-4 w-4 mr-2 text-gray-500" />
+                    <span className="truncate">Completed Submissions</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </ScrollArea>
+      </div>
+      
+      {/* CER file tree sidebar - Only visible when CER is selected */}
+      <div className={`${selectedModule === 'cer' ? 'block' : 'hidden'} w-60 border-r border-gray-200 bg-white`}>
+        <div className="p-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-800 flex items-center">
+            <ClipboardList className="h-5 w-5 mr-2 text-blue-600" />
+            CER Generator
+          </h2>
+        </div>
+        
+        <div className="p-2">
+          <Input
+            type="search"
+            placeholder="Search files..."
+            className="mb-2 bg-gray-50"
+          />
+        </div>
+        
+        <ScrollArea className="h-[calc(100vh-12rem)]">
+          <div className="p-2">
+            {/* CER Documents folder */}
+            <div className="mb-1">
+              <button 
+                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
+                onClick={() => toggleFolder('devices')}
+              >
+                <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.devices ? 'rotate-90' : ''}`} />
+                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
+                <span className="text-sm font-medium">Clinical Documents</span>
+              </button>
+              
+              {expandedFolders.devices && (
+                <div className="ml-7 mt-1">
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
+                  >
+                    <File className="h-4 w-4 mr-2 text-gray-500" />
+                    <span className="truncate">Clinical Documentation</span>
+                  </button>
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
+                  >
+                    <File className="h-4 w-4 mr-2 text-gray-500" />
+                    <span className="truncate">Literature Search</span>
+                  </button>
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
+                  >
+                    <File className="h-4 w-4 mr-2 text-gray-500" />
+                    <span className="truncate">Risk Analysis</span>
+                  </button>
+                </div>
+              )}
+            </div>
+            
+            {/* CER Templates folder */}
+            <div className="mb-1">
+              <button 
+                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
+                onClick={() => toggleFolder('templates')}
+              >
+                <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.templates ? 'rotate-90' : ''}`} />
+                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
+                <span className="text-sm font-medium">CER Templates</span>
+              </button>
+              
+              {expandedFolders.templates && (
+                <div className="ml-7 mt-1">
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
+                  >
+                    <File className="h-4 w-4 mr-2 text-gray-500" />
+                    <span className="truncate">MDR Template</span>
+                  </button>
+                  <button
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
+                  >
+                    <File className="h-4 w-4 mr-2 text-gray-500" />
+                    <span className="truncate">MEDDEV Template</span>
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </ScrollArea>
+      </div>
+      
+      {/* Main content area */}
+      <div className="flex-1 flex flex-col bg-[#f5f5f5]">
+        {/* Top header bar */}
+        <div className="bg-white border-b flex items-center justify-between p-3">
+          <div className="flex items-center">
+            <h1 className="font-semibold text-xl text-gray-800 mr-8">
+              {selectedModule === '510k' ? '510(k) Submission Workflow' : 'CER Generator'}
+            </h1>
+            
+            <div className="hidden md:flex items-center space-x-1">
+              <Button variant="ghost" size="sm">
+                <PlusCircle className="h-4 w-4 mr-1" />
+                <span className="text-sm">New</span>
+              </Button>
+              
+              <Button variant="ghost" size="sm">
+                <Download className="h-4 w-4 mr-1" />
+                <span className="text-sm">Export</span>
+              </Button>
+              
+              <Button variant="ghost" size="sm">
+                <Bookmark className="h-4 w-4 mr-1" />
+                <span className="text-sm">Save</span>
+              </Button>
+            </div>
+          </div>
+          
+          <div className="flex items-center">
+            <Avatar className="h-8 w-8">
+              <AvatarImage src="" alt="User" />
+              <AvatarFallback className="bg-blue-600 text-white">TR</AvatarFallback>
+            </Avatar>
+          </div>
+        </div>
       <CardContent className="p-6">
         <div className="space-y-6">
           {/* Device Management System - Simplified Card Layout */}
