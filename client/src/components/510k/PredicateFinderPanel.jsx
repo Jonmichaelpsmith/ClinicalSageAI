@@ -50,7 +50,14 @@ import FDA510kService from '../../services/FDA510kService';
 import PredicateComparison from './PredicateComparison';
 import { isFeatureEnabled } from '@/flags/featureFlags';
 
-const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], recommendations = [] }) => {
+const PredicateFinderPanel = ({ 
+  deviceProfile, 
+  organizationId, 
+  predicates = [], 
+  recommendations = [],
+  documentId,
+  onPredicatesFound 
+}) => {
   // Make sure we protect against null/undefined props
   const safePredicates = Array.isArray(predicates) ? predicates : [];
   const safeRecommendations = Array.isArray(recommendations) ? recommendations : [];
@@ -127,6 +134,11 @@ const PredicateFinderPanel = ({ deviceProfile, organizationId, predicates = [], 
         predicateCount: result.predicateDevices?.length || 0,
         literatureCount: result.literatureReferences?.length || 0
       });
+      
+      // Call the onPredicatesFound callback if provided
+      if (typeof onPredicatesFound === 'function') {
+        onPredicatesFound(result.predicateDevices || []);
+      }
       
       toast({
         title: "Search Complete",

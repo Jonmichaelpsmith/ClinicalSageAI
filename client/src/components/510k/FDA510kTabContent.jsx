@@ -12,6 +12,7 @@ import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import EquivalenceBuilderPanel from '@/components/cer/EquivalenceBuilderPanel';
 import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
 import ReportGenerator from '@/components/510k/ReportGenerator';
+import WorkflowPanel from '@/components/510k/WorkflowPanel';
 
 /**
  * The FDA510kTabContent component serves as the container for all 510(k) submission
@@ -339,10 +340,21 @@ function FDA510kTabContent({
     }
   };
 
+  // Use the new WorkflowPanel component instead of the manual progression
   return (
     <div className="p-4 space-y-4">
-      {renderProgressBar()}
-      {renderStepContent()}
+      <WorkflowPanel
+        deviceProfile={deviceProfile}
+        predicates={[]}
+        activeStep={workflowStep}
+        onStepChange={setWorkflowStep}
+        onPredicatesFound={handlePredicatesComplete}
+        onEquivalenceComplete={handleEquivalenceComplete} 
+        onComplianceComplete={handleComplianceComplete}
+        onSubmissionReady={handleSubmissionReady}
+        complianceStatus={compliance?.status || 'draft'}
+        sections={sections}
+      />
     </div>
   );
 }

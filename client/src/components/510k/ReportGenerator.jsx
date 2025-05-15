@@ -33,11 +33,17 @@ import {
  */
 const ReportGenerator = ({
   deviceProfile = {},
+  documentId,
   predicates = [],
   literatureReferences = [],
   insightData = [],
   complianceStatus = {},
+  exportTimestamp,
+  draftStatus = 'in-progress',
+  setDraftStatus = () => {},
   onGenerateReport = () => {},
+  onSubmissionReady = () => {},
+  sections = [],
   recentReports = []
 }) => {
   const [isGenerating, setIsGenerating] = useState(false);
