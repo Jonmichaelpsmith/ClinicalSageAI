@@ -806,13 +806,23 @@ const EquivalenceBuilderPanel = ({
                   </TableCell>
                   {selectedLiterature.length > 0 && (
                     <TableCell>
-                      {literatureEvidence[feature.id] ? (
-                        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-                          {literatureEvidence[feature.id].length} {literatureEvidence[feature.id].length === 1 ? 'Paper' : 'Papers'}
-                        </Badge>
-                      ) : (
-                        <span className="text-gray-500 text-sm">None</span>
-                      )}
+                      <div className="flex items-center space-x-2">
+                        {literatureEvidence[feature.id] ? (
+                          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                            {literatureEvidence[feature.id].length} {literatureEvidence[feature.id].length === 1 ? 'Paper' : 'Papers'}
+                          </Badge>
+                        ) : (
+                          <span className="text-gray-500 text-sm">None</span>
+                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-7 px-2"
+                          onClick={() => setActiveFeatureForEvidence(feature.id)}
+                        >
+                          <Link className="h-4 w-4 text-blue-600" />
+                        </Button>
+                      </div>
                     </TableCell>
                   )}
                 </TableRow>
@@ -1041,7 +1051,129 @@ const EquivalenceBuilderPanel = ({
         </div>
       </CardFooter>
     </Card>
+
+    {/* Literature Evidence Selection Dialog */}
+    <Dialog open={activeFeatureForEvidence !== null} onOpenChange={(open) => !open && setActiveFeatureForEvidence(null)}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader>
+          <DialogTitle>Assign Literature Evidence</DialogTitle>
+          <DialogDescription>
+            Select literature to associate with this feature to strengthen your substantial equivalence argument.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="py-4">
+          {activeFeatureForEvidence && (
+            <div className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-100">
+              <h3 className="font-medium text-blue-800">Feature</h3>
+              <p>{comparisonFeatures.find(f => f.id === activeFeatureForEvidence)?.name}</p>
+            </div>
+          )}
+
+          <ScrollArea className="h-[320px]">
+            <div className="space-y-3">
+              {selectedLiterature.map((paper) => {
+                // Check if this paper is already linked to the active feature
+                const isLinked = literatureEvidence[activeFeatureForEvidence]?.some(
+                  (linkedPaper) => linkedPaper.id === paper.id
+                );
+                
+                return (
+                  <div key={paper.id} className="flex items-start gap-3 p-3 border rounded-md">
+                    <Checkbox 
+                      checked={isLinked} 
+                      id={`paper-${paper.id}`}
+                      onCheckedChange={(checked) => {
+                        toggleLiteratureForFeature(activeFeatureForEvidence, paper, checked);
+                      }}
+                    />
+                    <div className="flex-1">
+                      <label 
+                        htmlFor={`paper-${paper.id}`} 
+                        className="text-sm font-medium cursor-pointer"
+                      >
+                        {paper.title}
+                      </label>
+                      <div className="text-xs text-gray-500 flex items-center gap-2 mt-1">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(paper.publicationDate || Date.now()).getFullYear()}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <BookOpen className="h-3 w-3" />
+                          {paper.journal || 'Journal'}
+                        </span>
+                        {paper.relevanceScore && (
+                          <span className="flex items-center gap-1">
+                            <BarChart2 className="h-3 w-3" />
+                            {Math.round(paper.relevanceScore * 100)}% relevant
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </ScrollArea>
+        </div>
+
+        <DialogFooter className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={() => setActiveFeatureForEvidence(null)}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={() => setActiveFeatureForEvidence(null)}
+          >
+            Done
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
+
+  // Helper function to toggle literature associations for a feature
+  const toggleLiteratureForFeature = (featureId, paper, isChecked) => {
+    if (!featureId) return;
+    
+    setLiteratureEvidence(prev => {
+      const newEvidence = { ...prev };
+      
+      // If feature doesn't have an array yet, create one
+      if (!newEvidence[featureId]) {
+        newEvidence[featureId] = [];
+      }
+      
+      if (isChecked) {
+        // Add paper if not already present
+        if (!newEvidence[featureId].some(p => p.id === paper.id)) {
+          newEvidence[featureId].push(paper);
+        }
+      } else {
+        // Remove paper
+        newEvidence[featureId] = newEvidence[featureId].filter(p => p.id !== paper.id);
+        
+        // Clean up empty arrays
+        if (newEvidence[featureId].length === 0) {
+          delete newEvidence[featureId];
+        }
+      }
+      
+      return newEvidence;
+    });
+    
+    // Show feedback to the user
+    toast({
+      title: isChecked ? "Evidence Added" : "Evidence Removed",
+      description: isChecked 
+        ? `Paper added as supporting evidence for this feature.` 
+        : `Paper removed from feature evidence.`,
+      variant: isChecked ? "default" : "destructive"
+    });
+  };
 };
 
 export default EquivalenceBuilderPanel;
