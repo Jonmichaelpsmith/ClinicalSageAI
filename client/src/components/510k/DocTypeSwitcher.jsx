@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { SwitchCamera } from 'lucide-react';
-import { DocumentContextProvider } from '@/components/510k/About510kDialog';
+import { DocumentContextProvider } from '@/contexts/DocumentContext';
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 
 /**
