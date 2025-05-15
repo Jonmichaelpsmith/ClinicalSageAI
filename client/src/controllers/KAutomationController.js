@@ -92,10 +92,14 @@ class KAutomationController {
    */
   async generateESTARPackage(projectId, options = {}) {
     try {
-      return await fda510kService.buildESTARPackage(projectId, options);
+      return await fda510kService.generateESTARPackage(projectId, options);
     } catch (error) {
       console.error('Error generating eSTAR package:', error);
-      throw error;
+      return {
+        success: false,
+        error: error.message || 'Failed to generate eSTAR package',
+        details: error.response?.data || null
+      };
     }
   }
   
