@@ -290,9 +290,19 @@ const ComplianceCheckPanel = ({
                   <p className="text-sm text-blue-600">
                     {literatureEvidenceCount} {literatureEvidenceCount === 1 ? 'paper' : 'papers'} supporting {Object.keys(literatureEvidence).length} {Object.keys(literatureEvidence).length === 1 ? 'feature' : 'features'}
                   </p>
+                  {deviceProfile?.deviceName?.includes('BP-Track') && (
+                    <p className="text-xs text-blue-600 mt-1 italic">
+                      Including AAMI/ANSI SP10 standard evidence for blood pressure accuracy
+                    </p>
+                  )}
                 </div>
               </div>
-              <Badge className="bg-blue-500">{Object.keys(literatureEvidence).length} Features Supported</Badge>
+              <div className="flex flex-col space-y-2">
+                <Badge className="bg-blue-500">{Object.keys(literatureEvidence).length} Features Supported</Badge>
+                {deviceProfile?.deviceName?.includes('BP-Track') && (
+                  <Badge className="bg-green-500">FDA BP Monitor Guidelines</Badge>
+                )}
+              </div>
             </div>
           </div>
         )}

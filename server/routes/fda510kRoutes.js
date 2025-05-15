@@ -9,13 +9,13 @@ const FDA_API_ENDPOINT = 'https://api.fda.gov/device/510k.json';
 const PUBMED_API_ENDPOINT = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi';
 const PUBMED_API_KEY = process.env.PUBMED_API_KEY; // Use API key if available
 
-// GET existing profile
-router.get('/device-profile/:projectId', async (req, res) => {
-  const { projectId } = req.params;
+// GET existing profile by ID
+router.get('/device-profile/:id', async (req, res) => {
+  const { id } = req.params;
   try {
     const { rows } = await db.query(
-      `SELECT * FROM device_profiles WHERE project_id = $1`,
-      [projectId]
+      `SELECT * FROM device_profiles WHERE id = $1`,
+      [id]
     );
     res.json(rows[0] || null);
   } catch (error) {
@@ -26,27 +26,73 @@ router.get('/device-profile/:projectId', async (req, res) => {
 
 // POST save/update profile
 router.post('/device-profile', async (req, res) => {
-  const { projectId, name, model, intendedUse, technology } = req.body;
-  const now = new Date();
-  
   try {
-    // upsert
-    await db.query(
-      `INSERT INTO device_profiles(project_id,name,model,intended_use,technology,created_at,updated_at)
-      VALUES($1,$2,$3,$4,$5,$6,$6)
-      ON CONFLICT (project_id)
-      DO UPDATE SET
-        name=EXCLUDED.name,
-        model=EXCLUDED.model,
-        intended_use=EXCLUDED.intended_use,
-        technology=EXCLUDED.technology,
-        updated_at=EXCLUDED.updated_at`,
-      [projectId, name, model, intendedUse, technology, now]
+    console.log('Received device profile data:', req.body);
+    const { 
+      deviceName, 
+      deviceClass, 
+      intendedUse, 
+      deviceDescription,
+      manufacturer,
+      modelNumber,
+      technicalCharacteristics
+    } = req.body;
+    
+    const now = new Date();
+    
+    // First check if the device_profiles table exists and if not, create it
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS device_profiles (
+        id SERIAL PRIMARY KEY,
+        device_name TEXT NOT NULL,
+        device_class TEXT,
+        intended_use TEXT,
+        device_description TEXT,
+        manufacturer TEXT,
+        model_number TEXT,
+        technical_characteristics JSONB,
+        created_at TIMESTAMP NOT NULL,
+        updated_at TIMESTAMP NOT NULL,
+        document_vault_id TEXT,
+        folder_structure JSONB
+      )
+    `);
+    
+    // Insert the new device profile
+    const result = await db.query(
+      `INSERT INTO device_profiles(
+        device_name,
+        device_class,
+        intended_use,
+        device_description,
+        manufacturer,
+        model_number,
+        technical_characteristics,
+        created_at,
+        updated_at
+      )
+      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$8)
+      RETURNING *`,
+      [
+        deviceName, 
+        deviceClass, 
+        intendedUse, 
+        deviceDescription,
+        manufacturer,
+        modelNumber,
+        JSON.stringify(technicalCharacteristics || {}),
+        now
+      ]
     );
-    res.json({ success: true });
+    
+    // Return the created device profile
+    const savedProfile = result.rows[0];
+    console.log('Created device profile:', savedProfile);
+    
+    res.json(savedProfile);
   } catch (error) {
     console.error('Error saving device profile:', error);
-    res.status(500).json({ error: 'Failed to save device profile' });
+    res.status(500).json({ error: 'Failed to save device profile: ' + error.message });
   }
 });
 
