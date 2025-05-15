@@ -82,11 +82,11 @@ const DeviceProfileDialog = ({
             className={`${buttonClassName} ${isStartingPoint ? "relative px-6 py-6 h-auto text-md font-medium shadow-md hover:shadow-lg transition-all duration-200" : ""}`}
           >
             {getButtonIcon()}
-            {isStartingPoint ? "STEP 1: " + buttonText : buttonText}
+            {buttonText}
             {isStartingPoint && (
               <div className="absolute -top-3 -right-3">
                 <Badge className="bg-green-600 text-white text-xs px-2 py-1 rounded-full">
-                  START 510(k)
+                  FIRST STEP
                 </Badge>
               </div>
             )}
