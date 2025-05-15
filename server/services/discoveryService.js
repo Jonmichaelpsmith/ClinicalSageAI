@@ -235,7 +235,7 @@ async function searchFDA510K(query, filters = {}) {
   }
 }
 
-async function fallbackPredicateSearch(query) {
+async function fallbackPredicateSearch(query, deviceContext = '') {
   try {
     // Use OpenAI to handle cases where structured data is unavailable
     const completion = await openai.chat.completions.create({
@@ -243,29 +243,70 @@ async function fallbackPredicateSearch(query) {
       messages: [
         {
           role: "system",
-          content: "You are a medical device regulatory expert. Based on the query, provide information about relevant predicate devices that might exist. Format your response as JSON with an array of objects containing: id, title, manufacturer, clearance_date, product_code, and similarity (0-1)."
+          content: "You are a medical device regulatory expert with extensive knowledge of FDA 510(k) cleared devices. Based on the query, provide information about relevant predicate devices that might exist for a 510(k) submission. Include real device names, manufacturers, and product codes where possible. Format your response as JSON with an array of 'devices' containing: id (string), title (string), manufacturer (string), clearance_date (string in YYYY-MM-DD format), product_code (string), description (string), and similarity (number between 0-1)."
         },
         {
           role: "user",
-          content: `Find predicate devices similar to: ${query}`
+          content: deviceContext 
+            ? `Find predicate devices similar to: ${query}\n\nDevice context: ${deviceContext}`
+            : `Find predicate devices similar to: ${query}`
         }
       ],
       response_format: { type: "json_object" },
     });
     
-    const result = JSON.parse(completion.choices[0].message.content);
-    
-    if (Array.isArray(result.devices)) {
-      return result.devices.map(device => ({
-        ...device,
-        source: 'AI-Generated',
-        type: 'predicate',
-      }));
+    try {
+      const result = JSON.parse(completion.choices[0].message.content);
+      
+      if (Array.isArray(result.devices)) {
+        return result.devices.map(device => ({
+          ...device,
+          source: 'AI-Generated',
+          type: 'predicate',
+          id: device.id || `ai-predicatedevice-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+        }));
+      }
+      
+      return [];
+    } catch (parseError) {
+      console.error('Failed to parse AI predicate device response:', parseError);
+      
+      // Try with a simplified prompt if parsing failed
+      const fallbackCompletion = await openai.chat.completions.create({
+        model: "gpt-4o",
+        messages: [
+          {
+            role: "system",
+            content: "You are a medical device expert. Create a JSON response with an array called 'devices' containing 5 predicate device examples. Each device should have these fields: id, title, manufacturer, clearance_date, product_code, and similarity."
+          },
+          {
+            role: "user",
+            content: `Find predicate devices for: ${query}`
+          }
+        ],
+        response_format: { type: "json_object" },
+      });
+      
+      try {
+        const fallbackResult = JSON.parse(fallbackCompletion.choices[0].message.content);
+        
+        if (Array.isArray(fallbackResult.devices)) {
+          return fallbackResult.devices.map(device => ({
+            ...device,
+            source: 'AI-Generated (fallback)',
+            type: 'predicate',
+            id: device.id || `ai-predicatedevice-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+          }));
+        }
+      } catch (finalError) {
+        console.error('Final fallback parsing also failed:', finalError);
+      }
+      
+      return [];
     }
-    
-    return [];
   } catch (error) {
     console.error('Error in AI fallback search:', error);
+    // Don't throw, return empty array
     return [];
   }
 }
@@ -280,78 +321,144 @@ const discoveryService = {
     try {
       console.log(`Searching literature for: "${query}" with context: ${context}`);
       
-      // First try vector search if available
+      // Initialize results array and tracking metrics
       let results = [];
+      let searchStats = {
+        vectorSearch: { attempted: false, successful: false, resultsCount: 0 },
+        ieeeSearch: { attempted: false, successful: false, resultsCount: 0 },
+        pubmedSearch: { attempted: false, successful: false, resultsCount: 0 },
+        aiSearch: { attempted: false, successful: false, resultsCount: 0 }
+      };
+      
+      // Tier 1: Vector search with pgvector (primary method)
       try {
+        searchStats.vectorSearch.attempted = true;
         const embedding = await vectorizeQuery(query);
-        results = await performVectorSearch(embedding, 'literature');
+        const vectorResults = await performVectorSearch(embedding, 'literature');
+        if (vectorResults && vectorResults.length > 0) {
+          results = vectorResults;
+          searchStats.vectorSearch.successful = true;
+          searchStats.vectorSearch.resultsCount = vectorResults.length;
+          console.log(`Vector search successful: ${vectorResults.length} results`);
+        }
       } catch (error) {
         console.warn('Vector search failed, falling back to API searches:', error.message);
+        // Don't throw - continue to fallbacks
       }
       
-      // If vector search returned insufficient results, or failed, try IEEE
+      // Tier 2: IEEE Search (first fallback)
       if (results.length < 10) {
         try {
+          searchStats.ieeeSearch.attempted = true;
           const ieeeResults = await searchIEEE(query, filters);
-          if (ieeeResults.length > 0) {
+          
+          if (ieeeResults && ieeeResults.length > 0) {
             // Transform IEEE results to match our format
             const transformedResults = ieeeResults.map(article => ({
-              id: article.article_number,
-              title: article.title,
+              id: article.article_number || `ieee-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+              title: article.title || 'Unknown Title',
               authors: article.authors?.authors?.map(a => a.full_name).join(', ') || 'Unknown',
               publication_date: article.publication_date || 'Unknown',
               journal: article.publisher || 'IEEE',
               source: 'IEEE',
               url: article.html_url,
+              abstract: article.abstract || '',
               similarity: 0.85, // Default similarity for API results
             }));
             
             results = [...results, ...transformedResults];
+            searchStats.ieeeSearch.successful = true;
+            searchStats.ieeeSearch.resultsCount = transformedResults.length;
+            console.log(`IEEE search successful: ${transformedResults.length} results`);
           }
         } catch (error) {
           console.warn('IEEE search failed:', error.message);
+          // Don't throw - continue to next fallback
         }
       }
       
-      // Also try PubMed regardless
+      // Tier 3: PubMed Search (second fallback, run regardless for comprehensive results)
       try {
+        searchStats.pubmedSearch.attempted = true;
         const pubmedResults = await searchPubMed(query, filters);
-        if (pubmedResults.length > 0) {
-          results = [...results, ...pubmedResults];
+        
+        if (pubmedResults && pubmedResults.length > 0) {
+          // Remove duplicates before adding PubMed results
+          const existingIds = new Set(results.map(r => r.id?.toString()));
+          const uniquePubmedResults = pubmedResults.filter(article => 
+            !existingIds.has(article.id?.toString())
+          );
+          
+          results = [...results, ...uniquePubmedResults];
+          searchStats.pubmedSearch.successful = true;
+          searchStats.pubmedSearch.resultsCount = uniquePubmedResults.length;
+          console.log(`PubMed search successful: ${uniquePubmedResults.length} unique results`);
         }
       } catch (error) {
         console.warn('PubMed search failed:', error.message);
+        // Don't throw - continue to final fallback
       }
       
-      // If we still have no results, use an AI fallback
+      // Tier 4: AI Fallback (final resilience layer)
       if (results.length === 0) {
         try {
+          searchStats.aiSearch.attempted = true;
+          // Extract key terms from the query to improve search quality
+          const keyTermsPrompt = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+              {
+                role: "system",
+                content: "Extract 3-5 key medical/scientific terms from this query for literature search. Return only the terms separated by commas."
+              },
+              {
+                role: "user",
+                content: query
+              }
+            ]
+          });
+          
+          const keyTerms = keyTermsPrompt.choices[0].message.content;
+          
+          // Generate AI-based literature results
           const completion = await openai.chat.completions.create({
             model: "gpt-4o",
             messages: [
               {
                 role: "system",
-                content: "You are a medical literature expert. Based on the query, provide information about relevant medical literature that might exist. Format your response as JSON with an array of objects containing: id, title, authors, publication_date, journal, and similarity (0-1)."
+                content: "You are a medical literature expert. Based on the query, provide information about relevant medical literature that might exist. Focus on high-quality, peer-reviewed articles relevant to medical devices and clinical research. Format your response as JSON with an array of 'articles' containing: id (string), title (string), authors (string), publication_date (string in YYYY-MM-DD format where possible), journal (string), abstract (string), and similarity (number between 0-1)."
               },
               {
                 role: "user",
-                content: `Find medical literature related to: ${query}`
+                content: `Find medical literature related to: ${query}\nKey terms to focus on: ${keyTerms}`
               }
             ],
             response_format: { type: "json_object" },
           });
           
-          const aiResult = JSON.parse(completion.choices[0].message.content);
-          
-          if (Array.isArray(aiResult.articles)) {
-            results = aiResult.articles.map(article => ({
-              ...article,
-              source: 'AI-Generated',
-              type: 'literature',
-            }));
+          try {
+            const aiResult = JSON.parse(completion.choices[0].message.content);
+            
+            if (Array.isArray(aiResult.articles)) {
+              const aiGeneratedResults = aiResult.articles.map(article => ({
+                ...article,
+                source: 'AI-Generated',
+                type: 'literature',
+                id: article.id || `ai-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+              }));
+              
+              results = aiGeneratedResults;
+              searchStats.aiSearch.successful = true;
+              searchStats.aiSearch.resultsCount = aiGeneratedResults.length;
+              console.log(`AI fallback search successful: ${aiGeneratedResults.length} results`);
+            }
+          } catch (parseError) {
+            console.error('Failed to parse AI response:', parseError);
+            // Still don't throw - return whatever we have
           }
         } catch (error) {
           console.error('AI fallback search failed:', error);
+          // Last fallback failed, but we still shouldn't throw
         }
       }
       
@@ -403,34 +510,100 @@ const discoveryService = {
     try {
       console.log(`Searching predicate devices for: "${query}"`);
       
-      // First try vector search if available
+      // Initialize results array and tracking metrics
       let results = [];
+      let searchStats = {
+        vectorSearch: { attempted: false, successful: false, resultsCount: 0 },
+        fdaSearch: { attempted: false, successful: false, resultsCount: 0 },
+        aiSearch: { attempted: false, successful: false, resultsCount: 0 }
+      };
+      
+      // Extract device key terms for better search
+      let deviceKeyTerms = query;
       try {
-        const embedding = await vectorizeQuery(query);
-        results = await performVectorSearch(embedding, 'predicates');
+        // Use a lightweight approach to extract key terms first
+        const keyTermsRegex = /(?:for|device|predicate|similar to)\s+(.+?)(?:\.|$)/i;
+        const matches = query.match(keyTermsRegex);
+        if (matches && matches[1]) {
+          deviceKeyTerms = matches[1].trim();
+        }
       } catch (error) {
-        console.warn('Vector search failed for predicates, falling back to API:', error.message);
+        console.warn('Failed to extract device key terms, using original query');
       }
       
-      // Try FDA 510(k) database search
+      // Tier 1: Vector search with pgvector (primary method)
       try {
-        const fdaResults = await searchFDA510K(query, filters);
-        if (fdaResults.length > 0) {
-          results = [...results, ...fdaResults];
+        searchStats.vectorSearch.attempted = true;
+        const embedding = await vectorizeQuery(deviceKeyTerms || query);
+        const vectorResults = await performVectorSearch(embedding, 'predicates');
+        
+        if (vectorResults && vectorResults.length > 0) {
+          results = vectorResults;
+          searchStats.vectorSearch.successful = true;
+          searchStats.vectorSearch.resultsCount = vectorResults.length;
+          console.log(`Vector search successful for predicates: ${vectorResults.length} results`);
+        }
+      } catch (error) {
+        console.warn('Vector search failed for predicates, falling back to API:', error.message);
+        // Continue to fallbacks
+      }
+      
+      // Tier 2: FDA 510(k) database search (direct API fallback)
+      try {
+        searchStats.fdaSearch.attempted = true;
+        const fdaResults = await searchFDA510K(deviceKeyTerms || query, filters);
+        
+        if (fdaResults && fdaResults.length > 0) {
+          // Remove duplicates before adding FDA results
+          const existingIds = new Set(results.map(r => r.id?.toString()));
+          const uniqueFdaResults = fdaResults.filter(device => 
+            !existingIds.has(device.id?.toString())
+          );
+          
+          results = [...results, ...uniqueFdaResults];
+          searchStats.fdaSearch.successful = true;
+          searchStats.fdaSearch.resultsCount = uniqueFdaResults.length;
+          console.log(`FDA 510(k) search successful: ${uniqueFdaResults.length} unique results`);
         }
       } catch (error) {
         console.warn('FDA 510(k) search failed:', error.message);
+        // Continue to final fallback
       }
       
-      // If we still have no results, use AI fallback
+      // Tier 3: AI fallback (final resilience layer)
       if (results.length === 0) {
         try {
-          const aiResults = await fallbackPredicateSearch(query);
-          if (aiResults.length > 0) {
+          searchStats.aiSearch.attempted = true;
+          
+          // First extract device classification and key attributes to improve search
+          const deviceAnalysisPrompt = await openai.chat.completions.create({
+            model: "gpt-4o",
+            messages: [
+              {
+                role: "system",
+                content: "You are a medical device regulatory expert. Extract the device type, classification (I, II, or III if mentioned), and key technical attributes from this query. Format your response as a comma-separated list of terms."
+              },
+              {
+                role: "user",
+                content: query
+              }
+            ]
+          });
+          
+          const deviceAnalysis = deviceAnalysisPrompt.choices[0].message.content;
+          
+          // Use the enhanced fallback predicate search with additional context
+          const aiResults = await fallbackPredicateSearch(query, deviceAnalysis);
+          
+          if (aiResults && aiResults.length > 0) {
             results = aiResults;
+            searchStats.aiSearch.successful = true;
+            searchStats.aiSearch.resultsCount = aiResults.length;
+            console.log(`AI fallback predicate search successful: ${aiResults.length} results`);
           }
         } catch (error) {
           console.error('AI fallback predicate search failed:', error);
+          // Last fallback, still don't throw
         }
       }
       
@@ -444,13 +617,48 @@ const discoveryService = {
         });
       }
       
-      // Sort by similarity (relevance)
-      filteredResults.sort((a, b) => (b.similarity || 0) - (a.similarity || 0));
+      // Deduplicate results based on device name and manufacturer
+      const uniqueDevices = new Map();
+      filteredResults.forEach(device => {
+        const key = `${device.title?.toLowerCase() || ''}|${device.manufacturer?.toLowerCase() || ''}`;
+        // Keep the result with the highest similarity score
+        if (!uniqueDevices.has(key) || (device.similarity || 0) > (uniqueDevices.get(key).similarity || 0)) {
+          uniqueDevices.set(key, device);
+        }
+      });
       
-      return filteredResults;
+      // Convert back to array and sort by similarity (relevance)
+      const finalResults = Array.from(uniqueDevices.values());
+      finalResults.sort((a, b) => (b.similarity || 0) - (a.similarity || 0));
+      
+      // Add search stats as metadata
+      const resultWithMetadata = {
+        results: finalResults,
+        metadata: {
+          query: query,
+          enhancedQuery: deviceKeyTerms !== query ? deviceKeyTerms : undefined,
+          totalResults: finalResults.length,
+          searchStats: searchStats
+        }
+      };
+      
+      return finalResults;
     } catch (error) {
       console.error('Error in searchPredicateDevices:', error);
-      throw new Error(`Predicate device search failed: ${error.message}`);
+      // Even in the outer catch block, try to return something useful
+      const fallbackResults = [];
+      try {
+        // Last-ditch effort: try a simple AI fallback if everything else failed
+        const aiResults = await fallbackPredicateSearch(query);
+        if (aiResults && aiResults.length > 0) {
+          return aiResults;
+        }
+      } catch (finalError) {
+        console.error('Final fallback also failed:', finalError);
+      }
+      
+      // If we absolutely can't get results, return empty array instead of throwing
+      return fallbackResults;
     }
   },
   
