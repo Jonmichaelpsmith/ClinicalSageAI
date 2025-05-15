@@ -247,58 +247,69 @@ export const FDA510kService = {
   async saveDeviceProfile(profileData) {
     console.log('Creating device profile with Document Vault integration:', profileData);
     
-    // Step 1: Save profile data to API
-    const response = await apiRequest.post(`/api/fda510k/device-profile`, profileData);
-    const savedProfile = response.data;
-    
-    if (!savedProfile || !savedProfile.id) {
-      throw new Error('Failed to save device profile - no ID returned');
+    try {
+      // Step 1: Save profile data to API
+      const response = await apiRequest.post(`/api/fda510k/device-profile`, profileData);
+      const savedProfile = response.data;
+      
+      if (!savedProfile || !savedProfile.id) {
+        throw new Error('Failed to save device profile - no ID returned');
+      }
+      
+      // Step 2: Create document structure in Document Vault
+      try {
+        const folderStructure = await this.createDeviceVaultStructure(savedProfile);
+        
+        // Step 3: Create profile document in Document Vault
+        const profileDocumentData = {
+          name: `${savedProfile.device_name || savedProfile.deviceName || 'Unnamed Device'} - Device Profile`,
+          content: JSON.stringify(savedProfile, null, 2),
+          mimeType: 'application/json',
+          metadata: {
+            documentType: '510k-device-profile',
+            deviceId: savedProfile.id,
+            manufacturer: savedProfile.manufacturer,
+            deviceClass: savedProfile.device_class || savedProfile.deviceClass,
+            date: new Date().toISOString(),
+            version: '1.0',
+            status: 'active'
+          }
+        };
+        
+        // Create JSON document in the device profile folder
+        const documentResult = await this.createProfileDocument(
+          folderStructure.deviceProfileFolderId, 
+          profileDocumentData
+        );
+        
+        // Step 4: Update the profile with document references
+        const updatedProfile = {
+          ...savedProfile,
+          documentVaultId: documentResult.id,
+          folderStructure: {
+            rootFolderId: folderStructure.rootFolderId,
+            deviceProfileFolderId: folderStructure.deviceProfileFolderId,
+            predicatesFolderId: folderStructure.predicatesFolderId,
+            equivalenceFolderId: folderStructure.equivalenceFolderId,
+            testingFolderId: folderStructure.testingFolderId,
+            submissionFolderId: folderStructure.submissionFolderId
+          }
+        };
+        
+        // Step 5: Save the updated profile with document references
+        await apiRequest.put(`/api/fda510k/device-profile/${savedProfile.id}`, updatedProfile);
+        
+        console.log('Device profile created and vault integration complete:', updatedProfile);
+        return updatedProfile;
+      } catch (vaultError) {
+        // If document vault integration fails, still return the saved profile
+        console.warn('Document vault integration failed, but device profile was saved:', vaultError);
+        return savedProfile;
+      }
+    } catch (error) {
+      console.error('Error saving device profile:', error);
+      throw error;
     }
-    
-    // Step 2: Create document structure in Document Vault
-    const folderStructure = await this.createDeviceVaultStructure(savedProfile);
-    
-    // Step 3: Create profile document in Document Vault
-    const profileDocumentData = {
-      name: `${savedProfile.deviceName || 'Unnamed Device'} - Device Profile`,
-      content: JSON.stringify(savedProfile, null, 2),
-      mimeType: 'application/json',
-      metadata: {
-        documentType: '510k-device-profile',
-        deviceId: savedProfile.id,
-        manufacturer: savedProfile.manufacturer,
-        deviceClass: savedProfile.deviceClass,
-        date: new Date().toISOString(),
-        version: '1.0',
-        status: 'active'
-      }
-    };
-    
-    // Create JSON document in the device profile folder
-    const documentResult = await this.createProfileDocument(
-      folderStructure.deviceProfileFolderId, 
-      profileDocumentData
-    );
-    
-    // Step 4: Update the profile with document references
-    const updatedProfile = {
-      ...savedProfile,
-      documentVaultId: documentResult.id,
-      folderStructure: {
-        rootFolderId: folderStructure.rootFolderId,
-        deviceProfileFolderId: folderStructure.deviceProfileFolderId,
-        predicatesFolderId: folderStructure.predicatesFolderId,
-        equivalenceFolderId: folderStructure.equivalenceFolderId,
-        testingFolderId: folderStructure.testingFolderId,
-        submissionFolderId: folderStructure.submissionFolderId
-      }
-    };
-    
-    // Step 5: Save the updated profile with document references
-    await apiRequest.put(`/api/fda510k/device-profile/${savedProfile.id}`, updatedProfile);
-    
-    console.log('Device profile created and vault integration complete:', updatedProfile);
-    return updatedProfile;
   },
 
   /**
