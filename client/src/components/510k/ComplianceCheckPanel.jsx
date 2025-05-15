@@ -8,7 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { FDA510kService } from "@/services/FDA510kService";
-import { CheckSquare, AlertCircle, AlertTriangle, CheckCircle, XCircle, RefreshCw, FileCheck, Loader2, Save } from 'lucide-react';
+import { CheckSquare, AlertCircle, AlertTriangle, BookOpen, CheckCircle, XCircle, RefreshCw, FileCheck, Loader2, Save } from 'lucide-react';
 
 /**
  * Compliance Check Panel for 510(k) Submissions
@@ -245,8 +245,11 @@ const ComplianceCheckPanel = ({
   const renderComplianceResults = () => {
     if (!complianceData) return null;
     
-    const { score, status, issues = [] } = complianceData;
+    const { score, status, issues = [], literatureEvidence = {} } = complianceData;
     const percentage = Math.round(score * 100);
+    const hasLiteratureEvidence = literatureEvidence && Object.keys(literatureEvidence).length > 0;
+    const literatureEvidenceCount = hasLiteratureEvidence ? 
+      Object.values(literatureEvidence).reduce((acc, papers) => acc + papers.length, 0) : 0;
     
     return (
       <div className="space-y-4">
@@ -276,6 +279,24 @@ const ComplianceCheckPanel = ({
         
         <Progress value={percentage} className={`h-2 ${getComplianceColor(score)}`} />
         
+        {/* Literature Evidence Summary */}
+        {hasLiteratureEvidence && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-md">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <BookOpen className="h-5 w-5 text-blue-600" />
+                <div>
+                  <h4 className="font-medium text-blue-700">Literature Evidence</h4>
+                  <p className="text-sm text-blue-600">
+                    {literatureEvidenceCount} {literatureEvidenceCount === 1 ? 'paper' : 'papers'} supporting {Object.keys(literatureEvidence).length} {Object.keys(literatureEvidence).length === 1 ? 'feature' : 'features'}
+                  </p>
+                </div>
+              </div>
+              <Badge className="bg-blue-500">{Object.keys(literatureEvidence).length} Features Supported</Badge>
+            </div>
+          </div>
+        )}
+        
         <Separator />
         
         <div className="space-y-4">
@@ -303,6 +324,16 @@ const ComplianceCheckPanel = ({
                     <AlertDescription className="mt-2 text-sm">
                       {issue.message}
                     </AlertDescription>
+                    
+                    {/* Show literature evidence hint if relevant */}
+                    {issue.missingEvidence && (
+                      <div className="mt-2 p-2 bg-amber-50 text-xs rounded border border-amber-200">
+                        <div className="flex items-center space-x-1">
+                          <AlertTriangle className="h-3 w-3 text-amber-600" />
+                          <span className="font-medium">Literature evidence recommended for this feature</span>
+                        </div>
+                      </div>
+                    )}
                   </Alert>
                 ))}
               </div>
@@ -313,6 +344,11 @@ const ComplianceCheckPanel = ({
               <AlertTitle className="text-green-700">All Requirements Met</AlertTitle>
               <AlertDescription className="text-green-600">
                 Your 510(k) submission meets all FDA compliance requirements.
+                {hasLiteratureEvidence && (
+                  <span className="block mt-1">
+                    Literature evidence supporting {Object.keys(literatureEvidence).length} features enhances submission quality.
+                  </span>
+                )}
               </AlertDescription>
             </Alert>
           )}

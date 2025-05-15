@@ -448,6 +448,43 @@ export const FDA510kService = {
       throw error;
     }
   },
+  
+  /**
+   * Save comprehensive equivalence analysis data including literature evidence
+   * 
+   * @param {Object} equivalenceData Complete equivalence analysis data
+   * @returns {Promise<Object>} Saved equivalence analysis data
+   */
+  async saveEquivalenceAnalysis(equivalenceData) {
+    try {
+      // Extract device ID from documentId if present
+      const deviceId = equivalenceData.documentId || 'unknown';
+      
+      // First attempt to save to document vault if folders are available
+      if (equivalenceData.folderStructure && equivalenceData.folderStructure.equivalenceFolderId) {
+        await this.saveEquivalenceDetermination(
+          equivalenceData,
+          equivalenceData.folderStructure.equivalenceFolderId
+        );
+      }
+      
+      // Then save to the API
+      const response = await apiRequest.post(`/api/fda510k/equivalence/${deviceId}`, equivalenceData);
+      
+      // Additionally save literature evidence connections if present
+      if (equivalenceData.literatureEvidence && Object.keys(equivalenceData.literatureEvidence).length > 0) {
+        await apiRequest.post(`/api/510k-literature/connections`, {
+          documentId: deviceId,
+          featureEvidence: equivalenceData.literatureEvidence
+        });
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error saving equivalence analysis:', error);
+      throw error;
+    }
+  },
 
   /**
    * Generate the final 510(k) submission package

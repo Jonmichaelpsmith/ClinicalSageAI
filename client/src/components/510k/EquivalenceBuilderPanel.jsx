@@ -137,8 +137,12 @@ const EquivalenceBuilderPanel = ({
         literatureEvidence
       };
       
-      // Update our backend (commented out until API route is ready)
-      // await FDA510kService.saveEquivalenceAnalysis(equivalenceData);
+      // Update our backend with complete equivalence data including literature evidence
+      const folderStructure = deviceProfile?.folderStructure || {};
+      await FDA510kService.saveEquivalenceAnalysis({
+        ...equivalenceData,
+        folderStructure
+      });
       
       // Clear interval and mark as complete
       clearInterval(interval);
