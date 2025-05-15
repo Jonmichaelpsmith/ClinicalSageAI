@@ -17,7 +17,7 @@ export async function processWithOpenAI(text, instruction) {
     // Check if OpenAI API key is configured
     if (!process.env.OPENAI_API_KEY) {
       console.warn('OpenAI API key not configured');
-      return 'OpenAI API key not configured. AI processing unavailable.';
+      throw new Error('OpenAI API key not configured');
     }
     
     const response = await fetch('https://api.openai.com/v1/chat/completions', {

@@ -310,14 +310,8 @@ export const generateRelevanceAppraisal = async (study, deviceName, inclusionCri
       return await response.json();
     } catch (backupError) {
       console.error('Backup server appraisal failed:', backupError);
-      // Return a minimal default structure if all else fails
-      return {
-        summary: 'Could not generate automatic appraisal. Please assess manually.',
-        scores: {},
-        criteriaAssessments: {},
-        overallScore: null,
-        timestamp: new Date().toISOString()
-      };
+      // No fallbacks - propagate the error to be handled by UI components
+      throw backupError;
     }
   }
 };
