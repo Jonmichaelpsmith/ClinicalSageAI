@@ -24,7 +24,8 @@ const EquivalenceBuilderPanel = ({
   deviceProfile, 
   documentId, 
   onComplete,
-  predicateDevices = []
+  predicateDevices = [],
+  selectedLiterature = []
 }) => {
   const [selectedTab, setSelectedTab] = useState('overview');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
