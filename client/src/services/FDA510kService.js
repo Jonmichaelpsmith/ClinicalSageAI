@@ -3,9 +3,13 @@
  * 
  * This service handles interactions with the 510(k) API endpoints,
  * including eSTAR integration, package validation, and workflow management.
+ * 
+ * This service now fully integrates with Document Vault for proper file management
+ * and connects to downstream features throughout the 510(k) workflow.
  */
 
 import { apiRequest } from '../lib/queryClient';
+import docuShareService from './DocuShareService';
 
 // Export as a singleton object
 export const FDA510kService = {
@@ -466,24 +470,178 @@ export const FDA510kService = {
   },
 
   /**
-   * Save a device profile (create or update)
+   * Save a device profile and create necessary folder structure in Document Vault
    * 
-   * @param {Object} profileData The profile data including projectId, name, model, etc.
-   * @returns {Promise<boolean>} Whether the save was successful
+   * This enhanced method handles:
+   * 1. Saving the device profile data
+   * 2. Creating/updating device profile document in Document Vault
+   * 3. Creating the proper folder structure for the 510(k) submission
+   * 4. Establishing connections to downstream workflow components
+   * 
+   * @param {Object} profileData The complete device profile data
+   * @returns {Promise<Object>} Created/updated profile with Document Vault references
    */
-  async saveDeviceProfile({ projectId, name, model, intendedUse, technology }) {
+  async saveDeviceProfile(profileData) {
     try {
-      const response = await apiRequest.post(`/api/fda510k/device-profile`, {
-        projectId, 
-        name, 
-        model, 
-        intendedUse, 
-        technology
-      });
-      return response.ok;
+      console.log('Creating device profile with Document Vault integration:', profileData);
+      
+      // Step 1: Save profile data to API
+      const response = await apiRequest.post(`/api/fda510k/device-profile`, profileData);
+      const savedProfile = response.data;
+      
+      if (!savedProfile || !savedProfile.id) {
+        throw new Error('Failed to save device profile - no ID returned');
+      }
+      
+      // Step 2: Create document structure in Document Vault
+      const folderStructure = await this.createDeviceVaultStructure(savedProfile);
+      
+      // Step 3: Create profile document in Document Vault
+      const profileDocumentData = {
+        name: `${savedProfile.deviceName || 'Unnamed Device'} - Device Profile`,
+        content: JSON.stringify(savedProfile, null, 2),
+        mimeType: 'application/json',
+        metadata: {
+          documentType: '510k-device-profile',
+          deviceId: savedProfile.id,
+          manufacturer: savedProfile.manufacturer,
+          deviceClass: savedProfile.deviceClass,
+          date: new Date().toISOString(),
+          version: '1.0',
+          status: 'active'
+        }
+      };
+      
+      // Create JSON document in the device profile folder
+      const documentResult = await this.createProfileDocument(
+        folderStructure.deviceProfileFolderId, 
+        profileDocumentData
+      );
+      
+      // Step 4: Update the profile with document references
+      const updatedProfile = {
+        ...savedProfile,
+        documentVaultId: documentResult.id,
+        folderStructure: {
+          rootFolderId: folderStructure.rootFolderId,
+          deviceProfileFolderId: folderStructure.deviceProfileFolderId,
+          predicatesFolderId: folderStructure.predicatesFolderId,
+          equivalenceFolderId: folderStructure.equivalenceFolderId,
+          testingFolderId: folderStructure.testingFolderId,
+          submissionFolderId: folderStructure.submissionFolderId
+        }
+      };
+      
+      // Step 5: Save the updated profile with document references
+      await apiRequest.put(`/api/fda510k/device-profile/${savedProfile.id}`, updatedProfile);
+      
+      console.log('Device profile created and vault integration complete:', updatedProfile);
+      return updatedProfile;
     } catch (error) {
-      console.error('Error saving device profile:', error);
-      return false;
+      console.error('Error saving device profile with vault integration:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Create the 510(k) folder structure in Document Vault
+   * 
+   * @param {Object} deviceProfile Device profile object
+   * @returns {Promise<Object>} Created folder structure IDs
+   */
+  async createDeviceVaultStructure(deviceProfile) {
+    try {
+      // First check if structure already exists
+      const existingStructure = await apiRequest.get(`/api/fda510k/device-vault-structure/${deviceProfile.id}`);
+      if (existingStructure.data && existingStructure.data.rootFolderId) {
+        console.log('Using existing vault structure:', existingStructure.data);
+        return existingStructure.data;
+      }
+      
+      // Create root folder for device
+      const rootFolder = await apiRequest.post('/api/vault/folders', {
+        name: `${deviceProfile.deviceName || 'Device'} - 510(k) Submission`,
+        parentId: null, // Root level folder
+        metadata: {
+          deviceId: deviceProfile.id,
+          submissionType: '510k',
+          status: 'in-progress'
+        }
+      });
+      
+      // Create subfolders for each section
+      const deviceProfileFolder = await apiRequest.post('/api/vault/folders', {
+        name: '1. Device Profile',
+        parentId: rootFolder.data.id,
+        metadata: { section: 'device-profile', deviceId: deviceProfile.id }
+      });
+      
+      const predicatesFolder = await apiRequest.post('/api/vault/folders', {
+        name: '2. Predicate Devices',
+        parentId: rootFolder.data.id,
+        metadata: { section: 'predicates', deviceId: deviceProfile.id }
+      });
+      
+      const equivalenceFolder = await apiRequest.post('/api/vault/folders', {
+        name: '3. Substantial Equivalence',
+        parentId: rootFolder.data.id,
+        metadata: { section: 'equivalence', deviceId: deviceProfile.id }
+      });
+      
+      const testingFolder = await apiRequest.post('/api/vault/folders', {
+        name: '4. Performance Testing',
+        parentId: rootFolder.data.id,
+        metadata: { section: 'testing', deviceId: deviceProfile.id }
+      });
+      
+      const submissionFolder = await apiRequest.post('/api/vault/folders', {
+        name: '5. Final Submission',
+        parentId: rootFolder.data.id,
+        metadata: { section: 'submission', deviceId: deviceProfile.id }
+      });
+      
+      // Save folder structure to device profile
+      const folderStructure = {
+        rootFolderId: rootFolder.data.id,
+        deviceProfileFolderId: deviceProfileFolder.data.id,
+        predicatesFolderId: predicatesFolder.data.id,
+        equivalenceFolderId: equivalenceFolder.data.id,
+        testingFolderId: testingFolder.data.id,
+        submissionFolderId: submissionFolder.data.id
+      };
+      
+      console.log('Created folder structure:', folderStructure);
+      return folderStructure;
+    } catch (error) {
+      console.error('Error creating device vault structure:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Create a device profile document in Document Vault
+   * 
+   * @param {string} folderId Folder ID to store the document
+   * @param {Object} documentData Document data including name, content, etc.
+   * @returns {Promise<Object>} Created document metadata
+   */
+  async createProfileDocument(folderId, documentData) {
+    try {
+      // Use DocuShare service to create document
+      const jsonBlob = new Blob([documentData.content], { type: 'application/json' });
+      const jsonFile = new File([jsonBlob], `${documentData.name}.json`, { type: 'application/json' });
+      
+      const documentMetadata = {
+        ...documentData.metadata,
+        folderId: folderId
+      };
+      
+      const result = await docuShareService.uploadDocument(jsonFile, documentMetadata);
+      console.log('Created device profile document:', result);
+      return result;
+    } catch (error) {
+      console.error('Error creating profile document:', error);
+      throw error;
     }
   },
 
