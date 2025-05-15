@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,9 +12,11 @@ import { DialogFooter } from '@/components/ui/dialog';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
-import { AlertCircle, HelpCircle, Info, CheckCircle } from 'lucide-react';
+import { AlertCircle, HelpCircle, Info, CheckCircle, Loader2 } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import deviceProfileSchema from './schemas/deviceProfile.json';
 import { useTenant } from '@/contexts/TenantContext';
+import { FDA510kService } from '@/services/FDA510kService';
 
 // Enhanced Zod schema with additional fields for 510(k) submission
 const deviceProfileZodSchema = z.object({
