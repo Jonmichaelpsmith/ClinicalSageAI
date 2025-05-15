@@ -402,25 +402,64 @@ export default function CERV2Page() {
   
   // Render content based on active tab
   // Import 510k tab content component
-  const FDA510kTabContent = React.lazy(() => import('@/components/510k/FDA510kTabContent'));
+  // Commented out to fix import error
+  // const FDA510kTabContent = React.lazy(() => import('@/components/510k/FDA510kTabContent'));
   
   const renderContent = () => {
-    // If 510k document type is selected, show FDA510k content
+    // If 510k document type is selected, show 510k content directly in CERV2Page
     if (documentType === '510k') {
       return (
-        <React.Suspense fallback={<div className="p-4">Loading 510(k) submission tools...</div>}>
-          <FDA510kTabContent 
-            deviceProfile={deviceProfile}
-            activeTab={activeTab}
-            onTabChange={setActiveTab}
-            onComplianceChange={setCompliance}
-            onComplianceStatusChange={setDraftStatus}
-            isComplianceRunning={isComplianceRunning}
-            setIsComplianceRunning={setIsComplianceRunning}
-            compliance={compliance}
-            sections={sections}
-          />
-        </React.Suspense>
+        <div className="p-4">
+          <div className="mb-4 bg-blue-50 p-4 rounded-lg border border-blue-100">
+            <h2 className="text-lg font-medium text-blue-800">510(k) Submission Builder</h2>
+            <p className="text-sm text-blue-600">Use the navigation tabs above to create your 510(k) submission</p>
+          </div>
+          
+          {activeTab === 'predicates' && (
+            <div className="space-y-4">
+              <PredicateFinderPanel 
+                deviceProfile={deviceProfile}
+                setDeviceProfile={setDeviceProfile}
+                documentId={k510DocumentId}
+              />
+            </div>
+          )}
+          
+          {activeTab === 'equivalence' && (
+            <div className="space-y-4">
+              <EquivalenceBuilderPanel 
+                deviceProfile={deviceProfile}
+                setDeviceProfile={setDeviceProfile}
+                documentId={k510DocumentId}
+              />
+            </div>
+          )}
+          
+          {activeTab === 'compliance' && (
+            <div className="space-y-4">
+              <ComplianceScorePanel 
+                deviceProfile={deviceProfile}
+                setDeviceProfile={setDeviceProfile}
+                documentId={k510DocumentId}
+                compliance={compliance}
+                setCompliance={setCompliance}
+                isLoading={isLoading}
+              />
+            </div>
+          )}
+          
+          {activeTab === 'submission' && (
+            <div className="space-y-4">
+              <ReportGenerator
+                deviceProfile={deviceProfile}
+                documentId={k510DocumentId}
+                exportTimestamp={exportTimestamp}
+                draftStatus={draftStatus}
+                setDraftStatus={setDraftStatus}
+              />
+            </div>
+          )}
+        </div>
       );
     }
     
