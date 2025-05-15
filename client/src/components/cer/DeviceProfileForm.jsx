@@ -68,8 +68,11 @@ const deviceProfileZodSchema = z.object({
   }).optional(),
 });
 
-const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
+const DeviceProfileForm = ({ initialData, onSubmit, onCancel, projectId }) => {
   const { currentOrganization, currentClientWorkspace } = useTenant();
+  const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [vaultStatus, setVaultStatus] = useState(null);
   
   // Configure form with react-hook-form and Zod validation
   const form = useForm({
@@ -91,20 +94,62 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
       marketHistory: '',
       productCode: '',
       regulationNumber: '',
+      projectId: projectId || 'new-device', // Use provided projectId or default
     }
   });
 
-  const handleSubmit = (data) => {
-    // Add tenant context data if available
-    if (currentOrganization?.id) {
-      data.organizationId = currentOrganization.id;
+  // Enhanced submit handler with Document Vault integration
+  const handleSubmit = async (data) => {
+    try {
+      setIsSubmitting(true);
+      
+      // Add tenant context data if available
+      if (currentOrganization?.id) {
+        data.organizationId = currentOrganization.id;
+      }
+      
+      if (currentClientWorkspace?.id) {
+        data.clientWorkspaceId = currentClientWorkspace.id;
+      }
+      
+      // Set proper projectId
+      data.projectId = projectId || data.projectId || 'new-device';
+      
+      console.log('Saving device profile with Document Vault integration:', data);
+      setVaultStatus('creating');
+      
+      // Use FDA510kService to save profile with Document Vault integration
+      const result = await FDA510kService.saveDeviceProfile(data);
+      
+      console.log('Device profile saved with Document Vault integration:', result);
+      setVaultStatus('created');
+      
+      // Show success toast
+      toast({
+        title: "Device profile saved successfully",
+        description: "Your device profile has been saved and document structure created in the vault.",
+        variant: "success"
+      });
+      
+      // Use callback if provided
+      if (onSubmit) {
+        onSubmit(result);
+      }
+      
+      setIsSubmitting(false);
+    } catch (error) {
+      console.error('Error saving device profile:', error);
+      setVaultStatus('error');
+      
+      // Show error toast
+      toast({
+        title: "Error saving device profile",
+        description: error.message || "There was an error saving your device profile. Please try again.",
+        variant: "destructive"
+      });
+      
+      setIsSubmitting(false);
     }
-    
-    if (currentClientWorkspace?.id) {
-      data.clientWorkspaceId = currentClientWorkspace.id;
-    }
-    
-    onSubmit(data);
   };
 
   // Get current device class to provide context-sensitive guidance
@@ -492,15 +537,53 @@ const DeviceProfileForm = ({ initialData, onSubmit, onCancel }) => {
         </Tabs>
         
         <DialogFooter className="mt-6 pt-4 border-t border-gray-200 flex flex-col sm:flex-row sm:justify-between">
-          <Button 
-            type="button" 
-            variant="outline" 
-            className="mb-2 sm:mb-0" 
-            onClick={onCancel}
-          >
-            Cancel
-          </Button>
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700">Save Device Profile</Button>
+          {/* Status indicator */}
+          {vaultStatus && (
+            <div className="mb-4 w-full sm:mb-0 sm:w-auto px-3 py-2 rounded-md text-sm font-medium">
+              {vaultStatus === 'creating' && (
+                <div className="flex items-center text-blue-600">
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Creating folder structure in Document Vault...
+                </div>
+              )}
+              {vaultStatus === 'created' && (
+                <div className="flex items-center text-green-600">
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Document structure created successfully
+                </div>
+              )}
+              {vaultStatus === 'error' && (
+                <div className="flex items-center text-red-600">
+                  <AlertCircle className="h-4 w-4 mr-2" />
+                  Error creating document structure
+                </div>
+              )}
+            </div>
+          )}
+          
+          <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto">
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="mb-2 sm:mb-0" 
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              className="bg-blue-600 hover:bg-blue-700"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : 'Save Device Profile'}
+            </Button>
+          </div>
         </DialogFooter>
       </form>
     </Form>
