@@ -15,7 +15,7 @@ import DeviceProfileList from '../cer/DeviceProfileList';
 import DeviceProfileDialog from '../cer/DeviceProfileDialog';
 import PredicateFinderPanel from './PredicateFinderPanel';
 import EquivalenceBuilderPanel from './EquivalenceBuilderPanel';
-import ComplianceScorePanel from './ComplianceCheckPanel';
+import ComplianceCheckPanel from './ComplianceCheckPanel';
 import ReportGenerator from './ReportGenerator';
 
 /**
