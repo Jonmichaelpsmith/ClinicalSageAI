@@ -17,6 +17,7 @@ import FDA510kService from '@/services/FDA510kService';
 const DeviceProfileDialog = ({ 
   buttonText = 'Create Device Profile', 
   buttonVariant = 'default',
+  buttonClassName = '',
   buttonIcon = null,
   existingData = null,
   onSuccessfulSubmit = () => {},
@@ -78,7 +79,7 @@ const DeviceProfileDialog = ({
           <Button 
             variant={buttonVariant} 
             disabled={loading}
-            className={isStartingPoint ? "relative px-6 py-6 h-auto text-md font-medium shadow-md hover:shadow-lg transition-all duration-200" : ""}
+            className={`${buttonClassName} ${isStartingPoint ? "relative px-6 py-6 h-auto text-md font-medium shadow-md hover:shadow-lg transition-all duration-200" : ""}`}
           >
             {getButtonIcon()}
             {buttonText}
