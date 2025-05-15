@@ -458,6 +458,62 @@ export const FDA510kService = {
   },
   
   /**
+   * Get the latest equivalence analysis from Document Vault
+   * 
+   * @param {string} folderId Folder ID in Document Vault
+   * @param {string} deviceProfileId Device profile ID for reference
+   * @param {boolean} includeCompletedOnly If true, only return completed analyses
+   * @returns {Promise<Object>} The latest equivalence analysis data
+   */
+  async getLatestEquivalenceAnalysis(folderId, deviceProfileId, includeCompletedOnly = false) {
+    try {
+      console.log(`Fetching equivalence analysis from folder ${folderId} for device ${deviceProfileId}`);
+      
+      // Query Document Vault for all equivalence analyses in this folder
+      const files = await docuShareService.listFiles(folderId, {
+        documentType: 'equivalence-analysis',
+        relatedEntityId: deviceProfileId
+      });
+      
+      if (!files.length) {
+        console.log('No equivalence analysis files found');
+        return null;
+      }
+      
+      // Filter for completed analyses if required
+      const filteredFiles = includeCompletedOnly 
+        ? files.filter(file => file.metadata?.status === 'completed')
+        : files;
+        
+      if (includeCompletedOnly && !filteredFiles.length) {
+        console.log('No completed equivalence analysis files found');
+        return null;
+      }
+      
+      // Sort by creation date descending to get the most recent
+      const sortedFiles = filteredFiles.sort((a, b) => 
+        new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      
+      // Get the latest file content
+      const latestFile = sortedFiles[0];
+      const fileContent = await docuShareService.getFileContent(latestFile.documentId);
+      
+      return {
+        success: true,
+        analysis: typeof fileContent === 'string' ? JSON.parse(fileContent) : fileContent,
+        documentReference: latestFile
+      };
+    } catch (error) {
+      console.error('Error fetching equivalence analysis from vault:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+  
+  /**
    * Run a comprehensive compliance check for a 510(k) submission
    * 
    * This function performs a detailed analysis of a 510(k) submission project
