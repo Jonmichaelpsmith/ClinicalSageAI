@@ -25,7 +25,7 @@ import KAutomationPanel from '@/components/cer/KAutomationPanel';
 // 510k components - directly importing only what we need
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import ReportGenerator from '@/components/510k/ReportGenerator';
-import DocumentTreePanel from '@/components/510k/DocumentTreePanel';
+import SimpleDocumentTreePanel from '@/components/510k/SimpleDocumentTreePanel';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -914,7 +914,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       </div>
       
       {/* Document Tree Panel (slides in from the right) */}
-      <DocumentTreePanel 
+      <SimpleDocumentTreePanel 
         isOpen={showDocumentTree}
         onClose={() => setShowDocumentTree(false)}
         documentId={documentType === 'cer' ? cerDocumentId : k510DocumentId}
