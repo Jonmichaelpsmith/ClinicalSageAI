@@ -34,14 +34,11 @@ import {
 } from "@/components/ui/table";
 import { formatDistanceToNow } from 'date-fns';
 import DeviceProfileForm from './DeviceProfileForm';
-import DeviceProfileList from './DeviceProfileList';
 import DeviceProfileDialog from './DeviceProfileDialog';
-import { postDeviceProfile, getDeviceProfiles } from '../../api/cer';
-// Import the service directly
-import FDA510kService from '../../services/FDA510kService';
 import { useTenant } from '@/contexts/TenantContext';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
+import FDA510kService from '../../services/FDA510kService';
 
 export default function KAutomationPanel() {
   const [activeTab, setActiveTab] = useState('workflow');
@@ -52,2722 +49,989 @@ export default function KAutomationPanel() {
   const [requirements, setRequirements] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
   const [deviceProfileDialogOpen, setDeviceProfileDialogOpen] = useState(false);
-  const [deviceProfileSubmitted, setDeviceProfileSubmitted] = useState(false);
-  const [currentDeviceProfile, setCurrentDeviceProfile] = useState(null);
-  const [predicateSearchResults, setPredicateSearchResults] = useState([]);
-  const [isSearchingPredicates, setIsSearchingPredicates] = useState(false);
-  const [recommendedPredicates, setRecommendedPredicates] = useState([]);
-  const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
-  const [showDeviceProfileDialog, setShowDeviceProfileDialog] = useState(false);
-  const { currentOrganization } = useTenant();
-  const { toast } = useToast();
+  const [deviceProfiles, setDeviceProfiles] = useState([]);
+  const [selectedDeviceProfile, setSelectedDeviceProfile] = useState(null);
+  const [currentStep, setCurrentStep] = useState('device-profile');
+  const [loadingRequirements, setLoadingRequirements] = useState(false);
+  const [predicateDevices, setPredicateDevices] = useState([]);
+  const [selectedPredicates, setSelectedPredicates] = useState([]);
+  const [loadingPredicates, setLoadingPredicates] = useState(false);
+  const [complianceResults, setComplianceResults] = useState(null);
+  const [loadingComplianceCheck, setLoadingComplianceCheck] = useState(false);
+  const [estarStatus, setEstarStatus] = useState(null);
+  const [generatingEstar, setGeneratingEstar] = useState(false);
   
-  // Query to fetch device profiles
-  const { 
-    data: deviceProfiles, 
-    isLoading: isLoadingProfiles, 
-    isError: isProfileError, 
-    refetch: refetchProfiles 
-  } = useQuery({
-    queryKey: ['/api/cer/device-profile/organization', currentOrganization?.id],
-    queryFn: () => getDeviceProfiles(currentOrganization?.id),
-    enabled: !!currentOrganization?.id,
-    staleTime: 30000, // 30 seconds
-    onSuccess: (data) => {
-      // If there's a current device and it's in the returned data, update it
-      if (currentDeviceProfile && data.some(profile => profile.id === currentDeviceProfile.id)) {
-        const updated = data.find(profile => profile.id === currentDeviceProfile.id);
-        setCurrentDeviceProfile(updated);
-      }
-    }
-  });
+  const { toast } = useToast();
+  const { organizationId } = useTenant();
 
-  // Default device class for requirements when no device is selected
-  const defaultDeviceClass = 'II';
-
-  // Load submission requirements based on device class
+  // Fetch device profiles on component mount
   useEffect(() => {
-    const loadRequirements = async () => {
+    const fetchDeviceProfiles = async () => {
       try {
-        // Use the current device profile's class if available, otherwise use default
-        const deviceClass = currentDeviceProfile?.deviceClass || defaultDeviceClass;
-        
-        console.log(`Loading requirements for device class: ${deviceClass}`);
-        
-        try {
-          const response = await FDA510kService.getRequirements(deviceClass);
-          const requirementData = response.requirements;
-          if (requirementData) {
-            setRequirements(requirementData);
-          } else {
-            console.log('Using default requirements (API returned empty data)');
-            setDefaultRequirements(deviceClass);
-          }
-        } catch (apiError) {
-          console.log('Falling back to default requirements');
-          setDefaultRequirements(deviceClass);
-        }
+        const profiles = await FDA510kService.DeviceProfileAPI.list(organizationId);
+        setDeviceProfiles(profiles || []);
       } catch (error) {
-        console.error('Error handling 510(k) requirements:', error);
-        setDefaultRequirements(defaultDeviceClass);
+        console.error("Error fetching device profiles:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch device profiles",
+          variant: "destructive"
+        });
       }
     };
 
-    // Helper to set default requirements when API fails
-    const setDefaultRequirements = (deviceClass) => {
-      const defaultReqs = {
-        'I': [
-          { id: 'basic-info', title: 'Basic Device Information', required: true },
-          { id: 'device-description', title: 'Device Description', required: true },
-          { id: 'performance-data', title: 'Performance Data', required: true },
-          { id: 'labeling', title: 'Labeling', required: true }
-        ],
-        'II': [
-          { id: 'basic-info', title: 'Basic Device Information', required: true },
-          { id: 'device-description', title: 'Device Description', required: true },
-          { id: 'performance-data', title: 'Performance Data', required: true },
-          { id: 'substantial-equivalence', title: 'Substantial Equivalence', required: true },
-          { id: 'labeling', title: 'Labeling', required: true },
-          { id: 'sterilization', title: 'Sterilization', required: false },
-          { id: 'biocompatibility', title: 'Biocompatibility', required: false }
-        ],
-        'III': [
-          { id: 'basic-info', title: 'Basic Device Information', required: true },
-          { id: 'device-description', title: 'Device Description', required: true },
-          { id: 'performance-data', title: 'Performance Data', required: true },
-          { id: 'substantial-equivalence', title: 'Substantial Equivalence', required: true },
-          { id: 'clinical-data', title: 'Clinical Data', required: true },
-          { id: 'labeling', title: 'Labeling', required: true },
-          { id: 'sterilization', title: 'Sterilization', required: true },
-          { id: 'biocompatibility', title: 'Biocompatibility', required: true },
-          { id: 'manufacturing', title: 'Manufacturing Information', required: true }
-        ]
-      };
-      
-      setRequirements(defaultReqs[deviceClass] || defaultReqs['II']);
-    };
+    fetchDeviceProfiles();
+  }, [organizationId, toast]);
 
-    loadRequirements();
-  }, [currentDeviceProfile, currentOrganization, defaultDeviceClass]);
-
-  // Handle device profile form submission
-  const handleSubmitDeviceProfile = async (data) => {
+  // Handle device profile creation
+  const handleCreateDeviceProfile = async (profileData) => {
     try {
-      // Show progress and clear errors
-      setAiProcessing(true);
-      setErrorMessage('');
-      
-      // Call API to save the device profile
-      const response = await postDeviceProfile(data);
-      
-      // Update state with the new device profile
-      setCurrentDeviceProfile(response);
-      setDeviceProfileSubmitted(true);
-      
-      // Close the dialog
+      const newProfile = await FDA510kService.DeviceProfileAPI.create(profileData, organizationId);
+      setDeviceProfiles(prev => [...prev, newProfile]);
+      setSelectedDeviceProfile(newProfile);
       setDeviceProfileDialogOpen(false);
       
-      // Refresh the device profiles list
-      refetchProfiles();
-      
-      // Show success toast
       toast({
-        title: "Device Profile Saved",
-        description: `${data.deviceName} has been successfully saved.`,
+        title: "Success",
+        description: "Device profile created successfully",
       });
       
-      // Show success insights
-      setAiInsights([
-        {
-          id: 'device-profile-1',
-          type: 'device',
-          name: data.deviceName,
-          deviceClass: data.deviceClass,
-          timestamp: new Date().toISOString()
-        },
-        ...aiInsights
-      ]);
-      
-      // Auto-navigate to pipeline view
-      setWorkflowSubTab('pipeline');
+      // Load requirements for the device class
+      if (newProfile.deviceClass) {
+        await loadRequirements(newProfile.deviceClass);
+      }
       
     } catch (error) {
-      console.error('Error saving device profile:', error);
-      setErrorMessage(error.message || 'Failed to save device profile');
+      console.error("Error creating device profile:", error);
       toast({
-        title: "Error Saving Profile",
-        description: error.message || 'Failed to save device profile',
-        variant: "destructive",
+        title: "Error",
+        description: "Failed to create device profile",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Load requirements based on device class
+  const loadRequirements = async (deviceClass) => {
+    try {
+      setLoadingRequirements(true);
+      const response = await FDA510kService.getRequirements(deviceClass);
+      setRequirements(response.requirements || []);
+    } catch (error) {
+      console.error("Error loading requirements:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load requirements for this device class",
+        variant: "destructive"
       });
     } finally {
-      setAiProcessing(false);
+      setLoadingRequirements(false);
     }
   };
-  
-  // Handle selection of a device profile
+
+  // Handle device profile selection
   const handleSelectDeviceProfile = (profile) => {
-    setCurrentDeviceProfile(profile);
+    setSelectedDeviceProfile(profile);
     
-    // Show success toast
-    toast({
-      title: "Device Profile Selected",
-      description: `${profile.deviceName} is now the active device for your 510(k) submission.`,
-    });
-    
-    // Update insights
-    const existingInsight = aiInsights.find(insight => 
-      insight.type === 'device' && insight.name === profile.deviceName
-    );
-    
-    if (!existingInsight) {
-      setAiInsights([
-        {
-          id: `device-profile-${Date.now()}`,
-          type: 'device',
-          name: profile.deviceName,
-          deviceClass: profile.deviceClass,
-          timestamp: new Date().toISOString()
-        },
-        ...aiInsights
-      ]);
+    if (profile.deviceClass) {
+      loadRequirements(profile.deviceClass);
     }
     
-    // Auto-navigate to pipeline view 
-    setWorkflowSubTab('pipeline');
+    toast({
+      title: "Profile Selected",
+      description: `Selected ${profile.deviceName}`
+    });
   };
-  
-  // Handle running different pipeline steps with real API integration
-  const handleRunPipeline = async (step) => {
-    // Set up friendly step names for toast messages
-    const stepNames = {
-      'ingestDeviceProfile': 'Device Profile Intake',
-      'findPredicatesAndLiterature': 'Predicate & Literature Discovery',
-      'adviseRegulatoryPathway': 'Regulatory Pathway Analysis',
-      'draftSectionsWithAI': 'Content Generation',
-      'runComplianceChecks': 'Compliance Check'
-    };
-    console.log(`Running 510(k) pipeline step: ${step}`);
-    
-    // For device profile step, open the dialog instead of running the pipeline
-    if (step === 'ingestDeviceProfile') {
-      setDeviceProfileDialogOpen(true);
+
+  // Find predicate devices
+  const handleFindPredicateDevices = async () => {
+    if (!selectedDeviceProfile) {
+      toast({
+        title: "Error",
+        description: "Please select a device profile first",
+        variant: "destructive"
+      });
       return;
     }
     
-    // Reset any previous errors
-    setErrorMessage('');
-    
-    // Show status toast to provide immediate feedback
-    toast({
-      title: `Starting ${stepNames[step] || 'Process'}`,
-      description: `Initializing ${stepNames[step] || step} workflow...`,
-    });
-    
-    // Log information for debugging
-    console.log(`Processing step ${step}`, {
-      deviceProfile: currentDeviceProfile ? currentDeviceProfile.deviceName : 'None selected',
-      organization: currentOrganization?.id || 'None'
-    });
-    
-    // Start progress indicator
-    setAiProcessing(true);
-    setProgress(0);
-    
-    // Simulate progress animation with timeout safety
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 98) {
-          // Hold at 98% until API response comes back
-          return 98;
-        }
-        return prev + (98 - prev) * 0.1;
+    try {
+      setLoadingPredicates(true);
+      setCurrentStep('predicate-finder');
+      
+      const predicateResponse = await FDA510kService.findPredicateDevices({
+        deviceName: selectedDeviceProfile.deviceName,
+        productCode: selectedDeviceProfile.productCode,
+        manufacturer: selectedDeviceProfile.manufacturer,
+        intendedUse: selectedDeviceProfile.intendedUse
+      }, organizationId);
+      
+      if (predicateResponse.success) {
+        setPredicateDevices(predicateResponse.predicates || []);
+      } else {
+        toast({
+          title: "Warning",
+          description: "Could not find matching predicate devices",
+          variant: "destructive"
+        });
+        setPredicateDevices([]);
+      }
+    } catch (error) {
+      console.error("Error finding predicate devices:", error);
+      toast({
+        title: "Error",
+        description: "Failed to search for predicate devices",
+        variant: "destructive"
       });
-    }, 150);
-    
-    // Safety timeout to prevent progress getting stuck indefinitely
-    const safetyTimeout = setTimeout(() => {
-      clearInterval(interval);
-      // If we're still at 98% after 20 seconds, complete the progress
-      setProgress(current => {
-        if (current >= 98 && current < 100) {
-          console.log('Safety timeout triggered to complete progress');
-          return 100;
-        }
-        return current;
+    } finally {
+      setLoadingPredicates(false);
+    }
+  };
+
+  // Select/deselect predicate device
+  const togglePredicateSelection = (predicate) => {
+    setSelectedPredicates(prev => {
+      const isSelected = prev.some(p => p.id === predicate.id);
+      if (isSelected) {
+        return prev.filter(p => p.id !== predicate.id);
+      } else {
+        return [...prev, predicate];
+      }
+    });
+  };
+
+  // Move to compliance check step
+  const handleMoveToComplianceCheck = () => {
+    if (selectedPredicates.length === 0) {
+      toast({
+        title: "Warning",
+        description: "Please select at least one predicate device",
+        variant: "destructive"
       });
-      setAiProcessing(false);
-    }, 20000);
+      return;
+    }
+    
+    setCurrentStep('compliance-check');
+  };
+
+  // Run compliance check
+  const runComplianceCheck = async () => {
+    if (!selectedDeviceProfile || selectedPredicates.length === 0) {
+      toast({
+        title: "Error",
+        description: "Device profile and predicate devices are required",
+        variant: "destructive"
+      });
+      return;
+    }
     
     try {
-      let results;
+      setLoadingComplianceCheck(true);
       
-      // Select API call based on step
-      if (step === 'findPredicatesAndLiterature') {
-        // Verify we have a device profile selected
-        if (!currentDeviceProfile) {
-          toast({
-            title: "Missing Device Profile",
-            description: "Please select a device profile before searching for predicates",
-            variant: "destructive"
-          });
-          throw new Error("Please select a device profile before searching for predicates");
+      const complianceResponse = await FDA510kService.runComplianceCheck(
+        "temp-project-id", // This would be a real project ID in production
+        {
+          deviceProfile: selectedDeviceProfile,
+          predicateDevices: selectedPredicates,
+          requirementsChecked: true
         }
+      );
       
-        setIsSearchingPredicates(true);
-        
-        // Detailed logging for debugging
-        console.log('Starting predicate device search...', {
-          deviceProfile: {
-            id: currentDeviceProfile.id,
-            name: currentDeviceProfile.deviceName,
-            class: currentDeviceProfile.deviceClass,
-            indication: currentDeviceProfile.indication
-          },
-          organization: currentOrganization
-        });
-        
-        // Show toast notification for better UX
-        toast({
-          title: "Searching Predicate Devices",
-          description: `Finding similar devices for ${currentDeviceProfile.deviceName}...`,
-        });
-        
-        try {
-          // Use the actual API to find predicate devices
-          const predicateResponse = await FDA510kService.findPredicateDevices(
-            currentDeviceProfile, 
-            currentOrganization?.id
-          );
-          
-          // Log the API response for debugging
-          console.log('Predicate search response:', predicateResponse);
-          
-          if (!predicateResponse || !predicateResponse.success) {
-            throw new Error(predicateResponse?.message || "Failed to find predicate devices");
-          }
-          
-          // Handle different response formats
-          results = predicateResponse || {};
-          
-          // ==== ENHANCED RESPONSE DEBUGGING ====
-          console.log('Raw predicate search response:', results);
-          console.log('Response type:', typeof results);
-          console.log('Response keys:', Object.keys(results));
-          
-          // Handle the case where the entire response might be the nested structure
-          // (could happen with different API implementations)
-          if (!results.predicateDevices && !results.literatureReferences && results.success) {
-            console.warn('Response format different than expected - restructuring');
-            
-            // Common variations of response format
-            if (results.predicates && typeof results.predicates === 'object') {
-              console.log('Found predicates object:', results.predicates);
-              
-              // Extract predicateDevices from nested structure if they exist
-              if (results.predicates.predicateDevices) {
-                results.predicateDevices = results.predicates.predicateDevices;
-                console.log('Extracted predicateDevices from predicates object:', results.predicateDevices);
-              }
-              
-              // Extract literatureReferences from nested structure if they exist
-              if (results.predicates.literatureReferences) {
-                results.literatureReferences = results.predicates.literatureReferences;
-                console.log('Extracted literatureReferences from predicates object:', results.literatureReferences);
-              }
-            }
-          }
-          
-          // Store results for display in the UI - use the most specific data first
-          const foundDevices = results.predicateDevices || 
-            results.devices || 
-            (Array.isArray(results.predicates) ? results.predicates : []) ||
-            [];
-          
-          console.log('Found devices after normalization:', foundDevices);
-          console.log('Number of predicate devices found:', foundDevices.length);
-          
-          // Always set the results even if empty
-          setPredicateSearchResults(foundDevices);
-          
-          // Show toast notification with result count
-          toast({
-            title: "Search Complete",
-            description: `Found ${foundDevices.length} potential predicate devices`,
-            variant: foundDevices.length > 0 ? "default" : "warning"
-          });
-          
-          // Transform API results to insights format with enhanced debugging
-          const insights = [];
-          
-          // Add predicate devices to insights - with detailed logging
-          const predicateDevices = foundDevices; // Use already normalized devices
-          console.log('Processing predicate devices:', predicateDevices);
-          
-          // Force predicateDevices to be an array
-          const devicesArray = Array.isArray(predicateDevices) ? predicateDevices : 
-                              (predicateDevices ? [predicateDevices] : []);
-                              
-          console.log('Devices array has length:', devicesArray.length);
-          
-          if (devicesArray.length > 0) {
-            console.log(`Adding ${devicesArray.length} predicate devices to insights`);
-            devicesArray.forEach((device, index) => {
-              // Skip null or undefined entries
-              if (!device) {
-                console.warn(`Skipping null/undefined device at index ${index}`);
-                return;
-              }
-              
-              console.log(`Processing device ${index}:`, device);
-              
-              // Create the insight object with detailed logging
-              const insight = {
-                id: `pred-${Date.now()}-${index}`,
-                type: 'predicate', // This type MUST match the check in the insights section
-                name: device.deviceName || device.name || `Predicate Device ${index + 1}`,
-                manufacturer: device.manufacturer || device.company || 'Unknown Manufacturer',
-                confidence: device.matchScore || device.similarity_score || device.confidence || 0.85,
-                date: device.clearanceDate || device.clearance_date || device.date || '2023-10-15',
-                k_number: device.k_number || device.kNumber || device.id || `K${Math.floor(100000 + Math.random() * 900000)}`,
-                deviceClass: device.deviceClass || device.device_class || currentDeviceProfile.deviceClass,
-                description: device.description || device.matchRationale || ''
-              };
-              
-              // Ensure confidence is a number between 0 and 1
-              if (typeof insight.confidence !== 'number' || isNaN(insight.confidence)) {
-                insight.confidence = 0.85; // Default if not a valid number
-              }
-              
-              console.log(`Adding predicate device insight: ${insight.name}`);
-              insights.push(insight);
-            });
-          } else {
-            console.warn('No predicate devices found to add to insights');
-          }
-          
-          // Add literature references to insights with enhanced error handling
-          const literatureReferences = 
-            results.literatureReferences || 
-            results.literature || 
-            [];
-            
-          console.log('Processing literature references:', literatureReferences);
-          
-          // Force literatureReferences to be an array
-          const referencesArray = Array.isArray(literatureReferences) ? literatureReferences : 
-                                 (literatureReferences ? [literatureReferences] : []);
-                                 
-          console.log('References array has length:', referencesArray.length);
-          
-          if (referencesArray.length > 0) {
-            console.log(`Adding ${referencesArray.length} literature references to insights`);
-            referencesArray.forEach((reference, index) => {
-              // Skip null or undefined entries
-              if (!reference) {
-                console.warn(`Skipping null/undefined reference at index ${index}`);
-                return;
-              }
-              
-              console.log(`Processing reference ${index}:`, reference);
-              
-              // Create the insight object with detailed logging  
-              const insight = {
-                id: `lit-${Date.now()}-${index}`,
-                type: 'literature', // This type MUST match the check in the insights section
-                name: reference.title || `Literature Reference ${index + 1}`,
-                confidence: reference.relevanceScore || reference.relevance || reference.confidence || 0.8,
-                journal: reference.journal || reference.publication || 'Journal of Medical Devices',
-                url: reference.url || reference.link || null,
-                authors: reference.authors || (reference.author ? reference.author.split(',') : []),
-                year: reference.year || new Date().getFullYear(),
-                abstract: reference.abstract || ''
-              };
-              
-              // Ensure confidence is a number between 0 and 1
-              if (typeof insight.confidence !== 'number' || isNaN(insight.confidence)) {
-                insight.confidence = 0.8; // Default if not a valid number
-              }
-              
-              console.log(`Adding literature reference insight: ${insight.name}`);
-              insights.push(insight);
-            });
-          } else {
-            console.warn('No literature references found to add to insights');
-          }
-          
-          // Update insights state with the combined results
-          // Keep existing device profile insights
-          const deviceInsights = aiInsights.filter(i => i.type === 'device');
-          
-          // Add detailed logging for insights generation
-          console.log(`Total insights to add: ${insights.length}`);
-          console.log(`Current device insights: ${deviceInsights.length}`);
-          console.log(`Total insights after update: ${deviceInsights.length + insights.length}`);
-          
-          // Log the insights types being added
-          const typeBreakdown = {};
-          insights.forEach(insight => {
-            typeBreakdown[insight.type] = (typeBreakdown[insight.type] || 0) + 1;
-          });
-          console.log('Insights type breakdown:', typeBreakdown);
-          
-          // Verify that insights has the types expected by the rendering code
-          const hasPredicateInsights = insights.some(i => i.type === 'predicate');
-          const hasLiteratureInsights = insights.some(i => i.type === 'literature');
-          console.log('Contains predicate insights:', hasPredicateInsights);
-          console.log('Contains literature insights:', hasLiteratureInsights);
-          
-          // Only update if we have insights to add
-          if (insights.length > 0) {
-            // Create a new array with all insights
-            const updatedInsights = [...deviceInsights, ...insights];
-            console.log('Setting aiInsights with:', updatedInsights);
-            
-            // Force the state update with a new reference
-            setAiInsights(Array.from(updatedInsights));
-            
-            // Add a timeout before switching tabs to ensure state update completes
-            setTimeout(() => {
-              console.log('Switching to insights tab');
-              setActiveTab('insights');
-            }, 100);
-          } else {
-            console.warn('No insights were generated from the API response');
-            
-            // Show toast to inform the user
-            toast({
-              title: "No insights generated",
-              description: "The search completed but no insights were generated. Try modifying your device profile for better results.",
-              variant: "warning"
-            });
-          }
-        } catch (error) {
-          console.error('Predicate search failed:', error);
-          toast({
-            title: "Predicate Search Failed",
-            description: error.message || "An error occurred during the search",
-            variant: "destructive"
-          });
-          throw error;
-        } finally {
-          setIsSearchingPredicates(false);
-        }
-      } 
-      else if (step === 'adviseRegulatoryPathway') {
-        // Verify we have a device profile selected
-        if (!currentDeviceProfile) {
-          throw new Error("Please select a device profile before analyzing the regulatory pathway");
-        }
+      setComplianceResults(complianceResponse);
       
-        // Use the actual device profile data
-        const pathwayResponse = await FDA510kService.analyzeRegulatoryPathway(
-          currentDeviceProfile, 
-          currentOrganization?.id
-        );
-        results = pathwayResponse;
-        
-        // Transform pathway analysis to insights
-        const pathwayInsights = [
-          {
-            id: `reg-${Date.now()}`,
-            type: 'regulatory',
-            pathway: results.recommendedPathway || 'Traditional 510(k)',
-            confidence: results.confidenceScore || 0.94,
-            reasoning: results.rationale || `Based on ${currentDeviceProfile.deviceName}'s classification and intended use`,
-            device: currentDeviceProfile.deviceName
-          },
-          {
-            id: `time-${Date.now()}`,
-            type: 'timeline',
-            estimate: `${results.estimatedTimelineInDays || '90-120'} days`,
-            confidence: 0.85,
-            milestones: results.keyMilestones || [
-              { name: 'Submission Preparation', days: 30 },
-              { name: 'FDA Review Period', days: 60 },
-              { name: 'Response to FDA Questions', days: 15 },
-              { name: 'Final Decision', days: 15 }
-            ]
-          }
-        ];
-        
-        // Add any special requirements
-        if (results.specialRequirements && results.specialRequirements.length > 0) {
-          pathwayInsights.push({
-            id: `req-${Date.now()}`,
-            type: 'requirements',
-            items: results.specialRequirements
-          });
-        }
-        
-        // Update insights state while preserving device info and predicates
-        const existingInsights = aiInsights.filter(i => 
-          i.type === 'device' || i.type === 'predicate' || i.type === 'literature'
-        );
-        
-        setAiInsights([...existingInsights, ...pathwayInsights]);
-        
-        // Automatically switch to insights tab
-        setActiveTab('insights');
-      }
-      else if (step === 'draftSectionsWithAI') {
-        // Verify we have a device profile selected
-        if (!currentDeviceProfile) {
-          throw new Error("Please select a device profile before generating a 510(k) draft");
-        }
-        
-        try {
-          // Use the FDA510kService to create default sections for the 510(k) submission
-          const response = await FDA510kService.createDefaultSections(
-            currentDeviceProfile.id || "demo-project-id", 
-            currentOrganization?.id || 1
-          );
-          
-          console.log('Section generation response:', response);
-          
-          // Show success toast with more detailed information
-          toast({
-            title: "510(k) Draft Created",
-            description: `Generated draft with ${response.sections?.length || 'multiple'} sections for ${currentDeviceProfile.deviceName}`,
-          });
-          
-          // Add to insights
-          setAiInsights([
-            ...aiInsights.filter(i => i.type !== 'document'), // Remove previous document insights
-            {
-              id: `draft-${Date.now()}`,
-              type: 'document',
-              name: `${currentDeviceProfile.deviceName} 510(k) Draft`,
-              sections: response.sections?.length || 15,
-              completeness: response.completeness || 0.85,
-              timestamp: new Date().toISOString()
-            }
-          ]);
-          
-          // Navigate to the document tab to show the generated content
-          window.location.href = '/client-portal/510k?tab=documentEditor';
-        } catch (error) {
-          console.error('Error generating 510(k) draft:', error);
-          toast({
-            title: "Draft Generation Failed",
-            description: error.message || "Could not generate 510(k) draft sections",
-            variant: "destructive"
-          });
-          throw error;
-        }
-      }
-      else if (step === 'runComplianceChecks') {
-        // Verify we have a device profile selected
-        if (!currentDeviceProfile) {
-          toast({
-            title: "Missing Device Profile",
-            description: "Please select a device profile before running compliance checks",
-            variant: "destructive"
-          });
-          throw new Error("Please select a device profile before running compliance checks");
-        }
-        
-        // Add detailed console logging for compliance check
-        console.log('Starting compliance check...', {
-          deviceProfile: {
-            id: currentDeviceProfile.id,
-            name: currentDeviceProfile.deviceName,
-            class: currentDeviceProfile.deviceClass
-          },
-          organization: currentOrganization
-        });
-        
-        toast({
-          title: "Running Compliance Check",
-          description: `Analyzing ${currentDeviceProfile.deviceName} for regulatory compliance`,
-        });
-        
-        try {
-          // Use the actual device profile for compliance check
-          const complianceResponse = await FDA510kService.runComplianceCheck(
-            currentDeviceProfile, 
-            currentOrganization?.id
-          );
-          
-          // Log the API response for debugging
-          console.log('Compliance check response:', complianceResponse);
-          
-          if (!complianceResponse || !complianceResponse.success) {
-            throw new Error(complianceResponse?.message || "Failed to complete compliance check");
-          }
-          
-          // Create a structured validation insight with fallbacks for different response formats
-          const validationInsight = {
-            id: `validation-${Date.now()}`,
-            type: 'validation',
-            isValid: complianceResponse.isValid || complianceResponse.valid || false,
-            score: complianceResponse.score || complianceResponse.complianceScore || 0.75,
-            passedChecks: complianceResponse.passedChecks || complianceResponse.passedCheckCount || 0,
-            totalChecks: complianceResponse.totalChecks || complianceResponse.totalCheckCount || 1,
-            criticalIssues: complianceResponse.criticalIssues || complianceResponse.criticalCount || 0,
-            warnings: complianceResponse.warnings || complianceResponse.warningCount || 0,
-            errors: complianceResponse.errors || complianceResponse.errorCount || 0,
-            detailedChecks: Array.isArray(complianceResponse.detailedChecks) 
-              ? complianceResponse.detailedChecks 
-              : Array.isArray(complianceResponse.checks) 
-                ? complianceResponse.checks 
-                : [],
-            timestamp: complianceResponse.timestamp || new Date().toISOString(),
-            device: currentDeviceProfile.deviceName
-          };
-          
-          // Keep existing insights that aren't validation type, and add the new one
-          const existingInsights = aiInsights.filter(i => i.type !== 'validation');
-          setAiInsights([validationInsight, ...existingInsights]);
-          
-          // Show success toast
-          toast({
-            title: "Compliance Check Complete",
-            description: `Score: ${Math.round(validationInsight.score * 100)}% with ${validationInsight.warnings} warnings and ${validationInsight.errors} errors`,
-            variant: validationInsight.score > 0.8 ? "default" : "warning"
-          });
-          
-          // Automatically switch to insights tab
-          setActiveTab('insights');
-          
-          // Log successful completion
-          console.log('Compliance check completed successfully:', validationInsight);
-        } catch (error) {
-          console.error('Compliance check failed:', error);
-          toast({
-            title: "Compliance Check Failed",
-            description: error.message || "An error occurred during compliance check",
-            variant: "destructive"
-          });
-          throw error;
-        }
-      }
-      
-      // Complete progress and clear interval and timeout
-      clearInterval(interval);
-      clearTimeout(safetyTimeout);
-      setProgress(100);
-      
-      // Display success notification
-      console.log(`510(k) pipeline step completed: ${step}`);
+      toast({
+        title: "Compliance Check Complete",
+        description: `Found ${complianceResponse.issues?.length || 0} issues to address`
+      });
       
     } catch (error) {
-      // Handle API errors gracefully
-      console.error(`Error in 510(k) pipeline step ${step}:`, error);
-      setErrorMessage(error.message || 'An error occurred while processing your request');
-      
-      // Clear interval, timeout and reset progress
-      clearInterval(interval);
-      clearTimeout(safetyTimeout);
-      setProgress(0);
+      console.error("Error running compliance check:", error);
+      toast({
+        title: "Error",
+        description: "Failed to run compliance check",
+        variant: "destructive"
+      });
     } finally {
-      // Always reset processing state
-      setAiProcessing(false);
+      setLoadingComplianceCheck(false);
+    }
+  };
+
+  // Move to final review
+  const handleMoveToFinalReview = () => {
+    if (!complianceResults) {
+      toast({
+        title: "Warning",
+        description: "Please complete compliance check first",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setCurrentStep('final-review');
+  };
+
+  // Generate eSTAR package
+  const generateESTARPackage = async () => {
+    try {
+      setGeneratingEstar(true);
+      
+      // This would integrate with the real endpoints in production
+      const response = await FDA510kService.buildESTARPackage(
+        "temp-project-id", // This would be a real project ID in production
+        {
+          deviceProfile: selectedDeviceProfile,
+          predicateDevices: selectedPredicates,
+          complianceResults: complianceResults
+        }
+      );
+      
+      setEstarStatus(response);
+      
+      toast({
+        title: "eSTAR Package Generated",
+        description: "The 510(k) eSTAR package is ready for submission"
+      });
+      
+    } catch (error) {
+      console.error("Error generating eSTAR package:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate eSTAR package",
+        variant: "destructive"
+      });
+    } finally {
+      setGeneratingEstar(false);
     }
   };
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Device Profile Dialog */}
-      <Dialog open={deviceProfileDialogOpen} onOpenChange={setDeviceProfileDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Create Device Profile</DialogTitle>
-            <DialogDescription>
-              Enter information about your medical device to start the 510(k) submission process.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <DeviceProfileForm
-            initialData={currentDeviceProfile}
-            onSubmit={handleSubmitDeviceProfile}
-            onCancel={() => setDeviceProfileDialogOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 mb-2">
-          <h2 className="text-2xl font-semibold text-blue-700">510(k) Automation</h2>
-          <div className="bg-blue-100 rounded-full px-2 py-0.5 text-xs text-blue-700 font-medium">
-            FDA Submission
-          </div>
+    <div className="h-full flex flex-col bg-white border rounded-lg shadow">
+      <div className="border-b bg-white p-4 flex justify-between items-center sticky top-0 z-10">
+        <div className="flex items-center">
+          <FileCheck className="h-5 w-5 text-blue-600 mr-2" />
+          <h2 className="text-xl font-semibold text-gray-800">510(k) Automation Panel</h2>
         </div>
-        <Badge variant="outline" className="bg-indigo-50 text-indigo-800 border-indigo-200">
-          <Brain className="h-3.5 w-3.5 mr-1" /> AI-Powered
-        </Badge>
+        
+        <div className="flex space-x-2">
+          <Button variant="outline" size="sm">
+            <Info className="h-4 w-4 mr-1" />
+            Help
+          </Button>
+          <Button variant="outline" size="sm">
+            <Settings className="h-4 w-4 mr-1" />
+            Settings
+          </Button>
+        </div>
       </div>
       
-      <p className="text-gray-600 mb-6">
-        Streamline your FDA 510(k) submission process with our end-to-end automation pipeline.
-      </p>
-
-      <Tabs defaultValue="workflow" value={activeTab} onValueChange={setActiveTab} className="mb-6">
-        <TabsList className="bg-blue-50 p-1">
-          <TabsTrigger 
-            value="workflow" 
-            className="data-[state=active]:bg-white"
-            onClick={() => {
-              console.log('Workflow tab clicked, current activeTab:', activeTab);
-              // Force set to workflow even if it's already that value
-              setActiveTab('workflow');
-              console.log('Setting activeTab to workflow');
-            }}
-          >
-            <ListChecks className="h-4 w-4 mr-2" />
-            Workflow <span className="ml-1 text-xs text-blue-600">▶</span>
-          </TabsTrigger>
-          <TabsTrigger value="ai-tools" className="data-[state=active]:bg-white">
-            <Zap className="h-4 w-4 mr-2" />
-            AI Tools
-          </TabsTrigger>
-          <TabsTrigger value="insights" className="data-[state=active]:bg-white">
-            <Lightbulb className="h-4 w-4 mr-2" />
-            Insights
-            {aiInsights.length > 0 && (
-              <Badge variant="outline" className="ml-2 bg-blue-100 text-blue-800">
-                {aiInsights.length}
-              </Badge>
-            )}
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="workflow">
-          <div className="space-y-6">
-            {/* Device Management System - Unified Navigation Card */}
-            <div className="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden">
-              <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4 text-white">
-                <h3 className="text-xl font-semibold flex items-center">
-                  <Database className="h-5 w-5 mr-2" />
-                  Medical Device Submission Manager
-                </h3>
-                <p className="text-blue-100 text-sm mt-1">
-                  Unified system for managing your 510(k) device submission process
-                </p>
+      <Tabs defaultValue="workflow" value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        <div className="bg-gray-50 border-b px-4 pt-2">
+          <TabsList className="w-full bg-transparent gap-4">
+            <TabsTrigger value="workflow" className="data-[state=active]:bg-white">
+              <ListChecks className="h-4 w-4 mr-2" />
+              Workflow
+            </TabsTrigger>
+            <TabsTrigger value="templates" className="data-[state=active]:bg-white">
+              <FileText className="h-4 w-4 mr-2" />
+              Templates
+            </TabsTrigger>
+            <TabsTrigger value="ai-tools" className="data-[state=active]:bg-white">
+              <Brain className="h-4 w-4 mr-2" />
+              AI Tools
+            </TabsTrigger>
+            <TabsTrigger value="documentation" className="data-[state=active]:bg-white">
+              <BookOpen className="h-4 w-4 mr-2" />
+              Documentation
+            </TabsTrigger>
+          </TabsList>
+        </div>
+        
+        <TabsContent value="workflow" className="flex-1 p-4 overflow-auto m-0">
+          {currentStep === 'device-profile' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-medium">Device Profile</h3>
+                  <p className="text-sm text-gray-500">Step 1 of 4: Create or select a device profile for your submission</p>
+                </div>
+                <Badge variant="outline">Step 1</Badge>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-x divide-gray-100">
-                {/* COLUMN 1: Device Profile */}
-                <div className="p-4 bg-gradient-to-b from-blue-50 to-white">
-                  <div className="flex items-center mb-3">
-                    <div className="bg-blue-100 rounded-full p-2 mr-3">
-                      <FileText className="h-5 w-5 text-blue-700" />
+              {!selectedDeviceProfile ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Create Device Profile</CardTitle>
+                    <CardDescription>
+                      Start by creating a device profile for your 510(k) submission
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col items-center justify-center py-6">
+                    <div className="rounded-full bg-blue-50 p-4 mb-4">
+                      <FilePlus className="h-8 w-8 text-blue-500" />
                     </div>
-                    <div>
-                      <h4 className="font-medium text-blue-800">Device Profile</h4>
-                      <p className="text-xs text-blue-700">FDA Regulatory Information</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-3 border-l-2 border-blue-300 pl-3">
-                    Complete regulatory documentation with device classifications, intended use, and specifications for FDA submission.
-                  </p>
-                  <Button 
-                    size="sm" 
-                    className="w-full bg-blue-600 hover:bg-blue-700 mt-2"
-                    onClick={() => {
-                      // First switch to devices tab then focus on profiles
-                      setWorkflowSubTab('devices');
-                      
-                      // Provide visual feedback
-                      toast({
-                        title: "Device Profiles",
-                        description: "Loading device profile management view...",
-                      });
-                    }}
-                  >
-                    Manage Device Profiles
-                  </Button>
-                </div>
-                
-                {/* COLUMN 2: Device Setup */}
-                <div className="p-4 bg-gradient-to-b from-green-50 to-white relative">
-                  <div className="flex items-center mb-3">
-                    <div className="bg-green-100 rounded-full p-2 mr-3">
-                      <Settings className="h-5 w-5 text-green-700" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-green-800">Device Setup</h4>
-                      <p className="text-xs text-green-700">System Configuration</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-3 border-l-2 border-green-300 pl-3">
-                    System-level parameters and configuration that control how your device is processed in the platform.
-                  </p>
-                  <Button 
-                    size="sm" 
-                    className="w-full bg-green-600 hover:bg-green-700 mt-2"
-                    onClick={() => {
-                      if (!currentDeviceProfile) {
-                        // If no profile is selected, guide user to create/select one first
-                        toast({
-                          title: "Device Profile Required",
-                          description: "Please select or create a device profile first",
-                          variant: "warning",
-                        });
-                        
-                        // Switch to device profiles view
-                        setWorkflowSubTab('devices');
-                      } else {
-                        // If profile exists, proceed with configuration
-                        handleRunPipeline('ingestDeviceProfile');
-                        
-                        toast({
-                          title: "Device Setup",
-                          description: `Configuring setup for ${currentDeviceProfile.deviceName}`,
-                        });
-                      }
-                    }}
-                  >
-                    Configure Device Setup
-                  </Button>
-                </div>
-                
-                {/* COLUMN 3: Device Intake */}
-                <div className="p-4 bg-gradient-to-b from-purple-50 to-white">
-                  <div className="flex items-center mb-3">
-                    <div className="bg-purple-100 rounded-full p-2 mr-3">
-                      <Upload className="h-5 w-5 text-purple-700" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-purple-800">Device Intake</h4>
-                      <p className="text-xs text-purple-700">Onboarding Wizard</p>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-3 border-l-2 border-purple-300 pl-3">
-                    Step-by-step wizard for bringing a new device into the system, including data validation and enhancement.
-                  </p>
-                  <Button 
-                    size="sm" 
-                    className="w-full bg-purple-600 hover:bg-purple-700 mt-2"
-                    onClick={() => {
-                      // Device intake is for new devices that don't have profiles yet
-                      // So we show a dialog option
-                      
-                      // Check if we already have a device profile selected
-                      if (currentDeviceProfile) {
-                        toast({
-                          title: "Device Profile Exists",
-                          description: "You already have a device profile selected. Do you want to start a new profile instead?",
-                          variant: "default",
-                          action: (
-                            <ToastAction 
-                              altText="Create New" 
-                              onClick={() => setShowDeviceProfileDialog(true)}
-                            >
-                              Create New
-                            </ToastAction>
-                          ),
-                        });
-                      } else {
-                        // If no profile, jump straight to creation dialog
-                        setShowDeviceProfileDialog(true);
-                        
-                        toast({
-                          title: "Device Intake Started",
-                          description: "Please complete the device profile form to continue",
-                        });
-                      }
-                    }}
-                  >
-                    Start Device Intake
-                  </Button>
-                </div>
-              </div>
-            </div>
-            
-            {/* Workflow Navigation Tabs */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white border-b border-blue-800">
-                <h3 className="font-medium">510(k) Submission Progress</h3>
-              </div>
-              <div className="p-4">
-                <Tabs value={workflowSubTab} onValueChange={setWorkflowSubTab} className="mb-2">
-                  <TabsList className="w-full bg-blue-50 p-1">
-                    <TabsTrigger value="devices" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-blue-700">
-                      <Database className="h-4 w-4 mr-2" />
-                      1. Device Profile
-                    </TabsTrigger>
-                    <TabsTrigger value="predicates" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-blue-700">
-                      <Search className="h-4 w-4 mr-2" />
-                      2. Predicate Finder
-                    </TabsTrigger>
-                    <TabsTrigger value="status" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-blue-700">
-                      <Shield className="h-4 w-4 mr-2" />
-                      3. Compliance Check
-                    </TabsTrigger>
-                    <TabsTrigger value="pipeline" className="flex-1 py-2 data-[state=active]:bg-white data-[state=active]:text-blue-700">
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      4. Final Review
-                    </TabsTrigger>
-                  </TabsList>
-                </Tabs>
-              </div>
-            </div>
-          
-            {workflowSubTab === 'pipeline' && (
-              <div className="space-y-6">
-                <Card className="shadow-md border-0 overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-white">
-                    <h3 className="text-lg font-medium flex items-center">
-                      <CheckCircle className="h-5 w-5 mr-2" /> 
-                      Final Review & eSTAR Generation
-                    </h3>
-                    <p className="text-blue-100 text-sm mt-1">
-                      Generate FDA-compliant 510(k) eSTAR submission packages with all required documentation
+                    <h4 className="text-lg font-medium mb-2">No Device Profile Selected</h4>
+                    <p className="text-center text-gray-500 mb-4 max-w-md">
+                      Create or select a device profile to begin your 510(k) submission workflow
                     </p>
-                  </div>
-                  
-                  <div className="p-6 bg-white">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <Card className="border shadow-sm hover:shadow-md transition-shadow">
-                        <CardHeader className="bg-gradient-to-r from-blue-50 to-white pb-3 border-b">
-                          <CardTitle className="text-blue-700 flex items-center text-base">
-                            <Database className="mr-2 h-5 w-5 text-blue-600" />
-                            1. Device Profile Status
-                          </CardTitle>
-                        </CardHeader>
-                  <CardContent className="pt-4">
-                    <p className="text-sm text-gray-600 mb-4">
-                      Provide basic device information or upload existing documentation to jump-start your 510(k) submission.
-                    </p>
-                    
-                    {currentDeviceProfile && (
-                      <div className="mt-4 p-3 bg-blue-50 rounded-md border border-blue-100">
-                        <div className="flex items-center">
-                          <Database className="h-4 w-4 text-blue-600 mr-2" />
-                          <span className="text-sm font-medium">Selected Device:</span>
+                    <Button onClick={() => setDeviceProfileDialogOpen(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create New Profile
+                    </Button>
+                  </CardContent>
+                  {deviceProfiles.length > 0 && (
+                    <CardFooter className="flex flex-col border-t pt-6">
+                      <h4 className="text-sm font-medium mb-3">Or select an existing profile:</h4>
+                      <div className="w-full space-y-2">
+                        {deviceProfiles.map(profile => (
+                          <div 
+                            key={profile.id}
+                            className="flex items-center justify-between p-3 border rounded hover:bg-gray-50 cursor-pointer"
+                            onClick={() => handleSelectDeviceProfile(profile)}
+                          >
+                            <div>
+                              <p className="font-medium">{profile.deviceName}</p>
+                              <p className="text-xs text-gray-500">
+                                {profile.manufacturer} • Class {profile.deviceClass}
+                              </p>
+                            </div>
+                            <Badge variant="outline">{profile.productCode || 'No Code'}</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    </CardFooter>
+                  )}
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <div className="flex justify-between">
+                        <CardTitle>Selected Device Profile</CardTitle>
+                        <Badge variant="outline">{selectedDeviceProfile.productCode || 'No Code'}</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-lg font-medium">{selectedDeviceProfile.deviceName}</h3>
+                          <p className="text-sm text-gray-500">
+                            {selectedDeviceProfile.manufacturer} • Class {selectedDeviceProfile.deviceClass}
+                          </p>
                         </div>
-                        <div className="mt-1 text-sm">{currentDeviceProfile.deviceName}</div>
-                        <div className="mt-1 flex gap-2">
-                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                            Class {currentDeviceProfile.deviceClass}
+                        
+                        <Separator />
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
+                          <div>
+                            <h4 className="text-sm font-medium">Device Type</h4>
+                            <p className="text-sm text-gray-600">{selectedDeviceProfile.deviceType || 'Not specified'}</p>
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-medium">Regulation Number</h4>
+                            <p className="text-sm text-gray-600">{selectedDeviceProfile.regulationNumber || 'Not specified'}</p>
+                          </div>
+                          <div className="col-span-2">
+                            <h4 className="text-sm font-medium">Intended Use</h4>
+                            <p className="text-sm text-gray-600">{selectedDeviceProfile.intendedUse || 'Not specified'}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="border-t flex justify-between">
+                      <Button variant="outline" onClick={() => setSelectedDeviceProfile(null)}>
+                        Change Profile
+                      </Button>
+                      <Button onClick={handleFindPredicateDevices}>
+                        Find Predicate Devices
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                  
+                  {loadingRequirements ? (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Loading Requirements</CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex justify-center py-6">
+                        <Progress value={45} className="w-3/4" />
+                      </CardContent>
+                    </Card>
+                  ) : requirements.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle>Device Class Requirements</CardTitle>
+                        <CardDescription>
+                          FDA requirements for {selectedDeviceProfile.deviceClass ? `Class ${selectedDeviceProfile.deviceClass}` : 'this device class'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-3">
+                          {requirements.slice(0, 5).map((req, index) => (
+                            <div key={index} className="flex items-start p-2 border rounded">
+                              <AlertCircle className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
+                              <div>
+                                <p className="text-sm font-medium">{req.title || 'Requirement Title'}</p>
+                                <p className="text-xs text-gray-500">{req.description || 'Requirement description would appear here.'}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          
+          {currentStep === 'predicate-finder' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-medium">Predicate Device Finder</h3>
+                  <p className="text-sm text-gray-500">Step 2 of 4: Identify appropriate predicate devices for your submission</p>
+                </div>
+                <Badge variant="outline">Step 2</Badge>
+              </div>
+              
+              {loadingPredicates ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Searching for Predicate Devices</CardTitle>
+                    <CardDescription>
+                      Finding devices with similar characteristics to use as predicates
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex flex-col items-center py-8">
+                    <Progress value={65} className="w-3/4 mb-6" />
+                    <p className="text-sm text-gray-500">Searching FDA database for matching devices...</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Select Predicate Devices</CardTitle>
+                      <CardDescription>
+                        Choose one or more predicate devices that are substantially equivalent to your device
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {predicateDevices.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-6">
+                          <AlertTriangle className="h-8 w-8 text-amber-500 mb-4" />
+                          <h4 className="text-lg font-medium mb-2">No Predicate Devices Found</h4>
+                          <p className="text-center text-gray-500 mb-4 max-w-md">
+                            We couldn't find any matching predicate devices. Try adjusting your device profile or search manually.
+                          </p>
+                          <Button variant="outline">
+                            <Search className="h-4 w-4 mr-2" />
+                            Manual Search
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3">
+                          {predicateDevices.map(predicate => (
+                            <div 
+                              key={predicate.id || predicate.k_number} 
+                              className={`flex items-start justify-between p-3 border rounded cursor-pointer ${
+                                selectedPredicates.some(p => p.id === predicate.id) ? 'border-blue-500 bg-blue-50' : 'hover:bg-gray-50'
+                              }`}
+                              onClick={() => togglePredicateSelection(predicate)}
+                            >
+                              <div className="flex items-start">
+                                <div className={`w-5 h-5 rounded-full border flex items-center justify-center mr-3 mt-1 ${
+                                  selectedPredicates.some(p => p.id === predicate.id) ? 'bg-blue-500 border-blue-500' : 'border-gray-300'
+                                }`}>
+                                  {selectedPredicates.some(p => p.id === predicate.id) && (
+                                    <Check className="h-3 w-3 text-white" />
+                                  )}
+                                </div>
+                                <div>
+                                  <p className="font-medium">{predicate.deviceName || 'Unnamed Device'}</p>
+                                  <p className="text-xs text-gray-500">
+                                    {predicate.manufacturer || 'Unknown'} • {predicate.k_number || 'No K-Number'}
+                                  </p>
+                                  <p className="text-xs text-gray-500 mt-1">{predicate.clearanceDate || 'No date'}</p>
+                                </div>
+                              </div>
+                              <Badge variant="outline">{predicate.productCode || 'No Code'}</Badge>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                    <CardFooter className="border-t flex justify-between">
+                      <Button variant="outline" onClick={() => setCurrentStep('device-profile')}>
+                        Back to Device Profile
+                      </Button>
+                      <Button 
+                        onClick={handleMoveToComplianceCheck}
+                        disabled={selectedPredicates.length === 0}
+                      >
+                        Continue to Compliance Check
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </div>
+              )}
+            </div>
+          )}
+          
+          {currentStep === 'compliance-check' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-medium">510(k) Compliance Check</h3>
+                  <p className="text-sm text-gray-500">Step 3 of 4: Verify submission compliance with FDA requirements</p>
+                </div>
+                <Badge variant="outline">Step 3</Badge>
+              </div>
+              
+              <Card>
+                <CardHeader>
+                  <CardTitle>Regulatory Compliance Check</CardTitle>
+                  <CardDescription>
+                    Verify your submission meets all FDA 510(k) requirements
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!complianceResults ? (
+                    <div className="flex flex-col items-center justify-center py-6">
+                      {loadingComplianceCheck ? (
+                        <>
+                          <Progress value={78} className="w-3/4 mb-6" />
+                          <p className="text-sm text-gray-500">Running 510(k) compliance verification...</p>
+                        </>
+                      ) : (
+                        <>
+                          <div className="rounded-full bg-amber-50 p-4 mb-4">
+                            <AlertCircle className="h-8 w-8 text-amber-500" />
+                          </div>
+                          <h4 className="text-lg font-medium mb-2">Ready to Check Compliance</h4>
+                          <p className="text-center text-gray-500 mb-6 max-w-md">
+                            Run an FDA regulatory compliance check to identify any issues with your submission
+                          </p>
+                          <Button onClick={runComplianceCheck}>
+                            <FileCheck className="h-4 w-4 mr-2" />
+                            Run Compliance Check
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                          {complianceResults.score >= 80 ? (
+                            <div className="flex items-center text-green-600">
+                              <CheckCircle2 className="h-5 w-5 mr-2" />
+                              <span className="font-medium">Submission Ready</span>
+                            </div>
+                          ) : complianceResults.score >= 60 ? (
+                            <div className="flex items-center text-amber-600">
+                              <AlertCircle className="h-5 w-5 mr-2" />
+                              <span className="font-medium">Minor Issues Found</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center text-red-600">
+                              <AlertTriangle className="h-5 w-5 mr-2" />
+                              <span className="font-medium">Major Issues Found</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center">
+                          <span className="text-sm font-medium mr-2">Compliance Score:</span>
+                          <Badge variant={complianceResults.score >= 80 ? 'default' : 'outline'} className="bg-blue-500">
+                            {complianceResults.score || 0}%
                           </Badge>
-                          {currentDeviceProfile.modelNumber && (
-                            <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200">
-                              {currentDeviceProfile.modelNumber}
-                            </Badge>
+                        </div>
+                      </div>
+                      
+                      <Separator />
+                      
+                      <div>
+                        <h4 className="text-sm font-medium mb-3">Issues to Address:</h4>
+                        <div className="space-y-3">
+                          {(complianceResults.issues || []).slice(0, 3).map((issue, index) => (
+                            <div key={index} className="p-3 border rounded">
+                              <div className="flex items-start">
+                                {issue.severity === 'high' ? (
+                                  <AlertTriangle className="h-5 w-5 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
+                                ) : issue.severity === 'medium' ? (
+                                  <AlertCircle className="h-5 w-5 text-amber-500 mr-2 flex-shrink-0 mt-0.5" />
+                                ) : (
+                                  <Info className="h-5 w-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" />
+                                )}
+                                <div>
+                                  <p className="text-sm font-medium">{issue.title || `Issue #${index + 1}`}</p>
+                                  <p className="text-xs text-gray-500">{issue.description || 'No description provided'}</p>
+                                  {issue.recommendation && (
+                                    <p className="text-xs text-blue-600 mt-1">
+                                      <span className="font-medium">Recommendation:</span> {issue.recommendation}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                          {(complianceResults.issues || []).length > 3 && (
+                            <p className="text-sm text-gray-500 text-center">
+                              +{(complianceResults.issues || []).length - 3} more issues to address
+                            </p>
+                          )}
+                          {(complianceResults.issues || []).length === 0 && (
+                            <div className="flex items-center justify-center py-4">
+                              <CheckCircle2 className="h-5 w-5 text-green-500 mr-2" />
+                              <p className="text-sm text-gray-600">No issues found. Your submission is compliant!</p>
+                            </div>
                           )}
                         </div>
                       </div>
-                    )}
-                  </CardContent>
-                  <CardFooter className="border-t bg-gray-50 py-2 px-4">
-                    <Button 
-                      onClick={() => handleRunPipeline('ingestDeviceProfile')}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      {currentDeviceProfile ? "Change Device Profile" : "Select Device Profile"}
-                    </Button>
-                  </CardFooter>
-                </Card>
-
-                <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
-                  <CardHeader className="bg-white border-b border-green-100 pb-2">
-                    <CardTitle className="flex items-center text-green-700">
-                      <Search className="mr-2 h-5 w-5 text-green-600" />
-                      2. Predicate & Literature Discovery
-                    </CardTitle>
-                    <CardDescription>
-                      Draft predicate list and literature search results.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <p className="text-sm text-gray-600 mb-4">
-                      Automatically discover potential predicate devices and relevant scientific literature for your submission.
-                    </p>
-                    
-                    {!currentDeviceProfile && (
-                      <Alert variant="warning" className="mb-4 bg-amber-50 text-amber-800 border-amber-200">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Device Profile required</AlertTitle>
-                        <AlertDescription>
-                          Please select or create a Device Profile before running the predicate finder.
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                    
-                    {predicateSearchResults.length > 0 && (
-                      <div className="mt-4 bg-green-50 rounded-md border border-green-100 p-3">
-                        <div className="flex items-center mb-2">
-                          <Search className="h-4 w-4 text-green-600 mr-2" />
-                          <span className="text-sm font-medium text-green-800">Found {predicateSearchResults.length} potential predicates</span>
-                        </div>
-                        <div className="text-xs text-green-700">
-                          Click "View Insights" to see detailed results
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                  <CardFooter className="border-t bg-gray-50 py-2 px-4 flex justify-between">
-                    <Button 
-                      onClick={() => handleRunPipeline('findPredicatesAndLiterature')}
-                      className="bg-green-600 hover:bg-green-700"
-                      disabled={aiProcessing || !currentDeviceProfile}
-                    >
-                      {isSearchingPredicates ? (
+                    </div>
+                  )}
+                </CardContent>
+                <CardFooter className="border-t flex justify-between">
+                  <Button variant="outline" onClick={() => setCurrentStep('predicate-finder')}>
+                    Back to Predicates
+                  </Button>
+                  <Button 
+                    onClick={handleMoveToFinalReview} 
+                    disabled={!complianceResults}
+                  >
+                    Continue to Final Review
+                    <ArrowRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            </div>
+          )}
+          
+          {currentStep === 'final-review' && (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h3 className="text-lg font-medium">Final Review & eSTAR Generation</h3>
+                  <p className="text-sm text-gray-500">Step 4 of 4: Generate your FDA-compliant 510(k) eSTAR package</p>
+                </div>
+                <Badge variant="outline">Step 4</Badge>
+              </div>
+              
+              <Card className="border-blue-100">
+                <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+                  <CardTitle className="text-white flex items-center">
+                    <CheckCircle className="h-5 w-5 mr-2" /> 
+                    510(k) eSTAR Package
+                  </CardTitle>
+                  <CardDescription className="text-blue-100">
+                    Generate your FDA-compliant 510(k) eSTAR submission package
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  {!estarStatus ? (
+                    <div className="flex flex-col items-center justify-center py-6">
+                      {generatingEstar ? (
                         <>
-                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Processing...
+                          <Progress value={85} className="w-3/4 mb-6" />
+                          <p className="text-sm text-gray-500">Generating eSTAR package...</p>
                         </>
                       ) : (
-                        "Run Predicate Finder"
-                      )}
-                    </Button>
-                    
-                    <div className="flex space-x-2">
-                      {predicateSearchResults.length > 0 && (
-                        <Button 
-                          variant="outline"
-                          onClick={() => setActiveTab('insights')}
-                          className="ml-2"
-                        >
-                          View Insights
-                        </Button>
-                      )}
-                      
-                      {/* AI Recommendations Button */}
-                      <Button 
-                        variant="outline"
-                        onClick={() => {
-                          // Define the function to handle recommendations
-                          const handleGetRecommendations = async () => {
-                            if (!currentDeviceProfile) {
-                              toast({
-                                title: "No Device Profile Selected",
-                                description: "Please select a device profile before getting recommendations",
-                                variant: "destructive"
-                              });
-                              return;
-                            }
+                        <>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full mb-6">
+                            <div className="border rounded p-4">
+                              <h4 className="text-sm font-medium mb-2 flex items-center">
+                                <Zap className="h-4 w-4 text-blue-500 mr-1" />
+                                Submission Summary
+                              </h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">Device Name:</span>
+                                  <span className="font-medium">{selectedDeviceProfile?.deviceName || 'Not specified'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">Device Class:</span>
+                                  <span className="font-medium">Class {selectedDeviceProfile?.deviceClass || 'II'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">Product Code:</span>
+                                  <span className="font-medium">{selectedDeviceProfile?.productCode || 'Not specified'}</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">Predicates:</span>
+                                  <span className="font-medium">{selectedPredicates.length} selected</span>
+                                </div>
+                              </div>
+                            </div>
                             
-                            try {
-                              setIsLoadingRecommendations(true);
-                              const recommendations = await FDA510kService.getRecommendations(currentDeviceProfile);
-                              setRecommendedPredicates(recommendations);
-                              
-                              toast({
-                                title: "Recommendations Generated",
-                                description: `Found ${recommendations.length} recommended predicate devices`,
-                                variant: "default"
-                              });
-                              
-                              // After loading recommendations, navigate to the predicates tab to view them
-                              setWorkflowSubTab('predicates');
-                              
-                            } catch (error) {
-                              console.error('Error getting recommendations:', error);
-                              toast({
-                                title: "Recommendation Generation Failed",
-                                description: error.message || "An error occurred while generating recommendations",
-                                variant: "destructive"
-                              });
-                            } finally {
-                              setIsLoadingRecommendations(false);
-                            }
-                          };
+                            <div className="border rounded p-4">
+                              <h4 className="text-sm font-medium mb-2 flex items-center">
+                                <FileCheck className="h-4 w-4 text-blue-500 mr-1" />
+                                Compliance Status
+                              </h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">Score:</span>
+                                  <span className="font-medium">{complianceResults?.score || 0}%</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">Issues:</span>
+                                  <span className="font-medium">{complianceResults?.issues?.length || 0} found</span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">Status:</span>
+                                  <span className={`font-medium ${complianceResults?.score >= 80 ? 'text-green-600' : 'text-amber-600'}`}>
+                                    {complianceResults?.score >= 80 ? 'Ready' : 'Needs Attention'}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between">
+                                  <span className="text-gray-500">Last Check:</span>
+                                  <span className="font-medium">Just now</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                           
-                          // Call the function
-                          handleGetRecommendations();
-                        }}
-                        className="ml-2"
-                        disabled={isLoadingRecommendations || !currentDeviceProfile}
-                      >
-                        {isLoadingRecommendations ? (
-                          <>
-                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Getting Recommendations...
-                          </>
-                        ) : (
-                          <>
-                            <Lightbulb className="mr-1 h-4 w-4" />
-                            AI Recommendations
-                          </>
-                        )}
-                      </Button>
-                      
-                      <Button 
-                        variant="outline"
-                        onClick={() => setWorkflowSubTab('predicates')}
-                        className="ml-2"
-                        disabled={!currentDeviceProfile}
-                      >
-                        <FileText className="mr-1 h-4 w-4" />
-                        View NLP Summaries
-                      </Button>
-                    </div>
-                  </CardFooter>
-                </Card>
-                
-                <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
-                  <CardHeader className="bg-gradient-to-r from-purple-50 to-white pb-2">
-                    <CardTitle className="flex items-center text-purple-700">
-                      <FilePlus className="mr-2 h-5 w-5 text-purple-600" />
-                      3. One-Click 510(k) Draft
-                    </CardTitle>
-                    <CardDescription>
-                      AI-draft all required sections and assemble eSTAR package.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <p className="text-sm text-gray-600 mb-4">
-                      Generate a complete draft of your 510(k) submission with all required sections, formatted according to FDA guidelines.
-                    </p>
-                    
-                    {!currentDeviceProfile && (
-                      <Alert variant="warning" className="mb-4 bg-amber-50 text-amber-800 border-amber-200">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Device Profile required</AlertTitle>
-                        <AlertDescription>
-                          Please select or create a Device Profile before generating a draft.
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                  </CardContent>
-                  <CardFooter className="border-t bg-gray-50 py-2 px-4">
-                    <Button 
-                      onClick={() => handleRunPipeline('draftSectionsWithAI')}
-                      className="bg-purple-600 hover:bg-purple-700"
-                      disabled={!currentDeviceProfile}
-                    >
-                      <ArrowRight className="h-4 w-4 mr-2" />
-                      One-Click 510(k) Draft
-                    </Button>
-                  </CardFooter>
-                </Card>
-                
-                <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
-                  <CardHeader className="bg-gradient-to-r from-red-50 to-white pb-2">
-                    <CardTitle className="flex items-center text-red-700">
-                      <Shield className="mr-2 h-5 w-5 text-red-600" />
-                      4. Compliance Checker
-                    </CardTitle>
-                    <CardDescription>
-                      Validate against FDA requirements.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <p className="text-sm text-gray-600 mb-4">
-                      AI-powered checks verify that your submission meets all FDA requirements and is ready for submission.
-                    </p>
-                    
-                    {!currentDeviceProfile && (
-                      <Alert variant="warning" className="mb-4 bg-amber-50 text-amber-800 border-amber-200">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Device Profile required</AlertTitle>
-                        <AlertDescription>
-                          Please select or create a Device Profile first.
-                        </AlertDescription>
-                      </Alert>
-                    )}
-                  </CardContent>
-                  <CardFooter className="border-t bg-gray-50 py-2 px-4">
-                    <Button 
-                      onClick={() => handleRunPipeline('runComplianceChecks')}
-                      className="bg-red-600 hover:bg-red-700"
-                      disabled={!currentDeviceProfile}
-                    >
-                      <Shield className="h-4 w-4 mr-2" />
-                      Run Compliance Check
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            )}
-            
-            {workflowSubTab === 'devices' && (
-              <div className="space-y-5">
-                <Card className="border-0 shadow-md overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-5">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-xl font-semibold flex items-center">
-                          <FileText className="h-5 w-5 mr-2" />
-                          510(k) Device Profile Manager
-                        </h3>
-                        <p className="text-blue-100 mt-1">
-                          <span className="font-medium">REQUIRED FIRST STEP:</span> Create or select a device profile to begin your FDA 510(k) submission
-                        </p>
-                      </div>
-                      
-                      <div>
-                        <div className="inline-flex items-center bg-blue-500 hover:bg-blue-600 text-white rounded-md px-3 py-2 transition shadow-sm">
-                          <PlusCircle className="h-4 w-4 mr-2" />
-                          <button 
-                            onClick={() => setShowDeviceProfileDialog(true)}
-                            className="font-medium"
-                          >
-                            Begin New 510(k) Submission
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex mt-5 space-x-3">
-                      <Badge className="bg-blue-500 hover:bg-blue-400">Total: {deviceProfiles?.length || 0}</Badge>
-                      <Badge className="bg-blue-500 hover:bg-blue-400">Class I: {deviceProfiles?.filter(p => p.deviceClass === "I").length || 0}</Badge>
-                      <Badge className="bg-blue-500 hover:bg-blue-400">Class II: {deviceProfiles?.filter(p => p.deviceClass === "II").length || 0}</Badge>
-                      <Badge className="bg-blue-500 hover:bg-blue-400">Class III: {deviceProfiles?.filter(p => p.deviceClass === "III").length || 0}</Badge>
-                      
-                      <div className="flex-1"></div>
-                      
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
-                        className="text-blue-100 hover:text-white hover:bg-blue-500"
-                        onClick={refetchProfiles}
-                      >
-                        <RefreshCw className="h-3.5 w-3.5 mr-1" />
-                        Refresh List
-                      </Button>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-white p-6">
-                    {isLoadingProfiles ? (
-                      <div className="text-center p-8">
-                        <svg className="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        <p className="mt-4 text-gray-600">Loading device profiles...</p>
-                      </div>
-                    ) : isProfileError ? (
-                      <Alert variant="destructive" className="mb-4">
-                        <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Error loading profiles</AlertTitle>
-                        <AlertDescription>
-                          There was a problem loading your device profiles. Please try again.
-                        </AlertDescription>
-                      </Alert>
-                    ) : deviceProfiles && deviceProfiles.length > 0 ? (
-                      <ScrollArea className="h-[400px] rounded-md border">
-                        <div className="p-4">
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Device Name</TableHead>
-                                <TableHead>Class</TableHead>
-                                <TableHead>Manufacturer</TableHead>
-                                <TableHead>Last Updated</TableHead>
-                                <TableHead className="text-right">Actions</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {deviceProfiles.map(profile => (
-                                <TableRow key={profile.id} className="cursor-pointer hover:bg-blue-50" onClick={() => handleSelectDeviceProfile(profile)}>
-                                  <TableCell className="font-medium">{profile.deviceName}</TableCell>
-                                  <TableCell>
-                                    <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">
-                                      Class {profile.deviceClass}
-                                    </Badge>
-                                  </TableCell>
-                                  <TableCell>{profile.manufacturer || '-'}</TableCell>
-                                  <TableCell className="text-gray-500 text-sm">
-                                    {profile.updatedAt ? formatDistanceToNow(new Date(profile.updatedAt), { addSuffix: true }) : 'N/A'}
-                                  </TableCell>
-                                  <TableCell className="text-right">
-                                    <div className="flex justify-end space-x-2">
-                                      <Button 
-                                        variant="ghost" 
-                                        size="icon" 
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          setWorkflowSubTab('predicates');
-                                          handleSelectDeviceProfile(profile);
-                                        }}
-                                      >
-                                        <ChevronRight className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                      </ScrollArea>
-                    ) : (
-                      <div className="text-center p-8 bg-blue-50 rounded-md border border-blue-100">
-                        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mb-4">
-                          <FileText className="h-6 w-6 text-blue-600" />
-                        </div>
-                        <h3 className="text-lg font-medium text-blue-800">Setup Required</h3>
-                        <p className="mt-2 text-sm text-blue-600 max-w-md mx-auto">
-                          To begin your FDA 510(k) submission, you must first create a device profile with essential information about your medical device.
-                        </p>
-                        <div className="mt-6">
-                          <Button
-                            onClick={() => setShowDeviceProfileDialog(true)}
-                            className="bg-blue-600 hover:bg-blue-700"
-                          >
-                            <PlusCircle className="h-4 w-4 mr-2" />
-                            Create First Device Profile
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {currentDeviceProfile && (
-                    <div className="bg-blue-50 px-6 py-4 border-t border-blue-100">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center">
-                          <div className="bg-blue-100 p-2 rounded-full mr-3">
-                            <CheckCircle className="h-4 w-4 text-blue-700" />
+                          <div className="w-full space-y-4">
+                            <Alert className="bg-blue-50 border-blue-100">
+                              <FileCheck className="h-4 w-4 text-blue-600" />
+                              <AlertTitle className="text-blue-800">Ready to Generate eSTAR Package</AlertTitle>
+                              <AlertDescription className="text-blue-800">
+                                Your 510(k) submission has passed all required checks and is ready for eSTAR package generation.
+                              </AlertDescription>
+                            </Alert>
+                            
+                            <div className="flex justify-center">
+                              <Button onClick={generateESTARPackage} className="bg-blue-600 hover:bg-blue-700">
+                                <FileCheck className="h-4 w-4 mr-2" />
+                                Generate eSTAR Package
+                              </Button>
+                            </div>
                           </div>
-                          <div>
-                            <p className="font-medium text-blue-800">Selected Device: {currentDeviceProfile.deviceName}</p>
-                            <p className="text-sm text-blue-600">
-                              Class {currentDeviceProfile.deviceClass}{currentDeviceProfile.manufacturer ? ` • ${currentDeviceProfile.manufacturer}` : ''}
-                            </p>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <Alert className="bg-green-50 border-green-100">
+                        <CheckCircle2 className="h-4 w-4 text-green-600" />
+                        <AlertTitle className="text-green-800">eSTAR Package Generated Successfully</AlertTitle>
+                        <AlertDescription className="text-green-800">
+                          Your 510(k) eSTAR package has been generated and is ready for submission to the FDA.
+                        </AlertDescription>
+                      </Alert>
+                      
+                      <div className="border rounded-lg overflow-hidden">
+                        <div className="bg-gray-50 p-3 border-b">
+                          <h4 className="font-medium">eSTAR Package Details</h4>
+                        </div>
+                        <div className="p-4 space-y-4">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">Package ID:</span>
+                            <span className="font-medium">{estarStatus?.packageId || 'ESTAR-12345'}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">Generation Date:</span>
+                            <span className="font-medium">{new Date().toLocaleDateString()}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">Status:</span>
+                            <Badge variant="outline" className="bg-green-100 text-green-800 hover:bg-green-100">Ready for Submission</Badge>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-500">Validation:</span>
+                            <span className="font-medium text-green-600">Passed</span>
                           </div>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="border-blue-200 text-blue-700 hover:bg-blue-100"
-                          onClick={() => setWorkflowSubTab('predicates')}
-                        >
-                          <Search className="h-3.5 w-3.5 mr-1.5" />
-                          Find Predicates
+                      </div>
+                      
+                      <div className="flex justify-between">
+                        <Button variant="outline">
+                          <Download className="h-4 w-4 mr-2" />
+                          Download Package
+                        </Button>
+                        <Button className="bg-blue-600 hover:bg-blue-700">
+                          <ExternalLink className="h-4 w-4 mr-2" />
+                          Submit to FDA
                         </Button>
                       </div>
                     </div>
                   )}
-                </Card>
-                
-                {/* Device Profile Dialog for creating new profiles */}
-                {showDeviceProfileDialog && (
-                  <DeviceProfileDialog
-                    open={showDeviceProfileDialog}
-                    onOpenChange={setShowDeviceProfileDialog}
-                    onDeviceProfileCreated={(profile) => {
-                      setCurrentDeviceProfile(profile);
-                      setShowDeviceProfileDialog(false);
-                      toast({
-                        title: "Device Profile Created",
-                        description: `${profile.deviceName} profile has been created successfully.`
-                      });
-                    }}
-                  />
-                )}
-              </div>
-            )}
-            
-            {workflowSubTab === 'predicates' && (
-              <div className="space-y-5">
-                {currentDeviceProfile ? (
-                  <PredicateFinderPanel 
-                    deviceProfile={currentDeviceProfile}
-                    organizationId={currentOrganization?.id}
-                    predicates={predicateSearchResults}
-                    recommendations={recommendedPredicates}
-                  />
-                ) : (
-                  <Card className="shadow-md border-0 overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-white">
-                      <h3 className="text-lg font-medium flex items-center">
-                        <Search className="h-5 w-5 mr-2" /> 
-                        Predicate Device Search
-                      </h3>
-                      <p className="text-blue-100 text-sm mt-1">
-                        Find substantially equivalent devices for your 510(k) submission
-                      </p>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="templates" className="flex-1 p-4 overflow-auto m-0">
+          <div className="grid gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>510(k) Templates</CardTitle>
+                <CardDescription>
+                  Standard templates for FDA 510(k) submission documents
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="border rounded p-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer">
+                    <div className="flex items-center">
+                      <FileText className="h-5 w-5 text-blue-500 mr-3" />
+                      <div>
+                        <p className="font-medium">Traditional 510(k) Template</p>
+                        <p className="text-xs text-gray-500">Complete template for traditional 510(k) submissions</p>
+                      </div>
                     </div>
-                    
-                    <div className="p-6 bg-white">
-                      <Alert className="bg-amber-50 border-amber-200">
-                        <AlertTriangle className="h-4 w-4 text-amber-600" />
-                        <AlertTitle>Device Profile Required</AlertTitle>
-                        <AlertDescription>
-                          Please create or select a device profile first to enable predicate search functionality.
-                        </AlertDescription>
-                        <div className="mt-4">
-                          <Button 
-                            variant="default"
-                            size="sm"
-                            className="bg-blue-600 hover:bg-blue-700"
-                            onClick={() => setWorkflowSubTab('devices')}
-                          >
-                            <Database className="h-3.5 w-3.5 mr-1.5" />
-                            Go to Device Profiles
-                          </Button>
-                        </div>
-                      </Alert>
-                    </div>
-                  </Card>
-                )}
-              </div>
-            )}
-            
-            {workflowSubTab === 'status' && (
-              <div className="space-y-5">
-                <Card className="shadow-md border-0 overflow-hidden">
-                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 text-white">
-                    <h3 className="text-lg font-medium flex items-center">
-                      <Shield className="h-5 w-5 mr-2" /> 
-                      Compliance Verification Status
-                    </h3>
-                    <p className="text-blue-100 text-sm mt-1">
-                      Track and verify your 510(k) submission compliance with FDA requirements
-                    </p>
+                    <Button variant="outline" size="sm">Use Template</Button>
                   </div>
                   
-                  <div className="p-6 bg-white">
-                    <div className="space-y-6">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${currentDeviceProfile ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-500'}`}>
-                            {currentDeviceProfile ? (
-                              <Check className="h-6 w-6" />
-                            ) : (
-                              <span className="text-blue-700 font-medium">1</span>
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-800">Device Profile</div>
-                            <div className="text-sm text-gray-500">
-                              {currentDeviceProfile ? `${currentDeviceProfile.deviceName} (Class ${currentDeviceProfile.deviceClass})` : 'Not Started'}
-                            </div>
-                          </div>
-                        </div>
-                        {currentDeviceProfile ? (
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-medium">
-                            <Check className="h-3.5 w-3.5 mr-1" />
-                            Complete
-                          </Badge>
-                        ) : (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            className="bg-blue-600 hover:bg-blue-700"
-                            onClick={() => setWorkflowSubTab('devices')}
-                          >
-                            <Database className="h-3.5 w-3.5 mr-1.5" />
-                            Create Device Profile
-                          </Button>
-                        )}
-                      </div>
-                      
-                      <div className="h-10 border-l-2 border-dashed border-blue-200 ml-5"></div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-4 ${predicateSearchResults.length > 0 ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-500'}`}>
-                            {predicateSearchResults.length > 0 ? (
-                              <Check className="h-6 w-6" />
-                            ) : (
-                              <span className="text-blue-700 font-medium">2</span>
-                            )}
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-800">Predicate Device Search</div>
-                            <div className="text-sm text-gray-500">
-                              {predicateSearchResults.length > 0 
-                                ? `${predicateSearchResults.length} predicates found` 
-                                : 'Find substantially equivalent devices'}
-                            </div>
-                          </div>
-                        </div>
-                        {predicateSearchResults.length > 0 ? (
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 font-medium">
-                            <Check className="h-3.5 w-3.5 mr-1" />
-                            Complete
-                          </Badge>
-                        ) : (
-                          <Button
-                            variant="default"
-                            size="sm"
-                            className={currentDeviceProfile ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400"}
-                            onClick={() => setWorkflowSubTab('predicates')}
-                            disabled={!currentDeviceProfile}
-                          >
-                            <Search className="h-3.5 w-3.5 mr-1.5" />
-                            Find Predicates
-                          </Button>
-                        )}
-                      </div>
-                      
-                      <div className="h-10 border-l-2 border-dashed border-blue-200 ml-5"></div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center mr-4 bg-blue-100">
-                            <span className="text-blue-700 font-medium">3</span>
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-800">Compliance Verification</div>
-                            <div className="text-sm text-gray-500">
-                              AI-powered compliance checks with FDA requirements
-                            </div>
-                          </div>
-                        </div>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className={currentDeviceProfile && predicateSearchResults.length > 0 ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400"}
-                          disabled={!currentDeviceProfile || predicateSearchResults.length === 0}
-                          onClick={() => handleRunPipeline('runComplianceChecks')}
-                        >
-                          <Shield className="h-3.5 w-3.5 mr-1.5" />
-                          Run Compliance Check
-                        </Button>
-                      </div>
-                      
-                      <div className="h-10 border-l-2 border-dashed border-blue-200 ml-5"></div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 rounded-full flex items-center justify-center mr-4 bg-blue-100">
-                            <span className="text-blue-700 font-medium">4</span>
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-800">eSTAR Submission Document</div>
-                            <div className="text-sm text-gray-500">
-                              Generate FDA-compliant eSTAR submission package
-                            </div>
-                          </div>
-                        </div>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className={currentDeviceProfile && predicateSearchResults.length > 0 ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400"}
-                          disabled={!currentDeviceProfile || predicateSearchResults.length === 0}
-                          onClick={() => handleRunPipeline('generate510kSubmission')}
-                        >
-                          <FileText className="h-3.5 w-3.5 mr-1.5" />
-                          Generate eSTAR Package
-                        </Button>
+                  <div className="border rounded p-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer">
+                    <div className="flex items-center">
+                      <FileText className="h-5 w-5 text-blue-500 mr-3" />
+                      <div>
+                        <p className="font-medium">Abbreviated 510(k) Template</p>
+                        <p className="text-xs text-gray-500">Streamlined template for abbreviated submissions</p>
                       </div>
                     </div>
+                    <Button variant="outline" size="sm">Use Template</Button>
                   </div>
-                </Card>
-              </div>
-            )}
+                  
+                  <div className="border rounded p-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer">
+                    <div className="flex items-center">
+                      <FileText className="h-5 w-5 text-blue-500 mr-3" />
+                      <div>
+                        <p className="font-medium">Special 510(k) Template</p>
+                        <p className="text-xs text-gray-500">Template for device modifications</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm">Use Template</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </TabsContent>
         
-        <TabsContent value="ai-tools">
+        <TabsContent value="ai-tools" className="flex-1 p-4 overflow-auto m-0">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="shadow-sm hover:shadow-md transition-shadow">
               <CardHeader className="bg-gradient-to-r from-indigo-50 to-white pb-2">
                 <CardTitle className="flex items-center text-indigo-700">
                   <Search className="mr-2 h-5 w-5 text-indigo-600" />
-                  Smart Predicate Finder
+                  Predicate Finder
                 </CardTitle>
-                <CardDescription>
-                  AI-powered discovery of predicate devices
-                </CardDescription>
               </CardHeader>
               <CardContent className="pt-4">
                 <p className="text-sm text-gray-600 mb-4">
-                  Uses advanced machine learning to identify appropriate predicate devices based on your device characteristics.
+                  Find similar predicate devices for your 510(k) submission using AI-powered search
                 </p>
-                <Button
-                  onClick={() => handleRunPipeline('findPredicatesAndLiterature')}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700"
-                  disabled={isSearchingPredicates || !currentDeviceProfile}
-                >
-                  {isSearchingPredicates ? "Processing..." : "Run AI Analysis"}
+                <Button variant="outline" className="w-full">
+                  Launch Tool
                 </Button>
-                {!currentDeviceProfile && (
-                  <p className="text-xs text-amber-600 mt-2">
-                    Please select a device profile first
-                  </p>
-                )}
               </CardContent>
             </Card>
             
             <Card className="shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="bg-gradient-to-r from-teal-50 to-white pb-2">
-                <CardTitle className="flex items-center text-teal-700">
-                  <FileText className="mr-2 h-5 w-5 text-teal-600" />
-                  510(k) Content Assistant
+              <CardHeader className="bg-gradient-to-r from-indigo-50 to-white pb-2">
+                <CardTitle className="flex items-center text-indigo-700">
+                  <Bot className="mr-2 h-5 w-5 text-indigo-600" />
+                  Compliance Assistant
                 </CardTitle>
-                <CardDescription>
-                  AI writing and content generation
-                </CardDescription>
               </CardHeader>
               <CardContent className="pt-4">
                 <p className="text-sm text-gray-600 mb-4">
-                  Generates draft content for all required 510(k) sections based on your device specifications and intended use.
+                  Get AI recommendations for addressing compliance issues in your submission
                 </p>
-                <Button
-                  onClick={() => handleRunPipeline('draftSectionsWithAI')}
-                  className="w-full bg-teal-600 hover:bg-teal-700"
-                  disabled={aiProcessing || !currentDeviceProfile}
-                >
-                  {aiProcessing ? "Processing..." : "Launch Content Assistant"}
+                <Button variant="outline" className="w-full">
+                  Launch Tool
                 </Button>
-                {!currentDeviceProfile && (
-                  <p className="text-xs text-amber-600 mt-2">
-                    Please select a device profile first
-                  </p>
-                )}
               </CardContent>
             </Card>
             
             <Card className="shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="bg-gradient-to-r from-red-50 to-white pb-2">
-                <CardTitle className="flex items-center text-red-700">
-                  <FileCheck className="mr-2 h-5 w-5 text-red-600" />
-                  Compliance Checker
+              <CardHeader className="bg-gradient-to-r from-indigo-50 to-white pb-2">
+                <CardTitle className="flex items-center text-indigo-700">
+                  <Lightbulb className="mr-2 h-5 w-5 text-indigo-600" />
+                  Content Generator
                 </CardTitle>
-                <CardDescription>
-                  AI validation against FDA requirements
-                </CardDescription>
               </CardHeader>
               <CardContent className="pt-4">
                 <p className="text-sm text-gray-600 mb-4">
-                  Analyzes your 510(k) submission for compliance with FDA requirements and guidelines, identifying potential issues.
+                  Generate FDA-compliant content for sections of your 510(k) submission
                 </p>
-                <Button
-                  onClick={() => handleRunPipeline('runComplianceChecks')}
-                  className="w-full bg-red-600 hover:bg-red-700"
-                  disabled={aiProcessing || !currentDeviceProfile}
-                >
-                  {aiProcessing ? "Processing..." : "Check Compliance"}
+                <Button variant="outline" className="w-full">
+                  Launch Tool
                 </Button>
-                {!currentDeviceProfile && (
-                  <p className="text-xs text-amber-600 mt-2">
-                    Please select a device profile first
-                  </p>
-                )}
               </CardContent>
             </Card>
           </div>
         </TabsContent>
         
-        <TabsContent value="insights">
-          {aiInsights.length === 0 ? (
+        <TabsContent value="documentation" className="flex-1 p-4 overflow-auto m-0">
+          <div className="grid gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>No Insights Available</CardTitle>
+                <CardTitle>FDA Guidance Documents</CardTitle>
                 <CardDescription>
-                  Run the AI tools to generate insights about your 510(k) submission.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8">
-                  <Lightbulb className="h-16 w-16 text-amber-300 mx-auto mb-4" />
-                  <p className="text-gray-500">
-                    Use the Smart Predicate Finder or Content Assistant to generate insights.
-                  </p>
-                </div>
-                <Button onClick={() => setActiveTab('workflow')} variant="outline" className="mt-4">
-                  Go to Workflow
-                </Button>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-6">
-              {/* Validation & Compliance Insights */}
-              {aiInsights.some(i => i.type === 'validation') && (
-                <Card className="shadow-sm border-amber-100">
-                  <CardHeader className="bg-gradient-to-r from-amber-50 to-white">
-                    <CardTitle className="flex items-center text-amber-700">
-                      <FileCheck className="mr-2 h-5 w-5 text-amber-600" />
-                      Compliance Analysis
-                    </CardTitle>
-                    <CardDescription>
-                      Compliance check results for your 510(k) submission
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="space-y-4">
-                      {aiInsights
-                        .filter(i => i.type === 'validation')
-                        .map((insight, index) => (
-                          <div key={insight.id} className="space-y-4">
-                            <div className="bg-amber-50 rounded-md p-4 border border-amber-100">
-                              <div className="flex items-center justify-between mb-2">
-                                <h3 className="font-medium text-amber-800">Compliance Score</h3>
-                                <Badge 
-                                  variant="outline" 
-                                  className={
-                                    insight.score > 0.9 
-                                      ? "bg-green-100 text-green-700 border-green-200"
-                                      : insight.score > 0.7
-                                        ? "bg-amber-100 text-amber-700 border-amber-200"
-                                        : "bg-red-100 text-red-700 border-red-200"
-                                  }
-                                >
-                                  {Math.round(insight.score * 100)}%
-                                </Badge>
-                              </div>
-                              <div className="flex flex-col gap-2">
-                                <div className="flex justify-between text-sm text-amber-700">
-                                  <span>Total checks completed:</span>
-                                  <span className="font-medium">{insight.passedChecks} / {insight.totalChecks}</span>
-                                </div>
-                                
-                                <div className="flex justify-between text-sm text-amber-700">
-                                  <span>Critical issues:</span>
-                                  <span className={insight.criticalIssues > 0 ? "font-medium text-red-600" : "font-medium text-green-600"}>
-                                    {insight.criticalIssues}
-                                  </span>
-                                </div>
-                                
-                                <div className="flex justify-between text-sm text-amber-700">
-                                  <span>Warnings:</span>
-                                  <span className={insight.warnings > 0 ? "font-medium text-amber-600" : "font-medium text-green-600"}>
-                                    {insight.warnings}
-                                  </span>
-                                </div>
-                                
-                                {insight.errors > 0 && (
-                                  <div className="flex justify-between text-sm text-amber-700">
-                                    <span>Errors:</span>
-                                    <span className="font-medium text-red-600">
-                                      {insight.errors}
-                                    </span>
-                                  </div>
-                                )}
-                                
-                                <div className="mt-2">
-                                  <Progress 
-                                    value={(insight.passedChecks / insight.totalChecks) * 100} 
-                                    className="h-2"
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {insight.detailedChecks && insight.detailedChecks.length > 0 && (
-                              <div className="bg-white rounded-md border shadow-sm">
-                                <div className="p-3 border-b bg-gray-50">
-                                  <h4 className="font-medium">Detailed Check Results</h4>
-                                </div>
-                                <ScrollArea className="h-[300px]">
-                                  <div className="p-4 space-y-3">
-                                    {insight.detailedChecks
-                                      .filter(check => !check.passed)
-                                      .map((check, checkIndex) => (
-                                        <div 
-                                          key={checkIndex} 
-                                          className={`p-3 rounded-md ${
-                                            check.severity === 'error' 
-                                              ? 'bg-red-50 border border-red-100' 
-                                              : 'bg-amber-50 border border-amber-100'
-                                          }`}
-                                        >
-                                          <div className="flex items-start gap-3">
-                                            {check.severity === 'error' ? (
-                                              <AlertTriangle className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-                                            ) : (
-                                              <Info className="h-5 w-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                                            )}
-                                            <div>
-                                              <div className="font-medium">
-                                                {check.category}: {check.description}
-                                              </div>
-                                              {check.recommendation && (
-                                                <div className="text-sm mt-1">
-                                                  {check.recommendation}
-                                                </div>
-                                              )}
-                                            </div>
-                                          </div>
-                                        </div>
-                                      ))
-                                    }
-                                  </div>
-                                </ScrollArea>
-                              </div>
-                            )}
-                          </div>
-                        ))
-                      }
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              
-              {/* Device Profile Insights */}
-              {aiInsights.some(i => i.type === 'device') && (
-                <Card className="shadow-sm border-blue-100">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-white">
-                    <CardTitle className="flex items-center text-blue-700">
-                      <Database className="mr-2 h-5 w-5 text-blue-600" />
-                      Device Profile
-                    </CardTitle>
-                    <CardDescription>
-                      Your selected medical device profile for 510(k) submission
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="space-y-4">
-                      {aiInsights
-                        .filter(i => i.type === 'device')
-                        .map((insight, index) => (
-                          <div key={insight.id} className="bg-blue-50 rounded-md p-4 border border-blue-100">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-medium text-blue-800">{insight.name}</h3>
-                              <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
-                                Class {insight.deviceClass}
-                              </Badge>
-                            </div>
-                            <div className="text-sm text-blue-700">
-                              Added {new Date(insight.timestamp).toLocaleString()}
-                            </div>
-                          </div>
-                        ))
-                      }
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              
-              {/* Predicate Device Insights */}
-              {aiInsights.some(i => i.type === 'predicate') && (
-                <Card className="shadow-sm border-green-100">
-                  <CardHeader className="bg-gradient-to-r from-green-50 to-white">
-                    <CardTitle className="flex items-center text-green-700">
-                      <Search className="mr-2 h-5 w-5 text-green-600" />
-                      Predicate Devices
-                    </CardTitle>
-                    <CardDescription>
-                      Potential predicate devices for your 510(k) submission
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    {/* Predicate devices statistics dashboard */}
-                    <div className="grid grid-cols-3 gap-3 mb-6">
-                      <div className="bg-green-50 p-3 rounded-md border border-green-100 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-green-700">
-                          {aiInsights.filter(i => i.type === 'predicate').length}
-                        </span>
-                        <span className="text-xs text-green-600">Potential Predicates</span>
-                      </div>
-                      <div className="bg-green-50 p-3 rounded-md border border-green-100 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-green-700">
-                          {aiInsights.filter(i => i.type === 'predicate' && i.confidence && i.confidence >= 0.7).length}
-                        </span>
-                        <span className="text-xs text-green-600">High Match Score</span>
-                      </div>
-                      <div className="bg-green-50 p-3 rounded-md border border-green-100 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-green-700">
-                          {Math.round(aiInsights.filter(i => i.type === 'predicate').reduce((sum, item) => sum + (item.confidence || 0), 0) / 
-                          (aiInsights.filter(i => i.type === 'predicate').length || 1) * 100)}%
-                        </span>
-                        <span className="text-xs text-green-600">Avg. Match Score</span>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      {aiInsights
-                        .filter(i => i.type === 'predicate')
-                        .sort((a, b) => b.confidence - a.confidence)
-                        .map((insight, index) => (
-                          <div key={insight.id} className="bg-green-50 rounded-md p-4 border border-green-100">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-medium text-green-800">{insight.name}</h3>
-                              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
-                                {insight.k_number}
-                              </Badge>
-                            </div>
-                            
-                            {/* Match score with visual indicator */}
-                            <div className="mb-3">
-                              <div className="flex justify-between text-sm text-green-700 mb-1">
-                                <span className="font-medium">Match Score:</span>
-                                <span className="font-medium">{Math.round(insight.confidence * 100)}%</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className="bg-green-600 h-2 rounded-full" 
-                                  style={{ width: `${Math.round(insight.confidence * 100)}%` }}
-                                />
-                              </div>
-                            </div>
-                            
-                            {/* Enhanced device visualizaton with badges */}
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-200">
-                                {insight.k_number}
-                              </Badge>
-                              {insight.productCode && (
-                                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                  Product Code: {insight.productCode}
-                                </Badge>
-                              )}
-                              <Badge variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
-                                Class {insight.deviceClass || 'II'}
-                              </Badge>
-                            </div>
-
-                            {/* Key Information with improved styling */}
-                            <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-green-700 p-3 bg-green-50 rounded-md mb-3">
-                              <div>
-                                <span className="font-medium block text-green-800">Manufacturer:</span>
-                                {insight.manufacturer}
-                              </div>
-                              <div>
-                                <span className="font-medium block text-green-800">Clearance Date:</span>
-                                {insight.date}
-                              </div>
-                              <div className="col-span-2 mt-1">
-                                <span className="font-medium block text-green-800 mb-1">Similarity Factors:</span>
-                                <div className="flex flex-wrap gap-1">
-                                  {insight.similarityFactors ? (
-                                    insight.similarityFactors.map((factor, idx) => (
-                                      <Badge key={idx} variant="secondary" className="bg-green-100 text-green-800">
-                                        {factor}
-                                      </Badge>
-                                    ))
-                                  ) : (
-                                    <>
-                                      <Badge variant="secondary" className="bg-green-100 text-green-800">Intended Use</Badge>
-                                      <Badge variant="secondary" className="bg-green-100 text-green-800">Technology</Badge>
-                                      <Badge variant="secondary" className="bg-green-100 text-green-800">Classification</Badge>
-                                    </>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {/* Description with improved collapsible */}
-                            {insight.description && (
-                              <Collapsible className="border border-green-100 rounded-md overflow-hidden mb-2">
-                                <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-green-50 hover:bg-green-100 text-sm font-medium text-green-800">
-                                  <div className="flex items-center">
-                                    <FileText className="h-4 w-4 mr-1.5 text-green-600" />
-                                    <span>Similarity Analysis</span>
-                                  </div>
-                                  <ChevronDown className="h-4 w-4 text-green-600" />
-                                </CollapsibleTrigger>
-                                <CollapsibleContent className="text-sm text-gray-700 p-3 border-t border-green-100">
-                                  {insight.description}
-                                </CollapsibleContent>
-                              </Collapsible>
-                            )}
-
-                            {/* Enhanced action buttons with improved UX */}
-                            <div className="flex items-center justify-between mt-4">
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                className="text-xs border-green-200 text-green-700 hover:bg-green-50"
-                                onClick={() => window.open(`https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfpmn/pmn.cfm?ID=${insight.k_number}`, '_blank')}
-                              >
-                                <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                                View FDA Record
-                              </Button>
-                              <div className="flex space-x-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-xs border-blue-200 text-blue-700 hover:bg-blue-50"
-                                  onClick={() => {
-                                    // Add to comparison list
-                                    toast({
-                                      title: "Added to Comparison",
-                                      description: `${insight.name} added to comparison list.`,
-                                    });
-                                  }}
-                                >
-                                  <ListPlus className="h-3.5 w-3.5 mr-1" />
-                                  Compare
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  className="text-xs bg-green-600 hover:bg-green-700"
-                                  onClick={() => {
-                                    // Set as primary predicate
-                                    toast({
-                                      title: "Primary Predicate Selected",
-                                      description: `${insight.name} set as primary predicate device.`,
-                                    });
-                                  }}
-                                >
-                                  <Check className="h-3.5 w-3.5 mr-1" />
-                                  Select as Primary
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      }
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              
-              {/* Literature Insights */}
-              {aiInsights.some(i => i.type === 'literature') && (
-                <Card className="shadow-sm border-purple-100">
-                  <CardHeader className="bg-gradient-to-r from-purple-50 to-white">
-                    <CardTitle className="flex items-center text-purple-700">
-                      <BookOpen className="mr-2 h-5 w-5 text-purple-600" />
-                      Relevant Literature
-                    </CardTitle>
-                    <CardDescription>
-                      Scientific literature supporting your 510(k) submission
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    {/* Literature statistics dashboard */}
-                    <div className="grid grid-cols-3 gap-3 mb-6">
-                      <div className="bg-purple-50 p-3 rounded-md border border-purple-100 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-purple-700">
-                          {aiInsights.filter(i => i.type === 'literature').length}
-                        </span>
-                        <span className="text-xs text-purple-600">References Found</span>
-                      </div>
-                      <div className="bg-purple-50 p-3 rounded-md border border-purple-100 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-purple-700">
-                          {aiInsights.filter(i => i.type === 'literature' && i.year && i.year >= new Date().getFullYear() - 3).length}
-                        </span>
-                        <span className="text-xs text-purple-600">Recent Publications</span>
-                      </div>
-                      <div className="bg-purple-50 p-3 rounded-md border border-purple-100 flex flex-col items-center justify-center">
-                        <span className="text-2xl font-bold text-purple-700">
-                          {Math.round(aiInsights.filter(i => i.type === 'literature').reduce((sum, item) => sum + (item.confidence || 0), 0) / 
-                          (aiInsights.filter(i => i.type === 'literature').length || 1) * 100)}%
-                        </span>
-                        <span className="text-xs text-purple-600">Avg. Relevance</span>
-                      </div>
-                    </div>
-                    
-                    <div className="space-y-4">
-                      {aiInsights
-                        .filter(i => i.type === 'literature')
-                        .sort((a, b) => b.confidence - a.confidence)
-                        .map((insight, index) => (
-                          <div key={insight.id} className="bg-purple-50 rounded-md p-4 border border-purple-100">
-                            <div className="flex items-center justify-between mb-3">
-                              <h3 className="font-medium text-purple-800 text-md">{insight.name}</h3>
-                            </div>
-                            
-                            {/* Enhanced badges for publication details */}
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-200">
-                                {insight.journal || "Journal Article"}
-                              </Badge>
-                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                Year: {insight.year || "N/A"}
-                              </Badge>
-                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                                Relevance: {Math.round(insight.confidence * 100)}%
-                              </Badge>
-                            </div>
-                            
-                            {/* Relevance score visual indicator */}
-                            <div className="mb-3">
-                              <div className="flex justify-between text-sm text-purple-700 mb-1">
-                                <span className="font-medium">Relevance Score:</span>
-                                <span className="font-medium">{Math.round(insight.confidence * 100)}%</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className="bg-purple-600 h-2 rounded-full" 
-                                  style={{ width: `${Math.round(insight.confidence * 100)}%` }}
-                                />
-                              </div>
-                            </div>
-                            
-                            {/* Authors */}
-                            {insight.authors && insight.authors.length > 0 && (
-                              <div className="text-sm p-3 bg-purple-50 rounded-md mb-3">
-                                <span className="font-medium text-purple-800 block mb-1">Authors:</span>
-                                <div className="text-purple-700">
-                                  {Array.isArray(insight.authors) 
-                                    ? insight.authors.join(', ')
-                                    : insight.authors}
-                                </div>
-                              </div>
-                            )}
-                            
-                            {/* Abstract with improved collapsible */}
-                            {insight.abstract && (
-                              <Collapsible className="border border-purple-100 rounded-md overflow-hidden mb-3">
-                                <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-purple-50 hover:bg-purple-100 text-sm font-medium text-purple-800">
-                                  <div className="flex items-center">
-                                    <FileText className="h-4 w-4 mr-1.5 text-purple-600" />
-                                    <span>Abstract</span>
-                                  </div>
-                                  <ChevronDown className="h-4 w-4 text-purple-600" />
-                                </CollapsibleTrigger>
-                                <CollapsibleContent className="text-sm text-gray-700 p-3 border-t border-purple-100">
-                                  {insight.abstract}
-                                </CollapsibleContent>
-                              </Collapsible>
-                            )}
-                            
-                            {/* Enhanced action buttons with improved UX */}
-                            <div className="flex items-center justify-between mt-4">
-                              {insight.url ? (
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="text-xs border-purple-200 text-purple-700 hover:bg-purple-50"
-                                  onClick={() => window.open(insight.url, '_blank')}
-                                >
-                                  <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                                  View Publication
-                                </Button>
-                              ) : (
-                                <Button 
-                                  size="sm" 
-                                  variant="outline" 
-                                  className="text-xs border-purple-200 text-purple-700 hover:bg-purple-50"
-                                  onClick={() => window.open(`https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(insight.name)}`, '_blank')}
-                                >
-                                  <Search className="h-3.5 w-3.5 mr-1" />
-                                  Search PubMed
-                                </Button>
-                              )}
-                              
-                              <div className="flex space-x-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="text-xs border-blue-200 text-blue-700 hover:bg-blue-50"
-                                  onClick={() => {
-                                    // Add to references list
-                                    toast({
-                                      title: "Added to References",
-                                      description: `${insight.name} added to literature references.`,
-                                    });
-                                  }}
-                                >
-                                  <BookmarkPlus className="h-3.5 w-3.5 mr-1" />
-                                  Save Reference
-                                </Button>
-                                <Button 
-                                  size="sm" 
-                                  className="text-xs bg-purple-600 hover:bg-purple-700"
-                                  onClick={() => {
-                                    // Cite in document
-                                    toast({
-                                      title: "Citation Added",
-                                      description: `${insight.name} citation will be added to your documents.`,
-                                    });
-                                  }}
-                                >
-                                  <FileText className="h-3.5 w-3.5 mr-1" />
-                                  Cite in Document
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      }
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              
-              {/* Regulatory Pathway Insights */}
-              {aiInsights.some(i => i.type === 'regulatory') && (
-                <Card className="shadow-sm border-blue-100">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-white">
-                    <CardTitle className="flex items-center text-blue-700">
-                      <Shield className="mr-2 h-5 w-5 text-blue-600" />
-                      Regulatory Pathway Analysis
-                    </CardTitle>
-                    <CardDescription>
-                      Recommended submission approach for your device
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="space-y-4">
-                      {aiInsights
-                        .filter(i => i.type === 'regulatory')
-                        .map((insight, index) => (
-                          <div key={insight.id} className="bg-blue-50 rounded-md p-4 border border-blue-100">
-                            {/* Enhanced pathway visualization with prominently displayed recommendation */}
-                            <div className="flex flex-col items-center justify-center mb-4 bg-white p-3 rounded-md border border-blue-100">
-                              <span className="text-xs uppercase text-blue-600 font-semibold mb-1">Recommended Regulatory Pathway</span>
-                              <h3 className="font-bold text-blue-800 text-xl">{insight.pathway}</h3>
-                              <div className="mt-2 w-3/4">
-                                <div className="flex justify-between text-sm text-blue-700 mb-1">
-                                  <span>Confidence</span>
-                                  <span>{Math.round(insight.confidence * 100)}%</span>
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                  <div 
-                                    className="bg-blue-600 h-2 rounded-full" 
-                                    style={{ width: `${Math.round(insight.confidence * 100)}%` }}
-                                  />
-                                </div>
-                              </div>
-                            </div>
-                            
-                            {/* Pathway characteristics badges */}
-                            <div className="flex flex-wrap gap-2 mb-3">
-                              {insight.characteristics ? (
-                                insight.characteristics.map((characteristic, idx) => (
-                                  <Badge key={idx} variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
-                                    {characteristic}
-                                  </Badge>
-                                ))
-                              ) : (
-                                <>
-                                  <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
-                                    Class {insight.deviceClass || currentDeviceProfile?.deviceClass || 'II'}
-                                  </Badge>
-                                  <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
-                                    Traditional
-                                  </Badge>
-                                  <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200">
-                                    Clinical Data Required
-                                  </Badge>
-                                </>
-                              )}
-                            </div>
-                            
-                            {/* Reasoning section in collapsible container */}
-                            <Collapsible className="border border-blue-100 rounded-md overflow-hidden mb-3">
-                              <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-blue-50 hover:bg-blue-100 text-sm font-medium text-blue-800">
-                                <div className="flex items-center">
-                                  <FileText className="h-4 w-4 mr-1.5 text-blue-600" />
-                                  <span>Pathway Justification</span>
-                                </div>
-                                <ChevronDown className="h-4 w-4 text-blue-600" />
-                              </CollapsibleTrigger>
-                              <CollapsibleContent className="text-sm text-gray-700 p-3 border-t border-blue-100 bg-white">
-                                {insight.reasoning}
-                              </CollapsibleContent>
-                            </Collapsible>
-                            
-                            {/* Action buttons */}
-                            <div className="flex items-center justify-end mt-4">
-                              <Button 
-                                size="sm" 
-                                className="text-xs bg-blue-600 hover:bg-blue-700"
-                                onClick={() => {
-                                  // Accept recommendation
-                                  toast({
-                                    title: "Pathway Selected",
-                                    description: `${insight.pathway} pathway has been selected for your device.`,
-                                  });
-                                }}
-                              >
-                                <Check className="h-3.5 w-3.5 mr-1" />
-                                Use This Pathway
-                              </Button>
-                            </div>
-                          </div>
-                        ))
-                      }
-                      
-                      {aiInsights
-                        .filter(i => i.type === 'timeline')
-                        .map((insight, index) => (
-                          <div key={insight.id} className="mt-4 bg-white rounded-md p-4 border border-blue-100">
-                            <div className="flex items-center justify-between mb-3">
-                              <div className="flex items-center">
-                                <Clock className="mr-2 h-5 w-5 text-blue-600" />
-                                <h3 className="font-medium text-blue-800">Estimated Review Process</h3>
-                              </div>
-                              <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                                Total: {insight.estimate}
-                              </Badge>
-                            </div>
-                            
-                            {/* Timeline visualization */}
-                            <div className="relative pb-2">
-                              <div className="absolute left-[9px] top-0 h-full w-[2px] bg-blue-200"></div>
-                              
-                              {insight.milestones?.map((milestone, i) => {
-                                // Calculate position on timeline based on days
-                                const totalDays = insight.milestones.reduce((sum, m) => sum + (m.days || 0), 0);
-                                const previousDays = insight.milestones.slice(0, i).reduce((sum, m) => sum + (m.days || 0), 0);
-                                const startPercent = (previousDays / totalDays) * 100;
-                                const lengthPercent = (milestone.days / totalDays) * 100;
-                                
-                                return (
-                                  <div key={i} className="relative pl-6 py-3">
-                                    {/* Milestone marker */}
-                                    <div className="absolute left-0 -ml-[1px] mt-1.5 bg-white p-[3px]">
-                                      <div className={`h-4 w-4 rounded-full ${i === 0 ? 'bg-blue-600' : i === insight.milestones.length - 1 ? 'bg-green-600' : 'bg-blue-400'}`}></div>
-                                    </div>
-                                    
-                                    {/* Milestone content */}
-                                    <div className="flex flex-col mb-1">
-                                      <div className="flex justify-between">
-                                        <span className="font-medium text-blue-800">{milestone.name}</span>
-                                        <span className="text-blue-600 font-medium">{milestone.days} days</span>
-                                      </div>
-                                      
-                                      {milestone.description && (
-                                        <p className="text-xs text-gray-600 mt-1">{milestone.description}</p>
-                                      )}
-                                      
-                                      {/* Progress bar */}
-                                      <div className="mt-2 w-full bg-gray-100 rounded-full h-1.5">
-                                        <div 
-                                          className={`h-1.5 rounded-full ${i === 0 ? 'bg-blue-600' : i === insight.milestones.length - 1 ? 'bg-green-600' : 'bg-blue-400'}`}
-                                          style={{ width: `${lengthPercent}%` }}
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                            
-                            {/* Action button for timeline */}
-                            <div className="flex justify-end mt-3">
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                className="text-xs border-blue-200 text-blue-700 hover:bg-blue-50"
-                                onClick={() => {
-                                  toast({
-                                    title: "Timeline Exported",
-                                    description: "Project timeline has been exported to your calendar",
-                                  });
-                                }}
-                              >
-                                <Calendar className="h-3.5 w-3.5 mr-1" />
-                                Add to Calendar
-                              </Button>
-                            </div>
-                          </div>
-                        ))
-                      }
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-              
-              {/* Document Insights */}
-              {aiInsights.some(i => i.type === 'document') && (
-                <Card className="shadow-sm border-amber-100">
-                  <CardHeader className="bg-gradient-to-r from-amber-50 to-white">
-                    <CardTitle className="flex items-center text-amber-700">
-                      <FileText className="mr-2 h-5 w-5 text-amber-600" />
-                      Generated Documents
-                    </CardTitle>
-                    <CardDescription>
-                      AI-generated draft documents for your submission
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="space-y-4">
-                      {aiInsights
-                        .filter(i => i.type === 'document')
-                        .map((insight, index) => (
-                          <div key={insight.id} className="bg-amber-50 rounded-md p-4 border border-amber-100">
-                            <div className="flex items-center justify-between mb-2">
-                              <h3 className="font-medium text-amber-800">{insight.name}</h3>
-                              <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-200">
-                                {insight.sections} sections
-                              </Badge>
-                            </div>
-                            <div className="text-sm text-amber-700 mb-2">
-                              Generated on {new Date(insight.timestamp).toLocaleString()}
-                            </div>
-                            <div className="mt-2">
-                              <p className="text-xs text-amber-600 mb-1">Completeness</p>
-                              <div className="w-full bg-amber-200 rounded-full h-2">
-                                <div 
-                                  className="bg-amber-500 rounded-full h-2" 
-                                  style={{ width: `${insight.completeness * 100}%` }} 
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      }
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
-      
-      {/* Error message display */}
-      {errorMessage && (
-        <Alert variant="destructive" className="mt-6">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Error</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
-      )}
-      
-      {/* Progress indicator for API calls */}
-      {aiProcessing && progress > 0 && (
-        <div className="mt-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-500">Processing...</span>
-            <span className="text-sm text-gray-500">{Math.round(progress)}%</span>
-          </div>
-          <Progress value={progress} className="h-2" />
-        </div>
-      )}
-      
-      {/* Debug Panel - shows in development environment and when aiInsights > 0 */}
-      {true && (
-        <Card className="mt-8 border-yellow-300 shadow-sm">
-          <CardHeader className="bg-yellow-50">
-            <CardTitle className="flex items-center text-yellow-800">
-              <Bug className="h-5 w-5 mr-2 text-yellow-700" />
-              Debug Panel
-            </CardTitle>
-            <CardDescription className="text-yellow-700">
-              Troubleshooting panel for 510(k) insights module
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <h3 className="text-sm font-medium mb-2">State Values</h3>
-                <div className="space-y-1 text-xs">
-                  <p><span className="font-medium">Active Tab:</span> {activeTab}</p>
-                  <p><span className="font-medium">Workflow SubTab:</span> {workflowSubTab}</p>
-                  <p><span className="font-medium">AI Processing:</span> {aiProcessing ? 'True' : 'False'}</p>
-                  <p><span className="font-medium">Progress:</span> {progress}%</p>
-                  <p><span className="font-medium">Device Profile:</span> {currentDeviceProfile ? currentDeviceProfile.deviceName : 'None'}</p>
-                  <p><span className="font-medium">Device Profile Class:</span> {currentDeviceProfile?.deviceClass || 'Not set'}</p>
-                  <p><span className="font-medium">Total Insights:</span> {aiInsights.length}</p>
-                </div>
-              </div>
-              <div>
-                <h3 className="text-sm font-medium mb-2">Insights Breakdown</h3>
-                <div className="space-y-1 text-xs">
-                  <p><span className="font-medium">Device Insights:</span> {aiInsights.filter(i => i.type === 'device').length}</p>
-                  <p className="flex items-center">
-                    <span className="font-medium mr-1">Predicate Insights:</span> 
-                    {aiInsights.filter(i => i.type === 'predicate').length}
-                    {aiInsights.some(i => i.type === 'predicate') ? (
-                      <CheckCircle2 className="h-3 w-3 ml-1 text-green-500" />
-                    ) : (
-                      <AlertCircle className="h-3 w-3 ml-1 text-red-500" />
-                    )}
-                  </p>
-                  <p className="flex items-center">
-                    <span className="font-medium mr-1">Literature Insights:</span> 
-                    {aiInsights.filter(i => i.type === 'literature').length}
-                    {aiInsights.some(i => i.type === 'literature') ? (
-                      <CheckCircle2 className="h-3 w-3 ml-1 text-green-500" />
-                    ) : (
-                      <AlertCircle className="h-3 w-3 ml-1 text-red-500" />
-                    )}
-                  </p>
-                  <p className="flex items-center">
-                    <span className="font-medium mr-1">Regulatory Insights:</span> 
-                    {aiInsights.filter(i => i.type === 'regulatory').length}
-                    {aiInsights.some(i => i.type === 'regulatory') ? (
-                      <CheckCircle2 className="h-3 w-3 ml-1 text-green-500" />
-                    ) : (
-                      <AlertCircle className="h-3 w-3 ml-1 text-red-500" />
-                    )}
-                  </p>
-                  <p><span className="font-medium">Document Insights:</span> {aiInsights.filter(i => i.type === 'document').length}</p>
-                  <p><span className="font-medium">Validation Insights:</span> {aiInsights.filter(i => i.type === 'validation').length}</p>
-                </div>
-              </div>
-            </div>
-            
-            {/* Review Timeline Card */}
-            <Card className="mt-4">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base flex items-center">
-                  <Calendar className="h-4 w-4 mr-2 text-blue-600" />
-                  510(k) Review Timeline
-                </CardTitle>
-                <CardDescription>
-                  Estimated timeframes for each stage of your submission
+                  Official FDA guidance for 510(k) submissions
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="relative">
-                    {/* Timeline line */}
-                    <div className="absolute left-4 top-0 h-full w-0.5 bg-blue-100"></div>
-                    
-                    {/* Timeline events */}
-                    <div className="space-y-6">
-                      <div className="flex">
-                        <div className="relative flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white text-xs z-10">
-                          1
-                        </div>
-                        <div className="ml-4 -mt-1">
-                          <h4 className="text-sm font-medium text-blue-700">Initial Submission</h4>
-                          <p className="text-xs text-gray-500">Day 0: Submission received by the FDA</p>
-                          <div className="mt-1 p-2 bg-blue-50 border border-blue-100 rounded-md">
-                            <span className="text-xs text-blue-700">Documents undergo administrative review for completeness</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex">
-                        <div className="relative flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white text-xs z-10">
-                          2
-                        </div>
-                        <div className="ml-4 -mt-1">
-                          <h4 className="text-sm font-medium text-blue-700">Acceptance Review</h4>
-                          <p className="text-xs text-gray-500">Days 1-15: Administrative screening</p>
-                          <div className="mt-1 p-2 bg-blue-50 border border-blue-100 rounded-md">
-                            <span className="text-xs text-blue-700">RTA checklist verification and submission validation</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex">
-                        <div className="relative flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-blue-500 text-white text-xs z-10">
-                          3
-                        </div>
-                        <div className="ml-4 -mt-1">
-                          <h4 className="text-sm font-medium text-blue-700">Substantive Review</h4>
-                          <p className="text-xs text-gray-500">Days 16-90: Technical and scientific review</p>
-                          <div className="mt-1 p-2 bg-blue-50 border border-blue-100 rounded-md">
-                            <span className="text-xs text-blue-700">In-depth evaluation of substantial equivalence claims</span>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex">
-                        <div className="relative flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full bg-green-500 text-white text-xs z-10">
-                          ✓
-                        </div>
-                        <div className="ml-4 -mt-1">
-                          <h4 className="text-sm font-medium text-green-700">Final Decision</h4>
-                          <p className="text-xs text-gray-500">By Day 90: FDA determination</p>
-                          <div className="mt-1 p-2 bg-green-50 border border-green-100 rounded-md">
-                            <span className="text-xs text-green-700">Traditional 510(k) standard timeline: 90 days</span>
-                            <br />
-                            <span className="text-xs text-amber-600">Special 510(k) expedited timeline: 30 days</span>
-                          </div>
-                        </div>
+                  <div className="border rounded p-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer">
+                    <div className="flex items-center">
+                      <BookOpen className="h-5 w-5 text-blue-500 mr-3" />
+                      <div>
+                        <p className="font-medium">Format for Traditional and Abbreviated 510(k)s</p>
+                        <p className="text-xs text-gray-500">Guidance for Industry and FDA Staff</p>
                       </div>
                     </div>
+                    <Button variant="outline" size="sm">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View
+                    </Button>
                   </div>
                   
-                  <div className="text-xs text-gray-500 italic mt-2">
-                    Note: Actual review times may vary based on FDA workload and Additional Information requests.
+                  <div className="border rounded p-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer">
+                    <div className="flex items-center">
+                      <BookOpen className="h-5 w-5 text-blue-500 mr-3" />
+                      <div>
+                        <p className="font-medium">The 510(k) Program: Evaluating Substantial Equivalence</p>
+                        <p className="text-xs text-gray-500">Guidance for Industry and FDA Staff</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View
+                    </Button>
+                  </div>
+                  
+                  <div className="border rounded p-3 flex items-center justify-between hover:bg-gray-50 cursor-pointer">
+                    <div className="flex items-center">
+                      <BookOpen className="h-5 w-5 text-blue-500 mr-3" />
+                      <div>
+                        <p className="font-medium">eSTAR Final Guidance</p>
+                        <p className="text-xs text-gray-500">Electronic Submission Template And Resource for 510(k)s</p>
+                      </div>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View
+                    </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-            
-            {/* Debug panel */}
-            <Collapsible className="mt-4">
-              <CollapsibleTrigger className="w-full flex items-center justify-between p-2 bg-amber-50 hover:bg-amber-100 text-sm font-medium text-amber-800 rounded-md border border-amber-200">
-                <div className="flex items-center">
-                  <Bug className="h-4 w-4 mr-1.5 text-amber-600" />
-                  <span>Developer Debug Panel</span>
-                </div>
-                <ChevronDown className="h-4 w-4 text-amber-600" />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-2 space-y-2">
-                {/* Insights summary table */}
-                <div className="p-3 bg-amber-50 rounded-md border border-amber-100">
-                  <h4 className="text-sm font-medium text-amber-800 mb-2">AI Insights Overview</h4>
-                  <div className="grid grid-cols-4 gap-3">
-                    <div className="bg-white p-2 rounded border border-amber-100">
-                      <span className="text-xs text-amber-800">Predicate Devices</span>
-                      <div className="flex items-center mt-1">
-                        <span className="text-xl font-bold text-amber-700">{aiInsights.filter(i => i.type === 'predicate').length}</span>
-                        {aiInsights.some(i => i.type === 'predicate') ? (
-                          <CheckCircle2 className="h-3 w-3 ml-2 text-green-500" />
-                        ) : (
-                          <AlertCircle className="h-3 w-3 ml-2 text-red-500" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="bg-white p-2 rounded border border-amber-100">
-                      <span className="text-xs text-amber-800">Literature</span>
-                      <div className="flex items-center mt-1">
-                        <span className="text-xl font-bold text-amber-700">{aiInsights.filter(i => i.type === 'literature').length}</span>
-                        {aiInsights.some(i => i.type === 'literature') ? (
-                          <CheckCircle2 className="h-3 w-3 ml-2 text-green-500" />
-                        ) : (
-                          <AlertCircle className="h-3 w-3 ml-2 text-red-500" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="bg-white p-2 rounded border border-amber-100">
-                      <span className="text-xs text-amber-800">Regulatory</span>
-                      <div className="flex items-center mt-1">
-                        <span className="text-xl font-bold text-amber-700">{aiInsights.filter(i => i.type === 'regulatory').length}</span>
-                        {aiInsights.some(i => i.type === 'regulatory') ? (
-                          <CheckCircle2 className="h-3 w-3 ml-2 text-green-500" />
-                        ) : (
-                          <AlertCircle className="h-3 w-3 ml-2 text-red-500" />
-                        )}
-                      </div>
-                    </div>
-                    <div className="bg-white p-2 rounded border border-amber-100">
-                      <span className="text-xs text-amber-800">Total Insights</span>
-                      <div className="flex items-center mt-1">
-                        <span className="text-xl font-bold text-amber-700">{aiInsights.length}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Tab view for raw data */}
-                <Tabs defaultValue="insights" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="insights">AI Insights</TabsTrigger>
-                    <TabsTrigger value="device_profile">Device Profile</TabsTrigger>
-                    <TabsTrigger value="actions">Actions</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="insights" className="border border-amber-100 rounded-md p-2 bg-white">
-                    <div className="overflow-auto max-h-[300px]">
-                      <pre className="text-xs text-gray-800 whitespace-pre-wrap">
-                        {JSON.stringify(aiInsights, null, 2)}
-                      </pre>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="device_profile" className="border border-amber-100 rounded-md p-2 bg-white">
-                    <div className="overflow-auto max-h-[300px]">
-                      <pre className="text-xs text-gray-800 whitespace-pre-wrap">
-                        {JSON.stringify(currentDeviceProfile, null, 2)}
-                      </pre>
-                    </div>
-                  </TabsContent>
-                  <TabsContent value="actions" className="border border-amber-100 rounded-md p-2 bg-white">
-                    <div className="flex flex-wrap gap-2">
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-xs"
-                        onClick={() => console.log('Current aiInsights:', aiInsights)}
-                      >
-                        Log Insights
-                      </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-xs"
-                        onClick={() => {
-                          setActiveTab('insights');
-                          console.log('Manually switched to insights tab');
-                        }}
-                      >
-                        Switch to Insights Tab
-                      </Button>
-                      <Button 
-                        size="sm"
-                        variant="outline"
-                        className="text-xs"
-                        onClick={() => {
-                          setAiInsights([]);
-                          console.log('Cleared aiInsights state');
-                        }}
-                      >
-                        Clear Insights
-                      </Button>
-                    </div>
-                  </TabsContent>
-                </Tabs>
-              </CollapsibleContent>
-            </Collapsible>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        </TabsContent>
+      </Tabs>
+      
+      {/* Device Profile Dialog */}
+      <DeviceProfileDialog
+        open={deviceProfileDialogOpen}
+        onOpenChange={setDeviceProfileDialogOpen}
+        onSave={handleCreateDeviceProfile}
+      />
     </div>
   );
 }
