@@ -115,12 +115,82 @@ export const FDA510kService = {
    * @returns {Promise<Object>} Detailed compliance check results with issues and score
    */
   async runComplianceCheck(deviceProfile, organizationId, options = {}) {
+    // Include literature evidence with the compliance check if available
+    const literatureEvidence = options.literatureEvidence || {};
+    
     const response = await apiRequest.post(`/api/fda510k/compliance-check`, {
       deviceProfile: deviceProfile,
       organizationId: organizationId,
+      literatureEvidence: literatureEvidence,
       options: options
     });
     return response.data;
+  },
+  
+  /**
+   * Save compliance check input data to the Document Vault
+   * 
+   * @param {string} folderId The folder ID to save the input data to
+   * @param {File} file The JSON file containing compliance input data
+   * @param {string} deviceId The device ID for metadata
+   * @returns {Promise<Object>} The saved document
+   */
+  async saveComplianceInput(folderId, file, deviceId) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('metadata', JSON.stringify({
+        documentType: '510k-compliance-input',
+        deviceId: deviceId,
+        date: new Date().toISOString(),
+        version: '1.0'
+      }));
+      formData.append('folderId', folderId);
+      
+      const response = await apiRequest.post('/api/docushare/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error saving compliance input to Document Vault:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Save compliance check report to the Document Vault
+   * 
+   * @param {string} folderId The folder ID to save the report to
+   * @param {File} file The JSON file containing compliance report
+   * @param {string} deviceId The device ID for metadata
+   * @returns {Promise<Object>} The saved document
+   */
+  async saveComplianceReport(folderId, file, deviceId) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('metadata', JSON.stringify({
+        documentType: '510k-compliance-report',
+        deviceId: deviceId,
+        date: new Date().toISOString(),
+        version: '1.0'
+      }));
+      formData.append('folderId', folderId);
+      
+      const response = await apiRequest.post('/api/docushare/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      return response.data;
+    } catch (error) {
+      console.error('Error saving compliance report to Document Vault:', error);
+      throw error;
+    }
   },
 
   /**

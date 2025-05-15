@@ -93,10 +93,14 @@ const ComplianceCheckPanel = ({
         setProgress(50);
         
         // First save our current state to Document Vault
+        const hasLiteratureEvidence = equivalenceData && equivalenceData.literatureEvidence && 
+          Object.keys(equivalenceData.literatureEvidence).length > 0;
+          
         const complianceInputData = {
           deviceProfile: deviceProfile,
           predicateDevices: predicateDevices,
           equivalenceData: equivalenceData,
+          literatureEvidence: hasLiteratureEvidence ? equivalenceData.literatureEvidence : {},
           timestamp: new Date().toISOString()
         };
         
@@ -120,10 +124,23 @@ const ComplianceCheckPanel = ({
       
       setProgress(75);
       
-      // Run the compliance check
+      // Run the compliance check with literature evidence if available
+      const hasLiteratureEvidence = equivalenceData && equivalenceData.literatureEvidence && 
+        Object.keys(equivalenceData.literatureEvidence).length > 0;
+      
+      console.log('Compliance check with literature evidence:', 
+        hasLiteratureEvidence ? 'Yes' : 'No', 
+        hasLiteratureEvidence ? Object.keys(equivalenceData.literatureEvidence).length : 0, 
+        'connections'
+      );
+      
       const result = await FDA510kService.runComplianceCheck(
         deviceProfile,
-        deviceProfile.organizationId
+        deviceProfile.organizationId,
+        {
+          literatureEvidence: hasLiteratureEvidence ? equivalenceData.literatureEvidence : {},
+          includeEvidenceValidation: hasLiteratureEvidence
+        }
       );
       
       setComplianceData(result);
