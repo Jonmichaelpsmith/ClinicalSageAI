@@ -406,7 +406,7 @@ class FDA510kService {
   /**
    * Device Profile API methods
    * 
-   * These methods handle all interactions with device profiles from both
+   * These methods handle all interactions with Device Profiles from both
    * the 510(k) and CER interfaces using the unified API
    */
   DeviceProfileAPI = {
