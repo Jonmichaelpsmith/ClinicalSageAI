@@ -14,8 +14,8 @@ import FDA510kService from '../../services/FDA510kService';
 import DeviceProfileList from '../cer/DeviceProfileList';
 import DeviceProfileDialog from '../cer/DeviceProfileDialog';
 import PredicateFinderPanel from './PredicateFinderPanel';
-import EquivalenceBuilderPanel from '../cer/EquivalenceBuilderPanel';
-import ComplianceScorePanel from '../cer/ComplianceScorePanel';
+import EquivalenceBuilderPanel from './EquivalenceBuilderPanel';
+import ComplianceScorePanel from './ComplianceCheckPanel';
 import ReportGenerator from './ReportGenerator';
 
 /**
@@ -630,7 +630,7 @@ const WorkflowPanel = ({
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-4">
-                <ComplianceScorePanel 
+                <ComplianceCheckPanel 
                   deviceProfile={selectedDeviceProfile}
                   setDeviceProfile={setSelectedDeviceProfile}
                   documentId={selectedDeviceProfile?.id}
