@@ -7,9 +7,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Check, X, AlertTriangle, ThumbsUp, Loader2, FileText, GitCompare } from 'lucide-react';
+import { Search, Check, X, AlertTriangle, ThumbsUp, Loader2, FileText, GitCompare, BookOpen, Filter, ExternalLink, Eye, Calendar, BarChart, ArrowUpDown, Info } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { FDA510kService } from '@/services/FDA510kService';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { literatureAPIService } from '@/services/LiteratureAPIService';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 /**
  * Predicate Finder Panel for 510(k) Submissions
@@ -28,6 +32,19 @@ const PredicateFinderPanel = ({
   const [searchResults, setSearchResults] = useState([]);
   const [selectedPredicates, setSelectedPredicates] = useState([]);
   const [profileEditing, setProfileEditing] = useState(true);
+  const [activeTab, setActiveTab] = useState("predicates");
+  const [literatureResults, setLiteratureResults] = useState([]);
+  const [isSearchingLiterature, setIsSearchingLiterature] = useState(false);
+  const [selectedLiterature, setSelectedLiterature] = useState([]);
+  const [literatureFilters, setLiteratureFilters] = useState({
+    yearFrom: new Date().getFullYear() - 5,
+    yearTo: new Date().getFullYear(),
+    journalImpactFactor: "all",
+    studyType: "all"
+  });
+  const [showLiteratureDetails, setShowLiteratureDetails] = useState(false);
+  const [selectedLiteratureItem, setSelectedLiteratureItem] = useState(null);
+  
   const [formData, setFormData] = useState({
     deviceName: deviceProfile?.deviceName || '',
     manufacturer: deviceProfile?.manufacturer || '',
