@@ -20,11 +20,13 @@ import {
 } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ToastAction } from "@/components/ui/toast";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import DeviceProfileForm from './DeviceProfileForm';
 import DeviceProfileList from './DeviceProfileList';
+import DeviceProfileDialog from './DeviceProfileDialog';
 import { postDeviceProfile, getDeviceProfiles } from '../../api/cer';
 // Import the service directly
 import FDA510kService from '../../services/FDA510kService';
@@ -47,6 +49,7 @@ export default function KAutomationPanel() {
   const [isSearchingPredicates, setIsSearchingPredicates] = useState(false);
   const [recommendedPredicates, setRecommendedPredicates] = useState([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
+  const [showDeviceProfileDialog, setShowDeviceProfileDialog] = useState(false);
   const { currentOrganization } = useTenant();
   const { toast } = useToast();
   
@@ -851,7 +854,16 @@ export default function KAutomationPanel() {
                   <Button 
                     size="sm" 
                     className="w-full bg-blue-600 hover:bg-blue-700 mt-2"
-                    onClick={() => setWorkflowSubTab('devices')}
+                    onClick={() => {
+                      // First switch to devices tab then focus on profiles
+                      setWorkflowSubTab('devices');
+                      
+                      // Provide visual feedback
+                      toast({
+                        title: "Device Profiles",
+                        description: "Loading device profile management view...",
+                      });
+                    }}
                   >
                     Manage Device Profiles
                   </Button>
@@ -874,7 +886,27 @@ export default function KAutomationPanel() {
                   <Button 
                     size="sm" 
                     className="w-full bg-green-600 hover:bg-green-700 mt-2"
-                    onClick={() => handleRunPipeline('ingestDeviceProfile')}
+                    onClick={() => {
+                      if (!currentDeviceProfile) {
+                        // If no profile is selected, guide user to create/select one first
+                        toast({
+                          title: "Device Profile Required",
+                          description: "Please select or create a device profile first",
+                          variant: "warning",
+                        });
+                        
+                        // Switch to device profiles view
+                        setWorkflowSubTab('devices');
+                      } else {
+                        // If profile exists, proceed with configuration
+                        handleRunPipeline('ingestDeviceProfile');
+                        
+                        toast({
+                          title: "Device Setup",
+                          description: `Configuring setup for ${currentDeviceProfile.deviceName}`,
+                        });
+                      }
+                    }}
                   >
                     Configure Device Setup
                   </Button>
@@ -897,7 +929,35 @@ export default function KAutomationPanel() {
                   <Button 
                     size="sm" 
                     className="w-full bg-purple-600 hover:bg-purple-700 mt-2"
-                    onClick={() => handleRunPipeline('draftSectionsWithAI')}
+                    onClick={() => {
+                      // Device intake is for new devices that don't have profiles yet
+                      // So we show a dialog option
+                      
+                      // Check if we already have a device profile selected
+                      if (currentDeviceProfile) {
+                        toast({
+                          title: "Device Profile Exists",
+                          description: "You already have a device profile selected. Do you want to start a new profile instead?",
+                          variant: "default",
+                          action: (
+                            <ToastAction 
+                              altText="Create New" 
+                              onClick={() => setShowDeviceProfileDialog(true)}
+                            >
+                              Create New
+                            </ToastAction>
+                          ),
+                        });
+                      } else {
+                        // If no profile, jump straight to creation dialog
+                        setShowDeviceProfileDialog(true);
+                        
+                        toast({
+                          title: "Device Intake Started",
+                          description: "Please complete the device profile form to continue",
+                        });
+                      }
+                    }}
                   >
                     Start Device Intake
                   </Button>
