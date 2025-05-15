@@ -411,11 +411,11 @@ class FDA510kService {
    */
   DeviceProfileAPI = {
     /**
-     * Create a new device profile
+     * Create a new Device Profile
      * 
-     * @param {Object} profileData The device profile data
+     * @param {Object} profileData The Device Profile data
      * @param {string} organizationId Optional organization ID
-     * @returns {Promise<Object>} The created device profile
+     * @returns {Promise<Object>} The created Device Profile
      */
     create: async (profileData, organizationId) => {
       try {
@@ -424,18 +424,18 @@ class FDA510kService {
         });
         return response.data;
       } catch (error) {
-        console.error('Error creating device profile:', error);
+        console.error('Error creating Device Profile:', error);
         throw error;
       }
     },
     
     /**
-     * Update an existing device profile
+     * Update an existing Device Profile
      * 
      * @param {string} profileId The ID of the profile to update
-     * @param {Object} profileData The updated device profile data
+     * @param {Object} profileData The updated Device Profile data
      * @param {string} organizationId Optional organization ID
-     * @returns {Promise<Object>} The updated device profile
+     * @returns {Promise<Object>} The updated Device Profile
      */
     update: async (profileId, profileData, organizationId) => {
       try {
@@ -444,16 +444,16 @@ class FDA510kService {
         });
         return response.data;
       } catch (error) {
-        console.error(`Error updating device profile ${profileId}:`, error);
+        console.error(`Error updating Device Profile ${profileId}:`, error);
         throw error;
       }
     },
     
     /**
-     * Get a list of all device profiles
+     * Get a list of all Device Profiles
      * 
      * @param {string} organizationId Optional organization ID to filter profiles
-     * @returns {Promise<Array>} Array of device profiles
+     * @returns {Promise<Array>} Array of Device Profiles
      */
     list: async (organizationId) => {
       try {
@@ -462,17 +462,17 @@ class FDA510kService {
         });
         return response.data;
       } catch (error) {
-        console.error('Error fetching device profiles:', error);
+        console.error('Error fetching Device Profiles:', error);
         throw error;
       }
     },
     
     /**
-     * Get a single device profile by ID
+     * Get a single Device Profile by ID
      * 
-     * @param {string} profileId The ID of the device profile to retrieve
+     * @param {string} profileId The ID of the Device Profile to retrieve
      * @param {string} organizationId Optional organization ID for tenant context
-     * @returns {Promise<Object>} The device profile
+     * @returns {Promise<Object>} The Device Profile
      */
     get: async (profileId, organizationId) => {
       try {
