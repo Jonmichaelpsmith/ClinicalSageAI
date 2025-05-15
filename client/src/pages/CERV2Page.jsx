@@ -32,7 +32,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, ArrowRight, AlertTriangle, Files, FolderTree } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, ArrowRight, AlertTriangle, Files, FolderTree, X, FilePlus, FolderPlus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -909,40 +909,130 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         {renderNavigation()}
         
         <div className="flex">
-          {/* Embedded Document Tree Panel */}
+          {/* Document Manager - Professional UI with best practices */}
           {showDocumentTree && (
-            <div className="w-[280px] bg-white border-r mr-4 rounded-l-lg shadow-sm overflow-y-auto">
-              <div className="p-3 border-b bg-gray-50 flex items-center justify-between">
-                <div className="flex items-center">
-                  <FolderTree className="h-4 w-4 text-blue-600 mr-2" />
-                  <h3 className="font-medium text-sm">Document Vault</h3>
+            <div className="w-[300px] bg-white border-r rounded-l-lg shadow-sm overflow-hidden flex flex-col h-[calc(100vh-270px)]">
+              {/* Header with search */}
+              <div className="border-b p-3 bg-gray-50">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center">
+                    <FolderTree className="h-4 w-4 text-blue-600 mr-2" />
+                    <h3 className="font-medium text-sm">Document Repository</h3>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowDocumentTree(false)}
+                    className="h-6 w-6 p-0"
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
                 </div>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setShowDocumentTree(false)}
-                  className="h-6 w-6 p-0"
-                >
-                  <X className="h-3 w-3" />
-                </Button>
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-3.5 w-3.5 text-gray-400" />
+                  <Input
+                    placeholder="Search documents..."
+                    className="h-8 pl-8 text-xs"
+                  />
+                </div>
               </div>
               
-              <div className="p-2">
-                <ul className="space-y-1">
-                  {['Device Description.pdf', 'Substantial Equivalence.docx', 'Test Reports', 'FDA Guidance', 'Predicate Devices', '510(k) Submission.pdf'].map((doc, i) => (
-                    <li 
-                      key={i}
-                      className="flex items-center p-1.5 text-sm hover:bg-gray-100 rounded cursor-pointer"
-                    >
-                      {i % 2 === 1 ? (
-                        <FolderOpen className="w-3.5 h-3.5 text-yellow-500 mr-1.5" />
-                      ) : (
-                        <FileText className="w-3.5 h-3.5 text-blue-500 mr-1.5" />
-                      )}
-                      <span className="text-sm truncate">{doc}</span>
-                    </li>
-                  ))}
-                </ul>
+              {/* File type filter */}
+              <div className="px-3 py-2 border-b bg-gray-50">
+                <div className="flex space-x-1">
+                  <Button variant="outline" size="sm" className="h-6 text-xs px-2 bg-white">
+                    All
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-6 text-xs px-2">
+                    Submissions
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-6 text-xs px-2">
+                    Predicates
+                  </Button>
+                </div>
+              </div>
+              
+              {/* File browser */}
+              <div className="flex-grow overflow-auto">
+                <div className="p-0.5">
+                  {/* Folders section */}
+                  <div className="mb-2">
+                    <div className="px-3 py-1.5 text-xs font-medium text-gray-500">
+                      Folders
+                    </div>
+                    <ul>
+                      {[
+                        { name: 'Device Information', count: 3 },
+                        { name: 'Predicate Devices', count: 2 },
+                        { name: 'Test Reports', count: 5 },
+                        { name: 'Regulatory Documents', count: 4 }
+                      ].map((folder, i) => (
+                        <li 
+                          key={i}
+                          className="flex items-center justify-between px-3 py-1.5 hover:bg-blue-50 cursor-pointer"
+                        >
+                          <div className="flex items-center">
+                            <FolderOpen className="w-4 h-4 text-yellow-500 mr-2" />
+                            <span className="text-sm">{folder.name}</span>
+                          </div>
+                          <span className="text-xs text-gray-500 bg-gray-100 px-1.5 rounded-full">
+                            {folder.count}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  {/* Recent files section */}
+                  <div>
+                    <div className="px-3 py-1.5 text-xs font-medium text-gray-500 flex items-center justify-between">
+                      <span>Recent Files</span>
+                      <Button variant="ghost" size="sm" className="h-5 text-xs px-2 text-blue-600">
+                        View All
+                      </Button>
+                    </div>
+                    <ul>
+                      {[
+                        { name: 'Device Description.pdf', type: 'pdf', date: 'Today' },
+                        { name: 'Substantial Equivalence.docx', type: 'docx', date: 'Yesterday' },
+                        { name: '510(k) Submission.pdf', type: 'pdf', date: '2 days ago' },
+                        { name: 'Performance Testing.xlsx', type: 'xlsx', date: 'May 10' },
+                        { name: 'FDA Predicates List.pdf', type: 'pdf', date: 'May 8' }
+                      ].map((file, i) => (
+                        <li 
+                          key={i}
+                          className="flex items-center px-3 py-1.5 hover:bg-blue-50 cursor-pointer"
+                        >
+                          <div className="mr-2">
+                            {file.type === 'pdf' ? (
+                              <FileText className="h-4 w-4 text-red-500" />
+                            ) : file.type === 'docx' ? (
+                              <FileText className="h-4 w-4 text-blue-500" />
+                            ) : (
+                              <FileText className="h-4 w-4 text-green-500" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="text-sm truncate">{file.name}</div>
+                            <div className="text-xs text-gray-500">{file.date}</div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Footer with actions */}
+              <div className="border-t p-2 bg-gray-50 flex items-center justify-between">
+                <Button variant="outline" size="sm" className="text-xs px-2">
+                  <FolderPlus className="h-3.5 w-3.5 mr-1" />
+                  New Folder
+                </Button>
+                <Button variant="primary" size="sm" className="text-xs px-2 bg-blue-600 text-white hover:bg-blue-700">
+                  <FilePlus className="h-3.5 w-3.5 mr-1" />
+                  Upload
+                </Button>
               </div>
             </div>
           )}
