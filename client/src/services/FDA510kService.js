@@ -530,6 +530,63 @@ const FDA510kService = {
       console.error(`Error fetching requirements for device class ${deviceClass}:`, error);
       throw error;
     }
+  },
+  
+  /**
+   * Generate a comparison table between a subject device and predicate devices
+   * 
+   * This function creates an FDA-compliant comparison table for 510(k) submissions
+   * that highlights substantial equivalence between a subject device and selected
+   * predicate devices. The comparison focuses on technological characteristics,
+   * intended use, and other relevant parameters.
+   * 
+   * @param {Object} subjectDevice The subject device profile object
+   * @param {Array<Object>} predicateDevices Array of predicate device objects
+   * @param {Object} options Optional configuration parameters
+   * @returns {Promise<Object>} The formatted comparison data
+   */
+  async comparePredicateDevices(subjectDevice, predicateDevices, options = {}) {
+    try {
+      if (!subjectDevice) {
+        throw new Error('Subject device is required for comparison');
+      }
+      
+      if (!predicateDevices || !Array.isArray(predicateDevices) || predicateDevices.length === 0) {
+        throw new Error('At least one predicate device is required for comparison');
+      }
+      
+      // Prepare the request payload
+      const payload = {
+        subjectDevice,
+        predicateDevices,
+        options: {
+          includeRegulatoryContext: options.includeRegulatoryContext !== false,
+          includeTestingRequirements: options.includeTestingRequirements !== false,
+          formatForFDASubmission: options.formatForFDASubmission !== false,
+          includeStandards: options.includeStandards !== false,
+          highlightDifferences: options.highlightDifferences !== false,
+          ...options
+        }
+      };
+      
+      // Call the API endpoint for predicate comparison
+      const response = await apiRequest.post('/api/fda510k/compare-predicates', payload);
+      
+      // Return the formatted comparison data
+      return {
+        success: true,
+        data: response.data
+      };
+    } catch (error) {
+      console.error('Error generating predicate device comparison:', error);
+      return {
+        success: false,
+        error: {
+          message: error.message || 'Failed to generate predicate comparison',
+          details: error.response?.data || null
+        }
+      };
+    }
   }
 };
 
