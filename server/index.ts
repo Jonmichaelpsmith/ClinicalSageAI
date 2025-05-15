@@ -125,6 +125,11 @@ import { router as estar510kRouter } from './routes/510kEstarRoutes';
 app.use('/api/fda510k/estar', estar510kRouter);
 console.log('FDA 510(k) eSTAR routes registered at /api/fda510k/estar');
 
+// Import and register FDA 510(k) Routes
+import fda510kRoutes from './routes/fda510kRoutes.js';
+app.use('/api/fda510k', fda510kRoutes);
+console.log('FDA 510(k) routes registered at /api/fda510k');
+
 // We'll register the regulatory AI routes below with FDA 510(k) routes
 
 // Import and register health check routes
