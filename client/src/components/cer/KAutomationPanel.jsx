@@ -775,15 +775,15 @@ export default function KAutomationPanel() {
                   </TabsTrigger>
                   <TabsTrigger value="devices" className="flex-1">
                     <Database className="h-4 w-4 mr-2" />
-                    Device Profiles
+                    1. Device Setup
                   </TabsTrigger>
                   <TabsTrigger value="predicates" className="flex-1">
                     <Search className="h-4 w-4 mr-2" />
-                    Predicate Finder
+                    2. Predicate Finder
                   </TabsTrigger>
                   <TabsTrigger value="status" className="flex-1">
                     <Activity className="h-4 w-4 mr-2" />
-                    Workflow Status
+                    3. Workflow Status
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -1059,10 +1059,10 @@ export default function KAutomationPanel() {
               <div className="space-y-4">
                 <div className="bg-blue-50 p-4 rounded-md mb-6 border border-blue-100">
                   <h3 className="text-lg font-medium text-blue-800 mb-2 flex items-center">
-                    <Database className="h-5 w-5 mr-2" /> Device Profiles
+                    <Database className="h-5 w-5 mr-2" /> Step 1: Device Profile Management
                   </h3>
                   <p className="text-sm text-blue-700 mb-4">
-                    Create and manage your medical device profiles for 510(k) submissions. Select a device profile to use in your automation workflow.
+                    Start here: Create or select a medical device profile for your 510(k) submission workflow.
                   </p>
                   <div className="flex items-center">
                     <Button
@@ -1070,7 +1070,7 @@ export default function KAutomationPanel() {
                       className="bg-blue-600 hover:bg-blue-700"
                     >
                       <Plus className="h-4 w-4 mr-2" />
-                      Add New Device Profile
+                      Create New Device Profile
                     </Button>
                   </div>
                 </div>

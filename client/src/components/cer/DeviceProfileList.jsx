@@ -259,10 +259,10 @@ const DeviceProfileList = ({ onSelectProfile }) => {
         <div>
           <CardTitle className="flex items-center">
             <FileText className="h-5 w-5 mr-2 text-blue-600" />
-            Device Profiles
+            Available Device Profiles
           </CardTitle>
           <CardDescription>
-            Manage your medical device profiles for 510(k) submissions
+            Select an existing device profile or create a new one
           </CardDescription>
         </div>
         <div className="flex space-x-2 items-center">
@@ -271,7 +271,7 @@ const DeviceProfileList = ({ onSelectProfile }) => {
             Refresh
           </Button>
           <DeviceProfileDialog 
-            buttonText="New Profile"
+            buttonText="+ Create New Profile"
             buttonIcon={<PlusCircle className="h-4 w-4 mr-1" />}
             onSuccessfulSubmit={(profile) => {
               refetch();
