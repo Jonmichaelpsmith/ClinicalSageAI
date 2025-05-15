@@ -184,6 +184,41 @@ class DocuShareService {
       throw error;
     }
   }
+  
+  /**
+   * Get the folder structure for the document vault
+   * 
+   * @param {string} rootFolderId Optional root folder ID to start from
+   * @param {Object} options Optional parameters for controlling the tree depth and filters
+   * @returns {Promise<Object>} Hierarchical folder structure with files
+   */
+  async getFolderStructure(rootFolderId = null, options = { maxDepth: 3 }) {
+    try {
+      const params = new URLSearchParams();
+      
+      if (rootFolderId) {
+        params.append('rootFolderId', rootFolderId);
+      }
+      
+      if (options.maxDepth) {
+        params.append('maxDepth', options.maxDepth);
+      }
+      
+      if (options.includeFiles !== undefined) {
+        params.append('includeFiles', options.includeFiles);
+      }
+      
+      if (options.fileTypes) {
+        params.append('fileTypes', options.fileTypes.join(','));
+      }
+      
+      const response = await apiRequest.get(`/api/vault/structure?${params.toString()}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching folder structure:', error);
+      throw error;
+    }
+  }
 }
 
 // Create and export singleton instance
