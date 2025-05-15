@@ -216,6 +216,12 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     setEquivalenceCompleted(true);
     setEquivalenceData(data); // Store the equivalence data including literature evidence
     
+    // Explicitly move to the next step in the workflow
+    setWorkflowStep(4);
+    setActiveTab('compliance');
+    
+    console.log('Equivalence step completed successfully, transitioning to compliance step');
+    
     // Save literature-feature connections if available
     if (data && data.literatureEvidence && Object.keys(data.literatureEvidence).length > 0) {
       // Save to the server via the LiteratureFeatureService
@@ -583,8 +589,15 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     else if (documentType === 'cer' && activeTab === 'literature-review') {
       return <LiteratureReviewWorkflow cerDocumentId={cerDocumentId} />;
     }
-    else if (documentType === 'cer' && activeTab === 'compliance') {
-      return <ComplianceScorePanel cerDocumentId={cerDocumentId} sections={sections} />;
+    else if (activeTab === 'compliance') {
+      return <ComplianceScorePanel 
+        documentId={documentType === 'cer' ? cerDocumentId : k510DocumentId}
+        documentType={documentType}
+        sections={sections}
+        deviceProfile={deviceProfile}
+        predicateDevices={predicateDevices}
+        equivalenceData={equivalenceData}
+      />;
     }
     else if (documentType === 'cer' && activeTab === 'assistant') {
       return <CerAssistantPanel cerDocumentId={cerDocumentId} />;
@@ -595,8 +608,15 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     else if (documentType === 'cer' && activeTab === 'data-retrieval') {
       return <CerDataRetrievalPanel cerDocumentId={cerDocumentId} />;
     }
-    else if (documentType === 'cer' && activeTab === 'equivalence') {
-      return <EquivalenceBuilderPanel cerDocumentId={cerDocumentId} />;
+    else if (activeTab === 'equivalence') {
+      // Support both CER and 510k document types for the equivalence tab
+      return <EquivalenceBuilderPanel 
+        deviceProfile={deviceProfile}
+        documentId={documentType === 'cer' ? cerDocumentId : k510DocumentId}
+        predicateDevices={predicateDevices}
+        selectedLiterature={selectedLiterature}
+        onComplete={handleEquivalenceComplete}
+      />;
     }
     else if (documentType === 'cer' && activeTab === 'sota') {
       return <StateOfArtPanel cerDocumentId={cerDocumentId} />;
