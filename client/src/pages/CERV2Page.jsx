@@ -416,24 +416,12 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       case 4:
         return (
           <div className="space-y-4">
-            <ComplianceScorePanel 
+            <ComplianceCheckPanel 
               deviceProfile={deviceProfile}
-              setDeviceProfile={(newProfile) => {
-                // Just save the updated device profile
-                if (newProfile) {
-                  setDeviceProfile(newProfile);
-                }
-              }}
               documentId={deviceProfile?.id}
-              compliance={compliance}
-              setCompliance={(complianceData) => {
-                setCompliance(complianceData);
-                if (complianceData?.score) {
-                  handleComplianceComplete(Math.round(complianceData.score * 100));
-                }
-              }}
-              isLoading={isComplianceRunning}
-              setIsLoading={setIsComplianceRunning}
+              predicateDevices={predicateDevices}
+              equivalenceData={equivalenceData}
+              onComplete={handleComplianceComplete}
             />
           </div>
         );
