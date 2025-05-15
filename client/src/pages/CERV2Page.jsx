@@ -28,6 +28,7 @@ import ReportGenerator from '@/components/510k/ReportGenerator';
 import SimpleDocumentTreePanel from '@/components/510k/SimpleDocumentTreePanel';
 import WelcomeDialog from '@/components/510k/WelcomeDialog';
 import DeviceIntakeForm from '@/components/510k/DeviceIntakeForm';
+import DeviceProfileForm from '@/components/cer/DeviceProfileForm';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -468,6 +469,17 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const renderContent = () => {
     // If 510k document type is selected, show integrated 510k content
     if (documentType === '510k') {
+      // Show device profile tab if active
+      if (activeTab === 'device-profile') {
+        return (
+          <div className="p-4 space-y-4">
+            <DeviceProfileForm 
+              projectId={k510DocumentId || 'new-device'} 
+            />
+          </div>
+        );
+      }
+      // Otherwise show the step-based workflow content
       return (
         <div className="p-4 space-y-4">
           {render510kProgressBar()}
@@ -551,6 +563,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         {
           label: "510(k) Submission:",
           tabs: [
+            { id: "device-profile", label: "Device Profile", icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
             { id: "predicates", label: "Predicate Finder", icon: <Search className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
             { id: "equivalence", label: <div className="flex flex-col items-center leading-tight">
               <span>Substantial Equivalence</span>
@@ -889,7 +902,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                 variant="default"
                 size="sm"
                 className="bg-green-600 text-white hover:bg-green-700"
-                onClick={startNewClientOnboarding}
+                onClick={() => setActiveTab('device-profile')}
               >
                 <PlusCircle className="h-4 w-4 mr-1" />
                 New Device Submission
