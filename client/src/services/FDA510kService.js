@@ -344,7 +344,83 @@ export const FDA510kService = {
       };
     }
   },
-
+  
+  /**
+   * Save predicate search results to the Document Vault
+   * 
+   * @param {string} folderId Folder ID in Document Vault where to save results
+   * @param {File} resultsFile File object containing the search results
+   * @param {string} deviceProfileId Device profile ID for reference
+   * @returns {Promise<Object>} Created document reference in vault
+   */
+  async savePredicateSearchResults(folderId, resultsFile, deviceProfileId) {
+    try {
+      console.log(`Saving predicate search results to folder ${folderId} for device ${deviceProfileId}`);
+      
+      // Prepare form data for file upload
+      const formData = new FormData();
+      formData.append('file', resultsFile);
+      formData.append('name', `Predicate Search Results - ${new Date().toLocaleDateString()}`);
+      formData.append('description', 'Automated 510(k) predicate device search results');
+      formData.append('documentType', 'predicate-search');
+      formData.append('relatedEntityId', deviceProfileId);
+      
+      // Use Document Vault service to upload the file
+      const result = await docuShareService.uploadFile(folderId, formData);
+      
+      console.log('Predicate search results saved successfully:', result);
+      
+      return {
+        success: true,
+        documentId: result.documentId,
+        vaultReference: result
+      };
+    } catch (error) {
+      console.error('Error saving predicate search results to vault:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Fetch the latest predicate search results from Document Vault
+   * 
+   * @param {string} folderId Folder ID in Document Vault
+   * @param {string} deviceProfileId Device profile ID for reference
+   * @returns {Promise<Object>} The latest predicate search results
+   */
+  async getLatestPredicateSearchResults(folderId, deviceProfileId) {
+    try {
+      // Query Document Vault for all predicate search results in this folder
+      const files = await docuShareService.listFiles(folderId, {
+        documentType: 'predicate-search',
+        relatedEntityId: deviceProfileId
+      });
+      
+      // Sort by creation date descending to get the most recent
+      const sortedFiles = files.sort((a, b) => 
+        new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      
+      // If no files found, return null
+      if (!sortedFiles.length) {
+        return null;
+      }
+      
+      // Get the latest file content
+      const latestFile = sortedFiles[0];
+      const fileContent = await docuShareService.getFileContent(latestFile.documentId);
+      
+      return {
+        success: true,
+        results: typeof fileContent === 'string' ? JSON.parse(fileContent) : fileContent,
+        documentReference: latestFile
+      };
+    } catch (error) {
+      console.error('Error fetching predicate search results from vault:', error);
+      throw error;
+    }
+  },
+  
   /**
    * Run a comprehensive compliance check for a 510(k) submission
    * 
