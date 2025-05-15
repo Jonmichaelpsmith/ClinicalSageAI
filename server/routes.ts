@@ -98,6 +98,11 @@ declare module './routes/510k-literature-routes' {
   export default router;
 }
 
+declare module './routes/510k-literature-api.js' {
+  const router: express.Router;
+  export default router;
+}
+
 declare module './routes/510kEstarRoutes' {
   const router: express.Router;
   export default router;
@@ -130,6 +135,7 @@ import cerQmpIntegrationRouter from './routes/cer-qmp-integration.js';
 import authRouter from './routes/auth.js';
 import maudRouter from './routes/maud-routes';
 import fda510kLiteratureRouter from './routes/510k-literature-routes';
+import fda510kLiteratureApiRouter from './routes/510k-literature-api.js';
 import fda510kRouter from './routes/fda510k-routes';
 import fda510kComplianceRouter from './routes/510k-compliance-routes';
 import fda510kEstarRouter from './routes/510kEstarRoutes';
