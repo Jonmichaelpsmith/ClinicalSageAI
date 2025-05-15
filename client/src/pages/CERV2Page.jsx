@@ -39,22 +39,18 @@ import ProgressTracker from '@/components/510k/ProgressTracker';
 import SubmissionTimeline from '@/components/510k/SubmissionTimeline';
 import ReportGenerator from '@/components/510k/ReportGenerator';
 import About510kDialog from '@/components/510k/About510kDialog';
-import ComplianceChecker from '@/components/510k/ComplianceChecker';
-import WorkflowEnabledReportGenerator from '@/components/510k/WorkflowEnabledReportGenerator';
-import DeviceProfileForm from '@/components/510k/DeviceProfileForm';
-import OneClick510kDraft from '@/components/510k/OneClick510kDraft';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, GraduationCap, HelpCircle, Circle, Home, Menu, Filter, FolderPlus, Edit, ArrowRight, CheckCircle2, Cog, Trash2, Plus, Folder, File, Upload, ChevronRight, FilePlus } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, GraduationCap, HelpCircle, Circle, Home, Menu, Filter, FolderPlus, Edit, ArrowRight, CheckCircle2, Cog, Trash2, Plus, Folder, File } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -94,19 +90,6 @@ export default function CERV2Page() {
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
   const [exportTimestamp, setExportTimestamp] = useState(null);
-  
-  // 510k workflow state
-  const [workflowStep, setWorkflowStep] = useState(1);
-  const [workflowTabs, setWorkflowTabs] = useState([
-    { id: 'setup', name: "Setup", completed: false, enabled: true },
-    { id: 'device-profile', name: "Device Profile", completed: false, enabled: false },
-    { id: 'predicate-discovery', name: "Predicate Discovery", completed: false, enabled: false },
-    { id: 'pathway-advisor', name: "Pathway Advisor", completed: false, enabled: false },
-    { id: 'equivalence-drafting', name: "Equivalence Drafting", completed: false, enabled: false },
-    { id: 'compliance-check', name: "Compliance Check", completed: false, enabled: false },
-    { id: 'estar-assembly', name: "eSTAR Assembly", completed: false, enabled: false },
-    { id: 'submission', name: "Submission", completed: false, enabled: false }
-  ]);
   const [isComplianceRunning, setIsComplianceRunning] = useState(false);
   const [isGeneratingFullCER, setIsGeneratingFullCER] = useState(false);
   const [showDeviceInfoDialog, setShowDeviceInfoDialog] = useState(false);
@@ -114,7 +97,6 @@ export default function CERV2Page() {
   const [showWizard, setShowWizard] = useState(false);
   const [showEvidenceReminder, setShowEvidenceReminder] = useState(true);
   const [showSystemHealth, setShowSystemHealth] = useState(false);
-  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [systemInfo, setSystemInfo] = useState({
     memory: { used: 0, total: 0, percentage: 0 },
     api: { status: 'unknown', latency: 0 },
@@ -122,64 +104,7 @@ export default function CERV2Page() {
     errorCount: 0,
     lastChecked: null
   });
-  // Device profile creation state
-  const [showNewProfileInput, setShowNewProfileInput] = useState(false);
-  const [newProfileName, setNewProfileName] = useState('');
-  
-  // States for Device Intake
-  const [showNewDeviceIntakeInput, setShowNewDeviceIntakeInput] = useState(false);
-  const [newDeviceIntakeName, setNewDeviceIntakeName] = useState('');
-  
-  // States for Device
-  const [showNewDeviceInput, setShowNewDeviceInput] = useState(false);
-  const [newDeviceName, setNewDeviceName] = useState('');
   const { toast } = useToast();
-  
-  // Function to handle workflow tab navigation
-  const handleWorkflowTabChange = (tabId) => {
-    const tabIndex = workflowTabs.findIndex(tab => tab.id === tabId);
-    if (tabIndex !== -1) {
-      // Update current step
-      setWorkflowStep(tabIndex + 1);
-      
-      // Mark previous steps as completed
-      setWorkflowTabs(prev => {
-        const updated = [...prev];
-        for (let i = 0; i < tabIndex; i++) {
-          updated[i].completed = true;
-        }
-        // Enable the next step after the current one
-        if (tabIndex + 1 < updated.length) {
-          updated[tabIndex + 1].enabled = true;
-        }
-        return updated;
-      });
-    }
-  };
-  
-  // Function to complete the current workflow step and advance to the next
-  const completeWorkflowStep = () => {
-    if (workflowStep < workflowTabs.length) {
-      // Mark current step as completed
-      setWorkflowTabs(prev => {
-        const updated = [...prev];
-        updated[workflowStep - 1].completed = true;
-        // Enable next step
-        if (workflowStep < updated.length) {
-          updated[workflowStep].enabled = true;
-        }
-        return updated;
-      });
-      
-      // Advance to next step
-      const nextStep = workflowStep + 1;
-      setWorkflowStep(nextStep);
-      
-      // Return the ID of the next tab
-      return workflowTabs[nextStep - 1]?.id;
-    }
-    return null;
-  };
   
   // Helper function to format CtQ factors for a specific objective
   const getCtqFactorsForSection = (objectiveId, ctqFactors) => {
@@ -955,182 +880,34 @@ export default function CERV2Page() {
     
     if (activeTab === '510k') {
       console.log("Rendering enhanced 510k tab content");
-      
       return (
         <div className="bg-white p-6 rounded-md shadow-sm border border-blue-100">
-          <div className="mb-4 flex items-center justify-between">
-            <div>
-              <h2 className="text-2xl font-semibold text-blue-800">510(k) Submission Builder</h2>
-              <p className="text-gray-600">Complete your FDA 510(k) submission using our guided workflow</p>
-            </div>
-            <ProgressTracker 
-              currentStep={workflowStep} 
-              totalSteps={workflowTabs.length}
-              steps={workflowTabs.map(tab => ({ name: tab.name, completed: tab.completed }))}
-            />
-          </div>
-          
-          <Tabs 
-            defaultValue="setup" 
-            className="w-full"
-            onValueChange={(value) => handleWorkflowTabChange(value)}
-            value={workflowTabs[workflowStep - 1]?.id}
-          >
-            <TabsList className="mb-4 bg-blue-50 w-full flex justify-start gap-2 p-1 border-b overflow-x-auto">
-              {workflowTabs.map((tab) => (
-                <TabsTrigger 
-                  key={tab.id}
-                  value={tab.id} 
-                  className="data-[state=active]:bg-blue-600"
-                  disabled={!tab.enabled}
-                >
-                  {tab.id === 'setup' && <Cog className="h-4 w-4 mr-2" />}
-                  {tab.id === 'device-profile' && <FileText className="h-4 w-4 mr-2" />}
-                  {tab.id === 'predicate-discovery' && <Search className="h-4 w-4 mr-2" />}
-                  {tab.id === 'pathway-advisor' && <GraduationCap className="h-4 w-4 mr-2" />}
-                  {tab.id === 'equivalence-drafting' && <GitCompare className="h-4 w-4 mr-2" />}
-                  {tab.id === 'compliance-check' && <CheckSquare className="h-4 w-4 mr-2" />}
-                  {tab.id === 'estar-assembly' && <Layers className="h-4 w-4 mr-2" />}
-                  {tab.id === 'submission' && <Upload className="h-4 w-4 mr-2" />}
-                  {tab.name}
-                </TabsTrigger>
-              ))}
+          <Tabs defaultValue="workflow" className="w-full">
+            <TabsList className="mb-4 bg-blue-50 w-full flex justify-start gap-2 p-1 border-b">
+              <TabsTrigger value="workflow" className="data-[state=active]:bg-blue-600">
+                <FileText className="h-4 w-4 mr-2" />
+                Workflow
+              </TabsTrigger>
+              <TabsTrigger value="discovery" className="data-[state=active]:bg-blue-600">
+                <Search className="h-4 w-4 mr-2" />
+                Predicate Discovery
+              </TabsTrigger>
+              <TabsTrigger value="insights" className="data-[state=active]:bg-blue-600">
+                <Lightbulb className="h-4 w-4 mr-2" />
+                Insights
+              </TabsTrigger>
+              <TabsTrigger value="timeline" className="data-[state=active]:bg-blue-600">
+                <Calendar className="h-4 w-4 mr-2" />
+                Timeline
+              </TabsTrigger>
+              <TabsTrigger value="reports" className="data-[state=active]:bg-blue-600">
+                <FileText className="h-4 w-4 mr-2" />
+                Reports
+              </TabsTrigger>
             </TabsList>
             
-            {/* Setup Tab */}
-            <TabsContent value="setup" className="mt-4">
+            <TabsContent value="workflow" className="mt-4">
               <div className="grid grid-cols-1 gap-6">
-                <Card className="shadow-md border border-blue-100 overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
-                    <CardTitle className="text-xl flex items-center text-blue-800">
-                      <Cog className="h-5 w-5 mr-2" />
-                      510(k) Submission Setup
-                    </CardTitle>
-                    <CardDescription>
-                      Configure your 510(k) submission parameters and journey
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="document-id">510(k) Document ID</Label>
-                          <Input id="document-id" value={k510DocumentId} disabled className="bg-gray-50" />
-                        </div>
-                        <div>
-                          <Label htmlFor="submission-date">Target Submission Date</Label>
-                          <Input id="submission-date" type="date" defaultValue="2025-07-15" />
-                        </div>
-                      </div>
-                      
-                      <div>
-                        <Label htmlFor="submission-type">510(k) Submission Type</Label>
-                        <Select defaultValue="traditional">
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="traditional">Traditional 510(k)</SelectItem>
-                            <SelectItem value="abbreviated">Abbreviated 510(k)</SelectItem>
-                            <SelectItem value="special">Special 510(k)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2 mt-4">
-                        <Switch id="estar-format" defaultChecked />
-                        <Label htmlFor="estar-format">Use eSTAR format for submission</Label>
-                      </div>
-                      
-                      <div className="pt-4">
-                        <Button 
-                          className="mr-2"
-                          onClick={() => {
-                            toast({
-                              title: "Setup Saved",
-                              description: "Your 510(k) submission setup has been saved.",
-                            });
-                          }}
-                        >
-                          Save Setup
-                        </Button>
-                        <Button variant="outline" className="mr-2">
-                          Reset to Defaults
-                        </Button>
-                        <Button 
-                          className="bg-blue-600 hover:bg-blue-700"
-                          onClick={() => {
-                            const nextTabId = completeWorkflowStep();
-                            if (nextTabId) {
-                              toast({
-                                title: "Setup Complete",
-                                description: "Moving to Device Profile section.",
-                              });
-                            }
-                          }}
-                        >
-                          Continue to Device Profile
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            {/* Device Profile Tab */}
-            <TabsContent value="device-profile" className="mt-4">
-              <div className="grid grid-cols-1 gap-6">
-                <Card className="shadow-md border border-blue-100 overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
-                    <CardTitle className="text-xl flex items-center text-blue-800">
-                      <FileText className="h-5 w-5 mr-2" />
-                      Device Profile Information
-                    </CardTitle>
-                    <CardDescription>
-                      Complete all required information about your medical device
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <DeviceProfileForm 
-                      initialData={deviceProfile || {
-                        deviceName: deviceName || '',
-                        manufacturer: manufacturer || '',
-                        deviceClass: deviceType?.includes('II') ? 'II' : deviceType?.includes('III') ? 'III' : 'I',
-                        intendedUse: intendedUse || ''
-                      }}
-                      onSave={(data) => {
-                        console.log("Device profile data saved:", data);
-                        // Update local state
-                        setDeviceProfile(data);
-                        // Show success notification
-                        toast({
-                          title: "Device Profile Saved",
-                          description: "Your device profile has been successfully saved.",
-                        });
-                      }}
-                      additionalButtons={
-                        <Button 
-                          className="bg-blue-600 hover:bg-blue-700 mt-4"
-                          onClick={() => {
-                            const nextTabId = completeWorkflowStep();
-                            if (nextTabId) {
-                              toast({
-                                title: "Device Profile Complete",
-                                description: "Moving to Predicate Discovery section.",
-                              });
-                            }
-                          }}
-                        >
-                          Continue to Predicate Discovery
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                      }
-                    />
-                  </CardContent>
-                </Card>
-                
                 <GuidedTooltip
                   title="510(k) Submission Process"
                   steps={[
@@ -1369,81 +1146,12 @@ export default function CERV2Page() {
                                     <span className="truncate">Glucose Monitor</span>
                                   </button>
                                   
-                                  {/* Add New Profile Button with state-based visibility */}
-                                  {showNewProfileInput ? (
-                                    <div className="p-3 border-2 border-blue-500 rounded shadow-lg bg-white my-2">
-                                      {console.log('DEBUG: Attempting to render profile creation form. showNewProfileInput is:', showNewProfileInput)}
-                                      <Label htmlFor="newProfileName" className="block mb-1 font-medium text-sm">New Profile Name:</Label>
-                                      <Input 
-                                        id="newProfileName"
-                                        value={newProfileName}
-                                        onChange={(e) => setNewProfileName(e.target.value)}
-                                        placeholder="Enter profile name"
-                                        className="mb-2 text-sm border-2"
-                                      />
-                                      <div className="flex gap-2">
-                                        <button 
-                                          type="button"
-                                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded shadow-sm"
-                                          onClick={() => {
-                                            console.log("Create button clicked!");
-                                            alert("Create button clicked!");
-                                            
-                                            if (!newProfileName.trim()) {
-                                              alert("Profile name cannot be empty");
-                                              return;
-                                            }
-
-                                            console.log("Creating profile:", newProfileName);
-                                            // Simplified implementation without API call for testing
-                                            setNewProfileName("");
-                                            setShowNewProfileInput(false);
-                                            alert("Profile would be created: " + newProfileName);
-                                          }}
-                                        >
-                                          Create Profile
-                                        </button>
-                                        <button 
-                                          type="button"
-                                          className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 font-medium rounded shadow-sm"
-                                          onClick={() => {
-                                            console.log("Cancel button clicked!");
-                                            alert("Cancel button clicked!");
-                                            setNewProfileName("");
-                                            setShowNewProfileInput(false);
-                                          }}
-                                        >
-                                          Cancel
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <div
-                                      id="addNewProfileWrapper"
-                                      className="w-full cursor-pointer"
-                                      onClick={(e) => {
-                                        e.stopPropagation(); // Prevent event bubbling
-                                        console.log('DEBUG: "Add New Profile" wrapper clicked! Timestamp:', new Date().toISOString());
-                                        alert('Add New Profile area clicked!');
-                                        setShowNewProfileInput(true);
-                                      }}
-                                    >
-                                      <button
-                                        id="addNewProfileButton"
-                                        type="button"
-                                        className="w-full text-left px-3 py-2 rounded bg-red-100 text-red-700 text-sm flex items-center hover:bg-red-200 border-2 border-red-300 font-semibold"
-                                        onClick={(e) => {
-                                          e.stopPropagation(); // Prevent event bubbling
-                                          console.log('DEBUG: "Add New Profile" button clicked! Timestamp:', new Date().toISOString());
-                                          alert('Add New Profile button clicked!');
-                                          setShowNewProfileInput(true);
-                                        }}
-                                      >
-                                        <Plus className="h-4 w-4 mr-2" />
-                                        <span>Add New Profile</span>
-                                      </button>
-                                    </div>
-                                  )}
+                                  <button
+                                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center text-blue-600"
+                                  >
+                                    <Plus className="h-4 w-4 mr-2" />
+                                    <span>Add New Profile</span>
+                                  </button>
                                 </div>
                               </div>
                               
@@ -1719,565 +1427,17 @@ export default function CERV2Page() {
               </div>
             </TabsContent>
             
-            <TabsContent value="predicate-discovery" className="mt-4">
+            <TabsContent value="discovery" className="mt-4">
               <div className="grid grid-cols-1 gap-6">
-                <Card className="shadow-md border border-blue-100 overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
-                    <CardTitle className="text-xl flex items-center text-blue-800">
-                      <Search className="h-5 w-5 mr-2" />
-                      Predicate Device Discovery
-                    </CardTitle>
-                    <CardDescription>
-                      Search for and select predicate devices for your 510(k) submission
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <PredicateFinderPanel 
-                      deviceProfile={deviceProfile || {
-                        deviceName: deviceName,
-                        manufacturer: manufacturer,
-                        deviceClass: deviceType?.includes('II') ? 'II' : deviceType?.includes('III') ? 'III' : 'I',
-                        intendedUse: intendedUse
-                      }}
-                      organizationId={organizationId || 1}
-                      onPredicateSelected={(predicates) => {
-                        console.log("Selected predicates:", predicates);
-                        setComparators(predicates);
-                        toast({
-                          title: "Predicates Selected",
-                          description: `${predicates.length} predicate device(s) have been selected for comparison.`,
-                        });
-                      }}
-                      additionalButtons={
-                        <Button 
-                          className="bg-blue-600 hover:bg-blue-700 mt-4"
-                          onClick={() => {
-                            const nextTabId = completeWorkflowStep();
-                            if (nextTabId) {
-                              toast({
-                                title: "Predicate Discovery Complete",
-                                description: "Moving to Pathway Advisor section.",
-                              });
-                            }
-                          }}
-                        >
-                          Continue to Pathway Advisor
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                      }
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            {/* Pathway Advisor Tab */}
-            <TabsContent value="pathway-advisor" className="mt-4">
-              <div className="grid grid-cols-1 gap-6">
-                <Card className="shadow-md border border-blue-100 overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
-                    <CardTitle className="text-xl flex items-center text-blue-800">
-                      <GraduationCap className="h-5 w-5 mr-2" />
-                      510(k) Pathway Advisor
-                    </CardTitle>
-                    <CardDescription>
-                      Receive guidance on the most appropriate 510(k) submission pathway
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="space-y-6">
-                      {/* Pathway Recommendation Card */}
-                      <div className="bg-green-50 border border-green-100 rounded-lg p-4">
-                        <div className="flex items-start">
-                          <div className="bg-green-100 rounded-full p-2 mr-4">
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                          </div>
-                          <div>
-                            <h3 className="text-lg font-medium text-green-800">Recommended Pathway: Traditional 510(k)</h3>
-                            <p className="text-green-700 mt-1">
-                              Based on your device profile and selected predicates, a Traditional 510(k) is the most appropriate pathway.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Pathway Comparison Table */}
-                      <div className="border rounded-lg overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pathway Type</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timeline</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Suitability</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            <tr className="bg-green-50">
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Traditional 510(k)</td>
-                              <td className="px-6 py-4 text-sm text-gray-500">Standard pathway requiring demonstration of substantial equivalence</td>
-                              <td className="px-6 py-4 text-sm text-gray-500">90-day review period</td>
-                              <td className="px-6 py-4 text-sm text-green-600 font-medium">Recommended</td>
-                            </tr>
-                            <tr>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Abbreviated 510(k)</td>
-                              <td className="px-6 py-4 text-sm text-gray-500">Uses guidance documents, special controls, or recognized standards</td>
-                              <td className="px-6 py-4 text-sm text-gray-500">90-day review period</td>
-                              <td className="px-6 py-4 text-sm text-gray-500">Possible alternative</td>
-                            </tr>
-                            <tr>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Special 510(k)</td>
-                              <td className="px-6 py-4 text-sm text-gray-500">For modifications to your own legally marketed device</td>
-                              <td className="px-6 py-4 text-sm text-gray-500">30-day review period</td>
-                              <td className="px-6 py-4 text-sm text-gray-500">Not applicable</td>
-                            </tr>
-                          </tbody>
-                        </table>
-                      </div>
-                      
-                      <div className="flex justify-end space-x-2 pt-4">
-                        <Button variant="outline">
-                          Request Consultation
-                        </Button>
-                        <Button 
-                          onClick={() => {
-                            toast({
-                              title: "Pathway Confirmed",
-                              description: "Traditional 510(k) pathway has been confirmed.",
-                            });
-                          }}
-                        >
-                          Confirm Pathway
-                        </Button>
-                        <Button 
-                          className="bg-blue-600 hover:bg-blue-700"
-                          onClick={() => {
-                            const nextTabId = completeWorkflowStep();
-                            if (nextTabId) {
-                              toast({
-                                title: "Pathway Analysis Complete",
-                                description: "Moving to Equivalence Drafting section.",
-                              });
-                            }
-                          }}
-                        >
-                          Continue to Equivalence Drafting
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            {/* Equivalence Drafting Tab */}
-            <TabsContent value="equivalence-drafting" className="mt-4">
-              <div className="grid grid-cols-1 gap-6">
-                <Card className="shadow-md border border-blue-100 overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
-                    <CardTitle className="text-xl flex items-center text-blue-800">
-                      <GitCompare className="h-5 w-5 mr-2" />
-                      Substantial Equivalence Analysis
-                    </CardTitle>
-                    <CardDescription>
-                      Document and analyze substantial equivalence to predicate devices
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <EquivalenceBuilderPanel
-                      onEquivalenceDataChange={(data) => {
-                        console.log("Equivalence data updated:", data);
-                        setEquivalenceData(data);
-                      }}
-                      onAddToCER={(data) => {
-                        console.log("Equivalence data added to report:", data);
-                        toast({
-                          title: "Equivalence Analysis Added",
-                          description: "Your substantial equivalence analysis has been added to the report.",
-                        });
-                      }}
-                      additionalButtons={
-                        <Button 
-                          className="bg-blue-600 hover:bg-blue-700 mt-4"
-                          onClick={() => {
-                            const nextTabId = completeWorkflowStep();
-                            if (nextTabId) {
-                              toast({
-                                title: "Equivalence Analysis Complete",
-                                description: "Moving to Compliance Check section.",
-                              });
-                            }
-                          }}
-                        >
-                          Continue to Compliance Check
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                      }
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="compliance-check" className="mt-4">
-              <div className="grid grid-cols-1 gap-6">
-                <Card className="shadow-md border border-blue-100 overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
-                    <CardTitle className="text-xl flex items-center text-blue-800">
-                      <CheckSquare className="h-5 w-5 mr-2" />
-                      FDA Compliance Check
-                    </CardTitle>
-                    <CardDescription>
-                      Verify regulatory compliance of your 510(k) submission
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <ComplianceChecker
-                      projectId={deviceProfile?.id || 'dev-sample-1'}
-                      onComplianceChange={(results) => {
-                        setCompliance(results);
-                        setIsComplianceRunning(false);
-                      }}
-                      isComplianceRunning={isComplianceRunning}
-                      setIsComplianceRunning={setIsComplianceRunning}
-                      additionalButtons={
-                        <Button 
-                          className="bg-blue-600 hover:bg-blue-700 mt-4"
-                          onClick={() => {
-                            const nextTabId = completeWorkflowStep();
-                            if (nextTabId) {
-                              toast({
-                                title: "Compliance Check Complete",
-                                description: "Moving to eSTAR Assembly section.",
-                              });
-                            }
-                          }}
-                        >
-                          Continue to eSTAR Assembly
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                      }
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            {/* eSTAR Assembly Tab */}
-            <TabsContent value="estar-assembly" className="mt-4">
-              <div className="grid grid-cols-1 gap-6">
-                <Card className="shadow-md border border-blue-100 overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
-                    <CardTitle className="text-xl flex items-center text-blue-800">
-                      <Layers className="h-5 w-5 mr-2" />
-                      eSTAR Assembly
-                    </CardTitle>
-                    <CardDescription>
-                      Compile your submission into the FDA eSTAR format
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="space-y-6">
-                      {/* eSTAR Sections Display */}
-                      <div className="border rounded-lg overflow-hidden">
-                        <div className="bg-gray-50 px-4 py-3 border-b">
-                          <h3 className="text-sm font-medium text-gray-700">eSTAR Submission Assembly</h3>
-                        </div>
-                        <div className="divide-y divide-gray-200">
-                          {[
-                            { name: "Administrative Information", status: "complete", percent: 100 },
-                            { name: "Device Description", status: "complete", percent: 100 },
-                            { name: "Substantial Equivalence Discussion", status: "complete", percent: 100 },
-                            { name: "Sterilization", status: "in-progress", percent: 60 },
-                            { name: "Biocompatibility", status: "in-progress", percent: 75 },
-                            { name: "Software", status: "not-started", percent: 0 },
-                            { name: "Electromagnetic Compatibility", status: "not-started", percent: 0 },
-                            { name: "Performance Testing", status: "not-started", percent: 0 },
-                            { name: "Clinical Evidence", status: "not-started", percent: 0 },
-                            { name: "Labeling", status: "in-progress", percent: 40 },
-                          ].map((section, index) => (
-                            <div key={index} className="px-4 py-3 flex items-center justify-between">
-                              <div className="flex items-center">
-                                {section.status === "complete" ? (
-                                  <CheckCircle className="h-5 w-5 text-green-500 mr-3" />
-                                ) : section.status === "in-progress" ? (
-                                  <Circle className="h-5 w-5 text-yellow-500 mr-3" />
-                                ) : (
-                                  <Circle className="h-5 w-5 text-gray-300 mr-3" />
-                                )}
-                                <span className="text-sm text-gray-700">{section.name}</span>
-                              </div>
-                              <div className="flex items-center space-x-4">
-                                <div className="w-32 bg-gray-200 rounded-full h-2.5">
-                                  <div 
-                                    className={`h-2.5 rounded-full ${
-                                      section.status === "complete" 
-                                        ? "bg-green-500" 
-                                        : section.status === "in-progress" 
-                                          ? "bg-yellow-500" 
-                                          : "bg-gray-300"
-                                    }`}
-                                    style={{ width: `${section.percent}%` }}
-                                  ></div>
-                                </div>
-                                <span className="text-xs text-gray-500">{section.percent}%</span>
-                                <Button variant="ghost" size="sm" className="h-8 px-2">
-                                  <Edit className="h-4 w-4 text-gray-500" />
-                                </Button>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-end space-x-2 pt-4">
-                        <Button variant="outline">
-                          Save Draft
-                        </Button>
-                        <Button
-                          onClick={() => {
-                            toast({
-                              title: "eSTAR Assembly Completed",
-                              description: "Your eSTAR package has been successfully assembled.",
-                            });
-                          }}
-                        >
-                          Complete Assembly
-                        </Button>
-                        <Button 
-                          className="bg-blue-600 hover:bg-blue-700"
-                          onClick={() => {
-                            const nextTabId = completeWorkflowStep();
-                            if (nextTabId) {
-                              toast({
-                                title: "eSTAR Assembly Complete",
-                                description: "Moving to Final Submission section.",
-                              });
-                            }
-                          }}
-                        >
-                          Continue to Submission
-                          <ArrowRight className="h-4 w-4 ml-2" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            {/* Submission Tab */}
-            <TabsContent value="submission" className="mt-4">
-              <div className="grid grid-cols-1 gap-6">
-                <Card className="shadow-md border border-blue-100 overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
-                    <CardTitle className="text-xl flex items-center text-blue-800">
-                      <Upload className="h-5 w-5 mr-2" />
-                      FDA Submission
-                    </CardTitle>
-                    <CardDescription>
-                      Finalize and submit your 510(k) to the FDA
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <div className="space-y-6">
-                      {/* Pre-submission Checklist */}
-                      <div className="bg-white border rounded-lg overflow-hidden">
-                        <div className="bg-gray-50 px-4 py-3 border-b">
-                          <h3 className="text-sm font-medium text-gray-700">Pre-submission Checklist</h3>
-                        </div>
-                        <div className="p-4 space-y-3">
-                          {[
-                            { check: "Device information complete", done: true },
-                            { check: "Predicate devices identified", done: true },
-                            { check: "Substantial equivalence documented", done: true },
-                            { check: "Compliance verification complete", done: true },
-                            { check: "eSTAR package assembled", done: false },
-                            { check: "Submission fee payment prepared", done: false },
-                            { check: "Final review completed", done: false },
-                          ].map((item, i) => (
-                            <div key={i} className="flex items-start">
-                              <div className={`flex-shrink-0 h-5 w-5 ${item.done ? 'text-green-500' : 'text-gray-300'}`}>
-                                <CheckSquare className="h-5 w-5" />
-                              </div>
-                              <div className="ml-3">
-                                <p className={`text-sm ${item.done ? 'text-gray-700' : 'text-gray-500'}`}>{item.check}</p>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                      
-                      {/* Submission Details */}
-                      <div className="bg-white border rounded-lg overflow-hidden">
-                        <div className="bg-gray-50 px-4 py-3 border-b">
-                          <h3 className="text-sm font-medium text-gray-700">Submission Details</h3>
-                        </div>
-                        <div className="p-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="submission-id">Submission ID</Label>
-                              <Input id="submission-id" value={k510DocumentId} disabled className="bg-gray-50" />
-                            </div>
-                            <div>
-                              <Label htmlFor="submission-date">Submission Date</Label>
-                              <Input id="submission-date" type="date" defaultValue="2025-07-15" />
-                            </div>
-                            <div>
-                              <Label htmlFor="fda-contact">FDA Contact Person</Label>
-                              <Input id="fda-contact" placeholder="Optional" />
-                            </div>
-                            <div>
-                              <Label htmlFor="submission-fee">Submission Fee</Label>
-                              <Input id="submission-fee" value="$13,123" disabled className="bg-gray-50" />
-                            </div>
-                          </div>
-                          
-                          <div className="mt-4">
-                            <Label htmlFor="submission-notes">Additional Notes</Label>
-                            <textarea 
-                              id="submission-notes" 
-                              rows={3} 
-                              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" 
-                              placeholder="Any special notes for the FDA reviewer..."
-                            ></textarea>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex justify-end space-x-2 pt-4">
-                        <Button variant="outline">
-                          Save for Later
-                        </Button>
-                        <Button 
-                          className="bg-green-600 hover:bg-green-700"
-                          onClick={() => {
-                            completeWorkflowStep();
-                            toast({
-                              title: "510(k) Submission Complete",
-                              description: "Your submission has been successfully sent to the FDA.",
-                              variant: "success"
-                            });
-                            
-                            // Show success dialog
-                            setSuccessDialogOpen(true);
-                          }}
-                        >
-                          <Upload className="h-4 w-4 mr-2" />
-                          Submit to FDA
-                        </Button>
-                      </div>
-                      
-                      {/* Final Success Dialog */}
-                      <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
-                        <DialogContent className="sm:max-w-md">
-                          <DialogHeader>
-                            <DialogTitle className="flex items-center text-xl">
-                              <CheckCircle className="h-6 w-6 text-green-600 mr-2" />
-                              510(k) Submission Complete
-                            </DialogTitle>
-                            <DialogDescription>
-                              Your 510(k) submission has been successfully completed and sent to the FDA.
-                            </DialogDescription>
-                          </DialogHeader>
-                          <div className="flex flex-col gap-4 py-4">
-                            <div className="bg-green-50 p-4 rounded-lg border border-green-100">
-                              <h3 className="font-medium text-green-800 mb-2">Submission Details</h3>
-                              <p className="text-sm text-green-700 mb-1">Submission ID: {k510DocumentId}</p>
-                              <p className="text-sm text-green-700 mb-1">Submitted: {new Date().toLocaleDateString()}</p>
-                              <p className="text-sm text-green-700">Estimated Review Time: 90 days</p>
-                            </div>
-                            <p className="text-sm text-gray-600">
-                              You will receive confirmation from the FDA shortly. You can track the status of your submission in the Regulatory Dashboard.
-                            </p>
-                          </div>
-                          <DialogFooter>
-                            <Button type="button" variant="secondary" onClick={() => setSuccessDialogOpen(false)}>
-                              Close
-                            </Button>
-                            <Button type="button" onClick={() => setSuccessDialogOpen(false)}>
-                              View Submission
-                            </Button>
-                          </DialogFooter>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="compliance" className="mt-4">
-              <div className="grid grid-cols-1 gap-6">
-                <Card className="shadow-md border border-blue-100 overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
-                    <CardTitle className="text-xl flex items-center text-blue-800">
-                      <CheckSquare className="h-5 w-5 mr-2" />
-                      Compliance Check
-                    </CardTitle>
-                    <CardDescription>
-                      Validate your submission against FDA requirements
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <ComplianceChecker 
-                      projectId={deviceProfile?.id || 'dev-sample-1'}
-                      onComplianceChange={(results) => {
-                        setCompliance(results);
-                        setIsComplianceRunning(false);
-                      }}
-                      isComplianceRunning={isComplianceRunning}
-                      setIsComplianceRunning={setIsComplianceRunning}
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="reports" className="mt-4">
-              <div className="grid grid-cols-1 gap-6">
-                <Card className="shadow-md border border-blue-100 overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 pb-3">
-                    <CardTitle className="text-xl flex items-center text-blue-800">
-                      <FileText className="h-5 w-5 mr-2" />
-                      Final eSTAR Review & Generation
-                    </CardTitle>
-                    <CardDescription>
-                      Generate your FDA-compliant 510(k) submission package
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="pt-4">
-                    <WorkflowEnabledReportGenerator
-                      deviceData={deviceProfile || {
-                        deviceName: deviceName || 'Medical Device',
-                        manufacturer: manufacturer || 'Medical Device Manufacturer',
-                        deviceClass: deviceType?.includes('II') ? 'II' : deviceType?.includes('III') ? 'III' : 'I',
-                        intendedUse: intendedUse || 'Clinical use',
-                        id: 'dev-sample-1'
-                      }}
-                      predicateData={{
-                        deviceName: 'Predicate Device',
-                        k510Number: 'K123456',
-                        manufacturer: 'Predicate Manufacturer',
-                        clearanceDate: '2023-05-15',
-                        deviceClass: 'Class II',
-                        productCode: 'ABC',
-                        regulationNumber: '870.1234'
-                      }}
-                      validationResults={compliance || null}
-                      onReportGenerated={(reportId) => {
-                        console.log("Report generated:", reportId);
-                        toast({
-                          title: 'FDA 510(k) report generated',
-                          description: 'Your FDA-compliant 510(k) submission report has been generated successfully.',
-                        });
-                      }}
-                      organizationId={organizationId || 1}
-                      userId={userId || 1}
-                    />
-                  </CardContent>
-                </Card>
+                <PredicateFinderPanel 
+                  deviceProfile={deviceProfile || {
+                    deviceName: deviceName,
+                    manufacturer: manufacturer,
+                    deviceClass: deviceType.includes('II') ? 'II' : deviceType.includes('III') ? 'III' : 'I',
+                    intendedUse: intendedUse
+                  }}
+                  organizationId={1}
+                />
               </div>
             </TabsContent>
             
@@ -3369,21 +2529,6 @@ export default function CERV2Page() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
-      {/* DIAGNOSTIC TEST BUTTON */}
-      <div className="bg-red-100 mb-6 p-4 border border-red-400 rounded-lg shadow-md">
-        <h2 className="text-lg font-bold text-red-800 mb-2">UI DIAGNOSTIC TEST</h2>
-        <p className="text-sm text-red-700 mb-3">Click the button below to test if basic UI interactions are working:</p>
-        <Button 
-          className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded shadow-lg"
-          onClick={() => {
-            console.log('UI Test button clicked!');
-            alert('UI Test Button Clicked! If you see this alert, basic UI interactions are working.');
-          }}
-        >
-          TEST UI INTERACTIONS
-        </Button>
-      </div>
       
       {/* Direct 510(k) Automation Panel */}
       <div className="bg-white mb-6 p-6 border border-blue-200 rounded-lg shadow-md">

@@ -92,16 +92,8 @@ const deviceProfileSchema = z.object({
  * @param {Object} props.initialData - Initial form data (optional)
  * @param {Function} props.onSubmit - Function called when form is submitted
  * @param {boolean} props.isEditing - Whether the form is in editing mode
- * @param {Function} props.onComplete - Function called when the user wants to proceed to next workflow step
- * @param {boolean} props.isWorkflowEnabled - Whether this component is part of the guided workflow
  */
-const DeviceProfileForm = ({ 
-  initialData = {}, 
-  onSubmit, 
-  isEditing = false,
-  onComplete = () => {},
-  isWorkflowEnabled = false
-}) => {
+const DeviceProfileForm = ({ initialData = {}, onSubmit, isEditing = false }) => {
   const [isValidating, setIsValidating] = useState(false);
   const [validationResult, setValidationResult] = useState(null);
   
@@ -420,8 +412,8 @@ const DeviceProfileForm = ({
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="Limited">Limited (≤24 hours)</SelectItem>
-                            <SelectItem value="Prolonged">Prolonged (&gt;24 hours to 30 days)</SelectItem>
-                            <SelectItem value="Permanent">Permanent (&gt;30 days)</SelectItem>
+                            <SelectItem value="Prolonged">Prolonged (>24 hours to 30 days)</SelectItem>
+                            <SelectItem value="Permanent">Permanent (>30 days)</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>
@@ -641,33 +633,9 @@ const DeviceProfileForm = ({
                 >
                   {isValidating ? "Validating..." : "Validate Profile"}
                 </Button>
-                
-                <div className="flex space-x-2">
-                  <Button type="submit">
-                    {isEditing ? "Update Profile" : "Save Profile"}
-                  </Button>
-                  
-                  {isWorkflowEnabled && validationResult?.isValid && (
-                    <Button 
-                      type="button"
-                      className="bg-green-600 hover:bg-green-700"
-                      onClick={() => {
-                        // First submit the form data
-                        const formData = form.getValues();
-                        if (onSubmit) {
-                          onSubmit(formData);
-                        }
-                        
-                        // Then notify that this step is complete
-                        if (onComplete) {
-                          onComplete(formData);
-                        }
-                      }}
-                    >
-                      Continue to Predicate Discovery
-                    </Button>
-                  )}
-                </div>
+                <Button type="submit">
+                  {isEditing ? "Update Profile" : "Save Profile"}
+                </Button>
               </div>
             </form>
           </Form>

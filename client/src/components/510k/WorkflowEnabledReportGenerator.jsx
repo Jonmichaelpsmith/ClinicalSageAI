@@ -44,10 +44,7 @@ const WorkflowEnabledReportGenerator = ({
   deviceData,
   predicateData,
   reportType = "510k",
-  className = '',
-  isWorkflowEnabled = false,
-  onComplete = () => {},
-  workflowData = {}
+  className = ''
 }) => {
   const [activeTab, setActiveTab] = useState('generator');
   const [reportFormat, setReportFormat] = useState('pdf');
@@ -235,31 +232,6 @@ const WorkflowEnabledReportGenerator = ({
       // If eSTAR package generation is enabled, proceed with integration
       if (generateESTARPackage && generatedReportId) {
         handleESTARIntegration();
-      }
-    } else if (action === 'complete' || action === 'approve') {
-      // Call the onComplete callback if in workflow mode
-      if (isWorkflowEnabled && generatedReportId) {
-        // Prepare workflow completion data
-        const completionData = {
-          reportId: generatedReportId,
-          reportUrl: generatedReportUrl,
-          title: reportTitle,
-          format: reportFormat,
-          generatedOn: new Date().toISOString(),
-          estarPackage: estarStatus.packageGenerated ? {
-            downloadUrl: estarStatus.downloadUrl,
-            validated: estarStatus.validated,
-            validationIssues: estarStatus.validationIssues,
-          } : null
-        };
-        
-        // Notify the parent component
-        onComplete(completionData);
-        
-        toast({
-          title: 'Submission Process Completed',
-          description: 'The 510(k) submission has been completed and is ready for FDA review.',
-        });
       }
     }
   };
@@ -686,75 +658,36 @@ const WorkflowEnabledReportGenerator = ({
           </Tabs>
         </CardContent>
         <CardFooter className={activeTab === 'generator' ? 'flex justify-between' : 'hidden'}>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center">
             {generatedReportUrl && (
-              <Button variant="outline" size="sm" asChild>
+              <Button variant="outline" size="sm" className="mr-2" asChild>
                 <a href={generatedReportUrl} target="_blank" rel="noopener noreferrer">
                   <Download className="h-4 w-4 mr-1" /> Download Report
                 </a>
               </Button>
             )}
-            
-            {isWorkflowEnabled && generatedReportId && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => setActiveTab('workflow')}
-              >
-                <Clock className="h-4 w-4 mr-1" /> View Workflow
-              </Button>
-            )}
           </div>
-          
-          <div className="flex items-center space-x-2">
-            {isWorkflowEnabled && generatedReportId && (
-              <Button 
-                className="bg-green-600 hover:bg-green-700"
-                onClick={() => {
-                  // Prepare completion data
-                  const completionData = {
-                    reportId: generatedReportId,
-                    reportUrl: generatedReportUrl,
-                    title: reportTitle,
-                    format: reportFormat,
-                    generatedOn: new Date().toISOString()
-                  };
-                  
-                  // Call the completion handler
-                  onComplete(completionData);
-                  
-                  toast({
-                    title: "Continuing Workflow",
-                    description: "Moving to the next step in the 510(k) submission process.",
-                  });
-                }}
-              >
-                <PackageCheck className="h-4 w-4 mr-1" /> Continue to Submission
-              </Button>
+          <Button 
+            onClick={handleGenerateReport} 
+            disabled={isGenerating || !reportTitle.trim()}
+          >
+            {isGenerating ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Generating...
+              </>
+            ) : generatedReportId ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Regenerate Report
+              </>
+            ) : (
+              <>
+                <FileUp className="h-4 w-4 mr-2" />
+                Generate Report
+              </>
             )}
-            
-            <Button 
-              onClick={handleGenerateReport} 
-              disabled={isGenerating || !reportTitle.trim()}
-            >
-              {isGenerating ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                  Generating...
-                </>
-              ) : generatedReportId ? (
-                <>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Regenerate Report
-                </>
-              ) : (
-                <>
-                  <FileUp className="h-4 w-4 mr-2" />
-                  Generate Report
-                </>
-              )}
-            </Button>
-          </div>
+          </Button>
         </CardFooter>
       </Card>
     </div>

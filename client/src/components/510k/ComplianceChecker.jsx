@@ -64,12 +64,7 @@ const StatusBadge = ({ status }) => {
   return null;
 };
 
-const ComplianceChecker = ({ 
-  projectId,
-  isWorkflowEnabled = false,
-  onComplete = () => {},
-  workflowData = {}
-}) => {
+const ComplianceChecker = ({ projectId }) => {
   const [loading, setLoading] = useState(false);
   const [checking, setChecking] = useState(false);
   const [exporting, setExporting] = useState(false);
@@ -470,7 +465,7 @@ const ComplianceChecker = ({
       </CardContent>
 
       {results && (
-        <CardFooter className="flex flex-col gap-4">
+        <CardFooter>
           <Alert>
             <FaClipboardCheck className="h-4 w-4" />
             <AlertTitle>About Compliance Checks</AlertTitle>
@@ -480,55 +475,6 @@ const ComplianceChecker = ({
               Address all critical issues before submission to increase chances of acceptance.
             </AlertDescription>
           </Alert>
-          
-          {isWorkflowEnabled && (
-            <div className="flex justify-between mt-2">
-              <div className="flex space-x-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => toast({
-                    title: "Fixing Critical Issues",
-                    description: "Applying intelligent fixes to critical compliance issues...",
-                    duration: 3000,
-                  })}
-                >
-                  <FaMagic className="mr-2 h-4 w-4" />
-                  Auto-Fix Critical Issues
-                </Button>
-              </div>
-              
-              <div className="flex space-x-2">
-                <Button 
-                  onClick={() => {
-                    const canProceed = !results.criticalFailures || results.criticalFailures.length === 0;
-                    
-                    if (canProceed) {
-                      // Send compliance results to the next step
-                      onComplete({
-                        complianceResults: results,
-                        timestamp: new Date().toISOString()
-                      });
-                    } else {
-                      toast({
-                        title: "Critical Issues Detected",
-                        description: "Please resolve all critical issues before proceeding to eSTAR Assembly",
-                        variant: "destructive",
-                      });
-                    }
-                  }}
-                  className={results.criticalFailures && results.criticalFailures.length > 0 
-                    ? "bg-amber-600 hover:bg-amber-700" 
-                    : "bg-green-600 hover:bg-green-700"
-                  }
-                >
-                  {results.criticalFailures && results.criticalFailures.length > 0 
-                    ? "Resolve Critical Issues" 
-                    : "Continue to eSTAR Assembly"
-                  }
-                </Button>
-              </div>
-            </div>
-          )}
         </CardFooter>
       )}
     </Card>
