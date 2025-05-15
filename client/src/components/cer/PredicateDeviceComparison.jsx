@@ -130,20 +130,26 @@ const PredicateDeviceComparison = ({ deviceProfile, predicateDevices = [], onCom
     setIsSearching(true);
     
     try {
-      // Use the unified discovery service to find predicates
-      const predicates = await findPredicateDevices(searchQuery, { 
-        limit: 10, 
-        module: '510k' 
-      });
+      // Use FDA510kService to find predicates
+      const searchCriteria = {
+        deviceName: searchQuery,
+        limit: 10
+      };
       
-      setPredicateResults(predicates || []);
+      const result = await FDA510kService.findPredicateDevices(searchCriteria);
       
-      if (!predicates || predicates.length === 0) {
-        toast({
-          variant: "default",
-          title: "No predicates found",
-          description: "Try adjusting your search query for better results."
-        });
+      if (result.success && result.predicates) {
+        setPredicateResults(result.predicates);
+        
+        if (result.predicates.length === 0) {
+          toast({
+            variant: "default",
+            title: "No predicates found",
+            description: "Try adjusting your search query for better results."
+          });
+        }
+      } else {
+        throw new Error(result.error || 'Failed to find predicate devices');
       }
     } catch (error) {
       console.error('Error searching for predicates:', error);
