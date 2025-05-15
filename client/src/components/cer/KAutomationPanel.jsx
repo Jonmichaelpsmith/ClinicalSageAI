@@ -1181,6 +1181,6 @@ export default function KAutomationPanel() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Card>
+    </div>
   );
 }
