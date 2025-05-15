@@ -740,6 +740,35 @@ const EquivalenceBuilderPanel = ({
           </div>
         </div>
         
+        {/* Literature evidence stats */}
+        {selectedLiterature.length > 0 && (
+          <div className="mt-2 mb-4">
+            <h4 className="text-md font-medium mb-2">Literature Evidence</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-blue-50 p-3 rounded-md border border-blue-100 text-center">
+                <p className="text-sm text-blue-700 mb-1">Academic Papers</p>
+                <p className="text-2xl font-bold text-blue-700">{selectedLiterature.length}</p>
+              </div>
+              
+              <div className="bg-indigo-50 p-3 rounded-md border border-indigo-100 text-center">
+                <p className="text-sm text-indigo-700 mb-1">Features with Evidence</p>
+                <p className="text-2xl font-bold text-indigo-700">
+                  {Object.keys(literatureEvidence).length}
+                </p>
+              </div>
+              
+              <div className="bg-purple-50 p-3 rounded-md border border-purple-100 text-center">
+                <p className="text-sm text-purple-700 mb-1">Evidence Coverage</p>
+                <p className="text-2xl font-bold text-purple-700">
+                  {comparisonFeatures.length > 0 
+                    ? `${Math.round((Object.keys(literatureEvidence).length / comparisonFeatures.length) * 100)}%` 
+                    : '0%'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         {/* Summary table of features */}
         <ScrollArea className="h-[250px] border rounded-md">
           <Table>
@@ -747,6 +776,9 @@ const EquivalenceBuilderPanel = ({
               <TableRow>
                 <TableHead>Feature</TableHead>
                 <TableHead>Substantial Equivalence</TableHead>
+                {selectedLiterature.length > 0 && (
+                  <TableHead>Literature Evidence</TableHead>
+                )}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -770,6 +802,17 @@ const EquivalenceBuilderPanel = ({
                       </Badge>
                     )}
                   </TableCell>
+                  {selectedLiterature.length > 0 && (
+                    <TableCell>
+                      {literatureEvidence[feature.id] ? (
+                        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                          {literatureEvidence[feature.id].length} {literatureEvidence[feature.id].length === 1 ? 'Paper' : 'Papers'}
+                        </Badge>
+                      ) : (
+                        <span className="text-gray-500 text-sm">None</span>
+                      )}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
