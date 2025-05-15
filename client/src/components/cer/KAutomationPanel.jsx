@@ -791,9 +791,18 @@ export default function KAutomationPanel() {
 
       <Tabs defaultValue="workflow" value={activeTab} onValueChange={setActiveTab} className="mb-6">
         <TabsList className="bg-blue-50 p-1">
-          <TabsTrigger value="workflow" className="data-[state=active]:bg-white">
+          <TabsTrigger 
+            value="workflow" 
+            className="data-[state=active]:bg-white"
+            onClick={() => {
+              console.log('Workflow tab clicked, current activeTab:', activeTab);
+              // Force set to workflow even if it's already that value
+              setActiveTab('workflow');
+              console.log('Setting activeTab to workflow');
+            }}
+          >
             <ListChecks className="h-4 w-4 mr-2" />
-            Workflow
+            Workflow <span className="ml-1 text-xs text-blue-600">▶</span>
           </TabsTrigger>
           <TabsTrigger value="ai-tools" className="data-[state=active]:bg-white">
             <Zap className="h-4 w-4 mr-2" />
@@ -812,6 +821,27 @@ export default function KAutomationPanel() {
 
         <TabsContent value="workflow">
           <div className="space-y-4">
+            <div className="bg-white border border-gray-200 p-4 rounded-md mb-4 shadow-sm">
+              <h3 className="text-lg font-medium text-gray-800 mb-2 flex items-center">
+                <Info className="h-5 w-5 mr-2 text-blue-600" /> 
+                Device Management Areas: Key Differences
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="border-l-4 border-blue-500 pl-3 py-1">
+                  <span className="font-medium text-blue-700">Device Profile</span>
+                  <p className="text-gray-600 mt-1">The official regulatory "identity card" of your device, containing all technical specifications and classifications needed for FDA submissions.</p>
+                </div>
+                <div className="border-l-4 border-green-500 pl-3 py-1">
+                  <span className="font-medium text-green-700">Device Setup</span>
+                  <p className="text-gray-600 mt-1">System-level configuration for how your device is processed in the platform, including basic parameters and workflow settings.</p>
+                </div>
+                <div className="border-l-4 border-purple-500 pl-3 py-1">
+                  <span className="font-medium text-purple-700">Device Intake</span>
+                  <p className="text-gray-600 mt-1">The guided process for bringing a new device into the system, including initial data collection and validation steps.</p>
+                </div>
+              </div>
+            </div>
+            
             <div className="mb-4">
               <Tabs value={workflowSubTab} onValueChange={setWorkflowSubTab} className="mb-6">
                 <TabsList className="w-full bg-slate-100">
@@ -820,20 +850,8 @@ export default function KAutomationPanel() {
                     Pipeline Steps
                   </TabsTrigger>
                   <TabsTrigger value="devices" className="flex-1">
-                    <TooltipProvider>
-                      <Tooltip delayDuration={300}>
-                        <TooltipTrigger asChild>
-                          <div className="flex items-center">
-                            <Database className="h-4 w-4 mr-2" />
-                            1. Device Setup
-                          </div>
-                        </TooltipTrigger>
-                        <TooltipContent className="max-w-xs bg-black text-white p-3 rounded-md">
-                          <p className="text-sm font-medium">Device Setup</p>
-                          <p className="text-xs mt-1">Configure your device's technical parameters and system preferences. This is where you manage how your device is configured in the platform.</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
+                    <Database className="h-4 w-4 mr-2" />
+                    1. Device Setup
                   </TabsTrigger>
                   <TabsTrigger value="predicates" className="flex-1">
                     <Search className="h-4 w-4 mr-2" />
