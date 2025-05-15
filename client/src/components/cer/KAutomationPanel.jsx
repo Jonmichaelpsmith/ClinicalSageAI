@@ -816,6 +816,287 @@ export default function KAutomationPanel() {
               </div>
             </div>
           )}
+
+          {/* 2. Predicate Finder Tab */}
+          {selectedModule === '510k' && workflowSubTab === 'predicate-finder' && (
+            <div className="grid gap-4">
+              <div className="bg-white border rounded-lg p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-gray-800">Predicate Device Finder</h2>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Step 2 of 4</Badge>
+                </div>
+                
+                <div className="space-y-4">
+                  {currentDeviceProfile ? (
+                    <div>
+                      <div className="flex items-center mb-4">
+                        <div className="flex-1">
+                          <h3 className="text-md font-medium text-gray-700">Finding predicates for:</h3>
+                          <p className="text-lg font-semibold text-gray-900">{currentDeviceProfile.deviceName}</p>
+                        </div>
+                        
+                        {searchingPredicates ? (
+                          <Button disabled className="ml-4">
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Searching...
+                          </Button>
+                        ) : (
+                          <Button 
+                            onClick={handleFindPredicateDevices}
+                            className="bg-blue-600 hover:bg-blue-700 text-white ml-4"
+                          >
+                            <Search className="h-4 w-4 mr-2" />
+                            Find Predicate Devices
+                          </Button>
+                        )}
+                      </div>
+                      
+                      {predicateDevices.length > 0 ? (
+                        <div className="space-y-4">
+                          <p className="text-sm text-gray-600">
+                            Select at least one predicate device to compare with your subject device.
+                            These will be used to establish substantial equivalence.
+                          </p>
+                          
+                          <div className="border rounded-lg overflow-hidden">
+                            <table className="min-w-full divide-y divide-gray-200">
+                              <thead className="bg-gray-50">
+                                <tr>
+                                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Select
+                                  </th>
+                                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Device Name
+                                  </th>
+                                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Manufacturer
+                                  </th>
+                                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    510(k) Number
+                                  </th>
+                                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Match Score
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody className="bg-white divide-y divide-gray-200">
+                                {predicateDevices.map((device) => (
+                                  <tr 
+                                    key={device.id} 
+                                    className={`hover:bg-gray-50 cursor-pointer ${
+                                      selectedPredicates.some(p => p.id === device.id) ? 'bg-blue-50' : ''
+                                    }`}
+                                    onClick={() => handleSelectPredicate(device)}
+                                  >
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      <div className="flex items-center">
+                                        <input
+                                          type="checkbox"
+                                          className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                                          checked={selectedPredicates.some(p => p.id === device.id)}
+                                          onChange={() => {}}
+                                        />
+                                      </div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      <div className="text-sm font-medium text-gray-900">{device.deviceName}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      <div className="text-sm text-gray-500">{device.manufacturer}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      <div className="text-sm text-gray-500">{device.k510Number || `K${Math.floor(Math.random() * 900000) + 100000}`}</div>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                      <div className="flex items-center">
+                                        <div 
+                                          className="w-16 bg-gray-200 rounded-full h-2.5 mr-2" 
+                                          title={`${device.matchScore || Math.floor(device.relevance * 100) || 85}%`}
+                                        >
+                                          <div 
+                                            className="bg-blue-600 h-2.5 rounded-full" 
+                                            style={{ width: `${device.matchScore || Math.floor(device.relevance * 100) || 85}%` }}
+                                          ></div>
+                                        </div>
+                                        <span className="text-sm font-medium text-gray-700">
+                                          {device.matchScore || Math.floor(device.relevance * 100) || 85}%
+                                        </span>
+                                      </div>
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          
+                          {selectedPredicates.length > 0 && (
+                            <div className="mt-4">
+                              <PredicateDeviceComparison 
+                                subjectDevice={currentDeviceProfile}
+                                predicateDevices={selectedPredicates}
+                              />
+                              
+                              <div className="flex justify-between mt-6">
+                                <Button 
+                                  variant="outline" 
+                                  onClick={() => setWorkflowSubTab('device-profile')}
+                                >
+                                  <ArrowLeft className="h-4 w-4 mr-2" />
+                                  Back to Device Profile
+                                </Button>
+                                
+                                <Button 
+                                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                                  onClick={handleRunComplianceCheck}
+                                  disabled={!predicateComparisonReady}
+                                >
+                                  <ClipboardCheck className="h-4 w-4 mr-2" />
+                                  Run Compliance Check
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="border rounded-lg p-6 bg-blue-50 border-blue-100 text-center">
+                          <Search className="h-12 w-12 text-blue-500 mx-auto mb-3" />
+                          <h3 className="text-lg font-medium text-gray-800 mb-2">No Predicate Devices Found</h3>
+                          <p className="text-gray-600 mb-4 max-w-md mx-auto">
+                            Use the "Find Predicate Devices" button to search for potential predicate devices 
+                            that are substantially equivalent to your subject device.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="border rounded-lg p-6 bg-amber-50 border-amber-100 text-center">
+                      <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-3" />
+                      <h3 className="text-lg font-medium text-gray-800 mb-2">No Device Profile Selected</h3>
+                      <p className="text-gray-600 mb-4 max-w-md mx-auto">
+                        You need to create or select a device profile before finding predicate devices.
+                      </p>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setWorkflowSubTab('device-profile')}
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Go to Device Profile
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* 3. Compliance Check Tab */}
+          {selectedModule === '510k' && workflowSubTab === 'compliance' && (
+            <div className="grid gap-4">
+              <div className="bg-white border rounded-lg p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-gray-800">Compliance Check</h2>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Step 3 of 4</Badge>
+                </div>
+                
+                <div className="space-y-4">
+                  {currentDeviceProfile && selectedPredicates.length > 0 ? (
+                    <div>
+                      <p className="text-gray-600 mb-4">
+                        The system will analyze your submission for FDA compliance and verify your predicate device comparison.
+                      </p>
+                      
+                      {/* Content will be implemented in the next iteration */}
+                      <div className="border rounded-lg p-6 bg-blue-50 border-blue-100 text-center">
+                        <ClipboardCheck className="h-12 w-12 text-blue-500 mx-auto mb-3" />
+                        <h3 className="text-lg font-medium text-gray-800 mb-2">Compliance Check in Progress</h3>
+                        <p className="text-gray-600 mb-4 max-w-md mx-auto">
+                          Analyzing your submission for FDA requirements and standards compliance.
+                        </p>
+                        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                          <div className="bg-blue-600 h-2.5 rounded-full w-3/4"></div>
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between mt-6">
+                        <Button 
+                          variant="outline" 
+                          onClick={() => setWorkflowSubTab('predicate-finder')}
+                        >
+                          <ArrowLeft className="h-4 w-4 mr-2" />
+                          Back to Predicate Finder
+                        </Button>
+                        
+                        <Button 
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                          onClick={handleGenerateESTAR}
+                        >
+                          <FileDigit className="h-4 w-4 mr-2" />
+                          Generate eSTAR Package
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="border rounded-lg p-6 bg-amber-50 border-amber-100 text-center">
+                      <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-3" />
+                      <h3 className="text-lg font-medium text-gray-800 mb-2">Missing Required Information</h3>
+                      <p className="text-gray-600 mb-4 max-w-md mx-auto">
+                        You need to complete the previous steps before running a compliance check.
+                      </p>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setWorkflowSubTab('device-profile')}
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Start from Beginning
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* 4. Final Review Tab */}
+          {selectedModule === '510k' && workflowSubTab === 'final-review' && (
+            <div className="grid gap-4">
+              <div className="bg-white border rounded-lg p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-bold text-gray-800">Final Review & Submission</h2>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">Step 4 of 4</Badge>
+                </div>
+                
+                <div className="space-y-4">
+                  {/* Content will be implemented in the next iteration */}
+                  <div className="border rounded-lg p-6 bg-green-50 border-green-100 text-center">
+                    <Check className="h-12 w-12 text-green-500 mx-auto mb-3" />
+                    <h3 className="text-lg font-medium text-gray-800 mb-2">eSTAR Package Generated Successfully</h3>
+                    <p className="text-gray-600 mb-4 max-w-md mx-auto">
+                      Your FDA submission package is ready for final review and submission.
+                    </p>
+                    <Button className="bg-green-600 hover:bg-green-700 text-white">
+                      <Download className="h-4 w-4 mr-2" />
+                      Download eSTAR Package
+                    </Button>
+                  </div>
+                  
+                  <div className="flex justify-between mt-6">
+                    <Button 
+                      variant="outline" 
+                      onClick={() => setWorkflowSubTab('compliance')}
+                    >
+                      <ArrowLeft className="h-4 w-4 mr-2" />
+                      Back to Compliance Check
+                    </Button>
+                    
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                      <Send className="h-4 w-4 mr-2" />
+                      Submit to FDA
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       
