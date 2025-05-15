@@ -339,4 +339,12 @@ function FDA510kTabContent({
     }
   };
 
+  return (
+    <div className="p-4 space-y-4">
+      {renderProgressBar()}
+      {renderStepContent()}
+    </div>
+  );
+}
+
 export default FDA510kTabContent;
