@@ -7,7 +7,7 @@
 
 import { apiRequest } from '../lib/queryClient';
 
-class FDA510kService {
+export class FDA510kService {
   /**
    * Fetch a list of all 510(k) projects
    * 
@@ -529,5 +529,6 @@ class FDA510kService {
   }
 }
 
-// Export a singleton instance
-export default new FDA510kService();
+// Create and export a singleton instance
+const fda510kService = new FDA510kService();
+export default fda510kService;
