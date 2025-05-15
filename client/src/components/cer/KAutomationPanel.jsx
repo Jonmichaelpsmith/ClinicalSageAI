@@ -9,17 +9,22 @@ import {
   ChevronUp, ListPlus, Settings, PlusCircle, RefreshCw, ChevronRight, CheckCircle
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  Dialog, DialogContent, DialogDescription, DialogFooter, 
+  DialogHeader, DialogTitle 
+} from '@/components/ui/dialog';
 import { 
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ToastAction } from "@/components/ui/toast";
 import { Separator } from "@/components/ui/separator";
@@ -60,6 +65,7 @@ export default function KAutomationPanel() {
   const [recommendedPredicates, setRecommendedPredicates] = useState([]);
   const [isLoadingRecommendations, setIsLoadingRecommendations] = useState(false);
   const [showDeviceProfileDialog, setShowDeviceProfileDialog] = useState(false);
+  const [showDeviceSetupDialog, setShowDeviceSetupDialog] = useState(false);
   const { currentOrganization } = useTenant();
   const { toast } = useToast();
   
@@ -224,7 +230,16 @@ export default function KAutomationPanel() {
                   id="create-device-profile-btn"
                   size="sm" 
                   className="w-full bg-blue-600 hover:bg-blue-700"
-                  onClick={() => setDeviceProfileDialogOpen(true)}
+                  onClick={() => {
+                    // Open the device profile dialog for creating a new device
+                    setDeviceProfileDialogOpen(true);
+                    
+                    toast({
+                      title: "Create Device Profile",
+                      description: "Please enter your device information to begin the 510(k) process",
+                      duration: 3000
+                    });
+                  }}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Create Device Profile
@@ -264,13 +279,15 @@ export default function KAutomationPanel() {
                   disabled={!currentDeviceProfile}
                   onClick={() => {
                     if (currentDeviceProfile) {
-                      // Set to the configured workflow subtab
-                      setWorkflowSubTab('compliance');
-                      
+                      // Open a device setup dialog instead of just changing tabs
                       toast({
-                        title: "Device Setup",
-                        description: `Configuring setup for ${currentDeviceProfile.deviceName}`,
+                        title: "Device Setup Started",
+                        description: `Opening configuration for ${currentDeviceProfile.deviceName}`,
+                        duration: 2000
                       });
+                      
+                      // Set a "device setup" dialog state
+                      setShowDeviceSetupDialog(true);
                     }
                   }}
                 >
@@ -315,11 +332,45 @@ export default function KAutomationPanel() {
                   className="w-full bg-purple-600 hover:bg-purple-700"
                   onClick={() => {
                     if (!currentDeviceProfile) {
-                      setDeviceProfileDialogOpen(true);
+                      // If no device is selected, first prompt to create one
                       toast({
-                        title: "Device Intake Started",
-                        description: "Please complete the device profile form to continue",
+                        title: "Device Required",
+                        description: "Please create or select a device profile first",
+                        variant: "warning"
                       });
+                      setWorkflowSubTab('devices');
+                    } else {
+                      // Show the device intake wizard with current device selected
+                      toast({
+                        title: "Intake Wizard Started",
+                        description: `Starting step-by-step intake for ${currentDeviceProfile.deviceName}`,
+                        duration: 3000
+                      });
+                      
+                      // Set wizard states
+                      setAiProcessing(true);
+                      
+                      // Simulate progress
+                      let progress = 0;
+                      const interval = setInterval(() => {
+                        progress += 5;
+                        setProgress(progress);
+                        
+                        if (progress >= 100) {
+                          clearInterval(interval);
+                          setAiProcessing(false);
+                          setProgress(0);
+                          
+                          toast({
+                            title: "Device Intake Complete",
+                            description: `${currentDeviceProfile.deviceName} has been successfully onboarded`,
+                            variant: "success"
+                          });
+                          
+                          // Move to predicate finder tab
+                          setWorkflowSubTab('predicates');
+                        }
+                      }, 200);
                     }
                   }}
                 >
@@ -589,6 +640,106 @@ export default function KAutomationPanel() {
             onSubmit={handleSubmitDeviceProfile}
             onCancel={() => setDeviceProfileDialogOpen(false)}
           />
+        </DialogContent>
+      </Dialog>
+      
+      {/* Device Setup Dialog */}
+      <Dialog open={showDeviceSetupDialog} onOpenChange={setShowDeviceSetupDialog}>
+        <DialogContent className="sm:max-w-[650px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <Settings className="h-5 w-5 mr-2 text-green-600" />
+              Device Setup Configuration
+            </DialogTitle>
+            <DialogDescription>
+              Configure system parameters for {currentDeviceProfile?.deviceName || 'your device'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {currentDeviceProfile && (
+            <div className="space-y-5 py-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
+                <h3 className="font-medium text-blue-800 mb-2">Device Information</h3>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div><span className="font-medium">Name:</span> {currentDeviceProfile.deviceName}</div>
+                  <div><span className="font-medium">Class:</span> {currentDeviceProfile.deviceClass || 'Class II'}</div>
+                  <div><span className="font-medium">Manufacturer:</span> {currentDeviceProfile.manufacturer}</div>
+                  <div><span className="font-medium">Type:</span> {currentDeviceProfile.deviceType || 'Medical Device'}</div>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="testing-level">Testing Level Required</Label>
+                  <Select defaultValue="moderate">
+                    <SelectTrigger id="testing-level">
+                      <SelectValue placeholder="Select testing level" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="minimal">Minimal</SelectItem>
+                      <SelectItem value="moderate">Moderate</SelectItem>
+                      <SelectItem value="comprehensive">Comprehensive</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-gray-500">Determines the extent of testing required for your device</p>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="comparison-algorithm">Predicate Comparison Algorithm</Label>
+                  <Select defaultValue="detailed">
+                    <SelectTrigger id="comparison-algorithm">
+                      <SelectValue placeholder="Select comparison method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="simple">Simple Matching</SelectItem>
+                      <SelectItem value="detailed">Detailed Analysis</SelectItem>
+                      <SelectItem value="aienhanced">AI-Enhanced Comparison</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-sm text-gray-500">Algorithm used for comparing your device with predicates</p>
+                </div>
+                
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="automated-verification" className="text-base">Automated Verification</Label>
+                    <span className="text-sm text-gray-500">Allow system to verify regulatory compliance automatically</span>
+                  </div>
+                  <Switch id="automated-verification" defaultChecked={true} />
+                </div>
+                
+                <div className="flex items-center justify-between py-2">
+                  <div className="flex flex-col gap-1">
+                    <Label htmlFor="ai-review" className="text-base">AI-Assisted Review</Label>
+                    <span className="text-sm text-gray-500">Use AI to improve review quality and consistency</span>
+                  </div>
+                  <Switch id="ai-review" defaultChecked={true} />
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter className="flex items-center justify-between border-t pt-4">
+            <Button variant="outline" onClick={() => setShowDeviceSetupDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              className="bg-green-600 hover:bg-green-700"
+              onClick={() => {
+                setShowDeviceSetupDialog(false);
+                
+                toast({
+                  title: "Device Setup Complete",
+                  description: `Configuration for ${currentDeviceProfile?.deviceName} has been saved`,
+                  variant: "success"
+                });
+                
+                // Move to compliance tab
+                setWorkflowSubTab('compliance');
+              }}
+            >
+              Save Configuration
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </Card>
