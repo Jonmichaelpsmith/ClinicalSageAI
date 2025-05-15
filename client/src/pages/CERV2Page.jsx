@@ -54,7 +54,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Progress } from '@/components/ui/progress';
@@ -885,38 +885,13 @@ export default function CERV2Page() {
     if (activeTab === '510k') {
       console.log("Rendering enhanced 510k tab content");
       
-      // Use the FDA510kTabContent component directly for the dedicated 510k workflow
-      if (documentType === '510k') {
-        return (
-          <React.Suspense fallback={<div className="p-4 flex items-center justify-center">
-              <Loader2 className="h-6 w-6 animate-spin mr-2" />
-              <span>Loading 510(k) submission tools...</span>
-            </div>}>
-            <FDA510kTabContent 
-              deviceProfile={deviceProfile || {
-                deviceName: deviceName,
-                manufacturer: manufacturer,
-                deviceClass: deviceType.includes('II') ? 'II' : deviceType.includes('III') ? 'III' : 'I',
-                intendedUse: intendedUse
-              }}
-              activeTab="drafting"
-              onTabChange={(newTab) => console.log("FDA 510k tab changed:", newTab)}
-              onComplianceChange={setCompliance}
-              onComplianceStatusChange={setDraftStatus}
-              isComplianceRunning={isComplianceRunning}
-              setIsComplianceRunning={setIsComplianceRunning}
-              compliance={compliance}
-              sections={sections}
-              organizationId={organizationId || 1}
-              userId={userId || 1}
-            />
-          </React.Suspense>
-        );
-      }
-      
-      // Otherwise use the built-in tabs approach (maintaining backward compatibility)
       return (
         <div className="bg-white p-6 rounded-md shadow-sm border border-blue-100">
+          <div className="mb-4">
+            <h2 className="text-2xl font-semibold text-blue-800">510(k) Submission Builder</h2>
+            <p className="text-gray-600">Complete your FDA 510(k) submission using our guided workflow</p>
+          </div>
+          
           <Tabs defaultValue="workflow" className="w-full">
             <TabsList className="mb-4 bg-blue-50 w-full flex justify-start gap-2 p-1 border-b">
               <TabsTrigger value="workflow" className="data-[state=active]:bg-blue-600">
