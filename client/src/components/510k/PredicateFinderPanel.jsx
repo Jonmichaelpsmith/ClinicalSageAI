@@ -234,7 +234,7 @@ const PredicateFinderPanel = ({
   };
   
   // Complete the predicate selection and move to next step
-  const completePredicateSelection = () => {
+  const completePredicateSelection = async () => {
     if (selectedPredicates.length === 0) {
       toast({
         title: "No Predicates Selected",
@@ -244,16 +244,75 @@ const PredicateFinderPanel = ({
       return;
     }
     
-    // Call the parent component's callback to move to the next step
-    if (onPredicatesFound) {
-      onPredicatesFound(selectedPredicates);
-    }
+    // Show loading indicator
+    setIsSearching(true);
     
-    toast({
-      title: "Predicate Selection Complete",
-      description: `Selected ${selectedPredicates.length} predicate devices for your submission.`,
-      variant: "success"
-    });
+    try {
+      // If we have Document Vault integration, save the selected predicates
+      if (deviceProfile?.folderStructure?.predicatesFolderId) {
+        // Create data object with selected predicates
+        const predicateSelectionData = {
+          selectedPredicates,
+          deviceProfile,
+          selectionDate: new Date().toISOString(),
+          selectionRationale: "Selected by user for 510(k) substantial equivalence comparison"
+        };
+        
+        // Convert to JSON file
+        const jsonBlob = new Blob([JSON.stringify(predicateSelectionData, null, 2)], {
+          type: 'application/json'
+        });
+        
+        // Create file object for upload
+        const jsonFile = new File([jsonBlob], 'selected-predicates.json', {
+          type: 'application/json'
+        });
+        
+        // Upload to Document Vault
+        await FDA510kService.savePredicateSearchResults(
+          deviceProfile.folderStructure.predicatesFolderId,
+          jsonFile,
+          deviceProfile.id
+        );
+        
+        console.log('Selected predicates saved to Document Vault successfully');
+      }
+      
+      // Call the parent component's callback to move to the next step
+      if (onPredicatesFound) {
+        // Create enhanced predicates with device profile context
+        const enhancedPredicates = selectedPredicates.map(predicate => ({
+          ...predicate,
+          comparisonWithSubject: {
+            subjectDevice: deviceProfile,
+            predicateDevice: predicate,
+            comparisonInitiated: new Date().toISOString()
+          }
+        }));
+        
+        onPredicatesFound(enhancedPredicates);
+      }
+      
+      toast({
+        title: "Predicate Selection Complete",
+        description: `Selected ${selectedPredicates.length} predicate devices for your submission.`,
+        variant: "success"
+      });
+    } catch (error) {
+      console.error('Error saving selected predicates:', error);
+      toast({
+        title: "Warning",
+        description: "Selected predicates will be used, but there was an issue saving them to Document Vault.",
+        variant: "warning"
+      });
+      
+      // Still call the parent callback to continue the workflow
+      if (onPredicatesFound) {
+        onPredicatesFound(selectedPredicates);
+      }
+    } finally {
+      setIsSearching(false);
+    }
   };
   
   // Render device profile form
