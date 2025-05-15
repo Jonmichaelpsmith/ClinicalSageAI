@@ -1,7 +1,7 @@
 import React from 'react';
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
-import EquivalenceBuilderPanel from '@/components/510k/EquivalenceBuilderPanel';
-import ComplianceScorePanel from '@/components/510k/ComplianceChecker';
+import EquivalenceBuilderPanel from '@/components/cer/EquivalenceBuilderPanel';
+import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
 import ReportGenerator from '@/components/510k/ReportGenerator';
 
 /**
