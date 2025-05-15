@@ -854,9 +854,9 @@ export default function KAutomationPanel() {
                     {!currentDeviceProfile && (
                       <Alert variant="warning" className="mb-4 bg-amber-50 text-amber-800 border-amber-200">
                         <AlertTriangle className="h-4 w-4" />
-                        <AlertTitle>Device profile required</AlertTitle>
+                        <AlertTitle>Device Profile required</AlertTitle>
                         <AlertDescription>
-                          Please select or create a device profile before running the predicate finder.
+                          Please select or create a Device Profile before running the predicate finder.
                         </AlertDescription>
                       </Alert>
                     )}
