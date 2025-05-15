@@ -53,6 +53,8 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [title, setTitle] = useState('FDA 510(k) Submission');
   const [showWelcomeDialog, setShowWelcomeDialog] = useState(false);
   const [showDeviceIntakeForm, setShowDeviceIntakeForm] = useState(false);
+  const [newClientMode, setNewClientMode] = useState(false);
+  const [deviceIntakeData, setDeviceIntakeData] = useState(null);
   const [deviceType, setDeviceType] = useState('Class II Medical Device');
   const [documentType, setDocumentType] = useState(initialDocumentType || '510k'); // Options: 'cer' or '510k'
   const [deviceName, setDeviceName] = useState('');
@@ -116,7 +118,6 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     errorCount: 0,
     lastChecked: null
   });
-  const { toast } = useToast();
 
   // Update device profile when device information changes
   useEffect(() => {
@@ -763,6 +764,38 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Function to handle new client onboarding
+  const startNewClientOnboarding = () => {
+    setNewClientMode(true);
+    setShowWelcomeDialog(true);
+  };
+
+  // Function to handle welcome dialog continue
+  const handleWelcomeContinue = () => {
+    setShowWelcomeDialog(false);
+    setShowDeviceIntakeForm(true);
+  };
+
+  // Function to handle device intake form submission
+  const handleDeviceIntakeSubmit = (data) => {
+    setDeviceIntakeData(data);
+    setShowDeviceIntakeForm(false);
+    
+    // Update device profile with intake form data
+    setDeviceName(data.deviceName);
+    setManufacturer(data.manufacturer);
+    setDeviceType(`Class ${data.deviceClass} Medical Device`);
+    
+    // Set active tab to predicates to start the 510(k) workflow
+    setActiveTab('predicates');
+    
+    toast({
+      title: "Device Profile Created",
+      description: "Your device profile has been created successfully. You can now proceed with the 510(k) submission process.",
+      duration: 5000
+    });
   };
 
   const generateFullCER = async () => {
