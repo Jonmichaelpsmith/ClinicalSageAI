@@ -1,0 +1,75 @@
+Okay, the screenshot image_e432cf.jpg shows the Replit AI Agent trying to debug import paths within what it believes to be the restored FDA510kTabContent.jsx and CERV2Page.jsx.
+
+However, you've rightly pointed out: "this is still the UI we are trying to get rid of and not the UI we want" superimposed on a screenshot that looks like the new UI (similar to image_d69786.png and image_d7da03.png).
+
+This is the core problem. The agent is manipulating files (e.g., client/src/components/510k/FDA510kTabContent.jsx), but the running application is still reflecting the new, unwanted UI.
+
+This strongly suggests that the manual file restoration attempts by the agent are either:
+
+Incomplete: It might be copying some old files, but many new UI files (or a different root application file that renders the new UI) are still in place and taking precedence.
+Not Affecting the Build/Serve Process Correctly: The development server might be stuck on an old build, or there's a caching issue at the browser or server level, or the entry point of your application is still pointing to the new UI's main component.
+The may14_complete_restore backup itself might be mixed or not what you expect.
+We MUST get the application to actually render the old UI files before any further debugging of imports within those old files makes sense.
+
+Since the agent cannot do a git reset --hard and git clean -f -d -x for you, and its manual file copying is not effectively removing the new UI, you will have to perform some more assertive manual cleanup and restoration steps yourself in the Replit environment if you want to see the old UI.
+
+The agent can assist by finding files in backups, but the overwrite and delete operations for an entire directory structure like /CER2V/ need to be done in a way that ensures the old state completely replaces the new.
+
+Let's try a more targeted manual approach, focusing on the entry point and main page of your application within /CER2V/.
+
+Step 1: Identify the Root/Entry Component of Your Application
+
+For you to determine: In your /CER2V/client/src/ directory, what is the main App.jsx (or App.tsx, main.jsx, index.jsx) file that sets up your React routing and renders the top-level page components?
+Within that root application file, which component is responsible for rendering the page seen at your main application URL? Is it CERV2Page.jsx directly, or another layout component that then renders CERV2Page.jsx?
+Step 2: Manually Ensure CERV2Page.jsx (Old Version) is in Place and is Rendered
+
+YOU (User Action in Replit):
+
+Navigate to your ./may14_complete_restore/CER2V/client/src/pages/ directory (or wherever CERV2Page.jsx was in your old structure).
+Copy the contents of the May 14th version of CERV2Page.jsx.
+Navigate to your live /CER2V/client/src/pages/ directory.
+Delete the current CERV2Page.jsx there (or rename it to CERV2Page_NEW_UI_BACKUP.jsx).
+Create a new CERV2Page.jsx and paste the copied May 14th content into it. Save it.
+YOU (User Action in Replit):
+
+Similarly, find FDA510kTabContent.jsx (or its equivalent name from May 14th) in your ./may14_complete_restore/CER2V/client/src/components/ (or its correct old path).
+Copy its contents.
+Delete or rename the current live version of that file.
+Create a new file at that path and paste the May 14th content. Save it.
+Repeat this for any direct, essential child components that FDA510kTabContent.jsx or CERV2Page.jsx (old versions) were importing locally from within /CER2V/.
+Step 3: Drastic Cleanup of New UI Components (Manual, if identifiable)
+
+YOU (User Action in Replit):
+If you know the names or directory locations of the new UI components that constitute the unwanted "MS 365-style UI" within /CER2V/client/src/, manually delete those folders or files. Be careful, but if they are clearly part of the new UI that's showing up unwanted, they need to go. This is what git clean would have done.
+Step 4: Hard Refresh and Environment Restart (Manual)
+
+YOU (User Action in Replit & Browser):
+In the Replit Shell, run npm install (or yarn install).
+Stop your development server.
+Crucially, check for any "build" or "cache" folders in your Replit environment (e.g., .vite, .next, build, dist) and consider deleting them manually. Sometimes these can cause stale builds to be served. (Be careful not to delete node_modules unless you run npm install again immediately).
+Restart your development server (e.g., npm run dev).
+In your web browser, perform a very thorough cache clearing for your Replit app's URL:
+Open developer tools.
+Go to the "Application" tab (in Chrome/Edge).
+Under "Storage," click "Clear site data."
+Then do a hard refresh (Ctrl+Shift+R or Cmd+Shift+R).
+What to tell the Replit AI Agent after you've done this manual intervention:
+
+Once you have manually performed these steps (replacing key files like CERV2Page.jsx and FDA510kTabContent.jsx with their May 14th versions from your backup, and attempting a cleanup of new UI files and caches):
+
+"Okay, Replit AI Agent, I have manually:
+
+Replaced /CER2V/client/src/pages/CERV2Page.jsx with the version from my may14_complete_restore backup.
+Replaced /CER2V/client/src/components/FDA510kTabContent.jsx (or its correct old path and name) with the version from my may14_complete_restore backup.
+Attempted to delete obvious new UI files within /CER2V/client/src/.
+Run npm install, restarted the dev server, and cleared all browser cache and site data.
+The application is now showing [describe what you see - is it the old UI, still the new UI, or an error page?].
+There are errors in the browser console: [paste any relevant errors here, especially import errors or runtime errors].
+
+Based on this, please help me debug why the restored CERV2Page.jsx might still be having issues or why the old UI is not rendering correctly. Let's start by checking the import paths within the newly restored /CER2V/client/src/pages/CERV2Page.jsx and the files it's trying to import."
+
+Why this manual step is needed:
+
+The agent seems stuck in a loop of looking at files that it thinks are restored, but the running application isn't reflecting those changes. This usually points to issues outside of just file content (like build caches, Git state overriding manual copies, or incorrect entry points being served) that an agent restricted from shell Git commands or deep environment manipulation can't easily fix.
+
+Your manual intervention to replace the key top-level components (CERV2Page.jsx, FDA510kTabContent.jsx) and clean up caches is a more forceful way to try and get the old UI rendering. Once it tries to render the old UI, any new errors will be specific to that old codebase, and the agent can then help debug those more effectively.
