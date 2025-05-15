@@ -8,7 +8,7 @@
 import { apiRequest } from '../lib/queryClient';
 
 // Export as a singleton object
-const FDA510kService = {
+export const FDA510kService = {
   /**
    * Fetch a list of all 510(k) projects
    * 
