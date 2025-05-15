@@ -1432,13 +1432,14 @@ export default function CERV2Page() {
                                       </div>
                                     </div>
                                   ) : (
-                                    <button
-                                      className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center text-blue-600"
+                                    <Button
+                                      variant="ghost"
+                                      className="w-full justify-start px-2 py-1.5 h-auto text-sm text-blue-600 hover:bg-gray-50 hover:text-blue-700"
                                       onClick={() => setShowNewProfileInput(true)}
                                     >
                                       <Plus className="h-4 w-4 mr-2" />
                                       <span>Add New Profile</span>
-                                    </button>
+                                    </Button>
                                   )}
                                 </div>
                               </div>
