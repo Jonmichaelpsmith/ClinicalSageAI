@@ -419,6 +419,18 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       case 3:
         return (
           <div className="space-y-4">
+            {/* Display literature visualization if literature results exist */}
+            {literatureResults.length > 0 && (
+              <div className="mb-6">
+                <LiteratureVisualizationPanel 
+                  literatureData={literatureResults}
+                  selectedItems={selectedLiterature}
+                  onSelectItem={handleLiteratureSelect}
+                  deviceProfile={deviceProfile}
+                />
+              </div>
+            )}
+            
             <EquivalenceBuilderPanel 
               deviceProfile={deviceProfile}
               setDeviceProfile={(newProfile) => {
@@ -430,6 +442,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
               documentId={deviceProfile?.id}
               onComplete={handleEquivalenceComplete}
               predicateDevices={predicateDevices}
+              selectedLiterature={selectedLiterature}
             />
           </div>
         );

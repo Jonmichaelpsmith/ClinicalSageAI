@@ -370,7 +370,8 @@ const PredicateFinderPanel = ({
           }
         }));
         
-        onPredicatesFound(enhancedPredicates);
+        // Pass both the enhanced predicates and literature results to the parent component
+        onPredicatesFound(enhancedPredicates, literatureResults);
       }
       
       toast({
