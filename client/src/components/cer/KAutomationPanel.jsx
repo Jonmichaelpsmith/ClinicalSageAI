@@ -172,364 +172,463 @@ export default function KAutomationPanel() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-6rem)] overflow-hidden border rounded-lg bg-white">
-      {/* Left app sidebar - Microsoft 365 style main navigation */}
-      <div className={`bg-[#f3f2f1] border-r flex flex-col ${sidebarCollapsed ? 'w-16' : 'w-16 md:w-60'} transition-all duration-300`}>
-        {/* Top app navigation */}
-        <div className="flex justify-between items-center p-3 border-b border-gray-200">
-          <div className={`flex items-center ${sidebarCollapsed ? 'justify-center w-full' : ''}`}>
-            {!sidebarCollapsed && <span className="font-semibold text-gray-800 ml-2">TrialSage</span>}
-            {sidebarCollapsed && <LayoutDashboard className="h-5 w-5 text-blue-700" />}
-          </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            className="p-1"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          >
-            <Menu className="h-5 w-5" />
-          </Button>
-        </div>
-        
-        {/* Main app navigation */}
-        <div className="flex flex-col py-2">
-          <Button
-            variant={selectedModule === '510k' ? "subtle" : "ghost"}
-            className={`flex items-center justify-${sidebarCollapsed ? 'center' : 'start'} mb-1 ${selectedModule === '510k' ? 'bg-blue-100 text-blue-800' : ''}`}
-            onClick={() => setSelectedModule('510k')}
-          >
-            <FileCheck className="h-5 w-5 min-w-5" />
-            {!sidebarCollapsed && <span className="ml-3 text-sm">510(k) Workflow</span>}
+    <Card className="border rounded-sm overflow-hidden shadow-sm">
+      <div className="flex flex-col">
+        {/* Top navigation bar - Similar to Outlook's top bar */}
+        <div className="bg-white border-b border-gray-200 flex items-center p-2 gap-2">
+          <Button variant="ghost" size="sm" className="h-8 gap-1 text-gray-700">
+            <Home className="h-4 w-4" />
+            <span>Home</span>
           </Button>
           
-          <Button
-            variant={selectedModule === 'cer' ? "subtle" : "ghost"}
-            className={`flex items-center justify-${sidebarCollapsed ? 'center' : 'start'} mb-1 ${selectedModule === 'cer' ? 'bg-blue-100 text-blue-800' : ''}`}
-            onClick={() => setSelectedModule('cer')}
-          >
-            <ClipboardList className="h-5 w-5 min-w-5" />
-            {!sidebarCollapsed && <span className="ml-3 text-sm">CER Generator</span>}
+          <Button variant="ghost" size="sm" className="h-8 gap-1 text-gray-700">
+            <FileCheck className="h-4 w-4" />
+            <span>View</span>
           </Button>
           
-          <Button
-            variant="ghost"
-            className={`flex items-center justify-${sidebarCollapsed ? 'center' : 'start'} mb-1`}
-          >
-            <BookOpen className="h-5 w-5 min-w-5" />
-            {!sidebarCollapsed && <span className="ml-3 text-sm">Knowledge Base</span>}
+          <Button variant="ghost" size="sm" className="h-8 gap-1 text-gray-700">
+            <HelpCircle className="h-4 w-4" />
+            <span>Help</span>
           </Button>
           
-          <Button
-            variant="ghost"
-            className={`flex items-center justify-${sidebarCollapsed ? 'center' : 'start'} mb-1`}
-          >
-            <Archive className="h-5 w-5 min-w-5" />
-            {!sidebarCollapsed && <span className="ml-3 text-sm">Archives</span>}
-          </Button>
-        </div>
-        
-        {/* Bottom options */}
-        <div className="mt-auto border-t border-gray-200 pt-2 pb-4">
-          <Button
-            variant="ghost"
-            className={`flex items-center justify-${sidebarCollapsed ? 'center' : 'start'} mb-1 w-full`}
-            size="sm"
-          >
-            <Cog className="h-5 w-5 min-w-5" />
-            {!sidebarCollapsed && <span className="ml-3 text-sm">Settings</span>}
-          </Button>
-          
-          <Button
-            variant="ghost"
-            className={`flex items-center justify-${sidebarCollapsed ? 'center' : 'start'} mb-1 w-full`}
-            size="sm"
-          >
-            <HelpCircle className="h-5 w-5 min-w-5" />
-            {!sidebarCollapsed && <span className="ml-3 text-sm">Help</span>}
-          </Button>
-        </div>
-      </div>
-      
-      {/* File tree sidebar - Similar to Microsoft 365 Outlook folders */}
-      <div className={`${selectedModule === '510k' ? 'block' : 'hidden'} w-60 border-r border-gray-200 bg-white`}>
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800 flex items-center">
-            <FileCheck className="h-5 w-5 mr-2 text-blue-600" />
-            510(k) Workflow
-          </h2>
-        </div>
-        
-        <div className="p-2">
-          <Input
-            type="search"
-            placeholder="Search files..."
-            className="mb-2 bg-gray-50"
-          />
-        </div>
-        
-        <ScrollArea className="h-[calc(100vh-12rem)]">
-          <div className="p-2">
-            {/* Devices folder */}
-            <div className="mb-1">
-              <button 
-                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
-                onClick={() => toggleFolder('devices')}
-              >
-                <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.devices ? 'rotate-90' : ''}`} />
-                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
-                <span className="text-sm font-medium">Device Profiles</span>
-                <Badge className="ml-auto text-xs bg-blue-100 text-blue-800 hover:bg-blue-200">
-                  {deviceProfiles?.length || 0}
-                </Badge>
-              </button>
-              
-              {expandedFolders.devices && deviceProfiles && (
-                <div className="ml-7 mt-1">
-                  {deviceProfiles.map(profile => (
-                    <button
-                      key={profile.id}
-                      className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center mb-1 ${
-                        currentDeviceProfile?.id === profile.id 
-                          ? 'bg-blue-50 text-blue-700' 
-                          : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => handleSelectDeviceProfile(profile)}
-                    >
-                      <File className="h-4 w-4 mr-2 text-gray-500" />
-                      <span className="truncate">{profile.deviceName}</span>
-                    </button>
-                  ))}
-                  
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center text-blue-600"
-                    onClick={() => {
-                      // Open the device profile dialog
-                      document.getElementById('create-profile-button')?.click();
-                    }}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    <span>Add New Profile</span>
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            {/* Templates folder */}
-            <div className="mb-1">
-              <button 
-                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
-                onClick={() => toggleFolder('templates')}
-              >
-                <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.templates ? 'rotate-90' : ''}`} />
-                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
-                <span className="text-sm font-medium">Templates</span>
-              </button>
-              
-              {expandedFolders.templates && (
-                <div className="ml-7 mt-1">
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                  >
-                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="truncate">510(k) Template</span>
-                  </button>
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                  >
-                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="truncate">eSTAR Template</span>
-                  </button>
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                  >
-                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="truncate">Predicate Comparison</span>
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            {/* Reports folder */}
-            <div className="mb-1">
-              <button 
-                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
-                onClick={() => toggleFolder('reports')}
-              >
-                <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.reports ? 'rotate-90' : ''}`} />
-                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
-                <span className="text-sm font-medium">Reports</span>
-              </button>
-              
-              {expandedFolders.reports && (
-                <div className="ml-7 mt-1">
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                  >
-                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="truncate">Compliance Report</span>
-                  </button>
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                  >
-                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="truncate">Validation Report</span>
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            {/* Submissions folder */}
-            <div className="mb-1">
-              <button 
-                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
-                onClick={() => toggleFolder('submissions')}
-              >
-                <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.submissions ? 'rotate-90' : ''}`} />
-                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
-                <span className="text-sm font-medium">Submissions</span>
-              </button>
-              
-              {expandedFolders.submissions && (
-                <div className="ml-7 mt-1">
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                  >
-                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="truncate">Draft Submissions</span>
-                  </button>
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                  >
-                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="truncate">Completed Submissions</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </ScrollArea>
-      </div>
-      
-      {/* CER file tree sidebar - Only visible when CER is selected */}
-      <div className={`${selectedModule === 'cer' ? 'block' : 'hidden'} w-60 border-r border-gray-200 bg-white`}>
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-800 flex items-center">
-            <ClipboardList className="h-5 w-5 mr-2 text-blue-600" />
-            CER Generator
-          </h2>
-        </div>
-        
-        <div className="p-2">
-          <Input
-            type="search"
-            placeholder="Search files..."
-            className="mb-2 bg-gray-50"
-          />
-        </div>
-        
-        <ScrollArea className="h-[calc(100vh-12rem)]">
-          <div className="p-2">
-            {/* CER Documents folder */}
-            <div className="mb-1">
-              <button 
-                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
-                onClick={() => toggleFolder('devices')}
-              >
-                <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.devices ? 'rotate-90' : ''}`} />
-                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
-                <span className="text-sm font-medium">Clinical Documents</span>
-              </button>
-              
-              {expandedFolders.devices && (
-                <div className="ml-7 mt-1">
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                  >
-                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="truncate">Clinical Documentation</span>
-                  </button>
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                  >
-                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="truncate">Literature Search</span>
-                  </button>
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                  >
-                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="truncate">Risk Analysis</span>
-                  </button>
-                </div>
-              )}
-            </div>
-            
-            {/* CER Templates folder */}
-            <div className="mb-1">
-              <button 
-                className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
-                onClick={() => toggleFolder('templates')}
-              >
-                <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.templates ? 'rotate-90' : ''}`} />
-                <Folder className="h-4 w-4 mr-2 text-yellow-500" />
-                <span className="text-sm font-medium">CER Templates</span>
-              </button>
-              
-              {expandedFolders.templates && (
-                <div className="ml-7 mt-1">
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                  >
-                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="truncate">MDR Template</span>
-                  </button>
-                  <button
-                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center mb-1"
-                  >
-                    <File className="h-4 w-4 mr-2 text-gray-500" />
-                    <span className="truncate">MEDDEV Template</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </ScrollArea>
-      </div>
-      
-      {/* Main content area */}
-      <div className="flex-1 flex flex-col bg-[#f5f5f5]">
-        {/* Top header bar */}
-        <div className="bg-white border-b flex items-center justify-between p-3">
-          <div className="flex items-center">
-            <h1 className="font-semibold text-xl text-gray-800 mr-8">
-              {selectedModule === '510k' ? '510(k) Submission Workflow' : 'CER Generator'}
-            </h1>
-            
-            <div className="hidden md:flex items-center space-x-1">
-              <Button variant="ghost" size="sm">
-                <PlusCircle className="h-4 w-4 mr-1" />
-                <span className="text-sm">New</span>
-              </Button>
-              
-              <Button variant="ghost" size="sm">
-                <Download className="h-4 w-4 mr-1" />
-                <span className="text-sm">Export</span>
-              </Button>
-              
-              <Button variant="ghost" size="sm">
-                <Bookmark className="h-4 w-4 mr-1" />
-                <span className="text-sm">Save</span>
-              </Button>
-            </div>
-          </div>
-          
-          <div className="flex items-center">
+          <div className="ml-auto flex items-center gap-2">
+            <Input 
+              type="search" 
+              placeholder="Search" 
+              className="h-8 w-48 bg-gray-50" 
+            />
             <Avatar className="h-8 w-8">
-              <AvatarImage src="" alt="User" />
-              <AvatarFallback className="bg-blue-600 text-white">TR</AvatarFallback>
+              <AvatarFallback className="bg-blue-600 text-white text-xs">TR</AvatarFallback>
             </Avatar>
           </div>
         </div>
+        
+        {/* Action buttons toolbar - Similar to Outlook's action buttons */}
+        <div className="bg-white border-b border-gray-200 flex items-center p-2 gap-2">
+          <div className="flex items-center">
+            <Button size="sm" className="h-8 gap-1 bg-blue-500 hover:bg-blue-600 text-white">
+              <FilePlus className="h-4 w-4" />
+              <span>New</span>
+            </Button>
+            
+            <Separator orientation="vertical" className="h-6 mx-2" />
+            
+            <Button variant="outline" size="sm" className="h-8 gap-1">
+              <Trash2 className="h-4 w-4" />
+              <span>Delete</span>
+            </Button>
+            
+            <Button variant="outline" size="sm" className="h-8 gap-1">
+              <Archive className="h-4 w-4" />
+              <span>Archive</span>
+            </Button>
+            
+            <Separator orientation="vertical" className="h-6 mx-2" />
+            
+            <Button variant="outline" size="sm" className="h-8 gap-1">
+              <CheckCircle2 className="h-4 w-4" />
+              <span>Mark all as read</span>
+            </Button>
+          </div>
+        </div>
+      
+        {/* Main content area with sidebar, items list, and details pane */}
+        <div className="flex bg-white h-[calc(100vh-12rem)]">
+          {/* Left sidebar - Folders list */}
+          <div className="w-60 border-r border-gray-200 bg-white flex flex-col">
+            <div className="p-2">
+              <h3 className="font-medium text-sm text-gray-500 mb-2 px-2">Favorites</h3>
+              
+              <Button 
+                variant={selectedModule === '510k' ? 'subtle' : 'ghost'} 
+                className="w-full justify-start mb-1 text-sm h-8"
+                onClick={() => setSelectedModule('510k')}
+              >
+                <FileCheck className="h-4 w-4 mr-2" />
+                <span>510(k) Workflow</span>
+                {deviceProfiles?.length > 0 && (
+                  <Badge className="ml-auto bg-blue-100 text-blue-800 hover:bg-blue-200">
+                    {deviceProfiles.length}
+                  </Badge>
+                )}
+              </Button>
+              
+              <Button 
+                variant={selectedModule === 'cer' ? 'subtle' : 'ghost'} 
+                className="w-full justify-start mb-1 text-sm h-8"
+                onClick={() => setSelectedModule('cer')}
+              >
+                <ClipboardList className="h-4 w-4 mr-2" />
+                <span>CER Generator</span>
+              </Button>
+            </div>
+            
+            <Separator className="my-2" />
+            
+            <div className="p-2">
+              <h3 className="font-medium text-sm text-gray-500 mb-2 px-2">Folders</h3>
+              
+              <div className="space-y-1">
+                <div>
+                  <button 
+                    className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
+                    onClick={() => toggleFolder('devices')}
+                  >
+                    <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.devices ? 'rotate-90' : ''}`} />
+                    <Folder className="h-4 w-4 mr-2 text-yellow-500" />
+                    <span className="text-sm">Device Profiles</span>
+                  </button>
+                  
+                  {expandedFolders.devices && deviceProfiles && (
+                    <div className="ml-7 mt-1">
+                      {deviceProfiles.map(profile => (
+                        <button
+                          key={profile.id}
+                          className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center mb-1 ${
+                            currentDeviceProfile?.id === profile.id 
+                              ? 'bg-blue-50 text-blue-700' 
+                              : 'hover:bg-gray-50'
+                          }`}
+                          onClick={() => handleSelectDeviceProfile(profile)}
+                        >
+                          <File className="h-4 w-4 mr-2 text-gray-500" />
+                          <span className="truncate">{profile.deviceName}</span>
+                        </button>
+                      ))}
+                      
+                      <button
+                        className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-50 text-sm flex items-center text-blue-600"
+                        id="create-profile-button"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        <span>Add New Profile</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+                
+                <button 
+                  className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
+                  onClick={() => toggleFolder('templates')}
+                >
+                  <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.templates ? 'rotate-90' : ''}`} />
+                  <Folder className="h-4 w-4 mr-2 text-yellow-500" />
+                  <span className="text-sm">Templates</span>
+                </button>
+                
+                <button 
+                  className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
+                  onClick={() => toggleFolder('reports')}
+                >
+                  <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.reports ? 'rotate-90' : ''}`} />
+                  <Folder className="h-4 w-4 mr-2 text-yellow-500" />
+                  <span className="text-sm">Reports</span>
+                </button>
+                
+                <button 
+                  className="w-full text-left px-2 py-1.5 rounded hover:bg-gray-100 flex items-center"
+                  onClick={() => toggleFolder('submissions')}
+                >
+                  <ChevronRight className={`h-4 w-4 mr-1 transition-transform ${expandedFolders.submissions ? 'rotate-90' : ''}`} />
+                  <Folder className="h-4 w-4 mr-2 text-yellow-500" />
+                  <span className="text-sm">Submissions</span>
+                </button>
+              </div>
+            </div>
+            
+            <div className="mt-auto p-2">
+              <Button variant="outline" className="w-full justify-start text-sm">
+                <FolderPlus className="h-4 w-4 mr-2" />
+                <span>New Folder</span>
+              </Button>
+            </div>
+          </div>
+          
+          {/* Middle section - Items list */}
+          <div className="flex-1 border-r border-gray-200 flex flex-col">
+            {/* Items list header */}
+            <div className="flex items-center justify-between border-b border-gray-200 p-2">
+              <div className="flex items-center">
+                <TabsList>
+                  <TabsTrigger value="focused" className="text-sm">Focused</TabsTrigger>
+                  <TabsTrigger value="other" className="text-sm">Other</TabsTrigger>
+                </TabsList>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Filter className="h-4 w-4" />
+                </Button>
+                
+                <Select>
+                  <SelectTrigger className="h-8 w-32">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="date">By Date</SelectItem>
+                    <SelectItem value="name">By Name</SelectItem>
+                    <SelectItem value="type">By Type</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            {/* Items list */}
+            <ScrollArea className="flex-1">
+              <div className="p-0">
+                {currentDeviceProfile ? (
+                  <>
+                    <div className="border-b border-gray-100 px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-blue-100 rounded-full p-2">
+                          <FileCheck className="h-4 w-4 text-blue-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className="font-medium text-sm">{currentDeviceProfile.deviceName}</h4>
+                            <span className="text-xs text-gray-500">Today</span>
+                          </div>
+                          <p className="text-sm text-gray-700 line-clamp-1">
+                            Device profile created and ready for 510(k) submission workflow
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-b border-gray-100 px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-green-100 rounded-full p-2">
+                          <Shield className="h-4 w-4 text-green-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className="font-medium text-sm">Compliance Check</h4>
+                            <span className="text-xs text-gray-500">Yesterday</span>
+                          </div>
+                          <p className="text-sm text-gray-700 line-clamp-1">
+                            Complete compliance validation for your device submission
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="border-b border-gray-100 px-4 py-2 hover:bg-gray-50 cursor-pointer">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-purple-100 rounded-full p-2">
+                          <Search className="h-4 w-4 text-purple-600" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <h4 className="font-medium text-sm">Predicate Analysis</h4>
+                            <span className="text-xs text-gray-500">2 days ago</span>
+                          </div>
+                          <p className="text-sm text-gray-700 line-clamp-1">
+                            Find and analyze predicate devices for your submission
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-40 p-6">
+                    <FileCheck className="h-8 w-8 text-gray-300 mb-2" />
+                    <h3 className="text-lg font-medium text-gray-700">No Device Selected</h3>
+                    <p className="text-sm text-gray-500 text-center mt-1">
+                      Please select or create a device profile to begin
+                    </p>
+                    <Button className="mt-4" size="sm" id="create-device-button">
+                      <Plus className="h-4 w-4 mr-2" />
+                      Create Device Profile
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+          </div>
+          
+          {/* Right section - Details pane */}
+          <div className="w-[400px] bg-gray-50 flex flex-col">
+            {currentDeviceProfile ? (
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold text-gray-800">
+                    {currentDeviceProfile.deviceName}
+                  </h2>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm">
+                      <Edit className="h-4 w-4 mr-1" />
+                      <span>Edit</span>
+                    </Button>
+                    <Button size="sm">
+                      <CheckCircle className="h-4 w-4 mr-1" />
+                      <span>Review</span>
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="bg-white p-4 rounded border border-gray-200">
+                    <h3 className="font-medium text-sm text-gray-500 mb-2">Device Information</h3>
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">Device Class:</span>
+                        <span className="text-sm font-medium">{currentDeviceProfile.deviceClass || 'Class II'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">Manufacturer:</span>
+                        <span className="text-sm font-medium">{currentDeviceProfile.manufacturer || 'Not specified'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-500">510(k) Status:</span>
+                        <Badge variant="outline" className="text-amber-600 border-amber-200 bg-amber-50">
+                          In Progress
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white p-4 rounded border border-gray-200">
+                    <h3 className="font-medium text-sm text-gray-500 mb-2">Workflow Progress</h3>
+                    <div className="space-y-2">
+                      <div className="flex items-center">
+                        <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                        <span className="text-sm">Device Profile Created</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Circle className="h-4 w-4 text-gray-300 mr-2" />
+                        <span className="text-sm text-gray-500">Predicate Device Analysis</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Circle className="h-4 w-4 text-gray-300 mr-2" />
+                        <span className="text-sm text-gray-500">Compliance Check</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Circle className="h-4 w-4 text-gray-300 mr-2" />
+                        <span className="text-sm text-gray-500">Final Review & Generation</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-4">
+                      <Progress value={25} className="h-2" />
+                      <div className="flex justify-between mt-1">
+                        <span className="text-xs text-gray-500">25% Complete</span>
+                        <span className="text-xs text-gray-500">3 steps remaining</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-6">
+                  <Button className="w-full">
+                    <Play className="h-4 w-4 mr-2" />
+                    Continue Workflow
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full p-6">
+                <div className="bg-gray-100 rounded-full p-4 mb-4">
+                  <FileCheck className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-700">Select an item</h3>
+                <p className="text-sm text-gray-500 text-center mt-1 max-w-[240px]">
+                  Select a device profile or document to view its details
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Device Setup Dialog */}
+      <Dialog open={showDeviceSetupDialog} onOpenChange={setShowDeviceSetupDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Device Configuration</DialogTitle>
+            <DialogDescription>
+              Configure system parameters for your device submission workflow.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Validation Mode
+              </Label>
+              <Select defaultValue="standard">
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="basic">Basic</SelectItem>
+                  <SelectItem value="standard">Standard</SelectItem>
+                  <SelectItem value="advanced">Advanced</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="username" className="text-right">
+                eSTAR Template
+              </Label>
+              <Select defaultValue="standard">
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select template" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="standard">Standard Template</SelectItem>
+                  <SelectItem value="abbreviated">Abbreviated 510(k)</SelectItem>
+                  <SelectItem value="special">Special 510(k)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">
+                AI Assistance
+              </Label>
+              <div className="flex items-center space-x-4 col-span-3">
+                <Switch id="aiassist" />
+                <Label htmlFor="aiassist">Enable AI-powered features</Label>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right">
+                Auto-Validation
+              </Label>
+              <div className="flex items-center space-x-4 col-span-3">
+                <Switch id="autovalidate" />
+                <Label htmlFor="autovalidate">Enable automatic validation checks</Label>
+              </div>
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeviceSetupDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => {
+                toast({
+                  title: "Configuration Saved",
+                  description: "Your device setup has been configured successfully"
+                });
+                
+                setShowDeviceSetupDialog(false);
+                
+                // Move to compliance tab
+                setWorkflowSubTab('compliance');
+              }}
+            >
+              Save Configuration
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </Card>
+  );
       <CardContent className="p-6">
         <div className="space-y-6">
           {/* Device Management System - Simplified Card Layout */}
