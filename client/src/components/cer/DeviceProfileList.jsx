@@ -176,8 +176,8 @@ const DeviceProfileList = ({ onSelectProfile }) => {
   const handleRefresh = () => {
     refetch();
     toast({
-      title: 'Refreshing device profiles',
-      description: 'Fetching the latest device profiles from the server.'
+      title: 'Refreshing Device Profiles',
+      description: 'Fetching the latest Device Profiles from the server.'
     });
   };
   

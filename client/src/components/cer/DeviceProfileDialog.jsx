@@ -53,10 +53,10 @@ const DeviceProfileDialog = ({
       setOpen(false);
       onSuccessfulSubmit(result);
     } catch (error) {
-      console.error('Error saving device profile:', error);
+      console.error('Error saving Device Profile:', error);
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Failed to save device profile. Please try again.',
+        description: error.response?.data?.message || 'Failed to save Device Profile. Please try again.',
         variant: 'destructive',
       });
     } finally {
