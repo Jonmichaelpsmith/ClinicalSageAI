@@ -206,7 +206,7 @@ function App() {
               <Route path="/client-portal/csr-analyzer" component={CSRPage} />
               <Route path="/client-portal/study-architect" component={StudyArchitectPage} />
               <Route path="/client-portal/analytics" component={AnalyticsDashboard} />
-              {/* 510k routes now redirected to CERV2Page */}
+              {/* 510k functionality is now integrated in CERV2Page */}
               <Route path="/client-portal/510k" component={CERV2Page} />
               <Route path="/client-portal/510k-dashboard" component={CERV2Page} />
               <Route path="/client-portal/client-management">
@@ -249,9 +249,9 @@ function App() {
               <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
               <Route path="/timeline" component={TimelinePage} /> {/* Timeline page route */}
               <Route path="/protocol" component={ProtocolDesignerPage} /> {/* Protocol Designer page route */}
-              {/* Redirect 510k routes to CERV2Page */}
-              <Route path="/510k" component={CERV2Page} /> {/* FDA 510(k) Automation via CERV2 */}
-              <Route path="/510k-dashboard" component={CERV2Page} /> {/* FDA 510(k) Dashboard via CERV2 */}
+              {/* All 510k functionality is integrated in CERV2Page */}
+              <Route path="/510k" component={CERV2Page} /> {/* Direct to CERV2 */}
+              <Route path="/510k-dashboard" component={CERV2Page} /> {/* Direct to CERV2 */}
               <Route path="/csr" component={CSRPage} /> {/* CSR Deep Intelligence page route */}
               <Route path="/csr-library" component={CSRLibraryPage} /> {/* CSR Library page route */}
               <Route path="/cmc" component={CMCPage} /> {/* CMC Module page route */}
