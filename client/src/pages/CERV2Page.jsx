@@ -68,7 +68,7 @@ export default function CERV2Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingFaers, setIsFetchingFaers] = useState(false);
   const [isFetchingLiterature, setIsFetchingLiterature] = useState(false);
-  const [activeTab, setActiveTab] = useState('builder');
+  const [activeTab, setActiveTab] = useState(documentType === '510k' ? 'workflow' : 'builder');
   
   // Create a deviceProfile object for easier passing to 510k components
   const [deviceProfile, setDeviceProfile] = useState(null);
@@ -168,84 +168,45 @@ export default function CERV2Page() {
   const renderNavigation = () => {
     // Define 510k specific tab groups if the document type is 510k
     if (documentType === '510k') {
-      const k510TabGroups = [
-        {
-          label: "510(k) Submission:",
-          tabs: [
-            { id: "predicates", label: "Predicate Finder", icon: <Search className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-            { id: "equivalence", label: <div className="flex flex-col items-center leading-tight">
-              <span>Substantial Equivalence</span>
-              <span className="text-[0.65rem] text-blue-600">FDA Requirements</span>
-            </div>, icon: <GitCompare className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-            { id: "compliance", label: <div className="flex flex-col items-center leading-tight">
-              <span>FDA Compliance</span>
-              <span className="text-[0.65rem] text-blue-600">510(k) Requirements</span>
-            </div>, icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-            { id: "submission", label: <div className="flex items-center">
-              <span>Final Submission</span>
-              <span className="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full shadow-sm">New</span>
-            </div>, icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
-          ]
-        },
-        {
-          label: "Resources:",
-          tabs: [
-            { id: "documents", label: "Document Vault", icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
-            { id: "fda-guidance", label: "FDA Guidance", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
-            { id: "assistant", label: "AI Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> }
-          ]
-        }
-      ];
-      
-      // Return 510k specific tabs
+      // Return simplified 510k workflow navigation - using card interface instead 
       return (
         <div className="mt-2 mb-4 border-b border-blue-100">
-          <div className="flex overflow-x-auto pb-2 px-6 space-x-6">
-            {k510TabGroups.map((group, groupIndex) => (
-              <div key={groupIndex} className="space-y-2 min-w-fit">
-                <div className="text-xs font-medium text-blue-800 flex items-center gap-1.5">
-                  {group.label}
-                </div>
-                <div className="flex space-x-1.5">
-                  {group.tabs.map((tab) => (
-                    <Button
-                      key={tab.id}
-                      variant={activeTab === tab.id ? 'default' : 'outline'}
-                      className={`h-9 px-3 text-xs font-medium rounded ${
-                        activeTab === tab.id
-                          ? 'bg-blue-600 text-white hover:bg-blue-700'
-                          : 'text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
-                      }`}
-                      onClick={() => {
-                        setActiveTab(tab.id);
-                        // If this is the AI Assistant tab, open the assistant
-                        if (tab.id === "assistant") {
-                          // Set context information for the assistant (current document type and device info)
-                          setModuleContext(
-                            documentType === 'cer' ? 'Clinical Evaluation Report' : 'FDA 510(k) Submission', 
-                            {
-                              documentId: documentType === 'cer' ? cerDocumentId : k510DocumentId,
-                              deviceName: deviceName || (documentType === 'cer' ? 'Medical Device' : 'Subject Device'),
-                              deviceType: deviceType,
-                              manufacturer: manufacturer,
-                              intendedUse: intendedUse,
-                              documentType: documentType
-                            }
-                          );
-                          // Open the assistant
-                          openAssistant();
-                        }
-                      }}
-                    >
-                      <span className="flex items-center">
-                        {tab.icon}
-                        {tab.label}
-                      </span>
-                    </Button>
-                  ))}
-                </div>
-              </div>
-            ))}
+          <div className="flex items-center pb-2 px-6">
+            <Button
+              variant="ghost"
+              className="text-blue-600 hover:text-blue-800 hover:bg-blue-50 mr-2"
+              onClick={() => {
+                // Set context information for the assistant
+                setModuleContext(
+                  'FDA 510(k) Submission', 
+                  {
+                    documentId: k510DocumentId,
+                    deviceName: deviceName || 'Subject Device',
+                    deviceType: deviceType,
+                    manufacturer: manufacturer,
+                    intendedUse: intendedUse,
+                    documentType: documentType
+                  }
+                );
+                // Open the assistant
+                openAssistant();
+              }}
+            >
+              <Lightbulb className="h-4 w-4 mr-1.5 text-amber-500" />
+              <span>AI Assistant</span>
+            </Button>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto text-blue-600 border-blue-200 hover:border-blue-300 hover:bg-blue-50"
+              onClick={() => {
+                setShowDeviceInfoDialog(true);
+              }}
+            >
+              <Info className="h-3.5 w-3.5 mr-1.5" />
+              <span>510(k) Settings</span>
+            </Button>
           </div>
         </div>
       );
