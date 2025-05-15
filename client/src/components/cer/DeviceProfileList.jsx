@@ -262,7 +262,7 @@ const DeviceProfileList = ({ onSelectProfile }) => {
             Available Device Profiles
           </CardTitle>
           <CardDescription>
-            Choose an existing profile or use the "Create New Profile" button to add one
+            Step 1: Create a new device profile or select an existing one to begin your 510(k) submission
           </CardDescription>
         </div>
         <div className="flex space-x-2 items-center">
@@ -279,7 +279,7 @@ const DeviceProfileList = ({ onSelectProfile }) => {
             }}
             showBadge={true}
             isStartingPoint={true}
-            dialogTitle="Step 1: Create Device Profile"
+            dialogTitle="Step 1: Create New Device Profile"
             dialogDescription="Enter the details of your medical device to begin the 510(k) submission process. This information will be used throughout the FDA submission workflow."
           />
           <Button variant="outline" size="sm" onClick={handleRefresh} className="ml-2">
@@ -358,7 +358,7 @@ const DeviceProfileList = ({ onSelectProfile }) => {
                     description: `${profile.deviceName} has been created and selected for your 510(k) submission.`
                   });
                 }}
-                isStartingPoint={true}
+                isStartingPoint={false}
               />
             </div>
           </div>
