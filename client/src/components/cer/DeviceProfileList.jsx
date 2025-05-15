@@ -545,7 +545,7 @@ const DeviceProfileList = ({ onSelectProfile }) => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the device profile
+              This action cannot be undone. This will permanently delete the Device Profile
               {profileToDelete && <strong> "{profileToDelete.deviceName}"</strong>} and remove it from our servers.
             </AlertDialogDescription>
           </AlertDialogHeader>
