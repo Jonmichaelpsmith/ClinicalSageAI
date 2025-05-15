@@ -8,10 +8,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GitCompare, ArrowRight, Check, Loader2, FileCheck, X, ChevronDown, ChevronUp, Info } from 'lucide-react';
+import { GitCompare, ArrowRight, Check, Loader2, FileCheck, X, ChevronDown, ChevronUp, Info, Save } from 'lucide-react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
+import { FDA510kService } from "@/services/FDA510kService";
 
 /**
  * Equivalence Builder Panel for 510(k) Submissions
@@ -177,7 +178,7 @@ const EquivalenceBuilderPanel = ({
   };
   
   // Complete the equivalence analysis
-  const completeEquivalenceAnalysis = () => {
+  const completeEquivalenceAnalysis = async () => {
     // Check if all features have been marked
     const incompleteFeatures = comparisonFeatures.filter(f => f.substantial === null);
     
@@ -190,27 +191,88 @@ const EquivalenceBuilderPanel = ({
       return;
     }
     
-    // Update summary if not already done
-    if (!summaryStatement) {
-      setSummaryStatement(generateSummaryStatement());
-    }
+    // Set analyzing state to show progress
+    setIsAnalyzing(true);
+    setProgress(25);
     
-    // Mark as complete and call callback
-    setEquivalenceComplete(true);
-    
-    if (onComplete) {
-      onComplete({
-        predicateDeviceId: selectedPredicateDevice,
-        features: comparisonFeatures,
-        summary: summaryStatement || generateSummaryStatement()
+    try {
+      // Update summary if not already done
+      const finalSummary = summaryStatement || generateSummaryStatement();
+      if (!summaryStatement) {
+        setSummaryStatement(finalSummary);
+      }
+      
+      setProgress(50);
+      
+      // Check if we have Document Vault integration
+      if (deviceProfile?.folderStructure?.equivalenceFolderId) {
+        // Save equivalence analysis to Document Vault
+        const equivalenceData = {
+          deviceProfile: deviceProfile,
+          predicateDeviceId: selectedPredicateDevice,
+          predicateDevice: predicateDevices.find(p => p.id === selectedPredicateDevice),
+          features: comparisonFeatures,
+          summary: finalSummary,
+          completedAt: new Date().toISOString(),
+          analysis: {
+            substantiallyEquivalent: comparisonFeatures.every(f => f.substantial === true),
+            featuresCount: comparisonFeatures.length,
+            equivalentFeaturesCount: comparisonFeatures.filter(f => f.substantial === true).length,
+            nonEquivalentFeaturesCount: comparisonFeatures.filter(f => f.substantial === false).length
+          }
+        };
+        
+        // Create JSON blob for upload
+        const jsonBlob = new Blob([JSON.stringify(equivalenceData, null, 2)], {
+          type: 'application/json'
+        });
+        
+        // Create file object for upload
+        const jsonFile = new File([jsonBlob], 'equivalence-analysis.json', {
+          type: 'application/json'
+        });
+        
+        setProgress(75);
+        
+        // Upload to Document Vault
+        await FDA510kService.saveEquivalenceAnalysis(
+          deviceProfile.folderStructure.equivalenceFolderId,
+          jsonFile,
+          deviceProfile.id
+        );
+        
+        console.log('Equivalence analysis saved to Document Vault successfully');
+      }
+      
+      setProgress(100);
+      
+      // Mark as complete and call callback
+      setEquivalenceComplete(true);
+      
+      if (onComplete) {
+        onComplete({
+          predicateDeviceId: selectedPredicateDevice,
+          features: comparisonFeatures,
+          summary: finalSummary
+        });
+      }
+      
+      toast({
+        title: "Equivalence Analysis Complete",
+        description: "Your substantial equivalence analysis has been saved. You can now proceed to the next step.",
+        variant: "success"
       });
+    } catch (error) {
+      console.error('Error saving equivalence analysis:', error);
+      toast({
+        title: "Warning",
+        description: "Analysis completed but there was an issue saving to Document Vault.",
+        variant: "warning"
+      });
+    } finally {
+      setIsAnalyzing(false);
+      setProgress(0);
     }
-    
-    toast({
-      title: "Equivalence Analysis Complete",
-      description: "The substantial equivalence analysis has been completed successfully.",
-      variant: "success"
-    });
   };
   
   // Render the overview tab
@@ -671,6 +733,111 @@ const EquivalenceBuilderPanel = ({
         {selectedTab === 'comparison' && renderComparisonTab()}
         {selectedTab === 'summary' && renderSummaryTab()}
       </CardContent>
+      
+      <CardFooter className="flex justify-between border-t bg-gray-50 px-6 py-4">
+        <div className="flex items-center text-sm text-gray-600">
+          {isAnalyzing && (
+            <div className="mr-4 flex items-center">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <span>Processing...</span>
+            </div>
+          )}
+          {progress > 0 && (
+            <div className="w-32">
+              <Progress value={progress} className="h-2" />
+            </div>
+          )}
+        </div>
+        
+        <div className="flex space-x-4">
+          {deviceProfile?.folderStructure?.equivalenceFolderId && (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                setIsAnalyzing(true);
+                setProgress(30);
+                
+                try {
+                  // Save the current analysis to Document Vault
+                  const equivalenceData = {
+                    deviceProfile: deviceProfile,
+                    predicateDeviceId: selectedPredicateDevice,
+                    predicateDevice: predicateDevices.find(p => p.id === selectedPredicateDevice),
+                    features: comparisonFeatures,
+                    summary: summaryStatement || generateSummaryStatement(),
+                    savedAt: new Date().toISOString(),
+                    status: 'draft',
+                    analysis: {
+                      featuresCount: comparisonFeatures.length,
+                      completedFeaturesCount: comparisonFeatures.filter(f => f.substantial !== null).length
+                    }
+                  };
+                  
+                  setProgress(60);
+                  
+                  // Create JSON blob for upload
+                  const jsonBlob = new Blob([JSON.stringify(equivalenceData, null, 2)], {
+                    type: 'application/json'
+                  });
+                  
+                  // Create file object for upload
+                  const jsonFile = new File([jsonBlob], 'equivalence-analysis-draft.json', {
+                    type: 'application/json'
+                  });
+                  
+                  // Upload to Document Vault
+                  await FDA510kService.saveEquivalenceAnalysis(
+                    deviceProfile.folderStructure.equivalenceFolderId,
+                    jsonFile,
+                    deviceProfile.id
+                  );
+                  
+                  setProgress(100);
+                  
+                  toast({
+                    title: "Analysis Saved",
+                    description: "Your current equivalence analysis has been saved to Document Vault.",
+                    variant: "success"
+                  });
+                } catch (error) {
+                  console.error('Error saving analysis to vault:', error);
+                  toast({
+                    title: "Save Error",
+                    description: "There was an issue saving your analysis to Document Vault.",
+                    variant: "destructive"
+                  });
+                } finally {
+                  setIsAnalyzing(false);
+                  setProgress(0);
+                }
+              }}
+              disabled={isAnalyzing || !selectedPredicateDevice}
+            >
+              <Save className="mr-2 h-4 w-4" />
+              Save to Document Vault
+            </Button>
+          )}
+          
+          <Button
+            variant="primary"
+            onClick={completeEquivalenceAnalysis}
+            disabled={equivalenceComplete || isAnalyzing}
+          >
+            {equivalenceComplete ? (
+              <>
+                <Check className="mr-2 h-4 w-4" />
+                Completed
+              </>
+            ) : (
+              <>
+                <FileCheck className="mr-2 h-4 w-4" />
+                Complete Equivalence Analysis
+              </>
+            )}
+          </Button>
+        </div>
+      </CardFooter>
     </Card>
   );
 };

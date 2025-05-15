@@ -422,6 +422,42 @@ export const FDA510kService = {
   },
   
   /**
+   * Save equivalence analysis to Document Vault
+   * 
+   * @param {string} folderId Folder ID in Document Vault where to save analysis
+   * @param {File} analysisFile File object containing the equivalence analysis
+   * @param {string} deviceProfileId Device profile ID for reference
+   * @returns {Promise<Object>} Created document reference in vault
+   */
+  async saveEquivalenceAnalysis(folderId, analysisFile, deviceProfileId) {
+    try {
+      console.log(`Saving equivalence analysis to folder ${folderId} for device ${deviceProfileId}`);
+      
+      // Prepare form data for file upload
+      const formData = new FormData();
+      formData.append('file', analysisFile);
+      formData.append('name', `Substantial Equivalence Analysis - ${new Date().toLocaleDateString()}`);
+      formData.append('description', 'Automated 510(k) substantial equivalence analysis');
+      formData.append('documentType', 'equivalence-analysis');
+      formData.append('relatedEntityId', deviceProfileId);
+      
+      // Use Document Vault service to upload the file
+      const result = await docuShareService.uploadFile(folderId, formData);
+      
+      console.log('Equivalence analysis saved successfully:', result);
+      
+      return {
+        success: true,
+        documentId: result.documentId,
+        vaultReference: result
+      };
+    } catch (error) {
+      console.error('Error saving equivalence analysis to vault:', error);
+      throw error;
+    }
+  },
+  
+  /**
    * Run a comprehensive compliance check for a 510(k) submission
    * 
    * This function performs a detailed analysis of a 510(k) submission project
