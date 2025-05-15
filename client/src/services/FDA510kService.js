@@ -450,6 +450,44 @@ export const FDA510kService = {
   },
 
   /**
+   * Get an existing device profile by project ID
+   * 
+   * @param {string} projectId The project ID to retrieve the profile for
+   * @returns {Promise<Object>} The device profile data
+   */
+  async getDeviceProfile(projectId) {
+    try {
+      const response = await apiRequest.get(`/api/fda510k/device-profile/${projectId}`);
+      return response.ok ? response.data : null;
+    } catch (error) {
+      console.error('Error retrieving device profile:', error);
+      return null;
+    }
+  },
+
+  /**
+   * Save a device profile (create or update)
+   * 
+   * @param {Object} profileData The profile data including projectId, name, model, etc.
+   * @returns {Promise<boolean>} Whether the save was successful
+   */
+  async saveDeviceProfile({ projectId, name, model, intendedUse, technology }) {
+    try {
+      const response = await apiRequest.post(`/api/fda510k/device-profile`, {
+        projectId, 
+        name, 
+        model, 
+        intendedUse, 
+        technology
+      });
+      return response.ok;
+    } catch (error) {
+      console.error('Error saving device profile:', error);
+      return false;
+    }
+  },
+
+  /**
    * Device Profile API methods
    */
   deviceProfiles: {

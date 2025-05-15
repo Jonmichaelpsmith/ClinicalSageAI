@@ -1,0 +1,224 @@
+Below is a **hand-held, step-by-step recipe** you can drop straight into your Replit AI agent.  **Every file** lives under your **CER2V** module (`client/src/pages/CERV2Page.jsx` or its children in `client/src/components/cer/…`, plus server routes under `server/routes/fda510kRoutes.js`).  **No standalone pages**, **no mocks**, all real–world, production-style code.
+
+---
+
+## Sprint 0: Prep
+
+1. **Open your Replit shell** and make sure you’re on the right DB and server:
+
+   ```bash
+   # from project root
+   npm install pg pgvector openai
+   # ensure your DB has a device_profile table:
+   psql $DATABASE_URL -c "
+     CREATE TABLE IF NOT EXISTS device_profiles (
+       id SERIAL PRIMARY KEY,
+       project_id TEXT UNIQUE NOT NULL,
+       name TEXT,
+       model TEXT,
+       intended_use TEXT,
+       technology TEXT,
+       created_at TIMESTAMPTZ DEFAULT NOW(),
+       updated_at TIMESTAMPTZ DEFAULT NOW()
+     );
+   "
+   ```
+
+---
+
+## Step 1: Server — Add Device Profile Endpoints
+
+**File:** `server/routes/fda510kRoutes.js` (or `.ts`)
+
+```js
+import { Pool } from 'pg';
+import express from 'express';
+const router = express.Router();
+const db = new Pool({ connectionString: process.env.DATABASE_URL });
+
+// GET existing profile
+router.get('/device-profile/:projectId', async (req, res) => {
+  const { projectId } = req.params;
+  const { rows } = await db.query(
+    `SELECT * FROM device_profiles WHERE project_id = $1`,
+    [projectId]
+  );
+  res.json(rows[0] || null);
+});
+
+// POST save/update profile
+router.post('/device-profile', async (req, res) => {
+  const { projectId, name, model, intendedUse, technology } = req.body;
+  const now = new Date();
+  // upsert
+  await db.query(
+    `INSERT INTO device_profiles(project_id,name,model,intended_use,technology,created_at,updated_at)
+     VALUES($1,$2,$3,$4,$5,$6,$6)
+     ON CONFLICT (project_id)
+     DO UPDATE SET
+       name=EXCLUDED.name,
+       model=EXCLUDED.model,
+       intended_use=EXCLUDED.intended_use,
+       technology=EXCLUDED.technology,
+       updated_at=EXCLUDED.updated_at`,
+    [projectId, name, model, intendedUse, technology, now]
+  );
+  res.json({ success: true });
+});
+
+export default router;
+```
+
+> **Don’t forget** to register these routes in your main `server/index.js` or `server/routes.ts` right after your other `fda510k` imports:
+>
+> ```js
+> import fda510kRouter from './routes/fda510kRoutes.js';
+> app.use('/api/fda510k', fda510kRouter);
+> ```
+
+---
+
+## Step 2: Client Service Methods
+
+**File:** `client/src/services/FDA510kService.js`
+
+```js
+class FDA510kService {
+  // … existing methods …
+
+  async getDeviceProfile(projectId) {
+    const resp = await fetch(`/api/fda510k/device-profile/${projectId}`);
+    return resp.ok ? resp.json() : null;
+  }
+
+  async saveDeviceProfile({ projectId, name, model, intendedUse, technology }) {
+    const resp = await fetch(`/api/fda510k/device-profile`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ projectId, name, model, intendedUse, technology })
+    });
+    return resp.ok;
+  }
+}
+
+export default new FDA510kService();
+```
+
+---
+
+## Step 3: Create the Device Profile Form UI
+
+**File:** `client/src/components/cer/DeviceProfileForm.jsx`
+
+```jsx
+import React, { useEffect, useState } from 'react';
+import FDA510kService from '@/services/FDA510kService';
+import { Input, Textarea, Button, Card } from '@/components/ui';
+import { useToast } from '@/components/ui/use-toast';
+
+export default function DeviceProfileForm({ projectId }) {
+  const [form, setForm] = useState({
+    name: '', model: '', intendedUse: '', technology: ''
+  });
+  const { toast } = useToast();
+
+  useEffect(() => {
+    FDA510kService.getDeviceProfile(projectId).then(data => {
+      if (data) setForm({
+        name: data.name || '',
+        model: data.model || '',
+        intendedUse: data.intended_use || '',
+        technology: data.technology || ''
+      });
+    });
+  }, [projectId]);
+
+  const handleChange = (field) => (e) =>
+    setForm(prev => ({ ...prev, [field]: e.target.value }));
+
+  const handleSubmit = async () => {
+    const ok = await FDA510kService.saveDeviceProfile({
+      projectId,
+      name: form.name,
+      model: form.model,
+      intendedUse: form.intendedUse,
+      technology: form.technology
+    });
+    toast({ title: ok ? 'Saved!' : 'Error', description: ok ? 'Device profile saved.' : 'Failed to save.' });
+  };
+
+  return (
+    <Card className="p-6 space-y-4">
+      <h2 className="text-xl font-semibold">Device Profile</h2>
+      <Input
+        label="Device Name"
+        value={form.name}
+        onChange={handleChange('name')}
+        placeholder="e.g. Acme Insulin Pump"
+      />
+      <Input
+        label="Model"
+        value={form.model}
+        onChange={handleChange('model')}
+        placeholder="e.g. IP-1000"
+      />
+      <Textarea
+        label="Intended Use"
+        value={form.intendedUse}
+        onChange={handleChange('intendedUse')}
+        placeholder="Describe intended use…"
+      />
+      <Textarea
+        label="Technology"
+        value={form.technology}
+        onChange={handleChange('technology')}
+        placeholder="e.g. piezoelectric dosing system…"
+      />
+      <Button onClick={handleSubmit}>Save Profile</Button>
+    </Card>
+  );
+}
+```
+
+---
+
+## Step 4: Hook the Form into your CER2V Workflow
+
+**File:** `client/src/pages/CERV2Page.jsx`
+
+1. **Import** at the top:
+
+   ```jsx
+   import DeviceProfileForm from '@/components/cer/DeviceProfileForm';
+   ```
+
+2. In your **510(k) tab** render block (where you currently show “Predicate Finder”), replace or augment it:
+
+   ```jsx
+   {activeTab === 'device-profile' && (
+     <DeviceProfileForm projectId={currentProjectId} />
+   )}
+   ```
+
+3. In your **TabsTrigger** list, add a new entry:
+
+   ```jsx
+   <TabsTrigger value="device-profile">Device Profile</TabsTrigger>
+   ```
+
+   Place it as the **first** tab in your 510(k) workflow.
+
+---
+
+## Step 5: Smoke-Test End-to-End
+
+1. **Restart** your server & client (`npm run dev`).
+2. Navigate **Client Portal → Medical Device & Diagnostics → 510(k) tab**.
+3. Click **Device Profile**.
+4. Enter test data in all fields and **Save**.
+5. Refresh page—verify your inputs re-appear.
+6. Check your **PostgreSQL** table: `SELECT * FROM device_profiles;`
+
+---
+
+🎉  When you have this rock-solid, report back and we can move on to **Step 4: Semantic Search Enhancements** (or any other next feature).
