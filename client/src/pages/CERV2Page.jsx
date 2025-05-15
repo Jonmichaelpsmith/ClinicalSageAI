@@ -563,7 +563,6 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         {
           label: "Resources:",
           tabs: [
-            { id: "documents", label: "Document Vault", icon: <FolderOpen className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
             { id: "fda-guidance", label: "FDA Guidance", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
             { id: "assistant", label: "AI Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> }
           ]
