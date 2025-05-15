@@ -94,6 +94,19 @@ export default function CERV2Page() {
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
   const [exportTimestamp, setExportTimestamp] = useState(null);
+  
+  // 510k workflow state
+  const [workflowStep, setWorkflowStep] = useState(1);
+  const [workflowTabs, setWorkflowTabs] = useState([
+    { id: 'setup', name: "Setup", completed: false, enabled: true },
+    { id: 'device-profile', name: "Device Profile", completed: false, enabled: false },
+    { id: 'predicate-discovery', name: "Predicate Discovery", completed: false, enabled: false },
+    { id: 'pathway-advisor', name: "Pathway Advisor", completed: false, enabled: false },
+    { id: 'equivalence-drafting', name: "Equivalence Drafting", completed: false, enabled: false },
+    { id: 'compliance-check', name: "Compliance Check", completed: false, enabled: false },
+    { id: 'estar-assembly', name: "eSTAR Assembly", completed: false, enabled: false },
+    { id: 'submission', name: "Submission", completed: false, enabled: false }
+  ]);
   const [isComplianceRunning, setIsComplianceRunning] = useState(false);
   const [isGeneratingFullCER, setIsGeneratingFullCER] = useState(false);
   const [showDeviceInfoDialog, setShowDeviceInfoDialog] = useState(false);
@@ -109,6 +122,52 @@ export default function CERV2Page() {
     lastChecked: null
   });
   const { toast } = useToast();
+  
+  // Function to handle workflow tab navigation
+  const handleWorkflowTabChange = (tabId) => {
+    const tabIndex = workflowTabs.findIndex(tab => tab.id === tabId);
+    if (tabIndex !== -1) {
+      // Update current step
+      setWorkflowStep(tabIndex + 1);
+      
+      // Mark previous steps as completed
+      setWorkflowTabs(prev => {
+        const updated = [...prev];
+        for (let i = 0; i < tabIndex; i++) {
+          updated[i].completed = true;
+        }
+        // Enable the next step after the current one
+        if (tabIndex + 1 < updated.length) {
+          updated[tabIndex + 1].enabled = true;
+        }
+        return updated;
+      });
+    }
+  };
+  
+  // Function to complete the current workflow step and advance to the next
+  const completeWorkflowStep = () => {
+    if (workflowStep < workflowTabs.length) {
+      // Mark current step as completed
+      setWorkflowTabs(prev => {
+        const updated = [...prev];
+        updated[workflowStep - 1].completed = true;
+        // Enable next step
+        if (workflowStep < updated.length) {
+          updated[workflowStep].enabled = true;
+        }
+        return updated;
+      });
+      
+      // Advance to next step
+      const nextStep = workflowStep + 1;
+      setWorkflowStep(nextStep);
+      
+      // Return the ID of the next tab
+      return workflowTabs[nextStep - 1]?.id;
+    }
+    return null;
+  };
   
   // Helper function to format CtQ factors for a specific objective
   const getCtqFactorsForSection = (objectiveId, ctqFactors) => {
@@ -893,55 +952,37 @@ export default function CERV2Page() {
               <p className="text-gray-600">Complete your FDA 510(k) submission using our guided workflow</p>
             </div>
             <ProgressTracker 
-              currentStep={3} 
-              totalSteps={8}
-              steps={[
-                { name: "Setup", completed: true },
-                { name: "Device Profile", completed: true },
-                { name: "Predicate Discovery", completed: true },
-                { name: "Pathway Advisor", completed: false },
-                { name: "Equivalence Drafting", completed: false },
-                { name: "Compliance Check", completed: false },
-                { name: "eSTAR Assembly", completed: false },
-                { name: "Submission", completed: false }
-              ]}
+              currentStep={workflowStep} 
+              totalSteps={workflowTabs.length}
+              steps={workflowTabs.map(tab => ({ name: tab.name, completed: tab.completed }))}
             />
           </div>
           
-          <Tabs defaultValue="setup" className="w-full">
+          <Tabs 
+            defaultValue="setup" 
+            className="w-full"
+            onValueChange={(value) => handleWorkflowTabChange(value)}
+            value={workflowTabs[workflowStep - 1]?.id}
+          >
             <TabsList className="mb-4 bg-blue-50 w-full flex justify-start gap-2 p-1 border-b overflow-x-auto">
-              <TabsTrigger value="setup" className="data-[state=active]:bg-blue-600">
-                <Cog className="h-4 w-4 mr-2" />
-                Setup
-              </TabsTrigger>
-              <TabsTrigger value="device-profile" className="data-[state=active]:bg-blue-600">
-                <FileText className="h-4 w-4 mr-2" />
-                Device Profile
-              </TabsTrigger>
-              <TabsTrigger value="predicate-discovery" className="data-[state=active]:bg-blue-600">
-                <Search className="h-4 w-4 mr-2" />
-                Predicate Discovery
-              </TabsTrigger>
-              <TabsTrigger value="pathway-advisor" className="data-[state=active]:bg-blue-600">
-                <GraduationCap className="h-4 w-4 mr-2" />
-                Pathway Advisor
-              </TabsTrigger>
-              <TabsTrigger value="equivalence-drafting" className="data-[state=active]:bg-blue-600">
-                <GitCompare className="h-4 w-4 mr-2" />
-                Equivalence Drafting
-              </TabsTrigger>
-              <TabsTrigger value="compliance-check" className="data-[state=active]:bg-blue-600">
-                <CheckSquare className="h-4 w-4 mr-2" />
-                Compliance Check
-              </TabsTrigger>
-              <TabsTrigger value="estar-assembly" className="data-[state=active]:bg-blue-600">
-                <Layers className="h-4 w-4 mr-2" />
-                eSTAR Assembly
-              </TabsTrigger>
-              <TabsTrigger value="submission" className="data-[state=active]:bg-blue-600">
-                <Upload className="h-4 w-4 mr-2" />
-                Submission
-              </TabsTrigger>
+              {workflowTabs.map((tab) => (
+                <TabsTrigger 
+                  key={tab.id}
+                  value={tab.id} 
+                  className="data-[state=active]:bg-blue-600"
+                  disabled={!tab.enabled}
+                >
+                  {tab.id === 'setup' && <Cog className="h-4 w-4 mr-2" />}
+                  {tab.id === 'device-profile' && <FileText className="h-4 w-4 mr-2" />}
+                  {tab.id === 'predicate-discovery' && <Search className="h-4 w-4 mr-2" />}
+                  {tab.id === 'pathway-advisor' && <GraduationCap className="h-4 w-4 mr-2" />}
+                  {tab.id === 'equivalence-drafting' && <GitCompare className="h-4 w-4 mr-2" />}
+                  {tab.id === 'compliance-check' && <CheckSquare className="h-4 w-4 mr-2" />}
+                  {tab.id === 'estar-assembly' && <Layers className="h-4 w-4 mr-2" />}
+                  {tab.id === 'submission' && <Upload className="h-4 w-4 mr-2" />}
+                  {tab.name}
+                </TabsTrigger>
+              ))}
             </TabsList>
             
             {/* Setup Tab */}
