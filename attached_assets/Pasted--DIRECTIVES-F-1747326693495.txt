@@ -1,0 +1,84 @@
+------------------------------------------------------------------------------------
+**DIRECTIVES FOR REPLIT AI AGENT**
+
+**Objective:** Modify the React frontend component (within the `/CER2V/` folder) that handles new device profile creation to make an actual API POST request to the backend when the "Create" button is clicked.
+
+**Assumptions:**
+* The previous step (Directives Set 1, focused on UI elements for inputting a profile name within `/CER2V/`) was successfully implemented.
+* The React component has a state variable (e.g., `newProfileName`) holding the name entered by the user.
+* The user has an existing backend API endpoint for creating device profiles (e.g., `/api/device-profiles`). **The user will need to confirm or provide the exact endpoint URL if it's different.**
+
+---
+
+**Step 2.1: Implement the API Call in the `handleCreateAttempt` Function**
+
+* **File to Modify:** The React component within `/CER2V/` that was modified in the previous step (e.g., `/CER2V/components/DeviceProfileSection.jsx` or similar).
+* **Action:** Update the `handleCreateAttempt` (or similarly named) function to include a `Workspace` (or `axios` if the project uses it) API call.
+* **Code Snippet (Conceptual - to be integrated into the existing `handleCreateAttempt` function):**
+    ```javascript
+    // Example: Inside /CER2V/components/DeviceProfileSection.jsx (or similar)
+    // Within the handleCreateAttempt function:
+
+    const handleCreateAttempt = async () => { // Ensure the function is async
+      if (!newProfileName.trim()) {
+        alert('Profile name cannot be empty.');
+        return;
+      }
+
+      // **START NEW CODE FOR API CALL**
+      const backendApiEndpoint = '/api/device-profiles'; // **USER TO CONFIRM THIS ENDPOINT URL**
+      console.log(`UI: Sending data to ${backendApiEndpoint}:`, { name: newProfileName });
+
+      try {
+        const response = await fetch(backendApiEndpoint, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ name: newProfileName }), // Send only the name for now
+        });
+
+        const responseData = await response.json(); // Attempt to parse JSON response
+
+        if (response.ok) {
+          console.log('Backend success response:', responseData);
+          alert(`Profile "${newProfileName}" created successfully! ID: ${responseData.id} (Check backend logs & database)`);
+          // Optionally, reset form and hide:
+          // setIsCreating(false);
+          // setNewProfileName('');
+          // Later: Add logic here to refresh the list of device profiles in the UI
+        } else {
+          console.error('Backend error response:', responseData);
+          alert(`Error creating profile: ${responseData.error || response.statusText || 'Unknown error'}`);
+        }
+      } catch (error) {
+        console.error('Network or other error creating profile:', error);
+        alert(`An error occurred while sending data to the backend: ${error.message}. Check the console and ensure the backend server is running.`);
+      }
+      // **END NEW CODE FOR API CALL**
+    };
+    ```
+* **Important Notes for the Agent:**
+    * The `backendApiEndpoint` variable is a placeholder. **The user must confirm the correct API endpoint URL for creating device profiles.** If their backend routes are prefixed (e.g., `/api/v1/device-profiles`), that needs to be used.
+    * This code assumes the backend will return a JSON response, including the created profile with an `id` on success, or a JSON response with an `error` field on failure.
+    * Error handling is included to show messages in alerts and the console.
+
+---
+
+**Verification (User to perform):**
+
+1.  After the agent makes these changes **within the `/CER2V/` component**, ensure the backend server (your Express.js application) is running.
+2.  Refresh the TrialSage application in the browser.
+3.  Click "+ Add New Profile" in the "Device Profiles" section.
+4.  Enter a name (e.g., "Test Profile via UI").
+5.  Open the browser's Developer Tools and go to the "Network" tab to monitor API calls.
+6.  Click the "Create" button.
+7.  **Check the Network Tab:** You should see a `POST` request made to your specified backend endpoint (e.g., `/api/device-profiles`).
+    * Verify the request payload contains the correct JSON (e.g., `{"name":"Test Profile via UI"}`).
+    * Check the response status code (e.g., `201 Created` for success, or `400`/`500` for errors).
+    * Inspect the response body.
+8.  **Check the Browser Console:** Look for the `console.log` messages indicating the backend response or any errors.
+9.  **Check the Backend Server Logs:** These logs should show the incoming request and any processing or database interaction logs from the backend endpoint.
+10. **(If the backend part is already functional from previous work):** Verify if a new device profile record with the entered name was actually created in your PostgreSQL database. If the backend part isn't ready yet, focus on whether the frontend *sent* the request correctly.
+
+------------------------------------------------------------------------------------

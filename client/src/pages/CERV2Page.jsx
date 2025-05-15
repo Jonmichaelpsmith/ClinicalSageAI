@@ -48,6 +48,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
+import FDA510kService from '@/services/FDA510kService';
 import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, GraduationCap, HelpCircle, Circle, Home, Menu, Filter, FolderPlus, Edit, ArrowRight, CheckCircle2, Cog, Trash2, Plus, Folder, File, Upload, ChevronRight, FilePlus } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -1376,15 +1377,43 @@ export default function CERV2Page() {
                                         <Button 
                                           size="sm" 
                                           className="bg-blue-600 hover:bg-blue-700 text-xs"
-                                          onClick={() => {
+                                          onClick={async () => {
+                                            if (!newProfileName.trim()) {
+                                              toast({
+                                                title: "Error",
+                                                description: "Profile name cannot be empty",
+                                                variant: "destructive"
+                                              });
+                                              return;
+                                            }
+
                                             console.log("Creating new device profile:", newProfileName);
-                                            // Here you would call the API to create a new profile
-                                            toast({
-                                              title: "Profile Created",
-                                              description: `Created new device profile: ${newProfileName}`,
-                                            });
-                                            setNewProfileName("");
-                                            setShowNewProfileInput(false);
+                                            try {
+                                              // Make actual API request to create profile
+                                              const response = await FDA510kService.DeviceProfileAPI.create({
+                                                deviceName: newProfileName,
+                                                deviceClass: 'II', // Default to Class II
+                                                intendedUse: 'Not specified' // Required field
+                                              });
+                                              
+                                              console.log("Profile created successfully:", response);
+                                              toast({
+                                                title: "Profile Created",
+                                                description: `Created new device profile: ${newProfileName}`,
+                                                variant: "success"
+                                              });
+                                              setNewProfileName("");
+                                              setShowNewProfileInput(false);
+                                              
+                                              // Here you would refresh the list of profiles
+                                            } catch (error) {
+                                              console.error("Error creating device profile:", error);
+                                              toast({
+                                                title: "Error Creating Profile",
+                                                description: error.message || "An error occurred while creating the profile",
+                                                variant: "destructive"
+                                              });
+                                            }
                                           }}
                                         >
                                           Create
