@@ -28,6 +28,7 @@ import ProgressTracker from '@/components/510k/ProgressTracker';
 import SubmissionTimeline from '@/components/510k/SubmissionTimeline';
 import ReportGenerator from '@/components/510k/ReportGenerator';
 import WorkflowPanel from '@/components/510k/WorkflowPanel';
+import FDA510kTabContent from '@/components/510k/FDA510kTabContent';
 import About510kDialog from '@/components/510k/About510kDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,9 +49,9 @@ export default function CERV2Page() {
   // Hook into the Lumen AI Assistant context
   const { openAssistant, setModuleContext } = useLumenAiAssistant();
   
-  const [title, setTitle] = useState('Clinical Evaluation Report');
+  const [title, setTitle] = useState('FDA 510(k) Submission');
   const [deviceType, setDeviceType] = useState('Class II Medical Device');
-  const [documentType, setDocumentType] = useState('cer'); // Options: 'cer' or '510k'
+  const [documentType, setDocumentType] = useState('510k'); // Options: 'cer' or '510k'
   const [deviceName, setDeviceName] = useState('');
   const [manufacturer, setManufacturer] = useState('');
   const [intendedUse, setIntendedUse] = useState('');
@@ -69,10 +70,22 @@ export default function CERV2Page() {
   const [isLoading, setIsLoading] = useState(false);
   const [isFetchingFaers, setIsFetchingFaers] = useState(false);
   const [isFetchingLiterature, setIsFetchingLiterature] = useState(false);
-  const [activeTab, setActiveTab] = useState('builder');
+  const [activeTab, setActiveTab] = useState('predicates');
   
   // Create a deviceProfile object for easier passing to 510k components
-  const [deviceProfile, setDeviceProfile] = useState(null);
+  const [deviceProfile, setDeviceProfile] = useState({
+    id: k510DocumentId,
+    deviceName: deviceName || 'Sample Medical Device',
+    manufacturer: manufacturer || 'Sample Manufacturer',
+    productCode: 'ABC',
+    deviceClass: 'II',
+    intendedUse: intendedUse || 'For diagnostic use in clinical settings',
+    description: 'A medical device designed for diagnostic procedures',
+    technicalSpecifications: 'Meets ISO 13485 standards',
+    regulatoryClass: 'Class II',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  });
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
   const [exportTimestamp, setExportTimestamp] = useState(null);
@@ -91,6 +104,18 @@ export default function CERV2Page() {
     lastChecked: null
   });
   const { toast } = useToast();
+
+  // Update device profile when device information changes
+  useEffect(() => {
+    if (documentType === '510k') {
+      setDeviceProfile(prev => ({
+        ...prev,
+        deviceName: deviceName || prev.deviceName,
+        manufacturer: manufacturer || prev.manufacturer,
+        intendedUse: intendedUse || prev.intendedUse
+      }));
+    }
+  }, [deviceName, manufacturer, intendedUse, documentType]);
   
   // Helper function to format CtQ factors for a specific objective
   const getCtqFactorsForSection = (objectiveId, ctqFactors) => {
