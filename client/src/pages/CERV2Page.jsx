@@ -38,6 +38,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
+import LiteratureFeatureService from '@/services/LiteratureFeatureService';
 import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, ArrowRight, AlertTriangle, Files, FolderTree, X, FilePlus, FolderPlus, PlusCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -213,6 +214,23 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   
   const handleEquivalenceComplete = (data) => {
     setEquivalenceCompleted(true);
+    setEquivalenceData(data); // Store the equivalence data including literature evidence
+    
+    // Save literature-feature connections if available
+    if (data && data.literatureEvidence && Object.keys(data.literatureEvidence).length > 0) {
+      try {
+        // Save to the server via the LiteratureFeatureService
+        LiteratureFeatureService.saveLiteratureFeatureConnections({
+          documentId: deviceProfile?.id,
+          featureEvidence: data.literatureEvidence
+        });
+        
+        console.log('Saved literature evidence connections:', Object.keys(data.literatureEvidence).length);
+      } catch (error) {
+        console.error('Error saving literature evidence connections:', error);
+      }
+    }
+    
     toast({
       title: "Equivalence Analysis Complete",
       description: "Substantial equivalence documentation has been prepared.",
