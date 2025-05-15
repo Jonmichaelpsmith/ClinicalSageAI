@@ -9,19 +9,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, FileText, FilePlus, Check, RefreshCw, Download, Plus, X } from 'lucide-react';
+import { AlertCircle, FileText, FilePlus, Check, RefreshCw, Download } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { registerModuleDocument } from '../unified-workflow/registerModuleDocument';
-import DeviceProfileForm from './DeviceProfileForm';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogDescription,
-  DialogFooter,
-  DialogClose
-} from '@/components/ui/dialog';
 
 const DEVICE_TYPES = [
   { value: 'cardio', label: 'Cardiovascular' },
@@ -55,7 +45,6 @@ const OneClick510kDraft = ({
   onDraftCreated,
   className = ''
 }) => {
-  // Tab and form state
   const [activeTab, setActiveTab] = useState('device-info');
   const [deviceType, setDeviceType] = useState('cardio');
   const [riskClass, setRiskClass] = useState('class_ii');
@@ -72,31 +61,6 @@ const OneClick510kDraft = ({
   const [isClinicalData, setIsClinicalData] = useState(false);
   const [draftId, setDraftId] = useState(null);
   const [draftUrl, setDraftUrl] = useState(null);
-  
-  // Modal states
-  const [deviceProfileDialogOpen, setDeviceProfileDialogOpen] = useState(false);
-  const [deviceIntakeDialogOpen, setDeviceIntakeDialogOpen] = useState(false);
-  const [newDeviceDialogOpen, setNewDeviceDialogOpen] = useState(false);
-  
-  // Handle device profile submission
-  const handleDeviceProfileSubmit = (data) => {
-    toast({
-      title: "Device Profile Created",
-      description: `Successfully created profile for ${data.deviceName}`,
-    });
-    setDeviceProfileDialogOpen(false);
-    
-    // Update form with new device profile data
-    if (data.deviceName) {
-      setTitle(`${data.deviceName} 510(k) Draft`);
-    }
-    if (data.intendedUse) {
-      setIntendedUse(data.intendedUse);
-    }
-    if (data.description) {
-      setDescription(data.description);
-    }
-  };
   
   // Set default values based on device data
   React.useEffect(() => {
@@ -285,38 +249,6 @@ const OneClick510kDraft = ({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Add three buttons at the top matching the UI in screenshots */}
-          <div className="flex flex-wrap gap-3 mb-6">
-            <Button 
-              type="button" 
-              className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2"
-              onClick={() => setDeviceProfileDialogOpen(true)}
-            >
-              <FilePlus className="h-4 w-4" />
-              <span>Add New Device Profile</span>
-            </Button>
-            
-            <Button 
-              type="button" 
-              variant="outline"
-              className="border-blue-300 text-blue-700 hover:bg-blue-50 flex items-center gap-2"
-              onClick={() => setDeviceIntakeDialogOpen(true)}
-            >
-              <FileText className="h-4 w-4" />
-              <span>Add New Device Intake</span>
-            </Button>
-            
-            <Button 
-              type="button" 
-              variant="secondary"
-              className="bg-gray-100 hover:bg-gray-200 text-gray-800 flex items-center gap-2"
-              onClick={() => setNewDeviceDialogOpen(true)}
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add New Device</span>
-            </Button>
-          </div>
-          
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="device-info">

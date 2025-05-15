@@ -27,7 +27,6 @@ import { Badge } from '@/components/ui/badge';
 import OneClick510kDraft from './OneClick510kDraft';
 import WorkflowEnabledReportGenerator from './WorkflowEnabledReportGenerator';
 import ComplianceChecker from './ComplianceChecker';
-import eSTARAssembly from './eSTARAssembly';
 import FDA510kService from '../../services/FDA510kService';
 
 const DEFAULT_DEVICE_DATA = {
@@ -63,11 +62,7 @@ const FDA510kTabContent = ({
   userId,
   activeTab = 'drafting',
   onTabChange,
-  className = '',
-  isWorkflowEnabled = false,
-  onWorkflowComplete = () => {},
-  onWorkflowStepComplete = () => {},
-  workflowState = {}
+  className = ''
 }) => {
   const [activeSection, setActiveSection] = useState(activeTab);
   const [deviceData, setDeviceData] = useState(DEFAULT_DEVICE_DATA);
@@ -79,7 +74,6 @@ const FDA510kTabContent = ({
   const [isValidating, setIsValidating] = useState(false);
   const [validationProgress, setValidationProgress] = useState(0);
   const [strictValidation, setStrictValidation] = useState(false);
-  const [complianceStatus, setComplianceStatus] = useState(false);
   
   // Notify parent component when tab changes
   useEffect(() => {
@@ -228,7 +222,7 @@ const FDA510kTabContent = ({
       </Card>
     
       <Tabs value={activeSection} onValueChange={setActiveSection} className="w-full">
-        <TabsList className="grid w-full grid-cols-5 bg-blue-50 p-1">
+        <TabsList className="grid w-full grid-cols-4 bg-blue-50 p-1">
           <TabsTrigger value="drafting" className="data-[state=active]:bg-white">
             <FilePlus2 className="h-4 w-4 mr-2" /> 
             1. Device Profile
@@ -241,13 +235,9 @@ const FDA510kTabContent = ({
             <CheckSquare className="h-4 w-4 mr-2" /> 
             3. Compliance Check
           </TabsTrigger>
-          <TabsTrigger value="estar" className="data-[state=active]:bg-white">
-            <FileText className="h-4 w-4 mr-2" /> 
-            4. eSTAR Assembly
-          </TabsTrigger>
           <TabsTrigger value="documentation" className="data-[state=active]:bg-white">
             <BookOpen className="h-4 w-4 mr-2" /> 
-            5. Final Review
+            4. Final Review
           </TabsTrigger>
         </TabsList>
         
@@ -270,21 +260,6 @@ const FDA510kTabContent = ({
               predicateData={predicateData}
               reportType="510k"
               onReportGenerated={handleReportGenerated}
-              isWorkflowEnabled={isWorkflowEnabled}
-              onComplete={(reportData) => {
-                if (isWorkflowEnabled && onWorkflowStepComplete) {
-                  onWorkflowStepComplete('submission', reportData);
-                  // Automatically proceed to testing step
-                  setActiveSection('testing');
-                  if (onTabChange) onTabChange('testing');
-                }
-                
-                toast({
-                  title: "Report Generated",
-                  description: "Your 510(k) report has been generated. Proceeding to compliance check.",
-                });
-              }}
-              workflowData={workflowState?.submission || {}}
             />
           </TabsContent>
           
@@ -309,27 +284,7 @@ const FDA510kTabContent = ({
                   ) : (
                     <>
                       {/* Integration of the ComplianceChecker component for comprehensive validation */}
-                      <ComplianceChecker 
-                        projectId={deviceData?.id || 'dev-sample-1'}
-                        isWorkflowEnabled={isWorkflowEnabled}
-                        onComplete={(complianceData) => {
-                          if (isWorkflowEnabled && onWorkflowStepComplete) {
-                            onWorkflowStepComplete('compliance', complianceData);
-                            // Automatically proceed to eSTAR assembly step
-                            setActiveSection('estar');
-                            if (onTabChange) onTabChange('estar');
-                          }
-                          
-                          toast({
-                            title: "Compliance Check Complete",
-                            description: "Your 510(k) submission has passed compliance checks. Proceeding to eSTAR assembly.",
-                          });
-                          
-                          // Update compliance status state
-                          setComplianceStatus(true);
-                        }}
-                        workflowData={workflowState?.compliance || {}}
-                      />
+                      <ComplianceChecker projectId={deviceData?.id || 'dev-sample-1'} />
                       
                       <Separator className="my-8" />
                       
@@ -488,47 +443,6 @@ const FDA510kTabContent = ({
             </Card>
           </TabsContent>
           
-          <TabsContent value="estar">
-            {(hasDraftedDocument || draftDocumentId) && complianceStatus ? (
-              <eSTARAssembly 
-                projectId={deviceData?.id || 'dev-sample-1'}
-                isWorkflowEnabled={isWorkflowEnabled}
-                onComplete={(estarData) => {
-                  if (isWorkflowEnabled && onWorkflowStepComplete) {
-                    onWorkflowStepComplete('estar', estarData);
-                    // Automatically proceed to final step
-                    setActiveSection('documentation');
-                    if (onTabChange) onTabChange('documentation');
-                  }
-                  
-                  toast({
-                    title: "eSTAR Assembly Complete",
-                    description: "Your 510(k) eSTAR package has been successfully assembled and is ready for final review.",
-                  });
-                }}
-                workflowData={workflowState?.estar || {}}
-              />
-            ) : (
-              <Card>
-                <CardHeader>
-                  <CardTitle>eSTAR Assembly & Submission</CardTitle>
-                  <CardDescription>
-                    Assemble your 510(k) eSTAR package for FDA submission
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Alert variant="warning" className="bg-amber-50">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Required steps not completed</AlertTitle>
-                    <AlertDescription>
-                      Please complete the device profile drafting and compliance checking steps before proceeding to eSTAR assembly.
-                    </AlertDescription>
-                  </Alert>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-          
           <TabsContent value="documentation">
             <Card>
               <CardHeader>
@@ -582,48 +496,6 @@ const FDA510kTabContent = ({
                   </div>
                 </ScrollArea>
               </CardContent>
-              
-              {isWorkflowEnabled && (
-                <CardFooter className="flex justify-between bg-slate-50 border-t px-6 py-4">
-                  <div className="flex flex-col">
-                    <div className="flex items-center">
-                      <ShieldCheck className="h-5 w-5 text-green-600 mr-2" />
-                      <span className="font-medium">510(k) Submission Process Complete</span>
-                    </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Your submission package has been fully validated and is ready for FDA review
-                    </p>
-                  </div>
-                  
-                  <Button 
-                    className="bg-green-600 hover:bg-green-700"
-                    onClick={() => {
-                      if (isWorkflowEnabled && onWorkflowComplete) {
-                        // Collect all step data from the workflow
-                        const completeWorkflowData = {
-                          deviceData,
-                          predicateData,
-                          draftDocumentId,
-                          complianceStatus,
-                          submissionDate: new Date().toISOString(),
-                          steps: workflowState || {}
-                        };
-                        
-                        // Complete the full workflow
-                        onWorkflowComplete(completeWorkflowData);
-                        
-                        toast({
-                          title: "Submission Complete",
-                          description: "Your 510(k) submission is complete and has been successfully processed.",
-                        });
-                      }
-                    }}
-                  >
-                    <FileText className="mr-2 h-4 w-4" />
-                    Complete 510(k) Submission
-                  </Button>
-                </CardFooter>
-              )}
             </Card>
           </TabsContent>
         </div>
