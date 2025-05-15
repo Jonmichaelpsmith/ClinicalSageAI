@@ -151,9 +151,9 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
 
   return (
     <div className="mb-8">
-      {/* No tabs - direct card-based interface */}
-        
-        <TabsContent value="workflow">
+      {/* Card-based interface */}
+      {activeTab === 'workflow' && (
+          <>
           {/* Workflow Progress Indicator */}
           <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border">
             <div className="flex justify-between mb-4 items-center">
@@ -326,9 +326,10 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
               </CardContent>
             </Card>
           </div>
-        </TabsContent>
-        
-        <TabsContent value="deviceProfile">
+          </>
+      )}
+      
+      {activeTab === 'deviceProfile' && (
           <div className="space-y-6">
             <DeviceProfileList 
               onSelectProfile={handleDeviceProfileSelect} 
@@ -359,6 +360,8 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
                   </div>
                   <div className="mt-4">
                     <Button onClick={() => setActiveTab('workflow')} className="mr-2">
+                      Continue to Workflow
+                    </Button>>
                       Continue to Workflow
                     </Button>
                     <Button 
