@@ -92,8 +92,16 @@ const deviceProfileSchema = z.object({
  * @param {Object} props.initialData - Initial form data (optional)
  * @param {Function} props.onSubmit - Function called when form is submitted
  * @param {boolean} props.isEditing - Whether the form is in editing mode
+ * @param {Function} props.onComplete - Function called when the user wants to proceed to next workflow step
+ * @param {boolean} props.isWorkflowEnabled - Whether this component is part of the guided workflow
  */
-const DeviceProfileForm = ({ initialData = {}, onSubmit, isEditing = false }) => {
+const DeviceProfileForm = ({ 
+  initialData = {}, 
+  onSubmit, 
+  isEditing = false,
+  onComplete = () => {},
+  isWorkflowEnabled = false
+}) => {
   const [isValidating, setIsValidating] = useState(false);
   const [validationResult, setValidationResult] = useState(null);
   
