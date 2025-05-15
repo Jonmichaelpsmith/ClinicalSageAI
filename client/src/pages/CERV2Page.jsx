@@ -86,6 +86,8 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [workflowProgress, setWorkflowProgress] = useState(25);
   const [predicatesFound, setPredicatesFound] = useState(false);
   const [predicateDevices, setPredicateDevices] = useState([]);
+  const [literatureResults, setLiteratureResults] = useState([]);
+  const [selectedLiterature, setSelectedLiterature] = useState([]);
   const [equivalenceCompleted, setEquivalenceCompleted] = useState(false);
   const [complianceScore, setComplianceScore] = useState(null);
   const [submissionReady, setSubmissionReady] = useState(false);
@@ -176,9 +178,17 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   }, [documentType, workflowStep, deviceProfile, predicatesFound, equivalenceCompleted, complianceScore, submissionReady]);
 
   // Handler functions for 510k workflow
-  const handlePredicatesComplete = (data) => {
+  const handlePredicatesComplete = (data, literatureData = []) => {
     setPredicatesFound(true);
     setPredicateDevices(data || []);
+    
+    // Process any literature results that were found during predicate search
+    if (literatureData && literatureData.length > 0) {
+      setLiteratureResults(literatureData);
+      // Automatically select highly relevant papers (score >= 0.8) up to 5 papers
+      setSelectedLiterature(literatureData.filter(item => item.relevanceScore >= 0.8).slice(0, 5));
+    }
+    
     toast({
       title: "Predicate Devices Found",
       description: `Found ${data?.length || 'multiple'} potential predicate devices that match your criteria.`,
@@ -190,6 +200,15 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       setWorkflowStep(prev => prev + 1);
       setActiveTab('equivalence');
     }, 500);
+  };
+  
+  // Handle literature selection updates
+  const handleLiteratureSelect = (item) => {
+    if (selectedLiterature.some(lit => lit.id === item.id)) {
+      setSelectedLiterature(prev => prev.filter(lit => lit.id !== item.id));
+    } else {
+      setSelectedLiterature(prev => [...prev, item]);
+    }
   };
   
   const handleEquivalenceComplete = (data) => {
