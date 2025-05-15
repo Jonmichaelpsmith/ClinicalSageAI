@@ -6,7 +6,7 @@ import {
   FileCheck, CheckCircle2, AlertTriangle, Lightbulb, Bot, Star, ListChecks, BookOpen, 
   Clock, Info, Check, Brain, Activity, FileText, Undo2, Users, Plus, Database,
   ChevronDown, ExternalLink, Bug, AlertCircle, BookmarkPlus, Calendar,
-  ChevronUp, ListPlus, Settings
+  ChevronUp, ListPlus, Settings, PlusCircle, RefreshCw, ChevronRight, CheckCircle
 } from 'lucide-react';
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import { Badge } from '@/components/ui/badge';
@@ -24,6 +24,15 @@ import { ToastAction } from "@/components/ui/toast";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { formatDistanceToNow } from 'date-fns';
 import DeviceProfileForm from './DeviceProfileForm';
 import DeviceProfileList from './DeviceProfileList';
 import DeviceProfileDialog from './DeviceProfileDialog';
@@ -1261,35 +1270,180 @@ export default function KAutomationPanel() {
             )}
             
             {workflowSubTab === 'devices' && (
-              <div className="space-y-4">
-                <div className="bg-blue-50 p-4 rounded-md mb-6 border border-blue-100">
-                  <h3 className="text-lg font-medium text-blue-800 mb-2 flex items-center">
-                    <Database className="h-5 w-5 mr-2" /> Step 1: Device Profile Management
-                  </h3>
-                  <p className="text-sm text-blue-700 mb-4">
-                    Start here: Select an existing device profile or create a new one using the list below.
-                  </p>
-                </div>
-                
-                {isLoadingProfiles ? (
-                  <div className="text-center p-8">
-                    <svg className="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    <p className="mt-4 text-gray-600">Loading device profiles...</p>
+              <div className="space-y-5">
+                <Card className="border-0 shadow-md overflow-hidden">
+                  <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="text-xl font-semibold flex items-center">
+                          <FileText className="h-5 w-5 mr-2" />
+                          510(k) Device Profile Manager
+                        </h3>
+                        <p className="text-blue-100 mt-1">
+                          <span className="font-medium">REQUIRED FIRST STEP:</span> Create or select a device profile to begin your FDA 510(k) submission
+                        </p>
+                      </div>
+                      
+                      <div>
+                        <div className="inline-flex items-center bg-blue-500 hover:bg-blue-600 text-white rounded-md px-3 py-2 transition shadow-sm">
+                          <PlusCircle className="h-4 w-4 mr-2" />
+                          <button 
+                            onClick={() => setShowDeviceProfileDialog(true)}
+                            className="font-medium"
+                          >
+                            Begin New 510(k) Submission
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex mt-5 space-x-3">
+                      <Badge className="bg-blue-500 hover:bg-blue-400">Total: {deviceProfiles?.length || 0}</Badge>
+                      <Badge className="bg-blue-500 hover:bg-blue-400">Class I: {deviceProfiles?.filter(p => p.deviceClass === "I").length || 0}</Badge>
+                      <Badge className="bg-blue-500 hover:bg-blue-400">Class II: {deviceProfiles?.filter(p => p.deviceClass === "II").length || 0}</Badge>
+                      <Badge className="bg-blue-500 hover:bg-blue-400">Class III: {deviceProfiles?.filter(p => p.deviceClass === "III").length || 0}</Badge>
+                      
+                      <div className="flex-1"></div>
+                      
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="text-blue-100 hover:text-white hover:bg-blue-500"
+                        onClick={refetchProfiles}
+                      >
+                        <RefreshCw className="h-3.5 w-3.5 mr-1" />
+                        Refresh List
+                      </Button>
+                    </div>
                   </div>
-                ) : isProfileError ? (
-                  <Alert variant="destructive" className="mb-4">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Error loading profiles</AlertTitle>
-                    <AlertDescription>
-                      There was a problem loading your device profiles. Please try again.
-                    </AlertDescription>
-                  </Alert>
-                ) : (
-                  <DeviceProfileList 
-                    onSelectProfile={handleSelectDeviceProfile} 
+                  
+                  <div className="bg-white p-6">
+                    {isLoadingProfiles ? (
+                      <div className="text-center p-8">
+                        <svg className="animate-spin h-8 w-8 text-blue-600 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p className="mt-4 text-gray-600">Loading device profiles...</p>
+                      </div>
+                    ) : isProfileError ? (
+                      <Alert variant="destructive" className="mb-4">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertTitle>Error loading profiles</AlertTitle>
+                        <AlertDescription>
+                          There was a problem loading your device profiles. Please try again.
+                        </AlertDescription>
+                      </Alert>
+                    ) : deviceProfiles && deviceProfiles.length > 0 ? (
+                      <ScrollArea className="h-[400px] rounded-md border">
+                        <div className="p-4">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Device Name</TableHead>
+                                <TableHead>Class</TableHead>
+                                <TableHead>Manufacturer</TableHead>
+                                <TableHead>Last Updated</TableHead>
+                                <TableHead className="text-right">Actions</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {deviceProfiles.map(profile => (
+                                <TableRow key={profile.id} className="cursor-pointer hover:bg-blue-50" onClick={() => handleSelectDeviceProfile(profile)}>
+                                  <TableCell className="font-medium">{profile.deviceName}</TableCell>
+                                  <TableCell>
+                                    <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">
+                                      Class {profile.deviceClass}
+                                    </Badge>
+                                  </TableCell>
+                                  <TableCell>{profile.manufacturer || '-'}</TableCell>
+                                  <TableCell className="text-gray-500 text-sm">
+                                    {profile.updatedAt ? formatDistanceToNow(new Date(profile.updatedAt), { addSuffix: true }) : 'N/A'}
+                                  </TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex justify-end space-x-2">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setWorkflowSubTab('predicates');
+                                          handleSelectDeviceProfile(profile);
+                                        }}
+                                      >
+                                        <ChevronRight className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                      </ScrollArea>
+                    ) : (
+                      <div className="text-center p-8 bg-blue-50 rounded-md border border-blue-100">
+                        <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 mb-4">
+                          <FileText className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <h3 className="text-lg font-medium text-blue-800">Setup Required</h3>
+                        <p className="mt-2 text-sm text-blue-600 max-w-md mx-auto">
+                          To begin your FDA 510(k) submission, you must first create a device profile with essential information about your medical device.
+                        </p>
+                        <div className="mt-6">
+                          <Button
+                            onClick={() => setShowDeviceProfileDialog(true)}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <PlusCircle className="h-4 w-4 mr-2" />
+                            Create First Device Profile
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {currentDeviceProfile && (
+                    <div className="bg-blue-50 px-6 py-4 border-t border-blue-100">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center">
+                          <div className="bg-blue-100 p-2 rounded-full mr-3">
+                            <CheckCircle className="h-4 w-4 text-blue-700" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-blue-800">Selected Device: {currentDeviceProfile.deviceName}</p>
+                            <p className="text-sm text-blue-600">
+                              Class {currentDeviceProfile.deviceClass}{currentDeviceProfile.manufacturer ? ` • ${currentDeviceProfile.manufacturer}` : ''}
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-blue-200 text-blue-700 hover:bg-blue-100"
+                          onClick={() => setWorkflowSubTab('predicates')}
+                        >
+                          <Search className="h-3.5 w-3.5 mr-1.5" />
+                          Find Predicates
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </Card>
+                
+                {/* Device Profile Dialog for creating new profiles */}
+                {showDeviceProfileDialog && (
+                  <DeviceProfileDialog
+                    open={showDeviceProfileDialog}
+                    onOpenChange={setShowDeviceProfileDialog}
+                    onDeviceProfileCreated={(profile) => {
+                      setCurrentDeviceProfile(profile);
+                      setShowDeviceProfileDialog(false);
+                      toast({
+                        title: "Device Profile Created",
+                        description: `${profile.deviceName} profile has been created successfully.`
+                      });
+                    }}
                   />
                 )}
               </div>
