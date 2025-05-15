@@ -24,7 +24,7 @@ const FDA510kService = {
       console.error('Error fetching 510(k) projects:', error);
       throw error;
     }
-  }
+  },
 
   /**
    * Fetch a specific 510(k) project by ID
