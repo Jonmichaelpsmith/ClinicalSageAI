@@ -1,367 +1,540 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
-import { FileText, Download, CheckCircle, AlertTriangle, Loader2, FileCheck, Clock, XCircle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { FDA510kService } from '@/services/FDA510kService';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { toast } from "@/hooks/use-toast";
+import { FDA510kService } from "@/services/FDA510kService";
+import { 
+  FileText, 
+  CheckCircle, 
+  AlertTriangle, 
+  FileDown, 
+  Loader2, 
+  ArrowRight, 
+  FileCheck,
+  Download,
+  Calendar,
+  RefreshCw,
+} from 'lucide-react';
 
 /**
- * 510(k) Report Generator
+ * Report Generator for 510(k) submissions
  * 
- * This component handles the final report generation for the 510(k) submission,
- * including the eSTAR package creation and final submission readiness check.
+ * This component generates the final 510(k) report and eSTAR documents
+ * for submission to the FDA.
  */
-const ReportGenerator = ({ 
-  deviceProfile, 
-  documentId, 
-  draftStatus, 
-  setDraftStatus,
+const ReportGenerator = ({
+  deviceProfile,
+  documentId,
   exportTimestamp,
+  draftStatus = 'draft',
+  setDraftStatus,
   sections,
   onSubmissionReady
 }) => {
+  const [activeTab, setActiveTab] = useState('preview');
   const [isGenerating, setIsGenerating] = useState(false);
-  const [generationProgress, setGenerationProgress] = useState(0);
-  const [generationStatus, setGenerationStatus] = useState('idle');
-  const [reportURL, setReportURL] = useState(null);
-  const [validationResults, setValidationResults] = useState(null);
-  const [generationStep, setGenerationStep] = useState('');
-  const { toast } = useToast();
-  
-  // Handle report generation
-  const generateSubmissionPackage = async () => {
-    setIsGenerating(true);
-    setGenerationStatus('generating');
-    setGenerationProgress(0);
-    
-    try {
-      // Simulate report generation steps
-      await simulateGenerationStep('Preparing device information...', 10);
-      await simulateGenerationStep('Compiling predicate device comparisons...', 30);
-      await simulateGenerationStep('Generating substantial equivalence documentation...', 50);
-      await simulateGenerationStep('Validating FDA compliance...', 70);
-      await simulateGenerationStep('Creating eSTAR package...', 85);
-      await simulateGenerationStep('Finalizing submission document...', 95);
-      
-      // Get report URL from API
-      const result = await FDA510kService.generateSubmissionPDF(documentId);
-      
-      if (result) {
-        setReportURL(result.pdfUrl);
-        setGenerationStatus('complete');
-        setGenerationProgress(100);
-        setDraftStatus('ready');
-        
-        toast({
-          title: "Submission Package Ready",
-          description: "Your 510(k) submission package has been successfully generated.",
-          variant: "success"
-        });
-        
-        // Validate the package
-        await validateSubmissionPackage();
-        
-        // Call the onSubmissionReady callback
-        if (onSubmissionReady) {
-          onSubmissionReady();
+  const [progress, setProgress] = useState(0);
+  const [reportData, setReportData] = useState(null);
+  const [generatedDocs, setGeneratedDocs] = useState({
+    pdf: null,
+    eSTAR: null,
+    attachments: null
+  });
+
+  // Load any existing report data on mount
+  useEffect(() => {
+    const loadReportData = async () => {
+      if (documentId && deviceProfile?.folderStructure?.reportsFolderId) {
+        try {
+          // Try to load any existing report data from Document Vault
+          const existingReport = await FDA510kService.getLatestReportData(
+            deviceProfile.folderStructure,
+            documentId
+          );
+          
+          if (existingReport?.success && existingReport.report) {
+            setReportData(existingReport.report);
+            
+            // Check if any documents were already generated
+            if (existingReport.report.generatedDocuments) {
+              setGeneratedDocs(existingReport.report.generatedDocuments);
+            }
+          }
+        } catch (error) {
+          console.error('Error loading report data:', error);
         }
       }
-    } catch (error) {
-      console.error("Error generating submission package:", error);
-      setGenerationStatus('error');
-      
+    };
+    
+    loadReportData();
+  }, [documentId, deviceProfile]);
+
+  // Generate final report for 510(k) submission
+  const generateReport = async () => {
+    if (!deviceProfile?.id || !deviceProfile?.folderStructure?.reportsFolderId) {
       toast({
-        title: "Generation Error",
-        description: "An error occurred while generating your submission package. Please try again.",
+        title: "Cannot Generate Report",
+        description: "Missing device profile or Document Vault structure.",
         variant: "destructive"
       });
-    } finally {
-      setIsGenerating(false);
+      return;
     }
-  };
-  
-  // Helper function to simulate generation steps with progress updates
-  const simulateGenerationStep = async (step, progress) => {
-    return new Promise(resolve => {
-      setGenerationStep(step);
-      setGenerationProgress(progress);
-      setTimeout(resolve, 1000); // Simulate processing time
-    });
-  };
-  
-  // Validate the submission package
-  const validateSubmissionPackage = async () => {
+    
+    setIsGenerating(true);
+    setProgress(10);
+    
     try {
-      const validationResult = await FDA510kService.validateESTARPackage(documentId);
+      // First, assemble all the data needed for the report
+      const complianceResult = await FDA510kService.getLatestComplianceReport(
+        deviceProfile.folderStructure,
+        deviceProfile.id
+      );
       
-      setValidationResults(validationResult);
+      setProgress(30);
       
-      if (validationResult.score >= 0.9) {
+      const equivalenceResult = await FDA510kService.getLatestEquivalenceAnalysis(
+        deviceProfile.folderStructure,
+        deviceProfile.id
+      );
+      
+      setProgress(50);
+      
+      // Now generate the final 510(k) report package
+      const result = await FDA510kService.generateFinal510kReport({
+        deviceProfile: deviceProfile,
+        compliance: complianceResult?.report || null,
+        equivalence: equivalenceResult?.analysis || null,
+        sections: sections || [],
+        options: {
+          includeESTAR: true,
+          includeSummary: true,
+          includeAttachments: true
+        }
+      });
+      
+      setProgress(80);
+      
+      if (result.success) {
+        setReportData(result.report);
+        setGeneratedDocs(result.generatedDocuments);
+        
+        // Save the report data to Document Vault
+        const reportDataBlob = new Blob([JSON.stringify(result.report, null, 2)], {
+          type: 'application/json'
+        });
+        
+        const reportDataFile = new File([reportDataBlob], 'final-510k-report-data.json', {
+          type: 'application/json'
+        });
+        
+        await FDA510kService.saveReportData(
+          deviceProfile.folderStructure.reportsFolderId,
+          reportDataFile,
+          deviceProfile.id
+        );
+        
         toast({
-          title: "Validation Successful",
-          description: "Your submission package passed FDA validation with high compliance.",
+          title: "Report Generated Successfully",
+          description: "Your 510(k) submission package has been created.",
           variant: "success"
         });
-      } else if (validationResult.score >= 0.7) {
-        toast({
-          title: "Validation Warning",
-          description: "Your submission package has some minor compliance issues that should be addressed.",
-          variant: "warning"
-        });
+        
+        // Update draft status
+        if (setDraftStatus) {
+          setDraftStatus('ready_for_submission');
+        }
+        
+        // Notify parent component that submission is ready
+        if (onSubmissionReady) {
+          onSubmissionReady(result.report);
+        }
       } else {
         toast({
-          title: "Validation Failed",
-          description: "Your submission package has significant compliance issues that must be fixed.",
+          title: "Report Generation Failed",
+          description: result.error || "Failed to generate 510(k) report.",
           variant: "destructive"
         });
       }
     } catch (error) {
-      console.error("Error validating submission package:", error);
+      console.error('Error generating 510(k) report:', error);
       toast({
-        title: "Validation Error",
-        description: "An error occurred while validating your submission package.",
+        title: "Report Generation Failed",
+        description: error.message || "An unexpected error occurred.",
         variant: "destructive"
       });
+    } finally {
+      setIsGenerating(false);
+      setProgress(100);
+      
+      // Reset progress after delay
+      setTimeout(() => setProgress(0), 500);
     }
   };
-  
-  // Render the validation results
-  const renderValidationResults = () => {
-    if (!validationResults) return null;
+
+  // Download generated documents
+  const downloadDocument = (docType) => {
+    if (!generatedDocs?.[docType]?.url) {
+      toast({
+        title: "Document Not Available",
+        description: `The ${docType.toUpperCase()} document has not been generated yet.`,
+        variant: "warning"
+      });
+      return;
+    }
     
-    const score = validationResults.score;
-    const scorePercentage = Math.round(score * 100);
+    // Create a temporary anchor element to trigger download
+    const link = document.createElement('a');
+    link.href = generatedDocs[docType].url;
+    link.setAttribute('download', generatedDocs[docType].filename || `510k-${docType}.pdf`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // Render the report preview
+  const renderReportPreview = () => {
+    if (!reportData) {
+      return (
+        <div className="text-center p-8 space-y-4">
+          <FileText className="h-12 w-12 text-blue-500 mx-auto" />
+          <h3 className="text-lg font-medium">Generate Report</h3>
+          <p className="text-gray-600 mt-2 max-w-md mx-auto">
+            Generate your final 510(k) submission package including eSTAR documents
+            and attachments for FDA submission.
+          </p>
+          <Button
+            onClick={generateReport}
+            disabled={isGenerating}
+            className="mt-4"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              <>
+                <FileCheck className="mr-2 h-4 w-4" />
+                Generate 510(k) Submission
+              </>
+            )}
+          </Button>
+        </div>
+      );
+    }
     
     return (
-      <div className="mt-6 space-y-4">
-        <h3 className="text-lg font-medium">FDA Compliance Check</h3>
+      <div className="space-y-6">
+        <Alert variant="default" className="bg-blue-50 border-blue-200">
+          <FileCheck className="h-4 w-4 text-blue-600" />
+          <AlertTitle className="text-blue-700">510(k) Submission Package</AlertTitle>
+          <AlertDescription className="text-blue-600">
+            Your 510(k) submission documents have been generated and are ready for review.
+          </AlertDescription>
+        </Alert>
         
-        <div className="bg-gray-50 p-4 rounded-lg border">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center">
-              {score >= 0.9 ? (
-                <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-              ) : score >= 0.7 ? (
-                <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2" />
-              ) : (
-                <XCircle className="h-5 w-5 text-red-500 mr-2" />
-              )}
-              <span className="font-medium">Compliance Score:</span>
-            </div>
-            <span className={`font-bold ${
-              score >= 0.9 ? 'text-green-600' : 
-              score >= 0.7 ? 'text-yellow-600' : 
-              'text-red-600'
-            }`}>
-              {scorePercentage}%
+        <div className="grid md:grid-cols-3 gap-4">
+          {/* PDF Report */}
+          <Card className="flex flex-col">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center">
+                <FileText className="mr-2 h-4 w-4 text-blue-600" />
+                510(k) Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1">
+              <p className="text-xs text-gray-500">
+                Complete 510(k) summary document as required by the FDA.
+              </p>
+            </CardContent>
+            <CardFooter className="pt-2 border-t">
+              <Button 
+                onClick={() => downloadDocument('pdf')} 
+                size="sm" 
+                variant="outline" 
+                className="w-full text-xs"
+                disabled={!generatedDocs?.pdf?.url}
+              >
+                <Download className="mr-1 h-3.5 w-3.5" />
+                Download PDF
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          {/* eSTAR Package */}
+          <Card className="flex flex-col">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center">
+                <FileText className="mr-2 h-4 w-4 text-purple-600" />
+                eSTAR Package
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1">
+              <p className="text-xs text-gray-500">
+                Complete eSTAR (electronic Submission Template And Resource) file for FDA submission.
+              </p>
+            </CardContent>
+            <CardFooter className="pt-2 border-t">
+              <Button 
+                onClick={() => downloadDocument('eSTAR')} 
+                size="sm" 
+                variant="outline" 
+                className="w-full text-xs"
+                disabled={!generatedDocs?.eSTAR?.url}
+              >
+                <Download className="mr-1 h-3.5 w-3.5" />
+                Download eSTAR
+              </Button>
+            </CardFooter>
+          </Card>
+          
+          {/* Attachments */}
+          <Card className="flex flex-col">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-medium flex items-center">
+                <FileText className="mr-2 h-4 w-4 text-amber-600" />
+                Attachments
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1">
+              <p className="text-xs text-gray-500">
+                Supporting documentation, test results, and evidence for your submission.
+              </p>
+            </CardContent>
+            <CardFooter className="pt-2 border-t">
+              <Button 
+                onClick={() => downloadDocument('attachments')} 
+                size="sm" 
+                variant="outline" 
+                className="w-full text-xs"
+                disabled={!generatedDocs?.attachments?.url}
+              >
+                <Download className="mr-1 h-3.5 w-3.5" />
+                Download ZIP
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+        
+        <Separator />
+        
+        <div className="space-y-4">
+          <h3 className="text-md font-medium">Report Sections</h3>
+          
+          <Accordion type="multiple" className="border rounded-md">
+            {sections.map((section, index) => (
+              <AccordionItem value={section.key} key={index} className="px-4">
+                <AccordionTrigger className="text-sm">
+                  <div className="flex items-center">
+                    <span className="mr-2">{section.title}</span>
+                    {section.status === 'complete' && (
+                      <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                    )}
+                    {section.status === 'warning' && (
+                      <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />
+                    )}
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="text-xs text-gray-600">
+                  {section.description}
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+        
+        {reportData.submissionDate && (
+          <div className="flex items-center mt-6 text-sm text-gray-600">
+            <Calendar className="h-4 w-4 mr-2" />
+            <span>
+              Generated on {new Date(reportData.submissionDate).toLocaleDateString()}
             </span>
           </div>
+        )}
+        
+        <div className="flex justify-end space-x-4 mt-6">
+          <Button
+            variant="outline"
+            onClick={generateReport}
+            disabled={isGenerating}
+          >
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Regenerate
+          </Button>
           
-          <Progress 
-            value={scorePercentage} 
-            className={`h-2 ${
-              score >= 0.9 ? 'bg-green-100' : 
-              score >= 0.7 ? 'bg-yellow-100' : 
-              'bg-red-100'
-            }`}
-          />
-          
-          {validationResults.issues && validationResults.issues.length > 0 && (
-            <div className="mt-4">
-              <h4 className="text-sm font-medium mb-2">Issues to Address:</h4>
-              <ul className="space-y-2">
-                {validationResults.issues.map((issue, index) => (
-                  <li key={index} className="text-sm flex items-start">
-                    <div className={`mt-0.5 mr-2 flex-shrink-0 rounded-full h-4 w-4 flex items-center justify-center ${
-                      issue.severity === 'error' ? 'bg-red-100 text-red-600' :
-                      issue.severity === 'warning' ? 'bg-yellow-100 text-yellow-600' :
-                      'bg-blue-100 text-blue-600'
-                    }`}>
-                      {issue.severity === 'error' ? '!' :
-                       issue.severity === 'warning' ? '⚠' : 'i'}
-                    </div>
-                    <div>
-                      <span className="font-medium">{issue.section}: </span>
-                      {issue.message}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <Button
+            variant="primary"
+            onClick={() => {
+              if (onSubmissionReady) {
+                onSubmissionReady(reportData);
+              }
+            }}
+            className="bg-blue-600 text-white hover:bg-blue-700"
+          >
+            Complete 510(k) Submission
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
         </div>
       </div>
     );
   };
-  
-  // Render generation status
-  const renderGenerationStatus = () => {
-    if (generationStatus === 'generating') {
-      return (
-        <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
-          <div className="flex items-center mb-2">
-            <Loader2 className="h-5 w-5 text-blue-600 mr-2 animate-spin" />
-            <h3 className="text-blue-800 font-medium">Generating Submission Package</h3>
+
+  // Render document checklist
+  const renderDocumentChecklist = () => {
+    return (
+      <div className="space-y-6">
+        <Alert variant="default" className="bg-blue-50 border-blue-200">
+          <CheckCircle className="h-4 w-4 text-blue-600" />
+          <AlertTitle className="text-blue-700">Submission Checklist</AlertTitle>
+          <AlertDescription className="text-blue-600">
+            Verify all required documents for your 510(k) submission.
+          </AlertDescription>
+        </Alert>
+        
+        <ScrollArea className="h-[calc(100vh-350px)] pr-4">
+          <div className="space-y-6">
+            {/* Required Form Components */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Required FDA Forms</CardTitle>
+                <CardDescription>Forms that must be included in every 510(k) submission</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {[
+                    { name: 'FDA Form 3514', completed: true },
+                    { name: 'Cover Letter', completed: true },
+                    { name: 'Indications for Use Form (FDA Form 3881)', completed: true },
+                    { name: 'Truthful and Accuracy Statement', completed: true },
+                    { name: '510(k) Summary or 510(k) Statement', completed: true },
+                    { name: 'Class III Summary and Certification', completed: deviceProfile?.deviceClass !== 'Class III' }
+                  ].map((form, index) => (
+                    <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                      <span className="text-sm">{form.name}</span>
+                      {form.completed ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Device Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Device Information</CardTitle>
+                <CardDescription>Technical information about your device</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {[
+                    { name: 'Device Description', completed: true },
+                    { name: 'Design Controls', completed: true },
+                    { name: 'Substantial Equivalence Discussion', completed: true },
+                    { name: 'Proposed Labeling', completed: true },
+                    { name: 'Sterilization Information', completed: deviceProfile?.sterilizationMethod !== 'None' },
+                    { name: 'Shelf Life', completed: true }
+                  ].map((item, index) => (
+                    <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                      <span className="text-sm">{item.name}</span>
+                      {item.completed ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            
+            {/* Performance Testing */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-sm">Performance Testing</CardTitle>
+                <CardDescription>Test results and performance data</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {[
+                    { name: 'Biocompatibility', completed: deviceProfile?.biocompatibilityTesting !== 'Not Required' },
+                    { name: 'Software Documentation', completed: deviceProfile?.softwareLevel !== 'None' },
+                    { name: 'Electromagnetic Compatibility', completed: deviceProfile?.emcTesting !== 'Not Required' },
+                    { name: 'Performance Testing - Bench', completed: true },
+                    { name: 'Performance Testing - Animal', completed: deviceProfile?.animalTesting === 'Completed' },
+                    { name: 'Performance Testing - Clinical', completed: deviceProfile?.clinicalTesting === 'Completed' }
+                  ].map((item, index) => (
+                    <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                      <span className="text-sm">{item.name}</span>
+                      {item.completed ? (
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      ) : (
+                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
           </div>
-          <p className="text-blue-700 text-sm mb-3">{generationStep}</p>
-          <Progress value={generationProgress} className="h-2" />
-        </div>
-      );
-    } else if (generationStatus === 'complete') {
-      return (
-        <div className="bg-green-50 border border-green-100 rounded-lg p-4 mb-6">
-          <div className="flex items-center mb-2">
-            <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-            <h3 className="text-green-800 font-medium">Submission Package Ready</h3>
-          </div>
-          <p className="text-green-700 text-sm mb-3">
-            Your FDA 510(k) submission package has been successfully generated and is ready for final review.
-          </p>
-          <div className="flex justify-end">
-            <Button 
-              variant="outline" 
-              className="bg-white text-green-700 border-green-200 hover:bg-green-50"
-              onClick={() => {
-                if (reportURL) {
-                  window.open(reportURL, '_blank');
-                }
-              }}
-              disabled={!reportURL}
-            >
-              <FileText className="h-4 w-4 mr-2" />
-              View Submission Package
-            </Button>
-          </div>
-        </div>
-      );
-    } else if (generationStatus === 'error') {
-      return (
-        <div className="bg-red-50 border border-red-100 rounded-lg p-4 mb-6">
-          <div className="flex items-center mb-2">
-            <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
-            <h3 className="text-red-800 font-medium">Generation Error</h3>
-          </div>
-          <p className="text-red-700 text-sm mb-3">
-            There was an error generating your submission package. Please try again or contact support.
-          </p>
-          <div className="flex justify-end">
-            <Button 
-              variant="outline" 
-              className="bg-white text-red-700 border-red-200 hover:bg-red-50"
-              onClick={generateSubmissionPackage}
-            >
-              <FileCheck className="h-4 w-4 mr-2" />
-              Retry Generation
-            </Button>
-          </div>
-        </div>
-      );
-    }
-    
-    return null;
+        </ScrollArea>
+      </div>
+    );
   };
-  
+
   return (
     <Card className="shadow-sm">
       <CardHeader className="bg-blue-50 border-b">
         <CardTitle className="text-blue-800 flex items-center">
           <FileText className="mr-2 h-5 w-5 text-blue-600" />
-          FDA 510(k) Submission Generator
+          510(k) Submission Package
         </CardTitle>
         <CardDescription>
-          Generate your complete FDA 510(k) submission package with eSTAR format for regulatory review
+          Generate and review your final 510(k) submission package for FDA clearance
         </CardDescription>
       </CardHeader>
+      
       <CardContent className="pt-6">
-        <div className="space-y-6">
-          {renderGenerationStatus()}
+        <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="space-y-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="preview">Report Preview</TabsTrigger>
+            <TabsTrigger value="checklist">Document Checklist</TabsTrigger>
+          </TabsList>
           
-          <div className="bg-gray-50 p-4 rounded-lg border space-y-4">
-            <h3 className="text-lg font-medium">Submission Information</h3>
-            
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Device Name:</span>
-                <span className="font-medium">{deviceProfile?.deviceName || 'No device name'}</span>
-              </div>
-              
-              <div className="flex justify-between">
-                <span className="text-gray-600">Manufacturer:</span>
-                <span className="font-medium">{deviceProfile?.manufacturer || 'No manufacturer'}</span>
-              </div>
-              
-              <div className="flex justify-between">
-                <span className="text-gray-600">Document ID:</span>
-                <span className="font-medium">{documentId || 'No ID'}</span>
-              </div>
-              
-              <div className="flex justify-between">
-                <span className="text-gray-600">Status:</span>
-                <Badge className={
-                  draftStatus === 'ready' ? 'bg-green-100 text-green-800 hover:bg-green-100' :
-                  draftStatus === 'in-progress' ? 'bg-blue-100 text-blue-800 hover:bg-blue-100' :
-                  'bg-gray-100 text-gray-800 hover:bg-gray-100'
-                }>
-                  {draftStatus === 'ready' ? 'Ready for Submission' :
-                   draftStatus === 'in-progress' ? 'In Progress' :
-                   'Draft'}
-                </Badge>
-              </div>
-              
-              {exportTimestamp && (
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Last Updated:</span>
-                  <span className="font-medium">
-                    {new Date(exportTimestamp).toLocaleString()}
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
+          <TabsContent value="preview" className="space-y-4">
+            {renderReportPreview()}
+          </TabsContent>
           
-          {validationResults && renderValidationResults()}
-          
-          <div className="flex justify-between items-center pt-4">
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                // Implementation for preview/download individual sections would go here
-                toast({
-                  title: "Feature Not Available",
-                  description: "Section download is not available in this preview.",
-                  variant: "default"
-                });
-              }}
-              disabled={isGenerating}
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              Preview Sections
-            </Button>
-            
-            <Button 
-              onClick={generateSubmissionPackage}
-              disabled={isGenerating || generationStatus === 'complete'}
-              className="bg-blue-600 hover:bg-blue-700"
-            >
-              {isGenerating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <Download className="mr-2 h-4 w-4" />
-                  {generationStatus === 'complete' 
-                    ? 'Package Generated' 
-                    : 'Generate FDA Submission Package'}
-                </>
-              )}
-            </Button>
-          </div>
-        </div>
+          <TabsContent value="checklist" className="space-y-4">
+            {renderDocumentChecklist()}
+          </TabsContent>
+        </Tabs>
       </CardContent>
+      
+      <CardFooter className="flex justify-between border-t bg-gray-50 px-6 py-4">
+        <div className="flex items-center text-sm text-gray-600">
+          {isGenerating && (
+            <div className="mr-4 flex items-center">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <span>Processing...</span>
+            </div>
+          )}
+          {progress > 0 && (
+            <div className="w-32">
+              <Progress value={progress} className="h-2" />
+            </div>
+          )}
+        </div>
+      </CardFooter>
     </Card>
   );
 };

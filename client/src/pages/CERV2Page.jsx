@@ -8,7 +8,8 @@ import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
 import CerAssistantPanel from '@/components/cer/CerAssistantPanel';
 import DocumentVaultPanel from '@/components/cer/DocumentVaultPanel';
 import CerDataRetrievalPanel from '@/components/cer/CerDataRetrievalPanel';
-import EquivalenceBuilderPanel from '@/components/cer/EquivalenceBuilderPanel';
+// Using the 510k EquivalenceBuilderPanel instead of the CER one
+import EquivalenceBuilderPanel from '@/components/510k/EquivalenceBuilderPanel';
 import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
 import ClinicalEvaluationPlanPanel from '@/components/cer/ClinicalEvaluationPlanPanel';
 import QualityManagementPlanPanel from '@/components/cer/QualityManagementPlanPanel';

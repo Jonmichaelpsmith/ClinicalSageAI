@@ -514,6 +514,104 @@ export const FDA510kService = {
   },
   
   /**
+   * Save compliance check input to Document Vault
+   * 
+   * This function saves the compliance check input data to the Document Vault
+   * for audit trail and record keeping.
+   * 
+   * @param {string} folderId The Document Vault folder ID to save to
+   * @param {File} file The file to upload
+   * @param {string} associatedDocumentId The ID of the associated 510(k) document
+   * @returns {Promise<Object>} Upload result information
+   */
+  async saveComplianceInput(folderId, file, associatedDocumentId) {
+    try {
+      const metadata = {
+        documentType: 'FDA_510K_COMPLIANCE_INPUT',
+        associatedDocumentId: associatedDocumentId,
+        timestamp: new Date().toISOString(),
+        contentType: 'application/json'
+      };
+      
+      return await docuShareService.uploadDocument(file, folderId, metadata);
+    } catch (error) {
+      console.error('Error saving compliance input to vault:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Save compliance report to Document Vault
+   * 
+   * This function saves the generated compliance report to the Document Vault
+   * for audit trail and record keeping.
+   * 
+   * @param {string} folderId The Document Vault folder ID to save to
+   * @param {File} file The file to upload
+   * @param {string} associatedDocumentId The ID of the associated 510(k) document
+   * @returns {Promise<Object>} Upload result information
+   */
+  async saveComplianceReport(folderId, file, associatedDocumentId) {
+    try {
+      const metadata = {
+        documentType: 'FDA_510K_COMPLIANCE_REPORT',
+        associatedDocumentId: associatedDocumentId,
+        timestamp: new Date().toISOString(),
+        contentType: 'application/json'
+      };
+      
+      return await docuShareService.uploadDocument(file, folderId, metadata);
+    } catch (error) {
+      console.error('Error saving compliance report to vault:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get the latest compliance report from Document Vault
+   * 
+   * @param {Object} folderStructure The document folder structure
+   * @param {string} documentId The 510(k) document ID
+   * @returns {Promise<Object>} The latest compliance report data
+   */
+  async getLatestComplianceReport(folderStructure, documentId) {
+    try {
+      if (!folderStructure?.complianceFolderId) {
+        throw new Error('Missing compliance folder ID in document structure');
+      }
+      
+      const files = await docuShareService.getDocumentsByType(
+        folderStructure.complianceFolderId,
+        'FDA_510K_COMPLIANCE_REPORT'
+      );
+      
+      if (!files || files.length === 0) {
+        return null;
+      }
+      
+      // Sort by date, newest first
+      const sortedFiles = files.sort((a, b) => {
+        return new Date(b.uploadDate) - new Date(a.uploadDate);
+      });
+      
+      const latestFile = sortedFiles[0];
+      const fileContent = await docuShareService.getFileContent(latestFile.documentId);
+      
+      return {
+        success: true,
+        report: typeof fileContent === 'string' ? JSON.parse(fileContent) : fileContent,
+        documentReference: latestFile
+      };
+    } catch (error) {
+      console.error('Error fetching compliance report from vault:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  },
+  
+  /**
    * Run a comprehensive compliance check for a 510(k) submission
    * 
    * This function performs a detailed analysis of a 510(k) submission project
