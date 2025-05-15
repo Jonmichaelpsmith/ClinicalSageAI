@@ -6,7 +6,7 @@ import {
   FileCheck, CheckCircle2, AlertTriangle, Lightbulb, Bot, Star, ListChecks, BookOpen, 
   Clock, Info, Check, Brain, Activity, FileText, Undo2, Users, Plus, Database,
   ChevronDown, ExternalLink, Bug, AlertCircle, BookmarkPlus, Calendar,
-  ChevronUp, ListPlus
+  ChevronUp, ListPlus, Settings
 } from 'lucide-react';
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import { Badge } from '@/components/ui/badge';
@@ -820,49 +820,118 @@ export default function KAutomationPanel() {
         </TabsList>
 
         <TabsContent value="workflow">
-          <div className="space-y-4">
-            <div className="bg-white border border-gray-200 p-4 rounded-md mb-4 shadow-sm">
-              <h3 className="text-lg font-medium text-gray-800 mb-2 flex items-center">
-                <Info className="h-5 w-5 mr-2 text-blue-600" /> 
-                Device Management Areas: Key Differences
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                <div className="border-l-4 border-blue-500 pl-3 py-1">
-                  <span className="font-medium text-blue-700">Device Profile</span>
-                  <p className="text-gray-600 mt-1">The official regulatory "identity card" of your device, containing all technical specifications and classifications needed for FDA submissions.</p>
+          <div className="space-y-6">
+            {/* Device Management System - Unified Navigation Card */}
+            <div className="bg-white rounded-lg shadow-md border border-gray-100 overflow-hidden">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-800 px-6 py-4 text-white">
+                <h3 className="text-xl font-semibold flex items-center">
+                  <Database className="h-5 w-5 mr-2" />
+                  Medical Device Submission Manager
+                </h3>
+                <p className="text-blue-100 text-sm mt-1">
+                  Unified system for managing your 510(k) device submission process
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-0 divide-x divide-gray-100">
+                {/* COLUMN 1: Device Profile */}
+                <div className="p-4 bg-gradient-to-b from-blue-50 to-white">
+                  <div className="flex items-center mb-3">
+                    <div className="bg-blue-100 rounded-full p-2 mr-3">
+                      <FileText className="h-5 w-5 text-blue-700" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-blue-800">Device Profile</h4>
+                      <p className="text-xs text-blue-700">FDA Regulatory Information</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3 border-l-2 border-blue-300 pl-3">
+                    Complete regulatory documentation with device classifications, intended use, and specifications for FDA submission.
+                  </p>
+                  <Button 
+                    size="sm" 
+                    className="w-full bg-blue-600 hover:bg-blue-700 mt-2"
+                    onClick={() => setWorkflowSubTab('devices')}
+                  >
+                    Manage Device Profiles
+                  </Button>
                 </div>
-                <div className="border-l-4 border-green-500 pl-3 py-1">
-                  <span className="font-medium text-green-700">Device Setup</span>
-                  <p className="text-gray-600 mt-1">System-level configuration for how your device is processed in the platform, including basic parameters and workflow settings.</p>
+                
+                {/* COLUMN 2: Device Setup */}
+                <div className="p-4 bg-gradient-to-b from-green-50 to-white relative">
+                  <div className="flex items-center mb-3">
+                    <div className="bg-green-100 rounded-full p-2 mr-3">
+                      <Settings className="h-5 w-5 text-green-700" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-green-800">Device Setup</h4>
+                      <p className="text-xs text-green-700">System Configuration</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3 border-l-2 border-green-300 pl-3">
+                    System-level parameters and configuration that control how your device is processed in the platform.
+                  </p>
+                  <Button 
+                    size="sm" 
+                    className="w-full bg-green-600 hover:bg-green-700 mt-2"
+                    onClick={() => handleRunPipeline('ingestDeviceProfile')}
+                  >
+                    Configure Device Setup
+                  </Button>
                 </div>
-                <div className="border-l-4 border-purple-500 pl-3 py-1">
-                  <span className="font-medium text-purple-700">Device Intake</span>
-                  <p className="text-gray-600 mt-1">The guided process for bringing a new device into the system, including initial data collection and validation steps.</p>
+                
+                {/* COLUMN 3: Device Intake */}
+                <div className="p-4 bg-gradient-to-b from-purple-50 to-white">
+                  <div className="flex items-center mb-3">
+                    <div className="bg-purple-100 rounded-full p-2 mr-3">
+                      <Upload className="h-5 w-5 text-purple-700" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-purple-800">Device Intake</h4>
+                      <p className="text-xs text-purple-700">Onboarding Wizard</p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 mb-3 border-l-2 border-purple-300 pl-3">
+                    Step-by-step wizard for bringing a new device into the system, including data validation and enhancement.
+                  </p>
+                  <Button 
+                    size="sm" 
+                    className="w-full bg-purple-600 hover:bg-purple-700 mt-2"
+                    onClick={() => handleRunPipeline('draftSectionsWithAI')}
+                  >
+                    Start Device Intake
+                  </Button>
                 </div>
               </div>
             </div>
             
-            <div className="mb-4">
-              <Tabs value={workflowSubTab} onValueChange={setWorkflowSubTab} className="mb-6">
-                <TabsList className="w-full bg-slate-100">
-                  <TabsTrigger value="pipeline" className="flex-1">
-                    <ListChecks className="h-4 w-4 mr-2" />
-                    Pipeline Steps
-                  </TabsTrigger>
-                  <TabsTrigger value="devices" className="flex-1">
-                    <Database className="h-4 w-4 mr-2" />
-                    1. Device Setup
-                  </TabsTrigger>
-                  <TabsTrigger value="predicates" className="flex-1">
-                    <Search className="h-4 w-4 mr-2" />
-                    2. Predicate Finder
-                  </TabsTrigger>
-                  <TabsTrigger value="status" className="flex-1">
-                    <Activity className="h-4 w-4 mr-2" />
-                    3. Workflow Status
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+            {/* Workflow Navigation Tabs */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="px-6 py-3 bg-gray-50 border-b border-gray-200">
+                <h3 className="font-medium text-gray-800">Workflow Navigation</h3>
+              </div>
+              <div className="p-4">
+                <Tabs value={workflowSubTab} onValueChange={setWorkflowSubTab} className="mb-2">
+                  <TabsList className="w-full bg-slate-100 p-1">
+                    <TabsTrigger value="pipeline" className="flex-1 py-2">
+                      <ListChecks className="h-4 w-4 mr-2" />
+                      Pipeline Steps
+                    </TabsTrigger>
+                    <TabsTrigger value="devices" className="flex-1 py-2">
+                      <Database className="h-4 w-4 mr-2" />
+                      1. Device Setup
+                    </TabsTrigger>
+                    <TabsTrigger value="predicates" className="flex-1 py-2">
+                      <Search className="h-4 w-4 mr-2" />
+                      2. Predicate Finder
+                    </TabsTrigger>
+                    <TabsTrigger value="status" className="flex-1 py-2">
+                      <Activity className="h-4 w-4 mr-2" />
+                      3. Workflow Status
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+              </div>
             </div>
           
             {workflowSubTab === 'pipeline' && (
