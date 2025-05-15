@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Beaker, BarChart3, Database, FileText, SearchCode, Plus, CheckCircle, LineChart } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, useLocation } from 'wouter';
@@ -152,29 +151,7 @@ const WorkflowPanel = ({ projectId, organizationId }) => {
 
   return (
     <div className="mb-8">
-      <Tabs defaultValue="workflow" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="workflow">
-            <FileText className="h-4 w-4 mr-2" />
-            Workflow
-          </TabsTrigger>
-          <TabsTrigger value="deviceProfile">
-            <Database className="h-4 w-4 mr-2" />
-            Device Profiles
-          </TabsTrigger>
-          <TabsTrigger value="predicateAnalysis">
-            <SearchCode className="h-4 w-4 mr-2" />
-            Predicate Finder
-          </TabsTrigger>
-          <TabsTrigger value="ai-tools">
-            <Beaker className="h-4 w-4 mr-2" />
-            AI Tools
-          </TabsTrigger>
-          <TabsTrigger value="insights">
-            <BarChart3 className="h-4 w-4 mr-2" />
-            Insights
-          </TabsTrigger>
-        </TabsList>
+      {/* No tabs - direct card-based interface */}
         
         <TabsContent value="workflow">
           {/* Workflow Progress Indicator */}
