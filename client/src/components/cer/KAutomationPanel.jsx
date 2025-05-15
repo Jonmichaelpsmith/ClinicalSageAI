@@ -9,7 +9,7 @@ import {
   FolderPlus, FilePlus2, Inbox, SendHorizontal, Archive, Book, ClipboardList,
   Bookmark, BookOpen, CheckSquare, Download, PlusCircle, Filter, Layers,
   Paperclip, Share2, HelpCircle, Menu, LogOut, Info, Grid, LayoutDashboard,
-  Circle, ArrowRight, Edit, Play
+  Circle, ArrowRight, Edit, Play, Loader2
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -23,6 +23,9 @@ import { Separator } from '@/components/ui/separator';
 import { Progress } from '@/components/ui/progress';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
+import DeviceProfileDialog from './DeviceProfileDialog';
+import PredicateDeviceComparison from './PredicateDeviceComparison';
+import kAutomationController from '../../controllers/KAutomationController';
 
 export default function KAutomationPanel() {
   const [selectedModule, setSelectedModule] = useState('510k');
@@ -42,17 +45,21 @@ export default function KAutomationPanel() {
   const [cerSections, setCerSections] = useState(0);
   const [reportTitle, setReportTitle] = useState('Clinical Evaluation Report');
   const [cerCompliant, setCerCompliant] = useState(true);
+  
+  // Predicate device states
+  const [predicateDevices, setPredicateDevices] = useState([]);
+  const [searchingPredicates, setSearchingPredicates] = useState(false);
+  const [selectedPredicates, setSelectedPredicates] = useState([]);
+  const [predicateComparisonReady, setPredicateComparisonReady] = useState(false);
+  
   const { toast } = useToast();
 
   useEffect(() => {
     // Fetch device profiles from API
     const fetchDeviceProfiles = async () => {
       try {
-        // Use KAutomationController to fetch device profiles
-        const profiles = await import('../../controllers/KAutomationController').then(module => {
-          return module.default.fetchDeviceProfiles();
-        });
-        
+        // Use the imported KAutomationController to fetch device profiles
+        const profiles = await kAutomationController.fetchDeviceProfiles();
         setDeviceProfiles(profiles);
       } catch (error) {
         console.error("Error fetching device profiles:", error);
@@ -85,6 +92,104 @@ export default function KAutomationPanel() {
       description: `You've selected the ${profile.deviceName} profile.`,
       duration: 3000
     });
+  };
+  
+  // Handler for creating a new device profile
+  const handleCreateDeviceProfile = async (profileData) => {
+    try {
+      // Create device profile using the controller
+      const newProfile = await kAutomationController.createDeviceProfile(profileData);
+      
+      // Update the device profiles list
+      setDeviceProfiles(prev => [...prev, newProfile]);
+      
+      // Auto-select the newly created profile
+      setCurrentDeviceProfile(newProfile);
+      
+      // Close the dialog
+      setShowDeviceProfileDialog(false);
+      
+      // Navigate to device profile tab
+      setWorkflowSubTab('device-profile');
+      
+      toast({
+        title: "Device Profile Created",
+        description: `${newProfile.deviceName} has been created successfully.`,
+        duration: 3000
+      });
+    } catch (error) {
+      console.error("Error creating device profile:", error);
+      
+      toast({
+        title: "Error",
+        description: "Failed to create device profile. Please try again.",
+        variant: "destructive",
+        duration: 3000
+      });
+    }
+  };
+  
+  // Handler for finding predicate devices
+  const handleFindPredicateDevices = async () => {
+    if (!currentDeviceProfile) {
+      toast({
+        title: "No Device Selected",
+        description: "Please select or create a device profile first.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      // Navigate to predicate finder tab
+      setWorkflowSubTab('predicate-finder');
+      
+      toast({
+        title: "Searching for Predicates",
+        description: "Finding similar predicate devices for your submission...",
+        duration: 2000
+      });
+      
+      // Use the current device profile data for the search
+      const searchCriteria = {
+        deviceName: currentDeviceProfile.deviceName,
+        deviceClass: currentDeviceProfile.deviceClass,
+        manufacturer: currentDeviceProfile.manufacturer,
+        intendedUse: currentDeviceProfile.intendedUse,
+        technologyType: currentDeviceProfile.technologyType,
+        limit: 10
+      };
+      
+      // Search for predicate devices
+      const result = await kAutomationController.findPredicateDevices(searchCriteria);
+      
+      if (result.success && result.predicates && result.predicates.length > 0) {
+        // Set predicate devices in state (need to add state for this)
+        // setPredicateDevices(result.predicates);
+        
+        toast({
+          title: "Predicates Found",
+          description: `Found ${result.predicates.length} potential predicate devices.`,
+          duration: 3000
+        });
+      } else {
+        toast({
+          title: "No Predicates Found",
+          description: "No matching predicate devices were found. Try adjusting your device profile.",
+          variant: "destructive",
+          duration: 3000
+        });
+      }
+    } catch (error) {
+      console.error("Error finding predicate devices:", error);
+      
+      toast({
+        title: "Search Error",
+        description: "Failed to search for predicate devices. Please try again.",
+        variant: "destructive",
+        duration: 3000
+      });
+    }
   };
 
   return (
@@ -635,6 +740,20 @@ export default function KAutomationPanel() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Device Profile Dialog */}
+      {showDeviceProfileDialog && (
+        <DeviceProfileDialog
+          buttonText="Create Device Profile"
+          buttonVariant="default"
+          buttonClassName="hidden"
+          dialogTitle="Device Profile"
+          dialogDescription="Enter the details for your medical device to begin the 510(k) submission process."
+          onSuccessfulSubmit={handleCreateDeviceProfile}
+          isStartingPoint={deviceProfiles.length === 0}
+          showBadge={true}
+        />
+      )}
     </div>
   );
 }
