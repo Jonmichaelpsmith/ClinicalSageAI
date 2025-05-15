@@ -259,15 +259,15 @@ const DeviceProfileList = ({ onSelectProfile }) => {
         <div>
           <CardTitle className="flex items-center">
             <FileText className="h-5 w-5 mr-2 text-blue-600" />
-            Available Device Profiles
+            510(k) Device Profile Manager
           </CardTitle>
           <CardDescription>
-            Step 1: Create a new device profile or select an existing one to begin your 510(k) submission
+            <span className="font-semibold text-blue-700">REQUIRED FIRST STEP:</span> Create or select a device profile to begin your FDA 510(k) submission
           </CardDescription>
         </div>
         <div className="flex space-x-2 items-center">
           <DeviceProfileDialog 
-            buttonText="+ Create New Profile"
+            buttonText="Begin New 510(k) Submission"
             buttonIcon={<PlusCircle className="h-4 w-4 mr-1" />}
             buttonVariant="default"
             buttonClassName="bg-blue-600 hover:bg-blue-700 text-white" 
@@ -279,7 +279,7 @@ const DeviceProfileList = ({ onSelectProfile }) => {
             }}
             showBadge={true}
             isStartingPoint={true}
-            dialogTitle="Step 1: Create New Device Profile"
+            dialogTitle="Create Device Profile for 510(k) Submission"
             dialogDescription="Enter the details of your medical device to begin the 510(k) submission process. This information will be used throughout the FDA submission workflow."
           />
           <Button variant="outline" size="sm" onClick={handleRefresh} className="ml-2">
@@ -336,17 +336,24 @@ const DeviceProfileList = ({ onSelectProfile }) => {
         {(!deviceProfiles || deviceProfiles.length === 0) ? (
           <div className="text-center p-12 bg-gray-50">
             <div className="p-6 max-w-md mx-auto">
-              <div className="rounded-full bg-blue-100 w-12 h-12 flex items-center justify-center mx-auto mb-4">
-                <FileText className="h-6 w-6 text-blue-600" />
+              <div className="rounded-full bg-green-100 w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <FileText className="h-8 w-8 text-green-600" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-1">No Device Profiles</h3>
-              <p className="text-gray-500 mb-4">
-                Create a device profile to start your 510(k) submission process. Profiles contain essential information about your device.
-              </p>
+              <h3 className="text-xl font-medium text-gray-900 mb-3">SETUP REQUIRED</h3>
+              <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 mb-5 max-w-xl mx-auto">
+                <h4 className="font-medium text-blue-800 mb-2">FDA 510(k) Submission Process:</h4>
+                <p className="text-blue-700 mb-2">
+                  To begin your FDA 510(k) submission, you must first create a device profile with essential information about your medical device.
+                </p>
+                <p className="text-sm text-blue-600">
+                  This profile will be used throughout the submission process for predicate device comparisons, testing requirements, and final submission documents.
+                </p>
+              </div>
               <DeviceProfileDialog 
-                buttonText="Create Your First Device Profile"
+                buttonText="Create New Device Profile"
                 buttonVariant="default"
-                dialogTitle="Create 510(k) Device Profile"
+                buttonClassName="bg-green-600 hover:bg-green-700 text-white px-6 py-3 text-lg shadow-md"
+                dialogTitle="New 510(k) Device Profile"
                 dialogDescription="Enter the details of your medical device to begin the 510(k) submission process."
                 onSuccessfulSubmit={(profile) => {
                   refetch();
