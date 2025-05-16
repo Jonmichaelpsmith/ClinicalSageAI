@@ -310,12 +310,7 @@ const DeviceIntakeForm = ({ initialData, onSubmit, onCancel }) => {
   return (
     <Form {...form}>
       <form 
-        onSubmit={(e) => {
-          // Prevent default form submission behavior
-          e.preventDefault();
-          // Only manually trigger form submission when explicitly clicked submit
-          // form.handleSubmit(handleSubmit)();
-        }} 
+        onSubmit={form.handleSubmit(handleSubmit)} 
         className="w-full space-y-6">
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
           <h2 className="text-blue-800 font-medium flex items-center">
