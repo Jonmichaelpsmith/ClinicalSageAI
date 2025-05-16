@@ -1208,10 +1208,9 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                   saveState('deviceProfile', newProfile);
                 }
               }}
-              onPredicatesFound={handlePredicatesComplete} // CRITICAL FIX: Connect the onPredicatesFound callback
               initialError={predicateSearchError} // Pass any existing error
               documentId={k510DocumentId}
-              onPredicatesFound={handlePredicatesComplete}
+              onPredicatesFound={handlePredicatesComplete} // CRITICAL FIX: Connect onPredicatesFound callback
               organizationId={1}
             />
           </div>
