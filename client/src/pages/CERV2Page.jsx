@@ -94,6 +94,13 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [complianceScore, setComplianceScore] = useState(null);
   const [submissionReady, setSubmissionReady] = useState(false);
   
+  // eSTAR specific state
+  const [estarValidationResults, setEstarValidationResults] = useState(null);
+  const [isValidatingEstar, setIsValidatingEstar] = useState(false);
+  const [isGeneratingEstar, setIsGeneratingEstar] = useState(false);
+  const [estarFormat, setEstarFormat] = useState('zip'); // 'zip', 'pdf', or 'json'
+  const [estarGeneratedUrl, setEstarGeneratedUrl] = useState('');
+  
   // Create a deviceProfile object for easier passing to 510k components
   const [deviceProfile, setDeviceProfile] = useState({
     id: k510DocumentId,
