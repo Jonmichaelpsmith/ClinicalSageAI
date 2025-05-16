@@ -78,6 +78,8 @@ import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import ReportGenerator from '@/components/510k/ReportGenerator';
 // Enhanced document management with professional vault system
 import SimpleDocumentTreePanel from '@/components/510k/SimpleDocumentTreePanel';
+// Import the device profile utilities
+import { createNewDeviceProfile, ensureCompleteDeviceProfile } from '@/utils/deviceProfileDefaults';
 import WelcomeDialog from '@/components/510k/WelcomeDialog';
 import DeviceIntakeForm from '@/components/510k/DeviceIntakeForm';
 import DeviceProfileForm from '@/components/cer/DeviceProfileForm';
@@ -198,30 +200,25 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   
   // Create a deviceProfile object for easier passing to 510k components with localStorage persistence
+  // Using our new utilities for robust device profile creation and validation
   const [deviceProfile, setDeviceProfile] = useState(() => {
     // First try to load from localStorage
     const savedProfile = loadSavedState('deviceProfile', null);
     
-    // If we have a saved profile, use that
+    // If we have a saved profile, use that but ensure it has complete structure
     if (savedProfile) {
       console.log('Loaded device profile from localStorage:', savedProfile.deviceName);
-      return savedProfile;
+      // Validate and complete the profile structure if needed
+      return ensureCompleteDeviceProfile(savedProfile);
     }
     
-    // Otherwise create a new default profile
-    return {
+    // Otherwise create a new default profile using our utility
+    return createNewDeviceProfile({
       id: k510DocumentId,
       deviceName: deviceName || 'Sample Medical Device',
       manufacturer: manufacturer || 'Sample Manufacturer',
-      productCode: 'ABC',
-      deviceClass: 'II',
-      intendedUse: intendedUse || 'For diagnostic use in clinical settings',
-      description: 'A medical device designed for diagnostic procedures',
-      technicalSpecifications: 'Meets ISO 13485 standards',
-      regulatoryClass: 'Class II',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
+      intendedUse: intendedUse || 'For diagnostic use in clinical settings'
+    });
   });
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');

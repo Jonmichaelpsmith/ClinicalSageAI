@@ -1,0 +1,115 @@
+// DeviceProfileForm.jsx
+import React, { useState, useEffect } from 'react';
+
+// This form component is now simpler. It receives initialData and calls onSubmit 
+// with the data it has collected. It does not try to build the 'structure' or 'metadata' itself.
+
+function DeviceProfileForm({ initialData, onSubmit }) {
+  // Initialize form state with initialData.
+  // Only include fields that the form is responsible for editing.
+  const [formData, setFormData] = useState({
+    deviceName: '',
+    manufacturer: '',
+    productCode: '',
+    deviceClass: '',
+    intendedUse: '',
+    description: '',
+    technicalSpecifications: '',
+    regulatoryClass: '',
+    // Do NOT include 'id', 'structure', 'metadata', 'status' here by default
+    // unless the form is specifically designed to edit parts of them (e.g. structure.version)
+  });
+
+  // When initialData changes (e.g., after a save and state update in parent),
+  // re-initialize the form fields.
+  useEffect(() => {
+    if (initialData) {
+      setFormData({
+        deviceName: initialData.deviceName || '',
+        manufacturer: initialData.manufacturer || '',
+        productCode: initialData.productCode || '',
+        deviceClass: initialData.deviceClass || '',
+        intendedUse: initialData.intendedUse || '',
+        description: initialData.description || '',
+        technicalSpecifications: initialData.technicalSpecifications || '',
+        regulatoryClass: initialData.regulatoryClass || '',
+        // If you allow editing specific parts of structure, you could map them here:
+        // documentVersion: initialData.structure?.version || '',
+      });
+      console.log("DeviceProfileForm: initialData received and form state updated", initialData);
+    }
+  }, [initialData]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevData => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (onSubmit) {
+      // Only pass the data fields that this form manages.
+      // The parent component (CERV2Page) will merge this with the full profile
+      // and ensure 'id', 'structure', 'metadata', and 'status' are correct.
+      console.log("DeviceProfileForm: Submitting form data:", formData);
+      onSubmit(formData);
+    }
+  };
+
+  // Basic form styling for clarity
+  const inputStyle = "mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm";
+  const labelStyle = "block text-sm font-medium text-gray-700";
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 p-6 shadow-lg rounded-lg bg-white">
+      <div>
+        <label htmlFor="deviceName" className={labelStyle}>Device Name *</label>
+        <input type="text" name="deviceName" id="deviceName" value={formData.deviceName} onChange={handleChange} className={inputStyle} required />
+      </div>
+      <div>
+        <label htmlFor="manufacturer" className={labelStyle}>Manufacturer *</label>
+        <input type="text" name="manufacturer" id="manufacturer" value={formData.manufacturer} onChange={handleChange} className={inputStyle} required />
+      </div>
+      <div>
+        <label htmlFor="productCode" className={labelStyle}>Product Code</label>
+        <input type="text" name="productCode" id="productCode" value={formData.productCode} onChange={handleChange} className={inputStyle} />
+      </div>
+      <div>
+        <label htmlFor="deviceClass" className={labelStyle}>Device Class</label>
+        <input type="text" name="deviceClass" id="deviceClass" value={formData.deviceClass} onChange={handleChange} className={inputStyle} />
+      </div>
+      <div>
+        <label htmlFor="intendedUse" className={labelStyle}>Intended Use *</label>
+        <textarea name="intendedUse" id="intendedUse" value={formData.intendedUse} onChange={handleChange} rows="3" className={inputStyle} required />
+        <p className="mt-1 text-xs text-gray-500">Statement of the device's intended use or indication for use - critical for 510(k) substantial equivalence.</p>
+      </div>
+      <div>
+        <label htmlFor="description" className={labelStyle}>Device Description</label>
+        <textarea name="description" id="description" value={formData.description} onChange={handleChange} rows="3" className={inputStyle} />
+         <p className="mt-1 text-xs text-gray-500">Provide a detailed description of the device including key components, materials, principles of operation.</p>
+      </div>
+      <div>
+        <label htmlFor="technicalSpecifications" className={labelStyle}>Technical Specifications</label>
+        <textarea name="technicalSpecifications" id="technicalSpecifications" value={formData.technicalSpecifications} onChange={handleChange} rows="3" className={inputStyle} />
+      </div>
+       <div>
+        <label htmlFor="regulatoryClass" className={labelStyle}>Regulatory Classification</label>
+        <input type="text" name="regulatoryClass" id="regulatoryClass" value={formData.regulatoryClass} onChange={handleChange} className={inputStyle} />
+        <p className="mt-1 text-xs text-gray-500">FDA regulatory classification of the device.</p>
+      </div>
+      <div className="flex justify-end space-x-3 pt-4">
+        <button type="button" onClick={() => console.log("Cancel clicked")} className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Cancel
+        </button>
+        <button type="submit" className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          Save Device Profile
+        </button>
+      </div>
+    </form>
+  );
+}
+
+export default DeviceProfileForm;

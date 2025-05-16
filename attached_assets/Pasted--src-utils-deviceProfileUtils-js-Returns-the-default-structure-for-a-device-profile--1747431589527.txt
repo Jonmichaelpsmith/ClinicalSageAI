@@ -1,0 +1,111 @@
+// src/utils/deviceProfileUtils.js
+
+/**
+ * Returns the default structure for a device profile.
+ * This ensures consistency across the application.
+ */
+export const getDefaultDeviceProfileStructure = () => ({
+  documentType: '510k',
+  sections: ['device-info', 'predicates', 'compliance'], // Standard sections
+  version: '1.0'
+});
+
+/**
+ * Returns default metadata for a new device profile.
+ */
+export const getDefaultDeviceProfileMetadata = () => {
+  const now = new Date().toISOString();
+  return {
+    createdAt: now,
+    lastUpdated: now,
+  };
+};
+
+/**
+ * Creates a new, complete device profile object.
+ * @param {Object} initialProps - Optional initial properties to override defaults.
+ * @returns {Object} A new device profile object.
+ */
+export const createNewDeviceProfile = (initialProps = {}) => {
+  const defaultStructure = getDefaultDeviceProfileStructure();
+  const defaultMetadata = getDefaultDeviceProfileMetadata();
+
+  // Base profile with all required fields, including structure and metadata
+  const baseProfile = {
+    id: `device-${Date.now()}`,
+    deviceName: 'Sample Medical Device',
+    manufacturer: 'Sample Manufacturer',
+    productCode: 'ABC',
+    deviceClass: 'II',
+    intendedUse: 'For diagnostic use in clinical settings',
+    description: 'A medical device designed for diagnostic procedures',
+    technicalSpecifications: 'Meets ISO 13485 standards',
+    regulatoryClass: 'Class II', // From your attempted fix
+    status: 'active',
+    structure: { ...defaultStructure }, // Ensure a copy, not a reference
+    metadata: { ...defaultMetadata },   // Ensure a copy
+    ...initialProps, // Apply overrides
+  };
+
+  // If initialProps includes partial structure or metadata, merge them carefully
+  if (initialProps.structure) {
+    baseProfile.structure = { ...defaultStructure, ...initialProps.structure };
+  }
+  if (initialProps.metadata) {
+    baseProfile.metadata = { ...defaultMetadata, ...initialProps.metadata };
+  }
+  
+  return baseProfile;
+};
+
+/**
+ * Ensures an existing profile has the necessary structure and metadata.
+ * Useful for migrating profiles loaded from localStorage or other sources.
+ * @param {Object} profile - The device profile to check and migrate.
+ * @returns {Object} The migrated device profile.
+ */
+export const ensureProfileIntegrity = (profile) => {
+  if (!profile) return createNewDeviceProfile(); // Should not happen if called with a profile
+
+  let needsUpdate = false;
+  const now = new Date().toISOString();
+
+  // Ensure ID
+  if (!profile.id) {
+    profile.id = `device-${Date.now()}`;
+    needsUpdate = true;
+  }
+
+  // Ensure structure
+  if (!profile.structure || typeof profile.structure.documentType !== 'string') {
+    profile.structure = { ...getDefaultDeviceProfileStructure(), ...(profile.structure || {}) };
+    needsUpdate = true;
+    console.log(`Profile Migration: Updated structure for profile ID ${profile.id}`);
+  }
+
+  // Ensure metadata
+  if (!profile.metadata || typeof profile.metadata.createdAt !== 'string') {
+    profile.metadata = {
+      createdAt: profile.metadata?.createdAt || now, // Preserve original if exists
+      lastUpdated: now,
+      ...(profile.metadata || {}),
+    };
+    needsUpdate = true;
+    console.log(`Profile Migration: Updated metadata for profile ID ${profile.id}`);
+  } else {
+    profile.metadata.lastUpdated = now; // Always update lastUpdated
+  }
+
+
+  // Ensure status
+  if (!profile.status) {
+    profile.status = 'active';
+    needsUpdate = true;
+  }
+
+  if (needsUpdate) {
+    console.log("Profile was updated for integrity:", profile);
+  }
+
+  return profile;
+};

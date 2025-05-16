@@ -1,0 +1,112 @@
+// CERV2Page.jsx
+import React, { useState, useCallback, useEffect } from 'react';
+import { 
+    createNewDeviceProfile, 
+    ensureProfileIntegrity 
+} from './utils/deviceProfileUtils'; // Adjust path as needed
+import DeviceProfileForm from './DeviceProfileForm'; // Adjust path as needed
+
+// Mock localStorage functions (replace with your actual implementations)
+const loadSavedState = (key, defaultValue) => {
+  try {
+    const serializedState = localStorage.getItem(key);
+    if (serializedState === null) return defaultValue;
+    return JSON.parse(serializedState);
+  } catch (error) {
+    console.warn("Error loading state from localStorage for key", key, error);
+    return defaultValue;
+  }
+};
+
+const saveState = (key, state) => {
+  try {
+    // Before saving, always ensure the profile has the correct structure.
+    // This is a final check, though handleSaveDeviceProfile should already ensure it.
+    const profileToSave = ensureProfileIntegrity(state);
+    const serializedState = JSON.stringify(profileToSave);
+    localStorage.setItem(key, serializedState);
+    console.log("Successfully saved to localStorage:", profileToSave);
+  } catch (error) {
+    console.error("Error saving state to localStorage for key", key, error, state);
+    // Potentially throw the error or handle it more gracefully
+    throw new Error(`Failed to save state for key ${key}: ${error.message}`);
+  }
+};
+
+// Props might come from a router or parent component
+function CERV2Page({ k510DocumentId, deviceName, manufacturer, intendedUse }) {
+  const [deviceProfile, setDeviceProfile] = useState(() => {
+    const savedProfile = loadSavedState('deviceProfile', null);
+    if (savedProfile) {
+      console.log('Loaded device profile from localStorage:', savedProfile.deviceName);
+      // Ensure the loaded profile has the necessary structure and metadata
+      return ensureProfileIntegrity(savedProfile);
+    }
+    // If no saved profile, create a new one with all necessary fields
+    console.log('No saved profile found, creating a new one.');
+    return createNewDeviceProfile({
+      id: k510DocumentId, // This ID will be used if provided
+      deviceName,
+      manufacturer,
+      intendedUse,
+    });
+  });
+
+  useEffect(() => {
+    // Log the initial or loaded device profile state for debugging
+    console.log("CERV2Page: Initial deviceProfile state:", deviceProfile);
+  }, []); // Empty dependency array, so it runs once on mount
+
+  const handleSaveDeviceProfile = useCallback(async (formDataFromForm) => {
+    console.log("handleSaveDeviceProfile called with formData:", formDataFromForm);
+    setDeviceProfile(currentProfile => {
+      // Merge form data with the current profile.
+      // Create a new object to ensure immutability and trigger re-renders.
+      let updatedProfile = {
+        ...currentProfile, // Start with the existing full profile
+        ...formDataFromForm, // Override with values from the form
+      };
+
+      // Crucially, ensure the profile integrity (id, structure, metadata, status)
+      // This step is vital to prevent the "Error creating document structure".
+      // It ensures that even if formDataFromForm is partial, the core structure is maintained or restored.
+      updatedProfile = ensureProfileIntegrity(updatedProfile);
+      
+      // Update metadata's lastUpdated timestamp specifically
+      updatedProfile.metadata.lastUpdated = new Date().toISOString();
+
+      try {
+        console.log("Attempting to save updated device profile:", updatedProfile);
+        // Replace with your actual save logic (e.g., API call)
+        saveState('deviceProfile', updatedProfile); 
+        alert("Device Profile Saved Successfully!"); // Provide user feedback
+        return updatedProfile; // Set the new state
+      } catch (error) {
+        console.error("Error saving device profile in handleSaveDeviceProfile:", error);
+        console.error("Data that failed to save:", updatedProfile);
+        // Display a more user-friendly error message
+        alert(`Error saving profile: ${error.message}. Please check the console for details. The 'structure' field might still be an issue.`);
+        return currentProfile; // Revert to the previous state on error
+      }
+    });
+  }, []); // No dependencies needed if saveState and other externals don't change
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Device Profile Management (510k)</h1>
+      {/* Pass the current, complete profile to the form */}
+      {/* The form should ideally only submit fields it manages */}
+      <DeviceProfileForm
+        initialData={deviceProfile}
+        onSubmit={handleSaveDeviceProfile}
+        // Pass k510DocumentId if the form needs it for some reason, though ID management is now more centralized
+      />
+      <div className="mt-6 p-4 border rounded bg-gray-50">
+        <h2 className="text-lg font-semibold">Current Profile Data (for debugging):</h2>
+        <pre className="text-xs overflow-auto">{JSON.stringify(deviceProfile, null, 2)}</pre>
+      </div>
+    </div>
+  );
+}
+
+export default CERV2Page;
