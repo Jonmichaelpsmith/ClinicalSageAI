@@ -1,258 +1,551 @@
 /**
  * FDA 510(k) Risk Assessment API
  * 
- * This API uses OpenAI's GPT-4o to analyze device profile, predicate devices,
- * and literature evidence to predict FDA submission risks and approval likelihood.
+ * This module provides AI-powered risk assessment capabilities for 510(k) submissions,
+ * analyzing device profiles, predicate devices, and literature evidence to predict
+ * FDA clearance likelihood and identify potential risk factors.
  */
-const express = require('express');
-const { OpenAI } = require('openai');
-const router = express.Router();
 
-// Initialize OpenAI with API key from environment
-const openai = new OpenAI({
+const express = require('express');
+const { Configuration, OpenAIApi } = require('openai');
+const router = express.Router();
+const fs = require('fs');
+const path = require('path');
+const { v4: uuidv4 } = require('uuid');
+
+// Initialize OpenAI API
+const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY
 });
-
-// Create a system prompt that instructs GPT-4o on how to analyze FDA submissions
-const SYSTEM_PROMPT = `You are an FDA regulatory expert specializing in 510(k) medical device submissions.
-Analyze the provided medical device information and generate a comprehensive risk assessment with the following components:
-
-1. Approval Likelihood: Estimate the probability (0.0-1.0) of FDA clearance based on the submission data.
-2. Risk Factors: Identify specific risks that could impact FDA clearance, each with:
-   - Severity (high/medium/low)
-   - Title (concise description)
-   - Description (detailed explanation)
-   - Potential impact on the submission outcome
-3. Historical Comparisons: Identify similar devices from FDA's database with:
-   - Device name and K-number
-   - Clearance outcome and review timeline
-   - Key differences from the current device
-4. Strengths: List specific strengths that enhance the likelihood of clearance
-5. Recommendations: Provide actionable suggestions to improve the submission
-
-Base your analysis on FDA's current 510(k) guidelines, regulatory precedents, and the specific details of this submission.
-Ensure your assessment is thorough, accurate, and actionable.`;
+const openai = new OpenAIApi(configuration);
 
 /**
- * Predict FDA submission risks
+ * Predict FDA submission risks for a 510(k) device
  * 
- * POST /api/510k/predict-risks
- * 
- * @body {Object} deviceProfile - Device information including name, classification, description, etc.
- * @body {Array} predicateDevices - List of predicate devices
- * @body {Object} literatureEvidence - Supporting literature evidence
- * @body {Object} options - Additional analysis options
- * 
- * @returns {Object} Risk assessment results
+ * This endpoint analyzes device profiles, predicate comparisons, and literature evidence
+ * to predict FDA clearance likelihood and identify potential risk factors.
  */
-router.post('/predict-risks', async (req, res) => {
+router.post('/predict-submission-risks', async (req, res) => {
   try {
-    console.log('Received risk assessment request');
-    
-    const { deviceProfile, predicateDevices, literatureEvidence, equivalenceData, options } = req.body;
+    const { deviceProfile, predicateDevices, equivalenceData, options } = req.body;
     
     if (!deviceProfile) {
-      return res.status(400).json({
-        success: false,
-        error: 'Device profile is required'
-      });
+      return res.status(400).json({ error: 'Device profile is required' });
     }
     
-    // Format the data for OpenAI analysis
-    const analysisData = {
-      device: deviceProfile,
-      predicates: predicateDevices || [],
-      literature: literatureEvidence || [],
-      equivalence: equivalenceData || null,
-      options: options || {}
+    // Default options if not provided
+    const analysisOptions = {
+      includeHistoricalComparisons: options?.includeHistoricalComparisons || false,
+      performDeepAnalysis: options?.performDeepAnalysis || false
     };
     
-    // Prepare the formatted data for GPT-4o
-    const formattedAnalysis = JSON.stringify(analysisData, null, 2);
+    // Extract relevant data for analysis
+    const deviceData = {
+      id: deviceProfile.id,
+      name: deviceProfile.deviceName,
+      manufacturer: deviceProfile.manufacturerName,
+      description: deviceProfile.deviceDescription,
+      indications: deviceProfile.indicationsForUse,
+      regulatoryClass: deviceProfile.deviceClass,
+      productCode: deviceProfile.productCode,
+      hasPredicates: predicateDevices && predicateDevices.length > 0,
+      predicateCount: predicateDevices ? predicateDevices.length : 0,
+      evidenceData: equivalenceData?.literatureEvidence || {}
+    };
     
-    console.log('Calling OpenAI for risk assessment');
+    // Prepare OpenAI API request for risk assessment
+    const analysisPrompt = generateRiskAssessmentPrompt(
+      deviceData, 
+      predicateDevices, 
+      equivalenceData,
+      analysisOptions
+    );
     
-    // Call OpenAI with our formatted data
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
+    console.log('Performing FDA 510(k) submission risk assessment...');
+    
+    // Call OpenAI API for analysis
+    const completion = await openai.createChatCompletion({
+      model: "gpt-4o", // Use GPT-4o for comprehensive analysis
       messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: `Please analyze this medical device submission data for FDA 510(k) clearance risks and provide a comprehensive assessment:\n\n${formattedAnalysis}` }
+        {
+          role: "system",
+          content: "You are an FDA regulatory expert specialized in 510(k) submissions. Analyze the device information and provide a detailed risk assessment for FDA clearance."
+        },
+        {
+          role: "user",
+          content: analysisPrompt
+        }
       ],
-      response_format: { type: "json_object" },
-      temperature: 0.1, // Lower temperature for more consistent results
-      max_tokens: 3000 // Allow for detailed analysis
+      temperature: 0.3, // Lower temperature for more deterministic responses
+      max_tokens: 2500, // Allow for detailed analysis
+      // Request JSON format
+      response_format: { type: "json_object" }
     });
     
-    // Extract the structured risk assessment from GPT-4o
-    const analysis = JSON.parse(completion.choices[0].message.content);
+    // Parse the assessment response
+    const assessmentText = completion.data.choices[0].message.content;
+    let assessment = {};
     
-    // Process and enhance the OpenAI response
-    const enhancedResponse = {
-      success: true,
-      deviceName: deviceProfile.name || 'Unknown Device',
-      approvalLikelihood: analysis.approvalLikelihood || (analysis.approval_likelihood ? parseFloat(analysis.approval_likelihood) : null),
-      riskFactors: analysis.riskFactors || analysis.risk_factors || [],
-      historicalComparisons: analysis.historicalComparisons || analysis.historical_comparisons || [],
-      strengths: analysis.strengths || [],
-      recommendations: analysis.recommendations || [],
-      hasLiteratureEvidence: literatureEvidence && literatureEvidence.length > 0,
-      evidenceCount: literatureEvidence ? literatureEvidence.length : 0,
-      assessmentDate: new Date().toISOString(),
-      requestId: completion.id,
-      analysis_metadata: {
-        model: "gpt-4o",
-        prompt_tokens: completion.usage.prompt_tokens,
-        completion_tokens: completion.usage.completion_tokens,
-        total_tokens: completion.usage.total_tokens
-      }
-    };
+    try {
+      assessment = JSON.parse(assessmentText);
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      return res.status(500).json({ error: 'Error processing risk assessment results' });
+    }
     
-    console.log('Risk assessment completed successfully');
+    // Generate approval likelihood if not provided
+    if (!assessment.approvalLikelihood && assessment.riskFactors) {
+      // Calculate approval likelihood based on risk factors
+      const highRiskCount = assessment.riskFactors.filter(r => r.severity === 'high').length;
+      const mediumRiskCount = assessment.riskFactors.filter(r => r.severity === 'medium').length;
+      const lowRiskCount = assessment.riskFactors.filter(r => r.severity === 'low').length;
+      
+      const approvalLikelihood = calculateApprovalLikelihood(
+        highRiskCount, 
+        mediumRiskCount, 
+        lowRiskCount,
+        assessment.strengths ? assessment.strengths.length : 0
+      );
+      
+      assessment.approvalLikelihood = approvalLikelihood;
+    }
     
-    // Return the enhanced risk assessment
-    return res.json(enhancedResponse);
+    // Add assessment metadata
+    assessment.deviceName = deviceProfile.deviceName;
+    assessment.deviceId = deviceProfile.id;
+    assessment.assessmentDate = new Date().toISOString();
+    assessment.hasLiteratureEvidence = equivalenceData?.literatureEvidence && 
+      Object.keys(equivalenceData.literatureEvidence).length > 0;
+    assessment.evidenceCount = assessment.hasLiteratureEvidence ? 
+      Object.keys(equivalenceData.literatureEvidence).length : 0;
+    
+    res.json(assessment);
   } catch (error) {
-    console.error('Error in FDA risk assessment:', error);
-    
-    return res.status(500).json({
-      success: false,
-      error: error.message || 'Error generating risk assessment',
-      riskFactors: [],
-      recommendations: [
-        'Ensure device profile is complete with all required information',
-        'Add at least one valid predicate device for comparison',
-        'Include supporting literature evidence for key claims',
-        'Complete the substantial equivalence section thoroughly'
-      ]
+    console.error('Error in risk assessment:', error);
+    res.status(500).json({ 
+      error: 'Risk assessment failed', 
+      message: error.message 
     });
   }
 });
 
 /**
- * Generate automatic compliance issue fixes
- * 
- * POST /api/fda510k/compliance-fixes
- * 
- * @body {Array} issues - List of compliance issues to fix
- * @body {Object} deviceProfile - Device information
- * @body {Object} options - Additional options for fix generation
- * 
- * @returns {Object} Fix recommendations for compliance issues
+ * Generate AI-powered fix suggestions for compliance issues
  */
-router.post('/compliance-fixes', async (req, res) => {
+router.post('/suggest-compliance-fixes', async (req, res) => {
   try {
-    console.log('Received compliance fix request');
-    
     const { issues, deviceProfile, options } = req.body;
     
-    if (!issues || !Array.isArray(issues) || issues.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: 'Valid compliance issues are required'
-      });
+    if (!issues || !issues.length || !deviceProfile) {
+      return res.status(400).json({ error: 'Issues and device profile are required' });
     }
     
-    // Format the compliance issues for OpenAI analysis
-    const formattedIssues = JSON.stringify({
-      device: deviceProfile || { name: 'Medical Device' },
-      issues: issues,
-      options: options || {}
-    }, null, 2);
-    
-    // Create a system prompt for fix generation
-    const fixGenerationPrompt = `You are an FDA regulatory compliance expert specializing in 510(k) medical device submissions.
-Generate detailed, actionable fixes for each compliance issue in the submission data with the following components:
-
-1. For each issue, provide:
-   - A clear, descriptive title for the fix
-   - A detailed description of what needs to be addressed
-   - Step-by-step implementation instructions (at least 3-5 specific actions)
-   - Relevant regulatory resources or references
-   - Whether the fix can be applied automatically or requires manual review
-
-2. Consider:
-   - The device classification and type
-   - The specific section of the submission affected
-   - FDA guidance documents relevant to this specific issue
-   - Industry best practices for similar issues
-
-Your recommendations must be specific, actionable, and FDA-compliant. Focus on both technical requirements
-and documentation best practices. Ensure all suggestions align with current FDA regulations for medical devices.`;
-
-    console.log('Calling OpenAI for compliance fixes');
-    
-    // Call OpenAI to generate fixes
-    const completion = await openai.chat.completions.create({
-      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
-      messages: [
-        { role: "system", content: fixGenerationPrompt },
-        { role: "user", content: `Please generate compliance fixes for these 510(k) submission issues:\n\n${formattedIssues}` }
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.1, // Lower temperature for more consistent results
-      max_tokens: 3000 // Allow for detailed analysis
-    });
-    
-    // Extract the structured fixes from GPT-4o
-    const generatedFixes = JSON.parse(completion.choices[0].message.content);
-    
-    // Standardize the response format
-    const standardizedFixes = Array.isArray(generatedFixes.fixes) ? generatedFixes.fixes : [];
-    
-    // Map fixes to a consistent format if needed
-    const mappedFixes = standardizedFixes.map(fix => {
-      // Handle various response structures GPT might provide
-      if (typeof fix === 'object' && fix !== null) {
-        const issueId = fix.issueId || fix.issue_id;
-        
-        return {
-          issueId: issueId,
-          fix: {
-            title: fix.title || fix.fix?.title || 'Compliance Fix',
-            description: fix.description || fix.fix?.description || '',
-            implementationSteps: fix.implementationSteps || fix.implementation_steps || fix.fix?.implementationSteps || [],
-            resourceLinks: fix.resourceLinks || fix.resource_links || fix.fix?.resourceLinks || [],
-            templateId: fix.templateId || fix.template_id || fix.fix?.templateId || null
-          },
-          autoApplicable: fix.autoApplicable || fix.auto_applicable || fix.fix?.autoApplicable || false,
-          confidenceLevel: fix.confidenceLevel || fix.confidence_level || fix.fix?.confidenceLevel || 'medium'
-        };
-      }
-      return null;
-    }).filter(fix => fix !== null);
-    
-    // Process and enhance the OpenAI response
-    const enhancedResponse = {
-      success: true,
-      deviceName: deviceProfile?.name || 'Unknown Device',
-      fixes: mappedFixes,
-      generatedAt: new Date().toISOString(),
-      generatedBy: 'AI Regulatory Assistant',
-      fixCount: mappedFixes.length,
-      requestId: completion.id,
-      analysis_metadata: {
-        model: "gpt-4o",
-        prompt_tokens: completion.usage.prompt_tokens,
-        completion_tokens: completion.usage.completion_tokens,
-        total_tokens: completion.usage.total_tokens
-      }
+    // Default options
+    const fixOptions = {
+      deepAnalysis: options?.deepAnalysis || false,
+      includeTemplates: options?.includeTemplates || false
     };
     
-    console.log('Compliance fixes generated successfully');
+    // Generate prompt for fix suggestions
+    const fixPrompt = generateFixSuggestionsPrompt(issues, deviceProfile, fixOptions);
     
-    // Return the enhanced fixes
-    return res.json(enhancedResponse);
+    console.log('Generating AI-powered fix suggestions...');
+    
+    // Call OpenAI API for fix suggestions
+    const completion = await openai.createChatCompletion({
+      model: "gpt-4o", // Use GPT-4o for comprehensive analysis
+      messages: [
+        {
+          role: "system",
+          content: "You are an FDA regulatory expert specializing in 510(k) submissions. Generate detailed, actionable fixes for the compliance issues identified in the device submission."
+        },
+        {
+          role: "user",
+          content: fixPrompt
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 2500,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse the suggestions
+    const suggestionsText = completion.data.choices[0].message.content;
+    let suggestions = {};
+    
+    try {
+      suggestions = JSON.parse(suggestionsText);
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      return res.status(500).json({ error: 'Error processing fix suggestions' });
+    }
+    
+    // Add metadata
+    suggestions.deviceName = deviceProfile.deviceName;
+    suggestions.deviceId = deviceProfile.id;
+    suggestions.generatedAt = new Date().toISOString();
+    
+    res.json(suggestions);
   } catch (error) {
-    console.error('Error generating compliance fixes:', error);
-    
-    return res.status(500).json({
-      success: false,
-      error: error.message || 'Error generating compliance fixes',
-      fixes: [],
-      generatedAt: new Date().toISOString()
+    console.error('Error generating fix suggestions:', error);
+    res.status(500).json({ 
+      error: 'Fix generation failed', 
+      message: error.message 
     });
   }
 });
+
+/**
+ * Generate documentation templates for FDA submissions
+ */
+router.post('/generate-documentation-template/:templateType', async (req, res) => {
+  try {
+    const { templateType } = req.params;
+    const { deviceId } = req.body;
+    
+    if (!deviceId) {
+      return res.status(400).json({ error: 'Device ID is required' });
+    }
+    
+    // Validate template type
+    const validTemplateTypes = ['software', 'biocompatibility', 'electrical-safety', 'clinical', 'labeling'];
+    if (!validTemplateTypes.includes(templateType)) {
+      return res.status(400).json({ error: 'Invalid template type' });
+    }
+    
+    // Generate prompt for documentation template
+    const templatePrompt = generateDocumentationTemplatePrompt(templateType, deviceId);
+    
+    console.log(`Generating ${templateType} documentation template...`);
+    
+    // Call OpenAI API for documentation template
+    const completion = await openai.createChatCompletion({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: "You are an FDA regulatory documentation expert specializing in 510(k) submissions. Generate a comprehensive template structure for the requested documentation type."
+        },
+        {
+          role: "user",
+          content: templatePrompt
+        }
+      ],
+      temperature: 0.3,
+      max_tokens: 2500,
+      response_format: { type: "json_object" }
+    });
+    
+    // Parse the template
+    const templateText = completion.data.choices[0].message.content;
+    let templateData = {};
+    
+    try {
+      templateData = JSON.parse(templateText);
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      return res.status(500).json({ error: 'Error processing template data' });
+    }
+    
+    // Add metadata
+    templateData.templateType = templateType;
+    templateData.deviceId = deviceId;
+    templateData.generatedAt = new Date().toISOString();
+    
+    // Generate a template ID
+    const templateId = uuidv4();
+    const responseData = {
+      templateId,
+      templateData
+    };
+    
+    res.json(responseData);
+  } catch (error) {
+    console.error('Error generating documentation template:', error);
+    res.status(500).json({ 
+      error: 'Template generation failed', 
+      message: error.message 
+    });
+  }
+});
+
+/**
+ * Generate a prompt for risk assessment
+ */
+function generateRiskAssessmentPrompt(deviceData, predicateDevices, equivalenceData, options) {
+  let prompt = `
+Please analyze this 510(k) submission for FDA clearance risks and provide a detailed assessment.
+
+## Device Information:
+- Name: ${deviceData.name}
+- Manufacturer: ${deviceData.manufacturer}
+- Description: ${deviceData.description}
+- Indications for Use: ${deviceData.indications}
+- Regulatory Class: ${deviceData.regulatoryClass}
+- Product Code: ${deviceData.productCode}
+
+`;
+
+  if (predicateDevices && predicateDevices.length > 0) {
+    prompt += `
+## Predicate Devices (${predicateDevices.length}):
+${predicateDevices.map((predicate, index) => 
+  `${index + 1}. ${predicate.deviceName} (${predicate.kNumber || 'Unknown K Number'}) - ${predicate.manufacturer || 'Unknown Manufacturer'}`
+).join('\n')}
+`;
+  } else {
+    prompt += `
+## Predicate Devices:
+No predicate devices identified.
+`;
+  }
+
+  if (equivalenceData?.literatureEvidence && Object.keys(equivalenceData.literatureEvidence).length > 0) {
+    prompt += `
+## Literature Evidence:
+${Object.keys(equivalenceData.literatureEvidence).map((key, index) => 
+  `${index + 1}. ${equivalenceData.literatureEvidence[key].title} (${equivalenceData.literatureEvidence[key].journal || 'Unknown Journal'})`
+).join('\n')}
+`;
+  }
+
+  // Additional analysis options
+  if (options.includeHistoricalComparisons) {
+    prompt += `
+Please include historical comparisons with similar devices and their FDA clearance outcomes.
+`;
+  }
+
+  if (options.performDeepAnalysis) {
+    prompt += `
+Perform a deep analysis that includes:
+- Detailed risk factors categorized by severity (high, medium, low)
+- Key strengths of the submission
+- Specific recommendations to improve clearance likelihood
+- Analysis of how literature evidence supports the submission
+`;
+  }
+
+  prompt += `
+Please provide your assessment in the following JSON format:
+{
+  "approvalLikelihood": <number between 0-1 representing likelihood of FDA approval>,
+  "riskFactors": [
+    {
+      "title": "<risk factor title>",
+      "description": "<detailed description>",
+      "severity": "<high|medium|low>",
+      "impact": "<potential impact on submission>"
+    }
+  ],
+  "strengths": [
+    "<strength 1>",
+    "<strength 2>"
+  ],
+  "recommendations": [
+    "<recommendation 1>",
+    "<recommendation 2>"
+  ]
+}
+
+${options.includeHistoricalComparisons ? `
+If historical comparisons are available, please include them in this format:
+"historicalComparisons": [
+  {
+    "deviceName": "<device name>",
+    "kNumber": "<K number>",
+    "decisionDate": "<date of FDA decision>",
+    "reviewTime": <number of days>,
+    "similarityScore": <number 0-100>,
+    "outcome": "<Cleared|Not Cleared>",
+    "keyDifferences": "<key differences from submission device>"
+  }
+]
+` : ''}
+`;
+
+  return prompt;
+}
+
+/**
+ * Generate a prompt for fix suggestions
+ */
+function generateFixSuggestionsPrompt(issues, deviceProfile, options) {
+  let prompt = `
+Please generate actionable fix suggestions for the following compliance issues in a 510(k) submission:
+
+## Device Information:
+- Name: ${deviceProfile.deviceName}
+- Manufacturer: ${deviceProfile.manufacturerName}
+- Regulatory Class: ${deviceProfile.deviceClass}
+- Product Code: ${deviceProfile.productCode}
+
+## Compliance Issues:
+${issues.map((issue, index) => 
+  `${index + 1}. ${issue.title} (Severity: ${issue.severity})
+     ${issue.description}
+  `
+).join('\n')}
+
+`;
+
+  if (options.deepAnalysis) {
+    prompt += `
+Please provide a deep analysis with specific, step-by-step implementation guidance for each issue.
+Include regulatory references and resources where applicable.
+`;
+  }
+
+  if (options.includeTemplates) {
+    prompt += `
+For documentation-related issues, suggest appropriate template types (e.g., 'software-documentation', 'biocompatibility') that could help address the issue.
+`;
+  }
+
+  prompt += `
+Please provide your suggestions in the following JSON format:
+{
+  "fixes": [
+    {
+      "issueIndex": <index of the issue from input list>,
+      "fix": {
+        "title": "<title of the fix>",
+        "description": "<detailed description of the fix>",
+        "implementationSteps": [
+          "<step 1>",
+          "<step 2>"
+        ],
+        "resourceLinks": [
+          {
+            "title": "<resource title>",
+            "url": "<resource URL>"
+          }
+        ],
+        "templateId": "<template id if applicable>"
+      }
+    }
+  ]
+}
+`;
+
+  return prompt;
+}
+
+/**
+ * Generate a prompt for documentation templates
+ */
+function generateDocumentationTemplatePrompt(templateType, deviceId) {
+  let prompt = `
+Please generate a comprehensive FDA-compliant documentation template for a 510(k) submission.
+
+## Template Type: ${templateType}
+## Device ID: ${deviceId}
+
+`;
+
+  // Template-specific guidance
+  switch (templateType) {
+    case 'software':
+      prompt += `
+This should be a software documentation template following FDA guidance for medical device software.
+Include sections for:
+- Software description
+- Risk analysis
+- Requirements specifications
+- Architecture design
+- Unit, integration, and system level testing
+- Verification and validation
+- Cybersecurity considerations
+- Revision history
+`;
+      break;
+    case 'biocompatibility':
+      prompt += `
+This should be a biocompatibility documentation template following FDA guidance.
+Include sections for:
+- Materials characterization
+- Biocompatibility testing plan
+- Test protocols
+- Results summary
+- Risk assessment
+- Literature review
+`;
+      break;
+    case 'electrical-safety':
+      prompt += `
+This should be an electrical safety documentation template following FDA and IEC 60601-1 guidance.
+Include sections for:
+- Electrical specifications
+- Safety testing procedures
+- Compliance with standards
+- Risk assessment
+`;
+      break;
+    case 'clinical':
+      prompt += `
+This should be a clinical evaluation documentation template following FDA guidance.
+Include sections for:
+- Literature review methodology
+- Study design
+- Inclusion/exclusion criteria
+- Endpoints
+- Statistical analysis
+- Results presentation
+`;
+      break;
+    case 'labeling':
+      prompt += `
+This should be a labeling documentation template following FDA guidance.
+Include sections for:
+- Device label
+- Instructions for use
+- Package insert
+- Warnings and precautions
+- Indications for use
+`;
+      break;
+  }
+
+  prompt += `
+Please provide your template in the following JSON format:
+{
+  "title": "<template title>",
+  "description": "<brief description of the template purpose>",
+  "sections": [
+    {
+      "title": "<section title>",
+      "content": "<section content description>",
+      "subSections": [
+        "<subsection 1>",
+        "<subsection 2>"
+      ]
+    }
+  ]
+}
+`;
+
+  return prompt;
+}
+
+/**
+ * Calculate approval likelihood based on risk factors and strengths
+ */
+function calculateApprovalLikelihood(highRiskCount, mediumRiskCount, lowRiskCount, strengthsCount) {
+  // Base approval likelihood starts at 85%
+  let approvalLikelihood = 0.85;
+  
+  // Reduce for each risk factor based on severity
+  approvalLikelihood -= (highRiskCount * 0.15);
+  approvalLikelihood -= (mediumRiskCount * 0.05);
+  approvalLikelihood -= (lowRiskCount * 0.01);
+  
+  // Increase for each strength (up to a cap)
+  approvalLikelihood += Math.min(strengthsCount * 0.03, 0.15);
+  
+  // Ensure the likelihood stays within bounds
+  approvalLikelihood = Math.max(0.1, Math.min(0.98, approvalLikelihood));
+  
+  return approvalLikelihood;
+}
 
 module.exports = router;
