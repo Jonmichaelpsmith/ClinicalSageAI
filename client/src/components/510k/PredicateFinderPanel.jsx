@@ -7,13 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Check, X, AlertTriangle, ThumbsUp, Loader2, FileText, GitCompare, BookOpen, Filter, ExternalLink, Eye, Calendar, BarChart, ArrowUpDown, Info } from 'lucide-react';
+import { Search, Check, X, AlertTriangle, ThumbsUp, Loader2, FileText, GitCompare, BookOpen, Filter, ExternalLink, Eye, Calendar, BarChart, ArrowUpDown, Info, ShieldAlert, RefreshCw } from 'lucide-react';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import FDA510kService from '@/services/FDA510kService';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { literatureAPIService } from '@/services/LiteratureAPIService';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { loadState, saveState } from '../../utils/stabilityPatches';
 
 /**
  * Predicate Finder Panel for 510(k) Submissions
@@ -51,6 +52,11 @@ const PredicateFinderPanel = ({
   const [comparisonDevice, setComparisonDevice] = useState(null);
   const [isGeneratingComparison, setIsGeneratingComparison] = useState(false);
   const [equivalenceReport, setEquivalenceReport] = useState(null);
+  
+  // Stability and recovery state
+  const [recoveryAttempted, setRecoveryAttempted] = useState(false);
+  const [showRecoveryUI, setShowRecoveryUI] = useState(false);
+  const [errorState, setErrorState] = useState(null);
   
   const [formData, setFormData] = useState({
     deviceName: deviceProfile?.deviceName || '',
