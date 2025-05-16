@@ -1609,7 +1609,7 @@ const ComplianceCheckPanel = ({
           
           <DialogFooter className="border-t pt-4">
             <div className="mr-auto text-sm text-gray-600">
-              Generated: {templateData?.generatedAt ? new Date(templateData.generatedAt).toLocaleString() : 'N/A'}
+              Generated: {actualTemplateData?.generatedAt ? new Date(actualTemplateData.generatedAt).toLocaleString() : 'N/A'}
             </div>
             <Button variant="outline" onClick={() => actualSetShowTemplateDialog(false)}>
               Close
@@ -1638,15 +1638,15 @@ const ComplianceCheckPanel = ({
               AI-Generated Compliance Fixes
             </DialogTitle>
             <DialogDescription>
-              {selectedIssue && `Solutions for: ${selectedIssue.title}`}
+              {actualSelectedIssue && `Solutions for: ${actualSelectedIssue.title}`}
             </DialogDescription>
           </DialogHeader>
           
           <div className="flex-1 overflow-hidden">
-            {complianceFixes ? (
+            {actualComplianceFixes ? (
               <ScrollArea className="h-[60vh]">
                 <div className="p-4 space-y-6">
-                  {complianceFixes.fixes?.map((fix, index) => (
+                  {actualComplianceFixes.fixes?.map((fix, index) => (
                     <Card key={index} className="p-4 border-l-4 border-l-green-500">
                       <div className="flex-1 space-y-3">
                         <h3 className="font-medium text-lg flex items-center">
@@ -1691,7 +1691,7 @@ const ComplianceCheckPanel = ({
                     </Card>
                   ))}
                   
-                  {(!complianceFixes.fixes || complianceFixes.fixes.length === 0) && (
+                  {(!actualComplianceFixes.fixes || actualComplianceFixes.fixes.length === 0) && (
                     <div className="flex flex-col items-center justify-center py-8 text-center">
                       <AlertCircle className="h-12 w-12 text-amber-500 mb-4" />
                       <h3 className="text-lg font-medium text-gray-900">No specific fixes available</h3>
@@ -1712,7 +1712,7 @@ const ComplianceCheckPanel = ({
           
           <DialogFooter className="border-t pt-4">
             <div className="mr-auto text-sm text-gray-600">
-              Generated: {complianceFixes?.generatedAt ? new Date(complianceFixes.generatedAt).toLocaleString() : 'N/A'}
+              Generated: {actualComplianceFixes?.generatedAt ? new Date(actualComplianceFixes.generatedAt).toLocaleString() : 'N/A'}
             </div>
             <Button variant="outline" onClick={() => actualSetShowFixesDialog(false)}>
               Close
