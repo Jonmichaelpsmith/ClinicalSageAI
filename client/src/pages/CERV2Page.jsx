@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // Safely handle LumenAiAssistant context access with fallbacks
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
+import { useToast } from '@/hooks/use-toast';
 
 // Create a fallback if context is unavailable
 const safeAssistantHook = () => {
@@ -2058,14 +2059,16 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm">PMS Data Analysis</span>
                             <span className="ml-auto text-xs text-amber-600 font-medium">Draft</span>
-                          </a>
-                          <a 
-                            href="/attached_assets/9789240097711-eng.pdf" 
-                            target="_blank"
-                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                            onClick={(e) => {
-                              e.preventDefault();
+                          </button>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => {
                               window.open('/attached_assets/9789240097711-eng.pdf', '_blank');
+                              toast({
+                                title: "Document opened",
+                                description: "Viewing Clinical Guidelines document"
+                              });
                             }}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
@@ -2074,7 +2077,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm">Clinical Guidelines</span>
                             <span className="ml-auto text-xs text-green-600 font-medium">v3.0</span>
-                          </a>
+                          </button>
                         </div>
                       )}
                     </div>
