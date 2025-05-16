@@ -13,6 +13,7 @@ import CerDataRetrievalPanel from '@/components/cer/CerDataRetrievalPanel';
 import EquivalenceBuilderPanel from '@/components/510k/EquivalenceBuilderPanel';
 import ComplianceCheckPanel from '@/components/510k/ComplianceCheckPanel';
 import LiteratureVisualizationPanel from '@/components/510k/LiteratureVisualizationPanel';
+import ESTARBuilderPanel from '@/components/510k/ESTARBuilderPanel';
 import { FDA510kService } from '@/services/FDA510kService';
 import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
 import ClinicalEvaluationPlanPanel from '@/components/cer/ClinicalEvaluationPlanPanel';
