@@ -124,6 +124,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [showProcessingResults, setShowProcessingResults] = useState(false);
   const [processingType, setProcessingType] = useState('');
   const [processingResults, setProcessingResults] = useState(null);
+  // Device profile selector state is defined later
   const [cerDocumentId, setCerDocumentId] = useState(() => {
     const prefix = "CER-";
     return prefix + Math.floor(100000 + Math.random() * 900000);
@@ -633,6 +634,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   }, [documentType, workflowStep, deviceProfile, predicatesFound, equivalenceCompleted, complianceScore, submissionReady]);
 
   // Handler functions for 510k workflow
+  
   // Completely rewritten handler for predicate completion to fix workflow transition
   // EMERGENCY FIX: Direct function for manual predicate step completion
   const forcePredicateStepCompletion = () => {
