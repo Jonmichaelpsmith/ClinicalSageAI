@@ -292,18 +292,61 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // Navigation functions for 510k workflow
   const goToStep = (step) => {
     if (step >= 1 && step <= 5) {
-      setWorkflowStep(step);
-      
-      // Update active tab based on step
-      const tabMap = {
-        1: 'predicates', // Device Profile (displayed in Predicate Finder)
-        2: 'predicates', // Predicate Finder
-        3: 'equivalence', // Substantial Equivalence
-        4: 'compliance', // Compliance Check 
-        5: 'submission' // Final Submission
-      };
-      
-      setActiveTab(tabMap[step]);
+      try {
+        console.log(`[CERV2 Navigation] Attempting to go to step ${step}`);
+        
+        // Track current state before transition for debugging
+        const previousStep = workflowStep;
+        const previousTab = activeTab;
+        
+        setWorkflowStep(step);
+        
+        // Update active tab based on step
+        const tabMap = {
+          1: 'predicates', // Device Profile (displayed in Predicate Finder)
+          2: 'predicates', // Predicate Finder
+          3: 'equivalence', // Substantial Equivalence
+          4: 'compliance', // Compliance Check 
+          5: 'submission' // Final Submission
+        };
+        
+        // Store the target tab for verification
+        const targetTab = tabMap[step];
+        
+        console.log(`[CERV2 Navigation] Transitioning from tab "${previousTab}" to "${targetTab}"`);
+        
+        // Set the active tab with a timeout to ensure state is updated properly
+        setActiveTab(targetTab);
+        
+        // Verify the transition occurred properly
+        setTimeout(() => {
+          if (workflowStep === step && activeTab === targetTab) {
+            console.log(`[CERV2 Navigation] Successfully transitioned to step ${step} and tab "${targetTab}"`);
+          } else {
+            console.warn(`[CERV2 Navigation] Transition may have failed. Current tab: "${activeTab}", Expected: "${targetTab}"`);
+          }
+        }, 100);
+      } catch (error) {
+        console.error(`[CERV2 Navigation] Error transitioning to step ${step}:`, error);
+        // Attempt recovery
+        try {
+          const targetTab = {
+            1: 'predicates',
+            2: 'predicates',
+            3: 'equivalence',
+            4: 'compliance',
+            5: 'submission'
+          }[step];
+          
+          // Force update both state variables directly
+          setWorkflowStep(step);
+          setActiveTab(targetTab);
+          
+          console.log(`[CERV2 Navigation] Recovery attempt completed for step ${step}`);
+        } catch (recoveryError) {
+          console.error('[CERV2 Navigation] Recovery attempt failed:', recoveryError);
+        }
+      }
     }
   };
   
@@ -571,6 +614,65 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           {render510kStepContent()}
         </div>
       );
+    }
+    
+    // Special handling for equivalence tab outside of workflow steps
+    else if (activeTab === 'equivalence') {
+      // Make sure UI shows we're in this tab regardless of workflow state
+      console.log('[CERV2 Content] Explicitly rendering Equivalence tab content');
+      
+      try {
+        return (
+          <div className="p-4 space-y-4">
+            {/* Display literature visualization if literature results exist */}
+            {literatureResults.length > 0 && (
+              <div className="mb-6">
+                <LiteratureVisualizationPanel 
+                  literatureData={literatureResults}
+                  selectedItems={selectedLiterature}
+                  onSelectItem={handleLiteratureSelect}
+                  deviceProfile={deviceProfile}
+                />
+              </div>
+            )}
+            
+            <EquivalenceBuilderPanel 
+              deviceProfile={deviceProfile}
+              setDeviceProfile={(newProfile) => {
+                // Just save the updated device profile
+                if (newProfile) {
+                  setDeviceProfile(newProfile);
+                }
+              }}
+              documentId={deviceProfile?.id || k510DocumentId}
+              onComplete={handleEquivalenceComplete}
+              predicateDevices={predicateDevices}
+              selectedLiterature={selectedLiterature}
+            />
+          </div>
+        );
+      } catch (error) {
+        console.error('[CERV2 Content] Error rendering Equivalence tab:', error);
+        return (
+          <div className="p-4 bg-red-50 border border-red-200 rounded-md">
+            <h3 className="text-lg font-medium text-red-700">Error Loading Equivalence Tab</h3>
+            <p className="mt-2 text-red-600">
+              There was an error loading the Substantial Equivalence tab. Please try refreshing the page.
+            </p>
+            <Button 
+              variant="destructive"
+              size="sm"
+              className="mt-4"
+              onClick={() => {
+                setActiveTab('predicates');
+                setTimeout(() => setActiveTab('equivalence'), 500);
+              }}
+            >
+              Retry Loading
+            </Button>
+          </div>
+        );
+      }
     }
     
     // If CER document type is selected
