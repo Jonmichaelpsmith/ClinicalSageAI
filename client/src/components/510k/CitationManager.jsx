@@ -36,7 +36,7 @@ import {
 } from "lucide-react";
 
 import { useContext } from 'react';
-import { useTenant } from '../../contexts/TenantContext';
+import { useTenant } from '../../contexts/TenantContext.tsx';
 
 // Helper to format citation
 const formatCitation = (citation) => {

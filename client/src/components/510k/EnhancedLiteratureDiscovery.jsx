@@ -10,7 +10,7 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { useTenant } from '../../contexts/TenantContext';
+import { useTenant } from '../../contexts/TenantContext.tsx';
 import { Newspaper, BookCopy, FileText } from "lucide-react";
 
 import EnhancedLiteratureSearch from './EnhancedLiteratureSearch';
