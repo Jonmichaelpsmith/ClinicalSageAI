@@ -501,12 +501,23 @@ export const FDA510kService = {
    * @returns {Promise<Object>} Saved equivalence analysis data
    */
   async saveEquivalenceAnalysis(equivalenceData) {
+    console.log('[FDA510kService] Starting saveEquivalenceAnalysis with data:', { 
+      documentId: equivalenceData.documentId,
+      predicateId: equivalenceData.predicateDeviceId,
+      featureCount: equivalenceData.features?.length || 0,
+      hasFolderStructure: !!equivalenceData.folderStructure
+    });
+    
     try {
       // Extract device ID from documentId if present
       const deviceId = equivalenceData.documentId || 'unknown';
       
       // First attempt to save to document vault if folders are available
       if (equivalenceData.folderStructure && equivalenceData.folderStructure.equivalenceFolderId) {
+        console.log('[FDA510kService] Using folder structure for equivalence data:', {
+          equivalenceFolderId: equivalenceData.folderStructure.equivalenceFolderId
+        });
+        
         try {
           await this.saveEquivalenceDetermination(
             equivalenceData,

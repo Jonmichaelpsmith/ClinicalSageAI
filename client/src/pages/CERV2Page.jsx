@@ -180,27 +180,49 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
 
   // Handler functions for 510k workflow
   const handlePredicatesComplete = (data, literatureData = []) => {
-    setPredicatesFound(true);
-    setPredicateDevices(data || []);
-    
-    // Process any literature results that were found during predicate search
-    if (literatureData && literatureData.length > 0) {
-      setLiteratureResults(literatureData);
-      // Automatically select highly relevant papers (score >= 0.8) up to 5 papers
-      setSelectedLiterature(literatureData.filter(item => item.relevanceScore >= 0.8).slice(0, 5));
-    }
-    
-    toast({
-      title: "Predicate Devices Found",
-      description: `Found ${data?.length || 'multiple'} potential predicate devices that match your criteria.`,
-      variant: "success"
+    console.log('[CERV2 Workflow] Predicates complete handler called with data:', { 
+      predicateCount: data?.length || 0,
+      literatureCount: literatureData?.length || 0 
     });
     
-    // Automatically advance to next step after short delay
+    // Update state in separate operations to prevent batching issues
+    setPredicatesFound(true);
+    
+    // Set predicate devices with a slight delay to ensure proper state update
     setTimeout(() => {
-      setWorkflowStep(prev => prev + 1);
-      setActiveTab('equivalence');
-    }, 500);
+      setPredicateDevices(data || []);
+      
+      // Process any literature results that were found during predicate search
+      if (literatureData && literatureData.length > 0) {
+        setLiteratureResults(literatureData);
+        // Automatically select highly relevant papers (score >= 0.8) up to 5 papers
+        setSelectedLiterature(literatureData.filter(item => item.relevanceScore >= 0.8).slice(0, 5));
+      }
+      
+      toast({
+        title: "Predicate Devices Found",
+        description: `Found ${data?.length || 'multiple'} potential predicate devices that match your criteria.`,
+        variant: "success"
+      });
+      
+      // First update the workflow step
+      console.log('[CERV2 Workflow] Setting workflow step to 3');
+      setWorkflowStep(3);
+      
+      // Wait for state update to propagate, then update tab
+      setTimeout(() => {
+        console.log('[CERV2 Workflow] Setting active tab to equivalence');
+        setActiveTab('equivalence');
+        
+        // Verify the transition occurred properly
+        setTimeout(() => {
+          if (activeTab !== 'equivalence') {
+            console.warn('[CERV2 Workflow] Tab transition failed, forcing tab to equivalence');
+            setActiveTab('equivalence');
+          }
+        }, 500);
+      }, 100);
+    }, 50);
   };
   
   // Handle literature selection updates
