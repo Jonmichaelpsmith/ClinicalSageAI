@@ -58,7 +58,6 @@ import DeviceProfileForm from '@/components/cer/DeviceProfileForm';
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
 import LiteratureFeatureService from '@/services/LiteratureFeatureService';
@@ -2010,13 +2009,15 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                       </div>
                       {expandedFolders.clinical && (
                         <div>
-                          <a 
-                            href="/attached_assets/CER REPORT EXAMPLE OUTPUT.pdf" 
-                            target="_blank"
-                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                            onClick={(e) => {
-                              e.preventDefault();
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => {
                               window.open('/attached_assets/CER REPORT EXAMPLE OUTPUT.pdf', '_blank');
+                              toast({
+                                title: "Document opened",
+                                description: "Viewing CER Report"
+                              });
                             }}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
@@ -2025,14 +2026,16 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm">CER Report</span>
                             <span className="ml-auto text-xs text-green-600 font-medium">v2.4</span>
-                          </a>
-                          <a 
-                            href="/attached_assets/ICER_Acute-Pain_Evidence-Report_For-Publication_020525.pdf" 
-                            target="_blank"
-                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                            onClick={(e) => {
-                              e.preventDefault();
+                          </button>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => {
                               window.open('/attached_assets/ICER_Acute-Pain_Evidence-Report_For-Publication_020525.pdf', '_blank');
+                              toast({
+                                title: "Document opened",
+                                description: "Viewing Evidence Report"
+                              });
                             }}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
@@ -2041,7 +2044,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm">Evidence Report</span>
                             <span className="ml-auto text-xs text-green-600 font-medium">v1.1</span>
-                          </a>
+                          </button>
                           <button 
                             type="button"
                             className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
