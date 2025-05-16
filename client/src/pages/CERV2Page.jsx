@@ -1789,12 +1789,15 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         {renderNavigation()}
         
         <div className="flex">
-          {/* Document Vault Side Panel */}
+          {/* Enhanced Document Tree with FileTree Component */}
           {showDocumentTree && (
             <div className="w-72 md:w-80 lg:w-96 bg-white border-r border-gray-200 shadow-md h-full overflow-auto">
-              <div className="h-full p-4">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-lg font-semibold text-gray-800">Document Vault</h2>
+              <div className="h-full">
+                <div className="flex justify-between items-center p-4 border-b">
+                  <h2 className="text-lg font-semibold flex items-center">
+                    <BookOpen className="h-5 w-5 mr-2 text-blue-600" />
+                    Document Vault
+                  </h2>
                   <Button 
                     variant="ghost" 
                     size="sm" 
@@ -1805,59 +1808,352 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                   </Button>
                 </div>
                 
-                {/* Document list with simple rendering to avoid component errors */}
-                <div className="mt-4 space-y-4">
-                  <div className="text-sm font-medium text-gray-800">510(k) Documents</div>
-                  <div className="space-y-2">
-                    <div className="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer">
-                      <div className="font-medium">510(k) Summary - OrthoFuse Spinal System</div>
-                      <div className="flex items-center mt-1 text-xs text-gray-500">
-                        <FileText className="h-3.5 w-3.5 mr-1" />
-                        <span>Regulatory</span>
-                        <span className="mx-1">•</span>
-                        <span>Final</span>
+                {/* Document Stats */}
+                <div className="grid grid-cols-3 gap-3 p-4 border-b">
+                  <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
+                    <CardContent className="p-3 flex flex-col items-center justify-center">
+                      <div className="text-3xl font-bold text-blue-600">42</div>
+                      <p className="text-xs text-gray-600 font-medium mt-1">Total</p>
+                      <div className="mt-1 h-1 w-16 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-blue-500 rounded-full" 
+                          style={{ width: '100%' }}
+                        />
                       </div>
-                    </div>
-                    <div className="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer">
-                      <div className="font-medium">Substantial Equivalence Demo - CardioMonitor X5</div>
-                      <div className="flex items-center mt-1 text-xs text-gray-500">
-                        <FileText className="h-3.5 w-3.5 mr-1" />
-                        <span>Regulatory</span>
-                        <span className="mx-1">•</span>
-                        <span>Final</span>
+                    </CardContent>
+                  </Card>
+                  <Card className="shadow-sm border-green-100 hover:shadow-md transition-shadow">
+                    <CardContent className="p-3 flex flex-col items-center justify-center">
+                      <div className="text-3xl font-bold text-green-600">28</div>
+                      <p className="text-xs text-gray-600 font-medium mt-1 flex items-center">
+                        <span className="h-3 w-3 mr-1 text-green-500 rounded-full bg-green-500"></span>
+                        Final
+                      </p>
+                      <div className="mt-1 h-1 w-16 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-green-500 rounded-full" 
+                          style={{ width: '66%' }}
+                        />
                       </div>
-                    </div>
-                    <div className="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer">
-                      <div className="font-medium">eSTAR Submission Package - PainRelief</div>
-                      <div className="flex items-center mt-1 text-xs text-gray-500">
-                        <FileText className="h-3.5 w-3.5 mr-1" />
-                        <span>Submission</span>
-                        <span className="mx-1">•</span>
-                        <span>Final</span>
+                    </CardContent>
+                  </Card>
+                  <Card className="shadow-sm border-amber-100 hover:shadow-md transition-shadow">
+                    <CardContent className="p-3 flex flex-col items-center justify-center">
+                      <div className="text-3xl font-bold text-amber-600">14</div>
+                      <p className="text-xs text-gray-600 font-medium mt-1 flex items-center">
+                        <span className="h-3 w-3 mr-1 rounded-full bg-amber-500"></span>
+                        Draft
+                      </p>
+                      <div className="mt-1 h-1 w-16 bg-gray-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-amber-500 rounded-full" 
+                          style={{ width: '33%' }}
+                        />
                       </div>
-                    </div>
+                    </CardContent>
+                  </Card>
+                </div>
+                
+                {/* Search and Filter */}
+                <div className="p-4 border-b">
+                  <div className="relative">
+                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
+                    <Input 
+                      placeholder="Search documents..." 
+                      className="pl-8 h-9 text-sm"
+                    />
+                  </div>
+                </div>
+                
+                {/* File Tree View with Tabs */}
+                <Tabs defaultValue="all" className="w-full">
+                  <div className="px-4 pt-4 border-b">
+                    <TabsList className="grid grid-cols-3 mb-0">
+                      <TabsTrigger value="all" className="text-xs">All Files</TabsTrigger>
+                      <TabsTrigger value="510k" className="text-xs">510(k)</TabsTrigger>
+                      <TabsTrigger value="cer" className="text-xs">CER</TabsTrigger>
+                    </TabsList>
                   </div>
                   
-                  <div className="text-sm font-medium text-gray-800 mt-6">CER Documents</div>
-                  <div className="space-y-2">
-                    <div className="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer">
-                      <div className="font-medium">Clinical Evaluation Report - CardioStent Pro</div>
-                      <div className="flex items-center mt-1 text-xs text-gray-500">
-                        <FileText className="h-3.5 w-3.5 mr-1" />
-                        <span>Clinical Evaluation</span>
-                        <span className="mx-1">•</span>
-                        <span>Final</span>
+                  <TabsContent value="all" className="mt-0 p-0">
+                    <ScrollArea className="h-[calc(100vh-350px)]">
+                      <div className="p-4">
+                        <div className="mb-4">
+                          <div className="flex items-center mb-2 text-sm font-medium text-gray-700">
+                            <FolderOpen className="h-4 w-4 mr-1.5 text-blue-600" />
+                            510(k) Documents
+                          </div>
+                          <div className="space-y-2 pl-6">
+                            <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
+                              <div className="flex justify-between">
+                                <div className="flex items-start">
+                                  <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
+                                  <div>
+                                    <div className="font-medium text-sm">510(k) Summary - OrthoFuse Spinal</div>
+                                    <div className="flex items-center mt-1 text-xs text-gray-500">
+                                      <span>Regulatory</span>
+                                      <span className="mx-1">•</span>
+                                      <span className="text-green-600 font-medium">Final</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v2.1</Badge>
+                              </div>
+                            </div>
+                            <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
+                              <div className="flex justify-between">
+                                <div className="flex items-start">
+                                  <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
+                                  <div>
+                                    <div className="font-medium text-sm">Substantial Equivalence - CardioMonitor</div>
+                                    <div className="flex items-center mt-1 text-xs text-gray-500">
+                                      <span>Regulatory</span>
+                                      <span className="mx-1">•</span>
+                                      <span className="text-green-600 font-medium">Final</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v1.3</Badge>
+                              </div>
+                            </div>
+                            <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
+                              <div className="flex justify-between">
+                                <div className="flex items-start">
+                                  <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
+                                  <div>
+                                    <div className="font-medium text-sm">eSTAR Package - PainRelief</div>
+                                    <div className="flex items-center mt-1 text-xs text-gray-500">
+                                      <span>Submission</span>
+                                      <span className="mx-1">•</span>
+                                      <span className="text-green-600 font-medium">Final</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v3.0</Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="mb-4">
+                          <div className="flex items-center mb-2 text-sm font-medium text-gray-700">
+                            <FolderOpen className="h-4 w-4 mr-1.5 text-blue-600" />
+                            CER Documents
+                          </div>
+                          <div className="space-y-2 pl-6">
+                            <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
+                              <div className="flex justify-between">
+                                <div className="flex items-start">
+                                  <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
+                                  <div>
+                                    <div className="font-medium text-sm">Clinical Evaluation Report - CardioStent</div>
+                                    <div className="flex items-center mt-1 text-xs text-gray-500">
+                                      <span>Clinical</span>
+                                      <span className="mx-1">•</span>
+                                      <span className="text-green-600 font-medium">Final</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v2.4</Badge>
+                              </div>
+                            </div>
+                            <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
+                              <div className="flex justify-between">
+                                <div className="flex items-start">
+                                  <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
+                                  <div>
+                                    <div className="font-medium text-sm">Literature Search Protocol - DiabetMeter</div>
+                                    <div className="flex items-center mt-1 text-xs text-gray-500">
+                                      <span>Literature</span>
+                                      <span className="mx-1">•</span>
+                                      <span className="text-green-600 font-medium">Final</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v1.1</Badge>
+                              </div>
+                            </div>
+                            <div className="p-3 border border-amber-100 rounded-lg hover:bg-amber-50 cursor-pointer transition-all">
+                              <div className="flex justify-between">
+                                <div className="flex items-start">
+                                  <FileText className="h-4 w-4 mr-2 mt-1 text-amber-600" />
+                                  <div>
+                                    <div className="font-medium text-sm">Post-Market Follow-up - NeuroPulse</div>
+                                    <div className="flex items-center mt-1 text-xs text-gray-500">
+                                      <span>Post-Market</span>
+                                      <span className="mx-1">•</span>
+                                      <span className="text-amber-600 font-medium">Draft</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="text-xs h-5 bg-amber-50 border-amber-200 text-amber-700">v0.8</Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="flex items-center mb-2 text-sm font-medium text-gray-700">
+                            <FolderOpen className="h-4 w-4 mr-1.5 text-blue-600" />
+                            Technical Documentation
+                          </div>
+                          <div className="space-y-2 pl-6">
+                            <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
+                              <div className="flex justify-between">
+                                <div className="flex items-start">
+                                  <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
+                                  <div>
+                                    <div className="font-medium text-sm">Device Specifications</div>
+                                    <div className="flex items-center mt-1 text-xs text-gray-500">
+                                      <span>Technical</span>
+                                      <span className="mx-1">•</span>
+                                      <span className="text-green-600 font-medium">Final</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v4.2</Badge>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <div className="p-3 border rounded-lg hover:bg-blue-50 cursor-pointer">
-                      <div className="font-medium">Literature Search Protocol - DiabetMeter GLX</div>
-                      <div className="flex items-center mt-1 text-xs text-gray-500">
-                        <FileText className="h-3.5 w-3.5 mr-1" />
-                        <span>Literature</span>
-                        <span className="mx-1">•</span>
-                        <span>Final</span>
+                    </ScrollArea>
+                  </TabsContent>
+                  
+                  <TabsContent value="510k" className="mt-0 p-0">
+                    <ScrollArea className="h-[calc(100vh-350px)]">
+                      <div className="p-4">
+                        <div className="flex items-center mb-2 text-sm font-medium text-gray-700">
+                          <FolderOpen className="h-4 w-4 mr-1.5 text-blue-600" />
+                          510(k) Documents
+                        </div>
+                        <div className="space-y-2 pl-6">
+                          <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
+                            <div className="flex justify-between">
+                              <div className="flex items-start">
+                                <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
+                                <div>
+                                  <div className="font-medium text-sm">510(k) Summary - OrthoFuse Spinal</div>
+                                  <div className="flex items-center mt-1 text-xs text-gray-500">
+                                    <span>Regulatory</span>
+                                    <span className="mx-1">•</span>
+                                    <span className="text-green-600 font-medium">Final</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v2.1</Badge>
+                            </div>
+                          </div>
+                          <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
+                            <div className="flex justify-between">
+                              <div className="flex items-start">
+                                <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
+                                <div>
+                                  <div className="font-medium text-sm">Substantial Equivalence - CardioMonitor</div>
+                                  <div className="flex items-center mt-1 text-xs text-gray-500">
+                                    <span>Regulatory</span>
+                                    <span className="mx-1">•</span>
+                                    <span className="text-green-600 font-medium">Final</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v1.3</Badge>
+                            </div>
+                          </div>
+                          <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
+                            <div className="flex justify-between">
+                              <div className="flex items-start">
+                                <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
+                                <div>
+                                  <div className="font-medium text-sm">eSTAR Package - PainRelief</div>
+                                  <div className="flex items-center mt-1 text-xs text-gray-500">
+                                    <span>Submission</span>
+                                    <span className="mx-1">•</span>
+                                    <span className="text-green-600 font-medium">Final</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v3.0</Badge>
+                            </div>
+                          </div>
+                        </div>
                       </div>
-                    </div>
+                    </ScrollArea>
+                  </TabsContent>
+                  
+                  <TabsContent value="cer" className="mt-0 p-0">
+                    <ScrollArea className="h-[calc(100vh-350px)]">
+                      <div className="p-4">
+                        <div className="flex items-center mb-2 text-sm font-medium text-gray-700">
+                          <FolderOpen className="h-4 w-4 mr-1.5 text-blue-600" />
+                          CER Documents
+                        </div>
+                        <div className="space-y-2 pl-6">
+                          <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
+                            <div className="flex justify-between">
+                              <div className="flex items-start">
+                                <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
+                                <div>
+                                  <div className="font-medium text-sm">Clinical Evaluation Report - CardioStent</div>
+                                  <div className="flex items-center mt-1 text-xs text-gray-500">
+                                    <span>Clinical</span>
+                                    <span className="mx-1">•</span>
+                                    <span className="text-green-600 font-medium">Final</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v2.4</Badge>
+                            </div>
+                          </div>
+                          <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
+                            <div className="flex justify-between">
+                              <div className="flex items-start">
+                                <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
+                                <div>
+                                  <div className="font-medium text-sm">Literature Search Protocol - DiabetMeter</div>
+                                  <div className="flex items-center mt-1 text-xs text-gray-500">
+                                    <span>Literature</span>
+                                    <span className="mx-1">•</span>
+                                    <span className="text-green-600 font-medium">Final</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v1.1</Badge>
+                            </div>
+                          </div>
+                          <div className="p-3 border border-amber-100 rounded-lg hover:bg-amber-50 cursor-pointer transition-all">
+                            <div className="flex justify-between">
+                              <div className="flex items-start">
+                                <FileText className="h-4 w-4 mr-2 mt-1 text-amber-600" />
+                                <div>
+                                  <div className="font-medium text-sm">Post-Market Follow-up - NeuroPulse</div>
+                                  <div className="flex items-center mt-1 text-xs text-gray-500">
+                                    <span>Post-Market</span>
+                                    <span className="mx-1">•</span>
+                                    <span className="text-amber-600 font-medium">Draft</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className="text-xs h-5 bg-amber-50 border-amber-200 text-amber-700">v0.8</Badge>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </ScrollArea>
+                  </TabsContent>
+                </Tabs>
+                
+                {/* Bottom Action Buttons */}
+                <div className="border-t p-4 pt-3">
+                  <div className="flex space-x-2">
+                    <Button size="sm" className="text-xs flex-1">
+                      <UploadCloud className="h-3.5 w-3.5 mr-1" />
+                      Upload
+                    </Button>
+                    <Button variant="outline" size="sm" className="text-xs flex-1">
+                      <Download className="h-3.5 w-3.5 mr-1" />
+                      Export
+                    </Button>
                   </div>
                 </div>
               </div>
