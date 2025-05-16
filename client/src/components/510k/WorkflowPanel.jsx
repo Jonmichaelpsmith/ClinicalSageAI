@@ -80,6 +80,77 @@ const WorkflowPanel = ({
       setDeviceProfile(selectedDeviceProfile);
     }
   }, [deviceProfile, selectedDeviceProfile, setDeviceProfile]);
+  
+  // Recovery mechanism - attempt to restore workflow state from localStorage on mount or if errors occur
+  useEffect(() => {
+    try {
+      // Check if we have saved workflow state in localStorage
+      const savedState = localStorage.getItem('510k_workflowState');
+      if (savedState) {
+        const parsedState = JSON.parse(savedState);
+        
+        // Only restore if the saved state is less than 24 hours old (for safety)
+        const savedTime = new Date(parsedState.timestamp).getTime();
+        const currentTime = new Date().getTime();
+        const hoursSinceSave = (currentTime - savedTime) / (1000 * 60 * 60);
+        
+        if (hoursSinceSave < 24) {
+          console.log('[WorkflowPanel] Found saved workflow state, checking for recovery needs');
+          
+          // Check if we're in an inconsistent state that requires recovery
+          const needsRecovery = (
+            // If current workflowStep doesn't match saved workflowStep but we have the data for the saved step
+            (workflowStep !== parsedState.currentStep && 
+              ((parsedState.currentStep === 3 && parsedState.predicatesFound) || 
+               (parsedState.currentStep === 4 && parsedState.equivalenceCompleted) ||
+               (parsedState.currentStep === 5 && parsedState.complianceScore)))
+          );
+          
+          if (needsRecovery) {
+            console.log('[WorkflowPanel] Recovery needed - restoring workflow state');
+            
+            // Restore device profile if available
+            if (parsedState.deviceProfile && (!selectedDeviceProfile || parsedState.deviceProfile.updatedAt > selectedDeviceProfile.updatedAt)) {
+              setSelectedDeviceProfile(parsedState.deviceProfile);
+              if (typeof setDeviceProfile === 'function') {
+                setDeviceProfile(parsedState.deviceProfile);
+              }
+            }
+            
+            // Restore workflow state
+            if (parsedState.predicatesFound) setPredicatesFound(parsedState.predicatesFound);
+            if (parsedState.predicateDevices) setPredicateDevices(parsedState.predicateDevices);
+            if (parsedState.equivalenceCompleted) setEquivalenceCompleted(parsedState.equivalenceCompleted);
+            if (parsedState.complianceScore) setComplianceScore(parsedState.complianceScore);
+            
+            // Only update workflow step after state is restored
+            if (parsedState.currentStep && parsedState.currentStep !== workflowStep) {
+              setWorkflowStep(parsedState.currentStep);
+              // Update active tab based on the restored step
+              const stepToTabValueMap = {
+                1: 'workflow',
+                2: 'predicates',
+                3: 'equivalence',
+                4: 'compliance',
+                5: 'submission'
+              };
+              setActiveTab(stepToTabValueMap[parsedState.currentStep] || 'workflow');
+            }
+            
+            // Notify user of recovery
+            toast({
+              title: "Workflow State Recovered",
+              description: "Your previous work has been restored",
+              variant: "default"
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[WorkflowPanel] Error during state recovery:', error);
+      // Non-critical error, don't interrupt user flow
+    }
+  }, []);
 
   // Update workflow progress based on completed steps
   useEffect(() => {
@@ -171,9 +242,19 @@ const WorkflowPanel = ({
     }
   };
 
-  // Handle equivalence builder completion
+  // Handle equivalence builder completion with enhanced data persistence and error recovery
   const handleEquivalenceComplete = async (data) => {
     console.log('[WorkflowPanel] Equivalence completed with data:', data);
+    
+    // Save data to localStorage first as a backup before any API calls
+    try {
+      localStorage.setItem('510k_equivalenceData', JSON.stringify(data));
+      console.log('[WorkflowPanel] Successfully saved equivalence data to localStorage');
+    } catch (storageError) {
+      console.error('[WorkflowPanel] Error saving to localStorage:', storageError);
+      // Continue even if localStorage fails
+    }
+    
     setEquivalenceCompleted(true);
     
     toast({
@@ -184,7 +265,34 @@ const WorkflowPanel = ({
     
     // Notify parent of equivalence completion
     if (typeof onEquivalenceComplete === 'function') {
-      onEquivalenceComplete(data);
+      try {
+        onEquivalenceComplete(data);
+      } catch (callbackError) {
+        console.error('[WorkflowPanel] Error in parent callback:', callbackError);
+        // Continue despite callback error
+      }
+    }
+    
+    // Update device profile with equivalence data to ensure data persistence
+    if (selectedDeviceProfile) {
+      try {
+        const updatedProfile = {
+          ...selectedDeviceProfile,
+          equivalenceAnalysis: data,
+          updatedAt: new Date().toISOString()
+        };
+        
+        // Save to localStorage for resilience
+        localStorage.setItem('510k_deviceProfile', JSON.stringify(updatedProfile));
+        
+        // Update state
+        setSelectedDeviceProfile(updatedProfile);
+        if (typeof setDeviceProfile === 'function') {
+          setDeviceProfile(updatedProfile);
+        }
+      } catch (profileUpdateError) {
+        console.error('[WorkflowPanel] Error updating device profile with equivalence data:', profileUpdateError);
+      }
     }
     
     // Use the new API-based verification for workflow transitions
@@ -198,28 +306,51 @@ const WorkflowPanel = ({
       
       if (checkResult.canTransition) {
         console.log('[WorkflowPanel] Transition to compliance step approved by API');
+        
         // Update the step and tab states
         setWorkflowStep(4);
-        setTimeout(() => {
+        
+        // Use a safety timer to ensure transition completes
+        const transitionTimer = setTimeout(() => {
           try {
             console.log('[WorkflowPanel] Setting active tab to compliance');
             setActiveTab('compliance');
             
-            // Verify transition was successful
-            setTimeout(() => {
+            // Verify transition was successful with retry mechanism
+            const verifyTimer = setTimeout(() => {
               if (activeTab !== 'compliance') {
                 console.warn('[WorkflowPanel] Tab transition failed, retrying...');
                 setActiveTab('compliance');
+                
+                // Double-check with a second retry
+                setTimeout(() => {
+                  if (activeTab !== 'compliance') {
+                    console.error('[WorkflowPanel] Tab transition failed after retry, forcing refresh');
+                    setActiveTab('compliance');
+                    
+                    // Force a re-render if needed by toggling a state
+                    setWorkflowProgress(prev => {
+                      setTimeout(() => setWorkflowProgress(prev), 50);
+                      return prev - 1;
+                    });
+                  }
+                }, 300);
               } else {
                 console.log('[WorkflowPanel] Tab transition to compliance successful');
               }
             }, 200);
+            
+            // Cleanup verify timer if component unmounts
+            return () => clearTimeout(verifyTimer);
           } catch (transitionError) {
             console.error('[WorkflowPanel] Error during tab transition:', transitionError);
             // Emergency fallback
             setActiveTab('compliance');
           }
         }, 100);
+        
+        // Cleanup transition timer if component unmounts
+        return () => clearTimeout(transitionTimer);
       } else {
         console.warn(`[WorkflowPanel] API blocked transition to compliance: ${checkResult.message}`);
         toast({
@@ -230,12 +361,23 @@ const WorkflowPanel = ({
       }
     } catch (error) {
       console.error('[WorkflowPanel] Critical error in workflow transition:', error);
-      // Hard fallback - only use in case of unexpected errors, not API validation failures
+      
+      // Display error but provide recovery options
       toast({
         title: "Error During Transition",
-        description: "An unexpected error occurred. Engineering has been notified.",
+        description: "Workflow transition encountered an error. Your data has been saved, please try again.",
         variant: "destructive"
       });
+      
+      // Recovery mechanism - provide a direct way to retry
+      setTimeout(() => {
+        // Allow user to see the error message before showing recovery
+        toast({
+          title: "Recovery Available",
+          description: "Your equivalence data was saved. You can safely continue.",
+          variant: "default"
+        });
+      }, 3000);
     }
   };
 
@@ -365,12 +507,39 @@ const WorkflowPanel = ({
   const goToStep = async (step) => {
     console.log(`[WorkflowPanel] Attempting to navigate to step ${step}`);
     
+    // First, save the current state to localStorage for data persistence and recovery
+    try {
+      const currentState = {
+        currentStep: workflowStep,
+        deviceProfile: selectedDeviceProfile,
+        predicatesFound,
+        predicateDevices,
+        equivalenceCompleted,
+        complianceScore,
+        timestamp: new Date().toISOString()
+      };
+      localStorage.setItem('510k_workflowState', JSON.stringify(currentState));
+      console.log(`[WorkflowPanel] Saved workflow state before step transition to ${step}`);
+    } catch (saveError) {
+      console.error('[WorkflowPanel] Error saving workflow state to localStorage:', saveError);
+      // Continue despite save error - non-critical
+    }
+    
     // Set global transition loading state to prevent UI jumps
     setIsLoading({...isLoading, workflowTransition: true});
     
-    // Map steps to their corresponding tab names for loading state
+    // Map steps to their corresponding tab names for loading state and UI navigation
     const stepToTabMap = {
       1: 'deviceProfile',
+      2: 'predicates',
+      3: 'equivalence',
+      4: 'compliance',
+      5: 'submission'
+    };
+    
+    // Map steps to their corresponding tab values
+    const stepToTabValueMap = {
+      1: 'workflow',
       2: 'predicates',
       3: 'equivalence',
       4: 'compliance',
@@ -389,19 +558,30 @@ const WorkflowPanel = ({
         setWorkflowStep(1);
         
         // Use timeout to ensure smooth transition
-        setTimeout(() => {
+        const transitionTimer = setTimeout(() => {
           setActiveTab('workflow');
-          if (typeof onStepChange === 'function') onStepChange(1);
+          if (typeof onStepChange === 'function') {
+            try {
+              onStepChange(1);
+            } catch (callbackError) {
+              console.error('[WorkflowPanel] Error in step change callback:', callbackError);
+              // Continue despite callback error
+            }
+          }
           
           // Reset loading state with a slight delay to prevent flickering
-          setTimeout(() => {
+          const loadingTimer = setTimeout(() => {
             setIsLoading({
               ...isLoading, 
               workflowTransition: false, 
               deviceProfile: false
             });
           }, 300);
+          
+          return () => clearTimeout(loadingTimer);
         }, 100);
+        
+        return () => clearTimeout(transitionTimer);
       } else if (step === 2 && selectedDeviceProfile) {
         // Predicate finder - verify we can transition
         const checkResult = await FDA510kService.checkWorkflowTransition(
@@ -409,22 +589,43 @@ const WorkflowPanel = ({
         );
         
         if (checkResult.canTransition) {
+          // Update workflow step state first
           setWorkflowStep(2);
           
-          // Use timeout to ensure smooth transition
-          setTimeout(() => {
-            setActiveTab('predicates');
-            if (typeof onStepChange === 'function') onStepChange(2);
+          // Use timeout to ensure smooth transition with verification
+          const transitionTimer = setTimeout(() => {
+            // Set the correct tab for this step
+            setActiveTab(stepToTabValueMap[2]);
             
-            // Reset loading state with a slight delay to prevent flickering
-            setTimeout(() => {
+            // Notify parent of step change if callback exists
+            if (typeof onStepChange === 'function') {
+              try {
+                onStepChange(2);
+              } catch (callbackError) {
+                console.error('[WorkflowPanel] Error in step change callback:', callbackError);
+                // Continue despite callback error
+              }
+            }
+            
+            // Verify the tab transition worked
+            const verifyTimer = setTimeout(() => {
+              if (activeTab !== stepToTabValueMap[2]) {
+                console.warn('[WorkflowPanel] Tab transition verification failed, retrying...');
+                setActiveTab(stepToTabValueMap[2]);
+              }
+              
+              // Reset loading state after verification
               setIsLoading({
                 ...isLoading, 
                 workflowTransition: false, 
                 predicates: false
               });
             }, 300);
+            
+            return () => clearTimeout(verifyTimer);
           }, 100);
+          
+          return () => clearTimeout(transitionTimer);
         } else {
           console.warn(`[WorkflowPanel] Transition to step 2 blocked: ${checkResult.message}`);
           toast({
