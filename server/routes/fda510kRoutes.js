@@ -110,23 +110,8 @@ router.post('/device-profile', async (req, res) => {
     
     const now = new Date();
     
-    // First check if the device_profiles table exists and if not, create it
-    await db.query(`
-      CREATE TABLE IF NOT EXISTS device_profiles (
-        id SERIAL PRIMARY KEY,
-        device_name TEXT NOT NULL,
-        device_class TEXT,
-        intended_use TEXT,
-        device_description TEXT,
-        manufacturer TEXT,
-        model_number TEXT,
-        technical_characteristics JSONB,
-        created_at TIMESTAMP NOT NULL,
-        updated_at TIMESTAMP NOT NULL,
-        document_vault_id TEXT,
-        folder_structure JSONB
-      )
-    `);
+    // Don't try to create or modify the table - it already exists with a specific schema
+    // Just proceed to insert based on the existing structure
     
     // Insert the new device profile - corrected to match actual database schema
     const result = await db.query(
