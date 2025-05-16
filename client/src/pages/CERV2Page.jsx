@@ -2409,6 +2409,70 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                       New Folder
                     </button>
                     
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id="documentUpload"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            const fileName = e.target.files[0].name;
+                            
+                            // Show that the document is being uploaded and processed
+                            toast({
+                              title: "Uploading Document",
+                              description: `Processing ${fileName}...`
+                            });
+                            
+                            // Simulate document upload and AI processing
+                            setTimeout(() => {
+                              toast({
+                                title: "Document Uploaded",
+                                description: `${fileName} has been analyzed and categorized`
+                              });
+                              
+                              // Simulate document being uploaded and automatically classified
+                              setShowProcessingResults(true);
+                              setProcessingType('upload');
+                              
+                              // Set upload results with AI analysis
+                              setProcessingResults({
+                                processingType: 'upload',
+                                status: 'success',
+                                timestamp: new Date().toISOString(),
+                                fileName: fileName,
+                                fileSize: '2.4 MB',
+                                fileType: fileName.endsWith('.pdf') ? 'PDF Document' : 'Document',
+                                results: {
+                                  documentType: '510(k) Technical Document',
+                                  autoClassification: 'Performance Testing',
+                                  suggestedFolder: 'Regulatory Documents/510(k) Documents/Performance Testing',
+                                  contentSummary: 'This document contains bench testing results for the device, including mechanical strength testing, durability assessment, and biocompatibility data according to ISO 10993 standards.',
+                                  relevantStandards: [
+                                    'ISO 10993-1:2018',
+                                    'FDA 21 CFR 807.92(b)(3)',
+                                    'ASTM F2514-08'
+                                  ]
+                                }
+                              });
+                            }, 1500);
+                          }
+                        }}
+                        multiple={false}
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                      />
+                      <button 
+                        className="flex items-center justify-center py-1.5 px-3 border border-blue-600 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium rounded-md"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="17 8 12 3 7 8"></polyline>
+                          <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Upload Document
+                      </button>
+                    </div>
+                    
                     <button 
                       className="flex items-center justify-center py-1.5 px-3 border border-gray-300 hover:bg-gray-100 text-sm font-medium rounded-md"
                       onClick={() => {
@@ -2432,6 +2496,30 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                       </svg>
                       Export
+                    </button>
+                    
+                    <button 
+                      className="flex items-center justify-center py-1.5 px-3 border border-purple-600 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm font-medium rounded-md"
+                      onClick={() => {
+                        toast({
+                          title: "Workflow Integration",
+                          description: "Adding documents to the 510(k) submission workflow..."
+                        });
+                        
+                        setTimeout(() => {
+                          toast({
+                            title: "Workflow Updated",
+                            description: "Documents are now linked to the current workflow stage"
+                          });
+                        }, 1000);
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                      </svg>
+                      Add to Workflow
                     </button>
                   </div>
                   
@@ -2854,6 +2942,94 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                               >
                                 Save Report
                               </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {processingType === 'upload' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between text-sm text-gray-500 border-b pb-2">
+                              <span>Processed on: {new Date(processingResults.timestamp).toLocaleString()}</span>
+                              <span>Status: <span className="text-green-600 font-medium">Success</span></span>
+                            </div>
+                            
+                            <div className="border rounded-md p-3">
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-medium text-gray-900 flex items-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-red-500">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                  </svg>
+                                  {processingResults.fileName}
+                                </h4>
+                                <div className="text-sm text-gray-500">
+                                  {processingResults.fileSize} • {processingResults.fileType}
+                                </div>
+                              </div>
+                              
+                              <div className="bg-blue-50 border border-blue-100 rounded-md p-3 mb-3">
+                                <h5 className="text-sm font-medium text-blue-700 mb-2">AI Document Classification</h5>
+                                <div className="grid grid-cols-2 gap-2 text-sm mb-2">
+                                  <div>
+                                    <span className="text-gray-500">Document Type:</span>
+                                    <span className="ml-2 font-medium">{processingResults.results.documentType}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500">Category:</span>
+                                    <span className="ml-2 font-medium">{processingResults.results.autoClassification}</span>
+                                  </div>
+                                </div>
+                                <div className="mb-2 text-sm">
+                                  <span className="text-gray-500">Suggested Location:</span>
+                                  <span className="ml-2 font-medium">{processingResults.results.suggestedFolder}</span>
+                                </div>
+                              </div>
+                              
+                              <div className="border rounded-md p-3 bg-gray-50 mb-3 text-sm">
+                                <h5 className="font-medium text-gray-900 mb-2">Document Summary</h5>
+                                <p className="text-gray-700">{processingResults.results.contentSummary}</p>
+                              </div>
+                              
+                              {processingResults.results.relevantStandards && (
+                                <div className="mb-3">
+                                  <h5 className="font-medium text-sm text-gray-900 mb-2">Relevant Standards</h5>
+                                  <div className="flex flex-wrap gap-2">
+                                    {processingResults.results.relevantStandards.map((standard, index) => (
+                                      <span 
+                                        key={index} 
+                                        className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-1 rounded-md"
+                                      >
+                                        {standard}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <div className="flex items-center justify-between pt-2 border-t">
+                                <div className="flex space-x-2">
+                                  <button className="px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded-md text-sm font-medium hover:bg-green-100">
+                                    Accept Classification
+                                  </button>
+                                  <button className="px-3 py-1.5 bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-sm font-medium hover:bg-gray-100">
+                                    Change Category
+                                  </button>
+                                </div>
+                                <button 
+                                  className="text-blue-600 hover:text-blue-800 text-sm"
+                                  onClick={() => {
+                                    // Add document to compliance check
+                                    toast({
+                                      title: "Added to Workflow",
+                                      description: "Document added to Performance Testing workflow stage"
+                                    });
+                                    
+                                    setShowProcessingResults(false);
+                                  }}
+                                >
+                                  Add to Current Workflow
+                                </button>
+                              </div>
                             </div>
                           </div>
                         )}
