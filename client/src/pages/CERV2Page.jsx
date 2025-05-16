@@ -158,6 +158,14 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [predicateDevices, setPredicateDevices] = useState(() => loadSavedState('predicateDevices', []));
   const [literatureResults, setLiteratureResults] = useState([]);
   
+  // Predicate Device Finder state
+  const [predicateSearchTerm, setPredicateSearchTerm] = useState('');
+  const [predicateSearchResults, setPredicateSearchResults] = useState([]);
+  const [predicateLoading, setPredicateLoading] = useState(false);
+  const [selectedPredicate, setSelectedPredicate] = useState(null);
+  const [comparisonData, setComparisonData] = useState(null);
+  const [predicateFilterType, setPredicateFilterType] = useState('all'); // 'all', 'product_code', 'manufacturer'
+  
   // eSTAR Builder state variables
   const [isValidatingEstar, setIsValidatingEstar] = useState(false);
   const [isGeneratingEstar, setIsGeneratingEstar] = useState(false);
