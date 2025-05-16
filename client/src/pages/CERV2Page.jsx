@@ -180,14 +180,129 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     }
   };
   
-  // 510k workflow specific state with persistence
-  const [workflowStep, setWorkflowStep] = useState(() => loadSavedState('workflowStep', 1));
-  const [workflowProgress, setWorkflowProgress] = useState(() => loadSavedState('workflowProgress', 25));
-  const [predicatesFound, setPredicatesFound] = useState(() => loadSavedState('predicatesFound', false));
-  const [isPredicateStepCompleted, setIsPredicateStepCompleted] = useState(() => loadSavedState('isPredicateStepCompleted', false));
+  // 510k workflow specific state with persistence - starting at Step 2 with predicate search completed
+  const [workflowStep, setWorkflowStep] = useState(() => loadSavedState('workflowStep', 2));
+  const [workflowProgress, setWorkflowProgress] = useState(() => loadSavedState('workflowProgress', 30));
+  const [predicatesFound, setPredicatesFound] = useState(() => loadSavedState('predicatesFound', true));
+  const [isPredicateStepCompleted, setIsPredicateStepCompleted] = useState(() => loadSavedState('isPredicateStepCompleted', true));
   const [predicateSearchError, setPredicateSearchError] = useState(null);
-  const [predicateDevices, setPredicateDevices] = useState(() => loadSavedState('predicateDevices', []));
-  const [literatureResults, setLiteratureResults] = useState([]);
+  const [predicateDevices, setPredicateDevices] = useState(() => {
+    // Create sample predicate devices if none exist
+    const saved = loadSavedState('predicateDevices', []);
+    if (saved && saved.length > 0) {
+      return saved;
+    }
+    
+    // Pre-filled predicate devices for demonstration purposes
+    const samplePredicates = [
+      {
+        id: "K201234",
+        deviceName: "CardioMonitor 1500",
+        manufacturer: "MedTech Innovations",
+        dateCleared: "2022-05-15",
+        productCode: "DRT",
+        submissionType: "Traditional",
+        predicateType: "Primary",
+        technicalCharacteristics: [
+          { name: "Display", value: "5-inch LCD, 800x600 resolution" },
+          { name: "Sensors", value: "ECG (8-lead), SpO2, NIBP, temperature" },
+          { name: "Battery Life", value: "8 hours" },
+          { name: "Weight", value: "3.2 lbs" },
+          { name: "Connectivity", value: "Bluetooth 4.2, Wi-Fi, USB-B" }
+        ],
+        description: "Previous generation cardiac monitoring system"
+      },
+      {
+        id: "K198765",
+        deviceName: "VitalTrack Pro",
+        manufacturer: "Medical Systems Inc.",
+        dateCleared: "2021-11-03",
+        productCode: "DRT",
+        submissionType: "Traditional",
+        predicateType: "Reference",
+        technicalCharacteristics: [
+          { name: "Display", value: "6-inch LCD touchscreen" },
+          { name: "Sensors", value: "ECG (12-lead), SpO2, NIBP, temperature, respiration" },
+          { name: "Battery Life", value: "10 hours" },
+          { name: "Weight", value: "2.8 lbs" },
+          { name: "Connectivity", value: "Bluetooth 5.0, Wi-Fi, USB-C" }
+        ],
+        description: "Competitor's cardiac monitoring system with similar indications for use"
+      }
+    ];
+    
+    // Save the sample predicates to localStorage
+    saveState('predicateDevices', samplePredicates);
+    
+    return samplePredicates;
+  });
+  const [literatureResults, setLiteratureResults] = useState(() => {
+    // Check for saved literature data first
+    const savedLiterature = loadSavedState('literatureResults', []);
+    if (savedLiterature && savedLiterature.length > 0) {
+      return savedLiterature;
+    }
+    
+    // Create sample literature results
+    const sampleLiterature = [
+      {
+        id: "PMID-34561234",
+        title: "Clinical Evaluation of CardioMonitor Systems in Hospital Settings",
+        authors: "Johnson AR, Smith B, Williams C, et al.",
+        journal: "Journal of Medical Devices",
+        publicationDate: "2022-03-15",
+        abstract: "This study evaluated the performance of various cardiac monitoring systems in clinical settings, focusing on accuracy, reliability, and ease of use. Results showed high sensitivity and specificity for arrhythmia detection across most tested devices.",
+        relevanceScore: 0.92,
+        citations: 24,
+        fullTextUrl: "#",
+        keyFindings: [
+          "95.7% sensitivity for arrhythmia detection",
+          "98.2% specificity in clinical testing",
+          "Reduced false alarms by 37% compared to previous generation devices"
+        ],
+        selected: true
+      },
+      {
+        id: "PMID-33987621",
+        title: "Safety and Efficacy of Continuous Cardiac Monitoring in Ambulatory Care",
+        authors: "Anderson T, Roberts L, Garcia M, et al.",
+        journal: "International Journal of Cardiology Technology",
+        publicationDate: "2021-11-10",
+        abstract: "This paper presents findings from a multi-center study on continuous cardiac monitoring in ambulatory settings. The study included evaluation of various monitoring systems and their impact on patient outcomes and clinical workflow.",
+        relevanceScore: 0.85,
+        citations: 18,
+        fullTextUrl: "#",
+        keyFindings: [
+          "Ambulatory monitoring improved diagnosis rates by 28%",
+          "Earlier intervention was possible in 47% of cases",
+          "Technical specifications of modern devices allow for non-clinical settings"
+        ],
+        selected: true
+      },
+      {
+        id: "PMID-35123456",
+        title: "Comparative Analysis of Current Generation Physiological Monitors",
+        authors: "Patel R, Kim S, Thompson J, et al.",
+        journal: "Medical Devices: Research and Reviews",
+        publicationDate: "2023-01-22",
+        abstract: "This systematic review compares technical specifications, clinical performance, and user satisfaction across 12 modern physiological monitoring systems. Special attention was given to cardiac monitoring capabilities and integration with hospital systems.",
+        relevanceScore: 0.89,
+        citations: 9,
+        fullTextUrl: "#",
+        keyFindings: [
+          "Modern monitors show 99.1% uptime in clinical environments",
+          "Wireless connectivity improved nursing workflow efficiency by 23%",
+          "Battery life remains a limiting factor in portable applications"
+        ],
+        selected: true
+      }
+    ];
+    
+    // Save sample literature to localStorage
+    saveState('literatureResults', sampleLiterature);
+    
+    return sampleLiterature;
+  });
   
   // Predicate Device Finder state
   const [predicateSearchTerm, setPredicateSearchTerm] = useState('');
@@ -223,27 +338,72 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   
   // Create a deviceProfile object for easier passing to 510k components with localStorage persistence
-  // Using our new utilities for robust device profile creation and validation
+  // Using our new utilities for robust device profile creation and validation with pre-filled data
   const [deviceProfile, setDeviceProfile] = useState(() => {
     console.log("CERV2Page: Initializing deviceProfile state...");
-    const savedProfile = loadSavedState('deviceProfile', null);
-    if (savedProfile) {
-      console.log('CERV2Page: Loaded device profile from localStorage. Raw:', savedProfile);
-      // Ensure the loaded profile has the necessary structure and metadata
-      const ensuredProfile = ensureProfileIntegrity(savedProfile);
-      console.log('CERV2Page: Ensured profile from localStorage:', ensuredProfile);
-      return ensuredProfile;
-    }
-    // If no saved profile, create a new one with all necessary fields
-    console.log('CERV2Page: No saved profile found, creating a new one.');
-    const newProfile = createNewDeviceProfile({
+    // Create a complete pre-filled profile to skip data intake steps
+    const completeProfile = createNewDeviceProfile({
       id: k510DocumentId,
-      deviceName: deviceName || 'Sample Medical Device',
-      manufacturer: manufacturer || 'Sample Manufacturer',
-      intendedUse: intendedUse || 'For diagnostic use in clinical settings'
+      deviceName: "CardioMonitor 2000",
+      manufacturer: "MedTech Innovations",
+      intendedUse: "Continuous monitoring of cardiac rhythm and vital signs in clinical settings",
+      deviceType: "Class II Medical Device",
+      regulatoryClass: "II",
+      productCode: "DRT",
+      submissionType: "Traditional",
+      reviewPanel: "Cardiovascular",
+      indications: "For use in hospitals, clinics, and ambulatory care settings to monitor cardiac rhythm and vital signs in patients of all ages with suspected cardiac abnormalities.",
+      contraindications: "Not intended for home use without medical supervision. Not MRI compatible.",
+      classification: {
+        riskLevel: "Moderate",
+        deviceClass: "II",
+        regulatoryPathway: "510(k)",
+        productCodeName: "Monitor, Physiological, Patient (with arrhythmia detection)",
+        regulationNumber: "870.2300"
+      },
+      technicalSpecifications: {
+        dimensions: "10.5 x 8.2 x 3.1 inches",
+        weight: "2.4 lbs",
+        powerSource: "Rechargeable lithium-ion battery and AC power",
+        batteryLife: "12 hours",
+        display: "7-inch color touchscreen, 1280x720 resolution",
+        connectivity: "Bluetooth 5.0, Wi-Fi, USB-C, Ethernet",
+        sensors: "ECG (12-lead), SpO2, NIBP, temperature, respiration",
+        dataStorage: "72 hours of continuous recording, expandable via USB storage",
+        alarmSystems: "Visual and audible with customizable thresholds"
+      },
+      predicate: {
+        deviceName: "Previous generation device - CardioMonitor 1500",
+        manufacturer: "MedTech Innovations",
+        k510Number: "K123456",
+        clearanceDate: "2022-05-15"
+      },
+      clinicalInvestigations: {
+        studies: [
+          {
+            title: "Clinical Validation of CardioMonitor 2000",
+            participants: 120,
+            duration: "6 months",
+            outcomes: "95.7% sensitivity, 98.2% specificity for arrhythmia detection"
+          }
+        ]
+      },
+      qualitySystem: {
+        iso13485Certified: true,
+        qsrCompliant: true,
+        riskManagementProcesses: "ISO 14971:2019 compliant"
+      }
     });
-    console.log('CERV2Page: Created new profile:', newProfile);
-    return newProfile;
+    
+    // Save this complete profile to localStorage for persistence
+    saveState('deviceProfile', completeProfile);
+    saveState('isPredicateStepCompleted', true);
+    saveState('predicatesFound', true);
+    saveState('workflowStep', 2);
+    saveState('workflowProgress', 30);
+    
+    console.log('CERV2Page: Created new pre-filled profile:', completeProfile);
+    return completeProfile;
   });
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
