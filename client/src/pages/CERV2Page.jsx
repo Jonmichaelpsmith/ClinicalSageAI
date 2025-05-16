@@ -488,12 +488,25 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
 
   // Handler functions for 510k workflow
   // Completely rewritten handler for predicate completion to fix workflow transition
-  const handlePredicatesComplete = (data, literatureData = []) => {
+  const handlePredicatesComplete = (data, error = null) => {
     console.log('[CERV2 Workflow] Predicate completion handler called:', {
       predicateCount: data?.length || 0,
-      literatureCount: literatureData?.length || 0
+      error: error
     });
     
+    // Handle error case
+    if (error) {
+      console.error('[CERV2 Workflow] Error in predicate search:', error);
+      setPredicateSearchError(error);
+      toast({
+        title: "Predicate Search Error",
+        description: error || "An error occurred during predicate search.",
+        variant: "destructive",
+        duration: 3000
+      });
+      return;
+    }
+
     // Basic validation
     if (!data || data.length === 0) {
       toast({
@@ -519,11 +532,14 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       
       // 2. Set all state variables synchronously for workflow transition
       setPredicatesFound(true);
+      setIsPredicateStepCompleted(true); // CRITICAL FIX: Explicitly mark the predicate step as completed
+      setPredicateSearchError(null); // Clear any previous errors
       setPredicateDevices(data);
       setDeviceProfile(updatedDeviceProfile);
       
       // 3. Save state to localStorage for persistence
       saveState('predicatesFound', true);
+      saveState('isPredicateStepCompleted', true); // CRITICAL FIX: Save completion flag to localStorage
       saveState('predicateDevices', data);
       saveState('deviceProfile', updatedDeviceProfile);
       

@@ -384,6 +384,12 @@ const PredicateFinderPanel = ({
           setErrorState('search-failed');
           setShowRecoveryUI(true);
           
+          // Notify parent component about the error
+          if (onPredicatesFound) {
+            console.log('[510k] Notifying parent component of search error');
+            onPredicatesFound(null, "API search failed - using recovery data");
+          }
+          
           toast({
             title: "Search Error - Using Sample Data",
             description: "We've provided sample predicate devices based on your device profile.",
@@ -562,8 +568,9 @@ const PredicateFinderPanel = ({
     // Small delay to ensure state updates are processed before callback
     setTimeout(() => {
       if (onPredicatesFound) {
-        console.log('[510k] Executing onPredicatesFound callback');
-        onPredicatesFound(selectedPredicates);
+        console.log('[510k] Executing onPredicatesFound callback with predicates and null error');
+        // This is a critical change - pass null as second parameter to indicate no errors
+        onPredicatesFound(selectedPredicates, null);
       } else {
         console.warn('[510k] onPredicatesFound callback not available');
       }
