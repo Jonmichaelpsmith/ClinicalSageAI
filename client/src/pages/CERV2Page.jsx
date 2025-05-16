@@ -1790,266 +1790,196 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         {renderNavigation()}
         
         <div className="flex">
-          {/* Document Vault Panel */}
+          {/* Document Vault Sidebar */}
           {showDocumentTree && (
-            <div className="w-64 bg-white border-r border-gray-200 shadow-md h-full overflow-auto">
+            <div className="w-64 bg-gray-50 border-r border-gray-200 shadow-md h-full overflow-auto">
               <div className="h-full flex flex-col">
-                <div className="flex justify-between items-center p-3 border-b">
+                <div className="flex justify-between items-center p-3 border-b bg-gray-100">
                   <h2 className="text-base font-semibold flex items-center">
-                    <BookOpen className="h-4 w-4 mr-1.5 text-blue-600" />
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+                    </svg>
                     Document Vault
                   </h2>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
+                  <button
                     onClick={() => setShowDocumentTree(false)}
-                    className="h-7 w-7 p-0 text-gray-500 hover:text-gray-700"
+                    className="h-7 w-7 p-0 text-gray-500 hover:text-gray-700 rounded-full hover:bg-gray-200"
                   >
-                    <X className="h-4 w-4" />
-                  </Button>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 6 6 18"></path>
+                      <path d="m6 6 12 12"></path>
+                    </svg>
+                  </button>
                 </div>
                 
-                {/* Document Tree */}
-                <div className="flex-1 overflow-auto">
-                  <div className="p-2">
-                    {/* Regulatory Folder */}
-                    <div className="mb-2">
-                      <div 
-                        className="flex items-center p-1.5 rounded hover:bg-gray-100 cursor-pointer"
-                        onClick={() => {
-                          // Toggle folder code would go here
-                          toast({
-                            title: "Folder opened",
-                            description: "Regulatory documents folder expanded"
-                          });
-                        }}
-                      >
-                        <ChevronRight className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                        <Folder className="h-4 w-4 mr-1.5 text-blue-500" />
-                        <span className="text-sm font-medium">Regulatory</span>
-                      </div>
-                      <div className="ml-6 mt-1">
-                        <div 
-                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
-                          onClick={() => {
-                            window.open('/attached_assets/Format-and-Content-of-the-Clinical-and-Statistical-Sections-of-an-Application.pdf', '_blank');
-                            toast({
-                              title: "Document opened",
-                              description: "Viewing 510(k) Summary document"
-                            });
-                          }}
-                        >
-                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
-                          <span className="text-sm">510(k) Summary</span>
-                        </div>
-                        
-                        <div 
-                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
-                          onClick={() => {
-                            window.open('/attached_assets/E3-Structure-and-Content-of-Clinical-Study-Reports.pdf', '_blank');
-                            toast({
-                              title: "Document opened",
-                              description: "Viewing Equivalence Report document"
-                            });
-                          }}
-                        >
-                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
-                          <span className="text-sm">Equivalence Report</span>
-                        </div>
-
-                        <div 
-                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
-                          onClick={() => {
-                            window.open('/attached_assets/7.19.13.Miller-Clinical-Trials.pdf', '_blank');
-                            toast({
-                              title: "Document opened",
-                              description: "Viewing Regulatory Checklist document"
-                            });
-                          }}
-                        >
-                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
-                          <span className="text-sm">Regulatory Checklist</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Clinical Folder */}
-                    <div className="mb-2">
-                      <div 
-                        className="flex items-center p-1.5 rounded hover:bg-gray-100 cursor-pointer"
-                        onClick={() => {
-                          // Toggle folder code would go here
-                          toast({
-                            title: "Folder opened",
-                            description: "Clinical documents folder expanded"
-                          });
-                        }}
-                      >
-                        <ChevronRight className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                        <Folder className="h-4 w-4 mr-1.5 text-blue-500" />
-                        <span className="text-sm font-medium">Clinical</span>
-                      </div>
-                      <div className="ml-6 mt-1">
-                        <div 
-                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
-                          onClick={() => {
-                            window.open('/attached_assets/CER REPORT EXAMPLE OUTPUT.pdf', '_blank');
-                            toast({
-                              title: "Document opened",
-                              description: "Viewing Clinical Evaluation Report document"
-                            });
-                          }}
-                        >
-                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
-                          <span className="text-sm">CER Report</span>
-                        </div>
-                        
-                        <div 
-                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
-                          onClick={() => {
-                            window.open('/attached_assets/ICER_Acute-Pain_Evidence-Report_For-Publication_020525.pdf', '_blank');
-                            toast({
-                              title: "Document opened",
-                              description: "Viewing Literature Analysis document"
-                            });
-                          }}
-                        >
-                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
-                          <span className="text-sm">Literature Analysis</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Technical Folder */}
-                    <div className="mb-2">
-                      <div 
-                        className="flex items-center p-1.5 rounded hover:bg-gray-100 cursor-pointer"
-                        onClick={() => {
-                          // Toggle folder code would go here
-                          toast({
-                            title: "Folder opened",
-                            description: "Technical documents folder expanded"
-                          });
-                        }}
-                      >
-                        <ChevronRight className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                        <Folder className="h-4 w-4 mr-1.5 text-blue-500" />
-                        <span className="text-sm font-medium">Technical</span>
-                      </div>
-                      <div className="ml-6 mt-1">
-                        <div 
-                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
-                          onClick={() => {
-                            window.open('/attached_assets/DI_Intelligent-clinical-trials.pdf', '_blank');
-                            toast({
-                              title: "Document opened",
-                              description: "Viewing Design Specifications document"
-                            });
-                          }}
-                        >
-                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
-                          <span className="text-sm">Design Specifications</span>
-                        </div>
-                        
-                        <div 
-                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
-                          onClick={() => {
-                            window.open('/attached_assets/ENVIA_Whitepaper_SOTApdf.pdf', '_blank');
-                            toast({
-                              title: "Document opened",
-                              description: "Viewing Testing Protocol document"
-                            });
-                          }}
-                        >
-                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
-                          <span className="text-sm">Testing Protocol</span>
-                        </div>
-                      </div>
-                    </div>
-                    
-                    {/* Submission Folder */}
-                    <div className="mb-2">
-                      <div 
-                        className="flex items-center p-1.5 rounded hover:bg-gray-100 cursor-pointer"
-                        onClick={() => {
-                          // Toggle folder code would go here
-                          toast({
-                            title: "Folder opened",
-                            description: "Submission documents folder expanded"
-                          });
-                        }}
-                      >
-                        <ChevronRight className="h-3.5 w-3.5 mr-1 text-gray-500" />
-                        <Folder className="h-4 w-4 mr-1.5 text-green-500" />
-                        <span className="text-sm font-medium">Submission</span>
-                        <Badge variant="outline" className="ml-2 text-[10px] h-4 bg-green-50 text-green-700 border-green-200">NEW</Badge>
-                      </div>
-                      <div className="ml-6 mt-1">
-                        <div 
-                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
-                          onClick={() => {
-                            window.open('/attached_assets/1 - CER 2021 Update - Arthrosurface Shoulder Implant Systems - 10.07.2021 (FINAL).pdf', '_blank');
-                            toast({
-                              title: "Document opened",
-                              description: "Viewing eSTAR Submission Package document"
-                            });
-                          }}
-                        >
-                          <FileText className="h-4 w-4 mr-1.5 text-green-500" />
-                          <span className="text-sm">eSTAR Package</span>
-                        </div>
-                        
-                        <div 
-                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
-                          onClick={() => {
-                            window.open('/attached_assets/Clinical-Evaluation-Reports-How-To-Leverage-Published-Data-–-Pro-Te-Fall-2016.pdf', '_blank');
-                            toast({
-                              title: "Document opened",
-                              description: "Viewing Final Report document"
-                            });
-                          }}
-                        >
-                          <FileText className="h-4 w-4 mr-1.5 text-green-500" />
-                          <span className="text-sm">Final Report</span>
-                        </div>
-                      </div>
-                    </div>
+                {/* Search Bar */}
+                <div className="p-2 border-b">
+                  <div className="relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-2 top-2.5 h-4 w-4 text-gray-400">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <path d="m21 21-4.3-4.3"></path>
+                    </svg>
+                    <input 
+                      type="text" 
+                      placeholder="Search documents..." 
+                      className="pl-8 pr-2 py-2 w-full text-sm border border-gray-300 rounded-md"
+                    />
                   </div>
                 </div>
                 
-                {/* Action bar */}
-                <div className="p-2 border-t">
-                  <div className="flex space-x-1">
-                    <Button size="sm" className="text-xs h-8">
-                      <UploadCloud className="h-3.5 w-3.5 mr-1" />
+                {/* Navigation Tree */}
+                <div className="flex-1 overflow-auto bg-white">
+                  <nav className="p-1">
+                    {/* Regulatory Documents */}
+                    <div className="mb-0.5">
+                      <div className="flex items-center py-2 px-3 hover:bg-blue-50 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span className="text-sm font-medium">Regulatory</span>
+                      </div>
+                      <div>
+                        <a 
+                          href="/attached_assets/Format-and-Content-of-the-Clinical-and-Statistical-Sections-of-an-Application.pdf" 
+                          target="_blank"
+                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          <span className="text-sm">510(k) Summary</span>
+                        </a>
+                        <a 
+                          href="/attached_assets/E3-Structure-and-Content-of-Clinical-Study-Reports.pdf" 
+                          target="_blank"
+                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          <span className="text-sm">Clinical Study Report</span>
+                        </a>
+                      </div>
+                    </div>
+                    
+                    {/* Clinical Documents */}
+                    <div className="mb-0.5">
+                      <div className="flex items-center py-2 px-3 hover:bg-blue-50 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span className="text-sm font-medium">Clinical</span>
+                      </div>
+                      <div>
+                        <a 
+                          href="/attached_assets/CER REPORT EXAMPLE OUTPUT.pdf" 
+                          target="_blank"
+                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          <span className="text-sm">CER Report</span>
+                        </a>
+                        <a 
+                          href="/attached_assets/ICER_Acute-Pain_Evidence-Report_For-Publication_020525.pdf" 
+                          target="_blank"
+                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          <span className="text-sm">Evidence Report</span>
+                        </a>
+                      </div>
+                    </div>
+                    
+                    {/* FDA Submissions */}
+                    <div className="mb-0.5 bg-blue-50">
+                      <div className="flex items-center py-2 px-3 hover:bg-blue-100 cursor-pointer bg-blue-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span className="text-sm font-medium">FDA Submissions</span>
+                      </div>
+                      <div>
+                        <a 
+                          href="/attached_assets/1 - CER 2021 Update - Arthrosurface Shoulder Implant Systems - 10.07.2021 (FINAL).pdf" 
+                          target="_blank"
+                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          <span className="text-sm font-medium">510(k) Submission</span>
+                        </a>
+                        <a 
+                          href="/attached_assets/Clinical-Evaluation-Reports-How-To-Leverage-Published-Data-–-Pro-Te-Fall-2016.pdf" 
+                          target="_blank"
+                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          <span className="text-sm font-medium">Predicate Device</span>
+                        </a>
+                      </div>
+                    </div>
+                    
+                    {/* Technical Documentation */}
+                    <div className="mb-0.5">
+                      <div className="flex items-center py-2 px-3 hover:bg-blue-50 cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span className="text-sm font-medium">Technical</span>
+                      </div>
+                      <div>
+                        <a 
+                          href="/attached_assets/ENVIA_Whitepaper_SOTApdf.pdf" 
+                          target="_blank"
+                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                          </svg>
+                          <span className="text-sm">Technical Specs</span>
+                        </a>
+                      </div>
+                    </div>
+                  </nav>
+                </div>
+                
+                {/* Action buttons */}
+                <div className="p-2 border-t bg-gray-50">
+                  <div className="flex space-x-2">
+                    <button className="flex items-center justify-center py-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
                       Upload
-                    </Button>
-                    <Button variant="outline" size="sm" className="text-xs h-8">
-                      <Download className="h-3.5 w-3.5 mr-1" />
+                    </button>
+                    <button className="flex items-center justify-center py-1.5 px-3 border border-gray-300 hover:bg-gray-100 text-sm font-medium rounded-md">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                      </svg>
                       Export
-                    </Button>
+                    </button>
                   </div>
                 </div>
               </div>
             </div>
-          )}
-          
-          {/* Document Preview Dialog */}
-          {documentPreview.show && (
-            <Dialog open={documentPreview.show} onOpenChange={(open) => !open && setDocumentPreview({ show: false, path: '', title: '' })}>
-              <DialogContent className="max-w-4xl h-[80vh]">
-                <DialogHeader>
-                  <DialogTitle>{documentPreview.title}</DialogTitle>
-                </DialogHeader>
-                <div className="flex-1 h-full">
-                  <iframe
-                    src={documentPreview.path}
-                    className="w-full h-full"
-                    title={documentPreview.title}
-                  />
-                </div>
-              </DialogContent>
-            </Dialog>
           )}
           
           <div className={`bg-white rounded-lg border shadow-sm flex-1 ${showDocumentTree ? 'rounded-l-none' : ''}`}>
