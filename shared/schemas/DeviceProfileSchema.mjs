@@ -1,11 +1,11 @@
 /**
- * Device Profile Schema
+ * Device Profile Schema (ESM Version)
  * 
  * This schema defines the structure for device profiles used in 510(k) submissions.
  * It is shared between frontend and backend to ensure data consistency.
  * 
- * IMPORTANT: This schema accurately reflects the actual database structure.
- * Any changes here should be coordinated with database migrations.
+ * IMPORTANT: This file is the ESM-compatible version of DeviceProfileSchema.js
+ * Any changes here should be mirrored to the CJS version.
  */
 
 // The actual database columns that exist in the device_profiles table
@@ -69,6 +69,10 @@ export const formatDeviceProfileForFrontend = (dbRecord) => {
 
 // Convert frontend format (camelCase) to database format (snake_case)
 export const formatDeviceProfileForDatabase = (frontendData) => {
+  if (!frontendData) {
+    throw new Error('Device profile data is required');
+  }
+  
   const dbData = {
     device_name: frontendData.deviceName,
     device_class: frontendData.deviceClass,
@@ -85,5 +89,18 @@ export const formatDeviceProfileForDatabase = (frontendData) => {
       : JSON.stringify(frontendData.folderStructure || {})
   };
   
+  // Add additional validation
+  if (!dbData.device_name) {
+    throw new Error('Device name is required');
+  }
+  
   return dbData;
+};
+
+// Default export for compatibility
+export default {
+  DEVICE_PROFILE_COLUMNS,
+  validateDeviceProfileData,
+  formatDeviceProfileForFrontend,
+  formatDeviceProfileForDatabase
 };
