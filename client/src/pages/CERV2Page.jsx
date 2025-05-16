@@ -1687,8 +1687,8 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
             <DeviceProfileForm 
               projectId={k510DocumentId || 'new-device'} 
               initialData={deviceProfile}
-              onSubmit={(savedProfile) => {
-                console.log('Device profile saved with vault integration:', savedProfile);
+              onSubmit={async (formData) => {
+                console.log('Device profile form submitted:', formData);
                 
                 // Show loading toast to provide user feedback
                 toast({
@@ -1698,15 +1698,12 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                 });
                 
                 try {
-                  // Update the device profile in state
-                  setDeviceProfile(savedProfile);
+                  // Use our new robust handling function to ensure proper document structure
+                  await handleSaveDeviceProfile(formData);
                   
-                  // Always save profile to localStorage for persistence
-                  localStorage.setItem('510k_deviceProfile', JSON.stringify(savedProfile));
-                  
-                  // If we have an ID from the saved profile, use it
-                  if (savedProfile.id) {
-                    setK510DocumentId(savedProfile.id);
+                  // If formData has an ID, use it to update k510DocumentId
+                  if (formData.id) {
+                    setK510DocumentId(formData.id);
                   }
                   
                   // Transition to predicates step with 500ms delay to ensure UI updates
@@ -1723,10 +1720,10 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                     });
                   }, 500);
                 } catch (error) {
-                  console.error("Error in device profile transition:", error);
+                  console.error("Error in device profile processing:", error);
                   toast({
-                    title: "Navigation Error",
-                    description: "There was a problem moving to the predicate search. Please try again.",
+                    title: "Profile Error",
+                    description: "There was a problem saving the device profile. Please try again.",
                     variant: "destructive"
                   });
                 }
