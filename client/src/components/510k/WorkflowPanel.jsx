@@ -121,9 +121,38 @@ const WorkflowPanel = ({
         onPredicatesFound(result.predicateDevices || []);
       }
       
+      // First verify the data before proceeding
+      if (!result.predicateDevices || result.predicateDevices.length === 0) {
+        console.warn('[WorkflowPanel] No predicate devices found, cannot proceed to equivalence step');
+        toast({
+          title: "Workflow Warning",
+          description: "No predicate devices were found. Please refine your search criteria.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       // Go to next step
+      console.log('[WorkflowPanel] Found predicates, transitioning to equivalence step');
       setWorkflowStep(3);
-      setActiveTab('equivalence');
+      
+      // Use a slight delay to ensure step is updated before changing tab
+      setTimeout(() => {
+        try {
+          setActiveTab('equivalence');
+          console.log('[WorkflowPanel] Tab transition initiated');
+          
+          // Verify transition was successful
+          setTimeout(() => {
+            if (activeTab !== 'equivalence') {
+              console.warn('[WorkflowPanel] Tab transition failed, retrying...');
+              setActiveTab('equivalence');
+            }
+          }, 200);
+        } catch (transitionError) {
+          console.error('[WorkflowPanel] Error during tab transition:', transitionError);
+        }
+      }, 100);
     } catch (error) {
       console.error('Error in predicate finder:', error);
       toast({
@@ -138,6 +167,7 @@ const WorkflowPanel = ({
 
   // Handle equivalence builder completion
   const handleEquivalenceComplete = (data) => {
+    console.log('[WorkflowPanel] Equivalence completed with data:', data);
     setEquivalenceCompleted(true);
     
     toast({
@@ -151,9 +181,39 @@ const WorkflowPanel = ({
       onEquivalenceComplete(data);
     }
     
-    // Automatically advance to compliance check
-    setWorkflowStep(4);
-    setActiveTab('compliance');
+    // Enhanced transition with verification and fallbacks
+    try {
+      console.log('[WorkflowPanel] Transitioning to compliance step');
+      // First update the workflow step
+      setWorkflowStep(4);
+      
+      // Use a delay to ensure step is updated before changing tab
+      setTimeout(() => {
+        try {
+          console.log('[WorkflowPanel] Setting active tab to compliance');
+          setActiveTab('compliance');
+          
+          // Verify transition was successful
+          setTimeout(() => {
+            if (activeTab !== 'compliance') {
+              console.warn('[WorkflowPanel] Tab transition failed, retrying...');
+              setActiveTab('compliance');
+            } else {
+              console.log('[WorkflowPanel] Tab transition to compliance successful');
+            }
+          }, 200);
+        } catch (transitionError) {
+          console.error('[WorkflowPanel] Error during tab transition:', transitionError);
+          // Emergency fallback
+          setActiveTab('compliance');
+        }
+      }, 100);
+    } catch (error) {
+      console.error('[WorkflowPanel] Critical error in workflow transition:', error);
+      // Hard fallback
+      setWorkflowStep(4);
+      setActiveTab('compliance');
+    }
   };
 
   // Handle compliance check
