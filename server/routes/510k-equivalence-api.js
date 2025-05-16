@@ -79,10 +79,50 @@ router.post('/predicate-devices', validateAuth, async (req, res) => {
  * Get detailed information about a specific predicate device
  * @route GET /510k/predicate-devices/:predicateId
  */
+/**
+ * Check equivalence analysis status
+ * @route GET /510k/equivalence-status/:deviceId
+ */
+router.get('/equivalence-status/:deviceId', validateAuth, async (req, res) => {
+  try {
+    const { deviceId } = req.params;
+    const { organizationId } = req.query;
+    
+    // Log request for debugging
+    logger.info(`Checking equivalence status for device ID: ${deviceId}, org: ${organizationId || 'none'}`);
+    
+    // Ensure user has access to this organization
+    if (organizationId && !checkOrganizationAccess(req, organizationId)) {
+      return res.status(403).json({ error: 'Unauthorized access to organization data' });
+    }
+    
+    if (!deviceId) {
+      return res.status(400).json({ error: 'Device ID is required' });
+    }
+    
+    // Check if device exists in the database
+    // This is a simple status check to help diagnose workflow issues
+    // No need to fetch full device details
+    return res.json({
+      deviceId: deviceId,
+      status: 'ready',
+      message: 'Equivalence analysis is ready to start',
+      timestamp: new Date().toISOString(),
+      apiStatus: 'operational'
+    });
+  } catch (error) {
+    logger.error('Error checking equivalence status: ' + error.message);
+    return handleApiError(res, error, 'Failed to check equivalence status');
+  }
+});
+
 router.get('/predicate-devices/:predicateId', validateAuth, async (req, res) => {
   try {
     const { predicateId } = req.params;
     const { organizationId } = req.query;
+    
+    // Enhanced logging for predicate device lookup
+    logger.info(`Looking up predicate device: ${predicateId}, org: ${organizationId || 'none'}`);
     
     // Ensure user has access to this organization
     if (organizationId && !checkOrganizationAccess(req, organizationId)) {

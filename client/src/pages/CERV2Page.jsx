@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
+import axios from 'axios';
 import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
 import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
 import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
@@ -179,17 +180,43 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   }, [documentType, workflowStep, deviceProfile, predicatesFound, equivalenceCompleted, complianceScore, submissionReady]);
 
   // Handler functions for 510k workflow
-  const handlePredicatesComplete = (data, literatureData = []) => {
+  const handlePredicatesComplete = async (data, literatureData = []) => {
     console.log('[CERV2 Workflow] Predicates complete handler called with data:', { 
       predicateCount: data?.length || 0,
-      literatureCount: literatureData?.length || 0 
+      literatureCount: literatureData?.length || 0,
+      deviceProfileId: deviceProfile?.id || 'No device profile ID'
     });
     
-    // Update state in separate operations to prevent batching issues
+    // First, update state for predicates found
     setPredicatesFound(true);
+    
+    try {
+      // Check if Equivalence API is ready before transitioning 
+      if (deviceProfile?.id) {
+        try {
+          const statusResponse = await axios.get(`/api/510k/equivalence-status/${deviceProfile.id}`);
+          console.log('[CERV2 Workflow] Equivalence API status check:', statusResponse.data);
+          
+          if (statusResponse.data.status !== 'ready') {
+            console.warn('[CERV2 Workflow] Equivalence API not in ready state:', statusResponse.data.message);
+            toast({
+              title: "Workflow Check",
+              description: "Verifying system readiness for equivalence analysis...",
+              duration: 2000
+            });
+          }
+        } catch (apiError) {
+          console.error('[CERV2 Workflow] Error checking equivalence API status:', apiError);
+          // Continue with transition despite API error
+        }
+      }
+    } catch (error) {
+      console.error('[CERV2 Workflow] General error in workflow transition check:', error);
+    }
     
     // Set predicate devices with a slight delay to ensure proper state update
     setTimeout(() => {
+      // Update all necessary state values before navigation
       setPredicateDevices(data || []);
       
       // Process any literature results that were found during predicate search
@@ -201,28 +228,65 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       
       toast({
         title: "Predicate Devices Found",
-        description: `Found ${data?.length || 'multiple'} potential predicate devices that match your criteria.`,
+        description: `Found ${data?.length || 0} potential predicate devices that match your criteria.`,
         variant: "success"
       });
       
-      // First update the workflow step
-      console.log('[CERV2 Workflow] Setting workflow step to 3');
-      setWorkflowStep(3);
-      
-      // Wait for state update to propagate, then update tab
-      setTimeout(() => {
-        console.log('[CERV2 Workflow] Setting active tab to equivalence');
-        setActiveTab('equivalence');
+      try {
+        // First update the workflow step - this is critical for the tab navigation
+        console.log('[CERV2 Workflow] Setting workflow step to 3');
+        setWorkflowStep(3);
         
-        // Verify the transition occurred properly
+        // Wait for state update to propagate, then update tab
+        // Increased delay to ensure state is fully updated
         setTimeout(() => {
-          if (activeTab !== 'equivalence') {
-            console.warn('[CERV2 Workflow] Tab transition failed, forcing tab to equivalence');
+          try {
+            console.log('[CERV2 Workflow] Setting active tab to equivalence');
             setActiveTab('equivalence');
+            
+            // Enhanced verification with multiple retries
+            let verificationAttempts = 0;
+            const verifyTransition = () => {
+              verificationAttempts++;
+              console.log(`[CERV2 Workflow] Verifying tab transition (attempt ${verificationAttempts}): current=${activeTab}`);
+              
+              if (activeTab !== 'equivalence' && verificationAttempts < 3) {
+                console.warn('[CERV2 Workflow] Tab transition incomplete, retrying...');
+                setActiveTab('equivalence');
+                setTimeout(verifyTransition, 200);
+              } else if (activeTab !== 'equivalence') {
+                console.error('[CERV2 Workflow] Tab transition failed after multiple attempts');
+                
+                // Emergency recovery - force both state values synchronously
+                setWorkflowStep(3);
+                setActiveTab('equivalence');
+                
+                // Final confirmation toast to indicate recovery action
+                toast({
+                  title: "Navigation Assistance",
+                  description: "Workflow stabilized. You can continue with equivalence analysis.",
+                  variant: "default",
+                  duration: 3000
+                });
+              } else {
+                console.log('[CERV2 Workflow] Tab transition successful');
+              }
+            };
+            
+            // Start verification process after initial tab change
+            setTimeout(verifyTransition, 300);
+          } catch (tabError) {
+            console.error('[CERV2 Workflow] Error during tab transition:', tabError);
           }
-        }, 500);
-      }, 100);
-    }, 50);
+        }, 200);
+      } catch (workflowError) {
+        console.error('[CERV2 Workflow] Critical error in workflow step transition:', workflowError);
+        
+        // Hard reset both values as emergency recovery
+        setWorkflowStep(3);
+        setTimeout(() => setActiveTab('equivalence'), 100);
+      }
+    }, 100);
   };
   
   // Handle literature selection updates
