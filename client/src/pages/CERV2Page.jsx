@@ -1788,13 +1788,17 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         {renderNavigation()}
         
         <div className="flex">
-          {/* Document Manager - Using real API-based SimpleDocumentTreePanel */}
+          {/* Enhanced Document Vault with professional styling and real documents */}
           {showDocumentTree && (
-            <SimpleDocumentTreePanel 
-              isOpen={showDocumentTree} 
-              onClose={() => setShowDocumentTree(false)}
-              documentId={deviceProfile?.id || "default"} 
-            />
+            <div className="w-72 md:w-80 lg:w-96 bg-white border-r border-gray-200 shadow-md">
+              <DocumentVaultPanel 
+                documentType={documentType}
+                isOpen={showDocumentTree}
+                onClose={() => setShowDocumentTree(false)}
+                position="left"
+                jobId={deviceProfile?.id || "default"}
+              />
+            </div>
           )}
           
           <div className={`bg-white rounded-lg border shadow-sm flex-1 ${showDocumentTree ? 'rounded-l-none' : ''}`}>
