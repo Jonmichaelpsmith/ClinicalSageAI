@@ -25,9 +25,6 @@ import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPane
 import ExportModule from '@/components/cer/ExportModule';
 import CerComprehensiveReportsPanel from '@/components/cer/CerComprehensiveReportsPanel';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-// Import the FDA510kService
-import { FDA510kService } from '@/services/FDA510kService';
 import MAUDIntegrationPanel from '@/components/cer/MAUDIntegrationPanel';
 import KAutomationPanel from '@/components/cer/KAutomationPanel';
 
@@ -94,6 +91,13 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [predicatesFound, setPredicatesFound] = useState(false);
   const [predicateDevices, setPredicateDevices] = useState([]);
   const [literatureResults, setLiteratureResults] = useState([]);
+  
+  // eSTAR Builder state variables
+  const [isValidatingEstar, setIsValidatingEstar] = useState(false);
+  const [isGeneratingEstar, setIsGeneratingEstar] = useState(false);
+  const [estarValidationResults, setEstarValidationResults] = useState(null);
+  const [estarGeneratedUrl, setEstarGeneratedUrl] = useState('');
+  const [estarFormat, setEstarFormat] = useState('zip');
   const [selectedLiterature, setSelectedLiterature] = useState([]);
   const [equivalenceCompleted, setEquivalenceCompleted] = useState(false);
   const [complianceScore, setComplianceScore] = useState(null);
