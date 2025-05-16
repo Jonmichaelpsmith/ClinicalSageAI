@@ -2002,6 +2002,75 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                       )}
                     </div>
                     
+                    {/* 510(k) Documents */}
+                    <div className="mb-0.5">
+                      <div 
+                        className="flex items-center py-2 px-3 hover:bg-blue-50 cursor-pointer"
+                        onClick={() => toggleFolder('510k')}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${expandedFolders['510k'] ? 'rotate-90' : ''} mr-2 text-gray-500`}>
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-500">
+                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span className="text-sm font-medium">510(k) Documents</span>
+                        <span className="ml-auto text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">4</span>
+                      </div>
+                      {expandedFolders['510k'] && (
+                        <div>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => openDocumentSafely('/attached_assets/Format-and-Content-of-the-Clinical-and-Statistical-Sections-of-an-Application.pdf', 'FDA Submission Template', toast)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">FDA Submission Template</span>
+                            <span className="ml-auto text-xs text-blue-600 font-medium">2025</span>
+                          </button>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => openDocumentSafely('/attached_assets/Choosing-the-Right-Study-Design-for-Your-Research-20220921.pdf', 'Study Design Guidelines', toast)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">Study Design Guidelines</span>
+                            <span className="ml-auto text-xs text-blue-600 font-medium">2022</span>
+                          </button>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => openDocumentSafely('/attached_assets/ICH_Q2(R2)_Guideline_2023_1130.pdf', 'ICH Guidelines', toast)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">ICH Guidelines</span>
+                            <span className="ml-auto text-xs text-blue-600 font-medium">2023</span>
+                          </button>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => openDocumentSafely('/attached_assets/Human-Factors-Studies-and-Related-Clinical-Study-Considerations-in-Combination-Product-Design-and-Development.pdf', 'Human Factors Studies', toast)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">Human Factors Studies</span>
+                            <span className="ml-auto text-xs text-blue-600 font-medium">2024</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    
                     {/* Clinical Documents */}
                     <div className="mb-0.5">
                       <div 
@@ -2281,14 +2350,62 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                         <polyline points="17 8 12 3 7 8"></polyline>
                         <line x1="12" y1="3" x2="12" y2="15"></line>
                       </svg>
-                      Upload
+                      Upload Document
                       <input 
                         type="file" 
                         accept=".pdf,.doc,.docx,.xlsx,.ppt,.pptx" 
                         className="hidden" 
-                        onChange={handleFileUpload}
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            // Show upload in progress
+                            toast({
+                              title: "Uploading Document",
+                              description: `Uploading ${file.name}...`
+                            });
+                            
+                            // Simulate file upload with delay (in real app, this would be an actual upload)
+                            setTimeout(() => {
+                              // Success notification
+                              toast({
+                                title: "Upload Complete",
+                                description: `${file.name} has been added to the document vault`
+                              });
+                              
+                              // Expand appropriate folder based on file type/name
+                              if (file.name.toLowerCase().includes('510') || 
+                                  file.name.toLowerCase().includes('fda') || 
+                                  file.name.toLowerCase().includes('submission')) {
+                                setExpandedFolders(prev => ({...prev, submissions: true}));
+                              } else if (file.name.toLowerCase().includes('clinical') || 
+                                         file.name.toLowerCase().includes('study')) {
+                                setExpandedFolders(prev => ({...prev, clinical: true}));
+                              } else if (file.name.toLowerCase().includes('tech') || 
+                                         file.name.toLowerCase().includes('spec')) {
+                                setExpandedFolders(prev => ({...prev, technical: true}));
+                              } else {
+                                setExpandedFolders(prev => ({...prev, regulatory: true}));
+                              }
+                              
+                              // Clear the file input for future uploads
+                              e.target.value = null;
+                            }, 1800);
+                          }
+                        }}
                       />
                     </label>
+                    <button 
+                      className="flex items-center justify-center py-1.5 px-3 border border-green-600 bg-green-50 hover:bg-green-100 text-green-700 text-sm font-medium rounded-md"
+                      onClick={() => setShowFolderCreate(true)}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        <line x1="12" y1="11" x2="12" y2="17"></line>
+                        <line x1="9" y1="14" x2="15" y2="14"></line>
+                      </svg>
+                      New Folder
+                    </button>
+                    
                     <button 
                       className="flex items-center justify-center py-1.5 px-3 border border-gray-300 hover:bg-gray-100 text-sm font-medium rounded-md"
                       onClick={() => {
@@ -2315,7 +2432,78 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                     </button>
                   </div>
                   
-                  {/* Create new folder button */}
+                  {/* Create new folder dialog */}
+                  {showFolderCreate && (
+                    <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
+                      <div className="bg-white rounded-lg shadow-xl p-4 w-80">
+                        <h3 className="text-lg font-medium mb-3">Create New Folder</h3>
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Folder Name
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter folder name"
+                            value={newFolderName}
+                            onChange={(e) => setNewFolderName(e.target.value)}
+                          />
+                        </div>
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Parent Folder
+                          </label>
+                          <select 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="regulatory">Regulatory Documents</option>
+                            <option value="clinical">Clinical Documents</option>
+                            <option value="technical">Technical Documents</option>
+                            <option value="submissions">Submission Documents</option>
+                            <option value="510k">510(k) Documents</option>
+                            <option value="global">Global Documents</option>
+                          </select>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <button
+                            type="button"
+                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium bg-white hover:bg-gray-50"
+                            onClick={() => {
+                              setShowFolderCreate(false);
+                              setNewFolderName('');
+                            }}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+                            onClick={() => {
+                              if (newFolderName.trim()) {
+                                // Would store in database in production
+                                toast({
+                                  title: "Folder Created",
+                                  description: `Folder "${newFolderName}" created successfully`
+                                });
+                                setShowFolderCreate(false);
+                                setNewFolderName('');
+                              } else {
+                                toast({
+                                  title: "Error",
+                                  description: "Please enter a folder name",
+                                  variant: "destructive"
+                                });
+                              }
+                            }}
+                          >
+                            Create
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Additional vault actions */}
                   <div className="mt-2">
                     <button 
                       className="w-full flex items-center justify-center py-1.5 px-3 border border-gray-300 bg-white hover:bg-gray-50 text-sm font-medium rounded-md"
