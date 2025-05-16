@@ -66,7 +66,35 @@ export function loadState(key, defaultValue = null) {
  * @returns {Object} The initialized states
  */
 export function initializeStates(setters) {
-  // Load all states with fallbacks
+  // PERFORMANCE FIX: Skip heavy state loading on portal/landing pages to eliminate delays
+  const isLandingOrPortal = window.location.pathname === '/' || 
+                          window.location.pathname === '/client-portal' ||
+                          window.location.pathname.includes('landing') ||
+                          window.location.pathname.includes('portal');
+                          
+  if (isLandingOrPortal) {
+    console.log('[Performance] Fast path for Client Portal navigation active');
+    // Return default values without loading from localStorage (resolves 3-second delay)
+    const defaults = {
+      deviceProfile: {
+        id: `device-${Date.now()}`,
+        deviceName: '',
+        manufacturer: '',
+        productCode: '',
+        deviceClass: 'II'
+      },
+      workflowStep: 1,
+      activeTab: 'device-profile',
+      workflowProgress: 10,
+      predicateDevices: [],
+      selectedPredicates: [],
+      literatureResults: [],
+      selectedLiterature: []
+    };
+    return defaults;
+  }
+  
+  // REGULAR WORKFLOW PAGES: Continue with full state loading for workflow functionality
   const deviceProfile = loadState('deviceProfile', {
     id: `device-${Date.now()}`,
     deviceName: '',
