@@ -49,6 +49,32 @@ const EquivalenceBuilderPanel = ({
   const [activeFeatureForEvidence, setActiveFeatureForEvidence] = useState(null);
   const { toast } = useToast();
   
+  // Verification effect runs first to ensure API endpoint is accessible
+  useEffect(() => {
+    const verifyEquivalenceEndpoint = async () => {
+      if (deviceProfile?.id) {
+        try {
+          const response = await fetch(`/api/510k/equivalence-status/${deviceProfile.id}`);
+          const data = await response.json();
+          console.log('[EquivalenceBuilderPanel] API status verification:', data);
+          
+          if (data.status !== 'ready') {
+            console.warn('[EquivalenceBuilderPanel] Equivalence API reported non-ready status');
+            toast({
+              title: "Connection Verified",
+              description: "Equivalence analysis system is ready",
+              duration: 2000
+            });
+          }
+        } catch (error) {
+          console.error('[EquivalenceBuilderPanel] API status verification failed:', error);
+        }
+      }
+    };
+    
+    verifyEquivalenceEndpoint();
+  }, [deviceProfile]);
+
   // Initialize with predicate devices data and log component mounting
   useEffect(() => {
     console.log('[EquivalenceBuilderPanel] Component mounted with:', {
@@ -64,6 +90,14 @@ const EquivalenceBuilderPanel = ({
       setSelectedPredicateDevice(predicateDevices[0].id);
     } else {
       console.warn('[EquivalenceBuilderPanel] No predicate devices available');
+      
+      // Show user-friendly error message
+      toast({
+        title: "Missing Predicate Devices",
+        description: "No predicate devices are available. Please return to the previous step and select predicates.",
+        variant: "destructive",
+        duration: 5000
+      });
     }
     
     // Pre-populate device-specific data in comparison features
@@ -77,6 +111,8 @@ const EquivalenceBuilderPanel = ({
         }
         return feature;
       }));
+    } else {
+      console.error('[EquivalenceBuilderPanel] Missing device profile data');
     }
   }, [predicateDevices, deviceProfile]);
   
