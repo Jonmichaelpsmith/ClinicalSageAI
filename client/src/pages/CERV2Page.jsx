@@ -144,19 +144,31 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   
   // eSTAR specific state variables are defined above
   
-  // Create a deviceProfile object for easier passing to 510k components
-  const [deviceProfile, setDeviceProfile] = useState({
-    id: k510DocumentId,
-    deviceName: deviceName || 'Sample Medical Device',
-    manufacturer: manufacturer || 'Sample Manufacturer',
-    productCode: 'ABC',
-    deviceClass: 'II',
-    intendedUse: intendedUse || 'For diagnostic use in clinical settings',
-    description: 'A medical device designed for diagnostic procedures',
-    technicalSpecifications: 'Meets ISO 13485 standards',
-    regulatoryClass: 'Class II',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+  // Create a deviceProfile object for easier passing to 510k components with localStorage persistence
+  const [deviceProfile, setDeviceProfile] = useState(() => {
+    // First try to load from localStorage
+    const savedProfile = loadSavedState('deviceProfile', null);
+    
+    // If we have a saved profile, use that
+    if (savedProfile) {
+      console.log('Loaded device profile from localStorage:', savedProfile.deviceName);
+      return savedProfile;
+    }
+    
+    // Otherwise create a new default profile
+    return {
+      id: k510DocumentId,
+      deviceName: deviceName || 'Sample Medical Device',
+      manufacturer: manufacturer || 'Sample Manufacturer',
+      productCode: 'ABC',
+      deviceClass: 'II',
+      intendedUse: intendedUse || 'For diagnostic use in clinical settings',
+      description: 'A medical device designed for diagnostic procedures',
+      technicalSpecifications: 'Meets ISO 13485 standards',
+      regulatoryClass: 'Class II',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
   });
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
@@ -177,17 +189,32 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     lastChecked: null
   });
 
-  // Update device profile when device information changes
+  // Update device profile when device information changes and persist it
   useEffect(() => {
     if (documentType === '510k') {
-      setDeviceProfile(prev => ({
-        ...prev,
-        deviceName: deviceName || prev.deviceName,
-        manufacturer: manufacturer || prev.manufacturer,
-        intendedUse: intendedUse || prev.intendedUse
-      }));
+      const updatedProfile = {
+        ...deviceProfile,
+        deviceName: deviceName || deviceProfile.deviceName,
+        manufacturer: manufacturer || deviceProfile.manufacturer,
+        intendedUse: intendedUse || deviceProfile.intendedUse,
+        updatedAt: new Date().toISOString()
+      };
+      
+      setDeviceProfile(updatedProfile);
+      
+      // Persist device profile to localStorage
+      saveState('deviceProfile', updatedProfile);
     }
-  }, [deviceName, manufacturer, intendedUse, documentType]);
+  }, [deviceName, manufacturer, intendedUse, documentType, deviceProfile]);
+  
+  // Add a watcher to persist device profile when it changes from other sources
+  useEffect(() => {
+    // Don't save if the profile is empty or null
+    if (deviceProfile && Object.keys(deviceProfile).length > 0) {
+      console.log('Persisting device profile:', deviceProfile.deviceName);
+      saveState('deviceProfile', deviceProfile);
+    }
+  }, [deviceProfile]);
   
   // Helper function to format CtQ factors for a specific objective
   const getCtqFactorsForSection = (objectiveId, ctqFactors) => {
