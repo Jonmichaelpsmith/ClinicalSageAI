@@ -749,6 +749,153 @@ export const FDA510kService = {
         literatureReferences: []
       };
     }
+  },
+  
+  /**
+   * Validate an eSTAR package for FDA compliance
+   * 
+   * This function validates an eSTAR package against FDA requirements
+   * and returns detailed validation results including issues and recommendations.
+   * 
+   * @param {string} projectId - Project ID to validate
+   * @param {boolean} strictMode - If true, enforces stringent validation rules
+   * @returns {Promise<{
+   *   valid: boolean,
+   *   issues: Array<{severity: string, section: string, message: string}>,
+   *   score: number,
+   *   recommendations: Array<string>
+   * }>}
+   */
+  async validateESTARPackage(projectId, strictMode = false) {
+    try {
+      console.log(`[FDA510kService] Validating eSTAR package for project ${projectId} (strictMode: ${strictMode})`);
+      
+      const response = await apiRequest.post(`/api/fda510k/estar/validate`, { 
+        projectId,
+        strictMode
+      });
+      
+      console.log('[FDA510kService] eSTAR validation response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[FDA510kService] Error validating eSTAR package:', error);
+      
+      // Return a structured error response instead of throwing
+      return {
+        valid: false,
+        error: error.message || 'An error occurred during eSTAR validation',
+        issues: [
+          {
+            severity: 'error',
+            section: 'System',
+            message: `Validation service error: ${error.message || 'Unknown error'}`
+          }
+        ],
+        score: 0,
+        recommendations: ['Contact support if this error persists.']
+      };
+    }
+  },
+  
+  /**
+   * Integrate with eSTAR for final 510(k) submission
+   * 
+   * This function generates an FDA-compliant eSTAR package from the completed report
+   * and integrates it with the workflow system.
+   * 
+   * @param {string} reportId - The ID of the generated 510(k) report
+   * @param {string} projectId - The ID of the 510(k) project
+   * @param {Object} options - Integration options
+   * @param {boolean} options.validateFirst - Whether to validate before integration
+   * @param {boolean} options.strictValidation - Whether to use strict validation
+   * @returns {Promise<{
+   *   success: boolean, 
+   *   packageGenerated: boolean, 
+   *   downloadUrl: string, 
+   *   validated: boolean, 
+   *   validationResult: Object
+   * }>}
+   */
+  async integrateWithESTAR(reportId, projectId, options = {}) {
+    try {
+      console.log(`[FDA510kService] Integrating eSTAR for report ${reportId}, project ${projectId}`);
+      
+      const { validateFirst = true, strictValidation = false } = options;
+      
+      // Step 1: Build the eSTAR package
+      const buildResponse = await apiRequest.post(`/api/fda510k/estar/build`, {
+        projectId,
+        options: {
+          validateFirst, 
+          strictValidation,
+          format: 'zip',
+          includeReport: true,
+          reportId
+        }
+      });
+      
+      console.log('[FDA510kService] eSTAR build response:', buildResponse.data);
+      
+      if (!buildResponse.data.success) {
+        return {
+          success: false,
+          message: buildResponse.data.message || 'Failed to build eSTAR package',
+          validated: buildResponse.data.validationResult ? true : false,
+          validationResult: buildResponse.data.validationResult
+        };
+      }
+      
+      // Step 2: Store the eSTAR package in the document vault
+      try {
+        // Get device profile to find folder structure
+        const deviceProfile = await this.getDeviceProfile(projectId);
+        
+        if (!deviceProfile || !deviceProfile.folderStructure || !deviceProfile.folderStructure.submissionFolderId) {
+          console.warn('[FDA510kService] Missing folder structure for eSTAR storage');
+        } else {
+          // Store package reference in the submission folder
+          const submissionDoc = {
+            name: `${deviceProfile.device_name || deviceProfile.deviceName || 'Device'} - eSTAR Package`,
+            description: 'FDA-compliant eSTAR submission package',
+            url: buildResponse.data.downloadUrl,
+            mimeType: 'application/zip',
+            metadata: {
+              type: 'estar-package',
+              projectId,
+              reportId,
+              timestamp: new Date().toISOString(),
+              version: '1.0'
+            }
+          };
+          
+          // Store the document in vault
+          await apiRequest.post(`/api/document-vault/documents`, {
+            folderId: deviceProfile.folderStructure.submissionFolderId,
+            document: submissionDoc
+          });
+          
+          console.log('[FDA510kService] eSTAR package stored in document vault');
+        }
+      } catch (vaultError) {
+        console.warn('[FDA510kService] Error storing eSTAR in vault (continuing):', vaultError);
+      }
+      
+      // Return success response with validation details if available
+      return {
+        success: true,
+        packageGenerated: true,
+        downloadUrl: buildResponse.data.downloadUrl,
+        validated: buildResponse.data.validationResult ? true : false,
+        validationResult: buildResponse.data.validationResult
+      };
+    } catch (error) {
+      console.error('[FDA510kService] Error integrating with eSTAR:', error);
+      return {
+        success: false,
+        packageGenerated: false,
+        message: error.message || 'An error occurred during eSTAR integration'
+      };
+    }
   }
 };
 
