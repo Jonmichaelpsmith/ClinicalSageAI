@@ -4,6 +4,9 @@
  * This module handles the server-side API endpoints for the 510(k) substantial
  * equivalence analysis feature, including predicate device search, detailed
  * predicate device information, and AI-powered draft generation.
+ * 
+ * CRITICAL WORKFLOW COMPONENT: This API is part of the 510k workflow transition system
+ * and must be stable for proper tab navigation between Predicates and Equivalence steps.
  */
 
 const express = require('express');

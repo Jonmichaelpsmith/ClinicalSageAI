@@ -49,12 +49,36 @@ const EquivalenceBuilderPanel = ({
   const [activeFeatureForEvidence, setActiveFeatureForEvidence] = useState(null);
   const { toast } = useToast();
   
-  // Initialize with predicate devices data
+  // Initialize with predicate devices data and log component mounting
   useEffect(() => {
-    if (predicateDevices?.length > 0 && !selectedPredicateDevice) {
+    console.log('[EquivalenceBuilderPanel] Component mounted with:', {
+      deviceProfile: deviceProfile?.id || 'No device profile',
+      documentId: documentId || 'No document ID',
+      predicateDevicesCount: predicateDevices?.length || 0,
+      selectedLiteratureCount: selectedLiterature?.length || 0
+    });
+    
+    if (predicateDevices?.length > 0) {
+      console.log('[EquivalenceBuilderPanel] Setting predicate device:', predicateDevices[0].id);
+      // Force selection of first predicate device regardless of current state
       setSelectedPredicateDevice(predicateDevices[0].id);
+    } else {
+      console.warn('[EquivalenceBuilderPanel] No predicate devices available');
     }
-  }, [predicateDevices, selectedPredicateDevice]);
+    
+    // Pre-populate device-specific data in comparison features
+    if (deviceProfile) {
+      setComparisonFeatures(features => features.map(feature => {
+        // Update fields that can be populated from device profile
+        if (feature.name === 'Intended Use') {
+          return { ...feature, subjectDevice: deviceProfile.intendedUse || feature.subjectDevice };
+        } else if (feature.name === 'Standards Compliance') {
+          return { ...feature, subjectDevice: deviceProfile.technicalSpecifications || feature.subjectDevice };
+        }
+        return feature;
+      }));
+    }
+  }, [predicateDevices, deviceProfile]);
   
   // Process selected literature
   useEffect(() => {
