@@ -8,7 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
-import { useTenant } from '@/contexts/TenantContext';
+import { useTenant } from '@/contexts/TenantContext.tsx';
 import { useToast } from '@/hooks/use-toast';
 import FDA510kService from '../../services/FDA510kService';
 

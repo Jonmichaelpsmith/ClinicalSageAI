@@ -33,7 +33,7 @@ import {
 } from "lucide-react";
 
 import { useContext } from 'react';
-import { useTenant } from '../../contexts/TenantContext';
+import { useTenant } from '../../contexts/TenantContext.tsx';
 
 const LiteratureSearchResult = ({ result, onCite, onSummarize }) => {
   const formattedDate = result.publication_date 

@@ -34,7 +34,7 @@ import {
   FileText,
   FileQuestion
 } from 'lucide-react';
-import { useTenant } from '@/contexts/TenantContext';
+import { useTenant } from '@/contexts/TenantContext.tsx';
 import { useToast } from '@/hooks/use-toast';
 
 // Highly structured schema following FDA 510(k) requirements for device intake
