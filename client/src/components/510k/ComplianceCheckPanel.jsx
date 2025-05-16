@@ -531,10 +531,10 @@ const ComplianceCheckPanel = ({
       };
       
       // Store the generated fixes
-      setComplianceFixes(validatedResult);
+      actualSetComplianceFixes(validatedResult);
       
       // Open the fixes dialog
-      setShowFixesDialog(true);
+      actualSetShowFixesDialog(true);
       
       toast({
         title: "Fix Suggestions Generated",
@@ -642,10 +642,10 @@ const ComplianceCheckPanel = ({
       };
       
       // Store the template data
-      setTemplateData(processedTemplateData);
+      actualSetTemplateData(processedTemplateData);
       
       // Open the template dialog
-      setShowTemplateDialog(true);
+      actualSetShowTemplateDialog(true);
       
       toast({
         title: "Template Generated",
@@ -1052,7 +1052,7 @@ const ComplianceCheckPanel = ({
       </CardFooter>
 
       {/* Risk Assessment Dialog */}
-      <Dialog open={showRiskDialog} onOpenChange={setShowRiskDialog}>
+      <Dialog open={actualShowRiskDialog} onOpenChange={actualSetShowRiskDialog}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center text-xl font-semibold">
@@ -1065,7 +1065,7 @@ const ComplianceCheckPanel = ({
           </DialogHeader>
           
           <div className="flex-1 overflow-hidden">
-            {riskAssessmentData ? (
+            {actualRiskAssessmentData ? (
               <div className="h-full flex flex-col">
                 <Tabs defaultValue="overview" value={activeRiskTab} onValueChange={setActiveRiskTab} className="w-full h-full">
                   <TabsList className="grid grid-cols-4 mb-4">
@@ -1098,9 +1098,9 @@ const ComplianceCheckPanel = ({
                             </h3>
                             <div className="flex flex-col">
                               <div className="text-3xl font-bold mb-2">
-                                {riskAssessmentData.approvalLikelihood || riskAssessmentData.success === false ? 
-                                  (riskAssessmentData.success === false ? "Needs more data" : 
-                                   `${Math.round((riskAssessmentData.approvalLikelihood || 0.5) * 100)}%`) : "Analyzing..."}
+                                {actualRiskAssessmentData.approvalLikelihood || actualRiskAssessmentData.success === false ? 
+                                  (actualRiskAssessmentData.success === false ? "Needs more data" : 
+                                   `${Math.round((actualRiskAssessmentData.approvalLikelihood || 0.5) * 100)}%`) : "Analyzing..."}
                               </div>
                               <div className="text-sm text-gray-600">
                                 Estimated FDA clearance likelihood
@@ -1548,7 +1548,7 @@ const ComplianceCheckPanel = ({
       </Dialog>
 
       {/* Template Documentation Dialog */}
-      <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+      <Dialog open={actualShowTemplateDialog} onOpenChange={actualSetShowTemplateDialog}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center text-xl font-semibold">
@@ -1630,7 +1630,7 @@ const ComplianceCheckPanel = ({
       </Dialog>
 
       {/* Fix Suggestions Dialog */}
-      <Dialog open={showFixesDialog} onOpenChange={setShowFixesDialog}>
+      <Dialog open={actualShowFixesDialog} onOpenChange={actualSetShowFixesDialog}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle className="flex items-center text-xl font-semibold">
