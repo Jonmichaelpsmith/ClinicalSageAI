@@ -347,21 +347,30 @@ const ComplianceCheckPanel = ({
   // If we're still checking, show a loading card
   if (isChecking && !actualComplianceData) {
     return (
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center">
-            <ClipboardCheck className="mr-2 h-5 w-5" />
+      <Card className="w-full shadow-md border-blue-100">
+        <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b pb-4">
+          <CardTitle className="text-xl flex items-center text-blue-800">
+            <ClipboardCheck className="mr-2 h-5 w-5 text-blue-600" />
             Running 510(k) Compliance Check
           </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-blue-600">
             Analyzing your device against FDA 510(k) requirements
           </CardDescription>
         </CardHeader>
-        <CardContent className="pb-6">
+        <CardContent className="pb-6 pt-8">
           <div className="flex flex-col items-center justify-center py-8">
-            <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-            <p className="text-center text-muted-foreground">
-              Please wait while we analyze your submission against FDA requirements...
+            <div className="relative h-24 w-24 mb-6">
+              <div className="absolute inset-0 rounded-full border-4 border-blue-100"></div>
+              <div className="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <ClipboardCheck className="h-10 w-10 text-blue-500" />
+              </div>
+            </div>
+            <p className="text-center text-lg font-medium text-blue-700 mb-1">
+              Analyzing Submission
+            </p>
+            <p className="text-center text-gray-600 max-w-md">
+              Please wait while we analyze your submission against FDA 510(k) requirements and regulatory guidance...
             </p>
           </div>
         </CardContent>
@@ -370,15 +379,32 @@ const ComplianceCheckPanel = ({
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-xl flex items-center">
-          <ClipboardCheck className="mr-2 h-5 w-5" />
-          FDA 510(k) Compliance Check
-        </CardTitle>
-        <CardDescription>
-          Comprehensive analysis of your submission against FDA 510(k) requirements
-        </CardDescription>
+    <Card className="w-full shadow-md border-blue-100">
+      <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-xl flex items-center text-blue-800">
+              <ClipboardCheck className="mr-2 h-5 w-5 text-blue-600" />
+              FDA 510(k) Compliance Check
+            </CardTitle>
+            <CardDescription className="text-blue-600">
+              Comprehensive analysis of your submission against FDA 510(k) requirements
+            </CardDescription>
+          </div>
+          
+          {actualComplianceData && (
+            <div className="flex items-center bg-white rounded-full px-3 py-1 shadow-sm border">
+              <span className="text-sm font-medium mr-2">Score:</span>
+              <span className={`text-lg font-bold ${
+                actualComplianceData.score >= 0.75 ? "text-green-600" : 
+                actualComplianceData.score >= 0.5 ? "text-amber-600" : 
+                "text-red-600"
+              }`}>
+                {Math.round(actualComplianceData.score * 100)}%
+              </span>
+            </div>
+          )}
+        </div>
       </CardHeader>
       
       <CardContent className="pb-6">
@@ -768,59 +794,105 @@ const ComplianceCheckPanel = ({
         )}
       </CardContent>
       
-      <CardFooter className="flex flex-wrap justify-end gap-2">
-        {actualComplianceData && !actualRiskAssessmentData && (
-          <Button
-            variant="outline"
-            onClick={runRiskAssessment}
-            disabled={actualIsChecking || actualIsAssessingRisks}
-            size="sm"
-            className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
-          >
-            <Gauge className="mr-2 h-4 w-4" />
-            Risk Assessment
-          </Button>
-        )}
-        
-        {actualComplianceData && deviceProfile?.folderStructure?.complianceFolderId && (
-          <Button
-            variant="outline"
-            onClick={saveComplianceReport}
-            disabled={actualIsChecking || actualIsAssessingRisks}
-            size="sm"
-          >
-            <Save className="mr-2 h-4 w-4" />
-            Save Report to Vault
-          </Button>
-        )}
-        
-        {actualComplianceData && (
-          <Button
-            variant="default"
-            onClick={runComplianceCheck}
-            disabled={actualIsChecking || actualIsAssessingRisks}
-            size="sm"
-          >
-            <RefreshCw className="mr-2 h-4 w-4" />
-            Run Check Again
-          </Button>
-        )}
-        
-        {actualComplianceData && actualComplianceData.score >= 0.75 && !actualComplianceComplete && (
-          <Button
-            variant="primary"
-            onClick={() => {
-              actualSetComplianceComplete(true);
-              if (onComplete) {
-                onComplete(Math.round(actualComplianceData.score * 100));
-              }
-            }}
-            disabled={actualIsChecking || actualIsAssessingRisks}
-          >
-            <FileCheck className="mr-2 h-4 w-4" />
-            Complete Compliance Check
-          </Button>
-        )}
+      <CardFooter className="flex flex-wrap justify-end gap-3 pt-6 mt-2 border-t">
+        <div className="flex flex-wrap gap-3 w-full">
+          <div className="flex gap-3 flex-wrap md:mr-auto">
+            {actualComplianceData && (
+              <Button
+                variant="outline"
+                onClick={runComplianceCheck}
+                disabled={actualIsChecking || actualIsAssessingRisks}
+                size="sm"
+                className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 shadow-sm"
+              >
+                <RefreshCw className="mr-2 h-4 w-4" />
+                Run Check Again
+              </Button>
+            )}
+            
+            {actualComplianceData && deviceProfile?.folderStructure?.complianceFolderId && (
+              <Button
+                variant="outline"
+                onClick={saveComplianceReport}
+                disabled={actualIsChecking || actualIsAssessingRisks}
+                size="sm"
+                className="border-green-200 bg-green-50 text-green-700 hover:bg-green-100 shadow-sm"
+              >
+                <Save className="mr-2 h-4 w-4" />
+                Save Report to Document Vault
+              </Button>
+            )}
+          </div>
+          
+          <div className="flex gap-3 flex-wrap">
+            {actualComplianceData && !actualRiskAssessmentData && (
+              <Button
+                variant="outline"
+                onClick={runRiskAssessment}
+                disabled={actualIsChecking || actualIsAssessingRisks}
+                size="sm"
+                className={`border-amber-200 ${
+                  actualIsAssessingRisks 
+                    ? "bg-amber-100" 
+                    : "bg-amber-50"
+                } text-amber-700 hover:bg-amber-100 shadow-sm`}
+              >
+                {actualIsAssessingRisks ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Analyzing ({actualRiskAssessmentProgress}%)
+                  </>
+                ) : (
+                  <>
+                    <Gauge className="mr-2 h-4 w-4" />
+                    FDA Risk Assessment
+                  </>
+                )}
+              </Button>
+            )}
+            
+            {actualComplianceData && actualComplianceData.score >= 0.75 && !actualComplianceComplete && (
+              <Button
+                variant="default"
+                onClick={() => {
+                  actualSetComplianceComplete(true);
+                  if (onComplete) {
+                    onComplete(Math.round(actualComplianceData.score * 100));
+                  }
+                }}
+                disabled={actualIsChecking || actualIsAssessingRisks}
+                className="bg-blue-600 hover:bg-blue-700 shadow-sm"
+                size="sm"
+              >
+                <FileCheck className="mr-2 h-4 w-4" />
+                Complete Compliance Check
+              </Button>
+            )}
+            
+            {/* AI-powered fix suggestion button */}
+            {actualComplianceData && actualComplianceData.issues.length > 0 && (
+              <Button
+                variant="default"
+                onClick={generateFixSuggestions}
+                disabled={actualIsChecking || actualIsGeneratingFixes || actualIsAssessingRisks}
+                className="bg-purple-600 hover:bg-purple-700 shadow-sm"
+                size="sm"
+              >
+                {actualIsGeneratingFixes ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating AI Fixes
+                  </>
+                ) : (
+                  <>
+                    <WandSparkles className="mr-2 h-4 w-4" />
+                    Generate AI-Powered Fixes
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
+        </div>
       </CardFooter>
       
       {/* Risk Assessment Dialog */}
