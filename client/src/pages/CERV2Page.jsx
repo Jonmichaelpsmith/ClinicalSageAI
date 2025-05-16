@@ -3,6 +3,28 @@ import React, { useState, useEffect } from 'react';
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import { useToast } from '@/hooks/use-toast';
 
+// Function to safely open documents and prevent redirection issues
+const openDocumentSafely = (url, documentName, showToast) => {
+  try {
+    window.open(url, '_blank', 'noopener,noreferrer');
+    if (showToast) {
+      showToast({
+        title: "Document opened",
+        description: `Viewing ${documentName} document`
+      });
+    }
+  } catch (error) {
+    console.error("Error opening document:", error);
+    if (showToast) {
+      showToast({
+        title: "Error",
+        description: "Could not open document. Popup may be blocked.",
+        variant: "destructive"
+      });
+    }
+  }
+};
+
 // Create a fallback if context is unavailable
 const safeAssistantHook = () => {
   try {
@@ -1972,14 +1994,10 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             <span className="text-sm">Clinical Study Report</span>
                             <span className="ml-auto text-xs text-green-600 font-medium">v2.0</span>
                           </a>
-                          <a 
-                            href="/attached_assets/7.19.13.Miller-Clinical-Trials.pdf" 
-                            target="_blank"
-                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              window.open('/attached_assets/7.19.13.Miller-Clinical-Trials.pdf', '_blank');
-                            }}
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => openDocumentSafely('/attached_assets/7.19.13.Miller-Clinical-Trials.pdf', 'Regulatory Checklist', toast)}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
                               <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
@@ -2108,13 +2126,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                           <button 
                             type="button"
                             className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
-                            onClick={() => {
-                              window.open('/attached_assets/1 - CER 2021 Update - Arthrosurface Shoulder Implant Systems - 10.07.2021 (FINAL).pdf', '_blank');
-                              toast({
-                                title: "Document opened",
-                                description: "Viewing 510(k) Submission document"
-                              });
-                            }}
+                            onClick={() => openDocumentSafely('/attached_assets/1 - CER 2021 Update - Arthrosurface Shoulder Implant Systems - 10.07.2021 (FINAL).pdf', '510(k) Submission', toast)}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
                               <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
@@ -2126,13 +2138,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                           <button 
                             type="button"
                             className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
-                            onClick={() => {
-                              window.open('/attached_assets/Clinical-Evaluation-Reports-How-To-Leverage-Published-Data-–-Pro-Te-Fall-2016.pdf', '_blank');
-                              toast({
-                                title: "Document opened",
-                                description: "Viewing Clinical Evaluation Reports document"
-                              });
-                            }}
+                            onClick={() => openDocumentSafely('/attached_assets/Clinical-Evaluation-Reports-How-To-Leverage-Published-Data-–-Pro-Te-Fall-2016.pdf', 'Predicate Device', toast)}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
                               <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
@@ -2144,13 +2150,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                           <button 
                             type="button"
                             className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
-                            onClick={() => {
-                              window.open('/attached_assets/Human-Factors-Studies-and-Related-Clinical-Study-Considerations-in-Combination-Product-Design-and-Development.pdf', '_blank');
-                              toast({
-                                title: "Document opened",
-                                description: "Viewing eSTAR Package document"
-                              });
-                            }}
+                            onClick={() => openDocumentSafely('/attached_assets/Human-Factors-Studies-and-Related-Clinical-Study-Considerations-in-Combination-Product-Design-and-Development.pdf', 'eSTAR Package', toast)}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
                               <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
@@ -2207,13 +2207,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                           <button 
                             type="button"
                             className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
-                            onClick={() => {
-                              window.open('/attached_assets/ENVIA_Whitepaper_SOTApdf.pdf', '_blank');
-                              toast({
-                                title: "Document opened",
-                                description: "Viewing Technical Specs document"
-                              });
-                            }}
+                            onClick={() => openDocumentSafely('/attached_assets/ENVIA_Whitepaper_SOTApdf.pdf', 'Technical Specs', toast)}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
                               <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
@@ -2225,13 +2219,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                           <button 
                             type="button"
                             className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
-                            onClick={() => {
-                              window.open('/attached_assets/DI_Intelligent-clinical-trials.pdf', '_blank');
-                              toast({
-                                title: "Document opened",
-                                description: "Viewing Risk Analysis document"
-                              });
-                            }}
+                            onClick={() => openDocumentSafely('/attached_assets/DI_Intelligent-clinical-trials.pdf', 'Risk Analysis', toast)}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
                               <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
@@ -2276,13 +2264,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             <button 
                               type="button"
                               className="flex w-full items-center py-2 px-3 pl-9 hover:bg-blue-50 cursor-pointer text-left"
-                              onClick={() => {
-                                window.open('/attached_assets/9789240097711-eng.pdf', '_blank');
-                                toast({
-                                  title: "Document opened",
-                                  description: "Viewing Shared Resources document"
-                                });
-                              }}
+                              onClick={() => openDocumentSafely('/attached_assets/9789240097711-eng.pdf', 'Shared Resources', toast)}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-purple-500">
                                 <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
