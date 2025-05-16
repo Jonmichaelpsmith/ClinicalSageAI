@@ -13,6 +13,7 @@ import CerDataRetrievalPanel from '@/components/cer/CerDataRetrievalPanel';
 import EquivalenceBuilderPanel from '@/components/510k/EquivalenceBuilderPanel';
 import ComplianceCheckPanel from '@/components/510k/ComplianceCheckPanel';
 import LiteratureVisualizationPanel from '@/components/510k/LiteratureVisualizationPanel';
+import { FDA510kService } from '@/services/FDA510kService';
 import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
 import ClinicalEvaluationPlanPanel from '@/components/cer/ClinicalEvaluationPlanPanel';
 import QualityManagementPlanPanel from '@/components/cer/QualityManagementPlanPanel';
@@ -23,6 +24,33 @@ import NotificationBanner from '@/components/cer/NotificationBanner';
 import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPanel';
 import ExportModule from '@/components/cer/ExportModule';
 import CerComprehensiveReportsPanel from '@/components/cer/CerComprehensiveReportsPanel';
+// UI components
+import {
+  Tabs, 
+  TabsContent, 
+  TabsList, 
+  TabsTrigger
+} from "@/components/ui/tabs";
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardFooter, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
+import { FileDown, AlertTriangle, CheckCircle, AlertCircle, Download } from "lucide-react";
 import MAUDIntegrationPanel from '@/components/cer/MAUDIntegrationPanel';
 import KAutomationPanel from '@/components/cer/KAutomationPanel';
 
