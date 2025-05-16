@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ShieldAlert, RefreshCw } from 'lucide-react';
 import { initializeStates, saveState, loadState, recoverWorkflow, getWorkflowDiagnostics } from '../utils/stabilityPatches';
 import WorkflowContinuityManager from '../components/recovery/WorkflowContinuityManager';
+import EmergencyRecoveryButton from '../components/510k/EmergencyRecoveryButton';
 
 // Function to safely open documents and prevent redirection issues
 const openDocumentSafely = (url, documentName, showToast) => {
@@ -1919,6 +1920,16 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       // Otherwise show the step-based workflow content
       return (
         <div className="p-4 space-y-4">
+          {/* EMERGENCY WORKFLOW RECOVERY BUTTON */}
+          {workflowStep === 2 && (
+            <EmergencyRecoveryButton 
+              onFixWorkflow={forcePredicateStepCompletion}
+              isPredicateStep={true}
+              showAlways={true}
+              className="mb-6"
+            />
+          )}
+          
           {render510kProgressBar()}
           
           {saveError && (
