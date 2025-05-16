@@ -767,13 +767,13 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
               isValidating={isValidatingEstar}
               isGenerating={isGeneratingEstar}
               validationResults={estarValidationResults}
-              generatedUrl={generatedEstarUrl}
+              generatedUrl={estarGeneratedUrl}
               estarFormat={estarFormat}
               setEstarFormat={setEstarFormat}
               setIsValidating={setIsValidatingEstar}
               setIsGenerating={setIsGeneratingEstar}
               setValidationResults={setEstarValidationResults}
-              setGeneratedUrl={setGeneratedEstarUrl}
+              setGeneratedUrl={setEstarGeneratedUrl}
               onValidationComplete={(results) => {
                 setEstarValidationResults(results);
                 if (results.valid) {
