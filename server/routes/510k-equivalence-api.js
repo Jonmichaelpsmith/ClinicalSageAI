@@ -21,10 +21,19 @@ const logger = require('../utils/logger');
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 /**
+ * Utility function to check if a user has access to an organization.
+ * This replaces the missing checkOrganizationAccess function.
+ */
+function checkUserOrganizationAccess(req, organizationId) {
+  if (!req.user) return false;
+  return req.user.organizationId === organizationId || req.user.roles?.includes('admin');
+}
+
+/**
  * Search for predicate devices from FDA 510(k) database
  * @route POST /510k/predicate-devices
  */
-router.post('/predicate-devices', validateAuth, async (req, res) => {
+router.post('/predicate-devices', authenticateJWT, async (req, res) => {
   try {
     const { searchData, organizationId } = req.body;
     
@@ -116,7 +125,7 @@ router.get('/equivalence-status/:deviceId', authenticateJWT, async (req, res) =>
   }
 });
 
-router.get('/predicate-devices/:predicateId', validateAuth, async (req, res) => {
+router.get('/predicate-devices/:predicateId', authenticateJWT, async (req, res) => {
   try {
     const { predicateId } = req.params;
     const { organizationId } = req.query;
@@ -162,7 +171,7 @@ router.get('/predicate-devices/:predicateId', validateAuth, async (req, res) => 
  * Generate substantial equivalence draft
  * @route POST /510k/draft-equivalence
  */
-router.post('/draft-equivalence', validateAuth, async (req, res) => {
+router.post('/draft-equivalence', authenticateJWT, async (req, res) => {
   try {
     const { deviceProfile, predicateProfile, equivalenceData, organizationId } = req.body;
     
