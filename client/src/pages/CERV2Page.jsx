@@ -2105,13 +2105,15 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                       </div>
                       {expandedFolders.submissions && (
                         <div>
-                          <a 
-                            href="/attached_assets/1 - CER 2021 Update - Arthrosurface Shoulder Implant Systems - 10.07.2021 (FINAL).pdf" 
-                            target="_blank"
-                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
-                            onClick={(e) => {
-                              e.preventDefault();
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
+                            onClick={() => {
                               window.open('/attached_assets/1 - CER 2021 Update - Arthrosurface Shoulder Implant Systems - 10.07.2021 (FINAL).pdf', '_blank');
+                              toast({
+                                title: "Document opened",
+                                description: "Viewing 510(k) Submission document"
+                              });
                             }}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
@@ -2120,14 +2122,16 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm font-medium">510(k) Submission</span>
                             <span className="ml-auto text-xs text-blue-700 font-medium">Final</span>
-                          </a>
-                          <a 
-                            href="/attached_assets/Clinical-Evaluation-Reports-How-To-Leverage-Published-Data-–-Pro-Te-Fall-2016.pdf" 
-                            target="_blank"
-                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
-                            onClick={(e) => {
-                              e.preventDefault();
+                          </button>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
+                            onClick={() => {
                               window.open('/attached_assets/Clinical-Evaluation-Reports-How-To-Leverage-Published-Data-–-Pro-Te-Fall-2016.pdf', '_blank');
+                              toast({
+                                title: "Document opened",
+                                description: "Viewing Clinical Evaluation Reports document"
+                              });
                             }}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
@@ -2136,14 +2140,16 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm font-medium">Predicate Device</span>
                             <span className="ml-auto text-xs text-blue-700 font-medium">Final</span>
-                          </a>
-                          <a 
-                            href="/attached_assets/Human-Factors-Studies-and-Related-Clinical-Study-Considerations-in-Combination-Product-Design-and-Development.pdf" 
-                            target="_blank"
-                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
-                            onClick={(e) => {
-                              e.preventDefault();
+                          </button>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
+                            onClick={() => {
                               window.open('/attached_assets/Human-Factors-Studies-and-Related-Clinical-Study-Considerations-in-Combination-Product-Design-and-Development.pdf', '_blank');
+                              toast({
+                                title: "Document opened",
+                                description: "Viewing eSTAR Package document"
+                              });
                             }}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
@@ -2152,7 +2158,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm font-medium">eSTAR Package</span>
                             <span className="ml-auto text-xs text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded-full">NEW</span>
-                          </a>
+                          </button>
                         </div>
                       )}
                     </div>
