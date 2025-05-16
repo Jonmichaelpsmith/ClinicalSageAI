@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { ShieldAlert, RefreshCw } from 'lucide-react';
 import { initializeStates, saveState, loadState, recoverWorkflow, getWorkflowDiagnostics } from '../utils/stabilityPatches';
 import WorkflowContinuityManager from '../components/recovery/WorkflowContinuityManager';
-import EmergencyRecoveryButton from '../components/510k/EmergencyRecoveryButton';
 
 // Function to safely open documents and prevent redirection issues
 const openDocumentSafely = (url, documentName, showToast) => {
@@ -1920,15 +1919,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       // Otherwise show the step-based workflow content
       return (
         <div className="p-4 space-y-4">
-          {/* EMERGENCY WORKFLOW RECOVERY BUTTON */}
-          {workflowStep === 2 && (
-            <EmergencyRecoveryButton 
-              onFixWorkflow={forcePredicateStepCompletion}
-              isPredicateStep={true}
-              showAlways={true}
-              className="mb-6"
-            />
-          )}
+          {/* No emergency recovery button */}
           
           {render510kProgressBar()}
           
@@ -1939,38 +1930,8 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
             </div>
           )}
           
-          {/* Quick Access Panel for Demo */}
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="text-lg font-medium text-blue-800 mb-2">Investor Demo Quick Access</h3>
-            <p className="text-sm text-blue-700 mb-3">
-              For quick access to the demo components without going through the complete workflow:
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <button 
-                onClick={() => {
-                  // Simulate having completed all previous steps
-                  setDeviceProfile(deviceProfile || {
-                    id: 'demo-device-123',
-                    deviceName: 'Demo Medical Device',
-                    manufacturer: 'Demo Manufacturer',
-                    deviceClass: 'II'
-                  });
-                  setPredicatesFound(true);
-                  setEquivalenceCompleted(true);
-                  setComplianceScore(85);
-                  setSubmissionReady(true);
-                  
-                  // Directly show eSTAR Builder by rendering it in this panel
-                  setShowESTARDemo(true);
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
-              >
-                Show eSTAR Builder Demo
-              </button>
-            </div>
-          </div>
+          {/* No demo panel */}
           
-
           
           {render510kStepContent()}
         </div>
