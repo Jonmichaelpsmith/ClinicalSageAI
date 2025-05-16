@@ -248,7 +248,7 @@ const ComplianceCheckPanel = ({
 
   // Save compliance report to Document Vault
   const saveComplianceReport = async () => {
-    if (!complianceData || !deviceProfile?.folderStructure?.complianceFolderId) {
+    if (!actualComplianceData || !deviceProfile?.folderStructure?.complianceFolderId) {
       toast({
         title: "Cannot Save Report",
         description: "No compliance data available or Document Vault integration is missing.",
@@ -262,10 +262,10 @@ const ComplianceCheckPanel = ({
     
     try {
       const reportData = {
-        ...complianceData,
+        ...actualComplianceData,
         deviceProfile: deviceProfile,
         generatedAt: new Date().toISOString(),
-        status: complianceData.score >= 0.75 ? 'ready' : 'needs_revision'
+        status: actualComplianceData.score >= 0.75 ? 'ready' : 'needs_revision'
       };
       
       // Create JSON blob for upload
@@ -1021,7 +1021,7 @@ const ComplianceCheckPanel = ({
             </Button>
           )}
           
-          {complianceData && (
+          {actualComplianceData && (
             <Button
               variant="default"
               onClick={runComplianceCheck}
@@ -1033,13 +1033,13 @@ const ComplianceCheckPanel = ({
             </Button>
           )}
           
-          {complianceData && complianceData.score >= 0.75 && !complianceComplete && (
+          {actualComplianceData && actualComplianceData.score >= 0.75 && !actualComplianceComplete && (
             <Button
               variant="primary"
               onClick={() => {
                 actualSetComplianceComplete(true);
                 if (onComplete) {
-                  onComplete(Math.round(complianceData.score * 100));
+                  onComplete(Math.round(actualComplianceData.score * 100));
                 }
               }}
               disabled={actualIsChecking || actualIsAssessingRisks}
