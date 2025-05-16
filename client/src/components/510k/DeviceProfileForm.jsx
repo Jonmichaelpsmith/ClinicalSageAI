@@ -125,10 +125,26 @@ const DeviceProfileForm = ({ initialData = {}, onSubmit, isEditing = false }) =>
     }
   });
   
-  // Handle form submission
+  // Handle form submission with proper document structure
   const handleSubmit = async (data) => {
     if (onSubmit) {
-      onSubmit(data);
+      // Add the required document structure to prevent the error
+      const enhancedData = {
+        ...data,
+        id: data.id || `device-${Date.now()}`,
+        structure: {
+          documentType: '510k',
+          sections: ['device-info', 'predicates', 'compliance'],
+          version: '1.0'
+        },
+        status: 'active',
+        metadata: {
+          createdAt: new Date().toISOString(),
+          lastUpdated: new Date().toISOString()
+        }
+      };
+      
+      onSubmit(enhancedData);
     }
   };
   
