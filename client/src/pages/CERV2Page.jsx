@@ -370,11 +370,12 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     saveState('workflowStep', 2);
     saveState('workflowProgress', 30);
     
-    // Update state
+    // Update state with profile data
     setDeviceProfile(selectedProfile);
-    setDeviceName(selectedProfile.deviceName || '');
-    setManufacturer(selectedProfile.manufacturer || '');
-    setIntendedUse(selectedProfile.intendedUse || '');
+    
+    // Only update these if not already set from profile
+    if (selectedProfile.deviceName) setDeviceName(selectedProfile.deviceName);
+    if (selectedProfile.intendedUse) setIntendedUse(selectedProfile.intendedUse);
     setShowProfileSelector(false);
     
     toast({
@@ -472,12 +473,12 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
 
   // Update device profile when device information changes and persist it
   useEffect(() => {
-    if (documentType === '510k') {
+    if (documentType === '510k' && deviceProfile) {
       const updatedProfile = {
         ...deviceProfile,
-        deviceName: deviceName || deviceProfile.deviceName,
-        manufacturer: manufacturer || deviceProfile.manufacturer,
-        intendedUse: intendedUse || deviceProfile.intendedUse,
+        deviceName: deviceName || (deviceProfile?.deviceName || ''),
+        manufacturer: manufacturer || (deviceProfile?.manufacturer || ''),
+        intendedUse: intendedUse || (deviceProfile?.intendedUse || ''),
         updatedAt: new Date().toISOString()
       };
       
