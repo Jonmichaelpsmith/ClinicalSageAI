@@ -456,7 +456,12 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       setPredicateDevices(data);
       setDeviceProfile(updatedDeviceProfile);
       
-      // 3. Process literature if available
+      // 3. Save state to localStorage for persistence
+      saveState('predicatesFound', true);
+      saveState('predicateDevices', data);
+      saveState('deviceProfile', updatedDeviceProfile);
+      
+      // 4. Process literature if available
       if (literatureData && literatureData.length > 0) {
         setLiteratureResults(literatureData);
         setSelectedLiterature(literatureData.filter(item => 
@@ -476,6 +481,12 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       console.log('[CERV2 Workflow] Directly transitioning to Equivalence step');
       setActiveTab('equivalence');
       setWorkflowStep(3);
+      setWorkflowProgress(50); // Update progress to 50%
+      
+      // 6. Save workflow state changes for persistence
+      saveState('activeTab', 'equivalence');
+      saveState('workflowStep', 3);
+      saveState('workflowProgress', 50);
     } catch (error) {
       console.error('[CERV2 Workflow] Error during predicate selection completion:', error);
       toast({
