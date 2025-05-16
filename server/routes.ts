@@ -6,6 +6,7 @@ import path from 'path';
 // Document integration routes
 import googleDocsRoutes from './routes/googleDocs';
 import moduleIntegrationRoutes from './routes/moduleIntegrationRoutes';
+import vaultRoutes from './routes/vaultRoutes';
 
 // Declare module types to avoid TypeScript errors
 declare module './routes/googleDocs' {
@@ -24,6 +25,11 @@ declare module './routes/indWizardAPI.js' {
 }
 
 declare module './routes/cer-final.js' {
+  const router: express.Router;
+  export default router;
+}
+
+declare module './routes/vaultRoutes' {
   const router: express.Router;
   export default router;
 }
@@ -291,6 +297,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register 510(k) Risk Assessment routes
   app.use('/api/510k-risk-assessment', fda510kRiskAssessmentRouter);
+  
+  // Register Document Vault routes with OCR and AI analysis
+  app.use('/api/vault', vaultRoutes);
   
   // Register Google Docs Integration routes
   app.use('/api/google-docs', googleDocsRoutes);
