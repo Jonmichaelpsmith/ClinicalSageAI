@@ -611,7 +611,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // Track loading state for navigation
   const [isNavigating, setIsNavigating] = useState(false);
   
-  // Improved navigation function for 510k workflow with loading state and better error handling
+  // Enhanced navigation function for 510k workflow with robust error handling and data consistency
   const goToStep = (step) => {
     if (step >= 1 && step <= 5) {
       // Set navigating state to show loading indicators
@@ -622,7 +622,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         
         // Map steps to tabs - this is the core navigation logic
         const tabMap = {
-          1: 'device-profile', // Changed to start at device-profile
+          1: 'device-profile', // Device Profile
           2: 'predicates',     // Predicate Finder
           3: 'equivalence',    // Substantial Equivalence
           4: 'compliance',     // Compliance Check 
@@ -632,69 +632,131 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         // Get target tab based on step
         const targetTab = tabMap[step] || 'device-profile';
         
-        // Check prerequisite conditions for navigation
-        if (step > 1 && !deviceProfile) {
-          console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 1 (Device Profile)");
-          toast({
-            title: "Complete Device Profile First",
-            description: "Please create and save a device profile before proceeding to the next step.",
-            variant: "warning"
-          });
-          setIsNavigating(false);
-          return;
+        // Calculate progress values based on step - calibrated for smoother progression
+        const progressMap = {
+          1: 20, // Initial step
+          2: 40, // Predicate finding
+          3: 60, // Equivalence analysis
+          4: 80, // Compliance check
+          5: 100 // Final submission
+        };
+        
+        // Perform data integrity checks to ensure required data exists
+        if (step > 1 && (!deviceProfile || !deviceProfile.deviceName)) {
+          // Try to recover device profile from localStorage if it exists there
+          const savedProfile = loadSavedState('deviceProfile', null);
+          if (savedProfile && savedProfile.deviceName) {
+            console.log("[CERV2 Recovery] Recovered device profile from localStorage:", savedProfile.deviceName);
+            setDeviceProfile(savedProfile);
+          } else {
+            console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 1 (Device Profile)");
+            toast({
+              title: "Complete Device Profile First",
+              description: "Please create and save a device profile before proceeding to the next step.",
+              variant: "warning"
+            });
+            setIsNavigating(false);
+            return;
+          }
         }
         
-        if (step > 2 && !predicatesFound) {
-          console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 2 (Predicate Finder)");
-          toast({
-            title: "Find Predicates First",
-            description: "Please select at least one predicate device before moving to equivalence building.",
-            variant: "warning"
-          });
-          setIsNavigating(false);
-          return;
+        if (step > 2 && (!predicateDevices || predicateDevices.length === 0)) {
+          // Try to recover predicate devices from localStorage if they exist there
+          const savedPredicates = loadSavedState('predicateDevices', []);
+          if (savedPredicates && savedPredicates.length > 0) {
+            console.log("[CERV2 Recovery] Recovered predicate devices from localStorage:", savedPredicates.length);
+            setPredicateDevices(savedPredicates);
+            setPredicatesFound(true);
+          } else {
+            console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 2 (Predicate Finder)");
+            toast({
+              title: "Find Predicates First",
+              description: "Please select at least one predicate device before moving to equivalence building.",
+              variant: "warning"
+            });
+            setIsNavigating(false);
+            return;
+          }
         }
         
         if (step > 3 && !equivalenceCompleted) {
-          console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 3 (Equivalence)");
-          toast({
-            title: "Complete Equivalence First",
-            description: "Please complete the substantial equivalence analysis before proceeding to compliance check.",
-            variant: "warning"
-          });
-          setIsNavigating(false);
-          return; 
+          // Try to recover equivalence data from localStorage if it exists
+          const savedEquivalence = loadSavedState('equivalenceData', null);
+          if (savedEquivalence) {
+            console.log("[CERV2 Recovery] Recovered equivalence data from localStorage");
+            setEquivalenceData(savedEquivalence);
+            setEquivalenceCompleted(true);
+          } else {
+            console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 3 (Equivalence)");
+            toast({
+              title: "Complete Equivalence First",
+              description: "Please complete the substantial equivalence analysis before proceeding to compliance check.",
+              variant: "warning"
+            });
+            setIsNavigating(false);
+            return; 
+          }
         }
         
         if (step > 4 && !complianceScore) {
-          console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 4 (Compliance)");
-          toast({
-            title: "Complete Compliance Check First",
-            description: "Please finish the compliance check before generating your submission.",
-            variant: "warning"
-          });
-          setIsNavigating(false);
-          return;
+          // Try to recover compliance data from localStorage if it exists
+          const savedCompliance = loadSavedState('complianceScore', null);
+          if (savedCompliance) {
+            console.log("[CERV2 Recovery] Recovered compliance score from localStorage:", savedCompliance);
+            setComplianceScore(savedCompliance);
+          } else {
+            console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 4 (Compliance)");
+            toast({
+              title: "Complete Compliance Check First",
+              description: "Please finish the compliance check before generating your submission.",
+              variant: "warning"
+            });
+            setIsNavigating(false);
+            return;
+          }
+        }
+        
+        // Save current state to ensure nothing is lost during transition
+        if (deviceProfile) {
+          saveState('deviceProfile', deviceProfile);
+        }
+        
+        if (predicateDevices && predicateDevices.length > 0) {
+          saveState('predicateDevices', predicateDevices);
+          saveState('predicatesFound', true);
+        }
+        
+        if (equivalenceData) {
+          saveState('equivalenceData', equivalenceData);
+          saveState('equivalenceCompleted', true);
+        }
+        
+        if (complianceScore) {
+          saveState('complianceScore', complianceScore);
         }
         
         // Use a slight delay to allow the loading state to be visible
         // and to ensure state updates are processed correctly
         setTimeout(() => {
-          // Update state with proper persistence
+          // Update step with proper persistence
           setWorkflowStep(step);
-          localStorage.setItem('510k_workflowStep', step.toString());
+          saveState('workflowStep', step);
+          
+          // Update progress with proper persistence
+          setWorkflowProgress(progressMap[step]);
+          saveState('workflowProgress', progressMap[step]);
           
           // Update tab with proper persistence
           setActiveTab(targetTab);
-          localStorage.setItem('510k_activeTab', targetTab);
+          saveState('activeTab', targetTab);
           
           console.log(`[CERV2 Navigation] Successfully transitioned to step ${step} and tab "${targetTab}"`);
           
-          // Show success toast
+          // Show success toast only when navigation completes successfully
           toast({
             title: "Navigation Successful",
             description: `Moved to ${tabMap[step].replace('-', ' ')} step.`,
-            variant: "success"
+            variant: "default"
           });
           
           // Clear navigation loading state
@@ -703,24 +765,39 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       } catch (error) {
         console.error(`[CERV2 Navigation] Error transitioning to step ${step}:`, error);
         
-        // Show error to user
+        // Show error to user with specific message from error if available
         toast({
           title: "Navigation Error",
-          description: "There was a problem navigating to the next step. Please try again.",
+          description: error.message || "There was a problem navigating to the next step. Please try again.",
           variant: "destructive"
         });
         
-        // Simple error state recovery - no fake data
+        // Enhanced error state recovery - restore from localStorage where possible
         try {
-          // Reset to a known good state
-          const previousStep = workflowStep;
-          console.log(`[CERV2 Navigation] Returning to previous step ${previousStep}`);
+          // Attempt to restore critical state from localStorage
+          const savedStep = loadSavedState('workflowStep', workflowStep);
+          const savedTab = loadSavedState('activeTab', activeTab);
+          
+          console.log(`[CERV2 Recovery] Restoring to step ${savedStep} and tab "${savedTab}"`);
+          
+          // Restore to previous known good state
+          setWorkflowStep(savedStep);
+          setActiveTab(savedTab);
+          
           setTimeout(() => setIsNavigating(false), 300);
         } catch (recoveryError) {
           console.error('[CERV2 Navigation] Recovery attempt failed:', recoveryError);
           setIsNavigating(false);
         }
       }
+    } else {
+      // Handle invalid step numbers
+      console.error(`[CERV2 Navigation] Invalid step number: ${step}`);
+      toast({
+        title: "Navigation Error",
+        description: `Invalid step number: ${step}. Steps must be between 1 and 5.`,
+        variant: "destructive"
+      });
     }
   };
   

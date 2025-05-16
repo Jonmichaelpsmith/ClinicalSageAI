@@ -127,45 +127,49 @@ const PredicateFinderPanel = ({
     });
   };
   
-  // Save device profile with enhanced persistence
+  // Save device profile with enhanced persistence and error handling
   const saveDeviceProfile = () => {
-    // Validate required fields
-    if (!formData.deviceName || !formData.manufacturer || !formData.intendedUse) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter at least the device name, manufacturer, and intended use",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Update device profile state with enhanced persistence
-    const updatedProfile = {
-      ...deviceProfile,
-      ...formData,
-      id: documentId || deviceProfile?.id || `device-${Date.now()}`,
-      updatedAt: new Date().toISOString(),
-      // Preserve any previously selected predicates
-      predicateDevices: deviceProfile?.predicateDevices || selectedPredicates || []
-    };
-    
-    // Save to localStorage for persistence across page reloads or workflow transitions
     try {
-      localStorage.setItem('510k_deviceProfile', JSON.stringify(updatedProfile));
-      console.log('Device profile saved to localStorage for workflow persistence');
-    } catch (error) {
-      console.error('Failed to save device profile to localStorage:', error);
-    }
-    
-    // Call the parent update function
-    setDeviceProfile(updatedProfile);
-    
-    // Move to search phase
-    setProfileEditing(false);
-    
-    // Show success toast
-    toast({
-      title: "Device Profile Saved",
+      // Validate required fields
+      if (!formData.deviceName || !formData.manufacturer || !formData.intendedUse) {
+        toast({
+          title: "Missing Information",
+          description: "Please enter at least the device name, manufacturer, and intended use",
+          variant: "destructive"
+        });
+        return false;
+      }
+      
+      // Create a complete updated profile with all necessary data
+      const updatedProfile = {
+        ...deviceProfile,
+        ...formData,
+        id: documentId || deviceProfile?.id || `device-${Date.now()}`,
+        updatedAt: new Date().toISOString(),
+        // Preserve any previously selected predicates
+        predicateDevices: deviceProfile?.predicateDevices || selectedPredicates || []
+      };
+      
+      // Log profile update for debugging
+      console.log(`[510k] Updating device profile: ${updatedProfile.deviceName} (${updatedProfile.id})`);
+      
+      // Save to localStorage to ensure we have a backup copy
+      try {
+        localStorage.setItem('510k_deviceProfile', JSON.stringify(updatedProfile));
+        console.log(`[510k] Saved device profile to localStorage: ${updatedProfile.deviceName}`);
+      } catch (storageError) {
+        console.error('[510k] Failed to save device profile to localStorage:', storageError);
+      }
+      
+      // Call the parent update function
+      setDeviceProfile(updatedProfile);
+      
+      // Move to search phase
+      setProfileEditing(false);
+      
+      // Show success toast
+      toast({
+        title: "Device Profile Saved",
       description: "Device information has been saved. You can now search for predicate devices.",
       variant: "success"
     });
