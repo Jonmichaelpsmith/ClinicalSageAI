@@ -108,6 +108,18 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [deviceType, setDeviceType] = useState('Class II Medical Device');
   const [documentType, setDocumentType] = useState(initialDocumentType || '510k'); // Options: 'cer' or '510k'
   const [deviceName, setDeviceName] = useState('');
+  
+  // Document vault state
+  const [expandedFolders, setExpandedFolders] = useState({
+    regulatory: false,
+    clinical: false,
+    technical: false,
+    submissions: false,
+    global: false,
+    '510k': false
+  });
+  const [showFolderCreate, setShowFolderCreate] = useState(false);
+  const [newFolderName, setNewFolderName] = useState('');
   const [manufacturer, setManufacturer] = useState('');
   const [intendedUse, setIntendedUse] = useState('');
   const [faers, setFaers] = useState([]);
@@ -2022,13 +2034,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                           <button 
                             type="button"
                             className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
-                            onClick={() => {
-                              window.open('/attached_assets/CER REPORT EXAMPLE OUTPUT.pdf', '_blank');
-                              toast({
-                                title: "Document opened",
-                                description: "Viewing CER Report"
-                              });
-                            }}
+                            onClick={() => openDocumentSafely('/attached_assets/CER REPORT EXAMPLE OUTPUT.pdf', 'CER Report', toast)}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
                               <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
@@ -2264,6 +2270,32 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                               </svg>
                               <span className="text-sm">Shared Resources</span>
                               <span className="ml-auto text-xs text-green-600 font-medium">v2.0</span>
+                            </button>
+                            
+                            <button 
+                              type="button"
+                              className="flex w-full items-center py-2 px-3 pl-9 hover:bg-blue-50 cursor-pointer text-left"
+                              onClick={() => openDocumentSafely('/attached_assets/ICH_Q2(R2)_Guideline_2023_1130.pdf', 'ICH Guidelines', toast)}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-purple-500">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                              </svg>
+                              <span className="text-sm">ICH Guidelines</span>
+                              <span className="ml-auto text-xs text-blue-700 font-medium">2023</span>
+                            </button>
+                            
+                            <button 
+                              type="button"
+                              className="flex w-full items-center py-2 px-3 pl-9 hover:bg-blue-50 cursor-pointer text-left"
+                              onClick={() => openDocumentSafely('/attached_assets/ICER_Acute-Pain_Evidence-Report_For-Publication_020525.pdf', 'Evidence Report', toast)}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-purple-500">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                              </svg>
+                              <span className="text-sm">Evidence Report</span>
+                              <span className="ml-auto text-xs text-purple-700 font-medium">2025</span>
                             </button>
                           </div>
                         )}
