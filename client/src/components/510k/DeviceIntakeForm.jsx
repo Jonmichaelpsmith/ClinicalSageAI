@@ -167,6 +167,14 @@ const DeviceIntakeForm = ({ initialData, onSubmit, onCancel }) => {
   
   // Handle form submission
   const handleSubmit = (data) => {
+    console.log("Persisting device profile:", data.deviceName);
+    
+    // Save to localStorage for immediate persistence
+    localStorage.setItem('510k_deviceProfile', JSON.stringify(data));
+    localStorage.setItem('510k_workflowStep', '1');
+    console.log("Saved device profile to localStorage:", data.deviceName);
+    console.log("Saved workflow step 1 to localStorage");
+    
     // Add tenant context data if available
     if (currentOrganization?.id) {
       data.organizationId = currentOrganization.id;
@@ -174,6 +182,20 @@ const DeviceIntakeForm = ({ initialData, onSubmit, onCancel }) => {
     
     if (currentClientWorkspace?.id) {
       data.clientWorkspaceId = currentClientWorkspace.id;
+    }
+    
+    // Ensure database persistence by sending to FDA510kService
+    try {
+      // Use the API service to save to database
+      FDA510kService.DeviceProfileAPI.create(data)
+        .then(result => {
+          console.log("Device profile saved to database:", result);
+        })
+        .catch(error => {
+          console.error("Error saving to database:", error);
+        });
+    } catch (error) {
+      console.error("Failed to persist device profile to database:", error);
     }
     
     // Additional validation based on conditionals
@@ -266,7 +288,14 @@ const DeviceIntakeForm = ({ initialData, onSubmit, onCancel }) => {
   
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="w-full space-y-6">
+      <form 
+        onSubmit={(e) => {
+          // Prevent default form submission behavior
+          e.preventDefault();
+          // Only manually trigger form submission when explicitly clicked submit
+          // form.handleSubmit(handleSubmit)();
+        }} 
+        className="w-full space-y-6">
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
           <h2 className="text-blue-800 font-medium flex items-center">
             <Info className="h-5 w-5 mr-2" />
