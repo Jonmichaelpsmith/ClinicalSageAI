@@ -191,25 +191,35 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     setPredicatesFound(true);
     
     try {
-      // Check if Equivalence API is ready before transitioning 
+      // Check if we have what we need to proceed to equivalence analysis
       if (deviceProfile?.id) {
         try {
-          // Ensure we're using the correct API endpoint path
-          const statusResponse = await axios.get(`/api/510k/equivalence-status/${deviceProfile.id}`);
-          console.log('[CERV2 Workflow] Equivalence API status check:', statusResponse.data);
+          console.log('[CERV2 Workflow] Checking readiness for equivalence analysis with device:', deviceProfile.id);
           
-          if (statusResponse.data.status !== 'ready') {
-            console.warn('[CERV2 Workflow] Equivalence API not in ready state:', statusResponse.data.message);
+          // Check if we have predicate devices to proceed with equivalence analysis
+          if (!data || data.length === 0) {
+            console.warn('[CERV2 Workflow] No predicate devices available for equivalence analysis');
             toast({
-              title: "Workflow Check",
-              description: "Verifying system readiness for equivalence analysis...",
-              duration: 2000
+              title: "Missing Predicate Devices",
+              description: "Please find and select predicate devices before proceeding to equivalence analysis.",
+              variant: "destructive",
+              duration: 3000
             });
+            return; // Prevent transition if no predicates are found
           }
-        } catch (apiError) {
-          console.error('[CERV2 Workflow] Error checking equivalence API status:', apiError);
-          // Continue with transition despite API error
+          
+          console.log(`[CERV2 Workflow] Found ${data.length} predicate devices, proceeding with equivalence analysis`);
+          toast({
+            title: "Workflow Check",
+            description: "Predicate devices verified. Proceeding with equivalence analysis...",
+            duration: 2000
+          });
+        } catch (verificationError) {
+          console.error('[CERV2 Workflow] Error during predicate verification:', verificationError);
+          // Log error but continue with transition
         }
+      } else {
+        console.warn('[CERV2 Workflow] Missing device profile ID for equivalence analysis');
       }
     } catch (error) {
       console.error('[CERV2 Workflow] General error in workflow transition check:', error);
