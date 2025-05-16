@@ -454,65 +454,105 @@ class FDA510kService {
    * 
    * @param {Object} deviceProfile - The device profile data to save
    * @returns {Promise<Object>} The saved device profile
+   * @throws {Error} Throws meaningful error if validation or saving fails
    */
   async saveDeviceProfile(deviceProfile) {
     console.log('FDA510kService.saveDeviceProfile called with:', deviceProfile);
     
+    // Validate input before proceeding
+    if (!deviceProfile || typeof deviceProfile !== 'object') {
+      const error = new Error('Invalid device profile: Profile data is null or not an object');
+      console.error('Validation failed:', error);
+      throw error;
+    }
+    
     try {
-      // First, ensure the device profile has the required structure
-      if (!deviceProfile.structure || typeof deviceProfile.structure.documentType !== 'string') {
-        console.log('Adding missing structure to device profile');
-        deviceProfile.structure = {
-          documentType: '510k',
-          sections: ['device-info', 'predicates', 'compliance'],
-          version: '1.0',
-          ...(deviceProfile.structure || {})
-        };
+      // First, validate the device profile has the required structure
+      if (!deviceProfile.structure || typeof deviceProfile.structure !== 'object') {
+        const error = new Error('Error creating document structure: Missing required structure object');
+        console.error('Structure validation failed:', error);
+        throw error;
       }
       
-      // Ensure metadata exists
+      // Validate structure properties
+      if (typeof deviceProfile.structure.documentType !== 'string' || deviceProfile.structure.documentType.trim() === '') {
+        const error = new Error('Error creating document structure: Missing or invalid documentType');
+        console.error('Structure validation failed:', error);
+        throw error;
+      }
+      
+      if (!Array.isArray(deviceProfile.structure.sections)) {
+        const error = new Error('Error creating document structure: Sections must be an array');
+        console.error('Structure validation failed:', error);
+        throw error;
+      }
+      
+      // Validate metadata
+      if (!deviceProfile.metadata || typeof deviceProfile.metadata !== 'object') {
+        const error = new Error('Error creating document structure: Missing metadata object');
+        console.error('Metadata validation failed:', error);
+        throw error;
+      }
+      
+      // Ensure timestamps
       const now = new Date().toISOString();
-      if (!deviceProfile.metadata || typeof deviceProfile.metadata.createdAt !== 'string') {
-        console.log('Adding missing metadata to device profile');
-        deviceProfile.metadata = {
-          createdAt: now,
-          lastUpdated: now,
-          ...(deviceProfile.metadata || {})
-        };
-      } else {
-        deviceProfile.metadata.lastUpdated = now;
+      if (typeof deviceProfile.metadata.createdAt !== 'string') {
+        console.log('Adding missing createdAt timestamp to metadata');
+        deviceProfile.metadata.createdAt = now;
+      }
+      
+      // Update the lastUpdated timestamp
+      deviceProfile.metadata.lastUpdated = now;
+      
+      // Validate required fields
+      const requiredFields = ['deviceName', 'manufacturer', 'productCode'];
+      for (const field of requiredFields) {
+        if (!deviceProfile[field] || typeof deviceProfile[field] !== 'string' || deviceProfile[field].trim() === '') {
+          const error = new Error(`Error creating document structure: Missing required field '${field}'`);
+          console.error('Field validation failed:', error);
+          throw error;
+        }
       }
       
       // Ensure ID exists
-      if (!deviceProfile.id) {
+      if (!deviceProfile.id || typeof deviceProfile.id !== 'string' || deviceProfile.id.trim() === '') {
+        console.log('Adding missing ID to device profile');
         deviceProfile.id = `device-${Date.now()}`;
       }
       
       // Ensure status exists
-      if (!deviceProfile.status) {
+      if (!deviceProfile.status || typeof deviceProfile.status !== 'string') {
+        console.log('Adding missing status to device profile');
         deviceProfile.status = 'active';
       }
       
-      // First try API endpoint (fallback later if needed)
+      console.log('Device profile validation passed - structure is valid');
+      
+      // First try API endpoint
       try {
+        console.log('Attempting to save profile via API endpoint');
         const response = await api.post('/api/fda510k/device-profiles', deviceProfile);
         console.log('Device profile saved successfully via API', response.data);
         return response.data;
       } catch (apiError) {
         console.warn('API endpoint for saving device profile failed:', apiError.message);
-        // Continue to fallback logic below
+        
+        // Try saving via localStorage as fallback
+        try {
+          console.log('Saving profile to localStorage as fallback');
+          localStorage.setItem('deviceProfile', JSON.stringify(deviceProfile));
+          console.log('Device profile saved to localStorage successfully');
+          return deviceProfile;
+        } catch (storageError) {
+          console.error('Failed to save to localStorage:', storageError);
+          throw new Error(`Failed to save device profile: ${storageError.message || 'Error creating document structure'}`);
+        }
       }
-      
-      // API call failed, but we'll return the enhanced profile structure
-      // This prevents the "Error creating document structure" by ensuring 
-      // we always return a profile with proper structure
-      console.log('Returning locally enhanced device profile structure', deviceProfile);
-      return deviceProfile;
     } catch (error) {
       console.error('Error in saveDeviceProfile:', error);
-      // Even on error, return the device profile with structure
-      // to prevent UI errors about missing document structure
-      return deviceProfile;
+      // Critical change: We're now throwing the error instead of swallowing it
+      // This allows the UI to display the specific error message
+      throw error;
     }
   }
 
