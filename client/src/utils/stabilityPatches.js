@@ -66,22 +66,28 @@ export function loadState(key, defaultValue = null) {
  * @returns {Object} The initialized states
  */
 export function initializeStates(setters) {
-  // PERFORMANCE FIX: Skip heavy state loading on portal/landing pages to eliminate delays
-  const isLandingOrPortal = window.location.pathname === '/' || 
-                          window.location.pathname === '/client-portal' ||
-                          window.location.pathname.includes('landing') ||
-                          window.location.pathname.includes('portal');
+  // PERFORMANCE FIX: Only apply fast path to landing page and client portal main page
+  // but not to actual workflow pages to avoid breaking functionality
+  const isOnlyLandingOrPortalMain = 
+       window.location.pathname === '/' || 
+       window.location.pathname === '/client-portal' ||
+       window.location.pathname === '/landing';
                           
-  if (isLandingOrPortal) {
-    console.log('[Performance] Fast path for Client Portal navigation active');
-    // Return default values without loading from localStorage (resolves 3-second delay)
-    const defaults = {
+  if (isOnlyLandingOrPortalMain) {
+    console.log('[Performance] Fast path for landing page navigation active');
+    // Return default values without loading from localStorage (resolves delay)
+    return {
       deviceProfile: {
         id: `device-${Date.now()}`,
         deviceName: '',
         manufacturer: '',
         productCode: '',
-        deviceClass: 'II'
+        deviceClass: 'II',
+        intendedUse: '',
+        description: '',
+        regulatoryClass: 'Class II',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       },
       workflowStep: 1,
       activeTab: 'device-profile',
@@ -91,7 +97,6 @@ export function initializeStates(setters) {
       literatureResults: [],
       selectedLiterature: []
     };
-    return defaults;
   }
   
   // REGULAR WORKFLOW PAGES: Continue with full state loading for workflow functionality
