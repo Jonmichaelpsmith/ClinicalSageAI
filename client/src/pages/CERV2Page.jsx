@@ -1151,6 +1151,393 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         
       case 5:
         return (
+          <div className="space-y-4">
+            <ComplianceCheckPanel 
+              deviceProfile={deviceProfile}
+              documentId={deviceProfile?.id}
+              predicateDevices={predicateDevices}
+              literatureReferences={selectedLiterature}
+              setCompliance={setCompliance}
+              isComplianceRunning={isComplianceRunning}
+              setIsComplianceRunning={setIsComplianceRunning}
+              complianceScore={complianceScore}
+              setComplianceScore={setComplianceScore}
+              
+              // Risk assessment state
+              riskAssessmentData={riskAssessmentData}
+              setRiskAssessmentData={setRiskAssessmentData}
+              isAssessingRisks={isAssessingRisks}
+              setIsAssessingRisks={setIsAssessingRisks}
+              riskAssessmentProgress={riskAssessmentProgress}
+              setRiskAssessmentProgress={setRiskAssessmentProgress}
+              showRiskDialog={showRiskDialog}
+              setShowRiskDialog={setShowRiskDialog}
+              
+              // Template generation state
+              templateData={templateData}
+              setTemplateData={setTemplateData}
+              isGeneratingTemplate={isGeneratingTemplate}
+              setIsGeneratingTemplate={setIsGeneratingTemplate}
+              showTemplateDialog={showTemplateDialog}
+              setShowTemplateDialog={setShowTemplateDialog}
+              
+              // Fix suggestions state
+              complianceFixes={complianceFixes}
+              setComplianceFixes={setComplianceFixes}
+              isGeneratingFixes={isGeneratingFixes}
+              setIsGeneratingFixes={setIsGeneratingFixes}
+              showFixesDialog={showFixesDialog}
+              setShowFixesDialog={setShowFixesDialog}
+            />
+          </div>
+        );
+      
+      case 6:
+        return (
+          <div className="space-y-4">
+            <Card className="border-orange-200">
+              <CardHeader className="bg-orange-50 border-b border-orange-100">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <AlertTriangle className="h-5 w-5 text-orange-500 mr-2" />
+                      FDA 510(k) Risk Assessment
+                    </CardTitle>
+                    <CardDescription>
+                      Analyze and address potential risks for your 510(k) submission
+                    </CardDescription>
+                  </div>
+                  
+                  {riskAssessmentData && (
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                      Risk Assessment Complete
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              
+              <CardContent className="pt-6">
+                {!riskAssessmentData ? (
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
+                      <h3 className="text-sm font-medium text-blue-800 mb-1 flex items-center">
+                        <Info className="h-4 w-4 mr-1.5" />
+                        Why Risk Assessment Matters
+                      </h3>
+                      <p className="text-sm text-blue-700">
+                        The FDA requires manufacturers to identify and mitigate potential risks associated with their devices.
+                        A thorough risk assessment improves your chances of 510(k) clearance and helps ensure patient safety.
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium mb-2">Device Details for Assessment</h3>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="p-3 bg-gray-50 rounded-md border">
+                          <p className="text-xs text-gray-500 mb-1">Device Name</p>
+                          <p className="font-medium">{deviceProfile?.deviceName}</p>
+                        </div>
+                        <div className="p-3 bg-gray-50 rounded-md border">
+                          <p className="text-xs text-gray-500 mb-1">Device Class</p>
+                          <p className="font-medium">Class {deviceProfile?.deviceClass || 'II'}</p>
+                        </div>
+                        <div className="p-3 bg-gray-50 rounded-md border">
+                          <p className="text-xs text-gray-500 mb-1">Manufacturer</p>
+                          <p className="font-medium">{deviceProfile?.manufacturer}</p>
+                        </div>
+                        <div className="p-3 bg-gray-50 rounded-md border">
+                          <p className="text-xs text-gray-500 mb-1">Selected Predicates</p>
+                          <p className="font-medium">{predicateDevices?.length || 0} device(s)</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end">
+                      <Button 
+                        onClick={() => {
+                          setIsAssessingRisks(true);
+                          setRiskAssessmentProgress(0);
+                          
+                          // Simulate incremental progress
+                          const interval = setInterval(() => {
+                            setRiskAssessmentProgress(prev => {
+                              if (prev >= 100) {
+                                clearInterval(interval);
+                                return 100;
+                              }
+                              return prev + 5;
+                            });
+                          }, 300);
+                          
+                          // Simulate completion after 6 seconds
+                          setTimeout(() => {
+                            clearInterval(interval);
+                            setRiskAssessmentProgress(100);
+                            setIsAssessingRisks(false);
+                            
+                            // Create mock risk assessment data
+                            const riskData = {
+                              deviceId: deviceProfile?.id,
+                              timestamp: new Date().toISOString(),
+                              overallRiskLevel: "MODERATE",
+                              risks: [
+                                {
+                                  id: "RISK-001",
+                                  category: "Safety",
+                                  description: "Potential for device malfunction during critical use",
+                                  severity: "High",
+                                  probability: "Low",
+                                  riskLevel: "MODERATE",
+                                  mitigations: [
+                                    "Implement robust quality control testing",
+                                    "Add redundant safety mechanisms",
+                                    "Provide clear warnings in instructions for use"
+                                  ]
+                                },
+                                {
+                                  id: "RISK-002",
+                                  category: "Manufacturing",
+                                  description: "Variation in device performance due to manufacturing processes",
+                                  severity: "Medium",
+                                  probability: "Medium",
+                                  riskLevel: "MODERATE",
+                                  mitigations: [
+                                    "Establish statistical process controls",
+                                    "Implement batch testing protocols",
+                                    "Conduct regular calibration of manufacturing equipment"
+                                  ]
+                                },
+                                {
+                                  id: "RISK-003",
+                                  category: "Regulatory",
+                                  description: "510(k) submission lacking sufficient evidence for substantial equivalence",
+                                  severity: "High",
+                                  probability: "Medium",
+                                  riskLevel: "HIGH",
+                                  mitigations: [
+                                    "Provide comprehensive comparison data with predicate devices",
+                                    "Include detailed testing results for all performance characteristics",
+                                    "Prepare responses to potential FDA questions in advance"
+                                  ]
+                                },
+                                {
+                                  id: "RISK-004",
+                                  category: "Clinical",
+                                  description: "Potential for adverse events in certain patient populations",
+                                  severity: "Medium",
+                                  probability: "Low",
+                                  riskLevel: "LOW",
+                                  mitigations: [
+                                    "Include contraindications for vulnerable populations",
+                                    "Provide clear usage guidelines for clinicians",
+                                    "Implement post-market surveillance plan"
+                                  ]
+                                },
+                                {
+                                  id: "RISK-005",
+                                  category: "Labeling",
+                                  description: "Inadequate instructions for use leading to improper device operation",
+                                  severity: "Medium",
+                                  probability: "Medium",
+                                  riskLevel: "MODERATE",
+                                  mitigations: [
+                                    "Develop comprehensive, user-tested instructions",
+                                    "Include visual aids and clear step-by-step procedures",
+                                    "Provide training materials for clinicians"
+                                  ]
+                                }
+                              ],
+                              recommendations: [
+                                "Address all identified high-risk items before submission",
+                                "Include a comprehensive risk management report in your 510(k) submission",
+                                "Document all mitigation efforts with supporting evidence",
+                                "Consider comparative risk analysis with predicate devices"
+                              ]
+                            };
+                            
+                            setRiskAssessmentData(riskData);
+                            saveState('riskAssessmentData', riskData);
+                            
+                            toast({
+                              title: "Risk Assessment Complete",
+                              description: "5 potential risks identified with recommended mitigations",
+                            });
+                          }, 6000);
+                        }}
+                        disabled={isAssessingRisks}
+                      >
+                        {isAssessingRisks ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Analyzing Risks...
+                          </>
+                        ) : (
+                          <>
+                            <AlertTriangle className="h-4 w-4 mr-2" />
+                            Start Risk Assessment
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    
+                    {isAssessingRisks && (
+                      <div className="mt-4">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Analyzing device risks and mitigations...</span>
+                          <span>{riskAssessmentProgress}%</span>
+                        </div>
+                        <Progress value={riskAssessmentProgress} className="h-2" />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className={`p-4 rounded-md flex items-center justify-between ${
+                      riskAssessmentData.overallRiskLevel === "LOW" 
+                        ? "bg-green-50 border border-green-200" 
+                        : riskAssessmentData.overallRiskLevel === "MODERATE"
+                          ? "bg-orange-50 border border-orange-200"
+                          : "bg-red-50 border border-red-200"
+                    }`}>
+                      <div>
+                        <h3 className={`text-lg font-medium ${
+                          riskAssessmentData.overallRiskLevel === "LOW" 
+                            ? "text-green-800" 
+                            : riskAssessmentData.overallRiskLevel === "MODERATE"
+                              ? "text-orange-800"
+                              : "text-red-800"
+                        }`}>
+                          {riskAssessmentData.overallRiskLevel} Overall Risk
+                        </h3>
+                        <p className="text-sm mt-1">
+                          {riskAssessmentData.risks.length} risks identified with mitigations
+                        </p>
+                      </div>
+                      <div className="space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => {
+                          setRiskAssessmentData(null);
+                          localStorage.removeItem('510k_riskAssessmentData');
+                          toast({
+                            title: "Assessment Reset",
+                            description: "Risk assessment has been reset",
+                          });
+                        }}>
+                          <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                          Reset
+                        </Button>
+                        <Button size="sm" onClick={() => {
+                          // In a real app, this would download a PDF report
+                          toast({
+                            title: "Report Generated",
+                            description: "Risk assessment report has been generated",
+                          });
+                        }}>
+                          <Download className="h-3.5 w-3.5 mr-1.5" />
+                          Export Report
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-base font-medium mb-3">Identified Risks & Mitigations</h3>
+                      <div className="space-y-3">
+                        {riskAssessmentData.risks.map((risk) => (
+                          <div 
+                            key={risk.id} 
+                            className="border rounded-md p-4"
+                          >
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <h4 className="font-medium flex items-center">
+                                  <span className={`h-2 w-2 rounded-full mr-2 ${
+                                    risk.riskLevel === "LOW" 
+                                      ? "bg-green-500" 
+                                      : risk.riskLevel === "MODERATE"
+                                        ? "bg-orange-500"
+                                        : "bg-red-500"
+                                  }`}></span>
+                                  {risk.description}
+                                </h4>
+                                <div className="flex space-x-4 text-xs text-gray-500 mt-1">
+                                  <span>ID: {risk.id}</span>
+                                  <span>Category: {risk.category}</span>
+                                  <span>Severity: {risk.severity}</span>
+                                  <span>Probability: {risk.probability}</span>
+                                </div>
+                              </div>
+                              <Badge 
+                                variant="outline" 
+                                className={
+                                  risk.riskLevel === "LOW" 
+                                    ? "border-green-500 text-green-700 bg-green-50" 
+                                    : risk.riskLevel === "MODERATE"
+                                      ? "border-orange-500 text-orange-700 bg-orange-50"
+                                      : "border-red-500 text-red-700 bg-red-50"
+                                }
+                              >
+                                {risk.riskLevel} RISK
+                              </Badge>
+                            </div>
+                            
+                            <div className="mt-2">
+                              <h5 className="text-sm font-medium mb-1">Recommended Mitigations:</h5>
+                              <ul className="text-sm space-y-1 pl-5 list-disc">
+                                {risk.mitigations.map((mitigation, index) => (
+                                  <li key={index}>{mitigation}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="border-t pt-4">
+                      <h3 className="text-base font-medium mb-2">Recommendations for 510(k) Submission</h3>
+                      <ul className="space-y-2">
+                        {riskAssessmentData.recommendations.map((rec, index) => (
+                          <li key={index} className="flex items-start">
+                            <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5 shrink-0" />
+                            <span className="text-sm">{rec}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <div className="flex justify-between border-t pt-4">
+                      <div className="text-xs text-gray-500">
+                        Generated on {new Date(riskAssessmentData.timestamp).toLocaleString()}
+                      </div>
+                      <Button 
+                        onClick={() => {
+                          // Move to the next step
+                          setWorkflowStep(7);
+                          saveState('workflowStep', 7);
+                          const newProgress = Math.round((7 / 8) * 100);
+                          setWorkflowProgress(newProgress);
+                          saveState('workflowProgress', newProgress);
+                          setActiveTab('estar-builder');
+                          
+                          toast({
+                            title: "Moving to eSTAR Builder",
+                            description: "Risk assessment completed successfully",
+                          });
+                        }}
+                      >
+                        <ArrowRight className="h-4 w-4 mr-2" />
+                        Continue to eSTAR Builder
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        );
+        
+      case 7:
+        return (
           <div className="space-y-6">
             {/* Report Generator */}
             <ReportGenerator
