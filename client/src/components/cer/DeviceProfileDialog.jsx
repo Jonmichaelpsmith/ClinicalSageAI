@@ -33,18 +33,35 @@ const DeviceProfileDialog = ({
   const handleSubmit = async (data) => {
     setLoading(true);
     try {
+      // Filter out fields that aren't in the database schema to prevent errors
+      const filteredData = {
+        deviceName: data.deviceName,
+        deviceClass: data.deviceClass,
+        intendedUse: data.intendedUse,
+        manufacturer: data.manufacturer,
+        modelNumber: data.modelNumber,
+        // Fields below might not exist in all database setups
+        // If they're included but don't exist in the DB, they'll be ignored by the backend
+        technologyType: data.technologyType,
+        predicateDevice: data.predicateDevice,
+        projectId: data.projectId || `510K-${Math.floor(100000 + Math.random() * 900000)}`
+        // Explicitly NOT including deviceDescription which is causing errors
+      };
+      
+      console.log('Submitting filtered device profile data:', filteredData);
+      
       let result;
       
       if (existingData?.id) {
         // Update existing profile using unified DeviceProfileAPI
-        result = await FDA510kService.DeviceProfileAPI.update(existingData.id, data);
+        result = await FDA510kService.DeviceProfileAPI.update(existingData.id, filteredData);
         toast({
           title: 'Device Profile updated',
           description: 'Your Device Profile has been successfully updated.',
         });
       } else {
         // Create new profile using unified DeviceProfileAPI
-        result = await FDA510kService.DeviceProfileAPI.create(data);
+        result = await FDA510kService.DeviceProfileAPI.create(filteredData);
         toast({
           title: 'Device Profile created',
           description: 'Your Device Profile has been successfully created.',

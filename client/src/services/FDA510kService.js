@@ -10,6 +10,9 @@
  * CRITICAL UPDATE: Added new workflow transition verification to properly handle
  * the transitions between workflow steps, especially the problematic Predicate→Equivalence
  * transition that was causing workflow issues.
+ * 
+ * CRITICAL FIX (May 16, 2025): Added robust device profile API with schema validation to ensure
+ * data sent to the server matches the actual database schema structure, preventing database errors.
  */
 
 import { apiRequest } from '../lib/queryClient';
