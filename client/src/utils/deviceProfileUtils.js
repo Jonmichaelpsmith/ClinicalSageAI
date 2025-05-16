@@ -64,132 +64,206 @@ export const createNewDeviceProfile = (initialProps = {}) => {
 /**
  * Ensures an existing profile has the necessary structure and metadata.
  * Useful for migrating profiles loaded from localStorage or other sources.
+ * 
  * @param {Object} profile - The device profile to check and migrate.
  * @returns {Object} The migrated device profile, or a new profile if input is null/undefined.
+ * @throws {Error} Will throw an error if essential corrections cannot be made
  */
 export const ensureProfileIntegrity = (profile) => {
-  // Enhanced validation - if profile is null, undefined, or not an object, create a new one
-  if (!profile || typeof profile !== 'object') {
-    console.warn("ensureProfileIntegrity received invalid profile, creating new one.");
-    return createNewDeviceProfile();
-  }
-
-  let needsUpdate = false;
-  const now = new Date().toISOString();
-  
-  // Create a deep copy to avoid mutating the original object directly
-  // This is especially important when working with React state
-  const newProfile = JSON.parse(JSON.stringify(profile));
-
-  // Ensure ID with explicit validation
-  if (!newProfile.id || typeof newProfile.id !== 'string' || newProfile.id.trim() === '') {
-    newProfile.id = `device-${Date.now()}`;
-    needsUpdate = true;
-    console.log(`Profile Integrity: Added/fixed ID ${newProfile.id}`);
-  }
-
-  // Ensure structure with explicit type validation
-  const defaultStructure = getDefaultDeviceProfileStructure();
-  if (!newProfile.structure || 
-      typeof newProfile.structure !== 'object' || 
-      !newProfile.structure.documentType || 
-      !Array.isArray(newProfile.structure.sections)) {
-    
-    // Create a clean structure object with required properties
-    newProfile.structure = { 
-      documentType: defaultStructure.documentType,
-      sections: [...defaultStructure.sections], // Use spread to create a new array
-      version: defaultStructure.version
-    };
-    
-    needsUpdate = true;
-    console.log(`Profile Integrity: Completely rebuilt structure for profile ID ${newProfile.id}`, newProfile.structure);
-  } else {
-    // Ensure all default keys are present and of correct type in structure
-    let structureFixed = false;
-    
-    // Verify documentType
-    if (typeof newProfile.structure.documentType !== 'string' || newProfile.structure.documentType.trim() === '') {
-      newProfile.structure.documentType = defaultStructure.documentType;
-      structureFixed = true;
+  try {
+    // Enhanced validation - if profile is null, undefined, or not an object, create a new one
+    if (!profile || typeof profile !== 'object') {
+      console.warn("ensureProfileIntegrity received invalid profile, creating new one.");
+      return createNewDeviceProfile();
     }
+
+    let needsUpdate = false;
+    const now = new Date().toISOString();
     
-    // Verify sections array
-    if (!Array.isArray(newProfile.structure.sections)) {
-      newProfile.structure.sections = [...defaultStructure.sections];
-      structureFixed = true;
-    } else if (newProfile.structure.sections.length === 0) {
-      // If array is empty, populate with defaults
-      newProfile.structure.sections = [...defaultStructure.sections];
-      structureFixed = true;
-    }
+    // Create a deep copy to avoid mutating the original object directly
+    // This is especially important when working with React state
+    const newProfile = JSON.parse(JSON.stringify(profile));
+
+    // ---- STAGE 1: CRITICAL DATA VALIDATION ----
     
-    // Verify version
-    if (typeof newProfile.structure.version !== 'string') {
-      newProfile.structure.version = defaultStructure.version;
-      structureFixed = true;
-    }
-    
-    if (structureFixed) {
+    // Ensure ID with explicit validation
+    if (!newProfile.id || typeof newProfile.id !== 'string' || newProfile.id.trim() === '') {
+      newProfile.id = `device-${Date.now()}`;
       needsUpdate = true;
-      console.log(`Profile Integrity: Fixed structure properties for profile ID ${newProfile.id}`, newProfile.structure);
+      console.log(`Profile Integrity: Added/fixed ID ${newProfile.id}`);
     }
-  }
 
-  // Ensure metadata with explicit validation
-  const defaultMetadata = getDefaultDeviceProfileMetadata();
-  if (!newProfile.metadata || 
-      typeof newProfile.metadata !== 'object' || 
-      typeof newProfile.metadata.createdAt !== 'string') {
+    // ---- STAGE 2: STRUCTURE VALIDATION ----
     
-    // Create a fresh metadata object with proper timestamps
-    newProfile.metadata = { 
-      createdAt: now,
-      lastUpdated: now
-    };
+    // Ensure structure with comprehensive validation
+    const defaultStructure = getDefaultDeviceProfileStructure();
     
-    needsUpdate = true;
-    console.log(`Profile Integrity: Completely rebuilt metadata for profile ID ${newProfile.id}`, newProfile.metadata);
-  } else {
-    // Validate createdAt format
-    if (!newProfile.metadata.createdAt || typeof newProfile.metadata.createdAt !== 'string') {
-      newProfile.metadata.createdAt = now;
-      needsUpdate = true;
-    }
-    
-    // Always update lastUpdated timestamp
-    newProfile.metadata.lastUpdated = now;
-    needsUpdate = true;
-  }
-
-  // Ensure required string fields with strict validation
-  const requiredStringFields = [
-    'deviceName',
-    'manufacturer',
-    'productCode',
-    'deviceClass',
-    'status'
-  ];
-  
-  for (const field of requiredStringFields) {
-    if (!newProfile[field] || typeof newProfile[field] !== 'string' || newProfile[field].trim() === '') {
-      const defaultValue = {
-        deviceName: 'Medical Device',
-        manufacturer: 'Manufacturer',
-        productCode: 'ABC',
-        deviceClass: 'II',
-        status: 'active'
-      }[field] || 'default';
+    // Check if structure is missing or invalid
+    if (!newProfile.structure || typeof newProfile.structure !== 'object') {
+      console.log(`Profile Integrity: Missing structure object for profile ID ${newProfile.id}, rebuilding`);
       
-      newProfile[field] = defaultValue;
+      // Create a completely new structure object
+      newProfile.structure = { 
+        documentType: defaultStructure.documentType,
+        sections: [...defaultStructure.sections],
+        version: defaultStructure.version
+      };
+      
       needsUpdate = true;
-      console.log(`Profile Integrity: Fixed missing/invalid required field '${field}' for profile ID ${newProfile.id}`);
+    } else {
+      // Structure exists but might need property validation
+      let structureFixed = false;
+      
+      // Validate documentType (critical property)
+      if (typeof newProfile.structure.documentType !== 'string' || newProfile.structure.documentType.trim() === '') {
+        console.log(`Profile Integrity: Invalid documentType for profile ID ${newProfile.id}, fixing`);
+        newProfile.structure.documentType = defaultStructure.documentType;
+        structureFixed = true;
+      }
+      
+      // Validate sections array (critical property)
+      if (!Array.isArray(newProfile.structure.sections)) {
+        console.log(`Profile Integrity: sections is not an array for profile ID ${newProfile.id}, fixing`);
+        newProfile.structure.sections = [...defaultStructure.sections];
+        structureFixed = true;
+      } else if (newProfile.structure.sections.length === 0) {
+        console.log(`Profile Integrity: sections array is empty for profile ID ${newProfile.id}, populating`);
+        newProfile.structure.sections = [...defaultStructure.sections];
+        structureFixed = true;
+      } else {
+        // Ensure sections contains valid string entries
+        const validSections = newProfile.structure.sections.filter(
+          section => typeof section === 'string' && section.trim() !== ''
+        );
+        
+        if (validSections.length !== newProfile.structure.sections.length) {
+          console.log(`Profile Integrity: Found invalid section entries for profile ID ${newProfile.id}, fixing`);
+          newProfile.structure.sections = validSections.length > 0 ? 
+            validSections : [...defaultStructure.sections];
+          structureFixed = true;
+        }
+      }
+      
+      // Validate version property
+      if (typeof newProfile.structure.version !== 'string' || !newProfile.structure.version) {
+        console.log(`Profile Integrity: Invalid version for profile ID ${newProfile.id}, fixing`);
+        newProfile.structure.version = defaultStructure.version;
+        structureFixed = true;
+      }
+      
+      if (structureFixed) {
+        needsUpdate = true;
+        console.log(`Profile Integrity: Fixed structure properties for profile ID ${newProfile.id}`, newProfile.structure);
+      }
     }
-  }
 
-  if (needsUpdate) {
-    console.log("Profile was updated for integrity. Final ensured profile:", newProfile);
-  }
+    // ---- STAGE 3: METADATA VALIDATION ----
+    
+    // Ensure metadata with explicit validation
+    const defaultMetadata = getDefaultDeviceProfileMetadata();
+    
+    // Check if metadata is missing or invalid
+    if (!newProfile.metadata || typeof newProfile.metadata !== 'object') {
+      console.log(`Profile Integrity: Missing metadata object for profile ID ${newProfile.id}, rebuilding`);
+      
+      // Create a fresh metadata object with proper timestamps
+      newProfile.metadata = { 
+        createdAt: now,
+        lastUpdated: now
+      };
+      
+      needsUpdate = true;
+    } else {
+      // Metadata exists but might need property validation
+      
+      // Validate createdAt (critical timestamp)
+      if (typeof newProfile.metadata.createdAt !== 'string' || !newProfile.metadata.createdAt) {
+        console.log(`Profile Integrity: Invalid createdAt timestamp for profile ID ${newProfile.id}, fixing`);
+        newProfile.metadata.createdAt = now;
+        needsUpdate = true;
+      } else {
+        // Validate ISO format of createdAt
+        try {
+          // Check if it's a valid date string
+          new Date(newProfile.metadata.createdAt).toISOString();
+        } catch (e) {
+          console.log(`Profile Integrity: Invalid createdAt date format for profile ID ${newProfile.id}, fixing`);
+          newProfile.metadata.createdAt = now;
+          needsUpdate = true;
+        }
+      }
+      
+      // Always update lastUpdated timestamp
+      newProfile.metadata.lastUpdated = now;
+      needsUpdate = true;
+    }
 
-  return newProfile;
+    // ---- STAGE 4: REQUIRED FIELDS VALIDATION ----
+    
+    // Ensure required device fields with comprehensive validation
+    const requiredStringFields = [
+      'deviceName',
+      'manufacturer',
+      'productCode',
+      'deviceClass',
+      'status'
+    ];
+    
+    const defaultValues = {
+      deviceName: 'Medical Device',
+      manufacturer: 'Manufacturer',
+      productCode: 'ABC',
+      deviceClass: 'II',
+      status: 'active'
+    };
+    
+    for (const field of requiredStringFields) {
+      // Check if field is missing or invalid
+      if (!newProfile[field] || typeof newProfile[field] !== 'string' || newProfile[field].trim() === '') {
+        console.log(`Profile Integrity: Missing or invalid ${field} for profile ID ${newProfile.id}, fixing`);
+        
+        // Use default value for the field
+        newProfile[field] = defaultValues[field] || 'default';
+        needsUpdate = true;
+      }
+    }
+
+    // Ensure other required fields have sensible values
+    if (typeof newProfile.intendedUse !== 'string' || newProfile.intendedUse.trim() === '') {
+      console.log(`Profile Integrity: Missing or invalid intendedUse for profile ID ${newProfile.id}, fixing`);
+      newProfile.intendedUse = 'For diagnostic use in clinical settings';
+      needsUpdate = true;
+    }
+    
+    if (typeof newProfile.description !== 'string' || newProfile.description.trim() === '') {
+      console.log(`Profile Integrity: Missing or invalid description for profile ID ${newProfile.id}, fixing`);
+      newProfile.description = 'A medical device designed for diagnostic procedures';
+      needsUpdate = true;
+    }
+
+    // ---- FINAL CHECKS AND LOGGING ----
+    
+    // Perform a final structural validation before returning
+    if (!newProfile.structure || 
+        typeof newProfile.structure !== 'object' ||
+        typeof newProfile.structure.documentType !== 'string' ||
+        !Array.isArray(newProfile.structure.sections)) {
+      throw new Error('Failed to ensure profile integrity: Critical structure validation failed.');
+    }
+    
+    if (!newProfile.metadata || 
+        typeof newProfile.metadata !== 'object' ||
+        typeof newProfile.metadata.createdAt !== 'string') {
+      throw new Error('Failed to ensure profile integrity: Critical metadata validation failed.');
+    }
+
+    if (needsUpdate) {
+      console.log("Profile was updated for integrity. Final ensured profile:", newProfile);
+    }
+
+    return newProfile;
+  } catch (error) {
+    console.error('Fatal error in ensureProfileIntegrity:', error);
+    throw new Error(`Error creating document structure: ${error.message}`);
+  }
 };
