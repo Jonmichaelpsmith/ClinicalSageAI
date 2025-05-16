@@ -24,33 +24,10 @@ import NotificationBanner from '@/components/cer/NotificationBanner';
 import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPanel';
 import ExportModule from '@/components/cer/ExportModule';
 import CerComprehensiveReportsPanel from '@/components/cer/CerComprehensiveReportsPanel';
-// UI components
-import {
-  Tabs, 
-  TabsContent, 
-  TabsList, 
-  TabsTrigger
-} from "@/components/ui/tabs";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardFooter, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import { 
-  Select, 
-  SelectContent, 
-  SelectItem, 
-  SelectTrigger, 
-  SelectValue 
-} from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { FileDown, AlertTriangle, CheckCircle, AlertCircle, Download } from "lucide-react";
+// Import the FDA510kService
+import { FDA510kService } from '@/services/FDA510kService';
 import MAUDIntegrationPanel from '@/components/cer/MAUDIntegrationPanel';
 import KAutomationPanel from '@/components/cer/KAutomationPanel';
 
@@ -421,6 +398,132 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     });
   };
   
+  /**
+   * Validate the eSTAR package against FDA requirements
+   * 
+   * @param {boolean} strictMode Whether to apply strict validation rules
+   * @returns {Promise<void>}
+   */
+  const validateESTARPackage = async (strictMode = false) => {
+    if (!deviceProfile?.id) {
+      toast({
+        title: "Validation Error",
+        description: "No device profile found. Please complete device setup first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsValidatingEstar(true);
+    setEstarValidationResults(null);
+    
+    try {
+      const results = await FDA510kService.validateESTARPackage(deviceProfile.id, strictMode);
+      
+      setEstarValidationResults(results);
+      
+      if (results.valid) {
+        toast({
+          title: "Validation Successful",
+          description: "eSTAR package meets FDA submission requirements.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Validation Issues Found",
+          description: `${results.issues?.length || 0} issues need to be resolved before submission.`,
+          variant: "warning",
+        });
+      }
+    } catch (error) {
+      console.error("Error validating eSTAR package:", error);
+      toast({
+        title: "Validation Error",
+        description: "Failed to validate eSTAR package. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsValidatingEstar(false);
+    }
+  };
+  
+  /**
+   * Generate a FDA-compliant eSTAR package
+   * 
+   * @param {string} format Format for the eSTAR package ('zip', 'pdf', or 'json')
+   * @returns {Promise<void>}
+   */
+  const generateESTARPackage = async (format = 'zip') => {
+    if (!deviceProfile?.id) {
+      toast({
+        title: "Generation Error",
+        description: "No device profile found. Please complete device setup first.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!submissionReady) {
+      toast({
+        title: "Not Ready for Submission",
+        description: "Please complete all required sections before generating the eSTAR package.",
+        variant: "warning",
+      });
+      return;
+    }
+    
+    setIsGeneratingEstar(true);
+    setEstarGeneratedUrl('');
+    
+    try {
+      // Collect all the necessary data for the eSTAR package
+      const reportData = {
+        deviceProfile: deviceProfile,
+        compliance: {
+          score: complianceScore,
+          status: draftStatus,
+        },
+        equivalence: {
+          predicateDevices: predicateDevices,
+          completed: equivalenceCompleted,
+        },
+        sections: sections,
+        options: {
+          format: format,
+          includeAttachments: true,
+          validateBeforeGeneration: true
+        }
+      };
+      
+      // Generate the final 510(k) report including eSTAR package
+      const result = await FDA510kService.generateFinal510kReport(reportData);
+      
+      if (result?.downloadUrl) {
+        setEstarGeneratedUrl(result.downloadUrl);
+        toast({
+          title: "eSTAR Package Generated",
+          description: "Your eSTAR package has been generated successfully.",
+          variant: "default",
+        });
+      } else {
+        toast({
+          title: "Generation Warning",
+          description: "eSTAR package was generated but no download URL was returned.",
+          variant: "warning",
+        });
+      }
+    } catch (error) {
+      console.error("Error generating eSTAR package:", error);
+      toast({
+        title: "Generation Error",
+        description: "Failed to generate eSTAR package. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingEstar(false);
+    }
+  };
+  
   // Navigation functions for 510k workflow
   const goToStep = (step) => {
     if (step >= 1 && step <= 5) {
@@ -679,7 +782,8 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         
       case 5:
         return (
-          <div className="space-y-4">
+          <div className="space-y-6">
+            {/* Report Generator */}
             <ReportGenerator
               deviceProfile={deviceProfile}
               documentId={deviceProfile?.id}
@@ -689,6 +793,150 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
               sections={sections}
               onSubmissionReady={handleSubmissionReady}
             />
+            
+            {/* eSTAR Builder Panel */}
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <FileDown className="mr-2 h-5 w-5 text-blue-600" />
+                  eSTAR Package Builder
+                </CardTitle>
+                <CardDescription>
+                  Generate a FDA-compliant eSTAR package for your 510(k) submission
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Validation panel */}
+                  <div className="mb-4">
+                    <h3 className="text-sm font-medium mb-2">1. Validate eSTAR Package</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Ensure your eSTAR package meets all FDA requirements before generating it
+                    </p>
+                    
+                    <div className="flex items-center gap-3">
+                      <Button 
+                        onClick={() => validateESTARPackage(false)}
+                        disabled={isValidatingEstar || !submissionReady}
+                        variant="outline"
+                      >
+                        {isValidatingEstar ? (
+                          <>Validating<span className="loading ml-2">...</span></>
+                        ) : "Standard Validation"}
+                      </Button>
+                      
+                      <Button 
+                        onClick={() => validateESTARPackage(true)}
+                        disabled={isValidatingEstar || !submissionReady}
+                        variant="outline"
+                      >
+                        {isValidatingEstar ? (
+                          <>Validating<span className="loading ml-2">...</span></>
+                        ) : "Strict Validation"}
+                      </Button>
+                    </div>
+                    
+                    {/* Validation results display */}
+                    {estarValidationResults && (
+                      <div className="mt-4 p-4 rounded-md border bg-gray-50">
+                        <div className="flex items-center mb-2">
+                          {estarValidationResults.valid ? (
+                            <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
+                          ) : (
+                            <AlertCircle className="h-5 w-5 text-amber-500 mr-2" />
+                          )}
+                          <h4 className="font-medium">
+                            {estarValidationResults.valid 
+                              ? "Package Valid" 
+                              : `${estarValidationResults.issues?.length || 0} Issues Found`}
+                          </h4>
+                        </div>
+                        
+                        {estarValidationResults.issues && estarValidationResults.issues.length > 0 && (
+                          <ul className="list-disc list-inside text-sm space-y-1 mt-2">
+                            {estarValidationResults.issues.slice(0, 5).map((issue, idx) => (
+                              <li key={idx} className={
+                                issue.severity === 'error' 
+                                  ? 'text-red-600' 
+                                  : issue.severity === 'warning' 
+                                    ? 'text-amber-600' 
+                                    : 'text-blue-600'
+                              }>
+                                {issue.message}
+                              </li>
+                            ))}
+                            {estarValidationResults.issues.length > 5 && (
+                              <li>...and {estarValidationResults.issues.length - 5} more issues</li>
+                            )}
+                          </ul>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Package generation */}
+                  <div>
+                    <h3 className="text-sm font-medium mb-2">2. Generate eSTAR Package</h3>
+                    <p className="text-sm text-gray-600 mb-3">
+                      Create an FDA-compliant eSTAR package for submission
+                    </p>
+                    
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                      <Select
+                        value={estarFormat}
+                        onValueChange={setEstarFormat}
+                        disabled={isGeneratingEstar || !submissionReady}
+                      >
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Select format" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="zip">ZIP Archive</SelectItem>
+                          <SelectItem value="pdf">PDF Document</SelectItem>
+                          <SelectItem value="json">JSON Data</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      
+                      <Button 
+                        onClick={() => generateESTARPackage(estarFormat)}
+                        disabled={isGeneratingEstar || !submissionReady}
+                        className="w-full sm:w-auto"
+                      >
+                        {isGeneratingEstar ? (
+                          <>Generating<span className="loading ml-2">...</span></>
+                        ) : (
+                          <>
+                            <Download className="mr-2 h-4 w-4" />
+                            Generate eSTAR Package
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    
+                    {/* Download link when available */}
+                    {estarGeneratedUrl && (
+                      <div className="mt-4">
+                        <Alert>
+                          <CheckCircle className="h-4 w-4" />
+                          <AlertTitle>Package Generated</AlertTitle>
+                          <AlertDescription>
+                            Your eSTAR package is ready for download.
+                            <a 
+                              href={estarGeneratedUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block mt-2 text-blue-600 hover:underline font-medium"
+                            >
+                              Download eSTAR Package
+                            </a>
+                          </AlertDescription>
+                        </Alert>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         );
         
