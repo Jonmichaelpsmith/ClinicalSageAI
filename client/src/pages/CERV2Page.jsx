@@ -1412,6 +1412,19 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           </Button>
         )}
         
+        {/* Add select profile button when needed */}
+        {workflowStep <= 2 && !deviceProfile && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowProfileSelector(true)}
+            className="mx-2"
+          >
+            <RefreshCw className="h-4 w-4 mr-1" />
+            Select Profile
+          </Button>
+        )}
+        
         <Button 
           variant="default" 
           size="sm" 
@@ -1441,6 +1454,15 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       case 2:
         return (
           <div className="space-y-4">
+            {/* Show device profile selector when needed */}
+            {showProfileSelector && (
+              <div className="mb-4 p-4 border border-blue-100 rounded-lg bg-blue-50">
+                <h3 className="text-lg font-semibold mb-2">Select a Device Profile</h3>
+                <p className="mb-4 text-gray-600">Choose a pre-configured device profile to streamline your workflow:</p>
+                <DeviceProfileSelector onProfileSelect={handleProfileSelect} />
+              </div>
+            )}
+            
             <PredicateFinderPanel 
               deviceProfile={deviceProfile || {
                 id: k510DocumentId,
