@@ -7,17 +7,16 @@
  */
 
 const express = require('express');
-const { Configuration, OpenAIApi } = require('openai');
+const OpenAI = require('openai');
 const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 
-// Initialize OpenAI API
-const configuration = new Configuration({
+// Initialize OpenAI API with the latest client interface
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
-const openai = new OpenAIApi(configuration);
 
 /**
  * Predict FDA submission risks for a 510(k) device
@@ -63,9 +62,9 @@ router.post('/predict-submission-risks', async (req, res) => {
     
     console.log('Performing FDA 510(k) submission risk assessment...');
     
-    // Call OpenAI API for analysis
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4o", // Use GPT-4o for comprehensive analysis
+    // Call OpenAI API for analysis using the latest client interface
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
       messages: [
         {
           role: "system",
@@ -82,8 +81,8 @@ router.post('/predict-submission-risks', async (req, res) => {
       response_format: { type: "json_object" }
     });
     
-    // Parse the assessment response
-    const assessmentText = completion.data.choices[0].message.content;
+    // Parse the assessment response - updated for new OpenAI client
+    const assessmentText = completion.choices[0].message.content;
     let assessment = {};
     
     try {
@@ -151,9 +150,9 @@ router.post('/suggest-compliance-fixes', async (req, res) => {
     
     console.log('Generating AI-powered fix suggestions...');
     
-    // Call OpenAI API for fix suggestions
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4o", // Use GPT-4o for comprehensive analysis
+    // Call OpenAI API for fix suggestions using latest client
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
       messages: [
         {
           role: "system",
@@ -169,8 +168,8 @@ router.post('/suggest-compliance-fixes', async (req, res) => {
       response_format: { type: "json_object" }
     });
     
-    // Parse the suggestions
-    const suggestionsText = completion.data.choices[0].message.content;
+    // Parse the suggestions using updated client response format
+    const suggestionsText = completion.choices[0].message.content;
     let suggestions = {};
     
     try {
@@ -218,9 +217,9 @@ router.post('/generate-documentation-template/:templateType', async (req, res) =
     
     console.log(`Generating ${templateType} documentation template...`);
     
-    // Call OpenAI API for documentation template
-    const completion = await openai.createChatCompletion({
-      model: "gpt-4o",
+    // Call OpenAI API for documentation template using latest client
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o", // the newest OpenAI model is "gpt-4o" which was released May 13, 2024
       messages: [
         {
           role: "system",
@@ -236,8 +235,8 @@ router.post('/generate-documentation-template/:templateType', async (req, res) =
       response_format: { type: "json_object" }
     });
     
-    // Parse the template
-    const templateText = completion.data.choices[0].message.content;
+    // Parse the template using updated client response format
+    const templateText = completion.choices[0].message.content;
     let templateData = {};
     
     try {
