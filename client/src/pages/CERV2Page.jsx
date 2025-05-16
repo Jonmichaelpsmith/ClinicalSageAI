@@ -50,7 +50,7 @@ import KAutomationPanel from '@/components/cer/KAutomationPanel';
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import ReportGenerator from '@/components/510k/ReportGenerator';
 // Enhanced document management with professional vault system
-import DocumentVaultPanel from '@/components/cer/DocumentVaultPanel';
+import SimpleDocumentTreePanel from '@/components/510k/SimpleDocumentTreePanel';
 import WelcomeDialog from '@/components/510k/WelcomeDialog';
 import DeviceIntakeForm from '@/components/510k/DeviceIntakeForm';
 import DeviceProfileForm from '@/components/cer/DeviceProfileForm';
@@ -1791,14 +1791,27 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         <div className="flex">
           {/* Enhanced Document Vault with professional styling and real documents */}
           {showDocumentTree && (
-            <div className="w-72 md:w-80 lg:w-96 bg-white border-r border-gray-200 shadow-md">
-              <DocumentVaultPanel 
-                documentType={documentType}
-                isOpen={showDocumentTree}
-                onClose={() => setShowDocumentTree(false)}
-                position="left"
-                jobId={deviceProfile?.id || "default"}
-              />
+            <div className="w-72 md:w-80 lg:w-96 bg-white border-r border-gray-200 shadow-md h-full overflow-auto">
+              <div className="h-full p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="text-lg font-semibold text-gray-800">Document Vault</h2>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowDocumentTree(false)}
+                    className="text-gray-500 hover:text-gray-700"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <DocumentVaultPanel 
+                  documentType={documentType}
+                  isOpen={true}
+                  onClose={() => setShowDocumentTree(false)}
+                  position="left"
+                  jobId={deviceProfile?.id || "default"}
+                />
+              </div>
             </div>
           )}
           
