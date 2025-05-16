@@ -35,6 +35,14 @@ const ComplianceCheckPanel = ({
   const [riskAssessmentData, setRiskAssessmentData] = useState(null);
   const [showRiskDialog, setShowRiskDialog] = useState(false);
   const [activeRiskTab, setActiveRiskTab] = useState('overview');
+  const [isGeneratingFixes, setIsGeneratingFixes] = useState(false);
+  const [complianceFixes, setComplianceFixes] = useState(null);
+  const [showFixesDialog, setShowFixesDialog] = useState(false);
+  const [selectedIssue, setSelectedIssue] = useState(null);
+  const [isGeneratingTemplate, setIsGeneratingTemplate] = useState(false);
+  const [templateData, setTemplateData] = useState(null);
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [isCheckingSaves, setIsCheckingSaves] = useState(false);
   const { toast } = useToast();
 
   const getSeverityColor = (severity) => {
@@ -307,6 +315,177 @@ const ComplianceCheckPanel = ({
       
       // Reset progress after delay
       setTimeout(() => setProgress(0), 500);
+    }
+  };
+  
+  // Generate AI-powered fixes for a specific compliance issue
+  const generateFixesForIssue = async (issue) => {
+    if (!deviceProfile?.id || !issue) {
+      toast({
+        title: "Missing Information",
+        description: "Device profile and issue details are required to generate fixes.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsGeneratingFixes(true);
+    setSelectedIssue(issue);
+    setProgress(20);
+    
+    try {
+      // Call the FDA service to generate compliance fixes
+      const result = await FDA510kService.suggestFixesForComplianceIssues(
+        [issue],
+        deviceProfile,
+        {
+          deepAnalysis: true,
+          includeTemplates: true
+        }
+      );
+      
+      setProgress(80);
+      
+      // Store the generated fixes
+      setComplianceFixes(result);
+      
+      // Open the fixes dialog
+      setShowFixesDialog(true);
+      
+      toast({
+        title: "Fix Suggestions Generated",
+        description: `Generated ${result.fixes?.length || 0} potential fixes for "${issue.title}".`,
+        variant: "success"
+      });
+    } catch (error) {
+      console.error('Error generating compliance fixes:', error);
+      toast({
+        title: "Fix Generation Failed",
+        description: "There was an error generating compliance fixes. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingFixes(false);
+      setProgress(100);
+      
+      // Reset progress after delay
+      setTimeout(() => setProgress(0), 500);
+    }
+  };
+  
+  // Generate documentation template based on type
+  const generateDocumentationTemplate = async (templateType) => {
+    if (!deviceProfile?.id) {
+      toast({
+        title: "Missing Device Profile",
+        description: "A device profile is required to generate templates.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsGeneratingTemplate(true);
+    setProgress(25);
+    
+    try {
+      // Call the appropriate FDA service to generate template
+      let result;
+      
+      if (templateType === 'software') {
+        result = await FDA510kService.generateSoftwareDocumentationTemplate(deviceProfile.id);
+      } else if (templateType === 'biocompatibility') {
+        result = await FDA510kService.generateBiocompatibilityTemplate(deviceProfile.id);
+      } else {
+        throw new Error(`Unknown template type: ${templateType}`);
+      }
+      
+      setProgress(75);
+      
+      // Store the template data
+      setTemplateData(result.templateData);
+      
+      // Open the template dialog
+      setShowTemplateDialog(true);
+      
+      toast({
+        title: "Template Generated",
+        description: `Generated ${templateType} documentation template for ${deviceProfile.deviceName}.`,
+        variant: "success"
+      });
+    } catch (error) {
+      console.error('Error generating documentation template:', error);
+      toast({
+        title: "Template Generation Failed",
+        description: "There was an error generating the documentation template. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeneratingTemplate(false);
+      setProgress(100);
+      
+      // Reset progress after delay
+      setTimeout(() => setProgress(0), 500);
+    }
+  };
+  
+  // Save risk assessment to Document Vault
+  const saveRiskAssessment = async () => {
+    if (!riskAssessmentData || !deviceProfile?.folderStructure?.complianceFolderId) {
+      toast({
+        title: "Cannot Save Assessment",
+        description: "No assessment data available or Document Vault integration is missing.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsCheckingSaves(true);
+    setProgress(30);
+    
+    try {
+      const reportData = {
+        ...riskAssessmentData,
+        deviceProfile: deviceProfile,
+        generatedAt: new Date().toISOString(),
+        status: riskAssessmentData.approvalLikelihood >= 0.75 ? 'favorable' : 'needs_improvement'
+      };
+      
+      // Create JSON blob for upload
+      const jsonBlob = new Blob([JSON.stringify(reportData, null, 2)], {
+        type: 'application/json'
+      });
+      
+      // Create file object for upload
+      const jsonFile = new File([jsonBlob], 'risk-assessment-report.json', {
+        type: 'application/json'
+      });
+      
+      setProgress(60);
+      
+      // Upload to Document Vault
+      await FDA510kService.saveComplianceReport(
+        deviceProfile.folderStructure.complianceFolderId,
+        jsonFile,
+        deviceProfile.id
+      );
+      
+      setProgress(100);
+      
+      toast({
+        title: "Assessment Saved",
+        description: "Risk assessment has been saved to Document Vault.",
+        variant: "success"
+      });
+    } catch (error) {
+      console.error('Error saving risk assessment:', error);
+      toast({
+        title: "Save Failed",
+        description: "There was an error saving the risk assessment.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsCheckingSaves(false);
+      setProgress(0);
     }
   };
 
@@ -980,5 +1159,176 @@ const ComplianceCheckPanel = ({
     </Card>
   );
 };
+
+      {/* Fixes Dialog for compliance issues */}
+      <Dialog open={showFixesDialog} onOpenChange={setShowFixesDialog}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-xl font-semibold">
+              <WandSparkles className="mr-2 h-5 w-5 text-blue-600" />
+              AI-Generated Compliance Fixes
+            </DialogTitle>
+            <DialogDescription>
+              {selectedIssue && `Suggestions to resolve "${selectedIssue.title}"`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {complianceFixes ? (
+            <ScrollArea className="max-h-[60vh]">
+              <div className="space-y-4">
+                {complianceFixes.fixes && complianceFixes.fixes.map((fixItem, index) => (
+                  <Card key={index}>
+                    <CardHeader className="py-4 bg-blue-50">
+                      <CardTitle className="text-md font-medium">{fixItem.fix.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="py-4">
+                      <div className="space-y-4">
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 mb-1">Description</h4>
+                          <p className="text-sm">{fixItem.fix.description}</p>
+                        </div>
+                        
+                        <div>
+                          <h4 className="text-sm font-medium text-gray-500 mb-1">Implementation Steps</h4>
+                          <div className="space-y-2">
+                            {fixItem.fix.implementationSteps.map((step, stepIndex) => (
+                              <div key={stepIndex} className="flex items-start">
+                                <div className="mt-0.5 mr-2 h-5 w-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                                  <span className="text-xs font-medium text-blue-700">{stepIndex + 1}</span>
+                                </div>
+                                <p className="text-sm">{step}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        
+                        {fixItem.fix.resourceLinks && fixItem.fix.resourceLinks.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-500 mb-1">Regulatory Resources</h4>
+                            <div className="space-y-1">
+                              {fixItem.fix.resourceLinks.map((link, linkIndex) => (
+                                <div key={linkIndex} className="flex items-center">
+                                  <FileText className="h-3.5 w-3.5 text-blue-600 mr-1.5" />
+                                  <span className="text-sm text-blue-600 hover:underline cursor-pointer">
+                                    {link.title}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {fixItem.fix.templateId && (
+                          <div className="mt-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="text-xs"
+                              onClick={() => generateDocumentationTemplate(fixItem.fix.templateId === 'software-documentation' ? 'software' : 'biocompatibility')}
+                            >
+                              <FileSymlink className="mr-1 h-3.5 w-3.5" />
+                              Generate Documentation Template
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </ScrollArea>
+          ) : (
+            <div className="py-8 text-center">
+              <Loader2 className="mx-auto h-8 w-8 text-gray-400 animate-spin mb-4" />
+              <p className="text-gray-500">Generating fix suggestions...</p>
+            </div>
+          )}
+          
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowFixesDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Template Dialog for documentation templates */}
+      <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-xl font-semibold">
+              <FileText className="mr-2 h-5 w-5 text-green-600" />
+              {templateData?.title || 'Documentation Template'}
+            </DialogTitle>
+            <DialogDescription>
+              FDA-compliant documentation template to enhance your submission
+            </DialogDescription>
+          </DialogHeader>
+          
+          {templateData ? (
+            <ScrollArea className="max-h-[60vh]">
+              <div className="space-y-6">
+                <p className="text-sm text-gray-500">
+                  Generated on {new Date(templateData.generatedAt).toLocaleString()}
+                </p>
+                
+                {templateData.sections && templateData.sections.map((section, index) => (
+                  <Card key={index}>
+                    <CardHeader className="py-4 bg-gray-50">
+                      <CardTitle className="text-md font-medium">{section.title}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="py-4">
+                      <div className="space-y-4">
+                        <p className="text-sm">{section.content}</p>
+                        
+                        {section.subSections && section.subSections.length > 0 && (
+                          <div className="space-y-2">
+                            <h4 className="text-sm font-medium">Sections to Include:</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              {section.subSections.map((subSection, subIndex) => (
+                                <div key={subIndex} className="flex items-center p-2 rounded-md bg-gray-50">
+                                  <div className="mr-2 h-5 w-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                                    <CheckCircle className="h-3 w-3 text-green-600" />
+                                  </div>
+                                  <p className="text-sm">{subSection}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+                
+                <Alert className="bg-amber-50 border-amber-100">
+                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <AlertTitle className="text-amber-700">FDA Documentation Requirement</AlertTitle>
+                  <AlertDescription className="text-amber-600">
+                    This template is based on FDA regulations and guidance documents. Thorough documentation in these areas significantly increases the likelihood of 510(k) clearance.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </ScrollArea>
+          ) : (
+            <div className="py-8 text-center">
+              <Loader2 className="mx-auto h-8 w-8 text-gray-400 animate-spin mb-4" />
+              <p className="text-gray-500">Generating documentation template...</p>
+            </div>
+          )}
+          
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowTemplateDialog(false)}>
+              Close
+            </Button>
+            {templateData && (
+              <Button variant="default">
+                <Save className="mr-2 h-4 w-4" />
+                Save Template to Vault
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
 export default ComplianceCheckPanel;
