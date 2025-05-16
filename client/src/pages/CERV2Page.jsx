@@ -1479,29 +1479,81 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     if (documentType === '510k') {
       const k510TabGroups = [
         {
-          label: "510(k) Submission:",
-          tabs: [
-            { id: "device-profile", label: "Device Profile", icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-            { id: "predicates", label: "Predicate Finder", icon: <Search className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-            { id: "equivalence", label: <div className="flex flex-col items-center leading-tight">
-              <span>Substantial Equivalence</span>
-              <span className="text-[0.65rem] text-blue-600">FDA Requirements</span>
-            </div>, icon: <GitCompare className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-            { id: "compliance", label: <div className="flex flex-col items-center leading-tight">
-              <span>FDA Compliance</span>
-              <span className="text-[0.65rem] text-blue-600">510(k) Requirements</span>
-            </div>, icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-            { id: "submission", label: <div className="flex items-center">
-              <span>Final Submission</span>
-              <span className="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full shadow-sm">New</span>
-            </div>, icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
+          name: "Device Definition",
+          icon: <FileText className="h-4 w-4" />,
+          items: [
+            { 
+              id: "device-profile", 
+              name: "Device Profile", 
+              icon: <FileText className="h-4 w-4" />,
+              isCompleted: () => deviceProfile && deviceProfile.deviceName && deviceProfile.manufacturer && deviceProfile.intendedUse
+            },
+            { 
+              id: "predicates", 
+              name: "Predicate Finder", 
+              icon: <Search className="h-4 w-4" />,
+              isCompleted: () => predicateDevices && predicateDevices.length > 0
+            }
           ]
         },
         {
-          label: "Resources:",
-          tabs: [
-            { id: "fda-guidance", label: "FDA Guidance", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
-            { id: "assistant", label: "AI Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> }
+          name: "Literature & Evidence",
+          icon: <BookOpen className="h-4 w-4" />,
+          items: [
+            { 
+              id: "literature", 
+              name: "Literature Review", 
+              icon: <BookMarked className="h-4 w-4" />,
+              isCompleted: () => selectedLiterature && selectedLiterature.length > 0
+            }
+          ]
+        },
+        {
+          name: "Substantial Equivalence",
+          icon: <GitCompare className="h-4 w-4" />,
+          items: [
+            { 
+              id: "equivalence", 
+              name: "Equivalence Builder", 
+              icon: <GitCompare className="h-4 w-4" />,
+              isCompleted: () => equivalenceCompleted
+            }
+          ]
+        },
+        {
+          name: "Compliance & Risk",
+          icon: <ShieldCheck className="h-4 w-4" />,
+          items: [
+            { 
+              id: "compliance", 
+              name: "Compliance Check", 
+              icon: <CheckSquare className="h-4 w-4" />,
+              isCompleted: () => complianceScore && complianceScore.score > 65
+            },
+            { 
+              id: "risk-assessment", 
+              name: "Risk Assessment", 
+              icon: <AlertTriangle className="h-4 w-4" />,
+              isCompleted: () => riskAssessmentData && riskAssessmentData.risks && riskAssessmentData.risks.length > 0
+            }
+          ]
+        },
+        {
+          name: "Submission Package",
+          icon: <FileCheck className="h-4 w-4" />,
+          items: [
+            { 
+              id: "estar-builder", 
+              name: "eSTAR Builder", 
+              icon: <FileCheck className="h-4 w-4" />,
+              isCompleted: () => estarGeneratedUrl
+            },
+            { 
+              id: "report-generator", 
+              name: "Final Review", 
+              icon: <FileText className="h-4 w-4" />,
+              isCompleted: () => submissionReady
+            }
           ]
         }
       ];
@@ -1523,9 +1575,44 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                       className={`h-9 px-3 text-xs font-medium rounded ${
                         activeTab === tab.id
                           ? 'bg-blue-600 text-white hover:bg-blue-700'
-                          : 'text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
+                          : tab.id === 'predicates' && predicatesFound 
+                            ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                            : tab.id === 'literature' && selectedLiterature?.length > 0
+                              ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                              : tab.id === 'equivalence' && equivalenceCompleted
+                                ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                                : tab.id === 'compliance' && complianceScore?.score > 65
+                                  ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                                  : tab.id === 'risk-assessment' && riskAssessmentData?.risks?.length > 0
+                                    ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                                    : tab.id === 'estar-builder' && estarGeneratedUrl
+                                      ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                                      : tab.id === 'submission' && submissionReady
+                                        ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                                        : 'text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
                       }`}
                       onClick={() => {
+                        // Calculate new workflow step based on tab selection
+                        let newStep = 1;
+                        if (tab.id === 'predicates') newStep = 1;
+                        else if (tab.id === 'literature') newStep = 3;
+                        else if (tab.id === 'equivalence') newStep = 4;
+                        else if (tab.id === 'compliance') newStep = 5;
+                        else if (tab.id === 'risk-assessment') newStep = 6;
+                        else if (tab.id === 'estar-builder') newStep = 7;
+                        else if (tab.id === 'submission') newStep = 8;
+                        
+                        // Update workflow step if needed
+                        if (newStep !== workflowStep && tab.id !== 'assistant' && tab.id !== 'fda-guidance') {
+                          setWorkflowStep(newStep);
+                          saveState('workflowStep', newStep);
+                          
+                          // Update progress based on step position (8 steps total)
+                          const newProgress = Math.round((newStep / 8) * 100);
+                          setWorkflowProgress(newProgress);
+                          saveState('workflowProgress', newProgress);
+                        }
+                        
                         setActiveTab(tab.id);
                         // If this is the AI Assistant tab, open the assistant
                         if (tab.id === "assistant") {
