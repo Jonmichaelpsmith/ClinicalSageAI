@@ -112,6 +112,9 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [intendedUse, setIntendedUse] = useState('');
   const [faers, setFaers] = useState([]);
   const [showESTARDemo, setShowESTARDemo] = useState(false);
+  const [showProcessingResults, setShowProcessingResults] = useState(false);
+  const [processingType, setProcessingType] = useState('');
+  const [processingResults, setProcessingResults] = useState(null);
   const [cerDocumentId, setCerDocumentId] = useState(() => {
     const prefix = "CER-";
     return prefix + Math.floor(100000 + Math.random() * 900000);
@@ -2476,11 +2479,60 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             description: "Analyzing documents for regulatory compliance..."
                           });
                           
-                          // This would call the compliance API in production
+                          // Initialize compliance check processing
+                          setShowProcessingResults(true);
+                          setProcessingType('compliance');
+                          
                           setTimeout(() => {
                             toast({
                               title: "Compliance Analysis Complete",
-                              description: "All documents meet 510(k) regulatory standards"
+                              description: "Found 1 issue requiring attention"
+                            });
+                            
+                            // Set simulated processing results
+                            setProcessingResults({
+                              processingType: 'compliance',
+                              status: 'complete',
+                              timestamp: new Date().toISOString(),
+                              results: [
+                                {
+                                  id: 'comp-1',
+                                  section: 'Device Description',
+                                  standard: 'FDA 21 CFR 807.92(a)(4)',
+                                  documents: ['Device Technical Documentation.pdf'],
+                                  status: 'compliant',
+                                  message: 'The device description contains all required elements for a 510(k) submission.',
+                                  confidence: 0.96
+                                },
+                                {
+                                  id: 'comp-2',
+                                  section: 'Substantial Equivalence',
+                                  standard: 'FDA 21 CFR 807.92(b)',
+                                  documents: ['Predicate Device Comparison.pdf'],
+                                  status: 'compliant',
+                                  message: 'Comparison to predicate device adequately demonstrates substantial equivalence.',
+                                  confidence: 0.92
+                                },
+                                {
+                                  id: 'comp-3',
+                                  section: 'Performance Testing',
+                                  standard: 'FDA 21 CFR 807.92(b)(3)',
+                                  documents: ['Bench Testing Report.pdf'],
+                                  status: 'non-compliant',
+                                  message: 'Performance testing documentation is incomplete. Missing biocompatibility test results according to ISO 10993.',
+                                  confidence: 0.89,
+                                  recommendation: 'Add biocompatibility testing results for all patient-contacting materials according to ISO 10993-1 requirements.'
+                                },
+                                {
+                                  id: 'comp-4',
+                                  section: 'Clinical Evidence',
+                                  standard: 'FDA 21 CFR 807.92(b)(2)',
+                                  documents: ['Clinical Study Report 510k.pdf'],
+                                  status: 'compliant',
+                                  message: 'Clinical evidence sufficiently demonstrates safety and effectiveness for the intended use.',
+                                  confidence: 0.94
+                                }
+                              ]
                             });
                           }, 2000);
                         }}
@@ -2500,11 +2552,49 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             description: "Generating regulatory tags from document content..."
                           });
                           
-                          // This would call the AI tagging API in production
+                          // Initialize smart tag processing
+                          setShowProcessingResults(true);
+                          setProcessingType('tags');
+                          
                           setTimeout(() => {
                             toast({
                               title: "Tag Generation Complete",
                               description: "8 regulatory tags extracted from documents"
+                            });
+                            
+                            // Set simulated processing results
+                            setProcessingResults({
+                              processingType: 'tags',
+                              status: 'success',
+                              timestamp: new Date().toISOString(),
+                              results: [
+                                {
+                                  id: 'tag-1',
+                                  category: 'Regulatory Standards',
+                                  tags: [
+                                    { name: 'ISO 13485:2016', confidence: 0.94, relevance: 'high' },
+                                    { name: 'FDA 21 CFR Part 820', confidence: 0.91, relevance: 'high' },
+                                    { name: 'EU MDR 2017/745', confidence: 0.88, relevance: 'medium' }
+                                  ]
+                                },
+                                {
+                                  id: 'tag-2',
+                                  category: 'Safety & Performance',
+                                  tags: [
+                                    { name: 'Biocompatibility', confidence: 0.92, relevance: 'high' },
+                                    { name: 'Sterilization Validation', confidence: 0.89, relevance: 'high' },
+                                    { name: 'Performance Testing', confidence: 0.93, relevance: 'medium' }
+                                  ]
+                                },
+                                {
+                                  id: 'tag-3',
+                                  category: 'Clinical Evidence',
+                                  tags: [
+                                    { name: 'Clinical Evaluation', confidence: 0.96, relevance: 'high' },
+                                    { name: 'Post-Market Surveillance', confidence: 0.87, relevance: 'medium' }
+                                  ]
+                                }
+                              ]
                             });
                           }, 1500);
                         }}
@@ -2523,11 +2613,40 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             description: "Extracting text from document images..."
                           });
                           
-                          // This would call the OCR API in production
+                          // Call OCR processing on the /api/vault/process-images endpoint
+                          // This is a mockup API call for the investor demo
+                          setShowProcessingResults(true);
+                          setProcessingType('ocr');
+                          
                           setTimeout(() => {
                             toast({
                               title: "OCR Complete",
                               description: "Text extracted from 2 scanned documents"
+                            });
+                            
+                            // Set simulated processing results
+                            setProcessingResults({
+                              processingType: 'ocr',
+                              status: 'success',
+                              timestamp: new Date().toISOString(),
+                              results: [
+                                {
+                                  id: 'doc-1',
+                                  title: 'Clinical Study Report 510k.pdf',
+                                  wordCount: 5842,
+                                  confidence: 0.94,
+                                  extract: "This clinical evaluation provides a critical assessment of the relevant pre-clinical and clinical data relating to the safety and performance of the MEDXHEALTH AUTOSTENT Device...",
+                                  pages: 27
+                                },
+                                {
+                                  id: 'doc-2',
+                                  title: 'Annual Device Report.pdf',
+                                  wordCount: 3215,
+                                  confidence: 0.89,
+                                  extract: "Annual monitoring period: January 2024 - December 2024. Total number of devices sold: 1,245. Adverse event rate: 0.3%...",
+                                  pages: 18
+                                }
+                              ]
                             });
                           }, 2500);
                         }}
@@ -2540,6 +2659,280 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                       </button>
                     </div>
                   </div>
+                  
+                  {/* Document Processing Results Panel */}
+                  {showProcessingResults && processingResults && (
+                    <div className="mt-4 border rounded-md overflow-hidden">
+                      <div className="bg-gray-100 px-3 py-2 border-b flex items-center justify-between">
+                        <h3 className="font-medium flex items-center">
+                          {processingType === 'ocr' && (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-purple-600">
+                                <polygon points="14 2 18 6 7 17 3 17 3 13 14 2"></polygon>
+                                <line x1="3" y1="22" x2="21" y2="22"></line>
+                              </svg>
+                              OCR Processing Results
+                            </>
+                          )}
+                          {processingType === 'tags' && (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-600">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                              </svg>
+                              Smart Tags Generated
+                            </>
+                          )}
+                          {processingType === 'compliance' && (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                              </svg>
+                              Compliance Check Results
+                            </>
+                          )}
+                        </h3>
+                        <button 
+                          className="text-gray-500 hover:text-gray-700"
+                          onClick={() => setShowProcessingResults(false)}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                      </div>
+                      
+                      <div className="p-3">
+                        {processingType === 'ocr' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between text-sm text-gray-500 border-b pb-2">
+                              <span>Processed on: {new Date(processingResults.timestamp).toLocaleString()}</span>
+                              <span>Status: <span className="text-green-600 font-medium">Successful</span></span>
+                            </div>
+                            
+                            {processingResults.results.map(doc => (
+                              <div key={doc.id} className="border rounded-md p-3">
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="font-medium text-gray-900 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-red-500">
+                                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                      <polyline points="14 2 14 8 20 8"></polyline>
+                                    </svg>
+                                    {doc.title}
+                                  </h4>
+                                  <span className="text-sm text-gray-500">
+                                    {doc.pages} pages • {doc.wordCount.toLocaleString()} words
+                                  </span>
+                                </div>
+                                
+                                <div className="text-sm bg-gray-50 p-2 rounded border mb-2">
+                                  <p className="text-gray-700">{doc.extract}</p>
+                                </div>
+                                
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="text-gray-500">OCR Confidence: {(doc.confidence * 100).toFixed(1)}%</span>
+                                  <div>
+                                    <button className="text-blue-600 hover:text-blue-800 mr-3">
+                                      View Full Text
+                                    </button>
+                                    <button className="text-purple-600 hover:text-purple-800">
+                                      Add to Document
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            
+                            <div className="flex justify-end mt-2">
+                              <button 
+                                className="px-3 py-1.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-md text-sm font-medium hover:bg-purple-100"
+                                onClick={() => {
+                                  setShowProcessingResults(false);
+                                  toast({
+                                    title: "Processing Complete",
+                                    description: "OCR results have been saved to the document vault"
+                                  });
+                                }}
+                              >
+                                Save Results
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {processingType === 'compliance' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between text-sm text-gray-500 border-b pb-2">
+                              <span>Analyzed on: {new Date(processingResults.timestamp).toLocaleString()}</span>
+                              <span>Status: <span className="text-amber-600 font-medium">Needs Review</span></span>
+                            </div>
+                            
+                            <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm mb-3">
+                              <div className="flex items-center text-amber-700 font-medium mb-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                Your submission has 1 compliance issue that requires attention
+                              </div>
+                              <p className="text-amber-600 ml-6">Please review and address all compliance issues before final submission.</p>
+                            </div>
+                            
+                            {processingResults.results.map(item => (
+                              <div 
+                                key={item.id} 
+                                className={`border rounded-md p-3 ${item.status === 'non-compliant' ? 'border-red-200 bg-red-50' : ''}`}
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="font-medium text-gray-900 flex items-center">
+                                    {item.status === 'compliant' ? (
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-green-500">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                      </svg>
+                                    ) : (
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-red-500">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                                      </svg>
+                                    )}
+                                    {item.section}
+                                  </h4>
+                                  <span className="text-sm text-gray-500">
+                                    {item.standard}
+                                  </span>
+                                </div>
+                                
+                                <div className={`text-sm p-2 rounded border mb-2 ${
+                                  item.status === 'non-compliant' 
+                                    ? 'bg-white border-red-200 text-red-700' 
+                                    : 'bg-gray-50 border-gray-200 text-gray-700'
+                                }`}>
+                                  <p>{item.message}</p>
+                                  {item.recommendation && (
+                                    <div className="mt-2 pt-2 border-t border-red-200">
+                                      <p className="font-medium">Recommendation:</p>
+                                      <p>{item.recommendation}</p>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="flex items-center justify-between text-sm">
+                                  <div>
+                                    <span className="text-gray-500 mr-4">Documents: </span>
+                                    {item.documents.map((doc, index) => (
+                                      <span key={index} className="text-blue-600">{doc}{index < item.documents.length - 1 ? ', ' : ''}</span>
+                                    ))}
+                                  </div>
+                                  <span className="text-gray-500">Confidence: {(item.confidence * 100).toFixed(0)}%</span>
+                                </div>
+                                
+                                {item.status === 'non-compliant' && (
+                                  <div className="mt-3 pt-2 border-t flex justify-end">
+                                    <button className="px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-md text-sm font-medium hover:bg-red-100">
+                                      Fix Issue
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                            
+                            <div className="flex justify-end mt-2">
+                              <button 
+                                className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-md text-sm font-medium hover:bg-blue-100"
+                                onClick={() => {
+                                  setShowProcessingResults(false);
+                                  toast({
+                                    title: "Compliance Report Saved",
+                                    description: "You can access this report in the document history"
+                                  });
+                                }}
+                              >
+                                Save Report
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {processingType === 'tags' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between text-sm text-gray-500 border-b pb-2">
+                              <span>Generated on: {new Date(processingResults.timestamp).toLocaleString()}</span>
+                              <span>Status: <span className="text-green-600 font-medium">Complete</span></span>
+                            </div>
+                            
+                            {processingResults.results.map(category => (
+                              <div key={category.id} className="border rounded-md p-3">
+                                <h4 className="font-medium text-gray-900 mb-2 pb-2 border-b flex items-center">
+                                  {category.category === 'Regulatory Standards' && (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-500">
+                                      <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                                      <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                                      <line x1="6" y1="1" x2="6" y2="4"></line>
+                                      <line x1="10" y1="1" x2="10" y2="4"></line>
+                                      <line x1="14" y1="1" x2="14" y2="4"></line>
+                                    </svg>
+                                  )}
+                                  {category.category === 'Safety & Performance' && (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-green-500">
+                                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                    </svg>
+                                  )}
+                                  {category.category === 'Clinical Evidence' && (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-500">
+                                      <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                                    </svg>
+                                  )}
+                                  {category.category}
+                                </h4>
+                                
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                  {category.tags.map((tag, index) => (
+                                    <div 
+                                      key={index} 
+                                      className={`text-sm px-2 py-1 rounded-md flex items-center
+                                        ${tag.relevance === 'high' 
+                                          ? 'bg-amber-50 text-amber-700 border border-amber-200' 
+                                          : 'bg-gray-50 text-gray-700 border border-gray-200'
+                                        }`}
+                                    >
+                                      <span className="mr-1">{tag.name}</span>
+                                      <span className="text-xs opacity-70">({(tag.confidence * 100).toFixed(0)}%)</span>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                <div className="flex justify-end text-sm">
+                                  <button className="text-amber-600 hover:text-amber-800">
+                                    Apply Tags to Document
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                            
+                            <div className="flex justify-end mt-2">
+                              <button 
+                                className="px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-sm font-medium hover:bg-amber-100"
+                                onClick={() => {
+                                  setShowProcessingResults(false);
+                                  toast({
+                                    title: "Tags Generated",
+                                    description: "Regulatory tags have been saved to the document metadata"
+                                  });
+                                }}
+                              >
+                                Save All Tags
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                   
                   {/* Create new folder dialog */}
                   {showFolderCreate && (
