@@ -303,7 +303,13 @@ const PredicateFinderPanel = ({
           variant: "default"
         });
         
-        // We already set these earlier, so nothing to do here
+        // CRITICAL FIX: Notify parent component of successful predicate search with previous results
+        if (onPredicatesFound) {
+          console.log('[510k] Notifying parent of successful predicate search with', previousResults.length, 'previous devices');
+          onPredicatesFound(previousResults, null);
+        }
+        
+        // We already set these earlier for display
       } 
       // We have fresh results from the API
       else if (results.length > 0) {
@@ -318,6 +324,12 @@ const PredicateFinderPanel = ({
         setSearchResults(results);
         setErrorState(null);
         setShowRecoveryUI(false);
+        
+        // CRITICAL FIX: Notify parent component of successful predicate search
+        if (onPredicatesFound) {
+          console.log('[510k] Notifying parent of successful predicate search with', results.length, 'devices');
+          onPredicatesFound(results, null);
+        }
         
         toast({
           title: "Search Complete",
