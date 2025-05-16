@@ -535,7 +535,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // Add a watcher to persist device profile when it changes from other sources
   useEffect(() => {
     // Don't save if the profile is empty or null
-    if (deviceProfile && Object.keys(deviceProfile).length > 0) {
+    if (deviceProfile && Object.keys(deviceProfile).length > 0 && deviceProfile.deviceName) {
       console.log('Persisting device profile:', deviceProfile.deviceName);
       saveState('deviceProfile', deviceProfile);
     }
@@ -625,7 +625,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       console.log(`Saved workflow step ${workflowStep} to localStorage`);
       
       // Also save device profile if it exists
-      if (deviceProfile && Object.keys(deviceProfile).length > 0) {
+      if (deviceProfile && Object.keys(deviceProfile).length > 0 && deviceProfile.deviceName) {
         localStorage.setItem('510k_deviceProfile', JSON.stringify(deviceProfile));
         console.log(`Saved device profile to localStorage: ${deviceProfile.deviceName}`);
       }
@@ -1111,13 +1111,15 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         };
         
         // Perform data integrity checks to ensure required data exists
-        if (step > 1 && (!deviceProfile || !deviceProfile.deviceName)) {
+        if (step > 1 && (!deviceProfile || (deviceProfile && !deviceProfile.deviceName))) {
           // Try to recover device profile from localStorage if it exists there
           const savedProfile = loadSavedState('deviceProfile', null);
           if (savedProfile && savedProfile.deviceName) {
             console.log("[CERV2 Recovery] Recovered device profile from localStorage:", savedProfile.deviceName);
             setDeviceProfile(savedProfile);
           } else {
+            // Show profile selector if we can't recover the profile
+            setShowProfileSelector(true);
             console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 1 (Device Profile)");
             toast({
               title: "Complete Device Profile First",
