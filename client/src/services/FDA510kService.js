@@ -49,27 +49,64 @@ export const FDA510kService = {
   /**
    * Check equivalence analysis readiness for a device
    * 
+   * This enhanced method performs a more thorough check against the database
+   * to ensure the device exists and has all required data for equivalence analysis.
+   * 
    * @param {string} deviceId - Device ID to check
    * @param {string} organizationId - Organization ID for access control
-   * @returns {Promise<{status: string, canProceed: boolean}>}
+   * @returns {Promise<{
+   *   status: string, 
+   *   canProceed: boolean,
+   *   message: string,
+   *   deviceName?: string,
+   *   manufacturer?: string,
+   *   deviceClass?: string,
+   *   requiredAction?: string,
+   *   timestamp: string,
+   *   apiStatus: string
+   * }>}
    */
   async checkEquivalenceStatus(deviceId, organizationId) {
     try {
       console.log(`[FDA510kService] Checking equivalence status for device ${deviceId}`);
+      
+      // Performance optimization: Add a cache breaker to ensure we get fresh data
+      const cacheBuster = new Date().getTime();
+      
       const response = await apiRequest.get(`/api/510k/equivalence-status/${deviceId}`, {
-        params: { organizationId }
+        params: { 
+          organizationId,
+          _t: cacheBuster // Cache breaker parameter
+        }
       });
       
       console.log('[FDA510kService] Equivalence status response:', response.data);
-      return response.data;
+      
+      // Verify the response has the expected properties
+      const data = response.data;
+      if (!data || typeof data.canProceed !== 'boolean') {
+        console.warn('[FDA510kService] Invalid response format for equivalence status check');
+        return {
+          status: 'error',
+          canProceed: false,
+          message: 'Invalid response format from server',
+          timestamp: new Date().toISOString(),
+          apiStatus: 'degraded'
+        };
+      }
+      
+      return data;
     } catch (error) {
       console.error('[FDA510kService] Equivalence status check error:', error);
-      // Default to false on any error to prevent invalid transitions
+      // Enhanced error response with more details
       return { 
         status: 'error',
         canProceed: false, 
         message: error.response?.data?.message || 'Error checking equivalence status',
-        error: error.message
+        error: error.message,
+        timestamp: new Date().toISOString(),
+        apiStatus: 'error',
+        errorCode: error.response?.status || 500
       };
     }
   },
