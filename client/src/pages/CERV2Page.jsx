@@ -202,24 +202,28 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // Create a deviceProfile object for easier passing to 510k components with localStorage persistence
   // Using our new utilities for robust device profile creation and validation
   const [deviceProfile, setDeviceProfile] = useState(() => {
-    // First try to load from localStorage
+    console.log("CERV2Page: Initializing deviceProfile state...");
     const savedProfile = loadSavedState('deviceProfile', null);
-    
-    // If we have a saved profile, use that but ensure it has complete structure
     if (savedProfile) {
-      console.log('Loaded device profile from localStorage:', savedProfile.deviceName);
-      // Validate and complete the profile structure if needed
-      return ensureProfileIntegrity(savedProfile);
+      console.log('CERV2Page: Loaded device profile from localStorage. Raw:', savedProfile);
+      // Ensure the loaded profile has the necessary structure and metadata
+      const ensuredProfile = ensureProfileIntegrity(savedProfile);
+      console.log('CERV2Page: Ensured profile from localStorage:', ensuredProfile);
+      return ensuredProfile;
     }
-    
-    // Otherwise create a new default profile using our utility
-    return createNewDeviceProfile({
+    // If no saved profile, create a new one with all necessary fields
+    console.log('CERV2Page: No saved profile found, creating a new one.');
+    const newProfile = createNewDeviceProfile({
       id: k510DocumentId,
       deviceName: deviceName || 'Sample Medical Device',
       manufacturer: manufacturer || 'Sample Manufacturer',
       intendedUse: intendedUse || 'For diagnostic use in clinical settings'
     });
+    console.log('CERV2Page: Created new profile:', newProfile);
+    return newProfile;
   });
+  
+  const [saveError, setSaveError] = useState(null); // State to hold save error messages
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
   const [exportTimestamp, setExportTimestamp] = useState(null);
@@ -303,6 +307,10 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     lastChecked: null
   });
 
+  useEffect(() => {
+    console.log("CERV2Page: deviceProfile state updated in useEffect:", deviceProfile);
+  }, [deviceProfile]);
+
   // Update device profile when device information changes and persist it
   useEffect(() => {
     if (documentType === '510k') {
@@ -321,48 +329,60 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     }
   }, [deviceName, manufacturer, intendedUse, documentType, deviceProfile]);
   
-  // Handle saving the device profile with proper document structure
   const handleSaveDeviceProfile = useCallback(async (formDataFromForm) => {
-    console.log("handleSaveDeviceProfile called with formData:", formDataFromForm);
-    setDeviceProfile(currentProfile => {
-      // Merge form data with the current profile.
-      // Create a new object to ensure immutability and trigger re-renders.
-      let updatedProfile = {
-        ...currentProfile, // Start with the existing full profile
-        ...formDataFromForm, // Override with values from the form
-      };
+    console.log("CERV2Page: handleSaveDeviceProfile called with formDataFromForm:", formDataFromForm);
+    setSaveError(null); // Clear previous errors
 
-      // Crucially, ensure the profile integrity (id, structure, metadata, status)
-      // This step is vital to prevent the "Error creating document structure".
-      updatedProfile = ensureProfileIntegrity(updatedProfile);
-      
-      // Update metadata's lastUpdated timestamp specifically
-      if (updatedProfile.metadata) {
+    // We use the functional update form of setDeviceProfile to ensure we're working with the latest state.
+    // However, the core logic of building updatedProfile can happen outside,
+    // then we pass the final result to setDeviceProfile.
+    
+    // Create a snapshot of the current profile to work with
+    const currentProfileSnapshot = deviceProfile;
+
+    let updatedProfile = {
+      ...currentProfileSnapshot, // Start with the existing full profile
+      ...formDataFromForm,      // Override with values from the form
+    };
+    console.log("CERV2Page: Profile after merging formDataFromForm:", JSON.parse(JSON.stringify(updatedProfile)));
+
+
+    // CRITICAL STEP: Ensure profile integrity (id, structure, metadata, status)
+    // This function will log details if it makes changes.
+    updatedProfile = ensureProfileIntegrity(updatedProfile);
+    console.log("CERV2Page: Profile after ensureProfileIntegrity:", JSON.parse(JSON.stringify(updatedProfile)));
+    
+    // Specifically ensure metadata.lastUpdated is set, though ensureProfileIntegrity should do it.
+    if (updatedProfile.metadata) {
         updatedProfile.metadata.lastUpdated = new Date().toISOString();
-      }
+    } else { // Should not happen if ensureProfileIntegrity worked
+        updatedProfile.metadata = { ...getDefaultDeviceProfileMetadata(), lastUpdated: new Date().toISOString()};
+    }
+    console.log("CERV2Page: Profile after final metadata.lastUpdated update:", JSON.parse(JSON.stringify(updatedProfile)));
 
-      try {
-        console.log("Attempting to save updated device profile:", updatedProfile);
-        // Save to localStorage
-        saveState('deviceProfile', updatedProfile);
-        toast({
-          title: "Success",
-          description: "Device Profile saved successfully",
-          variant: "success"
-        });
-        return updatedProfile; // Set the new state
-      } catch (error) {
-        console.error("Error saving device profile:", error);
-        console.error("Data that failed to save:", updatedProfile);
-        toast({
-          title: "Error",
-          description: `Failed to save profile: ${error.message}`,
-          variant: "destructive"
-        });
-        return currentProfile; // Revert to the previous state on error
-      }
-    });
-  }, []);
+    try {
+      console.log("CERV2Page: >>>>>>>>>> PRE-SAVE CHECK: Final object being passed to saveState <<<<<<<<<<", JSON.parse(JSON.stringify(updatedProfile)));
+      
+      // Perform the save operation
+      saveState('deviceProfile', updatedProfile); 
+      
+      // If saveState is successful, update the component's state
+      setDeviceProfile(updatedProfile); 
+      
+      toast({
+        title: "Device Profile Saved",
+        description: "Your device profile has been saved successfully.",
+        variant: "success"
+      });
+      console.log("CERV2Page: Device profile saved and state updated successfully.");
+
+    } catch (error) {
+      console.error("CERV2Page: Error during save operation in handleSaveDeviceProfile:", error);
+      console.error("CERV2Page: Data that failed to save (this is the 'updatedProfile' variable):", JSON.parse(JSON.stringify(updatedProfile)));
+      setSaveError(error.message || "An unknown error occurred while saving."); // Set the error message for UI display
+      // Do NOT update setDeviceProfile here, keep the old state.
+    }
+  }, [deviceProfile]); // Added deviceProfile to dependencies of useCallback
 
   // Add a watcher to persist device profile when it changes from other sources
   useEffect(() => {
