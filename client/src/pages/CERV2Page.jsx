@@ -541,6 +541,9 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       error: error
     });
     
+    // Log the actual predicate data for debugging
+    console.log('[CERV2 Workflow] Predicate data received:', JSON.stringify(data));
+    
     // Handle error case
     if (error) {
       console.error('[CERV2 Workflow] Error in predicate search:', error);
@@ -626,14 +629,36 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       
       // 5. Critical workflow transition fix - direct and synchronous workflow navigation
       console.log('[CERV2 Workflow] Directly transitioning to Equivalence step');
+      
+      // Force direct state updates for workflow progression
       setActiveTab('equivalence');
       setWorkflowStep(3);
       setWorkflowProgress(50); // Update progress to 50%
       
-      // 6. Save workflow state changes for persistence
+      // 6. Save workflow state changes for persistence - using multiple methods for maximum reliability
       saveState('activeTab', 'equivalence');
       saveState('workflowStep', 3);
       saveState('workflowProgress', 50);
+      
+      // Direct localStorage setting as fallback/redundancy
+      try {
+        localStorage.setItem('510k_activeTab', JSON.stringify('equivalence'));
+        localStorage.setItem('510k_workflowStep', JSON.stringify(3));
+        localStorage.setItem('510k_workflowProgress', JSON.stringify(50));
+        localStorage.setItem('510k_workflow_transition_timestamp', new Date().toISOString());
+      } catch (e) {
+        console.error('[CERV2 Workflow] Error saving direct workflow state to localStorage:', e);
+      }
+      
+      // Show success toast to notify user of transition
+      setTimeout(() => {
+        toast({
+          title: "Workflow Advanced",
+          description: "Successfully moved to Equivalence Builder step",
+          variant: "success",
+          duration: 2000
+        });
+      }, 800);
     } catch (error) {
       console.error('[CERV2 Workflow] Error during predicate selection completion:', error);
       toast({
