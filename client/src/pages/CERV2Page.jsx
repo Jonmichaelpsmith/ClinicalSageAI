@@ -144,6 +144,18 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   
   // eSTAR specific state variables are defined above
   
+  // FDA 510(k) Risk Assessment state variables
+  const [riskAssessmentData, setRiskAssessmentData] = useState(() => loadSavedState('riskAssessmentData', null));
+  const [isAssessingRisks, setIsAssessingRisks] = useState(false);
+  const [riskAssessmentProgress, setRiskAssessmentProgress] = useState(0);
+  const [showRiskDialog, setShowRiskDialog] = useState(false);
+  const [complianceFixes, setComplianceFixes] = useState(null);
+  const [isGeneratingFixes, setIsGeneratingFixes] = useState(false);
+  const [showFixesDialog, setShowFixesDialog] = useState(false);
+  const [isGeneratingTemplate, setIsGeneratingTemplate] = useState(false);
+  const [templateData, setTemplateData] = useState(null);
+  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  
   // Create a deviceProfile object for easier passing to 510k components with localStorage persistence
   const [deviceProfile, setDeviceProfile] = useState(() => {
     // First try to load from localStorage
@@ -215,6 +227,14 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       saveState('deviceProfile', deviceProfile);
     }
   }, [deviceProfile]);
+  
+  // Persist risk assessment data when it changes
+  useEffect(() => {
+    if (riskAssessmentData) {
+      console.log('Saving risk assessment data to localStorage');
+      saveState('riskAssessmentData', riskAssessmentData);
+    }
+  }, [riskAssessmentData]);
   
   // Helper function to format CtQ factors for a specific objective
   const getCtqFactorsForSection = (objectiveId, ctqFactors) => {

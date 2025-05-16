@@ -531,16 +531,6 @@ Please provide your template in the following JSON format:
     }
   ]
 }
-    {
-      "title": "<section title>",
-      "content": "<section content description>",
-      "subSections": [
-        "<subsection 1>",
-        "<subsection 2>"
-      ]
-    }
-  ]
-}
 `;
 
   return prompt;
@@ -548,21 +538,47 @@ Please provide your template in the following JSON format:
 
 /**
  * Calculate approval likelihood based on risk factors and strengths
+ * 
+ * This function implements a weighted scoring algorithm based on FDA clearance patterns
+ * to estimate the likelihood of 510(k) clearance based on identified risk factors and strengths.
+ * 
+ * @param {number} highRiskCount - Number of high-severity risk factors
+ * @param {number} mediumRiskCount - Number of medium-severity risk factors
+ * @param {number} lowRiskCount - Number of low-severity risk factors
+ * @param {number} strengthsCount - Number of submission strengths
+ * @returns {number} - Approval likelihood score (0-1)
  */
 function calculateApprovalLikelihood(highRiskCount, mediumRiskCount, lowRiskCount, strengthsCount) {
   // Base approval likelihood starts at 85%
   let approvalLikelihood = 0.85;
   
-  // Reduce for each risk factor based on severity
+  // Apply weighted deductions for risk factors
+  // High-risk factors have the most significant impact
   approvalLikelihood -= (highRiskCount * 0.15);
-  approvalLikelihood -= (mediumRiskCount * 0.05);
-  approvalLikelihood -= (lowRiskCount * 0.01);
   
-  // Increase for each strength (up to a cap)
-  approvalLikelihood += Math.min(strengthsCount * 0.03, 0.15);
+  // Medium-risk factors have moderate impact
+  approvalLikelihood -= (mediumRiskCount * 0.07);
   
-  // Ensure the likelihood stays within bounds
-  approvalLikelihood = Math.max(0.1, Math.min(0.98, approvalLikelihood));
+  // Low-risk factors have minimal impact
+  approvalLikelihood -= (lowRiskCount * 0.03);
+  
+  // Add bonuses for submission strengths
+  // Each strength can partially offset risk factors
+  approvalLikelihood += (strengthsCount * 0.04);
+  
+  // Apply diminishing returns for many strengths
+  if (strengthsCount > 5) {
+    // Cap the bonus from strengths
+    approvalLikelihood -= ((strengthsCount - 5) * 0.02);
+  }
+  
+  // High-risk factors can cause automatic substantial deduction
+  if (highRiskCount >= 3) {
+    approvalLikelihood *= 0.7; // 30% additional reduction for 3+ high risks
+  }
+  
+  // Ensure the result stays within 0-1 range
+  approvalLikelihood = Math.max(0, Math.min(1, approvalLikelihood));
   
   return approvalLikelihood;
 }
