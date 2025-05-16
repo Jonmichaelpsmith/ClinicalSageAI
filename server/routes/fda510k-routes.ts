@@ -15,6 +15,9 @@ dotenv.config();
 // Create router
 const router = express.Router();
 
+// Add debug logging for route registration
+console.log('FDA 510(k) Predicate search route registered');
+
 // Database connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
