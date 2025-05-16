@@ -794,149 +794,43 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
               onSubmissionReady={handleSubmissionReady}
             />
             
-            {/* eSTAR Builder Panel */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <FileDown className="mr-2 h-5 w-5 text-blue-600" />
-                  eSTAR Package Builder
-                </CardTitle>
-                <CardDescription>
-                  Generate a FDA-compliant eSTAR package for your 510(k) submission
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Validation panel */}
-                  <div className="mb-4">
-                    <h3 className="text-sm font-medium mb-2">1. Validate eSTAR Package</h3>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Ensure your eSTAR package meets all FDA requirements before generating it
-                    </p>
-                    
-                    <div className="flex items-center gap-3">
-                      <Button 
-                        onClick={() => validateESTARPackage(false)}
-                        disabled={isValidatingEstar || !submissionReady}
-                        variant="outline"
-                      >
-                        {isValidatingEstar ? (
-                          <>Validating<span className="loading ml-2">...</span></>
-                        ) : "Standard Validation"}
-                      </Button>
-                      
-                      <Button 
-                        onClick={() => validateESTARPackage(true)}
-                        disabled={isValidatingEstar || !submissionReady}
-                        variant="outline"
-                      >
-                        {isValidatingEstar ? (
-                          <>Validating<span className="loading ml-2">...</span></>
-                        ) : "Strict Validation"}
-                      </Button>
-                    </div>
-                    
-                    {/* Validation results display */}
-                    {estarValidationResults && (
-                      <div className="mt-4 p-4 rounded-md border bg-gray-50">
-                        <div className="flex items-center mb-2">
-                          {estarValidationResults.valid ? (
-                            <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-                          ) : (
-                            <AlertCircle className="h-5 w-5 text-amber-500 mr-2" />
-                          )}
-                          <h4 className="font-medium">
-                            {estarValidationResults.valid 
-                              ? "Package Valid" 
-                              : `${estarValidationResults.issues?.length || 0} Issues Found`}
-                          </h4>
-                        </div>
-                        
-                        {estarValidationResults.issues && estarValidationResults.issues.length > 0 && (
-                          <ul className="list-disc list-inside text-sm space-y-1 mt-2">
-                            {estarValidationResults.issues.slice(0, 5).map((issue, idx) => (
-                              <li key={idx} className={
-                                issue.severity === 'error' 
-                                  ? 'text-red-600' 
-                                  : issue.severity === 'warning' 
-                                    ? 'text-amber-600' 
-                                    : 'text-blue-600'
-                              }>
-                                {issue.message}
-                              </li>
-                            ))}
-                            {estarValidationResults.issues.length > 5 && (
-                              <li>...and {estarValidationResults.issues.length - 5} more issues</li>
-                            )}
-                          </ul>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Package generation */}
-                  <div>
-                    <h3 className="text-sm font-medium mb-2">2. Generate eSTAR Package</h3>
-                    <p className="text-sm text-gray-600 mb-3">
-                      Create an FDA-compliant eSTAR package for submission
-                    </p>
-                    
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                      <Select
-                        value={estarFormat}
-                        onValueChange={setEstarFormat}
-                        disabled={isGeneratingEstar || !submissionReady}
-                      >
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Select format" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="zip">ZIP Archive</SelectItem>
-                          <SelectItem value="pdf">PDF Document</SelectItem>
-                          <SelectItem value="json">JSON Data</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      
-                      <Button 
-                        onClick={() => generateESTARPackage(estarFormat)}
-                        disabled={isGeneratingEstar || !submissionReady}
-                        className="w-full sm:w-auto"
-                      >
-                        {isGeneratingEstar ? (
-                          <>Generating<span className="loading ml-2">...</span></>
-                        ) : (
-                          <>
-                            <Download className="mr-2 h-4 w-4" />
-                            Generate eSTAR Package
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                    
-                    {/* Download link when available */}
-                    {estarGeneratedUrl && (
-                      <div className="mt-4">
-                        <Alert>
-                          <CheckCircle className="h-4 w-4" />
-                          <AlertTitle>Package Generated</AlertTitle>
-                          <AlertDescription>
-                            Your eSTAR package is ready for download.
-                            <a 
-                              href={estarGeneratedUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="block mt-2 text-blue-600 hover:underline font-medium"
-                            >
-                              Download eSTAR Package
-                            </a>
-                          </AlertDescription>
-                        </Alert>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Enhanced eSTAR Builder Panel */}
+            <ESTARBuilderPanel
+              projectId={deviceProfile?.id}
+              deviceProfile={deviceProfile}
+              complianceScore={complianceScore || 0}
+              equivalenceData={equivalenceData}
+              isValidating={isValidatingEstar}
+              isGenerating={isGeneratingEstar}
+              validationResults={estarValidationResults}
+              generatedUrl={estarGeneratedUrl}
+              estarFormat={estarFormat}
+              setEstarFormat={setEstarFormat}
+              setIsValidating={setIsValidatingEstar}
+              setIsGenerating={setIsGeneratingEstar}
+              setValidationResults={setEstarValidationResults}
+              setGeneratedUrl={setEstarGeneratedUrl}
+              onValidationComplete={(results) => {
+                setEstarValidationResults(results);
+                if (results.valid) {
+                  toast({
+                    title: "Validation Successful",
+                    description: "eSTAR package meets FDA submission requirements.",
+                    variant: "default",
+                  });
+                }
+              }}
+              onGenerationComplete={(result) => {
+                if (result && result.downloadUrl) {
+                  setEstarGeneratedUrl(result.downloadUrl);
+                  toast({
+                    title: "Generation Complete",
+                    description: "eSTAR package has been generated successfully.",
+                    variant: "default",
+                  });
+                }
+              }}
+            />
           </div>
         );
         
