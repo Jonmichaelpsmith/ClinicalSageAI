@@ -1500,9 +1500,9 @@ const ComplianceCheckPanel = ({
                           Recommended Actions
                         </h3>
                         
-                        {riskAssessmentData.recommendations?.length > 0 ? (
+                        {actualRiskAssessmentData.recommendations?.length > 0 ? (
                           <div className="space-y-3">
-                            {riskAssessmentData.recommendations.map((recommendation, index) => (
+                            {actualRiskAssessmentData.recommendations.map((recommendation, index) => (
                               <div key={index} className="flex items-start p-2 rounded-md hover:bg-slate-50">
                                 <div className="flex-shrink-0 mr-3 mt-1">
                                   <CheckSquare className="h-5 w-5 text-green-600" />
@@ -1538,9 +1538,9 @@ const ComplianceCheckPanel = ({
           
           <DialogFooter className="border-t pt-4">
             <div className="mr-auto text-sm text-gray-600">
-              Assessment generated: {riskAssessmentData?.assessmentDate ? new Date(riskAssessmentData.assessmentDate).toLocaleString() : 'N/A'}
+              Assessment generated: {actualRiskAssessmentData?.assessmentDate ? new Date(actualRiskAssessmentData.assessmentDate).toLocaleString() : 'N/A'}
             </div>
-            <Button variant="outline" onClick={() => setShowRiskDialog(false)}>
+            <Button variant="outline" onClick={() => actualSetShowRiskDialog(false)}>
               Close
             </Button>
           </DialogFooter>
@@ -1561,22 +1561,22 @@ const ComplianceCheckPanel = ({
           </DialogHeader>
           
           <div className="flex-1 overflow-hidden">
-            {templateData ? (
+            {actualTemplateData ? (
               <ScrollArea className="h-[60vh]">
                 <div className="p-4 space-y-4">
                   <div className="flex justify-between items-center mb-2">
-                    <h3 className="font-medium text-xl">{templateData.title}</h3>
+                    <h3 className="font-medium text-xl">{actualTemplateData.title}</h3>
                     <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
-                      {templateData.templateType}
+                      {actualTemplateData.templateType}
                     </Badge>
                   </div>
                   
-                  <p className="text-gray-700">{templateData.description}</p>
+                  <p className="text-gray-700">{actualTemplateData.description}</p>
                   
                   <Separator className="my-4" />
                   
                   <div className="space-y-6">
-                    {templateData.sections?.map((section, index) => (
+                    {actualTemplateData.sections?.map((section, index) => (
                       <div key={index} className="space-y-3">
                         <h4 className="font-medium text-lg flex items-center">
                           <ListChecksIcon className="h-4 w-4 mr-2 text-blue-600" />
@@ -1611,7 +1611,7 @@ const ComplianceCheckPanel = ({
             <div className="mr-auto text-sm text-gray-600">
               Generated: {templateData?.generatedAt ? new Date(templateData.generatedAt).toLocaleString() : 'N/A'}
             </div>
-            <Button variant="outline" onClick={() => setShowTemplateDialog(false)}>
+            <Button variant="outline" onClick={() => actualSetShowTemplateDialog(false)}>
               Close
             </Button>
             <Button onClick={() => {
@@ -1620,7 +1620,7 @@ const ComplianceCheckPanel = ({
                 description: "Documentation template has been saved to your Document Vault.",
                 variant: "success"
               });
-              setShowTemplateDialog(false);
+              actualSetShowTemplateDialog(false);
             }}>
               <Save className="h-4 w-4 mr-2" />
               Save to Document Vault
@@ -1714,7 +1714,7 @@ const ComplianceCheckPanel = ({
             <div className="mr-auto text-sm text-gray-600">
               Generated: {complianceFixes?.generatedAt ? new Date(complianceFixes.generatedAt).toLocaleString() : 'N/A'}
             </div>
-            <Button variant="outline" onClick={() => setShowFixesDialog(false)}>
+            <Button variant="outline" onClick={() => actualSetShowFixesDialog(false)}>
               Close
             </Button>
             <Button onClick={() => {
@@ -1723,7 +1723,7 @@ const ComplianceCheckPanel = ({
                 description: "Compliance fixes have been applied to your submission.",
                 variant: "success"
               });
-              setShowFixesDialog(false);
+              actualSetShowFixesDialog(false);
             }}>
               <CheckCircle className="h-4 w-4 mr-2" />
               Apply Fixes
