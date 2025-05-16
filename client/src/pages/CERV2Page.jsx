@@ -1317,8 +1317,14 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     else if (documentType === 'cer' && activeTab === 'assistant') {
       return <CerAssistantPanel cerDocumentId={cerDocumentId} />;
     }
-    else if (documentType === 'cer' && activeTab === 'documents') {
-      return <DocumentVaultPanel cerDocumentId={cerDocumentId} />;
+    else if (activeTab === 'documents') {
+      // Support both CER and 510k documents in the vault
+      return <DocumentVaultPanel 
+        documentType={documentType} 
+        jobId={documentType === 'cer' ? cerDocumentId : k510DocumentId}
+        position="left"
+        isOpen={true}
+      />;
     }
     else if (documentType === 'cer' && activeTab === 'data-retrieval') {
       return <CerDataRetrievalPanel cerDocumentId={cerDocumentId} />;
