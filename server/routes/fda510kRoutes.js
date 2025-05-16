@@ -128,29 +128,25 @@ router.post('/device-profile', async (req, res) => {
       )
     `);
     
-    // Insert the new device profile
+    // Insert the new device profile - corrected to match actual database schema
     const result = await db.query(
       `INSERT INTO device_profiles(
         device_name,
         device_class,
         intended_use,
-        device_description,
         manufacturer,
         model_number,
-        technical_characteristics,
         created_at,
         updated_at
       )
-      VALUES($1,$2,$3,$4,$5,$6,$7,$8,$8)
+      VALUES($1,$2,$3,$4,$5,$6,$6)
       RETURNING *`,
       [
         deviceName, 
         deviceClass, 
-        intendedUse, 
-        deviceDescription,
+        intendedUse,
         manufacturer,
         modelNumber,
-        JSON.stringify(technicalCharacteristics || {}),
         now
       ]
     );
