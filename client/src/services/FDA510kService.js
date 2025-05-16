@@ -6,6 +6,10 @@
  * 
  * This service now fully integrates with Document Vault for proper file management
  * and connects to downstream features throughout the 510(k) workflow.
+ * 
+ * CRITICAL UPDATE: Added new workflow transition verification to properly handle
+ * the transitions between workflow steps, especially the problematic Predicate→Equivalence
+ * transition that was causing workflow issues.
  */
 
 import { apiRequest } from '../lib/queryClient';
@@ -13,6 +17,62 @@ import docuShareService from './DocuShareService';
 
 // Export as a singleton object
 export const FDA510kService = {
+  /**
+   * Check if a workflow transition is safe to perform
+   * 
+   * @param {string} fromStep - The current workflow step
+   * @param {string} toStep - The target workflow step
+   * @param {string} deviceId - Device ID for context
+   * @param {string} organizationId - Organization ID for access control
+   * @returns {Promise<{canTransition: boolean, message: string}>}
+   */
+  async checkWorkflowTransition(fromStep, toStep, deviceId, organizationId) {
+    try {
+      console.log(`[FDA510kService] Checking transition from ${fromStep} to ${toStep}`);
+      const response = await apiRequest.get(`/api/510k/workflow-transition/${fromStep}/${toStep}`, {
+        params: { deviceId, organizationId }
+      });
+      
+      console.log('[FDA510kService] Transition check response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[FDA510kService] Transition check error:', error);
+      // Default to false on any error to prevent invalid transitions
+      return { 
+        canTransition: false, 
+        message: error.response?.data?.message || 'Error checking workflow transition',
+        error: error.message
+      };
+    }
+  },
+  
+  /**
+   * Check equivalence analysis readiness for a device
+   * 
+   * @param {string} deviceId - Device ID to check
+   * @param {string} organizationId - Organization ID for access control
+   * @returns {Promise<{status: string, canProceed: boolean}>}
+   */
+  async checkEquivalenceStatus(deviceId, organizationId) {
+    try {
+      console.log(`[FDA510kService] Checking equivalence status for device ${deviceId}`);
+      const response = await apiRequest.get(`/api/510k/equivalence-status/${deviceId}`, {
+        params: { organizationId }
+      });
+      
+      console.log('[FDA510kService] Equivalence status response:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('[FDA510kService] Equivalence status check error:', error);
+      // Default to false on any error to prevent invalid transitions
+      return { 
+        status: 'error',
+        canProceed: false, 
+        message: error.response?.data?.message || 'Error checking equivalence status',
+        error: error.message
+      };
+    }
+  },
   /**
    * Fetch a list of all 510(k) projects
    * 
