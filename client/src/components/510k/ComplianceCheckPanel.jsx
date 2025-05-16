@@ -19,31 +19,81 @@ import { CheckSquare, AlertCircle, AlertTriangle, BookOpen, CheckCircle, XCircle
  * 
  * This component performs a comprehensive compliance check for 510(k) submissions
  * against FDA requirements, identifying issues and providing an overall compliance score.
+ * It also provides risk assessment capabilities powered by OpenAI.
  */
 const ComplianceCheckPanel = ({ 
   deviceProfile, 
   documentId,
   onComplete,
   predicateDevices = [],
-  equivalenceData = null
+  equivalenceData = null,
+  
+  // FDA Risk Assessment props
+  riskAssessmentData,
+  setRiskAssessmentData,
+  isAssessingRisks,
+  setIsAssessingRisks,
+  riskAssessmentProgress,
+  setRiskAssessmentProgress,
+  showRiskDialog,
+  setShowRiskDialog,
+  
+  // Template generation props
+  templateData,
+  setTemplateData,
+  isGeneratingTemplate,
+  setIsGeneratingTemplate,
+  showTemplateDialog,
+  setShowTemplateDialog,
+  
+  // Fix suggestions props
+  complianceFixes,
+  setComplianceFixes,
+  isGeneratingFixes,
+  setIsGeneratingFixes,
+  showFixesDialog,
+  setShowFixesDialog
 }) => {
+  // Use the props if provided, otherwise use local state
   const [isChecking, setIsChecking] = useState(false);
   const [progress, setProgress] = useState(0);
   const [complianceData, setComplianceData] = useState(null);
   const [complianceComplete, setComplianceComplete] = useState(false);
-  const [isAssessingRisks, setIsAssessingRisks] = useState(false);
-  const [riskAssessmentData, setRiskAssessmentData] = useState(null);
-  const [showRiskDialog, setShowRiskDialog] = useState(false);
+  const [_isAssessingRisks, _setIsAssessingRisks] = useState(false);
+  const [_riskAssessmentData, _setRiskAssessmentData] = useState(null);
+  const [_showRiskDialog, _setShowRiskDialog] = useState(false);
   const [activeRiskTab, setActiveRiskTab] = useState('overview');
-  const [isGeneratingFixes, setIsGeneratingFixes] = useState(false);
-  const [complianceFixes, setComplianceFixes] = useState(null);
-  const [showFixesDialog, setShowFixesDialog] = useState(false);
+  const [_isGeneratingFixes, _setIsGeneratingFixes] = useState(false);
+  const [_complianceFixes, _setComplianceFixes] = useState(null);
+  const [_showFixesDialog, _setShowFixesDialog] = useState(false);
   const [selectedIssue, setSelectedIssue] = useState(null);
-  const [isGeneratingTemplate, setIsGeneratingTemplate] = useState(false);
-  const [templateData, setTemplateData] = useState(null);
-  const [showTemplateDialog, setShowTemplateDialog] = useState(false);
+  const [_isGeneratingTemplate, _setIsGeneratingTemplate] = useState(false);
+  const [_templateData, _setTemplateData] = useState(null);
+  const [_showTemplateDialog, _setShowTemplateDialog] = useState(false);
   const [isCheckingSaves, setIsCheckingSaves] = useState(false);
   const { toast } = useToast();
+  
+  // Use either the prop or local state depending on what's available
+  const actualRiskAssessmentData = riskAssessmentData !== undefined ? riskAssessmentData : _riskAssessmentData;
+  const actualSetRiskAssessmentData = setRiskAssessmentData || _setRiskAssessmentData;
+  const actualIsAssessingRisks = isAssessingRisks !== undefined ? isAssessingRisks : _isAssessingRisks;
+  const actualSetIsAssessingRisks = setIsAssessingRisks || _setIsAssessingRisks;
+  const actualShowRiskDialog = showRiskDialog !== undefined ? showRiskDialog : _showRiskDialog;
+  const actualSetShowRiskDialog = setShowRiskDialog || _setShowRiskDialog;
+  
+  const actualTemplateData = templateData !== undefined ? templateData : _templateData;
+  const actualSetTemplateData = setTemplateData || _setTemplateData;
+  const actualIsGeneratingTemplate = isGeneratingTemplate !== undefined ? isGeneratingTemplate : _isGeneratingTemplate;
+  const actualSetIsGeneratingTemplate = setIsGeneratingTemplate || _setIsGeneratingTemplate;
+  const actualShowTemplateDialog = showTemplateDialog !== undefined ? showTemplateDialog : _showTemplateDialog;
+  const actualSetShowTemplateDialog = setShowTemplateDialog || _setShowTemplateDialog;
+  
+  const actualComplianceFixes = complianceFixes !== undefined ? complianceFixes : _complianceFixes;
+  const actualSetComplianceFixes = setComplianceFixes || _setComplianceFixes;
+  const actualIsGeneratingFixes = isGeneratingFixes !== undefined ? isGeneratingFixes : _isGeneratingFixes;
+  const actualSetIsGeneratingFixes = setIsGeneratingFixes || _setIsGeneratingFixes;
+  const actualShowFixesDialog = showFixesDialog !== undefined ? showFixesDialog : _showFixesDialog;
+  const actualSetShowFixesDialog = setShowFixesDialog || _setShowFixesDialog;
 
   const getSeverityColor = (severity) => {
     switch (severity) {
@@ -284,7 +334,7 @@ const ComplianceCheckPanel = ({
       return;
     }
     
-    setIsAssessingRisks(true);
+    actualSetIsAssessingRisks(true);
     setProgress(25);
     
     try {
@@ -362,10 +412,10 @@ const ComplianceCheckPanel = ({
       };
       
       // Store the risk assessment data
-      setRiskAssessmentData(validatedResult);
+      actualSetRiskAssessmentData(validatedResult);
       
       // Open the risk assessment dialog
-      setShowRiskDialog(true);
+      actualSetShowRiskDialog(true);
       
       toast({
         title: "Risk Assessment Complete",

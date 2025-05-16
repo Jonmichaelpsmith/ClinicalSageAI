@@ -1020,6 +1020,32 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
               predicateDevices={predicateDevices}
               equivalenceData={equivalenceData}
               onComplete={handleComplianceComplete}
+              
+              // FDA Risk Assessment state
+              riskAssessmentData={riskAssessmentData}
+              setRiskAssessmentData={setRiskAssessmentData}
+              isAssessingRisks={isAssessingRisks}
+              setIsAssessingRisks={setIsAssessingRisks}
+              riskAssessmentProgress={riskAssessmentProgress}
+              setRiskAssessmentProgress={setRiskAssessmentProgress}
+              showRiskDialog={showRiskDialog}
+              setShowRiskDialog={setShowRiskDialog}
+              
+              // Template generation state
+              templateData={templateData}
+              setTemplateData={setTemplateData}
+              isGeneratingTemplate={isGeneratingTemplate}
+              setIsGeneratingTemplate={setIsGeneratingTemplate}
+              showTemplateDialog={showTemplateDialog}
+              setShowTemplateDialog={setShowTemplateDialog}
+              
+              // Fix suggestions state
+              complianceFixes={complianceFixes}
+              setComplianceFixes={setComplianceFixes}
+              isGeneratingFixes={isGeneratingFixes}
+              setIsGeneratingFixes={setIsGeneratingFixes}
+              showFixesDialog={showFixesDialog}
+              setShowFixesDialog={setShowFixesDialog}
             />
           </div>
         );
