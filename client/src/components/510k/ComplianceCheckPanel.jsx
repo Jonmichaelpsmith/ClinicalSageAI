@@ -1244,66 +1244,63 @@ const ComplianceCheckPanel = ({
                                 </h4>
                                 {actualRiskAssessmentData.riskFactors.filter(risk => risk.severity === 'low').map((risk, index) => (
                                   <Card key={`low-${index}`} className="p-4 border-l-4 border-l-blue-500 bg-blue-50 mb-2">
-                                    <div className="flex flex-col">
-                                      <div className="flex items-start">
-                                        <div className="flex-shrink-0 mr-3">
-                                          <AlertCircle className="h-5 w-5 text-blue-600" />
+                                    <div className="flex flex-col space-y-3">
+                                      {/* Risk header with badge */}
+                                      <div className="flex items-start justify-between">
+                                        <div className="flex items-start">
+                                          <div className="flex-shrink-0 mr-3">
+                                            <AlertCircle className="h-5 w-5 text-blue-600" />
+                                          </div>
+                                          <div className="flex-1">
+                                            <h4 className="font-medium">{risk.title}</h4>
+                                            <p className="text-sm mt-1 text-gray-700">{risk.description}</p>
+                                            {risk.impact && (
+                                              <div className="mt-2">
+                                                <span className="text-xs font-medium text-gray-600">Potential Impact:</span>
+                                                <p className="text-sm text-gray-700">{risk.impact}</p>
+                                              </div>
+                                            )}
+                                          </div>
                                         </div>
-                                        <div className="flex-1">
-                                          <h4 className="font-medium">{risk.title}</h4>
-                                          <p className="text-sm mt-1 text-gray-700">{risk.description}</p>
-                                          {risk.impact && (
-                                            <div className="mt-2">
-                                              <span className="text-xs font-medium text-gray-600">Potential Impact:</span>
-                                              <p className="text-sm text-gray-700">{risk.impact}</p>
-                                            </div>
-                                          )}
+                                        <div className="ml-4 flex-shrink-0">
+                                          <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                                            Low Risk
+                                          </Badge>
                                         </div>
                                       </div>
-                                    <div className="ml-4 flex-shrink-0">
-                                      <Badge className={
-                                        risk.severity === 'high' ? 'bg-red-100 text-red-800 hover:bg-red-100' : 
-                                        risk.severity === 'medium' ? 'bg-amber-100 text-amber-800 hover:bg-amber-100' : 
-                                        'bg-blue-100 text-blue-800 hover:bg-blue-100'
-                                      }>
-                                        {risk.severity === 'high' ? 'High' : 
-                                         risk.severity === 'medium' ? 'Medium' : 'Low'} Risk
-                                      </Badge>
-                                    </div>
-                                  </div>
-                                  
-                                  {/* AI-Generated Risk Resolution Options */}
-                                  <div className="mt-4 border-t pt-3 border-gray-200">
-                                    <div className="flex items-center mb-2">
-                                      <WandSparkles className="h-4 w-4 text-purple-600 mr-2" />
-                                      <span className="text-sm font-medium text-gray-700">AI-Suggested Solutions</span>
-                                    </div>
-                                    
-                                    {/* Auto-fix suggestions based on risk type */}
-                                    <div className="space-y-2 mt-2">
-                                      {risk.title.toLowerCase().includes('predicate device') && (
-                                        <Button 
-                                          variant="outline" 
-                                          size="sm"
-                                          className="w-full justify-start text-left bg-white hover:bg-green-50 hover:text-green-700 border-gray-200"
-                                          onClick={() => {
-                                            toast({
-                                              title: "Predicate Device Search Initiated",
-                                              description: "Starting automated search for suitable FDA-cleared predicate devices for your submission.",
-                                              variant: "default"
-                                            });
-                                            
-                                            // Go back to the predicate finder step
-                                            if (onComplete) {
-                                              onComplete(-2); // Special code to navigate to predicate finder
-                                            }
-                                            setShowRiskDialog(false);
-                                          }}
-                                        >
-                                          <SearchIcon className="h-4 w-4 mr-2 text-green-600" />
-                                          Find Appropriate Predicate Devices
-                                        </Button>
-                                      )}
+                                      
+                                      {/* AI-Generated Risk Resolution Options */}
+                                      <div className="mt-2 border-t pt-3 border-gray-200">
+                                        <div className="flex items-center mb-2">
+                                          <WandSparkles className="h-4 w-4 text-purple-600 mr-2" />
+                                          <span className="text-sm font-medium text-gray-700">AI-Suggested Solutions</span>
+                                        </div>
+                                        
+                                        {/* Auto-fix suggestions based on risk type */}
+                                        <div className="space-y-2 mt-2">
+                                          {risk.title.toLowerCase().includes('predicate device') && (
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm"
+                                              className="w-full justify-start text-left bg-white hover:bg-green-50 hover:text-green-700 border-gray-200"
+                                              onClick={() => {
+                                                toast({
+                                                  title: "Predicate Device Search Initiated",
+                                                  description: "Starting automated search for suitable FDA-cleared predicate devices for your submission.",
+                                                  variant: "default"
+                                                });
+                                                
+                                                // Go back to the predicate finder step
+                                                if (onComplete) {
+                                                  onComplete(-2); // Special code to navigate to predicate finder
+                                                }
+                                                actualSetShowRiskDialog(false);
+                                              }}
+                                            >
+                                              <SearchIcon className="h-4 w-4 mr-2 text-green-600" />
+                                              Find Appropriate Predicate Devices
+                                            </Button>
+                                          )}
                                       
                                       {risk.title.toLowerCase().includes('literature') && (
                                         <Button 
