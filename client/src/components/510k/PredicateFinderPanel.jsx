@@ -120,17 +120,25 @@ const PredicateFinderPanel = ({
   
   // Initialize form data from device profile when component mounts or profile changes
   useEffect(() => {
-    if (deviceProfile) {
+    if (deviceProfile && typeof deviceProfile === 'object') {
+      console.log('PredicateFinderPanel: Loading device profile:', deviceProfile.deviceName || 'unnamed device');
+      
+      // Use safe accessors with fallback defaults
       setFormData({
-        deviceName: deviceProfile.deviceName || '',
-        manufacturer: deviceProfile.manufacturer || '',
-        productCode: deviceProfile.productCode || '',
-        deviceClass: deviceProfile.deviceClass || 'II',
-        intendedUse: deviceProfile.intendedUse || '',
-        description: deviceProfile.description || '',
-        technicalSpecifications: deviceProfile.technicalSpecifications || '',
-        regulatoryClass: deviceProfile.regulatoryClass || 'Class II'
+        deviceName: deviceProfile?.deviceName || '',
+        manufacturer: deviceProfile?.manufacturer || '',
+        productCode: deviceProfile?.productCode || '',
+        deviceClass: deviceProfile?.deviceClass || 'II',
+        intendedUse: deviceProfile?.intendedUse || '',
+        description: deviceProfile?.description || '',
+        technicalSpecifications: deviceProfile?.technicalSpecifications || '',
+        regulatoryClass: deviceProfile?.regulatoryClass || 'Class II'
       });
+      
+      // Log successful profile loading
+      if (deviceProfile.deviceName) {
+        console.log(`PredicateFinderPanel: Successfully loaded profile for "${deviceProfile.deviceName}"`);
+      }
       
       // Check for saved predicate selections
       const savedPredicates = localStorage.getItem('510k_selectedPredicates');
@@ -173,8 +181,20 @@ const PredicateFinderPanel = ({
           console.error('Error restoring saved literature results:', error);
         }
       }
+    } else {
+      // Device profile not available
+      console.warn('PredicateFinderPanel: No valid device profile provided');
+      
+      toast({
+        title: "Device Profile Missing",
+        description: "Please select or create a device profile before continuing.",
+        variant: "warning"
+      });
+      
+      // Set profile editing mode to true so the user can enter data
+      setProfileEditing(true);
     }
-  }, [deviceProfile]);
+  }, [deviceProfile, toast]);
   
   // Handle form field updates
   const handleInputChange = (field, value) => {
