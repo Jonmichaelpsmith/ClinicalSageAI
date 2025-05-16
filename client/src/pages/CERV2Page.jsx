@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 // Safely handle LumenAiAssistant context access with fallbacks
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import { useToast } from '@/hooks/use-toast';
+import { initializeStates, saveState, loadState, recoverWorkflow, getWorkflowDiagnostics } from '../utils/stabilityPatches';
 
 // Function to safely open documents and prevent redirection issues
 const openDocumentSafely = (url, documentName, showToast) => {
