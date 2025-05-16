@@ -202,7 +202,10 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     regulatory: true,
     clinical: true,
     submissions: true,
-    technical: true
+    technical: true,
+    global: false,
+    cer: false,
+    k510: false
   });
   
   // Toggle folder expansion in document tree
@@ -211,6 +214,50 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       ...prev,
       [folderId]: !prev[folderId]
     }));
+  };
+  
+  // Document Vault - file management state
+  const [documentView, setDocumentView] = useState('all'); // 'all', 'cer', '510k', 'global'
+  const [folderRenameState, setFolderRenameState] = useState({
+    isRenaming: false,
+    folderId: null,
+    folderName: ''
+  });
+  
+  // Start folder rename
+  const startRenameFolder = (folderId, currentName, e) => {
+    e.stopPropagation();
+    setFolderRenameState({
+      isRenaming: true,
+      folderId,
+      folderName: currentName
+    });
+  };
+  
+  // Complete folder rename
+  const completeRenameFolder = () => {
+    // In a real app, this would save to database
+    toast({
+      title: "Folder renamed",
+      description: `Renamed to: ${folderRenameState.folderName}`,
+    });
+    setFolderRenameState({
+      isRenaming: false,
+      folderId: null,
+      folderName: ''
+    });
+  };
+  
+  // Handle file upload
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      // In a real app, this would upload to server
+      toast({
+        title: "File uploaded",
+        description: `Uploaded: ${file.name}`,
+      });
+    }
   };
   const [systemInfo, setSystemInfo] = useState({
     memory: { used: 0, total: 0, percentage: 0 },
@@ -1828,6 +1875,36 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                   </button>
                 </div>
                 
+                {/* Document View Tabs */}
+                <div className="border-b">
+                  <div className="flex">
+                    <button 
+                      className={`flex-1 py-2 text-sm font-medium text-center ${documentView === 'all' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                      onClick={() => setDocumentView('all')}
+                    >
+                      All Files
+                    </button>
+                    <button 
+                      className={`flex-1 py-2 text-sm font-medium text-center ${documentView === 'cer' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                      onClick={() => setDocumentView('cer')}
+                    >
+                      CER
+                    </button>
+                    <button 
+                      className={`flex-1 py-2 text-sm font-medium text-center ${documentView === '510k' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                      onClick={() => setDocumentView('510k')}
+                    >
+                      510(k)
+                    </button>
+                    <button 
+                      className={`flex-1 py-2 text-sm font-medium text-center ${documentView === 'global' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                      onClick={() => setDocumentView('global')}
+                    >
+                      Global
+                    </button>
+                  </div>
+                </div>
+                
                 {/* Search Bar */}
                 <div className="p-2 border-b">
                   <div className="relative">
@@ -2084,8 +2161,32 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
                           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                         </svg>
-                        <span className="text-sm font-medium">Technical</span>
-                        <span className="ml-auto text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">2</span>
+                        {folderRenameState.isRenaming && folderRenameState.folderId === 'technical' ? (
+                          <input
+                            type="text"
+                            className="text-sm w-28 p-0.5 border border-blue-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            value={folderRenameState.folderName}
+                            onChange={(e) => setFolderRenameState(prev => ({...prev, folderName: e.target.value}))}
+                            onBlur={completeRenameFolder}
+                            onKeyDown={(e) => e.key === 'Enter' && completeRenameFolder()}
+                            autoFocus
+                            onClick={(e) => e.stopPropagation()}
+                          />
+                        ) : (
+                          <span className="text-sm font-medium">Technical</span>
+                        )}
+                        <div className="ml-auto flex items-center">
+                          <button 
+                            className="h-5 w-5 text-gray-400 hover:text-gray-600 mr-1"
+                            onClick={(e) => startRenameFolder('technical', 'Technical', e)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                              <path d="m15 5 4 4"></path>
+                            </svg>
+                          </button>
+                          <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">2</span>
+                        </div>
                       </div>
                       {expandedFolders.technical && (
                         <div>
@@ -2124,27 +2225,126 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                         </div>
                       )}
                     </div>
+                    
+                    {/* Global Documents Folder */}
+                    {(documentView === 'all' || documentView === 'global') && (
+                      <div className="mb-0.5">
+                        <div 
+                          className="flex items-center py-2 px-3 hover:bg-blue-50 cursor-pointer bg-gray-50"
+                          onClick={() => toggleFolder('global')}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${expandedFolders.global ? 'rotate-90' : ''} mr-2 text-gray-500`}>
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                          </svg>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-purple-600">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                          </svg>
+                          <span className="text-sm font-medium">Global Documents</span>
+                          <div className="ml-auto flex items-center">
+                            <button 
+                              className="h-5 w-5 text-gray-400 hover:text-gray-600 mr-1"
+                              onClick={(e) => startRenameFolder('global', 'Global Documents', e)}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17 3a2.85 2.85 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path>
+                                <path d="m15 5 4 4"></path>
+                              </svg>
+                            </button>
+                            <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">1</span>
+                          </div>
+                        </div>
+                        {expandedFolders.global && (
+                          <div>
+                            <a 
+                              href="/attached_assets/9789240097711-eng.pdf" 
+                              target="_blank"
+                              className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                window.open('/attached_assets/9789240097711-eng.pdf', '_blank');
+                              }}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-purple-500">
+                                <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                              </svg>
+                              <span className="text-sm">Shared Resources</span>
+                              <span className="ml-auto text-xs text-green-600 font-medium">v2.0</span>
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </nav>
                 </div>
                 
                 {/* Action buttons */}
                 <div className="p-2 border-t bg-gray-50">
                   <div className="flex space-x-2">
-                    <button className="flex items-center justify-center py-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md">
+                    <label className="flex items-center justify-center py-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md cursor-pointer">
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="17 8 12 3 7 8"></polyline>
                         <line x1="12" y1="3" x2="12" y2="15"></line>
                       </svg>
                       Upload
-                    </button>
-                    <button className="flex items-center justify-center py-1.5 px-3 border border-gray-300 hover:bg-gray-100 text-sm font-medium rounded-md">
+                      <input 
+                        type="file" 
+                        accept=".pdf,.doc,.docx,.xlsx,.ppt,.pptx" 
+                        className="hidden" 
+                        onChange={handleFileUpload}
+                      />
+                    </label>
+                    <button 
+                      className="flex items-center justify-center py-1.5 px-3 border border-gray-300 hover:bg-gray-100 text-sm font-medium rounded-md"
+                      onClick={() => {
+                        toast({
+                          title: "Document Export",
+                          description: "Preparing document export...",
+                        });
+                          
+                        // In a real app, this would trigger a download
+                        setTimeout(() => {
+                          toast({
+                            title: "Export Complete",
+                            description: "Documents have been exported successfully",
+                          });
+                        }, 1500);
+                      }}
+                    >
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
                         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                         <polyline points="7 10 12 15 17 10"></polyline>
                         <line x1="12" y1="15" x2="12" y2="3"></line>
                       </svg>
                       Export
+                    </button>
+                  </div>
+                  
+                  {/* Create new folder button */}
+                  <div className="mt-2">
+                    <button 
+                      className="w-full flex items-center justify-center py-1.5 px-3 border border-gray-300 bg-white hover:bg-gray-50 text-sm font-medium rounded-md"
+                      onClick={() => {
+                        // Create a new folder functionality
+                        toast({
+                          title: "New Folder",
+                          description: "Created new folder in current view",
+                        });
+                        
+                        // This would typically involve server operations
+                        setExpandedFolders(prev => ({
+                          ...prev,
+                          newFolder: true
+                        }));
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        <line x1="12" y1="11" x2="12" y2="17"></line>
+                        <line x1="9" y1="14" x2="15" y2="14"></line>
+                      </svg>
+                      Create New Folder
                     </button>
                   </div>
                 </div>
