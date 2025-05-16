@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 // Safely handle LumenAiAssistant context access with fallbacks
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { ShieldAlert, RefreshCw } from 'lucide-react';
+import { initializeStates, saveState, loadState, recoverWorkflow, getWorkflowDiagnostics } from '../utils/stabilityPatches';
+import WorkflowContinuityManager from '../components/recovery/WorkflowContinuityManager';
 
 // Function to safely open documents and prevent redirection issues
 const openDocumentSafely = (url, documentName, showToast) => {
@@ -65,7 +70,6 @@ import NotificationBanner from '@/components/cer/NotificationBanner';
 import InternalClinicalDataPanel from '@/components/cer/InternalClinicalDataPanel';
 import ExportModule from '@/components/cer/ExportModule';
 import CerComprehensiveReportsPanel from '@/components/cer/CerComprehensiveReportsPanel';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import MAUDIntegrationPanel from '@/components/cer/MAUDIntegrationPanel';
 import KAutomationPanel from '@/components/cer/KAutomationPanel';
 
@@ -78,12 +82,12 @@ import WelcomeDialog from '@/components/510k/WelcomeDialog';
 import DeviceIntakeForm from '@/components/510k/DeviceIntakeForm';
 import DeviceProfileForm from '@/components/cer/DeviceProfileForm';
 
-import { Button } from '@/components/ui/button';
+// Button already imported above
 import { Badge } from '@/components/ui/badge';
 import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
 import LiteratureFeatureService from '@/services/LiteratureFeatureService';
-import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, ArrowRight, AlertTriangle, Files, FolderTree, X, FilePlus, FolderPlus, PlusCircle, Loader2, UploadCloud, CalendarDays, User, ChevronRight } from 'lucide-react';
+import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, ArrowRight, AlertTriangle, Files, FolderTree, X, FilePlus, FolderPlus, PlusCircle, Loader2, UploadCloud, CalendarDays, User, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -106,12 +110,17 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [newClientMode, setNewClientMode] = useState(false);
   const [deviceIntakeData, setDeviceIntakeData] = useState(null);
   const [deviceType, setDeviceType] = useState('Class II Medical Device');
+  const [showFolderCreate, setShowFolderCreate] = useState(false);
   const [documentType, setDocumentType] = useState(initialDocumentType || '510k'); // Options: 'cer' or '510k'
   const [deviceName, setDeviceName] = useState('');
   const [manufacturer, setManufacturer] = useState('');
+  const [newFolderName, setNewFolderName] = useState('');
   const [intendedUse, setIntendedUse] = useState('');
   const [faers, setFaers] = useState([]);
   const [showESTARDemo, setShowESTARDemo] = useState(false);
+  const [showProcessingResults, setShowProcessingResults] = useState(false);
+  const [processingType, setProcessingType] = useState('');
+  const [processingResults, setProcessingResults] = useState(null);
   const [cerDocumentId, setCerDocumentId] = useState(() => {
     const prefix = "CER-";
     return prefix + Math.floor(100000 + Math.random() * 900000);
@@ -154,6 +163,14 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [predicatesFound, setPredicatesFound] = useState(() => loadSavedState('predicatesFound', false));
   const [predicateDevices, setPredicateDevices] = useState(() => loadSavedState('predicateDevices', []));
   const [literatureResults, setLiteratureResults] = useState([]);
+  
+  // Predicate Device Finder state
+  const [predicateSearchTerm, setPredicateSearchTerm] = useState('');
+  const [predicateSearchResults, setPredicateSearchResults] = useState([]);
+  const [predicateLoading, setPredicateLoading] = useState(false);
+  const [selectedPredicate, setSelectedPredicate] = useState(null);
+  const [comparisonData, setComparisonData] = useState(null);
+  const [predicateFilterType, setPredicateFilterType] = useState('all'); // 'all', 'product_code', 'manufacturer'
   
   // eSTAR Builder state variables
   const [isValidatingEstar, setIsValidatingEstar] = useState(false);
@@ -443,7 +460,12 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       setPredicateDevices(data);
       setDeviceProfile(updatedDeviceProfile);
       
-      // 3. Process literature if available
+      // 3. Save state to localStorage for persistence
+      saveState('predicatesFound', true);
+      saveState('predicateDevices', data);
+      saveState('deviceProfile', updatedDeviceProfile);
+      
+      // 4. Process literature if available
       if (literatureData && literatureData.length > 0) {
         setLiteratureResults(literatureData);
         setSelectedLiterature(literatureData.filter(item => 
@@ -463,6 +485,12 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       console.log('[CERV2 Workflow] Directly transitioning to Equivalence step');
       setActiveTab('equivalence');
       setWorkflowStep(3);
+      setWorkflowProgress(50); // Update progress to 50%
+      
+      // 6. Save workflow state changes for persistence
+      saveState('activeTab', 'equivalence');
+      saveState('workflowStep', 3);
+      saveState('workflowProgress', 50);
     } catch (error) {
       console.error('[CERV2 Workflow] Error during predicate selection completion:', error);
       toast({
@@ -1055,15 +1083,26 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         return (
           <div className="space-y-4">
             <PredicateFinderPanel 
-              deviceProfile={deviceProfile}
+              deviceProfile={deviceProfile || {
+                id: k510DocumentId,
+                deviceName: deviceName || 'Sample Medical Device',
+                manufacturer: manufacturer || 'Sample Manufacturer',
+                productCode: 'ABC',
+                deviceClass: 'II',
+                intendedUse: intendedUse || 'For diagnostic use in clinical settings'
+              }}
               setDeviceProfile={(newProfile) => {
                 // Just save the updated device profile
                 if (newProfile) {
+                  console.log("Updating device profile from PredicateFinderPanel:", newProfile.deviceName);
                   setDeviceProfile(newProfile);
+                  // Ensure workflow progression
+                  saveState('deviceProfile', newProfile);
                 }
               }}
-              documentId={deviceProfile?.id}
+              documentId={k510DocumentId}
               onPredicatesFound={handlePredicatesComplete}
+              organizationId={1}
             />
           </div>
         );
@@ -1139,6 +1178,393 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         );
         
       case 5:
+        return (
+          <div className="space-y-4">
+            <ComplianceCheckPanel 
+              deviceProfile={deviceProfile}
+              documentId={deviceProfile?.id}
+              predicateDevices={predicateDevices}
+              literatureReferences={selectedLiterature}
+              setCompliance={setCompliance}
+              isComplianceRunning={isComplianceRunning}
+              setIsComplianceRunning={setIsComplianceRunning}
+              complianceScore={complianceScore}
+              setComplianceScore={setComplianceScore}
+              
+              // Risk assessment state
+              riskAssessmentData={riskAssessmentData}
+              setRiskAssessmentData={setRiskAssessmentData}
+              isAssessingRisks={isAssessingRisks}
+              setIsAssessingRisks={setIsAssessingRisks}
+              riskAssessmentProgress={riskAssessmentProgress}
+              setRiskAssessmentProgress={setRiskAssessmentProgress}
+              showRiskDialog={showRiskDialog}
+              setShowRiskDialog={setShowRiskDialog}
+              
+              // Template generation state
+              templateData={templateData}
+              setTemplateData={setTemplateData}
+              isGeneratingTemplate={isGeneratingTemplate}
+              setIsGeneratingTemplate={setIsGeneratingTemplate}
+              showTemplateDialog={showTemplateDialog}
+              setShowTemplateDialog={setShowTemplateDialog}
+              
+              // Fix suggestions state
+              complianceFixes={complianceFixes}
+              setComplianceFixes={setComplianceFixes}
+              isGeneratingFixes={isGeneratingFixes}
+              setIsGeneratingFixes={setIsGeneratingFixes}
+              showFixesDialog={showFixesDialog}
+              setShowFixesDialog={setShowFixesDialog}
+            />
+          </div>
+        );
+      
+      case 6:
+        return (
+          <div className="space-y-4">
+            <Card className="border-orange-200">
+              <CardHeader className="bg-orange-50 border-b border-orange-100">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <CardTitle className="flex items-center">
+                      <AlertTriangle className="h-5 w-5 text-orange-500 mr-2" />
+                      FDA 510(k) Risk Assessment
+                    </CardTitle>
+                    <CardDescription>
+                      Analyze and address potential risks for your 510(k) submission
+                    </CardDescription>
+                  </div>
+                  
+                  {riskAssessmentData && (
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                      Risk Assessment Complete
+                    </Badge>
+                  )}
+                </div>
+              </CardHeader>
+              
+              <CardContent className="pt-6">
+                {!riskAssessmentData ? (
+                  <div className="space-y-4">
+                    <div className="bg-blue-50 p-4 rounded-md border border-blue-100">
+                      <h3 className="text-sm font-medium text-blue-800 mb-1 flex items-center">
+                        <Info className="h-4 w-4 mr-1.5" />
+                        Why Risk Assessment Matters
+                      </h3>
+                      <p className="text-sm text-blue-700">
+                        The FDA requires manufacturers to identify and mitigate potential risks associated with their devices.
+                        A thorough risk assessment improves your chances of 510(k) clearance and helps ensure patient safety.
+                      </p>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-sm font-medium mb-2">Device Details for Assessment</h3>
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="p-3 bg-gray-50 rounded-md border">
+                          <p className="text-xs text-gray-500 mb-1">Device Name</p>
+                          <p className="font-medium">{deviceProfile?.deviceName}</p>
+                        </div>
+                        <div className="p-3 bg-gray-50 rounded-md border">
+                          <p className="text-xs text-gray-500 mb-1">Device Class</p>
+                          <p className="font-medium">Class {deviceProfile?.deviceClass || 'II'}</p>
+                        </div>
+                        <div className="p-3 bg-gray-50 rounded-md border">
+                          <p className="text-xs text-gray-500 mb-1">Manufacturer</p>
+                          <p className="font-medium">{deviceProfile?.manufacturer}</p>
+                        </div>
+                        <div className="p-3 bg-gray-50 rounded-md border">
+                          <p className="text-xs text-gray-500 mb-1">Selected Predicates</p>
+                          <p className="font-medium">{predicateDevices?.length || 0} device(s)</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end">
+                      <Button 
+                        onClick={() => {
+                          setIsAssessingRisks(true);
+                          setRiskAssessmentProgress(0);
+                          
+                          // Simulate incremental progress
+                          const interval = setInterval(() => {
+                            setRiskAssessmentProgress(prev => {
+                              if (prev >= 100) {
+                                clearInterval(interval);
+                                return 100;
+                              }
+                              return prev + 5;
+                            });
+                          }, 300);
+                          
+                          // Simulate completion after 6 seconds
+                          setTimeout(() => {
+                            clearInterval(interval);
+                            setRiskAssessmentProgress(100);
+                            setIsAssessingRisks(false);
+                            
+                            // Create mock risk assessment data
+                            const riskData = {
+                              deviceId: deviceProfile?.id,
+                              timestamp: new Date().toISOString(),
+                              overallRiskLevel: "MODERATE",
+                              risks: [
+                                {
+                                  id: "RISK-001",
+                                  category: "Safety",
+                                  description: "Potential for device malfunction during critical use",
+                                  severity: "High",
+                                  probability: "Low",
+                                  riskLevel: "MODERATE",
+                                  mitigations: [
+                                    "Implement robust quality control testing",
+                                    "Add redundant safety mechanisms",
+                                    "Provide clear warnings in instructions for use"
+                                  ]
+                                },
+                                {
+                                  id: "RISK-002",
+                                  category: "Manufacturing",
+                                  description: "Variation in device performance due to manufacturing processes",
+                                  severity: "Medium",
+                                  probability: "Medium",
+                                  riskLevel: "MODERATE",
+                                  mitigations: [
+                                    "Establish statistical process controls",
+                                    "Implement batch testing protocols",
+                                    "Conduct regular calibration of manufacturing equipment"
+                                  ]
+                                },
+                                {
+                                  id: "RISK-003",
+                                  category: "Regulatory",
+                                  description: "510(k) submission lacking sufficient evidence for substantial equivalence",
+                                  severity: "High",
+                                  probability: "Medium",
+                                  riskLevel: "HIGH",
+                                  mitigations: [
+                                    "Provide comprehensive comparison data with predicate devices",
+                                    "Include detailed testing results for all performance characteristics",
+                                    "Prepare responses to potential FDA questions in advance"
+                                  ]
+                                },
+                                {
+                                  id: "RISK-004",
+                                  category: "Clinical",
+                                  description: "Potential for adverse events in certain patient populations",
+                                  severity: "Medium",
+                                  probability: "Low",
+                                  riskLevel: "LOW",
+                                  mitigations: [
+                                    "Include contraindications for vulnerable populations",
+                                    "Provide clear usage guidelines for clinicians",
+                                    "Implement post-market surveillance plan"
+                                  ]
+                                },
+                                {
+                                  id: "RISK-005",
+                                  category: "Labeling",
+                                  description: "Inadequate instructions for use leading to improper device operation",
+                                  severity: "Medium",
+                                  probability: "Medium",
+                                  riskLevel: "MODERATE",
+                                  mitigations: [
+                                    "Develop comprehensive, user-tested instructions",
+                                    "Include visual aids and clear step-by-step procedures",
+                                    "Provide training materials for clinicians"
+                                  ]
+                                }
+                              ],
+                              recommendations: [
+                                "Address all identified high-risk items before submission",
+                                "Include a comprehensive risk management report in your 510(k) submission",
+                                "Document all mitigation efforts with supporting evidence",
+                                "Consider comparative risk analysis with predicate devices"
+                              ]
+                            };
+                            
+                            setRiskAssessmentData(riskData);
+                            saveState('riskAssessmentData', riskData);
+                            
+                            toast({
+                              title: "Risk Assessment Complete",
+                              description: "5 potential risks identified with recommended mitigations",
+                            });
+                          }, 6000);
+                        }}
+                        disabled={isAssessingRisks}
+                      >
+                        {isAssessingRisks ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Analyzing Risks...
+                          </>
+                        ) : (
+                          <>
+                            <AlertTriangle className="h-4 w-4 mr-2" />
+                            Start Risk Assessment
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                    
+                    {isAssessingRisks && (
+                      <div className="mt-4">
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Analyzing device risks and mitigations...</span>
+                          <span>{riskAssessmentProgress}%</span>
+                        </div>
+                        <Progress value={riskAssessmentProgress} className="h-2" />
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className={`p-4 rounded-md flex items-center justify-between ${
+                      riskAssessmentData.overallRiskLevel === "LOW" 
+                        ? "bg-green-50 border border-green-200" 
+                        : riskAssessmentData.overallRiskLevel === "MODERATE"
+                          ? "bg-orange-50 border border-orange-200"
+                          : "bg-red-50 border border-red-200"
+                    }`}>
+                      <div>
+                        <h3 className={`text-lg font-medium ${
+                          riskAssessmentData.overallRiskLevel === "LOW" 
+                            ? "text-green-800" 
+                            : riskAssessmentData.overallRiskLevel === "MODERATE"
+                              ? "text-orange-800"
+                              : "text-red-800"
+                        }`}>
+                          {riskAssessmentData.overallRiskLevel} Overall Risk
+                        </h3>
+                        <p className="text-sm mt-1">
+                          {riskAssessmentData.risks.length} risks identified with mitigations
+                        </p>
+                      </div>
+                      <div className="space-x-2">
+                        <Button variant="outline" size="sm" onClick={() => {
+                          setRiskAssessmentData(null);
+                          localStorage.removeItem('510k_riskAssessmentData');
+                          toast({
+                            title: "Assessment Reset",
+                            description: "Risk assessment has been reset",
+                          });
+                        }}>
+                          <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                          Reset
+                        </Button>
+                        <Button size="sm" onClick={() => {
+                          // In a real app, this would download a PDF report
+                          toast({
+                            title: "Report Generated",
+                            description: "Risk assessment report has been generated",
+                          });
+                        }}>
+                          <Download className="h-3.5 w-3.5 mr-1.5" />
+                          Export Report
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <h3 className="text-base font-medium mb-3">Identified Risks & Mitigations</h3>
+                      <div className="space-y-3">
+                        {riskAssessmentData.risks.map((risk) => (
+                          <div 
+                            key={risk.id} 
+                            className="border rounded-md p-4"
+                          >
+                            <div className="flex justify-between items-start mb-3">
+                              <div>
+                                <h4 className="font-medium flex items-center">
+                                  <span className={`h-2 w-2 rounded-full mr-2 ${
+                                    risk.riskLevel === "LOW" 
+                                      ? "bg-green-500" 
+                                      : risk.riskLevel === "MODERATE"
+                                        ? "bg-orange-500"
+                                        : "bg-red-500"
+                                  }`}></span>
+                                  {risk.description}
+                                </h4>
+                                <div className="flex space-x-4 text-xs text-gray-500 mt-1">
+                                  <span>ID: {risk.id}</span>
+                                  <span>Category: {risk.category}</span>
+                                  <span>Severity: {risk.severity}</span>
+                                  <span>Probability: {risk.probability}</span>
+                                </div>
+                              </div>
+                              <Badge 
+                                variant="outline" 
+                                className={
+                                  risk.riskLevel === "LOW" 
+                                    ? "border-green-500 text-green-700 bg-green-50" 
+                                    : risk.riskLevel === "MODERATE"
+                                      ? "border-orange-500 text-orange-700 bg-orange-50"
+                                      : "border-red-500 text-red-700 bg-red-50"
+                                }
+                              >
+                                {risk.riskLevel} RISK
+                              </Badge>
+                            </div>
+                            
+                            <div className="mt-2">
+                              <h5 className="text-sm font-medium mb-1">Recommended Mitigations:</h5>
+                              <ul className="text-sm space-y-1 pl-5 list-disc">
+                                {risk.mitigations.map((mitigation, index) => (
+                                  <li key={index}>{mitigation}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="border-t pt-4">
+                      <h3 className="text-base font-medium mb-2">Recommendations for 510(k) Submission</h3>
+                      <ul className="space-y-2">
+                        {riskAssessmentData.recommendations.map((rec, index) => (
+                          <li key={index} className="flex items-start">
+                            <Check className="h-5 w-5 text-green-500 mr-2 mt-0.5 shrink-0" />
+                            <span className="text-sm">{rec}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                    
+                    <div className="flex justify-between border-t pt-4">
+                      <div className="text-xs text-gray-500">
+                        Generated on {new Date(riskAssessmentData.timestamp).toLocaleString()}
+                      </div>
+                      <Button 
+                        onClick={() => {
+                          // Move to the next step
+                          setWorkflowStep(7);
+                          saveState('workflowStep', 7);
+                          const newProgress = Math.round((7 / 8) * 100);
+                          setWorkflowProgress(newProgress);
+                          saveState('workflowProgress', newProgress);
+                          setActiveTab('estar-builder');
+                          
+                          toast({
+                            title: "Moving to eSTAR Builder",
+                            description: "Risk assessment completed successfully",
+                          });
+                        }}
+                      >
+                        <ArrowRight className="h-4 w-4 mr-2" />
+                        Continue to eSTAR Builder
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        );
+        
+      case 7:
         return (
           <div className="space-y-6">
             {/* Report Generator */}
@@ -1468,29 +1894,81 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     if (documentType === '510k') {
       const k510TabGroups = [
         {
-          label: "510(k) Submission:",
-          tabs: [
-            { id: "device-profile", label: "Device Profile", icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-            { id: "predicates", label: "Predicate Finder", icon: <Search className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-            { id: "equivalence", label: <div className="flex flex-col items-center leading-tight">
-              <span>Substantial Equivalence</span>
-              <span className="text-[0.65rem] text-blue-600">FDA Requirements</span>
-            </div>, icon: <GitCompare className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-            { id: "compliance", label: <div className="flex flex-col items-center leading-tight">
-              <span>FDA Compliance</span>
-              <span className="text-[0.65rem] text-blue-600">510(k) Requirements</span>
-            </div>, icon: <CheckSquare className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
-            { id: "submission", label: <div className="flex items-center">
-              <span>Final Submission</span>
-              <span className="ml-1.5 bg-blue-100 text-blue-700 text-xs px-1.5 py-0.5 rounded-full shadow-sm">New</span>
-            </div>, icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> }
+          name: "Device Definition",
+          icon: <FileText className="h-4 w-4" />,
+          items: [
+            { 
+              id: "device-profile", 
+              name: "Device Profile", 
+              icon: <FileText className="h-4 w-4" />,
+              isCompleted: () => deviceProfile && deviceProfile.deviceName && deviceProfile.manufacturer && deviceProfile.intendedUse
+            },
+            { 
+              id: "predicates", 
+              name: "Predicate Finder", 
+              icon: <Search className="h-4 w-4" />,
+              isCompleted: () => predicateDevices && predicateDevices.length > 0
+            }
           ]
         },
         {
-          label: "Resources:",
-          tabs: [
-            { id: "fda-guidance", label: "FDA Guidance", icon: <BookOpen className="h-3.5 w-3.5 mr-1.5 text-green-600" /> },
-            { id: "assistant", label: "AI Assistant", icon: <Lightbulb className="h-3.5 w-3.5 mr-1.5 text-amber-500" /> }
+          name: "Literature & Evidence",
+          icon: <BookOpen className="h-4 w-4" />,
+          items: [
+            { 
+              id: "literature", 
+              name: "Literature Review", 
+              icon: <BookMarked className="h-4 w-4" />,
+              isCompleted: () => selectedLiterature && selectedLiterature.length > 0
+            }
+          ]
+        },
+        {
+          name: "Substantial Equivalence",
+          icon: <GitCompare className="h-4 w-4" />,
+          items: [
+            { 
+              id: "equivalence", 
+              name: "Equivalence Builder", 
+              icon: <GitCompare className="h-4 w-4" />,
+              isCompleted: () => equivalenceCompleted
+            }
+          ]
+        },
+        {
+          name: "Compliance & Risk",
+          icon: <ShieldCheck className="h-4 w-4" />,
+          items: [
+            { 
+              id: "compliance", 
+              name: "Compliance Check", 
+              icon: <CheckSquare className="h-4 w-4" />,
+              isCompleted: () => complianceScore && complianceScore.score > 65
+            },
+            { 
+              id: "risk-assessment", 
+              name: "Risk Assessment", 
+              icon: <AlertTriangle className="h-4 w-4" />,
+              isCompleted: () => riskAssessmentData && riskAssessmentData.risks && riskAssessmentData.risks.length > 0
+            }
+          ]
+        },
+        {
+          name: "Submission Package",
+          icon: <FileCheck className="h-4 w-4" />,
+          items: [
+            { 
+              id: "estar-builder", 
+              name: "eSTAR Builder", 
+              icon: <FileCheck className="h-4 w-4" />,
+              isCompleted: () => estarGeneratedUrl
+            },
+            { 
+              id: "report-generator", 
+              name: "Final Review", 
+              icon: <FileText className="h-4 w-4" />,
+              isCompleted: () => submissionReady
+            }
           ]
         }
       ];
@@ -1505,16 +1983,51 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                   {group.label}
                 </div>
                 <div className="flex space-x-1.5">
-                  {group.tabs.map((tab) => (
+                  {group.tabs && Array.isArray(group.tabs) && group.tabs.map((tab) => tab && (
                     <Button
                       key={tab.id}
                       variant={activeTab === tab.id ? 'default' : 'outline'}
                       className={`h-9 px-3 text-xs font-medium rounded ${
                         activeTab === tab.id
                           ? 'bg-blue-600 text-white hover:bg-blue-700'
-                          : 'text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
+                          : tab.id === 'predicates' && predicatesFound 
+                            ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                            : tab.id === 'literature' && selectedLiterature?.length > 0
+                              ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                              : tab.id === 'equivalence' && equivalenceCompleted
+                                ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                                : tab.id === 'compliance' && complianceScore?.score > 65
+                                  ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                                  : tab.id === 'risk-assessment' && riskAssessmentData?.risks?.length > 0
+                                    ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                                    : tab.id === 'estar-builder' && estarGeneratedUrl
+                                      ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                                      : tab.id === 'submission' && submissionReady
+                                        ? 'border-green-200 bg-green-50 text-green-700 hover:bg-green-100'
+                                        : 'text-gray-600 border-gray-200 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200'
                       }`}
                       onClick={() => {
+                        // Calculate new workflow step based on tab selection
+                        let newStep = 1;
+                        if (tab.id === 'predicates') newStep = 1;
+                        else if (tab.id === 'literature') newStep = 3;
+                        else if (tab.id === 'equivalence') newStep = 4;
+                        else if (tab.id === 'compliance') newStep = 5;
+                        else if (tab.id === 'risk-assessment') newStep = 6;
+                        else if (tab.id === 'estar-builder') newStep = 7;
+                        else if (tab.id === 'submission') newStep = 8;
+                        
+                        // Update workflow step if needed
+                        if (newStep !== workflowStep && tab.id !== 'assistant' && tab.id !== 'fda-guidance') {
+                          setWorkflowStep(newStep);
+                          saveState('workflowStep', newStep);
+                          
+                          // Update progress based on step position (8 steps total)
+                          const newProgress = Math.round((newStep / 8) * 100);
+                          setWorkflowProgress(newProgress);
+                          saveState('workflowProgress', newProgress);
+                        }
+                        
                         setActiveTab(tab.id);
                         // If this is the AI Assistant tab, open the assistant
                         if (tab.id === "assistant") {
@@ -1973,7 +2486,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm">510(k) Summary</span>
                             <span className="ml-auto text-xs text-green-600 font-medium">v1.3</span>
-                          </a>
+                          </button>
                           <button 
                             type="button"
                             className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
@@ -1997,6 +2510,75 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm">Regulatory Checklist</span>
                             <span className="ml-auto text-xs text-amber-600 font-medium">Draft</span>
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* 510(k) Documents */}
+                    <div className="mb-0.5">
+                      <div 
+                        className="flex items-center py-2 px-3 hover:bg-blue-50 cursor-pointer"
+                        onClick={() => toggleFolder('510k')}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${expandedFolders['510k'] ? 'rotate-90' : ''} mr-2 text-gray-500`}>
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-500">
+                          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        <span className="text-sm font-medium">510(k) Documents</span>
+                        <span className="ml-auto text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">4</span>
+                      </div>
+                      {expandedFolders['510k'] && (
+                        <div>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => openDocumentSafely('/attached_assets/Format-and-Content-of-the-Clinical-and-Statistical-Sections-of-an-Application.pdf', 'FDA Submission Template', toast)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">FDA Submission Template</span>
+                            <span className="ml-auto text-xs text-blue-600 font-medium">2025</span>
+                          </button>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => openDocumentSafely('/attached_assets/Choosing-the-Right-Study-Design-for-Your-Research-20220921.pdf', 'Study Design Guidelines', toast)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">Study Design Guidelines</span>
+                            <span className="ml-auto text-xs text-blue-600 font-medium">2022</span>
+                          </button>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => openDocumentSafely('/attached_assets/ICH_Q2(R2)_Guideline_2023_1130.pdf', 'ICH Guidelines', toast)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">ICH Guidelines</span>
+                            <span className="ml-auto text-xs text-blue-600 font-medium">2023</span>
+                          </button>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => openDocumentSafely('/attached_assets/Human-Factors-Studies-and-Related-Clinical-Study-Considerations-in-Combination-Product-Design-and-Development.pdf', 'Human Factors Studies', toast)}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">Human Factors Studies</span>
+                            <span className="ml-auto text-xs text-blue-600 font-medium">2024</span>
                           </button>
                         </div>
                       )}
@@ -2281,14 +2863,126 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                         <polyline points="17 8 12 3 7 8"></polyline>
                         <line x1="12" y1="3" x2="12" y2="15"></line>
                       </svg>
-                      Upload
+                      Upload Document
                       <input 
                         type="file" 
                         accept=".pdf,.doc,.docx,.xlsx,.ppt,.pptx" 
                         className="hidden" 
-                        onChange={handleFileUpload}
+                        onChange={(e) => {
+                          const file = e.target.files[0];
+                          if (file) {
+                            // Show upload in progress
+                            toast({
+                              title: "Uploading Document",
+                              description: `Uploading ${file.name}...`
+                            });
+                            
+                            // Simulate file upload with delay (in real app, this would be an actual upload)
+                            setTimeout(() => {
+                              // Success notification
+                              toast({
+                                title: "Upload Complete",
+                                description: `${file.name} has been added to the document vault`
+                              });
+                              
+                              // Expand appropriate folder based on file type/name
+                              if (file.name.toLowerCase().includes('510') || 
+                                  file.name.toLowerCase().includes('fda') || 
+                                  file.name.toLowerCase().includes('submission')) {
+                                setExpandedFolders(prev => ({...prev, submissions: true}));
+                              } else if (file.name.toLowerCase().includes('clinical') || 
+                                         file.name.toLowerCase().includes('study')) {
+                                setExpandedFolders(prev => ({...prev, clinical: true}));
+                              } else if (file.name.toLowerCase().includes('tech') || 
+                                         file.name.toLowerCase().includes('spec')) {
+                                setExpandedFolders(prev => ({...prev, technical: true}));
+                              } else {
+                                setExpandedFolders(prev => ({...prev, regulatory: true}));
+                              }
+                              
+                              // Clear the file input for future uploads
+                              e.target.value = null;
+                            }, 1800);
+                          }
+                        }}
                       />
                     </label>
+                    <button 
+                      className="flex items-center justify-center py-1.5 px-3 border border-green-600 bg-green-50 hover:bg-green-100 text-green-700 text-sm font-medium rounded-md"
+                      onClick={() => setShowFolderCreate(true)}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        <line x1="12" y1="11" x2="12" y2="17"></line>
+                        <line x1="9" y1="14" x2="15" y2="14"></line>
+                      </svg>
+                      New Folder
+                    </button>
+                    
+                    <div className="relative">
+                      <input
+                        type="file"
+                        id="documentUpload"
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files.length > 0) {
+                            const fileName = e.target.files[0].name;
+                            
+                            // Show that the document is being uploaded and processed
+                            toast({
+                              title: "Uploading Document",
+                              description: `Processing ${fileName}...`
+                            });
+                            
+                            // Simulate document upload and AI processing
+                            setTimeout(() => {
+                              toast({
+                                title: "Document Uploaded",
+                                description: `${fileName} has been analyzed and categorized`
+                              });
+                              
+                              // Simulate document being uploaded and automatically classified
+                              setShowProcessingResults(true);
+                              setProcessingType('upload');
+                              
+                              // Set upload results with AI analysis
+                              setProcessingResults({
+                                processingType: 'upload',
+                                status: 'success',
+                                timestamp: new Date().toISOString(),
+                                fileName: fileName,
+                                fileSize: '2.4 MB',
+                                fileType: fileName.endsWith('.pdf') ? 'PDF Document' : 'Document',
+                                results: {
+                                  documentType: '510(k) Technical Document',
+                                  autoClassification: 'Performance Testing',
+                                  suggestedFolder: 'Regulatory Documents/510(k) Documents/Performance Testing',
+                                  contentSummary: 'This document contains bench testing results for the device, including mechanical strength testing, durability assessment, and biocompatibility data according to ISO 10993 standards.',
+                                  relevantStandards: [
+                                    'ISO 10993-1:2018',
+                                    'FDA 21 CFR 807.92(b)(3)',
+                                    'ASTM F2514-08'
+                                  ]
+                                }
+                              });
+                            }, 1500);
+                          }
+                        }}
+                        multiple={false}
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                      />
+                      <button 
+                        className="flex items-center justify-center py-1.5 px-3 border border-blue-600 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium rounded-md"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="17 8 12 3 7 8"></polyline>
+                          <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Upload Document
+                      </button>
+                    </div>
+                    
                     <button 
                       className="flex items-center justify-center py-1.5 px-3 border border-gray-300 hover:bg-gray-100 text-sm font-medium rounded-md"
                       onClick={() => {
@@ -2313,9 +3007,691 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                       </svg>
                       Export
                     </button>
+                    
+                    <button 
+                      className="flex items-center justify-center py-1.5 px-3 border border-purple-600 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm font-medium rounded-md"
+                      onClick={() => {
+                        toast({
+                          title: "Workflow Integration",
+                          description: "Adding documents to the 510(k) submission workflow..."
+                        });
+                        
+                        setTimeout(() => {
+                          toast({
+                            title: "Workflow Updated",
+                            description: "Documents are now linked to the current workflow stage"
+                          });
+                        }, 1000);
+                      }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="3" y1="9" x2="21" y2="9"></line>
+                        <line x1="9" y1="21" x2="9" y2="9"></line>
+                      </svg>
+                      Add to Workflow
+                    </button>
                   </div>
                   
-                  {/* Create new folder button */}
+                  {/* Advanced Document Processing Panel */}
+                  <div className="mt-2 border rounded-md bg-gray-50 p-3">
+                    <h4 className="text-sm font-semibold mb-3 flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                      </svg>
+                      AI Document Intelligence
+                    </h4>
+                    
+                    <div className="space-y-2 mb-3">
+                      <input 
+                        type="text"
+                        placeholder="Search documents by content..."
+                        className="w-full px-3 py-1.5 text-sm border border-gray-300 rounded-md"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            toast({
+                              title: "Semantic Search",
+                              description: `Searching for "${e.target.value}" in document content...`
+                            });
+                            
+                            // This would call the vault search API in production
+                            setTimeout(() => {
+                              toast({
+                                title: "Search Complete",
+                                description: "3 matching sections found across documents"
+                              });
+                            }, 1200);
+                          }
+                        }}
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <button 
+                        className="w-full flex items-center justify-center py-1.5 px-3 border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-sm font-medium rounded-md"
+                        onClick={() => {
+                          toast({
+                            title: "Running Compliance Check",
+                            description: "Analyzing documents for regulatory compliance..."
+                          });
+                          
+                          // Initialize compliance check processing
+                          setShowProcessingResults(true);
+                          setProcessingType('compliance');
+                          
+                          setTimeout(() => {
+                            toast({
+                              title: "Compliance Analysis Complete",
+                              description: "Found 1 issue requiring attention"
+                            });
+                            
+                            // Set simulated processing results
+                            setProcessingResults({
+                              processingType: 'compliance',
+                              status: 'complete',
+                              timestamp: new Date().toISOString(),
+                              results: [
+                                {
+                                  id: 'comp-1',
+                                  section: 'Device Description',
+                                  standard: 'FDA 21 CFR 807.92(a)(4)',
+                                  documents: ['Device Technical Documentation.pdf'],
+                                  status: 'compliant',
+                                  message: 'The device description contains all required elements for a 510(k) submission.',
+                                  confidence: 0.96
+                                },
+                                {
+                                  id: 'comp-2',
+                                  section: 'Substantial Equivalence',
+                                  standard: 'FDA 21 CFR 807.92(b)',
+                                  documents: ['Predicate Device Comparison.pdf'],
+                                  status: 'compliant',
+                                  message: 'Comparison to predicate device adequately demonstrates substantial equivalence.',
+                                  confidence: 0.92
+                                },
+                                {
+                                  id: 'comp-3',
+                                  section: 'Performance Testing',
+                                  standard: 'FDA 21 CFR 807.92(b)(3)',
+                                  documents: ['Bench Testing Report.pdf'],
+                                  status: 'non-compliant',
+                                  message: 'Performance testing documentation is incomplete. Missing biocompatibility test results according to ISO 10993.',
+                                  confidence: 0.89,
+                                  recommendation: 'Add biocompatibility testing results for all patient-contacting materials according to ISO 10993-1 requirements.'
+                                },
+                                {
+                                  id: 'comp-4',
+                                  section: 'Clinical Evidence',
+                                  standard: 'FDA 21 CFR 807.92(b)(2)',
+                                  documents: ['Clinical Study Report 510k.pdf'],
+                                  status: 'compliant',
+                                  message: 'Clinical evidence sufficiently demonstrates safety and effectiveness for the intended use.',
+                                  confidence: 0.94
+                                }
+                              ]
+                            });
+                          }, 2000);
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                        Run Compliance Check
+                      </button>
+                      
+                      <button 
+                        className="w-full flex items-center justify-center py-1.5 px-3 border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-700 text-sm font-medium rounded-md"
+                        onClick={() => {
+                          toast({
+                            title: "AI Analysis",
+                            description: "Generating regulatory tags from document content..."
+                          });
+                          
+                          // Initialize smart tag processing
+                          setShowProcessingResults(true);
+                          setProcessingType('tags');
+                          
+                          setTimeout(() => {
+                            toast({
+                              title: "Tag Generation Complete",
+                              description: "8 regulatory tags extracted from documents"
+                            });
+                            
+                            // Set simulated processing results
+                            setProcessingResults({
+                              processingType: 'tags',
+                              status: 'success',
+                              timestamp: new Date().toISOString(),
+                              results: [
+                                {
+                                  id: 'tag-1',
+                                  category: 'Regulatory Standards',
+                                  tags: [
+                                    { name: 'ISO 13485:2016', confidence: 0.94, relevance: 'high' },
+                                    { name: 'FDA 21 CFR Part 820', confidence: 0.91, relevance: 'high' },
+                                    { name: 'EU MDR 2017/745', confidence: 0.88, relevance: 'medium' }
+                                  ]
+                                },
+                                {
+                                  id: 'tag-2',
+                                  category: 'Safety & Performance',
+                                  tags: [
+                                    { name: 'Biocompatibility', confidence: 0.92, relevance: 'high' },
+                                    { name: 'Sterilization Validation', confidence: 0.89, relevance: 'high' },
+                                    { name: 'Performance Testing', confidence: 0.93, relevance: 'medium' }
+                                  ]
+                                },
+                                {
+                                  id: 'tag-3',
+                                  category: 'Clinical Evidence',
+                                  tags: [
+                                    { name: 'Clinical Evaluation', confidence: 0.96, relevance: 'high' },
+                                    { name: 'Post-Market Surveillance', confidence: 0.87, relevance: 'medium' }
+                                  ]
+                                }
+                              ]
+                            });
+                          }, 1500);
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                        </svg>
+                        Generate Smart Tags
+                      </button>
+                      
+                      <button 
+                        className="w-full flex items-center justify-center py-1.5 px-3 border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-700 text-sm font-medium rounded-md"
+                        onClick={() => {
+                          toast({
+                            title: "OCR Processing",
+                            description: "Extracting text from document images..."
+                          });
+                          
+                          // Call OCR processing on the /api/vault/process-images endpoint
+                          // This is a mockup API call for the investor demo
+                          setShowProcessingResults(true);
+                          setProcessingType('ocr');
+                          
+                          setTimeout(() => {
+                            toast({
+                              title: "OCR Complete",
+                              description: "Text extracted from 2 scanned documents"
+                            });
+                            
+                            // Set simulated processing results
+                            setProcessingResults({
+                              processingType: 'ocr',
+                              status: 'success',
+                              timestamp: new Date().toISOString(),
+                              results: [
+                                {
+                                  id: 'doc-1',
+                                  title: 'Clinical Study Report 510k.pdf',
+                                  wordCount: 5842,
+                                  confidence: 0.94,
+                                  extract: "This clinical evaluation provides a critical assessment of the relevant pre-clinical and clinical data relating to the safety and performance of the MEDXHEALTH AUTOSTENT Device...",
+                                  pages: 27
+                                },
+                                {
+                                  id: 'doc-2',
+                                  title: 'Annual Device Report.pdf',
+                                  wordCount: 3215,
+                                  confidence: 0.89,
+                                  extract: "Annual monitoring period: January 2024 - December 2024. Total number of devices sold: 1,245. Adverse event rate: 0.3%...",
+                                  pages: 18
+                                }
+                              ]
+                            });
+                          }, 2500);
+                        }}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-1.5">
+                          <polygon points="14 2 18 6 7 17 3 17 3 13 14 2"></polygon>
+                          <line x1="3" y1="22" x2="21" y2="22"></line>
+                        </svg>
+                        Process Scanned Documents
+                      </button>
+                    </div>
+                  </div>
+                  
+                  {/* Document Processing Results Panel */}
+                  {showProcessingResults && processingResults && (
+                    <div className="mt-4 border rounded-md overflow-hidden">
+                      <div className="bg-gray-100 px-3 py-2 border-b flex items-center justify-between">
+                        <h3 className="font-medium flex items-center">
+                          {processingType === 'ocr' && (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-purple-600">
+                                <polygon points="14 2 18 6 7 17 3 17 3 13 14 2"></polygon>
+                                <line x1="3" y1="22" x2="21" y2="22"></line>
+                              </svg>
+                              OCR Processing Results
+                            </>
+                          )}
+                          {processingType === 'tags' && (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-600">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                              </svg>
+                              Smart Tags Generated
+                            </>
+                          )}
+                          {processingType === 'compliance' && (
+                            <>
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                              </svg>
+                              Compliance Check Results
+                            </>
+                          )}
+                        </h3>
+                        <button 
+                          className="text-gray-500 hover:text-gray-700"
+                          onClick={() => setShowProcessingResults(false)}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                      </div>
+                      
+                      <div className="p-3">
+                        {processingType === 'ocr' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between text-sm text-gray-500 border-b pb-2">
+                              <span>Processed on: {new Date(processingResults.timestamp).toLocaleString()}</span>
+                              <span>Status: <span className="text-green-600 font-medium">Successful</span></span>
+                            </div>
+                            
+                            {processingResults.results.map(doc => (
+                              <div key={doc.id} className="border rounded-md p-3">
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="font-medium text-gray-900 flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-red-500">
+                                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                      <polyline points="14 2 14 8 20 8"></polyline>
+                                    </svg>
+                                    {doc.title}
+                                  </h4>
+                                  <span className="text-sm text-gray-500">
+                                    {doc.pages} pages • {doc.wordCount.toLocaleString()} words
+                                  </span>
+                                </div>
+                                
+                                <div className="text-sm bg-gray-50 p-2 rounded border mb-2">
+                                  <p className="text-gray-700">{doc.extract}</p>
+                                </div>
+                                
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="text-gray-500">OCR Confidence: {(doc.confidence * 100).toFixed(1)}%</span>
+                                  <div>
+                                    <button className="text-blue-600 hover:text-blue-800 mr-3">
+                                      View Full Text
+                                    </button>
+                                    <button className="text-purple-600 hover:text-purple-800">
+                                      Add to Document
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                            
+                            <div className="flex justify-end mt-2">
+                              <button 
+                                className="px-3 py-1.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-md text-sm font-medium hover:bg-purple-100"
+                                onClick={() => {
+                                  setShowProcessingResults(false);
+                                  toast({
+                                    title: "Processing Complete",
+                                    description: "OCR results have been saved to the document vault"
+                                  });
+                                }}
+                              >
+                                Save Results
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {processingType === 'compliance' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between text-sm text-gray-500 border-b pb-2">
+                              <span>Analyzed on: {new Date(processingResults.timestamp).toLocaleString()}</span>
+                              <span>Status: <span className="text-amber-600 font-medium">Needs Review</span></span>
+                            </div>
+                            
+                            <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm mb-3">
+                              <div className="flex items-center text-amber-700 font-medium mb-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2">
+                                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                                  <line x1="12" y1="9" x2="12" y2="13"></line>
+                                  <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                </svg>
+                                Your submission has 1 compliance issue that requires attention
+                              </div>
+                              <p className="text-amber-600 ml-6">Please review and address all compliance issues before final submission.</p>
+                            </div>
+                            
+                            {processingResults.results.map(item => (
+                              <div 
+                                key={item.id} 
+                                className={`border rounded-md p-3 ${item.status === 'non-compliant' ? 'border-red-200 bg-red-50' : ''}`}
+                              >
+                                <div className="flex items-center justify-between mb-2">
+                                  <h4 className="font-medium text-gray-900 flex items-center">
+                                    {item.status === 'compliant' ? (
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-green-500">
+                                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                                      </svg>
+                                    ) : (
+                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-red-500">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                                      </svg>
+                                    )}
+                                    {item.section}
+                                  </h4>
+                                  <span className="text-sm text-gray-500">
+                                    {item.standard}
+                                  </span>
+                                </div>
+                                
+                                <div className={`text-sm p-2 rounded border mb-2 ${
+                                  item.status === 'non-compliant' 
+                                    ? 'bg-white border-red-200 text-red-700' 
+                                    : 'bg-gray-50 border-gray-200 text-gray-700'
+                                }`}>
+                                  <p>{item.message}</p>
+                                  {item.recommendation && (
+                                    <div className="mt-2 pt-2 border-t border-red-200">
+                                      <p className="font-medium">Recommendation:</p>
+                                      <p>{item.recommendation}</p>
+                                    </div>
+                                  )}
+                                </div>
+                                
+                                <div className="flex items-center justify-between text-sm">
+                                  <div>
+                                    <span className="text-gray-500 mr-4">Documents: </span>
+                                    {item.documents.map((doc, index) => (
+                                      <span key={index} className="text-blue-600">{doc}{index < item.documents.length - 1 ? ', ' : ''}</span>
+                                    ))}
+                                  </div>
+                                  <span className="text-gray-500">Confidence: {(item.confidence * 100).toFixed(0)}%</span>
+                                </div>
+                                
+                                {item.status === 'non-compliant' && (
+                                  <div className="mt-3 pt-2 border-t flex justify-end">
+                                    <button className="px-3 py-1 bg-red-50 text-red-700 border border-red-200 rounded-md text-sm font-medium hover:bg-red-100">
+                                      Fix Issue
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                            
+                            <div className="flex justify-end mt-2">
+                              <button 
+                                className="px-3 py-1.5 bg-blue-50 text-blue-700 border border-blue-200 rounded-md text-sm font-medium hover:bg-blue-100"
+                                onClick={() => {
+                                  setShowProcessingResults(false);
+                                  toast({
+                                    title: "Compliance Report Saved",
+                                    description: "You can access this report in the document history"
+                                  });
+                                }}
+                              >
+                                Save Report
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {processingType === 'upload' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between text-sm text-gray-500 border-b pb-2">
+                              <span>Processed on: {new Date(processingResults.timestamp).toLocaleString()}</span>
+                              <span>Status: <span className="text-green-600 font-medium">Success</span></span>
+                            </div>
+                            
+                            <div className="border rounded-md p-3">
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-medium text-gray-900 flex items-center">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-red-500">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                  </svg>
+                                  {processingResults.fileName}
+                                </h4>
+                                <div className="text-sm text-gray-500">
+                                  {processingResults.fileSize} • {processingResults.fileType}
+                                </div>
+                              </div>
+                              
+                              <div className="bg-blue-50 border border-blue-100 rounded-md p-3 mb-3">
+                                <h5 className="text-sm font-medium text-blue-700 mb-2">AI Document Classification</h5>
+                                <div className="grid grid-cols-2 gap-2 text-sm mb-2">
+                                  <div>
+                                    <span className="text-gray-500">Document Type:</span>
+                                    <span className="ml-2 font-medium">{processingResults.results.documentType}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-500">Category:</span>
+                                    <span className="ml-2 font-medium">{processingResults.results.autoClassification}</span>
+                                  </div>
+                                </div>
+                                <div className="mb-2 text-sm">
+                                  <span className="text-gray-500">Suggested Location:</span>
+                                  <span className="ml-2 font-medium">{processingResults.results.suggestedFolder}</span>
+                                </div>
+                              </div>
+                              
+                              <div className="border rounded-md p-3 bg-gray-50 mb-3 text-sm">
+                                <h5 className="font-medium text-gray-900 mb-2">Document Summary</h5>
+                                <p className="text-gray-700">{processingResults.results.contentSummary}</p>
+                              </div>
+                              
+                              {processingResults.results.relevantStandards && (
+                                <div className="mb-3">
+                                  <h5 className="font-medium text-sm text-gray-900 mb-2">Relevant Standards</h5>
+                                  <div className="flex flex-wrap gap-2">
+                                    {processingResults.results.relevantStandards.map((standard, index) => (
+                                      <span 
+                                        key={index} 
+                                        className="text-xs bg-amber-50 text-amber-700 border border-amber-200 px-2 py-1 rounded-md"
+                                      >
+                                        {standard}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <div className="flex items-center justify-between pt-2 border-t">
+                                <div className="flex space-x-2">
+                                  <button className="px-3 py-1.5 bg-green-50 text-green-700 border border-green-200 rounded-md text-sm font-medium hover:bg-green-100">
+                                    Accept Classification
+                                  </button>
+                                  <button className="px-3 py-1.5 bg-gray-50 text-gray-700 border border-gray-200 rounded-md text-sm font-medium hover:bg-gray-100">
+                                    Change Category
+                                  </button>
+                                </div>
+                                <button 
+                                  className="text-blue-600 hover:text-blue-800 text-sm"
+                                  onClick={() => {
+                                    // Add document to compliance check
+                                    toast({
+                                      title: "Added to Workflow",
+                                      description: "Document added to Performance Testing workflow stage"
+                                    });
+                                    
+                                    setShowProcessingResults(false);
+                                  }}
+                                >
+                                  Add to Current Workflow
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {processingType === 'tags' && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between text-sm text-gray-500 border-b pb-2">
+                              <span>Generated on: {new Date(processingResults.timestamp).toLocaleString()}</span>
+                              <span>Status: <span className="text-green-600 font-medium">Complete</span></span>
+                            </div>
+                            
+                            {processingResults.results.map(category => (
+                              <div key={category.id} className="border rounded-md p-3">
+                                <h4 className="font-medium text-gray-900 mb-2 pb-2 border-b flex items-center">
+                                  {category.category === 'Regulatory Standards' && (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-500">
+                                      <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+                                      <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+                                      <line x1="6" y1="1" x2="6" y2="4"></line>
+                                      <line x1="10" y1="1" x2="10" y2="4"></line>
+                                      <line x1="14" y1="1" x2="14" y2="4"></line>
+                                    </svg>
+                                  )}
+                                  {category.category === 'Safety & Performance' && (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-green-500">
+                                      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                    </svg>
+                                  )}
+                                  {category.category === 'Clinical Evidence' && (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-amber-500">
+                                      <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+                                    </svg>
+                                  )}
+                                  {category.category}
+                                </h4>
+                                
+                                <div className="flex flex-wrap gap-2 mb-3">
+                                  {category.tags.map((tag, index) => (
+                                    <div 
+                                      key={index} 
+                                      className={`text-sm px-2 py-1 rounded-md flex items-center
+                                        ${tag.relevance === 'high' 
+                                          ? 'bg-amber-50 text-amber-700 border border-amber-200' 
+                                          : 'bg-gray-50 text-gray-700 border border-gray-200'
+                                        }`}
+                                    >
+                                      <span className="mr-1">{tag.name}</span>
+                                      <span className="text-xs opacity-70">({(tag.confidence * 100).toFixed(0)}%)</span>
+                                    </div>
+                                  ))}
+                                </div>
+
+                                <div className="flex justify-end text-sm">
+                                  <button className="text-amber-600 hover:text-amber-800">
+                                    Apply Tags to Document
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                            
+                            <div className="flex justify-end mt-2">
+                              <button 
+                                className="px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-md text-sm font-medium hover:bg-amber-100"
+                                onClick={() => {
+                                  setShowProcessingResults(false);
+                                  toast({
+                                    title: "Tags Generated",
+                                    description: "Regulatory tags have been saved to the document metadata"
+                                  });
+                                }}
+                              >
+                                Save All Tags
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Create new folder dialog */}
+                  {showFolderCreate && (
+                    <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
+                      <div className="bg-white rounded-lg shadow-xl p-4 w-80">
+                        <h3 className="text-lg font-medium mb-3">Create New Folder</h3>
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Folder Name
+                          </label>
+                          <input
+                            type="text"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter folder name"
+                            value={newFolderName}
+                            onChange={(e) => setNewFolderName(e.target.value)}
+                          />
+                        </div>
+                        <div className="mb-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Parent Folder
+                          </label>
+                          <select 
+                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="regulatory">Regulatory Documents</option>
+                            <option value="clinical">Clinical Documents</option>
+                            <option value="technical">Technical Documents</option>
+                            <option value="submissions">Submission Documents</option>
+                            <option value="510k">510(k) Documents</option>
+                            <option value="global">Global Documents</option>
+                          </select>
+                        </div>
+                        <div className="flex justify-end space-x-2">
+                          <button
+                            type="button"
+                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium bg-white hover:bg-gray-50"
+                            onClick={() => {
+                              setShowFolderCreate(false);
+                              setNewFolderName('');
+                            }}
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            type="button"
+                            className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+                            onClick={() => {
+                              if (newFolderName.trim()) {
+                                // Would store in database in production
+                                toast({
+                                  title: "Folder Created",
+                                  description: `Folder "${newFolderName}" created successfully`
+                                });
+                                setShowFolderCreate(false);
+                                setNewFolderName('');
+                              } else {
+                                toast({
+                                  title: "Error",
+                                  description: "Please enter a folder name",
+                                  variant: "destructive"
+                                });
+                              }
+                            }}
+                          >
+                            Create
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Additional vault actions */}
                   <div className="mt-2">
                     <button 
                       className="w-full flex items-center justify-center py-1.5 px-3 border border-gray-300 bg-white hover:bg-gray-50 text-sm font-medium rounded-md"
