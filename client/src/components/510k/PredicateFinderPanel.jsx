@@ -516,16 +516,51 @@ const PredicateFinderPanel = ({
       console.error('[510k] Failed to save updated device profile:', error);
     }
     
-    // Notify parent component that predicates have been found and selected
-    if (onPredicatesFound) {
-      onPredicatesFound(selectedPredicates);
+    // CRITICAL STABILITY FIX: Safely transition to next workflow step
+    console.log('[510k] Preparing to transition to literature analysis step');
+    
+    // 1. Double check predicate data is ready before transition
+    const predicateDataReady = selectedPredicates && selectedPredicates.length > 0;
+    
+    if (!predicateDataReady) {
+      console.warn('[510k] Attempting to transition with missing predicate data');
+      
+      toast({
+        title: "Selection Error",
+        description: "Please select at least one predicate device to continue",
+        variant: "destructive"
+      });
+      return;
     }
     
+    // 2. Ensure predicates are saved one last time before transition
+    try {
+      localStorage.setItem('510k_selectedPredicates_final', JSON.stringify(selectedPredicates));
+      console.log('[510k] Final save of predicate data before transition');
+    } catch (error) {
+      console.warn('[510k] Error during final predicate data save:', error);
+      // Continue despite error - we have other backup mechanisms
+    }
+    
+    // 3. Display success message to user
     toast({
       title: "Predicates Selected",
       description: `You have selected ${selectedPredicates.length} predicate device(s) for your 510(k) submission.`,
       variant: "success"
     });
+    
+    // 4. Notify parent component that predicates have been found and selected
+    console.log('[510k] Notifying parent component of selected predicates:', selectedPredicates.length);
+    
+    // Small delay to ensure state updates are processed before callback
+    setTimeout(() => {
+      if (onPredicatesFound) {
+        console.log('[510k] Executing onPredicatesFound callback');
+        onPredicatesFound(selectedPredicates);
+      } else {
+        console.warn('[510k] onPredicatesFound callback not available');
+      }
+    }, 100);
   };
   
   // Search for literature related to the device and predicates
