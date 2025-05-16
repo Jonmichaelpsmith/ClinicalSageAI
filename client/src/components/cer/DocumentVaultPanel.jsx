@@ -774,7 +774,7 @@ export default function DocumentVaultPanel({
           <CardContent className="p-3 flex flex-col items-center justify-center">
             <div className="text-3xl font-bold text-green-600">{documentMetrics.final}</div>
             <p className="text-xs text-gray-600 font-medium mt-1 flex items-center">
-              <CheckCircle className="h-3 w-3 mr-1 text-green-500" />
+              <span className="h-3 w-3 mr-1 text-green-500 rounded-full bg-green-500"></span>
               Final
             </p>
             <div className="mt-1 h-1 w-16 bg-gray-100 rounded-full overflow-hidden">
