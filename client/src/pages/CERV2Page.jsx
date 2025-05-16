@@ -1978,14 +1978,10 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             <span className="text-sm">510(k) Summary</span>
                             <span className="ml-auto text-xs text-green-600 font-medium">v1.3</span>
                           </a>
-                          <a 
-                            href="/attached_assets/E3-Structure-and-Content-of-Clinical-Study-Reports.pdf" 
-                            target="_blank"
-                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              window.open('/attached_assets/E3-Structure-and-Content-of-Clinical-Study-Reports.pdf', '_blank');
-                            }}
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => openDocumentSafely('/attached_assets/E3-Structure-and-Content-of-Clinical-Study-Reports.pdf', 'Clinical Study Report', toast)}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
                               <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
@@ -2005,7 +2001,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm">Regulatory Checklist</span>
                             <span className="ml-auto text-xs text-amber-600 font-medium">Draft</span>
-                          </a>
+                          </button>
                         </div>
                       )}
                     </div>
