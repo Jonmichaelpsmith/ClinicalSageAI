@@ -42,7 +42,8 @@ import {
   ArrowLeft,
   X,
   FileBox,
-  Loader2
+  Loader2,
+  BookOpen
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
