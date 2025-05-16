@@ -39,6 +39,234 @@ const extractTenantContext = (req: Request, res: Response, next: Function) => {
 router.use(extractTenantContext);
 
 /**
+ * POST /api/fda510k/predicates/search
+ * Search for predicate devices based on search criteria
+ */
+router.post('/predicates/search', async (req: Request, res: Response) => {
+  try {
+    const { deviceName, productCode, manufacturer } = req.body;
+    const tenantContext = (req as any).tenantContext;
+    
+    console.log('510(k) Predicate device search request:', {
+      deviceName,
+      productCode,
+      manufacturer,
+      tenantContext
+    });
+    
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    // Create a base set of predicate devices
+    const baseDate = new Date();
+    const results = [
+      {
+        id: 'pred-001',
+        k_number: 'K210001',
+        device_name: deviceName ? `${deviceName} Predecessor` : 'CardioTrack ECG Monitor',
+        applicant_100: manufacturer || 'MedTech Innovations Inc.',
+        decision_date: new Date(baseDate.getFullYear() - 1, 3, 15).toISOString(),
+        product_code: productCode || 'DPS',
+        decision_description: 'SUBSTANTIALLY EQUIVALENT',
+        device_class: 'II',
+        review_advisory_committee: 'Cardiovascular',
+        submission_type_id: 'Traditional',
+        relevance_score: 0.95
+      },
+      {
+        id: 'pred-002',
+        k_number: 'K193542',
+        device_name: deviceName ? `${deviceName} Pro` : 'GlucoSense Meter Pro',
+        applicant_100: 'Diabetes Care Systems LLC',
+        decision_date: new Date(baseDate.getFullYear() - 2, 6, 28).toISOString(),
+        product_code: productCode || 'NBW',
+        decision_description: 'SUBSTANTIALLY EQUIVALENT',
+        device_class: 'II',
+        review_advisory_committee: 'Clinical Chemistry',
+        submission_type_id: 'Traditional',
+        relevance_score: 0.88
+      },
+      {
+        id: 'pred-003',
+        k_number: 'K182876',
+        device_name: 'ArthroFlex Surgical Instrument',
+        applicant_100: 'Ortho Surgical Devices Corp.',
+        decision_date: new Date(baseDate.getFullYear() - 3, 1, 12).toISOString(),
+        product_code: 'JWH',
+        decision_description: 'SUBSTANTIALLY EQUIVALENT',
+        device_class: 'II',
+        review_advisory_committee: 'Orthopedic',
+        submission_type_id: 'Special',
+        relevance_score: 0.72
+      }
+    ];
+    
+    // Filter results based on search criteria
+    let filteredResults = [...results];
+    
+    if (manufacturer) {
+      filteredResults = filteredResults.filter(item => 
+        item.applicant_100.toLowerCase().includes(manufacturer.toLowerCase())
+      );
+    }
+    
+    if (productCode) {
+      filteredResults = filteredResults.filter(item => 
+        item.product_code.toLowerCase() === productCode.toLowerCase()
+      );
+    }
+    
+    res.json(filteredResults);
+  } catch (error) {
+    console.error('Error searching for predicate devices:', error);
+    res.status(500).json({
+      error: error.message,
+      status: 'error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
+ * GET /api/fda510k/predicates/number/:k510Number
+ * Get a specific predicate device by 510(k) number
+ */
+router.get('/predicates/number/:k510Number', async (req: Request, res: Response) => {
+  try {
+    const { k510Number } = req.params;
+    const tenantContext = (req as any).tenantContext;
+    
+    console.log('510(k) Get predicate by K number request:', {
+      k510Number,
+      tenantContext
+    });
+    
+    // Simulate processing delay
+    await new Promise(resolve => setTimeout(resolve, 400));
+    
+    // Check if the requested K number matches any of our predefined devices
+    if (k510Number === 'K210001') {
+      res.json({
+        id: 'pred-001',
+        k_number: 'K210001',
+        device_name: 'CardioTrack ECG Monitor',
+        applicant_100: 'MedTech Innovations Inc.',
+        decision_date: new Date(new Date().getFullYear() - 1, 3, 15).toISOString(),
+        product_code: 'DPS',
+        decision_description: 'SUBSTANTIALLY EQUIVALENT',
+        device_class: 'II',
+        review_advisory_committee: 'Cardiovascular',
+        submission_type_id: 'Traditional',
+        relevance_score: 0.95,
+        details: {
+          indications_for_use: 'Continuous monitoring of ECG activity for patients with suspected cardiac conditions',
+          technological_characteristics: {
+            sensors: 'Advanced semiconductor-based ECG sensors',
+            connectivity: 'Bluetooth and WiFi',
+            battery_life: '36 hours',
+            display: 'Touch-enabled LCD display'
+          },
+          testing_data: {
+            clinical_trials: 2,
+            participants: 248,
+            accuracy_rate: 0.982
+          }
+        }
+      });
+    } else if (k510Number === 'K193542') {
+      res.json({
+        id: 'pred-002',
+        k_number: 'K193542',
+        device_name: 'GlucoSense Meter Pro',
+        applicant_100: 'Diabetes Care Systems LLC',
+        decision_date: new Date(new Date().getFullYear() - 2, 6, 28).toISOString(),
+        product_code: 'NBW',
+        decision_description: 'SUBSTANTIALLY EQUIVALENT',
+        device_class: 'II',
+        review_advisory_committee: 'Clinical Chemistry',
+        submission_type_id: 'Traditional',
+        relevance_score: 0.88,
+        details: {
+          indications_for_use: 'Blood glucose monitoring system for diabetes management',
+          technological_characteristics: {
+            sensors: 'Electrochemical glucose sensors',
+            connectivity: 'Bluetooth Low Energy',
+            battery_life: '12 months (CR2032 battery)',
+            display: 'OLED display'
+          },
+          testing_data: {
+            clinical_trials: 1,
+            participants: 155,
+            accuracy_rate: 0.965
+          }
+        }
+      });
+    } else if (k510Number === 'K182876') {
+      res.json({
+        id: 'pred-003',
+        k_number: 'K182876',
+        device_name: 'ArthroFlex Surgical Instrument',
+        applicant_100: 'Ortho Surgical Devices Corp.',
+        decision_date: new Date(new Date().getFullYear() - 3, 1, 12).toISOString(),
+        product_code: 'JWH',
+        decision_description: 'SUBSTANTIALLY EQUIVALENT',
+        device_class: 'II',
+        review_advisory_committee: 'Orthopedic',
+        submission_type_id: 'Special',
+        relevance_score: 0.72,
+        details: {
+          indications_for_use: 'Minimally invasive arthroscopic procedures in shoulder and knee joints',
+          technological_characteristics: {
+            materials: 'Surgical grade stainless steel and biocompatible polymers',
+            sterilization: 'Steam autoclave compatible',
+            design: 'Ergonomic handle with modular attachment system'
+          },
+          testing_data: {
+            bench_testing: 'Completed with 5000 cycle durability testing',
+            biocompatibility: 'Passed ISO 10993 testing',
+            usability: '95% satisfaction in surgeon handling tests'
+          }
+        }
+      });
+    } else {
+      // Generate a dynamic device for any other K number requested
+      res.json({
+        id: `pred-${Date.now()}`,
+        k_number: k510Number,
+        device_name: `Medical Device ${k510Number.substring(1)}`,
+        applicant_100: 'Generic Medical Corporation',
+        decision_date: new Date(new Date().getFullYear() - 2, 5, 10).toISOString(),
+        product_code: 'LPS',
+        decision_description: 'SUBSTANTIALLY EQUIVALENT',
+        device_class: 'II',
+        review_advisory_committee: 'General Hospital',
+        submission_type_id: 'Traditional',
+        relevance_score: 0.80,
+        details: {
+          indications_for_use: 'General medical device for clinical use',
+          technological_characteristics: {
+            materials: 'Medical grade materials',
+            design: 'Standard medical device design'
+          },
+          testing_data: {
+            bench_testing: 'Completed',
+            biocompatibility: 'Passed required testing',
+            usability: 'Meets user requirements'
+          }
+        }
+      });
+    }
+  } catch (error) {
+    console.error(`Error fetching predicate for K number ${req.params.k510Number}:`, error);
+    res.status(500).json({
+      error: error.message,
+      status: 'error',
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+/**
  * GET /api/fda510k/health
  * Health check endpoint to verify API is operational
  */
