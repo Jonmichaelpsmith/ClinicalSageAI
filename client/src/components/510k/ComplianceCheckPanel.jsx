@@ -238,7 +238,7 @@ const ComplianceCheckPanel = ({
         variant: "destructive"
       });
     } finally {
-      setIsChecking(false);
+      actualSetIsChecking(false);
       setProgress(100);
       
       // Reset progress after delay
@@ -257,7 +257,7 @@ const ComplianceCheckPanel = ({
       return;
     }
     
-    setIsChecking(true);
+    actualSetIsChecking(true);
     setProgress(30);
     
     try {
@@ -302,7 +302,7 @@ const ComplianceCheckPanel = ({
         variant: "destructive"
       });
     } finally {
-      setIsChecking(false);
+      actualSetIsChecking(false);
       setProgress(0);
     }
   };
@@ -1000,7 +1000,7 @@ const ComplianceCheckPanel = ({
             <Button
               variant="outline"
               onClick={runRiskAssessment}
-              disabled={isChecking || isAssessingRisks}
+              disabled={actualIsChecking || actualIsAssessingRisks}
               size="sm"
               className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
             >
@@ -1013,7 +1013,7 @@ const ComplianceCheckPanel = ({
             <Button
               variant="outline"
               onClick={saveComplianceReport}
-              disabled={isChecking || isAssessingRisks}
+              disabled={actualIsChecking || actualIsAssessingRisks}
               size="sm"
             >
               <Save className="mr-2 h-4 w-4" />
