@@ -194,6 +194,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       // Check if Equivalence API is ready before transitioning 
       if (deviceProfile?.id) {
         try {
+          // Ensure we're using the correct API endpoint path
           const statusResponse = await axios.get(`/api/510k/equivalence-status/${deviceProfile.id}`);
           console.log('[CERV2 Workflow] Equivalence API status check:', statusResponse.data);
           
