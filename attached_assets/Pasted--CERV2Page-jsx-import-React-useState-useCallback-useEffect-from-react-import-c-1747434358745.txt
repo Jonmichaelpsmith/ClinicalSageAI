@@ -1,0 +1,321 @@
+// CERV2Page.jsx
+import React, { useState, useCallback, useEffect } from 'react';
+import { 
+    createNewDeviceProfile, 
+    ensureProfileIntegrity 
+    // Assuming getDefaultDeviceProfileMetadata is also exported if used directly
+    // import { getDefaultDeviceProfileMetadata } from './utils/deviceProfileUtils'; 
+} from './utils/deviceProfileUtils'; // Adjust path as needed
+import DeviceProfileForm from './DeviceProfileForm'; // Adjust path as needed
+// Import your PredicateFinderPanel and other step components
+// import PredicateFinderPanel from './PredicateFinderPanel'; // Adjust path
+// import EquivalenceBuilderPanel from './EquivalenceBuilderPanel'; // Adjust path
+
+// Mock localStorage functions (replace with your actual implementations)
+const loadSavedState = (key, defaultValue) => {
+  try {
+    const serializedState = localStorage.getItem(key);
+    if (serializedState === null) {
+      console.log(`loadSavedState: No data found for key '${key}'.`);
+      return defaultValue;
+    }
+    console.log(`loadSavedState: Data found for key '${key}'.`);
+    return JSON.parse(serializedState);
+  } catch (error) {
+    console.warn(`loadSavedState: Error loading state from localStorage for key '${key}'.`, error);
+    return defaultValue;
+  }
+};
+
+const saveState = (key, state) => {
+  try {
+    console.log(`saveState: Attempting to save state for key '${key}'. Object to save:`, JSON.parse(JSON.stringify(state)));
+    const serializedState = JSON.stringify(state);
+    localStorage.setItem(key, serializedState);
+    console.log(`saveState: Successfully saved to localStorage for key '${key}'.`);
+  } catch (error) {
+    console.error(`saveState: Error saving state to localStorage for key '${key}'. Object that failed:`, state, "Error:", error);
+    throw new Error(`Failed to save state for key ${key}: ${error.message}`);
+  }
+};
+
+// Mock toast function (replace with your actual toast implementation)
+const toast = ({ title, description, variant }) => {
+  console.log(`TOAST (${variant}): ${title} - ${description}`);
+  // alert(`${title}: ${description}`); // Simple alert for testing if no toast system
+};
+
+// Define workflow steps (example)
+const WORKFLOW_STEPS = {
+  DEVICE_PROFILE: 1,
+  PREDICATE_FINDER: 2,
+  EQUIVALENCE_BUILDER: 3,
+  COMPLIANCE_CHECK: 4,
+  SUBMISSION_SUMMARY: 5,
+};
+
+function CERV2Page({ k510DocumentId, deviceName, manufacturer, intendedUse }) {
+  const showDebugInfo = true; 
+
+  const [deviceProfile, setDeviceProfile] = useState(() => {
+    console.log("CERV2Page: Initializing deviceProfile state...");
+    const savedProfile = loadSavedState('deviceProfile', null);
+    if (savedProfile) {
+      const ensuredProfile = ensureProfileIntegrity(savedProfile);
+      return ensuredProfile;
+    }
+    const newProfile = createNewDeviceProfile({ id: k510DocumentId, deviceName, manufacturer, intendedUse });
+    return newProfile;
+  });
+
+  const [saveError, setSaveError] = useState(null);
+  const [currentStep, setCurrentStep] = useState(WORKFLOW_STEPS.DEVICE_PROFILE); // Start at step 1
+
+  // State for predicate devices and completion status
+  const [predicateDevices, setPredicateDevices] = useState([]);
+  const [isPredicateStepCompleted, setIsPredicateStepCompleted] = useState(false);
+  const [predicateSearchError, setPredicateSearchError] = useState(null);
+
+
+  useEffect(() => {
+    console.log("CERV2Page: deviceProfile state updated:", deviceProfile);
+  }, [deviceProfile]);
+
+  useEffect(() => {
+    // If predicateDevices has items, mark step as completed.
+    // This is a derived state, but explicit completion flag is more robust for navigation.
+    if (predicateDevices && predicateDevices.length > 0) {
+        setIsPredicateStepCompleted(true);
+        setPredicateSearchError(null); // Clear previous errors if we now have devices
+    }
+    // If you want to allow proceeding without predicates under certain conditions,
+    // this logic might need adjustment or an explicit "skip" action.
+  }, [predicateDevices]);
+
+
+  const handleSaveDeviceProfile = useCallback(async (formDataFromForm) => {
+    console.log("CERV2Page: handleSaveDeviceProfile called with formDataFromForm:", formDataFromForm);
+    setSaveError(null); 
+    
+    const currentProfileSnapshot = deviceProfile;
+    let updatedProfile = { ...currentProfileSnapshot, ...formDataFromForm };
+    updatedProfile = ensureProfileIntegrity(updatedProfile);
+    
+    if (updatedProfile.metadata) {
+        updatedProfile.metadata.lastUpdated = new Date().toISOString();
+    } else { 
+        // This case should ideally be handled by ensureProfileIntegrity
+        updatedProfile.metadata = { createdAt: new Date().toISOString(), lastUpdated: new Date().toISOString()};
+    }
+
+    try {
+      console.log("CERV2Page: PRE-SAVE CHECK (DeviceProfile):", JSON.parse(JSON.stringify(updatedProfile)));
+      saveState('deviceProfile', updatedProfile); 
+      setDeviceProfile(updatedProfile); 
+      alert("Device Profile Saved Successfully!"); 
+    } catch (error) {
+      console.error("CERV2Page: Error saving device profile:", error);
+      setSaveError(error.message || "An unknown error occurred while saving device profile."); 
+    }
+  }, [deviceProfile]); 
+
+  /**
+   * Callback for PredicateFinderPanel to update predicate devices and signal completion.
+   * @param {Array} foundPredicates - Array of predicate devices found.
+   * @param {string|null} error - Error message if any occurred during search.
+   */
+  const handlePredicatesFound = useCallback((foundPredicates, error = null) => {
+    if (error) {
+      console.error("CERV2Page: Error reported from PredicateFinderPanel:", error);
+      setPredicateSearchError(error);
+      setPredicateDevices([]); // Clear any stale predicate devices
+      setIsPredicateStepCompleted(false); // Mark as not completed due to error
+      toast({
+        title: "Predicate Search Failed",
+        description: error || "Could not retrieve predicate devices. Please try again.",
+        variant: "error"
+      });
+      return;
+    }
+
+    console.log("CERV2Page: Predicates found/updated:", foundPredicates);
+    setPredicateDevices(foundPredicates || []);
+    if (foundPredicates && foundPredicates.length > 0) {
+      setIsPredicateStepCompleted(true);
+      setPredicateSearchError(null); // Clear error on success
+      toast({
+        title: "Predicates Updated",
+        description: `${foundPredicates.length} predicate device(s) loaded.`,
+        variant: "success"
+      });
+    } else {
+      // No error, but no predicates found. User might need to adjust search.
+      // Or, if finding zero is acceptable for some reason, isPredicateStepCompleted could be true.
+      // For now, assume at least one predicate is desired for "completion".
+      setIsPredicateStepCompleted(false);
+      setPredicateSearchError(null); // No error, but also no results
+       toast({
+        title: "No Predicates Found",
+        description: "Your search returned no predicate devices. Please refine your criteria.",
+        variant: "warning"
+      });
+    }
+  }, []);
+
+  /**
+   * Handles navigation to a target step.
+   * @param {number} targetStep - The step number to navigate to.
+   */
+  const navigateToStep = useCallback((targetStep) => {
+    console.log(`[CERV2 Navigation] Attempting to navigate from step ${currentStep} to ${targetStep}`);
+
+    // Validate step completion before advancing
+    if (targetStep > currentStep) { // Only apply validation when moving forward
+      if (currentStep === WORKFLOW_STEPS.DEVICE_PROFILE && !deviceProfile.id) { // Simplified check
+        toast({ title: "Device Profile Incomplete", description: "Please save the device profile first.", variant: "warning" });
+        return;
+      }
+      // Your analysis: "Cannot advance to step 5 without completing step 2 (Predicate Finder)"
+      // "Cannot advance to step 3 without completing step 2 (Predicate Finder)"
+      if (targetStep > WORKFLOW_STEPS.PREDICATE_FINDER && !isPredicateStepCompleted) {
+        console.warn(`[CERV2 Navigation] Blocked: Predicate Finder step (2) not completed. Current completion: ${isPredicateStepCompleted}`);
+        toast({
+          title: "Find Predicates First",
+          description: "Please complete the predicate device search and selection before proceeding.",
+          variant: "warning"
+        });
+        if (predicateSearchError) {
+           toast({
+            title: "Predicate Search Issue",
+            description: `Note: ${predicateSearchError}`,
+            variant: "info"
+          });
+        }
+        return; 
+      }
+      // Add checks for other steps as needed
+      // e.g., if (currentStep === WORKFLOW_STEPS.EQUIVALENCE_BUILDER && !isEquivalenceStepCompleted) { ... }
+    }
+
+    console.log(`[CERV2 Navigation] Advancing to step ${targetStep}`);
+    setCurrentStep(targetStep);
+    setSaveError(null); // Clear general save errors when navigating
+    setPredicateSearchError(null); // Clear predicate search errors when navigating away from predicate step (or to it)
+
+  }, [currentStep, deviceProfile, isPredicateStepCompleted, predicateSearchError]);
+
+
+  // --- Render Logic ---
+  const renderCurrentStepPanel = () => {
+    switch (currentStep) {
+      case WORKFLOW_STEPS.DEVICE_PROFILE:
+        return (
+          <DeviceProfileForm
+            initialData={deviceProfile}
+            onSubmit={handleSaveDeviceProfile}
+          />
+        );
+      case WORKFLOW_STEPS.PREDICATE_FINDER:
+        // PredicateFinderPanel would need to be imported and accept onPredicatesFound prop
+        // return (
+        //   <PredicateFinderPanel
+        //     deviceProfile={deviceProfile} /* Pass relevant parts of device profile for search criteria */
+        //     onPredicatesFound={handlePredicatesFound}
+        //     initialError={predicateSearchError} /* Pass down any initial error */
+        //   />
+        // );
+        return (
+            <div>
+                <h2 className="text-xl font-semibold mb-4">Step 2: Predicate Finder</h2>
+                <p className="mb-2">Predicate Finder Panel would be here.</p>
+                <p className="mb-2">It needs to call `onPredicatesFound(predicateArray, errorString)`.</p>
+                {predicateSearchError && <div className="text-red-500 p-2 bg-red-100 rounded">Error: {predicateSearchError}</div>}
+                <div className="mt-4">
+                    <button onClick={() => handlePredicatesFound([{id: 'pred1', name: 'Sample Predicate 1'}], null)} className="p-2 bg-green-500 text-white rounded mr-2">Simulate Found 1 Predicate</button>
+                    <button onClick={() => handlePredicatesFound([], null)} className="p-2 bg-yellow-500 text-white rounded mr-2">Simulate Found 0 Predicates</button>
+                    <button onClick={() => handlePredicatesFound(null, "Simulated API connection failure.")} className="p-2 bg-red-500 text-white rounded">Simulate Search Error</button>
+                </div>
+            </div>
+        );
+
+      case WORKFLOW_STEPS.EQUIVALENCE_BUILDER:
+        // return <EquivalenceBuilderPanel deviceProfile={deviceProfile} predicateDevices={predicateDevices} />;
+         return <div><h2 className="text-xl font-semibold mb-4">Step 3: Equivalence Builder</h2><p>Equivalence Builder Panel would be here.</p><p>Selected Predicates: {JSON.stringify(predicateDevices)}</p></div>;
+      // Add other cases for other steps
+      default:
+        return <div>Unknown Step. Please select a step.</div>;
+    }
+  };
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">510(k) Submission Workflow</h1>
+      
+      {/* Simple Tab-like Navigation Example */}
+      <div className="mb-6 border-b">
+        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+          {Object.entries(WORKFLOW_STEPS).map(([stepName, stepNumber]) => (
+            <button
+              key={stepNumber}
+              onClick={() => navigateToStep(stepNumber)}
+              className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                currentStep === stepNumber
+                  ? 'border-indigo-500 text-indigo-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              {stepNumber}. {stepName.replace('_', ' ')}
+              {stepNumber === WORKFLOW_STEPS.PREDICATE_FINDER && isPredicateStepCompleted && <span className="ml-1 text-green-500">✓</span>}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Render current step's content */}
+      {renderCurrentStepPanel()}
+
+      {/* Global Save Error Display */}
+      {saveError && !predicateSearchError && ( // Only show general save error if not a predicate search error
+        <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          <p className="font-bold">Save Error:</p>
+          <p>{saveError}</p> 
+        </div>
+      )}
+
+      {/* Navigation Buttons (Example) */}
+      <div className="mt-8 flex justify-between">
+        <button 
+          onClick={() => navigateToStep(currentStep - 1)} 
+          disabled={currentStep === WORKFLOW_STEPS.DEVICE_PROFILE}
+          className="px-4 py-2 border rounded-md text-sm font-medium bg-gray-200 hover:bg-gray-300 disabled:opacity-50"
+        >
+          Previous
+        </button>
+        <button 
+          onClick={() => navigateToStep(currentStep + 1)} 
+          disabled={currentStep === WORKFLOW_STEPS.SUBMISSION_SUMMARY} // Assuming SUBMISSION_SUMMARY is the last step
+          className="px-4 py-2 border rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50"
+        >
+          Next
+        </button>
+      </div>
+
+      {showDebugInfo && (
+        <div className="mt-8 p-4 border border-gray-300 rounded-lg bg-gray-100">
+          <h3 className="text-md font-medium mb-2">Workflow Debug Information</h3>
+          <p>Current Step: {currentStep}</p>
+          <p>Device Profile ID: {deviceProfile?.id}</p>
+          <p>Predicate Step Completed: {isPredicateStepCompleted ? 'Yes' : 'No'}</p>
+          <p>Number of Predicate Devices: {predicateDevices.length}</p>
+          {predicateSearchError && <p className="text-red-600">Predicate Search Error: {predicateSearchError}</p>}
+          <div className="mt-2">
+            <h4 className="font-semibold">Full Device Profile (JSON):</h4>
+            <pre className="text-xs overflow-auto max-h-60 bg-white p-2 rounded">{JSON.stringify(deviceProfile, null, 2)}</pre>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default CERV2Page;

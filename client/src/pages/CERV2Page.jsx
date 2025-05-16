@@ -830,6 +830,25 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // Enhanced navigation function for 510k workflow with robust error handling and data consistency
   const goToStep = (step) => {
     if (step >= 1 && step <= 5) {
+      // Validate step transitions
+      if (step > 2 && !isPredicateStepCompleted) {
+        // CRITICAL FIX: Block navigation past step 2 if predicate search is incomplete
+        console.log(`[CERV2 Navigation] Blocked: Cannot navigate to step ${step} because predicate step is not completed.`);
+        toast({
+          title: "Workflow Step Blocked",
+          description: "You must complete the predicate device search before proceeding to later steps.",
+          variant: "destructive",
+          duration: 3000
+        });
+        
+        // Force navigation to predicate step instead
+        setWorkflowStep(2);
+        setActiveTab('predicates');
+        setWorkflowProgress(30);
+        setIsNavigating(false);
+        return;
+      }
+      
       // Set navigating state to show loading indicators
       setIsNavigating(true);
       
@@ -1152,7 +1171,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           }}
           disabled={
             (workflowStep === 1 && !deviceProfile) ||
-            (workflowStep === 2 && !predicatesFound) ||
+            (workflowStep === 2 && !isPredicateStepCompleted) || // CRITICAL FIX: Use isPredicateStepCompleted flag instead of predicatesFound
             (workflowStep === 3 && !equivalenceCompleted) ||
             (workflowStep === 4 && !complianceScore) ||
             workflowStep === 5
@@ -1189,6 +1208,8 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                   saveState('deviceProfile', newProfile);
                 }
               }}
+              onPredicatesFound={handlePredicatesComplete} // CRITICAL FIX: Connect the onPredicatesFound callback
+              initialError={predicateSearchError} // Pass any existing error
               documentId={k510DocumentId}
               onPredicatesFound={handlePredicatesComplete}
               organizationId={1}
