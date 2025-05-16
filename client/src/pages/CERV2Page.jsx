@@ -141,11 +141,30 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [showDebugInfo, setShowDebugInfo] = useState(true); // Debug UI visibility toggle
   const [saveError, setSaveError] = useState(null); // Error state for save operations
   
-  // Helper function to load saved state from localStorage
+  // Enhanced helper function to load saved state from localStorage with multi-key support
   const loadSavedState = (key, defaultValue) => {
     try {
+      // Try to get from primary storage location
       const savedValue = localStorage.getItem(`510k_${key}`);
-      return savedValue ? JSON.parse(savedValue) : defaultValue;
+      if (savedValue) {
+        return JSON.parse(savedValue);
+      }
+      
+      // For critical flags, check alternate storage locations
+      if (key === 'isPredicateStepCompleted') {
+        // Check alternate keys for this specific flag
+        const altValue1 = localStorage.getItem('isPredicateStepCompleted');
+        const altValue2 = localStorage.getItem('510k_workflow_step2_completed');
+        const altValue3 = localStorage.getItem('510k_emergency_recovery_applied');
+        
+        if (altValue1) return JSON.parse(altValue1);
+        if (altValue2) return JSON.parse(altValue2);
+        if (altValue3) return JSON.parse(altValue3);
+        
+        console.log('[CERV2 Recovery] Checking all predicate completion indicators, none found');
+      }
+      
+      return defaultValue;
     } catch (error) {
       console.warn(`Error loading saved state for ${key}:`, error);
       return defaultValue;
@@ -504,10 +523,10 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     try {
       localStorage.setItem('510k_isPredicateStepCompleted', JSON.stringify(true));
       localStorage.setItem('isPredicateStepCompleted', JSON.stringify(true));
-      localStorage.setItem('510k_predicatesFound', 'true');
-      localStorage.setItem('510k_workflow_step2_completed', 'true');
-      localStorage.setItem('510k_predicate_completion_timestamp', new Date().toISOString());
-      localStorage.setItem('510k_emergency_recovery_applied', 'true');
+      localStorage.setItem('510k_predicatesFound', JSON.stringify(true));
+      localStorage.setItem('510k_workflow_step2_completed', JSON.stringify(true));
+      localStorage.setItem('510k_predicate_completion_timestamp', JSON.stringify(new Date().toISOString()));
+      localStorage.setItem('510k_emergency_recovery_applied', JSON.stringify(true));
       console.log('[CERV2 EMERGENCY FIX] Multiple recovery flags saved to localStorage');
     } catch (storageError) {
       console.error('[CERV2 EMERGENCY FIX] Error saving recovery flags:', storageError);
@@ -596,13 +615,13 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       // 4. EMERGENCY DIRECT FIX: Save directly to localStorage with multiple keys and formats
       try {
         // Try multiple storage formats to maximize chances of success
-        localStorage.setItem('510k_isPredicateStepCompleted', 'true');
-        localStorage.setItem('isPredicateStepCompleted', 'true');
-        localStorage.setItem('510k_predicatesFound', 'true');
-        localStorage.setItem('510k_workflow_step2_completed', 'true');
+        localStorage.setItem('510k_isPredicateStepCompleted', JSON.stringify(true));
+        localStorage.setItem('isPredicateStepCompleted', JSON.stringify(true));
+        localStorage.setItem('510k_predicatesFound', JSON.stringify(true));
+        localStorage.setItem('510k_workflow_step2_completed', JSON.stringify(true));
         
         // Create emergency backup timestamp to verify completion happened
-        localStorage.setItem('510k_predicate_completion_timestamp', new Date().toISOString());
+        localStorage.setItem('510k_predicate_completion_timestamp', JSON.stringify(new Date().toISOString()));
         
         console.log('[CERV2 EMERGENCY FIX] Multiple predicate completion flags saved to localStorage');
       } catch (storageError) {
