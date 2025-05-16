@@ -196,6 +196,22 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [showSystemHealth, setShowSystemHealth] = useState(false);
   const [showDocumentTree, setShowDocumentTree] = useState(false);
   const [documentPreview, setDocumentPreview] = useState({ show: false, path: '', title: '' });
+  
+  // Document Vault - folder expansion state
+  const [expandedFolders, setExpandedFolders] = useState({
+    regulatory: true,
+    clinical: true,
+    submissions: true,
+    technical: true
+  });
+  
+  // Toggle folder expansion in document tree
+  const toggleFolder = (folderId) => {
+    setExpandedFolders(prev => ({
+      ...prev,
+      [folderId]: !prev[folderId]
+    }));
+  };
   const [systemInfo, setSystemInfo] = useState({
     memory: { used: 0, total: 0, percentage: 0 },
     api: { status: 'unknown', latency: 0 },
@@ -1832,127 +1848,281 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                   <nav className="p-1">
                     {/* Regulatory Documents */}
                     <div className="mb-0.5">
-                      <div className="flex items-center py-2 px-3 hover:bg-blue-50 cursor-pointer">
+                      <div 
+                        className="flex items-center py-2 px-3 hover:bg-blue-50 cursor-pointer"
+                        onClick={() => toggleFolder('regulatory')}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${expandedFolders.regulatory ? 'rotate-90' : ''} mr-2 text-gray-500`}>
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
                           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                         </svg>
                         <span className="text-sm font-medium">Regulatory</span>
+                        <span className="ml-auto text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">3</span>
                       </div>
-                      <div>
-                        <a 
-                          href="/attached_assets/Format-and-Content-of-the-Clinical-and-Statistical-Sections-of-an-Application.pdf" 
-                          target="_blank"
-                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
-                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                          </svg>
-                          <span className="text-sm">510(k) Summary</span>
-                        </a>
-                        <a 
-                          href="/attached_assets/E3-Structure-and-Content-of-Clinical-Study-Reports.pdf" 
-                          target="_blank"
-                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
-                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                          </svg>
-                          <span className="text-sm">Clinical Study Report</span>
-                        </a>
-                      </div>
+                      {expandedFolders.regulatory && (
+                        <div>
+                          <a 
+                            href="/attached_assets/Format-and-Content-of-the-Clinical-and-Statistical-Sections-of-an-Application.pdf" 
+                            target="_blank"
+                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open('/attached_assets/Format-and-Content-of-the-Clinical-and-Statistical-Sections-of-an-Application.pdf', '_blank');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">510(k) Summary</span>
+                            <span className="ml-auto text-xs text-green-600 font-medium">v1.3</span>
+                          </a>
+                          <a 
+                            href="/attached_assets/E3-Structure-and-Content-of-Clinical-Study-Reports.pdf" 
+                            target="_blank"
+                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open('/attached_assets/E3-Structure-and-Content-of-Clinical-Study-Reports.pdf', '_blank');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">Clinical Study Report</span>
+                            <span className="ml-auto text-xs text-green-600 font-medium">v2.0</span>
+                          </a>
+                          <a 
+                            href="/attached_assets/7.19.13.Miller-Clinical-Trials.pdf" 
+                            target="_blank"
+                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open('/attached_assets/7.19.13.Miller-Clinical-Trials.pdf', '_blank');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">Regulatory Checklist</span>
+                            <span className="ml-auto text-xs text-amber-600 font-medium">Draft</span>
+                          </a>
+                        </div>
+                      )}
                     </div>
                     
                     {/* Clinical Documents */}
                     <div className="mb-0.5">
-                      <div className="flex items-center py-2 px-3 hover:bg-blue-50 cursor-pointer">
+                      <div 
+                        className="flex items-center py-2 px-3 hover:bg-blue-50 cursor-pointer"
+                        onClick={() => toggleFolder('clinical')}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${expandedFolders.clinical ? 'rotate-90' : ''} mr-2 text-gray-500`}>
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
                           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                         </svg>
                         <span className="text-sm font-medium">Clinical</span>
+                        <span className="ml-auto text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">4</span>
                       </div>
-                      <div>
-                        <a 
-                          href="/attached_assets/CER REPORT EXAMPLE OUTPUT.pdf" 
-                          target="_blank"
-                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
-                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                          </svg>
-                          <span className="text-sm">CER Report</span>
-                        </a>
-                        <a 
-                          href="/attached_assets/ICER_Acute-Pain_Evidence-Report_For-Publication_020525.pdf" 
-                          target="_blank"
-                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
-                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                          </svg>
-                          <span className="text-sm">Evidence Report</span>
-                        </a>
-                      </div>
+                      {expandedFolders.clinical && (
+                        <div>
+                          <a 
+                            href="/attached_assets/CER REPORT EXAMPLE OUTPUT.pdf" 
+                            target="_blank"
+                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open('/attached_assets/CER REPORT EXAMPLE OUTPUT.pdf', '_blank');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">CER Report</span>
+                            <span className="ml-auto text-xs text-green-600 font-medium">v2.4</span>
+                          </a>
+                          <a 
+                            href="/attached_assets/ICER_Acute-Pain_Evidence-Report_For-Publication_020525.pdf" 
+                            target="_blank"
+                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open('/attached_assets/ICER_Acute-Pain_Evidence-Report_For-Publication_020525.pdf', '_blank');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">Evidence Report</span>
+                            <span className="ml-auto text-xs text-green-600 font-medium">v1.1</span>
+                          </a>
+                          <a 
+                            href="/attached_assets/AO_2508_2023_1-3.pdf" 
+                            target="_blank"
+                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open('/attached_assets/AO_2508_2023_1-3.pdf', '_blank');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">PMS Data Analysis</span>
+                            <span className="ml-auto text-xs text-amber-600 font-medium">Draft</span>
+                          </a>
+                          <a 
+                            href="/attached_assets/9789240097711-eng.pdf" 
+                            target="_blank"
+                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open('/attached_assets/9789240097711-eng.pdf', '_blank');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">Clinical Guidelines</span>
+                            <span className="ml-auto text-xs text-green-600 font-medium">v3.0</span>
+                          </a>
+                        </div>
+                      )}
                     </div>
                     
                     {/* FDA Submissions */}
                     <div className="mb-0.5 bg-blue-50">
-                      <div className="flex items-center py-2 px-3 hover:bg-blue-100 cursor-pointer bg-blue-50">
+                      <div 
+                        className="flex items-center py-2 px-3 hover:bg-blue-100 cursor-pointer bg-blue-50"
+                        onClick={() => toggleFolder('submissions')}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${expandedFolders.submissions ? 'rotate-90' : ''} mr-2 text-blue-600`}>
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
                           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                         </svg>
                         <span className="text-sm font-medium">FDA Submissions</span>
+                        <div className="ml-auto flex items-center">
+                          <span className="mr-1.5 text-xs text-gray-700 bg-white px-1.5 py-0.5 rounded-full border border-blue-200">New</span>
+                          <span className="text-xs text-gray-500 bg-white px-1.5 py-0.5 rounded-full border border-blue-200">3</span>
+                        </div>
                       </div>
-                      <div>
-                        <a 
-                          href="/attached_assets/1 - CER 2021 Update - Arthrosurface Shoulder Implant Systems - 10.07.2021 (FINAL).pdf" 
-                          target="_blank"
-                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
-                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                          </svg>
-                          <span className="text-sm font-medium">510(k) Submission</span>
-                        </a>
-                        <a 
-                          href="/attached_assets/Clinical-Evaluation-Reports-How-To-Leverage-Published-Data-–-Pro-Te-Fall-2016.pdf" 
-                          target="_blank"
-                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
-                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                          </svg>
-                          <span className="text-sm font-medium">Predicate Device</span>
-                        </a>
-                      </div>
+                      {expandedFolders.submissions && (
+                        <div>
+                          <a 
+                            href="/attached_assets/1 - CER 2021 Update - Arthrosurface Shoulder Implant Systems - 10.07.2021 (FINAL).pdf" 
+                            target="_blank"
+                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open('/attached_assets/1 - CER 2021 Update - Arthrosurface Shoulder Implant Systems - 10.07.2021 (FINAL).pdf', '_blank');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm font-medium">510(k) Submission</span>
+                            <span className="ml-auto text-xs text-blue-700 font-medium">Final</span>
+                          </a>
+                          <a 
+                            href="/attached_assets/Clinical-Evaluation-Reports-How-To-Leverage-Published-Data-–-Pro-Te-Fall-2016.pdf" 
+                            target="_blank"
+                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open('/attached_assets/Clinical-Evaluation-Reports-How-To-Leverage-Published-Data-–-Pro-Te-Fall-2016.pdf', '_blank');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm font-medium">Predicate Device</span>
+                            <span className="ml-auto text-xs text-blue-700 font-medium">Final</span>
+                          </a>
+                          <a 
+                            href="/attached_assets/Human-Factors-Studies-and-Related-Clinical-Study-Considerations-in-Combination-Product-Design-and-Development.pdf" 
+                            target="_blank"
+                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-100 bg-blue-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open('/attached_assets/Human-Factors-Studies-and-Related-Clinical-Study-Considerations-in-Combination-Product-Design-and-Development.pdf', '_blank');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm font-medium">eSTAR Package</span>
+                            <span className="ml-auto text-xs text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded-full">NEW</span>
+                          </a>
+                        </div>
+                      )}
                     </div>
                     
                     {/* Technical Documentation */}
                     <div className="mb-0.5">
-                      <div className="flex items-center py-2 px-3 hover:bg-blue-50 cursor-pointer">
+                      <div 
+                        className="flex items-center py-2 px-3 hover:bg-blue-50 cursor-pointer"
+                        onClick={() => toggleFolder('technical')}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform ${expandedFolders.technical ? 'rotate-90' : ''} mr-2 text-gray-500`}>
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-blue-600">
                           <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                         </svg>
                         <span className="text-sm font-medium">Technical</span>
+                        <span className="ml-auto text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded-full">2</span>
                       </div>
-                      <div>
-                        <a 
-                          href="/attached_assets/ENVIA_Whitepaper_SOTApdf.pdf" 
-                          target="_blank"
-                          className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
-                            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                          </svg>
-                          <span className="text-sm">Technical Specs</span>
-                        </a>
-                      </div>
+                      {expandedFolders.technical && (
+                        <div>
+                          <a 
+                            href="/attached_assets/ENVIA_Whitepaper_SOTApdf.pdf" 
+                            target="_blank"
+                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open('/attached_assets/ENVIA_Whitepaper_SOTApdf.pdf', '_blank');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">Technical Specs</span>
+                            <span className="ml-auto text-xs text-green-600 font-medium">v4.2</span>
+                          </a>
+                          <a 
+                            href="/attached_assets/DI_Intelligent-clinical-trials.pdf" 
+                            target="_blank"
+                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              window.open('/attached_assets/DI_Intelligent-clinical-trials.pdf', '_blank');
+                            }}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
+                              <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                              <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <span className="text-sm">Risk Analysis</span>
+                            <span className="ml-auto text-xs text-green-600 font-medium">v1.8</span>
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </nav>
                 </div>
