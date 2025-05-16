@@ -150,7 +150,7 @@ const ComplianceCheckPanel = ({
       return;
     }
     
-    setIsChecking(true);
+    actualSetIsChecking(true);
     setProgress(25);
     
     try {
@@ -430,7 +430,7 @@ const ComplianceCheckPanel = ({
         variant: "destructive"
       });
     } finally {
-      setIsAssessingRisks(false);
+      actualSetIsAssessingRisks(false);
       setProgress(100);
       
       // Reset progress after delay
@@ -593,7 +593,7 @@ const ComplianceCheckPanel = ({
       return;
     }
     
-    setIsGeneratingTemplate(true);
+    actualSetIsGeneratingTemplate(true);
     setProgress(25);
     
     try {
