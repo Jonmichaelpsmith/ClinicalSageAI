@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 // Safely handle LumenAiAssistant context access with fallbacks
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import { useToast } from '@/hooks/use-toast';
@@ -79,7 +79,7 @@ import ReportGenerator from '@/components/510k/ReportGenerator';
 // Enhanced document management with professional vault system
 import SimpleDocumentTreePanel from '@/components/510k/SimpleDocumentTreePanel';
 // Import the device profile utilities
-import { createNewDeviceProfile, ensureCompleteDeviceProfile } from '@/utils/deviceProfileDefaults';
+import { createNewDeviceProfile, ensureProfileIntegrity } from '@/utils/deviceProfileUtils';
 import WelcomeDialog from '@/components/510k/WelcomeDialog';
 import DeviceIntakeForm from '@/components/510k/DeviceIntakeForm';
 import DeviceProfileForm from '@/components/cer/DeviceProfileForm';
@@ -209,7 +209,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     if (savedProfile) {
       console.log('Loaded device profile from localStorage:', savedProfile.deviceName);
       // Validate and complete the profile structure if needed
-      return ensureCompleteDeviceProfile(savedProfile);
+      return ensureProfileIntegrity(savedProfile);
     }
     
     // Otherwise create a new default profile using our utility
@@ -321,6 +321,49 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     }
   }, [deviceName, manufacturer, intendedUse, documentType, deviceProfile]);
   
+  // Handle saving the device profile with proper document structure
+  const handleSaveDeviceProfile = useCallback(async (formDataFromForm) => {
+    console.log("handleSaveDeviceProfile called with formData:", formDataFromForm);
+    setDeviceProfile(currentProfile => {
+      // Merge form data with the current profile.
+      // Create a new object to ensure immutability and trigger re-renders.
+      let updatedProfile = {
+        ...currentProfile, // Start with the existing full profile
+        ...formDataFromForm, // Override with values from the form
+      };
+
+      // Crucially, ensure the profile integrity (id, structure, metadata, status)
+      // This step is vital to prevent the "Error creating document structure".
+      updatedProfile = ensureProfileIntegrity(updatedProfile);
+      
+      // Update metadata's lastUpdated timestamp specifically
+      if (updatedProfile.metadata) {
+        updatedProfile.metadata.lastUpdated = new Date().toISOString();
+      }
+
+      try {
+        console.log("Attempting to save updated device profile:", updatedProfile);
+        // Save to localStorage
+        saveState('deviceProfile', updatedProfile);
+        toast({
+          title: "Success",
+          description: "Device Profile saved successfully",
+          variant: "success"
+        });
+        return updatedProfile; // Set the new state
+      } catch (error) {
+        console.error("Error saving device profile:", error);
+        console.error("Data that failed to save:", updatedProfile);
+        toast({
+          title: "Error",
+          description: `Failed to save profile: ${error.message}`,
+          variant: "destructive"
+        });
+        return currentProfile; // Revert to the previous state on error
+      }
+    });
+  }, []);
+
   // Add a watcher to persist device profile when it changes from other sources
   useEffect(() => {
     // Don't save if the profile is empty or null
