@@ -1252,13 +1252,14 @@ const ComplianceCheckPanel = ({
                                         <div className="flex-1">
                                           <h4 className="font-medium">{risk.title}</h4>
                                           <p className="text-sm mt-1 text-gray-700">{risk.description}</p>
-                                      {risk.impact && (
-                                        <div className="mt-2">
-                                          <span className="text-xs font-medium text-gray-600">Potential Impact:</span>
-                                          <p className="text-sm text-gray-700">{risk.impact}</p>
+                                          {risk.impact && (
+                                            <div className="mt-2">
+                                              <span className="text-xs font-medium text-gray-600">Potential Impact:</span>
+                                              <p className="text-sm text-gray-700">{risk.impact}</p>
+                                            </div>
+                                          )}
                                         </div>
-                                      )}
-                                    </div>
+                                      </div>
                                     <div className="ml-4 flex-shrink-0">
                                       <Badge className={
                                         risk.severity === 'high' ? 'bg-red-100 text-red-800 hover:bg-red-100' : 
