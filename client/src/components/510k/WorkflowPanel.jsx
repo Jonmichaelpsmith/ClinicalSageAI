@@ -601,12 +601,60 @@ const WorkflowPanel = ({
         }
       } else {
         console.warn(`[WorkflowPanel] Cannot navigate to step ${step} - preconditions not met`);
+        
+        // Reset all loading states to prevent UI getting stuck
+        setIsLoading({
+          ...isLoading, 
+          workflowTransition: false,
+          deviceProfile: false,
+          predicates: false,
+          equivalence: false,
+          compliance: false,
+          submission: false
+        });
+        
+        // Show appropriate error message based on step
+        let errorMessage = "Cannot proceed to this step at this time.";
+        let errorTitle = "Workflow Navigation";
+        
+        switch(step) {
+          case 2:
+            errorMessage = "Device profile must be completed before finding predicate devices.";
+            break;
+          case 3:
+            errorMessage = "You must select predicate devices before performing equivalence analysis.";
+            break;
+          case 4:
+            errorMessage = "Equivalence analysis must be completed before compliance check.";
+            break;
+          case 5:
+            errorMessage = "Compliance check must be completed before final submission.";
+            break;
+        }
+        
+        toast({
+          title: errorTitle,
+          description: errorMessage,
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error(`[WorkflowPanel] Error in goToStep(${step}):`, error);
+      
+      // Reset all loading states on error to prevent UI getting stuck
+      setIsLoading({
+        ...isLoading, 
+        workflowTransition: false,
+        deviceProfile: false,
+        predicates: false,
+        equivalence: false,
+        compliance: false,
+        submission: false
+      });
+      
       toast({
         title: "Navigation Error",
-        description: "An error occurred while changing workflow steps",
+        description: error.message || "An error occurred while changing workflow steps",
         variant: "destructive"
       });
     }
