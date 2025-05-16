@@ -54,6 +54,7 @@ const EquivalenceBuilderPanel = ({
     const verifyEquivalenceEndpoint = async () => {
       if (deviceProfile?.id) {
         try {
+          // Use the correct API endpoint path
           const response = await fetch(`/api/510k/equivalence-status/${deviceProfile.id}`);
           const data = await response.json();
           console.log('[EquivalenceBuilderPanel] API status verification:', data);

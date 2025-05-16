@@ -12,7 +12,7 @@
 const express = require('express');
 const axios = require('axios');
 const router = express.Router();
-const { validateAuth, checkOrganizationAccess } = require('../middleware/auth');
+const { authenticateJWT, requireSameOrganization } = require('../middleware/auth');
 const { OpenAI } = require('openai');
 const { handleApiError } = require('../utils/errorHandler');
 const logger = require('../utils/logger');
@@ -83,7 +83,7 @@ router.post('/predicate-devices', validateAuth, async (req, res) => {
  * Check equivalence analysis status
  * @route GET /510k/equivalence-status/:deviceId
  */
-router.get('/equivalence-status/:deviceId', validateAuth, async (req, res) => {
+router.get('/equivalence-status/:deviceId', authenticateJWT, async (req, res) => {
   try {
     const { deviceId } = req.params;
     const { organizationId } = req.query;
