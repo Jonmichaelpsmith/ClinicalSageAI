@@ -542,9 +542,9 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const goToStep = (step) => {
     if (step >= 1 && step <= 5) {
       try {
-        console.log(`[CERV2 Navigation] Attempting to go to step ${step}`);
+        console.log(`[CERV2 Navigation] Transitioning to step ${step}`);
         
-        // Simple and stable tab mapping
+        // Map steps to tabs - this is the core navigation logic
         const tabMap = {
           1: 'predicates', // Device Profile (displayed in Predicate Finder)
           2: 'predicates', // Predicate Finder
@@ -553,101 +553,46 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           5: 'submission' // Final Submission
         };
         
+        // Get target tab based on step
         const targetTab = tabMap[step] || 'predicates';
         
-        // First update the step, then update the tab
+        // Check prerequisite conditions for navigation
+        if (step > 1 && !deviceProfile) {
+          console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 1 (Device Profile)");
+          return;
+        }
+        
+        if (step > 2 && !predicatesFound) {
+          console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 2 (Predicate Finder)");
+          return;
+        }
+        
+        if (step > 3 && !equivalenceCompleted) {
+          console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 3 (Equivalence)");
+          return; 
+        }
+        
+        if (step > 4 && !complianceScore) {
+          console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 4 (Compliance)");
+          return;
+        }
+        
+        // Update state with proper persistence
         setWorkflowStep(step);
         saveState('workflowStep', step);
         
-        // Immediately update the tab without timeouts or verifications
+        // Update tab with proper persistence
         setActiveTab(targetTab);
         saveState('activeTab', targetTab);
-        
-        // Apply emergency stability patch to prevent cascading errors
-        console.log("🛡️ Applying emergency stability patch to workflow navigation");
-        
-        // Ensure required state for each step to prevent navigation locks
-        if (step === 5) {
-          // Ensure all required states are set for eSTAR Builder
-          // Set device profile and save to localStorage
-          if (!deviceProfile) {
-            const newDeviceProfile = {
-              id: k510DocumentId || '510K-' + Math.floor(100000 + Math.random() * 900000),
-              deviceName: deviceName || 'Blood Pressure Monitor',
-              manufacturer: manufacturer || 'TrialSage Medical', 
-              productCode: 'DXN',
-              deviceClass: 'II',
-              intendedUse: intendedUse || 'For measurement of systolic and diastolic blood pressure in clinical settings'
-            };
-            setDeviceProfile(newDeviceProfile);
-            saveState('deviceProfile', newDeviceProfile);
-          }
-          
-          // Set predicate devices and save to localStorage
-          if (!predicatesFound) {
-            const newPredicateDevices = [{
-              id: 'K210123',
-              name: 'CardioMonitor BP200',
-              manufacturer: 'Medical Devices Inc',
-              k_number: 'K210123'
-            }];
-            setPredicatesFound(true);
-            setPredicateDevices(newPredicateDevices);
-            saveState('predicatesFound', true);
-            saveState('predicateDevices', newPredicateDevices);
-          }
-          
-          // Set equivalence data and save to localStorage
-          if (!equivalenceCompleted) {
-            const newEquivalenceData = {
-              subject: {
-                name: deviceName || 'Blood Pressure Monitor',
-                manufacturer: manufacturer || 'TrialSage Medical',
-                description: 'Digital blood pressure monitor with oscillometric measurement'
-              },
-              predicate: {
-                name: 'CardioMonitor BP200',
-                manufacturer: 'Medical Devices Inc',
-                k_number: 'K210123',
-                description: 'FDA-cleared digital blood pressure monitor'
-              },
-              comparison: {
-                status: 'complete',
-                technical_similarities: [
-                  'Uses oscillometric method for measurement',
-                  'Same measurement range (0-300 mmHg)',
-                  'Similar accuracy specifications (±3 mmHg)'
-                ],
-                indications_similarities: [
-                  'Used for measurement of systolic and diastolic blood pressure',
-                  'Intended for use in clinical settings',
-                  'Not intended for continuous monitoring'
-                ]
-              }
-            };
-            setEquivalenceCompleted(true);
-            setEquivalenceData(newEquivalenceData);
-            saveState('equivalenceCompleted', true);
-            saveState('equivalenceData', newEquivalenceData);
-          }
-          
-          // Set compliance score and save to localStorage
-          if (!complianceScore) {
-            const score = 92;
-            setComplianceScore(score);
-            saveState('complianceScore', score);
-          }
-        }
         
         console.log(`[CERV2 Navigation] Successfully transitioned to step ${step} and tab "${targetTab}"`);
       } catch (error) {
         console.error(`[CERV2 Navigation] Error transitioning to step ${step}:`, error);
-        // Simple fallback that doesn't rely on complex recovery logic
+        // Simple error state recovery - no fake data
         try {
-          // Directly set the workflow step without additional side effects
-          setWorkflowStep(step);
-          setActiveTab('predicates');
-          console.log(`[CERV2 Navigation] Basic recovery completed for step ${step}`);
+          // Reset to a known good state
+          const previousStep = workflowStep;
+          console.log(`[CERV2 Navigation] Returning to previous step ${previousStep}`);
         } catch (recoveryError) {
           console.error('[CERV2 Navigation] Recovery attempt failed:', recoveryError);
         }
