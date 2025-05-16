@@ -5,7 +5,7 @@
  * including compliance checking, risk assessment, and document generation.
  */
 
-import { apiRequest } from '../utils/api';
+import api from '../utils/api';
 
 class FDA510kService {
   /**
@@ -18,16 +18,13 @@ class FDA510kService {
    */
   async runComplianceCheck(deviceProfile, organizationId, options = {}) {
     try {
-      const response = await apiRequest('/api/510k/compliance-check', {
-        method: 'POST',
-        body: JSON.stringify({
-          deviceProfile,
-          organizationId,
-          options
-        })
+      const response = await api.post('/510k/compliance-check', {
+        deviceProfile,
+        organizationId,
+        options
       });
       
-      return response;
+      return response.data;
     } catch (error) {
       console.error('Error running compliance check:', error);
       throw error;
@@ -48,17 +45,14 @@ class FDA510kService {
    */
   async predictFdaSubmissionRisks(deviceProfile, predicateDevices, equivalenceData, options = {}) {
     try {
-      const response = await apiRequest('/api/510k-risk-assessment/predict-submission-risks', {
-        method: 'POST',
-        body: JSON.stringify({
-          deviceProfile,
-          predicateDevices,
-          equivalenceData,
-          options
-        })
+      const response = await api.post('/510k-risk-assessment/predict-submission-risks', {
+        deviceProfile,
+        predicateDevices,
+        equivalenceData,
+        options
       });
       
-      return response;
+      return response.data;
     } catch (error) {
       console.error('Error predicting FDA submission risks:', error);
       throw error;
@@ -75,16 +69,13 @@ class FDA510kService {
    */
   async suggestFixesForComplianceIssues(issues, deviceProfile, options = {}) {
     try {
-      const response = await apiRequest('/api/510k-risk-assessment/suggest-compliance-fixes', {
-        method: 'POST',
-        body: JSON.stringify({
-          issues,
-          deviceProfile,
-          options
-        })
+      const response = await api.post('/510k-risk-assessment/suggest-compliance-fixes', {
+        issues,
+        deviceProfile,
+        options
       });
       
-      return response;
+      return response.data;
     } catch (error) {
       console.error('Error generating compliance fixes:', error);
       throw error;
@@ -99,14 +90,11 @@ class FDA510kService {
    */
   async generateSoftwareDocumentationTemplate(deviceId) {
     try {
-      const response = await apiRequest(`/api/510k-risk-assessment/generate-documentation-template/software`, {
-        method: 'POST',
-        body: JSON.stringify({
-          deviceId
-        })
+      const response = await api.post(`/510k-risk-assessment/generate-documentation-template/software`, {
+        deviceId
       });
       
-      return response;
+      return response.data;
     } catch (error) {
       console.error('Error generating software documentation template:', error);
       throw error;
@@ -121,14 +109,11 @@ class FDA510kService {
    */
   async generateBiocompatibilityTemplate(deviceId) {
     try {
-      const response = await apiRequest(`/api/510k-risk-assessment/generate-documentation-template/biocompatibility`, {
-        method: 'POST',
-        body: JSON.stringify({
-          deviceId
-        })
+      const response = await api.post(`/510k-risk-assessment/generate-documentation-template/biocompatibility`, {
+        deviceId
       });
       
-      return response;
+      return response.data;
     } catch (error) {
       console.error('Error generating biocompatibility template:', error);
       throw error;
@@ -151,15 +136,13 @@ class FDA510kService {
       formData.append('deviceId', deviceId);
       formData.append('documentType', 'compliance-input');
       
-      const response = await apiRequest('/api/document-vault/upload', {
-        method: 'POST',
-        body: formData,
+      const response = await api.post('/document-vault/upload', formData, {
         headers: {
-          // Do not set Content-Type here, it will be set automatically with the proper boundary
+          'Content-Type': 'multipart/form-data'
         }
       });
       
-      return response;
+      return response.data;
     } catch (error) {
       console.error('Error saving compliance input:', error);
       throw error;
@@ -182,15 +165,13 @@ class FDA510kService {
       formData.append('deviceId', deviceId);
       formData.append('documentType', 'compliance-report');
       
-      const response = await apiRequest('/api/document-vault/upload', {
-        method: 'POST',
-        body: formData,
+      const response = await api.post('/document-vault/upload', formData, {
         headers: {
-          // Do not set Content-Type here, it will be set automatically with the proper boundary
+          'Content-Type': 'multipart/form-data'
         }
       });
       
-      return response;
+      return response.data;
     } catch (error) {
       console.error('Error saving compliance report:', error);
       throw error;
@@ -201,4 +182,5 @@ class FDA510kService {
 // Create a singleton instance
 const instance = new FDA510kService();
 
-export default instance;
+// Export as named export to match existing imports
+export { instance as FDA510kService };
