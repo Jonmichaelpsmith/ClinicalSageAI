@@ -83,12 +83,12 @@ interface TenantProviderProps {
 
 export const TenantProvider = ({ children }: TenantProviderProps) => {
   // State for organizations
-  const [organizations, setOrganizations] = useState<Organization[]>([]);
-  const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null);
+  const [organizations, setOrganizations] = React.useState<Organization[]>([]);
+  const [currentOrganization, setCurrentOrganization] = React.useState<Organization | null>(null);
   
   // State for client workspaces
-  const [clientWorkspaces, setClientWorkspaces] = useState<ClientWorkspace[]>([]);
-  const [currentClientWorkspace, setCurrentClientWorkspace] = useState<ClientWorkspace | null>(null);
+  const [clientWorkspaces, setClientWorkspaces] = React.useState<ClientWorkspace[]>([]);
+  const [currentClientWorkspace, setCurrentClientWorkspace] = React.useState<ClientWorkspace | null>(null);
   
   // State for modules
   const [modules, setModules] = useState<Module[]>([
