@@ -945,21 +945,41 @@ const ComplianceCheckPanel = ({
                                           variant="outline" 
                                           size="sm"
                                           className="w-full justify-start text-left bg-white hover:bg-green-50 hover:text-green-700 border-gray-200"
-                                          onClick={() => {
+                                          onClick={async () => {
                                             toast({
                                               title: "Software Documentation Template",
                                               description: "Preparing FDA-compliant software documentation template for your device.",
                                               variant: "default"
                                             });
                                             
-                                            // Create software documentation template
-                                            setTimeout(() => {
+                                            setIsGeneratingTemplate(true);
+                                            
+                                            try {
+                                              // Generate software documentation template using AI service
+                                              const result = await FDA510kService.generateSoftwareDocumentationTemplate(deviceProfile.id);
+                                              
+                                              // Store the template data
+                                              setTemplateData(result.templateData);
+                                              
+                                              // Open the template dialog
+                                              setShowTemplateDialog(true);
+                                              setShowRiskDialog(false);
+                                              
                                               toast({
                                                 title: "Software Documentation Ready",
-                                                description: "Template has been added to your Document Vault for completion.",
+                                                description: "Template has been generated successfully.",
                                                 variant: "success"
                                               });
-                                            }, 2000);
+                                            } catch (error) {
+                                              console.error('Error generating software documentation template:', error);
+                                              toast({
+                                                title: "Template Generation Failed",
+                                                description: "There was an error generating the documentation template. Please try again.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setIsGeneratingTemplate(false);
+                                            }
                                           }}
                                         >
                                           <FileText className="h-4 w-4 mr-2 text-green-600" />
@@ -972,21 +992,41 @@ const ComplianceCheckPanel = ({
                                           variant="outline" 
                                           size="sm"
                                           className="w-full justify-start text-left bg-white hover:bg-green-50 hover:text-green-700 border-gray-200"
-                                          onClick={() => {
+                                          onClick={async () => {
                                             toast({
                                               title: "Biocompatibility Documentation",
                                               description: "Preparing biocompatibility documentation template based on FDA requirements.",
                                               variant: "default"
                                             });
                                             
-                                            // Create biocompatibility documentation template
-                                            setTimeout(() => {
+                                            setIsGeneratingTemplate(true);
+                                            
+                                            try {
+                                              // Generate biocompatibility documentation template using AI service
+                                              const result = await FDA510kService.generateBiocompatibilityTemplate(deviceProfile.id);
+                                              
+                                              // Store the template data
+                                              setTemplateData(result.templateData);
+                                              
+                                              // Open the template dialog
+                                              setShowTemplateDialog(true);
+                                              setShowRiskDialog(false);
+                                              
                                               toast({
                                                 title: "Biocompatibility Documentation Ready",
-                                                description: "Template has been added to your Document Vault for completion.",
+                                                description: "Template has been generated successfully.",
                                                 variant: "success"
                                               });
-                                            }, 2000);
+                                            } catch (error) {
+                                              console.error('Error generating biocompatibility template:', error);
+                                              toast({
+                                                title: "Template Generation Failed",
+                                                description: "There was an error generating the biocompatibility template. Please try again.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setIsGeneratingTemplate(false);
+                                            }
                                           }}
                                         >
                                           <FileSymlink className="h-4 w-4 mr-2 text-green-600" />
@@ -1005,21 +1045,49 @@ const ComplianceCheckPanel = ({
                                           variant="outline" 
                                           size="sm"
                                           className="w-full justify-start text-left bg-white hover:bg-green-50 hover:text-green-700 border-gray-200"
-                                          onClick={() => {
+                                          onClick={async () => {
                                             toast({
                                               title: "Generating Compliance Solution",
                                               description: "Creating a tailored solution to address this compliance issue.",
                                               variant: "default"
                                             });
                                             
-                                            // Generic compliance enhancement
-                                            setTimeout(() => {
+                                            setIsGeneratingFixes(true);
+                                            
+                                            try {
+                                              // Generate AI-powered fixes for this specific compliance issue
+                                              const result = await FDA510kService.suggestFixesForComplianceIssues(
+                                                [risk], // Pass only this specific risk
+                                                deviceProfile,
+                                                {
+                                                  deepAnalysis: true,
+                                                  includeTemplates: true
+                                                }
+                                              );
+                                              
+                                              // Store the generated fixes
+                                              setComplianceFixes(result);
+                                              
+                                              // Open the fixes dialog
+                                              setShowFixesDialog(true);
+                                              setShowRiskDialog(false);
+                                              setSelectedIssue(risk);
+                                              
                                               toast({
                                                 title: "Compliance Solution Ready",
-                                                description: "Recommended documentation has been added to your Document Vault.",
+                                                description: `Generated ${result.fixes?.length || 0} potential solutions to address this issue.`,
                                                 variant: "success"
                                               });
-                                            }, 2000);
+                                            } catch (error) {
+                                              console.error('Error generating compliance fixes:', error);
+                                              toast({
+                                                title: "Solution Generation Failed",
+                                                description: "There was an error generating compliance solutions. Please try again.",
+                                                variant: "destructive"
+                                              });
+                                            } finally {
+                                              setIsGeneratingFixes(false);
+                                            }
                                           }}
                                         >
                                           <Sparkles className="h-4 w-4 mr-2 text-green-600" />
@@ -1152,6 +1220,191 @@ const ComplianceCheckPanel = ({
             </div>
             <Button variant="outline" onClick={() => setShowRiskDialog(false)}>
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Template Documentation Dialog */}
+      <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-xl font-semibold">
+              <FileText className="mr-2 h-5 w-5 text-blue-600" />
+              FDA Documentation Template
+            </DialogTitle>
+            <DialogDescription>
+              FDA-compliant documentation template for your 510(k) submission
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-hidden">
+            {templateData ? (
+              <ScrollArea className="h-[60vh]">
+                <div className="p-4 space-y-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-medium text-xl">{templateData.title}</h3>
+                    <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">
+                      {templateData.templateType}
+                    </Badge>
+                  </div>
+                  
+                  <p className="text-gray-700">{templateData.description}</p>
+                  
+                  <Separator className="my-4" />
+                  
+                  <div className="space-y-6">
+                    {templateData.sections?.map((section, index) => (
+                      <div key={index} className="space-y-3">
+                        <h4 className="font-medium text-lg flex items-center">
+                          <ListChecksIcon className="h-4 w-4 mr-2 text-blue-600" />
+                          {section.title}
+                        </h4>
+                        <p className="text-gray-700 text-sm ml-6">{section.content}</p>
+                        
+                        {section.subSections && section.subSections.length > 0 && (
+                          <div className="ml-6 mt-2 space-y-2">
+                            {section.subSections.map((subsection, sidx) => (
+                              <div key={sidx} className="flex items-start">
+                                <ArrowRight className="h-3 w-3 mr-2 mt-1 text-gray-500" />
+                                <div className="text-sm text-gray-700">{subsection}</div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </ScrollArea>
+            ) : (
+              <div className="flex items-center justify-center h-[40vh]">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-2" />
+                <p className="text-gray-600">Loading template data...</p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter className="border-t pt-4">
+            <div className="mr-auto text-sm text-gray-600">
+              Generated: {templateData?.generatedAt ? new Date(templateData.generatedAt).toLocaleString() : 'N/A'}
+            </div>
+            <Button variant="outline" onClick={() => setShowTemplateDialog(false)}>
+              Close
+            </Button>
+            <Button onClick={() => {
+              toast({
+                title: "Template Saved",
+                description: "Documentation template has been saved to your Document Vault.",
+                variant: "success"
+              });
+              setShowTemplateDialog(false);
+            }}>
+              <Save className="h-4 w-4 mr-2" />
+              Save to Document Vault
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Fix Suggestions Dialog */}
+      <Dialog open={showFixesDialog} onOpenChange={setShowFixesDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-xl font-semibold">
+              <Sparkles className="mr-2 h-5 w-5 text-purple-600" />
+              AI-Generated Compliance Fixes
+            </DialogTitle>
+            <DialogDescription>
+              {selectedIssue && `Solutions for: ${selectedIssue.title}`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-hidden">
+            {complianceFixes ? (
+              <ScrollArea className="h-[60vh]">
+                <div className="p-4 space-y-6">
+                  {complianceFixes.fixes?.map((fix, index) => (
+                    <Card key={index} className="p-4 border-l-4 border-l-green-500">
+                      <div className="flex-1 space-y-3">
+                        <h3 className="font-medium text-lg flex items-center">
+                          <WandSparkles className="h-4 w-4 mr-2 text-purple-600" />
+                          {fix.fix.title}
+                        </h3>
+                        <p className="text-gray-700">{fix.fix.description}</p>
+                        
+                        {fix.fix.implementationSteps?.length > 0 && (
+                          <div className="mt-4">
+                            <h4 className="text-sm font-medium mb-2">Implementation Steps:</h4>
+                            <div className="space-y-2 ml-2">
+                              {fix.fix.implementationSteps.map((step, stepIdx) => (
+                                <div key={stepIdx} className="flex items-start">
+                                  <div className="flex-shrink-0 flex items-center justify-center h-5 w-5 rounded-full bg-green-100 text-green-800 text-xs font-medium mr-2 mt-0.5">
+                                    {stepIdx + 1}
+                                  </div>
+                                  <div className="text-sm">{step}</div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {fix.fix.resourceLinks?.length > 0 && (
+                          <div className="mt-4">
+                            <h4 className="text-sm font-medium mb-2">Helpful Resources:</h4>
+                            <div className="space-y-1 ml-2">
+                              {fix.fix.resourceLinks.map((resource, resourceIdx) => (
+                                <div key={resourceIdx} className="flex items-start">
+                                  <div className="text-sm">
+                                    <span className="text-blue-600 cursor-pointer hover:underline">
+                                      {resource.title}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                  
+                  {(!complianceFixes.fixes || complianceFixes.fixes.length === 0) && (
+                    <div className="flex flex-col items-center justify-center py-8 text-center">
+                      <AlertCircle className="h-12 w-12 text-amber-500 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900">No specific fixes available</h3>
+                      <p className="mt-2 text-sm text-gray-600 max-w-md">
+                        Unable to generate specific fixes for this issue. Consider consulting additional FDA documentation.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+            ) : (
+              <div className="flex items-center justify-center h-[40vh]">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-2" />
+                <p className="text-gray-600">Generating compliance solutions...</p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter className="border-t pt-4">
+            <div className="mr-auto text-sm text-gray-600">
+              Generated: {complianceFixes?.generatedAt ? new Date(complianceFixes.generatedAt).toLocaleString() : 'N/A'}
+            </div>
+            <Button variant="outline" onClick={() => setShowFixesDialog(false)}>
+              Close
+            </Button>
+            <Button onClick={() => {
+              toast({
+                title: "Fixes Applied",
+                description: "Compliance fixes have been applied to your submission.",
+                variant: "success"
+              });
+              setShowFixesDialog(false);
+            }}>
+              <CheckCircle className="h-4 w-4 mr-2" />
+              Apply Fixes
             </Button>
           </DialogFooter>
         </DialogContent>
