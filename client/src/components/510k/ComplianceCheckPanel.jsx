@@ -6,9 +6,12 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import FDA510kService from "@/services/FDA510kService";
-import { CheckSquare, AlertCircle, AlertTriangle, BookOpen, CheckCircle, XCircle, RefreshCw, FileCheck, Loader2, Save } from 'lucide-react';
+import { CheckSquare, AlertCircle, AlertTriangle, BookOpen, CheckCircle, XCircle, RefreshCw, FileCheck, Loader2, Save, 
+  BarChart, Gauge, TrendingUp, TrendingDown, History, ListChecks, Award, PieChart, ClipboardCheck, Target } from 'lucide-react';
 
 /**
  * Compliance Check Panel for 510(k) Submissions
@@ -27,6 +30,10 @@ const ComplianceCheckPanel = ({
   const [progress, setProgress] = useState(0);
   const [complianceData, setComplianceData] = useState(null);
   const [complianceComplete, setComplianceComplete] = useState(false);
+  const [isAssessingRisks, setIsAssessingRisks] = useState(false);
+  const [riskAssessmentData, setRiskAssessmentData] = useState(null);
+  const [showRiskDialog, setShowRiskDialog] = useState(false);
+  const [activeRiskTab, setActiveRiskTab] = useState('overview');
   const { toast } = useToast();
 
   const getSeverityColor = (severity) => {
@@ -238,6 +245,67 @@ const ComplianceCheckPanel = ({
     } finally {
       setIsChecking(false);
       setProgress(0);
+    }
+  };
+  
+  // Run predictive FDA submission risk assessment
+  const runRiskAssessment = async () => {
+    if (!deviceProfile?.id) {
+      toast({
+        title: "Missing Device Profile",
+        description: "A device profile is required to run the risk assessment.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setIsAssessingRisks(true);
+    setProgress(25);
+    
+    try {
+      // Include predicates and literature evidence for comprehensive analysis
+      const hasPredicates = predicateDevices && predicateDevices.length > 0;
+      const hasEquivalence = equivalenceData !== null;
+      
+      setProgress(40);
+      
+      // Call the FDA service to analyze submission risks
+      const result = await FDA510kService.predictFdaSubmissionRisks(
+        deviceProfile,
+        predicateDevices,
+        equivalenceData,
+        {
+          includeHistoricalComparisons: true,
+          performDeepAnalysis: true
+        }
+      );
+      
+      setProgress(90);
+      
+      // Store the risk assessment data
+      setRiskAssessmentData(result);
+      
+      // Open the risk assessment dialog
+      setShowRiskDialog(true);
+      
+      toast({
+        title: "Risk Assessment Complete",
+        description: `Analysis identified ${result.riskFactors?.length || 0} potential risk factors.`,
+        variant: "success"
+      });
+    } catch (error) {
+      console.error('Error running risk assessment:', error);
+      toast({
+        title: "Risk Assessment Failed",
+        description: "There was an error analyzing submission risks. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsAssessingRisks(false);
+      setProgress(100);
+      
+      // Reset progress after delay
+      setTimeout(() => setProgress(0), 500);
     }
   };
 
