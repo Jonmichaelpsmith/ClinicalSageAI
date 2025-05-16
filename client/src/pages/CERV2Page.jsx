@@ -342,15 +342,45 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const handleComplianceComplete = (score) => {
     const numericScore = typeof score === 'number' ? score : 85;
     setComplianceScore(numericScore);
+    
     toast({
       title: "Compliance Check Complete",
       description: `Your 510(k) submission is ${numericScore}% compliant with FDA requirements.`,
       variant: numericScore > 80 ? "success" : "warning"
     });
     
-    // Advance to final submission
-    setWorkflowStep(5);
-    setActiveTab('submission');
+    // Set submission ready based on compliance score
+    if (numericScore >= 70) {
+      setSubmissionReady(true);
+    }
+    
+    // Use a timeout to ensure state updates are processed before navigation
+    setTimeout(() => {
+      try {
+        // First update the tab to ensure it's ready when we change the step
+        setActiveTab('submission');
+        
+        // Short delay to let the tab change apply
+        setTimeout(() => {
+          // Then update the workflow step
+          setWorkflowStep(5);
+          
+          console.log("[CERV2 Flow] Successfully advanced to final submission step");
+          
+          // Confirm the navigation with a user-friendly toast
+          toast({
+            title: "Final Submission Ready",
+            description: "You can now review and generate your eSTAR package",
+            variant: "success"
+          });
+        }, 100);
+      } catch (error) {
+        console.error("[CERV2 Flow] Error navigating to final step:", error);
+        
+        // Fallback approach if the primary navigation fails
+        goToStep(5);
+      }
+    }, 200);
   };
   
   const handleSubmissionReady = () => {
@@ -886,41 +916,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
             </div>
           </div>
           
-          {showESTARDemo && (
-            <div className="mb-6">
-              <ESTARBuilderPanel
-                projectId="demo-project-123"
-                deviceProfile={deviceProfile || {
-                  id: 'demo-device-123',
-                  deviceName: 'Demo Medical Device',
-                  manufacturer: 'Demo Manufacturer',
-                  deviceClass: 'II'
-                }}
-                complianceScore={85}
-                equivalenceData={{
-                  subject: { name: 'Demo Medical Device' },
-                  predicate: { name: 'Similar Device' },
-                  comparison: { status: 'complete' }
-                }}
-                onGenerationComplete={(result) => {
-                  console.log('eSTAR Package generated:', result);
-                }}
-                onValidationComplete={(results) => {
-                  console.log('Validation results:', results);
-                }}
-                isValidating={false}
-                isGenerating={false}
-                estarFormat="zip"
-                setEstarFormat={(format) => console.log('Format selected:', format)}
-                validationResults={null}
-                generatedUrl={null}
-                setIsValidating={() => {}}
-                setIsGenerating={() => {}}
-                setValidationResults={() => {}}
-                setGeneratedUrl={() => {}}
-              />
-            </div>
-          )}
+
           
           {render510kStepContent()}
         </div>
