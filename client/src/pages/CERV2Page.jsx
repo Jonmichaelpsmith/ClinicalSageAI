@@ -2204,13 +2204,15 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                       </div>
                       {expandedFolders.technical && (
                         <div>
-                          <a 
-                            href="/attached_assets/ENVIA_Whitepaper_SOTApdf.pdf" 
-                            target="_blank"
-                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                            onClick={(e) => {
-                              e.preventDefault();
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => {
                               window.open('/attached_assets/ENVIA_Whitepaper_SOTApdf.pdf', '_blank');
+                              toast({
+                                title: "Document opened",
+                                description: "Viewing Technical Specs document"
+                              });
                             }}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
@@ -2219,14 +2221,16 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm">Technical Specs</span>
                             <span className="ml-auto text-xs text-green-600 font-medium">v4.2</span>
-                          </a>
-                          <a 
-                            href="/attached_assets/DI_Intelligent-clinical-trials.pdf" 
-                            target="_blank"
-                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                            onClick={(e) => {
-                              e.preventDefault();
+                          </button>
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => {
                               window.open('/attached_assets/DI_Intelligent-clinical-trials.pdf', '_blank');
+                              toast({
+                                title: "Document opened",
+                                description: "Viewing Risk Analysis document"
+                              });
                             }}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
@@ -2235,7 +2239,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm">Risk Analysis</span>
                             <span className="ml-auto text-xs text-green-600 font-medium">v1.8</span>
-                          </a>
+                          </button>
                         </div>
                       )}
                     </div>
