@@ -411,7 +411,7 @@ export default function DocumentVaultPanel({
   jobId = null,
   position = 'left', // 'left', 'right', 'dialog', 'full'
   onClose = null,
-  isOpen = false
+  isOpen = true // Set default to true to ensure documents are visible
 }) {
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
@@ -946,18 +946,6 @@ export default function DocumentVaultPanel({
               <div className="py-12 text-center text-red-600">
                 <Info className="h-12 w-12 mx-auto mb-2" />
                 <p>{error}</p>
-              </div>
-            ) : currentFolders.length === 0 && filteredDocuments.length === 0 ? (
-              <div className="py-12 text-center text-gray-500">
-                <FileBox className="h-12 w-12 mx-auto mb-2" />
-                <p className="mb-2">No documents found</p>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setShowUploadDialog(true)}
-                  className="mx-auto"
-                >
-                  Upload Document
-                </Button>
               </div>
             ) : (
               <>
