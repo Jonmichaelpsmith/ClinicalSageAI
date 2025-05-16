@@ -543,10 +543,12 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       saveState('predicateDevices', data);
       saveState('deviceProfile', updatedDeviceProfile);
       
-      // 4. Process literature if available
-      if (literatureData && literatureData.length > 0) {
-        setLiteratureResults(literatureData);
-        setSelectedLiterature(literatureData.filter(item => 
+      // 4. Process literature if available (from another source)
+      // Get literature data from a different source since we changed the parameter structure
+      const storedLiteratureData = loadState('literatureData', []);
+      if (storedLiteratureData && storedLiteratureData.length > 0) {
+        setLiteratureResults(storedLiteratureData);
+        setSelectedLiterature(storedLiteratureData.filter(item => 
           item.relevanceScore >= 0.8).slice(0, 5)
         );
       }
