@@ -1,0 +1,144 @@
+// CERV2Page.jsx
+import React, { useState, useCallback, useEffect } from 'react';
+import { 
+    createNewDeviceProfile, 
+    ensureProfileIntegrity 
+} from './utils/deviceProfileUtils'; // Adjust path as needed
+import DeviceProfileForm from './DeviceProfileForm'; // Adjust path as needed
+
+// Mock localStorage functions (replace with your actual implementations)
+const loadSavedState = (key, defaultValue) => {
+  try {
+    const serializedState = localStorage.getItem(key);
+    if (serializedState === null) {
+      console.log(`loadSavedState: No data found for key '${key}'.`);
+      return defaultValue;
+    }
+    console.log(`loadSavedState: Data found for key '${key}'.`);
+    return JSON.parse(serializedState);
+  } catch (error) {
+    console.warn(`loadSavedState: Error loading state from localStorage for key '${key}'.`, error);
+    return defaultValue;
+  }
+};
+
+const saveState = (key, state) => {
+  try {
+    // The state passed here should already be integrity-checked by handleSaveDeviceProfile
+    console.log(`saveState: Attempting to save state for key '${key}'. Object to save:`, JSON.parse(JSON.stringify(state))); // Deep copy for logging
+    const serializedState = JSON.stringify(state);
+    localStorage.setItem(key, serializedState);
+    console.log(`saveState: Successfully saved to localStorage for key '${key}'.`);
+  } catch (error) {
+    console.error(`saveState: Error saving state to localStorage for key '${key}'. Object that failed:`, state, "Error:", error);
+    // Re-throw the error so handleSaveDeviceProfile can catch it
+    throw new Error(`Failed to save state for key ${key}: ${error.message}`);
+  }
+};
+
+// Props might come from a router or parent component
+function CERV2Page({ k510DocumentId, deviceName, manufacturer, intendedUse }) {
+  const [deviceProfile, setDeviceProfile] = useState(() => {
+    console.log("CERV2Page: Initializing deviceProfile state...");
+    const savedProfile = loadSavedState('deviceProfile', null);
+    if (savedProfile) {
+      console.log('CERV2Page: Loaded device profile from localStorage. Raw:', savedProfile);
+      // Ensure the loaded profile has the necessary structure and metadata
+      const ensuredProfile = ensureProfileIntegrity(savedProfile);
+      console.log('CERV2Page: Ensured profile from localStorage:', ensuredProfile);
+      return ensuredProfile;
+    }
+    // If no saved profile, create a new one with all necessary fields
+    console.log('CERV2Page: No saved profile found, creating a new one.');
+    const newProfile = createNewDeviceProfile({
+      id: k510DocumentId,
+      deviceName,
+      manufacturer,
+      intendedUse,
+    });
+    console.log('CERV2Page: Created new profile:', newProfile);
+    return newProfile;
+  });
+
+  const [saveError, setSaveError] = useState(null); // State to hold save error messages
+
+  useEffect(() => {
+    console.log("CERV2Page: deviceProfile state updated in useEffect:", deviceProfile);
+  }, [deviceProfile]);
+
+  const handleSaveDeviceProfile = useCallback(async (formDataFromForm) => {
+    console.log("CERV2Page: handleSaveDeviceProfile called with formDataFromForm:", formDataFromForm);
+    setSaveError(null); // Clear previous errors
+
+    // We use the functional update form of setDeviceProfile to ensure we're working with the latest state.
+    // However, the core logic of building updatedProfile can happen outside,
+    // then we pass the final result to setDeviceProfile.
+    
+    // Create a snapshot of the current profile to work with
+    const currentProfileSnapshot = deviceProfile;
+
+    let updatedProfile = {
+      ...currentProfileSnapshot, // Start with the existing full profile
+      ...formDataFromForm,      // Override with values from the form
+    };
+    console.log("CERV2Page: Profile after merging formDataFromForm:", JSON.parse(JSON.stringify(updatedProfile)));
+
+
+    // CRITICAL STEP: Ensure profile integrity (id, structure, metadata, status)
+    // This function will log details if it makes changes.
+    updatedProfile = ensureProfileIntegrity(updatedProfile);
+    console.log("CERV2Page: Profile after ensureProfileIntegrity:", JSON.parse(JSON.stringify(updatedProfile)));
+    
+    // Specifically ensure metadata.lastUpdated is set, though ensureProfileIntegrity should do it.
+    if (updatedProfile.metadata) {
+        updatedProfile.metadata.lastUpdated = new Date().toISOString();
+    } else { // Should not happen if ensureProfileIntegrity worked
+        updatedProfile.metadata = { ...getDefaultDeviceProfileMetadata(), lastUpdated: new Date().toISOString()};
+    }
+    console.log("CERV2Page: Profile after final metadata.lastUpdated update:", JSON.parse(JSON.stringify(updatedProfile)));
+
+    try {
+      console.log("CERV2Page: >>>>>>>>>> PRE-SAVE CHECK: Final object being passed to saveState <<<<<<<<<<", JSON.parse(JSON.stringify(updatedProfile)));
+      
+      // Perform the save operation
+      saveState('deviceProfile', updatedProfile); 
+      
+      // If saveState is successful, update the component's state
+      setDeviceProfile(updatedProfile); 
+      
+      alert("Device Profile Saved Successfully!"); // Provide user feedback
+      console.log("CERV2Page: Device profile saved and state updated successfully.");
+
+    } catch (error) {
+      console.error("CERV2Page: Error during save operation in handleSaveDeviceProfile:", error);
+      console.error("CERV2Page: Data that failed to save (this is the 'updatedProfile' variable):", JSON.parse(JSON.stringify(updatedProfile)));
+      setSaveError(error.message || "An unknown error occurred while saving."); // Set the error message for UI display
+      // Do NOT update setDeviceProfile here, keep the old state.
+    }
+  }, [deviceProfile]); // Added deviceProfile to dependencies of useCallback
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Device Profile Management (510k)</h1>
+      
+      <DeviceProfileForm
+        initialData={deviceProfile}
+        onSubmit={handleSaveDeviceProfile}
+      />
+
+      {saveError && (
+        <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          <p className="font-bold">Save Error:</p>
+          <p>{saveError}</p> {/* Display the error message from state */}
+        </div>
+      )}
+
+      <div className="mt-6 p-4 border rounded bg-gray-50">
+        <h2 className="text-lg font-semibold">Current Profile Data (for debugging):</h2>
+        <pre className="text-xs overflow-auto max-h-96">{JSON.stringify(deviceProfile, null, 2)}</pre>
+      </div>
+    </div>
+  );
+}
+
+export default CERV2Page;
