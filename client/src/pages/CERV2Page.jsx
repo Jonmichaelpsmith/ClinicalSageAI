@@ -1,5 +1,22 @@
 import React, { useState, useEffect } from 'react';
+// Safely handle LumenAiAssistant context access with fallbacks
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
+
+// Create a fallback if context is unavailable
+const safeAssistantHook = () => {
+  try {
+    return useLumenAiAssistant() || { 
+      openAssistant: () => {}, 
+      setModuleContext: () => {} 
+    };
+  } catch (e) {
+    console.warn('LumenAiAssistant context not available, using fallback');
+    return { 
+      openAssistant: () => {}, 
+      setModuleContext: () => {} 
+    };
+  }
+};
 import axios from 'axios';
 import CerBuilderPanel from '@/components/cer/CerBuilderPanel';
 import CerPreviewPanel from '@/components/cer/CerPreviewPanel';
@@ -54,8 +71,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 
 export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
-  // Hook into the Lumen AI Assistant context
-  const { openAssistant, setModuleContext } = useLumenAiAssistant();
+  // Use the safe assistant hook instead of direct context access
+  const assistantContext = safeAssistantHook();
+  const { openAssistant = () => {}, setModuleContext = () => {} } = assistantContext || {};
   const { toast } = useToast();
   
   // State variables
