@@ -209,10 +209,10 @@ const ComplianceCheckPanel = ({
         }
       );
       
-      setComplianceData(result);
+      actualSetComplianceData(result);
       
       if (result.score >= 0.75) {
-        setComplianceComplete(true);
+        actualSetComplianceComplete(true);
         
         if (onComplete) {
           onComplete(Math.round(result.score * 100));
@@ -996,7 +996,7 @@ const ComplianceCheckPanel = ({
         </div>
         
         <div className="flex space-x-4">
-          {complianceData && (
+          {actualComplianceData && (
             <Button
               variant="outline"
               onClick={runRiskAssessment}
@@ -1009,7 +1009,7 @@ const ComplianceCheckPanel = ({
             </Button>
           )}
           
-          {complianceData && deviceProfile?.folderStructure?.complianceFolderId && (
+          {actualComplianceData && deviceProfile?.folderStructure?.complianceFolderId && (
             <Button
               variant="outline"
               onClick={saveComplianceReport}
@@ -1025,7 +1025,7 @@ const ComplianceCheckPanel = ({
             <Button
               variant="default"
               onClick={runComplianceCheck}
-              disabled={isChecking || isAssessingRisks}
+              disabled={actualIsChecking || actualIsAssessingRisks}
               size="sm"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
@@ -1037,12 +1037,12 @@ const ComplianceCheckPanel = ({
             <Button
               variant="primary"
               onClick={() => {
-                setComplianceComplete(true);
+                actualSetComplianceComplete(true);
                 if (onComplete) {
                   onComplete(Math.round(complianceData.score * 100));
                 }
               }}
-              disabled={isChecking || isAssessingRisks}
+              disabled={actualIsChecking || actualIsAssessingRisks}
             >
               <FileCheck className="mr-2 h-4 w-4" />
               Complete Compliance Check
@@ -1067,7 +1067,7 @@ const ComplianceCheckPanel = ({
           <div className="flex-1 overflow-hidden">
             {actualRiskAssessmentData ? (
               <div className="h-full flex flex-col">
-                <Tabs defaultValue="overview" value={activeRiskTab} onValueChange={setActiveRiskTab} className="w-full h-full">
+                <Tabs defaultValue="overview" value={actualActiveRiskTab} onValueChange={actualSetActiveRiskTab} className="w-full h-full">
                   <TabsList className="grid grid-cols-4 mb-4">
                     <TabsTrigger value="overview">
                       <PieChart className="mr-2 h-4 w-4" />
