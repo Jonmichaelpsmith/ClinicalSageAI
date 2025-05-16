@@ -827,6 +827,74 @@ export const FDA510kService = {
   },
   
   /**
+   * Predict FDA submission risks by analyzing device profile, predicates, and evidence
+   * 
+   * This advanced analytics feature assesses the likelihood of FDA approval/rejection
+   * based on historical data of similar submissions and identifies potential risks
+   * that could delay or prevent clearance.
+   * 
+   * @param {Object} deviceProfile Device profile data
+   * @param {Array} predicateDevices Selected predicate devices
+   * @param {Object} equivalenceData Equivalence comparison data
+   * @param {Object} options Optional analysis parameters
+   * @returns {Promise<Object>} Risk assessment results
+   */
+  async predictFdaSubmissionRisks(deviceProfile, predicateDevices = [], equivalenceData = null, options = {}) {
+    try {
+      console.log('[FDA510kService] Analyzing submission risks');
+      
+      const hasLiteratureEvidence = equivalenceData && 
+        equivalenceData.literatureEvidence && 
+        Object.keys(equivalenceData.literatureEvidence).length > 0;
+      
+      // Build comprehensive risk assessment request
+      const requestData = {
+        deviceProfile,
+        predicateDevices: predicateDevices.filter(p => p), // Filter out any null entries
+        equivalenceData,
+        options: {
+          ...options,
+          includeHistoricalAnalysis: true,
+          includeSimilarDeviceOutcomes: true,
+          deepComplianceCheck: true,
+          literatureEvidenceStrength: hasLiteratureEvidence ? 'analyzed' : 'none'
+        }
+      };
+      
+      // Call API endpoint for risk prediction
+      const response = await apiRequest.post('/api/fda510k/predict-risks', requestData);
+      
+      // Enhance the response with additional metadata
+      const enhancedResponse = {
+        ...response.data,
+        assessmentDate: new Date().toISOString(),
+        deviceName: deviceProfile?.deviceName || deviceProfile?.device_name || 'Unknown Device',
+        hasLiteratureEvidence,
+        evidenceCount: hasLiteratureEvidence ? 
+          Object.values(equivalenceData.literatureEvidence).reduce((sum, papers) => sum + papers.length, 0) : 0
+      };
+      
+      return enhancedResponse;
+    } catch (error) {
+      console.error('[FDA510kService] Error predicting FDA submission risks:', error);
+      
+      // Return a graceful error response with helpful information
+      return {
+        success: false,
+        error: error.message || 'Failed to predict FDA submission risks',
+        riskFactors: [],
+        recommendations: [
+          'Ensure device profile is complete with all required information',
+          'Add at least one valid predicate device for comparison',
+          'Include supporting literature evidence for key claims',
+          'Complete the substantial equivalence section thoroughly'
+        ],
+        statusCode: error.status || 500
+      };
+    }
+  },
+  
+  /**
    * Find predicate devices and literature references for a given device profile
    * 
    * This method performs a comprehensive search for predicate devices and 
