@@ -125,73 +125,114 @@ router.get('/device-profile/:id', async (req, res) => {
   }
 });
 
+// GET all device profiles (with optional organization filter)
+router.get('/device-profiles', async (req, res) => {
+  try {
+    const { organizationId } = req.query;
+    let query = 'SELECT * FROM device_profiles';
+    let params = [];
+    
+    // Add organization filter if provided
+    if (organizationId) {
+      query += ' WHERE organization_id = $1';
+      params.push(organizationId);
+    }
+    
+    // Add sorting to ensure consistent results
+    query += ' ORDER BY created_at DESC';
+    
+    const { rows } = await db.query(query, params);
+    
+    // Format all profiles for frontend consistency
+    const formattedProfiles = rows.map(profile => formatDeviceProfileForFrontend(profile));
+    
+    res.json({
+      success: true,
+      data: formattedProfiles,
+      meta: {
+        count: formattedProfiles.length,
+        responseTime: new Date().toISOString()
+      }
+    });
+  } catch (error) {
+    console.error('Error retrieving device profiles:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to retrieve device profiles',
+      message: error.message
+    });
+  }
+});
+
 // PUT update existing profile
 router.put('/device-profile/:id', async (req, res) => {
   const { id } = req.params;
-  const updateData = req.body;
   
   try {
-    // Create updatable fields array from the request body
-    const updateableFields = [
-      'device_name', 
-      'device_class', 
-      'intended_use', 
-      'device_description', 
-      'manufacturer', 
-      'model_number',
-      'technical_characteristics',
-      'document_vault_id',
-      'folder_structure'
-    ];
+    // Check if profile exists
+    const checkResult = await db.query(
+      `SELECT id FROM device_profiles WHERE id = $1`,
+      [id]
+    );
     
-    // Build the SET clause dynamically
-    let setClauses = [];
-    let paramValues = [];
-    let paramCounter = 1;
-    
-    // Add updated_at timestamp
-    setClauses.push(`updated_at = $${paramCounter}`);
-    paramValues.push(new Date());
-    paramCounter++;
-    
-    // Add other fields if they exist in the request body
-    for (const field of updateableFields) {
-      if (updateData[field] !== undefined) {
-        setClauses.push(`${field} = $${paramCounter}`);
-        
-        // Handle JSON fields
-        if (field === 'technical_characteristics' || field === 'folder_structure') {
-          paramValues.push(JSON.stringify(updateData[field]));
-        } else {
-          paramValues.push(updateData[field]);
-        }
-        
-        paramCounter++;
-      }
+    if (checkResult.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false,
+        error: 'Device profile not found',
+        message: `No device profile found with id: ${id}`
+      });
     }
     
+    // Use the shared validation utility to ensure data consistency
+    let validatedData;
+    try {
+      validatedData = formatDeviceProfileForDatabase(req.body);
+    } catch (validationError) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Validation failed',
+        message: validationError.message
+      });
+    }
+    
+    // Add updated timestamp
+    validatedData.updated_at = new Date();
+    
+    // Create the dynamic SQL for updating with only existing fields
+    const fields = Object.keys(validatedData);
+    const setClauses = fields.map((field, index) => `${field} = $${index + 1}`);
+    const values = fields.map(field => validatedData[field]);
+    
     // Add the ID as the last parameter
-    paramValues.push(id);
+    values.push(id);
     
     // Execute the update query
     const query = `
       UPDATE device_profiles 
       SET ${setClauses.join(', ')} 
-      WHERE id = $${paramCounter}
+      WHERE id = $${values.length}
       RETURNING *
     `;
     
-    const result = await db.query(query, paramValues);
+    const result = await db.query(query, values);
     
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Device profile not found' });
-    }
+    // Format the response for the frontend
+    const responseData = formatDeviceProfileForFrontend(result.rows[0]);
     
-    // Return the updated profile
-    res.json(result.rows[0]);
+    res.json({
+      success: true,
+      data: responseData,
+      meta: {
+        responseTime: new Date().toISOString()
+      }
+    });
   } catch (error) {
     console.error('Error updating device profile:', error);
-    res.status(500).json({ error: 'Failed to update device profile: ' + error.message });
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to update device profile',
+      message: error.message
+    });
   }
 });
 
@@ -199,52 +240,59 @@ router.put('/device-profile/:id', async (req, res) => {
 router.post('/device-profile', async (req, res) => {
   try {
     console.log('Received device profile data:', req.body);
-    const { 
-      deviceName, 
-      deviceClass, 
-      intendedUse, 
-      deviceDescription,
-      manufacturer,
-      modelNumber,
-      technicalCharacteristics
-    } = req.body;
     
+    // Use the shared validation utility to ensure data consistency
+    // This will handle camelCase to snake_case conversion and validation
+    let validatedData;
+    try {
+      validatedData = formatDeviceProfileForDatabase(req.body);
+    } catch (validationError) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Validation failed',
+        message: validationError.message
+      });
+    }
+    
+    // Add timestamps
     const now = new Date();
+    validatedData.created_at = now;
+    validatedData.updated_at = now;
     
-    // Don't try to create or modify the table - it already exists with a specific schema
-    // Just proceed to insert based on the existing structure
+    // Create the dynamic SQL for inserting with only existing fields
+    const fields = Object.keys(validatedData);
+    const placeholders = fields.map((_, index) => `$${index + 1}`).join(',');
+    const values = fields.map(field => validatedData[field]);
     
-    // Insert the new device profile - corrected to match actual database schema
+    // Insert the new device profile using dynamic SQL
     const result = await db.query(
-      `INSERT INTO device_profiles(
-        device_name,
-        device_class,
-        intended_use,
-        manufacturer,
-        model_number,
-        created_at,
-        updated_at
-      )
-      VALUES($1,$2,$3,$4,$5,$6,$6)
-      RETURNING *`,
-      [
-        deviceName, 
-        deviceClass, 
-        intendedUse,
-        manufacturer,
-        modelNumber,
-        now
-      ]
+      `INSERT INTO device_profiles(${fields.join(',')})
+       VALUES(${placeholders})
+       RETURNING *`,
+      values
     );
     
-    // Return the created device profile
+    // Return the created device profile with frontend formatting
     const savedProfile = result.rows[0];
     console.log('Created device profile:', savedProfile);
     
-    res.json(savedProfile);
+    // Format the response for the frontend
+    const responseData = formatDeviceProfileForFrontend(savedProfile);
+    
+    res.json({
+      success: true,
+      data: responseData,
+      meta: {
+        responseTime: new Date().toISOString()
+      }
+    });
   } catch (error) {
     console.error('Error saving device profile:', error);
-    res.status(500).json({ error: 'Failed to save device profile: ' + error.message });
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to save device profile',
+      message: error.message 
+    });
   }
 });
 
