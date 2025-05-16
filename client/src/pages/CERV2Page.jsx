@@ -1741,7 +1741,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                 variant="outline" 
                 size="sm"
                 onClick={() => setShowDocumentTree(true)}
-                className="flex items-center text-gray-600"
+                className="flex items-center text-blue-600 font-medium border-blue-200 bg-blue-50 hover:bg-blue-100 hover:text-blue-700 shadow-sm"
               >
                 <FolderTree className="mr-1.5 h-4 w-4" />
                 Document Vault
