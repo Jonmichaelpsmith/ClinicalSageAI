@@ -58,13 +58,9 @@ const PredicateFinderPanel = ({
   
   const { toast } = useToast();
   
-  // Initialize form with existing device profile data if available
-  // and restore any persisted state
+  // Initialize form data from device profile when component mounts or profile changes
   useEffect(() => {
     if (deviceProfile) {
-      console.log('PredicateFinderPanel: Initializing with device profile:', deviceProfile.deviceName);
-      
-      // Set form data from device profile
       setFormData({
         deviceName: deviceProfile.deviceName || '',
         manufacturer: deviceProfile.manufacturer || '',
@@ -76,24 +72,25 @@ const PredicateFinderPanel = ({
         regulatoryClass: deviceProfile.regulatoryClass || 'Class II'
       });
       
-      // If profile seems complete, move to search phase
-      if (deviceProfile.deviceName && deviceProfile.intendedUse && deviceProfile.manufacturer) {
-        setProfileEditing(false);
-      }
-      
-      // Check if we already have predicates saved in deviceProfile
-      if (deviceProfile.predicateDevices && deviceProfile.predicateDevices.length > 0) {
-        console.log('Restoring previously selected predicates:', deviceProfile.predicateDevices.length);
-        setSelectedPredicates(deviceProfile.predicateDevices);
-        // Ensure we're not in profile editing mode if we have predicates
-        setProfileEditing(false);
-      }
-      
-      // Check localStorage for saved search results
-      const savedSearchResults = localStorage.getItem('510k_searchResults');
-      if (savedSearchResults) {
+      // Check for saved predicate selections
+      const savedPredicates = localStorage.getItem('510k_selectedPredicates');
+      if (savedPredicates) {
         try {
-          const parsedResults = JSON.parse(savedSearchResults);
+          const parsedPredicates = JSON.parse(savedPredicates);
+          if (parsedPredicates && parsedPredicates.length > 0) {
+            console.log('Restoring saved predicate selections:', parsedPredicates.length);
+            setSelectedPredicates(parsedPredicates);
+          }
+        } catch (error) {
+          console.error('Error restoring saved predicate selections:', error);
+        }
+      }
+      
+      // Check for saved search results
+      const savedResults = localStorage.getItem('510k_searchResults');
+      if (savedResults) {
+        try {
+          const parsedResults = JSON.parse(savedResults);
           if (parsedResults && parsedResults.length > 0) {
             console.log('Restoring saved search results:', parsedResults.length);
             setSearchResults(parsedResults);
@@ -129,50 +126,51 @@ const PredicateFinderPanel = ({
   
   // Save device profile with enhanced persistence and error handling
   const saveDeviceProfile = () => {
-    try {
-      // Validate required fields
-      if (!formData.deviceName || !formData.manufacturer || !formData.intendedUse) {
-        toast({
-          title: "Missing Information",
-          description: "Please enter at least the device name, manufacturer, and intended use",
-          variant: "destructive"
-        });
-        return false;
-      }
-      
-      // Create a complete updated profile with all necessary data
-      const updatedProfile = {
-        ...deviceProfile,
-        ...formData,
-        id: documentId || deviceProfile?.id || `device-${Date.now()}`,
-        updatedAt: new Date().toISOString(),
-        // Preserve any previously selected predicates
-        predicateDevices: deviceProfile?.predicateDevices || selectedPredicates || []
-      };
-      
-      // Log profile update for debugging
-      console.log(`[510k] Updating device profile: ${updatedProfile.deviceName} (${updatedProfile.id})`);
-      
-      // Save to localStorage to ensure we have a backup copy
-      try {
-        localStorage.setItem('510k_deviceProfile', JSON.stringify(updatedProfile));
-        console.log(`[510k] Saved device profile to localStorage: ${updatedProfile.deviceName}`);
-      } catch (storageError) {
-        console.error('[510k] Failed to save device profile to localStorage:', storageError);
-      }
-      
-      // Call the parent update function
-      setDeviceProfile(updatedProfile);
-      
-      // Move to search phase
-      setProfileEditing(false);
-      
-      // Show success toast
+    // Validate required fields
+    if (!formData.deviceName || !formData.manufacturer || !formData.intendedUse) {
       toast({
-        title: "Device Profile Saved",
+        title: "Missing Information",
+        description: "Please enter at least the device name, manufacturer, and intended use",
+        variant: "destructive"
+      });
+      return false;
+    }
+    
+    // Create a complete updated profile with all necessary data
+    const updatedProfile = {
+      ...deviceProfile,
+      ...formData,
+      id: documentId || deviceProfile?.id || `device-${Date.now()}`,
+      updatedAt: new Date().toISOString(),
+      // Preserve any previously selected predicates
+      predicateDevices: deviceProfile?.predicateDevices || selectedPredicates || []
+    };
+    
+    // Log profile update for debugging
+    console.log(`[510k] Updating device profile: ${updatedProfile.deviceName} (${updatedProfile.id})`);
+    
+    // Save to localStorage for persistence
+    try {
+      localStorage.setItem('510k_deviceProfile', JSON.stringify(updatedProfile));
+      console.log(`[510k] Saved device profile to localStorage: ${updatedProfile.deviceName}`);
+    } catch (storageError) {
+      console.error('[510k] Failed to save device profile to localStorage:', storageError);
+    }
+    
+    // Call the parent update function
+    setDeviceProfile(updatedProfile);
+    
+    // Move to search phase
+    setProfileEditing(false);
+    
+    // Show success toast
+    toast({
+      title: "Device Profile Saved",
       description: "Device information has been saved. You can now search for predicate devices.",
       variant: "success"
     });
+    
+    return true;
   };
   
   // Edit device profile (go back to editing mode)
@@ -180,1039 +178,704 @@ const PredicateFinderPanel = ({
     setProfileEditing(true);
   };
   
-  // Search for predicate devices using the integrated Document Vault profile
-  const searchForPredicates = async () => {
+  // Search for predicate devices in FDA database
+  const searchPredicateDevices = async () => {
+    if (!deviceProfile) {
+      toast({
+        title: "Missing Device Profile",
+        description: "Please save your device profile before searching for predicates",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsSearching(true);
     
     try {
-      // Use device profile from vault if available, otherwise use form data
-      const searchProfile = deviceProfile?.documentVaultId ? deviceProfile : formData;
+      const results = await FDA510kService.searchPredicateDevices({
+        deviceName: deviceProfile.deviceName,
+        productCode: deviceProfile.productCode,
+        manufacturer: deviceProfile.manufacturer
+      });
       
-      console.log('Searching for predicates with device profile:', searchProfile);
+      console.log(`[510k] Found ${results.length} potential predicate devices`);
       
-      // Log if we're using the Document Vault integrated profile
-      if (deviceProfile?.documentVaultId) {
-        console.log('Using Document Vault integrated profile with ID:', deviceProfile.documentVaultId);
+      // Save search results to localStorage for persistence
+      try {
+        localStorage.setItem('510k_searchResults', JSON.stringify(results));
+      } catch (error) {
+        console.error('Failed to save search results to localStorage:', error);
       }
       
-      // Get organization context if available
-      const organizationId = deviceProfile?.organizationId;
+      setSearchResults(results);
       
-      // Use the enhanced service to search with the proper context
-      const results = await FDA510kService.findPredicatesAndLiterature(
-        searchProfile,
-        organizationId
-      );
-      
-      if (results.success && results.predicateDevices?.length > 0) {
-        // Store predicate search results
-        setSearchResults(results.predicateDevices);
-        
-        // Save to localStorage for persistence across page reloads
-        localStorage.setItem('510k_searchResults', JSON.stringify(results.predicateDevices));
-        console.log(`Saved ${results.predicateDevices.length} predicate results to localStorage`);
-        
-        // Store literature results if they exist
-        if (results.literatureReferences && results.literatureReferences.length > 0) {
-          setLiteratureResults(results.literatureReferences);
-          
-          // Save literature results to localStorage
-          localStorage.setItem('510k_literatureResults', JSON.stringify(results.literatureReferences));
-          console.log(`Saved ${results.literatureReferences.length} literature results to localStorage`);
-        }
-        
-        // If we have a valid device profile with Document Vault integration, save the search results
-        if (deviceProfile?.folderStructure?.predicatesFolderId) {
-          try {
-            // Save the predicate search results to the Document Vault
-            await savePredicateSearchResults(
-              deviceProfile.folderStructure.predicatesFolderId,
-              results.predicateDevices,
-              results.searchQueries
-            );
-          } catch (vaultError) {
-            console.error('Error saving predicate results to vault:', vaultError);
-            // Non-fatal error, just log it and continue
-          }
-        }
-        
-        toast({
-          title: "Predicate Devices Found",
-          description: `Found ${results.predicateDevices.length} potential predicate devices and ${results.literatureReferences?.length || 0} literature references.`,
-          variant: "success"
-        });
-      } else {
-        toast({
-          title: "Search Results",
-          description: "No matching predicate devices found. Try adjusting your search terms.",
-          variant: "warning"
-        });
-        setSearchResults([]);
-      }
+      toast({
+        title: "Search Complete",
+        description: `Found ${results.length} potential predicate devices.`,
+        variant: "default"
+      });
     } catch (error) {
-      console.error("Error searching for predicates:", error);
+      console.error('Error searching for predicate devices:', error);
       toast({
         title: "Search Error",
-        description: "We encountered an error while searching for predicate devices. Please try again.",
+        description: "Failed to search for predicate devices. Please try again.",
         variant: "destructive"
       });
-      setSearchResults([]);
     } finally {
       setIsSearching(false);
     }
   };
   
-  // Search for literature specifically related to the device
-  const searchForLiterature = async () => {
-    setIsSearchingLiterature(true);
+  // Select/deselect a predicate device
+  const togglePredicateSelection = (device) => {
+    const isSelected = selectedPredicates.some(p => p.k_number === device.k_number);
     
-    try {
-      // Use device profile from vault if available, otherwise use form data
-      const searchProfile = deviceProfile?.documentVaultId ? deviceProfile : formData;
-      
-      // Prepare advanced search criteria including filters
-      const searchCriteria = {
-        query: searchProfile.deviceName || '',
-        productCode: searchProfile.productCode || '',
-        intendedUse: searchProfile.intendedUse || '',
-        deviceClass: searchProfile.deviceClass || '',
-        filters: literatureFilters,
-        useVectorSearch: true, // Enable semantic vector search
-        limit: 20
-      };
-      
-      // Get organization context if available
-      const organizationId = deviceProfile?.organizationId;
-      
-      // Use the literature API service for the search
-      const results = await literatureAPIService.searchLiterature(
-        searchCriteria,
-        organizationId
-      );
-      
-      if (results.success && results.data?.length > 0) {
-        // Store literature search results
-        setLiteratureResults(results.data);
-        
-        toast({
-          title: "Literature Found",
-          description: `Found ${results.data.length} relevant academic publications for your device.`,
-          variant: "success"
-        });
-      } else {
-        toast({
-          title: "Literature Search Results",
-          description: "No matching academic literature found. Try adjusting your search terms or filters.",
-          variant: "warning"
-        });
-        setLiteratureResults([]);
-      }
-    } catch (error) {
-      console.error("Error searching for literature:", error);
-      toast({
-        title: "Literature Search Error",
-        description: "We encountered an error while searching for academic literature. Please try again.",
-        variant: "destructive"
-      });
-      setLiteratureResults([]);
-    } finally {
-      setIsSearchingLiterature(false);
-    }
-  };
-  
-  // Save predicate search results to Document Vault
-  const savePredicateSearchResults = async (folderId, predicates, searchQueries) => {
-    try {
-      // Create search results JSON
-      const searchResultsData = {
-        predicates: predicates,
-        searchQueries: searchQueries,
-        searchDate: new Date().toISOString(),
-        deviceProfile: deviceProfile
-      };
-      
-      // Create a blob from the search results
-      const jsonBlob = new Blob([JSON.stringify(searchResultsData, null, 2)], { 
-        type: 'application/json' 
-      });
-      
-      // Create a file from the blob
-      const jsonFile = new File([jsonBlob], 'predicate-search-results.json', { 
-        type: 'application/json' 
-      });
-      
-      // Upload the file to the Document Vault using FDA510kService
-      const result = await FDA510kService.savePredicateSearchResults(
-        folderId,
-        jsonFile,
-        deviceProfile.id
-      );
-      
-      console.log('Predicate search results saved to vault:', result);
-      return result;
-    } catch (error) {
-      console.error('Error saving predicate search results:', error);
-      throw error;
-    }
-  };
-  
-  // Toggle a predicate device selection
-  const togglePredicateSelection = (predicate) => {
-    if (selectedPredicates.some(p => p.id === predicate.id)) {
-      // Remove from selection
-      setSelectedPredicates(selectedPredicates.filter(p => p.id !== predicate.id));
+    let updatedPredicates;
+    if (isSelected) {
+      updatedPredicates = selectedPredicates.filter(p => p.k_number !== device.k_number);
     } else {
-      // Add to selection (limit to 3)
-      if (selectedPredicates.length < 3) {
-        setSelectedPredicates([...selectedPredicates, predicate]);
-      } else {
-        toast({
-          title: "Selection Limit Reached",
-          description: "You can select up to three predicate devices for comparison.",
-          variant: "warning"
-        });
-      }
+      updatedPredicates = [...selectedPredicates, device];
+    }
+    
+    // Update state
+    setSelectedPredicates(updatedPredicates);
+    
+    // Save to localStorage for persistence
+    try {
+      localStorage.setItem('510k_selectedPredicates', JSON.stringify(updatedPredicates));
+    } catch (error) {
+      console.error('Failed to save predicate selections to localStorage:', error);
     }
   };
   
-  // Complete the predicate selection and move to next step with enhanced persistence
-  const completePredicateSelection = async () => {
+  // Complete predicate selection and move to the next step
+  const completePredicateSelection = () => {
     if (selectedPredicates.length === 0) {
       toast({
         title: "No Predicates Selected",
-        description: "Please select at least one predicate device for your 510(k) submission.",
+        description: "Please select at least one predicate device",
         variant: "warning"
       });
       return;
     }
     
-    // Show loading indicator
-    setIsSearching(true);
+    // Update the device profile with selected predicates
+    const updatedProfile = {
+      ...deviceProfile,
+      predicateDevices: selectedPredicates,
+      updatedAt: new Date().toISOString()
+    };
     
+    // Save updated profile
+    setDeviceProfile(updatedProfile);
+    
+    // Save to localStorage
     try {
-      // First, update the device profile with selected predicates to ensure persistence
-      const updatedDeviceProfile = {
-        ...deviceProfile,
-        predicateDevices: selectedPredicates,
-        selectedLiterature: selectedLiterature.length > 0 ? selectedLiterature : literatureResults.slice(0, 3), // Include top literature if none selected
-        lastUpdated: new Date().toISOString(),
-        completedSteps: {
-          ...(deviceProfile?.completedSteps || {}),
-          predicateSelection: true
-        }
-      };
-      
-      // Save updated profile to localStorage for persistence across page reloads or workflow transitions
-      try {
-        localStorage.setItem('510k_deviceProfile', JSON.stringify(updatedDeviceProfile));
-        localStorage.setItem('510k_selectedPredicates', JSON.stringify(selectedPredicates));
-        localStorage.setItem('510k_selectedLiterature', JSON.stringify(selectedLiterature.length > 0 ? 
-          selectedLiterature : literatureResults.slice(0, 3)));
-        console.log('Predicate selection saved to localStorage for workflow persistence');
-      } catch (storageError) {
-        console.error('Failed to save predicate selection to localStorage:', storageError);
-      }
-      
-      // If we have Document Vault integration, save the selected predicates
-      if (deviceProfile?.folderStructure?.predicatesFolderId) {
-        // Create data object with selected predicates and literature
-        const predicateSelectionData = {
-          selectedPredicates,
-          selectedLiterature: selectedLiterature.length > 0 ? selectedLiterature : literatureResults.slice(0, 3),
-          deviceProfile: updatedDeviceProfile,
-          selectionDate: new Date().toISOString(),
-          selectionRationale: "Selected by user for 510(k) substantial equivalence comparison"
-        };
-        
-        // Convert to JSON file
-        const jsonBlob = new Blob([JSON.stringify(predicateSelectionData, null, 2)], {
-          type: 'application/json'
-        });
-        
-        // Create file object for upload
-        const jsonFile = new File([jsonBlob], 'selected-predicates.json', {
-          type: 'application/json'
-        });
-        
-        // Upload to Document Vault
-        await FDA510kService.savePredicateSearchResults(
-          deviceProfile.folderStructure.predicatesFolderId,
-          jsonFile,
-          deviceProfile.id
-        );
-        
-        console.log('Selected predicates saved to Document Vault successfully');
-      }
-      
-      // Update parent component with the updated device profile
-      if (setDeviceProfile) {
-        setDeviceProfile(updatedDeviceProfile);
-      }
-      
-      // Call the parent component's callback to move to the next step
-      if (onPredicatesFound) {
-        // Create enhanced predicates with device profile context
-        const enhancedPredicates = selectedPredicates.map(predicate => ({
-          ...predicate,
-          comparisonWithSubject: {
-            subjectDevice: updatedDeviceProfile,
-            predicateDevice: predicate,
-            comparisonInitiated: new Date().toISOString()
-          }
-        }));
-        
-        // Pass both the enhanced predicates and literature results to the parent component
-        const literatureToPass = selectedLiterature.length > 0 ? 
-          selectedLiterature : literatureResults.slice(0, 3);
-          
-        console.log(`Passing ${enhancedPredicates.length} predicates and ${literatureToPass.length} literature items to parent component`);
-        onPredicatesFound(enhancedPredicates, literatureToPass);
-      }
-      
-      toast({
-        title: "Predicate Selection Complete",
-        description: `Selected ${selectedPredicates.length} predicate devices for your submission.`,
-        variant: "success"
-      });
+      localStorage.setItem('510k_deviceProfile', JSON.stringify(updatedProfile));
     } catch (error) {
-      console.error('Error saving selected predicates:', error);
+      console.error('Failed to save updated device profile to localStorage:', error);
+    }
+    
+    // Notify parent component that predicates have been found and selected
+    if (onPredicatesFound) {
+      onPredicatesFound(selectedPredicates);
+    }
+    
+    toast({
+      title: "Predicates Selected",
+      description: `You have selected ${selectedPredicates.length} predicate device(s) for your 510(k) submission.`,
+      variant: "success"
+    });
+  };
+  
+  // Search for literature related to the device and predicates
+  const searchRelatedLiterature = async () => {
+    if (!deviceProfile) {
       toast({
-        title: "Warning",
-        description: "Selected predicates will be used, but there was an issue saving them to Document Vault.",
+        title: "Missing Device Profile",
+        description: "Please save your device profile before searching for literature",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (selectedPredicates.length === 0) {
+      toast({
+        title: "No Predicates Selected",
+        description: "Please select at least one predicate device before searching for literature",
         variant: "warning"
       });
+      return;
+    }
+    
+    setIsSearchingLiterature(true);
+    
+    try {
+      // Build search query combining device info and predicate device characteristics
+      const predicateNames = selectedPredicates.map(p => p.device_name).join(', ');
+      const searchQuery = `${deviceProfile.deviceName} ${deviceProfile.intendedUse} ${predicateNames}`;
       
-      // Still call the parent callback to continue the workflow
-      if (onPredicatesFound) {
-        // Also pass literature results along with predicate devices
-        const literatureToPass = selectedLiterature.length > 0 ? 
-          selectedLiterature : literatureResults.slice(0, 3);
-        onPredicatesFound(selectedPredicates, literatureToPass);
+      const results = await literatureAPIService.searchLiterature({
+        query: searchQuery,
+        filters: literatureFilters,
+        limit: 20
+      });
+      
+      console.log(`[510k] Found ${results.length} relevant literature items`);
+      
+      // Save literature results to localStorage for persistence
+      try {
+        localStorage.setItem('510k_literatureResults', JSON.stringify(results));
+      } catch (error) {
+        console.error('Failed to save literature results to localStorage:', error);
       }
+      
+      setLiteratureResults(results);
+      
+      toast({
+        title: "Literature Search Complete",
+        description: `Found ${results.length} relevant publications.`,
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('Error searching for literature:', error);
+      toast({
+        title: "Literature Search Error",
+        description: "Failed to search for literature. Please try again.",
+        variant: "destructive"
+      });
     } finally {
-      setIsSearching(false);
+      setIsSearchingLiterature(false);
     }
   };
   
-  // Render device profile form
-  const renderProfileForm = () => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="deviceName">Device Name <span className="text-red-500">*</span></Label>
-          <Input 
-            id="deviceName"
-            value={formData.deviceName}
-            onChange={(e) => handleInputChange('deviceName', e.target.value)}
-            placeholder="Enter the name of your medical device"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="manufacturer">Manufacturer <span className="text-red-500">*</span></Label>
-          <Input 
-            id="manufacturer"
-            value={formData.manufacturer}
-            onChange={(e) => handleInputChange('manufacturer', e.target.value)}
-            placeholder="Enter the manufacturer name"
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="productCode">FDA Product Code</Label>
-          <Input 
-            id="productCode"
-            value={formData.productCode}
-            onChange={(e) => handleInputChange('productCode', e.target.value)}
-            placeholder="e.g., LLZ, DYB, etc."
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="deviceClass">Device Class</Label>
-          <Select 
-            value={formData.deviceClass}
-            onValueChange={(value) => handleInputChange('deviceClass', value)}
-          >
-            <SelectTrigger id="deviceClass">
-              <SelectValue placeholder="Select device class" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="I">Class I</SelectItem>
-              <SelectItem value="II">Class II</SelectItem>
-              <SelectItem value="III">Class III</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="intendedUse">Intended Use <span className="text-red-500">*</span></Label>
-        <Textarea 
-          id="intendedUse"
-          value={formData.intendedUse}
-          onChange={(e) => handleInputChange('intendedUse', e.target.value)}
-          placeholder="Describe the intended use of your device"
-          rows={3}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="description">Device Description</Label>
-        <Textarea 
-          id="description"
-          value={formData.description}
-          onChange={(e) => handleInputChange('description', e.target.value)}
-          placeholder="Provide a detailed description of your device"
-          rows={3}
-        />
-      </div>
-      
-      <div className="space-y-2">
-        <Label htmlFor="technicalSpecifications">Technical Specifications</Label>
-        <Textarea 
-          id="technicalSpecifications"
-          value={formData.technicalSpecifications}
-          onChange={(e) => handleInputChange('technicalSpecifications', e.target.value)}
-          placeholder="List technical specifications and standards compliance"
-          rows={3}
-        />
-      </div>
-      
-      <div className="flex justify-end space-x-2">
-        <Button 
-          variant="outline" 
-          onClick={() => {
-            // Reset form to original device profile data
-            if (deviceProfile) {
-              setFormData({
-                deviceName: deviceProfile.deviceName || '',
-                manufacturer: deviceProfile.manufacturer || '',
-                productCode: deviceProfile.productCode || '',
-                deviceClass: deviceProfile.deviceClass || 'II',
-                intendedUse: deviceProfile.intendedUse || '',
-                description: deviceProfile.description || '',
-                technicalSpecifications: deviceProfile.technicalSpecifications || '',
-                regulatoryClass: deviceProfile.regulatoryClass || 'Class II'
-              });
-            }
-          }}
-        >
-          Reset
-        </Button>
-        <Button onClick={saveDeviceProfile}>
-          Save Device Profile
-        </Button>
-      </div>
-    </div>
-  );
+  // Toggle selection of a literature item
+  const toggleLiteratureSelection = (item) => {
+    const isSelected = selectedLiterature.some(l => l.id === item.id);
+    
+    let updatedSelection;
+    if (isSelected) {
+      updatedSelection = selectedLiterature.filter(l => l.id !== item.id);
+    } else {
+      updatedSelection = [...selectedLiterature, item];
+    }
+    
+    // Update state
+    setSelectedLiterature(updatedSelection);
+    
+    // Save to localStorage for persistence
+    try {
+      localStorage.setItem('510k_selectedLiterature', JSON.stringify(updatedSelection));
+    } catch (error) {
+      console.error('Failed to save literature selections to localStorage:', error);
+    }
+  };
   
-  // Render predicate device search interface
-  const renderPredicateSearch = () => (
-    <div className="space-y-6">
-      <div className="bg-blue-50 p-4 rounded-lg border border-blue-100">
-        <div className="flex items-start">
-          <div className="flex-shrink-0 pt-0.5">
-            <FileText className="h-5 w-5 text-blue-600" />
-          </div>
-          <div className="ml-3">
-            <h3 className="text-sm font-medium text-blue-800">Device Profile</h3>
-            <div className="mt-2 text-sm text-blue-700">
-              <p className="font-medium">{formData.deviceName}</p>
-              <p>{formData.manufacturer}</p>
-              <p className="mt-1 text-sm text-blue-600 line-clamp-2">{formData.intendedUse}</p>
-            </div>
-            <div className="mt-2">
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="h-7 px-2 text-xs border-blue-200 text-blue-700 hover:bg-blue-100"
-                onClick={editDeviceProfile}
-              >
-                Edit Device Profile
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-medium text-gray-900">Find Predicate Devices</h3>
-          <Button 
-            onClick={searchForPredicates} 
-            disabled={isSearching}
-            className="flex items-center"
-          >
-            {isSearching ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Searching...
-              </>
-            ) : (
-              <>
-                <Search className="mr-2 h-4 w-4" />
-                Search FDA Database
-              </>
-            )}
-          </Button>
-        </div>
-        
-        {/* Search results */}
-        {searchResults.length > 0 ? (
-          <div className="space-y-3">
-            <div className="bg-gray-50 py-2 px-3 rounded-md">
-              <p className="text-sm text-gray-700">
-                Select up to <span className="font-medium">three</span> predicate devices to establish substantial equivalence. Choose devices with high match scores for better comparison.
-              </p>
-            </div>
-            
-            <ScrollArea className="h-[360px] rounded-md border">
-              <div className="divide-y">
-                {searchResults.map((predicate) => (
-                  <div 
-                    key={predicate.id}
-                    className={`p-4 hover:bg-gray-50 transition-colors cursor-pointer ${
-                      selectedPredicates.some(p => p.id === predicate.id) ? 'bg-blue-50 border-l-4 border-blue-500' : ''
-                    }`}
-                    onClick={() => togglePredicateSelection(predicate)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <div className="flex items-center">
-                          <h4 className="font-medium text-gray-900">{predicate.deviceName || predicate.name}</h4>
-                          <Badge variant="outline" className="ml-2 bg-blue-50 text-blue-700 border-blue-200">
-                            {predicate.id}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-600">{predicate.manufacturer}</p>
-                        <p className="text-sm text-gray-700 max-w-3xl">{predicate.intendedUse}</p>
-                        <div className="pt-1 flex items-center space-x-3 text-xs text-gray-500">
-                          {predicate.productCode && (
-                            <span>Product Code: {predicate.productCode}</span>
-                          )}
-                          {predicate.decisionDate && (
-                            <span>Decision: {predicate.decisionDate}</span>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-col items-end">
-                        <div className={`rounded-full h-8 w-8 flex items-center justify-center ${
-                          selectedPredicates.some(p => p.id === predicate.id) 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-gray-100 text-gray-400'
-                        }`}>
-                          {selectedPredicates.some(p => p.id === predicate.id) ? (
-                            <Check className="h-4 w-4" />
-                          ) : null}
-                        </div>
-                        
-                        <div className="mt-1 flex items-center space-x-1">
-                          <span className="text-sm font-medium">
-                            Match:
-                          </span>
-                          <span className={`text-sm font-medium ${
-                            predicate.matchScore >= 0.9 ? 'text-green-600' :
-                            predicate.matchScore >= 0.8 ? 'text-blue-600' :
-                            'text-amber-600'
-                          }`}>
-                            {Math.round(predicate.matchScore * 100)}%
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-            
-            <div className="flex justify-between items-center pt-2">
-              <div className="text-sm text-gray-600">
-                {selectedPredicates.length > 0 ? (
-                  <span>
-                    Selected {selectedPredicates.length} predicate device{selectedPredicates.length !== 1 ? 's' : ''}
-                  </span>
-                ) : (
-                  <span>No predicate devices selected</span>
-                )}
-              </div>
-              
-              <Button 
-                onClick={completePredicateSelection}
-                disabled={selectedPredicates.length === 0}
-                className="flex items-center"
-              >
-                <GitCompare className="mr-2 h-4 w-4" />
-                Proceed to Equivalence Analysis
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div className="text-center p-8 border rounded-md bg-gray-50">
-            <Search className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No Predicate Devices Found</h3>
-            <p className="mt-1 text-sm text-gray-500">
-              Use the search button above to find FDA-cleared devices similar to yours.
-            </p>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-  
-  // Function to view literature details
+  // View details of a literature item
   const viewLiteratureDetails = (item) => {
     setSelectedLiteratureItem(item);
     setShowLiteratureDetails(true);
   };
   
-  // Handler for selecting literature
-  const toggleLiteratureSelection = (item) => {
-    if (selectedLiterature.some(lit => lit.id === item.id)) {
-      setSelectedLiterature(prev => prev.filter(lit => lit.id !== item.id));
-    } else {
-      setSelectedLiterature(prev => [...prev, item]);
-    }
-  };
-  
-  // Handle changes to literature filters
-  const handleFilterChange = (field, value) => {
-    setLiteratureFilters(prev => ({
-      ...prev,
-      [field]: value
-    }));
-  };
-  
-  // Component to render literature search results
-  const renderLiteratureSearch = () => {
-    return (
-      <div className="space-y-6">
-        <div className="flex flex-col space-y-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-medium">Academic Literature</h3>
-              <p className="text-sm text-gray-500">
-                Discover relevant academic publications for your medical device
-              </p>
+  // Render device profile form
+  const renderDeviceProfileForm = () => (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Device Profile</CardTitle>
+        <CardDescription>
+          Enter information about your device to find appropriate predicates
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="deviceName">Device Name *</Label>
+              <Input
+                id="deviceName"
+                placeholder="Enter device name"
+                value={formData.deviceName}
+                onChange={(e) => handleInputChange('deviceName', e.target.value)}
+              />
             </div>
-            
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  searchForLiterature();
-                }}
-                disabled={isSearchingLiterature}
-              >
-                {isSearchingLiterature ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Searching...
-                  </>
-                ) : (
-                  <>
-                    <Search className="mr-2 h-4 w-4" />
-                    Semantic Search
-                  </>
-                )}
-              </Button>
-              
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Filter className="mr-2 h-4 w-4" />
-                    Filters
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Publication Filters</DialogTitle>
-                    <DialogDescription>
-                      Refine search results by publication date, impact factor, and study type
-                    </DialogDescription>
-                  </DialogHeader>
-                  
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label htmlFor="yearFrom">Year From</Label>
-                        <Select
-                          value={literatureFilters.yearFrom.toString()}
-                          onValueChange={(val) => handleFilterChange('yearFrom', parseInt(val))}
-                        >
-                          <SelectTrigger id="yearFrom">
-                            <SelectValue placeholder="From Year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - 19 + i).map(year => (
-                              <SelectItem key={year} value={year.toString()}>
-                                {year}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label htmlFor="yearTo">Year To</Label>
-                        <Select
-                          value={literatureFilters.yearTo.toString()}
-                          onValueChange={(val) => handleFilterChange('yearTo', parseInt(val))}
-                        >
-                          <SelectTrigger id="yearTo">
-                            <SelectValue placeholder="To Year" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - 19 + i).map(year => (
-                              <SelectItem key={year} value={year.toString()}>
-                                {year}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="journalImpactFactor">Journal Impact Factor</Label>
-                      <Select
-                        value={literatureFilters.journalImpactFactor}
-                        onValueChange={(val) => handleFilterChange('journalImpactFactor', val)}
-                      >
-                        <SelectTrigger id="journalImpactFactor">
-                          <SelectValue placeholder="Any Impact Factor" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Any Impact Factor</SelectItem>
-                          <SelectItem value="high">High Impact (5+)</SelectItem>
-                          <SelectItem value="medium">Medium Impact (2-5)</SelectItem>
-                          <SelectItem value="low">Low Impact (0-2)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <Label htmlFor="studyType">Study Type</Label>
-                      <Select
-                        value={literatureFilters.studyType}
-                        onValueChange={(val) => handleFilterChange('studyType', val)}
-                      >
-                        <SelectTrigger id="studyType">
-                          <SelectValue placeholder="Any Study Type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">All Study Types</SelectItem>
-                          <SelectItem value="rct">Randomized Controlled Trials</SelectItem>
-                          <SelectItem value="meta">Meta-Analyses & Systematic Reviews</SelectItem>
-                          <SelectItem value="cohort">Cohort Studies</SelectItem>
-                          <SelectItem value="case">Case Studies</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  
-                  <DialogFooter>
-                    <Button type="submit" onClick={() => searchForLiterature()}>
-                      Apply Filters
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+            <div className="space-y-2">
+              <Label htmlFor="manufacturer">Manufacturer *</Label>
+              <Input
+                id="manufacturer"
+                placeholder="Enter manufacturer name"
+                value={formData.manufacturer}
+                onChange={(e) => handleInputChange('manufacturer', e.target.value)}
+              />
             </div>
           </div>
           
-          {/* Literature results list */}
-          {literatureResults.length > 0 ? (
-            <ScrollArea className="h-[400px] border rounded-md p-2">
-              <div className="space-y-2">
-                {literatureResults.map((item) => (
-                  <div
-                    key={item.id}
-                    className={`p-3 border rounded-md hover:bg-blue-50 transition-colors cursor-pointer ${
-                      selectedLiterature.some(lit => lit.id === item.id) ? 'border-blue-400 bg-blue-50' : 'border-gray-200'
-                    }`}
-                    onClick={() => toggleLiteratureSelection(item)}
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-1 flex-1">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <h4 className="font-medium text-gray-900">{item.title}</h4>
-                            {item.source === 'PubMed' && (
-                              <Badge variant="outline" className="ml-2 bg-green-50 text-green-700 border-green-200">
-                                PubMed
-                              </Badge>
-                            )}
-                            {item.source === 'Google Scholar' && (
-                              <Badge variant="outline" className="ml-2 bg-blue-50 text-blue-700 border-blue-200">
-                                Scholar
-                              </Badge>
-                            )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="productCode">Product Code</Label>
+              <Input
+                id="productCode"
+                placeholder="e.g., ABC"
+                value={formData.productCode}
+                onChange={(e) => handleInputChange('productCode', e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="deviceClass">Device Class</Label>
+              <Select
+                value={formData.deviceClass}
+                onValueChange={(value) => handleInputChange('deviceClass', value)}
+              >
+                <SelectTrigger id="deviceClass">
+                  <SelectValue placeholder="Select class" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="I">Class I</SelectItem>
+                  <SelectItem value="II">Class II</SelectItem>
+                  <SelectItem value="III">Class III</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="intendedUse">Intended Use *</Label>
+            <Textarea
+              id="intendedUse"
+              placeholder="Describe the intended use of your device"
+              value={formData.intendedUse}
+              onChange={(e) => handleInputChange('intendedUse', e.target.value)}
+              rows={3}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="description">Device Description</Label>
+            <Textarea
+              id="description"
+              placeholder="Provide a description of your device"
+              value={formData.description}
+              onChange={(e) => handleInputChange('description', e.target.value)}
+              rows={3}
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <Label htmlFor="technicalSpecifications">Technical Specifications</Label>
+            <Textarea
+              id="technicalSpecifications"
+              placeholder="Enter technical specifications of your device"
+              value={formData.technicalSpecifications}
+              onChange={(e) => handleInputChange('technicalSpecifications', e.target.value)}
+              rows={3}
+            />
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button 
+          onClick={saveDeviceProfile}
+          className="w-full"
+        >
+          Save Device Profile
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+  
+  // Render predicate device search interface
+  const renderPredicateSearch = () => (
+    <Card className="mb-6">
+      <CardHeader>
+        <div className="flex justify-between items-start">
+          <div>
+            <CardTitle>Predicate Device Search</CardTitle>
+            <CardDescription>
+              Find substantially equivalent predicate devices for your 510(k) submission
+            </CardDescription>
+          </div>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={editDeviceProfile}
+          >
+            Edit Device Profile
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Button 
+              onClick={searchPredicateDevices}
+              disabled={isSearching}
+              className="flex items-center space-x-2"
+            >
+              {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+              <span>{isSearching ? 'Searching...' : 'Search FDA Database'}</span>
+            </Button>
+            
+            {selectedPredicates.length > 0 && (
+              <Button
+                variant="default"
+                onClick={completePredicateSelection}
+              >
+                <Check className="h-4 w-4 mr-2" />
+                <span>Complete Selection ({selectedPredicates.length})</span>
+              </Button>
+            )}
+          </div>
+          
+          {/* Quick summary of the current device */}
+          <div className="bg-blue-50 p-3 rounded-md">
+            <h4 className="font-medium text-blue-800 mb-1">Current Device</h4>
+            <p className="text-sm text-blue-700">{deviceProfile.deviceName} by {deviceProfile.manufacturer}</p>
+            <p className="text-xs text-blue-600 mt-1">{deviceProfile.intendedUse?.substring(0, 150)}...</p>
+          </div>
+          
+          {/* Display predicate search results */}
+          {searchResults.length > 0 && (
+            <div className="mt-4">
+              <h4 className="font-medium mb-2">Search Results ({searchResults.length})</h4>
+              <ScrollArea className="h-[300px] rounded-md border p-2">
+                <div className="space-y-3">
+                  {searchResults.map((device) => {
+                    const isSelected = selectedPredicates.some(p => p.k_number === device.k_number);
+                    return (
+                      <div 
+                        key={device.k_number} 
+                        className={`p-3 rounded-md border ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h5 className="font-medium">{device.device_name}</h5>
+                            <p className="text-sm text-gray-600">{device.applicant}</p>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <Badge variant="outline">{device.k_number}</Badge>
+                              <Badge variant="outline">{new Date(device.decision_date).toLocaleDateString()}</Badge>
+                            </div>
                           </div>
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="ml-2 h-8 w-8 p-0" 
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    viewLiteratureDetails(item);
-                                  }}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                  <span className="sr-only">View details</span>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>View publication details</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </div>
-                        
-                        <p className="text-sm text-gray-600">
-                          {item.authors.slice(0, 3).join(', ')}
-                          {item.authors.length > 3 && ' et al.'}
-                        </p>
-                        
-                        <p className="text-sm text-gray-700 mt-1">
-                          {item.journal}
-                          {item.publicationDate && ` (${item.publicationDate.split(' ')[0]})`}
-                        </p>
-                        
-                        <div className="flex items-center space-x-3 mt-1 text-xs text-gray-500">
-                          {item.publicationType && (
-                            <span className="flex items-center">
-                              <FileText className="h-3 w-3 mr-1" />
-                              {Array.isArray(item.publicationType) 
-                                ? item.publicationType[0] 
-                                : item.publicationType}
-                            </span>
-                          )}
-                          
-                          {item.citationCount !== undefined && (
-                            <span className="flex items-center">
-                              <BarChart className="h-3 w-3 mr-1" />
-                              {item.citationCount} citations
-                            </span>
-                          )}
-                          
-                          {item.doi && (
-                            <a 
-                              href={`https://doi.org/${item.doi}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex items-center text-blue-600 hover:underline"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              DOI
-                            </a>
-                          )}
+                          <Button
+                            variant={isSelected ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => togglePredicateSelection(device)}
+                          >
+                            {isSelected ? <Check className="h-4 w-4" /> : 'Select'}
+                          </Button>
                         </div>
                       </div>
-                      
-                      <div className="flex flex-col items-center pt-1 pl-2">
-                        <div className={`rounded-full h-6 w-6 flex items-center justify-center ${
-                          selectedLiterature.some(lit => lit.id === item.id) 
-                            ? 'bg-blue-600 text-white' 
-                            : 'bg-gray-100 text-gray-400'
-                        }`}>
-                          {selectedLiterature.some(lit => lit.id === item.id) ? (
-                            <Check className="h-3 w-3" />
-                          ) : null}
-                        </div>
-                        
-                        {item.relevanceScore && (
-                          <span className={`text-xs font-medium mt-1 ${
-                            item.relevanceScore >= 0.8 ? 'text-green-600' :
-                            item.relevanceScore >= 0.6 ? 'text-blue-600' :
-                            'text-gray-600'
-                          }`}>
-                            {Math.round(item.relevanceScore * 100)}%
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          ) : (
-            <div className="text-center p-8 border rounded-md bg-gray-50">
-              <BookOpen className="mx-auto h-12 w-12 text-gray-400" />
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No Literature Found</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Use the search button above to find relevant academic publications.
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+          
+          {/* No results message */}
+          {searchResults.length === 0 && !isSearching && (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <Search className="h-12 w-12 text-gray-400 mb-4" />
+              <h4 className="text-xl font-medium text-gray-700">No predicate devices found</h4>
+              <p className="text-gray-500 mt-2 max-w-md">
+                Try searching the FDA database to find predicate devices for your 510(k) submission.
               </p>
             </div>
           )}
         </div>
-      </div>
-    );
-  };
-
-  {/* Literature details dialog */}
-  const literatureDetailsDialog = (
-    <Dialog open={showLiteratureDetails} onOpenChange={setShowLiteratureDetails}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        {selectedLiteratureItem && (
-          <>
-            <DialogHeader>
-              <DialogTitle className="text-xl">{selectedLiteratureItem.title}</DialogTitle>
-              <DialogDescription>
-                {selectedLiteratureItem.authors.join(', ')}
-                <div className="flex items-center mt-1 text-sm">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  {selectedLiteratureItem.publicationDate || 'Publication date not available'}
-                  {selectedLiteratureItem.journal && (
-                    <span className="ml-2">• {selectedLiteratureItem.journal}</span>
-                  )}
-                </div>
-              </DialogDescription>
-            </DialogHeader>
-            
-            <div className="space-y-4 py-4">
-              {selectedLiteratureItem.abstract && (
-                <div>
-                  <h4 className="text-sm font-medium mb-1">Abstract</h4>
-                  <p className="text-sm text-gray-700">{selectedLiteratureItem.abstract}</p>
-                </div>
-              )}
-              
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <h4 className="font-medium mb-1">Publication Type</h4>
-                  <p className="text-gray-700">
-                    {Array.isArray(selectedLiteratureItem.publicationType) 
-                      ? selectedLiteratureItem.publicationType.join(', ') 
-                      : selectedLiteratureItem.publicationType || 'Not specified'}
-                  </p>
-                </div>
-                
-                <div>
-                  <h4 className="font-medium mb-1">Citation Count</h4>
-                  <p className="text-gray-700">
-                    {selectedLiteratureItem.citationCount !== undefined 
-                      ? `${selectedLiteratureItem.citationCount} citations` 
-                      : 'Not available'}
-                  </p>
-                </div>
-                
-                {selectedLiteratureItem.keywords && selectedLiteratureItem.keywords.length > 0 && (
-                  <div className="col-span-2">
-                    <h4 className="font-medium mb-1">Keywords</h4>
-                    <div className="flex flex-wrap gap-1">
-                      {selectedLiteratureItem.keywords.map((keyword, index) => (
-                        <Badge key={index} variant="secondary" className="text-xs">
-                          {keyword}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {selectedLiteratureItem.doi && (
-                  <div className="col-span-2">
-                    <h4 className="font-medium mb-1">DOI</h4>
-                    <a 
-                      href={`https://doi.org/${selectedLiteratureItem.doi}`} 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center"
-                    >
-                      {selectedLiteratureItem.doi}
-                      <ExternalLink className="h-3 w-3 ml-1" />
-                    </a>
-                  </div>
-                )}
-                
-                {selectedLiteratureItem.url && !selectedLiteratureItem.url.includes(selectedLiteratureItem.doi || '') && (
-                  <div className="col-span-2">
-                    <h4 className="font-medium mb-1">Source URL</h4>
-                    <a 
-                      href={selectedLiteratureItem.url} 
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline flex items-center"
-                    >
-                      View Publication
-                      <ExternalLink className="h-3 w-3 ml-1" />
-                    </a>
-                  </div>
-                )}
-              </div>
-              
-              {selectedLiteratureItem.relevanceScore && (
-                <div className="border-t pt-4">
-                  <h4 className="text-sm font-medium mb-1">Relevance to Your Device</h4>
-                  <div className="flex items-center">
-                    <div className="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                      <div 
-                        className={`h-2.5 rounded-full ${
-                          selectedLiteratureItem.relevanceScore >= 0.8 ? 'bg-green-600' :
-                          selectedLiteratureItem.relevanceScore >= 0.6 ? 'bg-blue-600' :
-                          'bg-amber-500'
-                        }`}
-                        style={{ width: `${Math.round(selectedLiteratureItem.relevanceScore * 100)}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm font-medium">{Math.round(selectedLiteratureItem.relevanceScore * 100)}%</span>
-                  </div>
-                </div>
-              )}
-            </div>
-            
-            <DialogFooter>
-              <Button 
-                variant="outline" 
-                onClick={() => toggleLiteratureSelection(selectedLiteratureItem)}
-              >
-                {selectedLiterature.some(lit => lit.id === selectedLiteratureItem.id) ? 'Unselect' : 'Select'} Publication
-              </Button>
-              {selectedLiteratureItem.fullTextAvailable && (
-                <Button>
-                  <FileText className="mr-2 h-4 w-4" />
-                  View Full Text
-                </Button>
-              )}
-            </DialogFooter>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+      </CardContent>
+    </Card>
   );
-
-  return (
-    <Card className="shadow-sm">
-      <CardHeader className="bg-blue-50 border-b">
-        <CardTitle className="text-blue-800 flex items-center">
-          <Search className="mr-2 h-5 w-5 text-blue-600" />
-          Predicate Device Finder
-        </CardTitle>
+  
+  // Render literature tab content
+  const renderLiteratureContent = () => (
+    <Card className="mb-6">
+      <CardHeader>
+        <CardTitle>Supporting Literature</CardTitle>
         <CardDescription>
-          Find suitable predicate devices and supporting literature for your 510(k) submission
+          Find relevant scientific literature to support your 510(k) submission
         </CardDescription>
       </CardHeader>
-      <CardContent className="pt-6">
-        {profileEditing ? (
-          renderProfileForm()
-        ) : (
-          <Tabs defaultValue="predicates" value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="predicates">Predicate Devices</TabsTrigger>
-              <TabsTrigger value="literature">Academic Literature</TabsTrigger>
-            </TabsList>
-            <TabsContent value="predicates">{renderPredicateSearch()}</TabsContent>
-            <TabsContent value="literature">{renderLiteratureSearch()}</TabsContent>
-          </Tabs>
-        )}
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Button 
+              onClick={searchRelatedLiterature}
+              disabled={isSearchingLiterature}
+              className="flex items-center space-x-2"
+            >
+              {isSearchingLiterature ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookOpen className="h-4 w-4" />}
+              <span>{isSearchingLiterature ? 'Searching...' : 'Search Literature'}</span>
+            </Button>
+            
+            {selectedLiterature.length > 0 && (
+              <Badge variant="outline" className="ml-2">
+                {selectedLiterature.length} selected
+              </Badge>
+            )}
+          </div>
+          
+          {/* Literature search filters */}
+          <div className="bg-gray-50 p-3 rounded-md">
+            <div className="flex items-center space-x-2 mb-2">
+              <Filter className="h-4 w-4 text-gray-600" />
+              <h4 className="font-medium text-gray-800">Search Filters</h4>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mt-2">
+              <div className="space-y-1">
+                <Label htmlFor="yearFrom" className="text-xs">From Year</Label>
+                <Input
+                  id="yearFrom"
+                  type="number"
+                  value={literatureFilters.yearFrom}
+                  onChange={(e) => setLiteratureFilters({
+                    ...literatureFilters,
+                    yearFrom: parseInt(e.target.value) || new Date().getFullYear() - 5
+                  })}
+                  className="h-8"
+                />
+              </div>
+              
+              <div className="space-y-1">
+                <Label htmlFor="yearTo" className="text-xs">To Year</Label>
+                <Input
+                  id="yearTo"
+                  type="number"
+                  value={literatureFilters.yearTo}
+                  onChange={(e) => setLiteratureFilters({
+                    ...literatureFilters,
+                    yearTo: parseInt(e.target.value) || new Date().getFullYear()
+                  })}
+                  className="h-8"
+                />
+              </div>
+              
+              <div className="space-y-1">
+                <Label htmlFor="journalImpactFactor" className="text-xs">Journal Quality</Label>
+                <Select
+                  value={literatureFilters.journalImpactFactor}
+                  onValueChange={(value) => setLiteratureFilters({
+                    ...literatureFilters,
+                    journalImpactFactor: value
+                  })}
+                >
+                  <SelectTrigger id="journalImpactFactor" className="h-8">
+                    <SelectValue placeholder="Impact Factor" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Journals</SelectItem>
+                    <SelectItem value="high">High Impact (IF {'>'}5)</SelectItem>
+                    <SelectItem value="medium">Medium Impact (IF 2-5)</SelectItem>
+                    <SelectItem value="low">Low Impact (IF {'<'}2)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-1">
+                <Label htmlFor="studyType" className="text-xs">Study Type</Label>
+                <Select
+                  value={literatureFilters.studyType}
+                  onValueChange={(value) => setLiteratureFilters({
+                    ...literatureFilters,
+                    studyType: value
+                  })}
+                >
+                  <SelectTrigger id="studyType" className="h-8">
+                    <SelectValue placeholder="Study Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Studies</SelectItem>
+                    <SelectItem value="clinical">Clinical Trials</SelectItem>
+                    <SelectItem value="meta">Meta-Analyses</SelectItem>
+                    <SelectItem value="review">Systematic Reviews</SelectItem>
+                    <SelectItem value="case">Case Studies</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+          
+          {/* Display literature search results */}
+          {literatureResults.length > 0 && (
+            <div className="mt-4">
+              <h4 className="font-medium mb-2">Literature Results ({literatureResults.length})</h4>
+              <ScrollArea className="h-[300px] rounded-md border p-2">
+                <div className="space-y-3">
+                  {literatureResults.map((item) => {
+                    const isSelected = selectedLiterature.some(l => l.id === item.id);
+                    return (
+                      <div 
+                        key={item.id} 
+                        className={`p-3 rounded-md border ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h5 className="font-medium">{item.title}</h5>
+                            <p className="text-sm text-gray-600 mt-1">{item.authors}</p>
+                            <p className="text-xs text-gray-500 mt-1">{item.journal}, {item.year}</p>
+                            <div className="flex items-center space-x-2 mt-2">
+                              <Badge variant="outline">{item.type || 'Article'}</Badge>
+                              
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-6 w-6"
+                                      onClick={() => viewLiteratureDetails(item)}
+                                    >
+                                      <Eye className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>View Details</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                              
+                              {item.url && (
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="h-6 w-6"
+                                        onClick={() => window.open(item.url, '_blank')}
+                                      >
+                                        <ExternalLink className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Open Source</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            variant={isSelected ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => toggleLiteratureSelection(item)}
+                          >
+                            {isSelected ? <Check className="h-4 w-4" /> : 'Select'}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+          
+          {/* No literature results message */}
+          {literatureResults.length === 0 && !isSearchingLiterature && (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <BookOpen className="h-12 w-12 text-gray-400 mb-4" />
+              <h4 className="text-xl font-medium text-gray-700">No literature found</h4>
+              <p className="text-gray-500 mt-2 max-w-md">
+                Search for relevant scientific literature to support your substantial equivalence claims.
+              </p>
+            </div>
+          )}
+        </div>
       </CardContent>
-      {literatureDetailsDialog}
+      
+      {/* Literature details dialog */}
+      <Dialog open={showLiteratureDetails} onOpenChange={setShowLiteratureDetails}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>{selectedLiteratureItem?.title}</DialogTitle>
+            <DialogDescription>
+              {selectedLiteratureItem?.authors} · {selectedLiteratureItem?.journal}, {selectedLiteratureItem?.year}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Publication Type</h4>
+                <p>{selectedLiteratureItem?.type || 'Article'}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Published Date</h4>
+                <p>{selectedLiteratureItem?.date || `${selectedLiteratureItem?.year}`}</p>
+              </div>
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">DOI</h4>
+                <p>{selectedLiteratureItem?.doi || 'N/A'}</p>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-sm font-medium text-gray-500">Abstract</h4>
+              <p className="text-sm mt-1">{selectedLiteratureItem?.abstract || 'No abstract available'}</p>
+            </div>
+            
+            {selectedLiteratureItem?.keywords && (
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Keywords</h4>
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {selectedLiteratureItem.keywords.split(',').map((keyword, idx) => (
+                    <Badge key={idx} variant="secondary">{keyword.trim()}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {selectedLiteratureItem?.relevance && (
+              <div>
+                <h4 className="text-sm font-medium text-gray-500">Relevance to Your Device</h4>
+                <p className="text-sm mt-1">{selectedLiteratureItem.relevance}</p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowLiteratureDetails(false)}>Close</Button>
+            {selectedLiteratureItem?.url && (
+              <Button onClick={() => window.open(selectedLiteratureItem.url, '_blank')}>
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Open Source
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
+  );
+  
+  // Main component render
+  return (
+    <div className="space-y-4">
+      {/* Display device profile form when in editing mode */}
+      {profileEditing ? (
+        renderDeviceProfileForm()
+      ) : (
+        <div>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <TabsList className="w-full grid grid-cols-2">
+              <TabsTrigger value="predicates">Predicate Devices</TabsTrigger>
+              <TabsTrigger value="literature">Supporting Literature</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="predicates">
+              {renderPredicateSearch()}
+            </TabsContent>
+            
+            <TabsContent value="literature">
+              {renderLiteratureContent()}
+            </TabsContent>
+          </Tabs>
+        </div>
+      )}
+    </div>
   );
 };
 
