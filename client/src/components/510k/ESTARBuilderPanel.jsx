@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -12,7 +12,9 @@ import {
   Download, 
   RefreshCw, 
   Shield, 
-  CheckSquare 
+  CheckSquare,
+  Save,
+  AlertTriangle
 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { FDA510kService } from "@/services/FDA510kService";
@@ -54,40 +56,166 @@ const ESTARBuilderPanel = ({
   const [includeAttachments, setIncludeAttachments] = useState(true);
   const [strictValidation, setStrictValidation] = useState(false);
   const [activeTab, setActiveTab] = useState('validation');
+  const [generationRetryCount, setGenerationRetryCount] = useState(0);
+  const [lastSuccessfulState, setLastSuccessfulState] = useState(null);
+  const [validationErrorMessage, setValidationErrorMessage] = useState('');
+  const [generationErrorMessage, setGenerationErrorMessage] = useState('');
+  
+  // Backup eSTAR state to localStorage for recovery
+  useEffect(() => {
+    try {
+      // Only save when we have meaningful state to preserve
+      if (validationResults || generatedUrl) {
+        const estarState = {
+          timestamp: new Date().toISOString(),
+          projectId,
+          validationResults,
+          generatedUrl,
+          estarFormat,
+          includeAttachments,
+          strictValidation,
+          activeTab
+        };
+        
+        localStorage.setItem('510k_estarState', JSON.stringify(estarState));
+        console.log('[ESTARBuilderPanel] State backed up to localStorage');
+      }
+    } catch (error) {
+      console.error('[ESTARBuilderPanel] Error saving state to localStorage:', error);
+      // Non-critical, continue
+    }
+  }, [validationResults, generatedUrl, estarFormat]);
+  
+  // Attempt to recover state on mount
+  useEffect(() => {
+    try {
+      const savedState = localStorage.getItem('510k_estarState');
+      if (savedState) {
+        const state = JSON.parse(savedState);
+        
+        // Only restore if it's for the same project and reasonably recent (24h)
+        const savedTime = new Date(state.timestamp).getTime();
+        const currentTime = new Date().getTime();
+        const hoursSinceSave = (currentTime - savedTime) / (1000 * 60 * 60);
+        
+        if (state.projectId === projectId && hoursSinceSave < 24) {
+          console.log('[ESTARBuilderPanel] Restoring saved state from localStorage');
+          
+          // Only restore what we have and what makes sense
+          if (state.validationResults && !validationResults) {
+            setValidationResults(state.validationResults);
+          }
+          
+          if (state.generatedUrl && !generatedUrl) {
+            setGeneratedUrl(state.generatedUrl);
+          }
+          
+          if (state.estarFormat) {
+            setEstarFormat(state.estarFormat);
+          }
+          
+          if (typeof state.includeAttachments === 'boolean') {
+            setIncludeAttachments(state.includeAttachments);
+          }
+          
+          if (typeof state.strictValidation === 'boolean') {
+            setStrictValidation(state.strictValidation);
+          }
+          
+          if (state.activeTab) {
+            setActiveTab(state.activeTab);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('[ESTARBuilderPanel] Error restoring state from localStorage:', error);
+      // Non-critical error, don't interrupt user flow
+    }
+  }, []);
   
   // Instance of the FDA510k service
   const fda510kService = new FDA510kService();
 
   /**
-   * Handles the eSTAR validation process
+   * Handles the eSTAR validation process with enhanced error recovery
    * @param {boolean} strict Whether to use strict validation
    */
-  const handleValidate = async (strict = false) => {
+  const handleValidate = useCallback(async (strict = false) => {
+    // Clear any previous error messages
+    setValidationErrorMessage('');
+    
+    // Save current state before validation for potential recovery
+    const currentState = {
+      validationResults,
+      estarFormat,
+      includeAttachments,
+      strictValidation: strict
+    };
+    setLastSuccessfulState(currentState);
+    
+    let progressInterval;
+    
     try {
       setIsValidating(true);
       setValidationInProgress(true);
       setValidationProgress(0);
       
-      // Progress simulation for UX
-      const progressInterval = setInterval(() => {
+      // Save validation attempt to localStorage
+      try {
+        localStorage.setItem('510k_estarValidationAttempt', JSON.stringify({
+          timestamp: new Date().toISOString(),
+          projectId,
+          strict
+        }));
+      } catch (storageError) {
+        console.warn('[ESTARBuilderPanel] Failed to save validation attempt:', storageError);
+        // Non-critical, continue
+      }
+      
+      // Progress simulation for UX with a more realistic pattern
+      progressInterval = setInterval(() => {
         setValidationProgress(prev => {
           if (prev >= 90) {
             clearInterval(progressInterval);
             return 90;
           }
-          return prev + 10;
+          // Slow down progress as it gets higher for realism
+          const increment = prev < 50 ? 10 : prev < 75 ? 6 : 3;
+          return prev + increment;
         });
-      }, 500);
+      }, 800);
       
-      // Call the actual validation service
-      const results = await fda510kService.validateESTARPackage(projectId, strict);
+      // Add timeout protection to prevent indefinite hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Validation request timed out after 90 seconds")), 90000);
+      });
       
-      clearInterval(progressInterval);
+      // Call the actual validation service with timeout protection
+      const results = await Promise.race([
+        fda510kService.validateESTARPackage(projectId, strict),
+        timeoutPromise
+      ]);
+      
+      // Clear the progress interval
+      if (progressInterval) {
+        clearInterval(progressInterval);
+        progressInterval = null;
+      }
       setValidationProgress(100);
+      
+      // Verify the results structure for data integrity
+      if (!results || typeof results !== 'object') {
+        throw new Error("Invalid validation response format");
+      }
       
       // Send the results to parent component
       if (onValidationComplete) {
-        onValidationComplete(results);
+        try {
+          onValidationComplete(results);
+        } catch (callbackError) {
+          console.error("[ESTARBuilderPanel] Error in validation callback:", callbackError);
+          // Continue despite callback error
+        }
       }
       
       // Set the validation results
@@ -107,69 +235,260 @@ const ESTARBuilderPanel = ({
           variant: "warning"
         });
       }
+      
+      // Reset error message if previously set
+      setValidationErrorMessage('');
+      
+      return results;
     } catch (error) {
-      console.error("Error validating eSTAR package:", error);
+      console.error("[ESTARBuilderPanel] Error validating eSTAR package:", error);
+      
+      // Store the error message for display
+      const errorMessage = error.message || "Failed to validate eSTAR package";
+      setValidationErrorMessage(errorMessage);
+      
+      // Show user-friendly error
       toast({
         title: "Validation Error",
-        description: error.message || "Failed to validate eSTAR package",
+        description: errorMessage,
         variant: "destructive"
       });
+      
+      // Attempt to restore previous state
+      if (lastSuccessfulState) {
+        setValidationResults(lastSuccessfulState.validationResults);
+      }
+      
+      return { valid: false, error: errorMessage };
     } finally {
+      // Ensure interval is cleared in all cases
+      if (progressInterval) {
+        clearInterval(progressInterval);
+      }
+      
+      // Reset UI states
       setIsValidating(false);
       setValidationInProgress(false);
       setValidationProgress(100);
+      
+      // Remove validation attempt record
+      try {
+        localStorage.removeItem('510k_estarValidationAttempt');
+      } catch (e) {
+        // Non-critical
+      }
     }
-  };
+  }, [projectId, validationResults, estarFormat, includeAttachments, lastSuccessfulState, onValidationComplete]);
 
   /**
-   * Handles the generation of the final eSTAR package
+   * Handles the generation of the final eSTAR package with enhanced reliability
+   * and strict FDA compliance enforcement
    */
-  const handleGenerate = async () => {
+  const handleGenerate = useCallback(async () => {
+    // Clear any previous error messages
+    setGenerationErrorMessage('');
+    
+    // Save current state before generation for potential recovery
+    const currentState = {
+      validationResults,
+      estarFormat,
+      includeAttachments,
+      strictValidation,
+      generatedUrl
+    };
+    setLastSuccessfulState(currentState);
+    
+    // Track generation attempt count for retry logic
+    setGenerationRetryCount(prev => prev + 1);
+    
+    // Ensure we have valid data before proceeding
+    if (!deviceProfile || !projectId) {
+      const missingItems = [];
+      if (!deviceProfile) missingItems.push("device profile");
+      if (!projectId) missingItems.push("project ID");
+      
+      const errorMessage = `Missing required data: ${missingItems.join(", ")}`;
+      setGenerationErrorMessage(errorMessage);
+      
+      toast({
+        title: "Cannot Generate eSTAR Package",
+        description: errorMessage,
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validate first if not already done or validation failed
+    if (!validationResults || !validationResults.valid) {
+      const shouldProceed = window.confirm(
+        "The eSTAR package has not been successfully validated. " +
+        "FDA submissions require validated packages. Would you like to validate first?"
+      );
+      
+      if (shouldProceed) {
+        const validationResult = await handleValidate(strictValidation);
+        if (!validationResult.valid) {
+          // Don't proceed if validation failed
+          return;
+        }
+      }
+    }
+    
     try {
       setIsGenerating(true);
       
-      // Generate a random report ID if not provided
-      const reportId = `510K-${Math.floor(100000 + Math.random() * 900000)}`;
+      // Save generation attempt to localStorage
+      try {
+        localStorage.setItem('510k_estarGenerationAttempt', JSON.stringify({
+          timestamp: new Date().toISOString(),
+          projectId,
+          format: estarFormat,
+          retryCount: generationRetryCount
+        }));
+      } catch (storageError) {
+        console.warn('[ESTARBuilderPanel] Failed to save generation attempt:', storageError);
+        // Non-critical, continue
+      }
+      
+      // Generate a stable report ID based on the project to ensure idempotency
+      // This helps with resuming interrupted operations
+      const reportId = `510K-${projectId.toString().replace(/\D/g, '')}-${new Date().toISOString().slice(0, 10)}`;
       
       const options = {
         validateFirst: !validationResults?.valid, // Validate first if not already validated
         strictValidation,
-        format: estarFormat || 'zip'
+        format: estarFormat || 'pdf', // Default to PDF for FDA compliance
+        includeAttachments,
+        fdaCompliant: true, // Enforce FDA formatting standards
+        deviceProfile,
+        complianceScore,
+        equivalenceData
       };
       
-      // Call the FDA service to integrate with eSTAR
-      const result = await fda510kService.integrateWithESTAR(reportId, projectId, options);
+      // Add timeout protection to prevent indefinite hanging
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error("Generation request timed out after 3 minutes")), 180000);
+      });
+      
+      // Call the FDA service to generate eSTAR with timeout protection
+      const result = await Promise.race([
+        fda510kService.integrateWithESTAR(reportId, projectId, options),
+        timeoutPromise
+      ]);
+      
+      // Verify the response integrity
+      if (!result || typeof result !== 'object') {
+        throw new Error("Invalid generation response format");
+      }
       
       if (result.success) {
         setGeneratedUrl(result.downloadUrl);
         
-        if (onGenerationComplete) {
-          onGenerationComplete(result);
+        // Verify the downloadUrl is actually present and valid
+        if (!result.downloadUrl) {
+          throw new Error("No download URL was returned in the successful response");
         }
         
-        toast({
-          title: "eSTAR Package Generated",
-          description: "Your FDA-compliant submission package is ready to download.",
-          variant: "success"
-        });
+        // Call the completion callback
+        if (onGenerationComplete) {
+          try {
+            onGenerationComplete(result);
+          } catch (callbackError) {
+            console.error("[ESTARBuilderPanel] Error in generation callback:", callbackError);
+            // Continue despite callback error
+          }
+        }
+        
+        // Ensure the generation is FDA compliant
+        if (!result.fdaCompliant) {
+          toast({
+            title: "eSTAR Package Generated with Warnings",
+            description: "Your package was generated but may not meet all FDA requirements. Review carefully.",
+            variant: "warning"
+          });
+        } else {
+          toast({
+            title: "eSTAR Package Generated",
+            description: "Your FDA-compliant submission package is ready to download.",
+            variant: "success"
+          });
+        }
+        
+        // Switch to the download tab
+        setActiveTab('generation');
+        
+        // Reset error tracking
+        setGenerationErrorMessage('');
       } else {
+        // Handle unsuccessful result with specific error information
+        const errorMessage = result.message || "Failed to generate eSTAR package due to server error.";
+        setGenerationErrorMessage(errorMessage);
+        
         toast({
           title: "Generation Failed",
-          description: result.message || "Failed to generate eSTAR package.",
+          description: errorMessage,
           variant: "destructive"
         });
       }
     } catch (error) {
-      console.error("Error generating eSTAR package:", error);
+      console.error("[ESTARBuilderPanel] Error generating eSTAR package:", error);
+      
+      // Store the error message for display
+      const errorMessage = error.message || "Failed to generate eSTAR package";
+      setGenerationErrorMessage(errorMessage);
+      
+      // Attempt automatic retry for certain errors
+      if (generationRetryCount < 2 && (
+        errorMessage.includes("timeout") || 
+        errorMessage.includes("network") ||
+        errorMessage.includes("connection")
+      )) {
+        toast({
+          title: "Automatic Retry",
+          description: "Connection issue detected. Retrying generation in 5 seconds...",
+          variant: "warning"
+        });
+        
+        // Retry after a short delay
+        setTimeout(() => handleGenerate(), 5000);
+        return;
+      }
+      
+      // Show user-friendly error
       toast({
         title: "Generation Error",
-        description: error.message || "Failed to generate eSTAR package",
+        description: errorMessage,
         variant: "destructive"
       });
+      
+      // Attempt to restore previous state if we had a URL before
+      if (lastSuccessfulState && lastSuccessfulState.generatedUrl) {
+        setGeneratedUrl(lastSuccessfulState.generatedUrl);
+      }
     } finally {
+      // Reset UI states
       setIsGenerating(false);
+      
+      // Remove generation attempt record
+      try {
+        localStorage.removeItem('510k_estarGenerationAttempt');
+      } catch (e) {
+        // Non-critical
+      }
     }
-  };
+  }, [
+    projectId, 
+    deviceProfile, 
+    validationResults, 
+    estarFormat, 
+    includeAttachments, 
+    strictValidation, 
+    complianceScore, 
+    equivalenceData, 
+    generationRetryCount,
+    lastSuccessfulState,
+    handleValidate
+  ]);
 
   return (
     <Card className="w-full shadow-md border-blue-200">
