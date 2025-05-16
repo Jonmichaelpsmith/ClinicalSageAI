@@ -125,26 +125,12 @@ const DeviceProfileForm = ({ initialData = {}, onSubmit, isEditing = false }) =>
     }
   });
   
-  // Handle form submission with proper document structure
+  // Handle form submission
   const handleSubmit = async (data) => {
     if (onSubmit) {
-      // Add the required document structure to prevent the error
-      const enhancedData = {
-        ...data,
-        id: data.id || `device-${Date.now()}`,
-        structure: {
-          documentType: '510k',
-          sections: ['device-info', 'predicates', 'compliance'],
-          version: '1.0'
-        },
-        status: 'active',
-        metadata: {
-          createdAt: new Date().toISOString(),
-          lastUpdated: new Date().toISOString()
-        }
-      };
-      
-      onSubmit(enhancedData);
+      // Pass the raw form data. The parent component's onSubmit will ensure
+      // all necessary fields are properly formatted and structured
+      onSubmit(data);
     }
   };
   
