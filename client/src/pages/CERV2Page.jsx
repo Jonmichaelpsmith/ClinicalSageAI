@@ -488,6 +488,27 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
 
   // Handler functions for 510k workflow
   // Completely rewritten handler for predicate completion to fix workflow transition
+  // EMERGENCY FIX: Direct function for manual predicate step completion
+  const forcePredicateStepCompletion = () => {
+    console.log('[CERV2 EMERGENCY RECOVERY] Forcing predicate step completion');
+    setIsPredicateStepCompleted(true);
+    saveState('isPredicateStepCompleted', true);
+    
+    toast({
+      title: "Workflow Fixed",
+      description: "Predicate step marked as completed. You can now proceed to the next step.",
+      variant: "success",
+      duration: 5000
+    });
+    
+    // Force navigation to next step
+    setTimeout(() => {
+      setActiveTab('equivalence');
+      setWorkflowStep(3);
+      setWorkflowProgress(50);
+    }, 500);
+  };
+
   const handlePredicatesComplete = (data, error = null) => {
     console.log('[CERV2 Workflow] Predicate completion handler called:', {
       predicateCount: data?.length || 0,
