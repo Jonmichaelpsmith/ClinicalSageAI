@@ -1116,7 +1116,7 @@ const ComplianceCheckPanel = ({
                             <div className="flex flex-col">
                               <div className="flex items-center mb-2">
                                 <div className="text-2xl font-bold">
-                                  {riskAssessmentData.evidenceCount || 0}
+                                  {actualRiskAssessmentData.evidenceCount || 0}
                                 </div>
                                 <div className="ml-2 text-sm text-gray-600">
                                   Literature references
@@ -1140,8 +1140,8 @@ const ComplianceCheckPanel = ({
                             Submission Strengths
                           </h3>
                           <div className="grid grid-cols-2 gap-4">
-                            {riskAssessmentData.strengths?.length > 0 ? (
-                              riskAssessmentData.strengths.map((strength, index) => (
+                            {actualRiskAssessmentData.strengths?.length > 0 ? (
+                              actualRiskAssessmentData.strengths.map((strength, index) => (
                                 <div key={index} className="flex items-start">
                                   <TrendingUp className="h-4 w-4 mr-2 mt-1 text-green-500 flex-shrink-0" />
                                   <div className="text-sm">{strength}</div>
@@ -1164,9 +1164,9 @@ const ComplianceCheckPanel = ({
                           Identified Risk Factors
                         </h3>
                         
-                        {riskAssessmentData.riskFactors?.length > 0 ? (
+                        {actualRiskAssessmentData.riskFactors?.length > 0 ? (
                           <div className="space-y-4">
-                            {riskAssessmentData.riskFactors.map((risk, index) => (
+                            {actualRiskAssessmentData.riskFactors.map((risk, index) => (
                               <Card key={index} className={`p-4 border-l-4 ${
                                 risk.severity === 'high' ? 'border-l-red-500 bg-red-50' : 
                                 risk.severity === 'medium' ? 'border-l-amber-500 bg-amber-50' : 
