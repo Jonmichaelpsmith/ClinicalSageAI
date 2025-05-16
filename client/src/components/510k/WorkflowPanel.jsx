@@ -194,31 +194,42 @@ const WorkflowPanel = ({
         console.log('[WorkflowPanel] Transition to compliance step approved by API');
         // Update the step and tab states
         setWorkflowStep(4);
-      setTimeout(() => {
-        try {
-          console.log('[WorkflowPanel] Setting active tab to compliance');
-          setActiveTab('compliance');
-          
-          // Verify transition was successful
-          setTimeout(() => {
-            if (activeTab !== 'compliance') {
-              console.warn('[WorkflowPanel] Tab transition failed, retrying...');
-              setActiveTab('compliance');
-            } else {
-              console.log('[WorkflowPanel] Tab transition to compliance successful');
-            }
-          }, 200);
-        } catch (transitionError) {
-          console.error('[WorkflowPanel] Error during tab transition:', transitionError);
-          // Emergency fallback
-          setActiveTab('compliance');
-        }
-      }, 100);
+        setTimeout(() => {
+          try {
+            console.log('[WorkflowPanel] Setting active tab to compliance');
+            setActiveTab('compliance');
+            
+            // Verify transition was successful
+            setTimeout(() => {
+              if (activeTab !== 'compliance') {
+                console.warn('[WorkflowPanel] Tab transition failed, retrying...');
+                setActiveTab('compliance');
+              } else {
+                console.log('[WorkflowPanel] Tab transition to compliance successful');
+              }
+            }, 200);
+          } catch (transitionError) {
+            console.error('[WorkflowPanel] Error during tab transition:', transitionError);
+            // Emergency fallback
+            setActiveTab('compliance');
+          }
+        }, 100);
+      } else {
+        console.warn(`[WorkflowPanel] API blocked transition to compliance: ${checkResult.message}`);
+        toast({
+          title: "Cannot Proceed to Compliance Check",
+          description: checkResult.message || "Equivalence analysis is incomplete",
+          variant: "destructive"
+        });
+      }
     } catch (error) {
       console.error('[WorkflowPanel] Critical error in workflow transition:', error);
-      // Hard fallback
-      setWorkflowStep(4);
-      setActiveTab('compliance');
+      // Hard fallback - only use in case of unexpected errors, not API validation failures
+      toast({
+        title: "Error During Transition",
+        description: "An unexpected error occurred. Engineering has been notified.",
+        variant: "destructive"
+      });
     }
   };
 
