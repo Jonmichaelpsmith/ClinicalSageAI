@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Input } from '@/components/ui/input';
+import { Input as BaseInput } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -15,6 +15,27 @@ import {
   FormLabel, 
   FormMessage 
 } from '@/components/ui/form';
+
+// Custom Input component that prevents form submission on Enter key
+const Input = React.forwardRef((props, ref) => {
+  return (
+    <BaseInput
+      {...props}
+      ref={ref}
+      onKeyDown={(e) => {
+        // Prevent form submission when pressing Enter
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        // Call original onKeyDown if it was provided
+        if (props.onKeyDown) {
+          props.onKeyDown(e);
+        }
+      }}
+    />
+  );
+});
 import { 
   Select, 
   SelectContent, 
