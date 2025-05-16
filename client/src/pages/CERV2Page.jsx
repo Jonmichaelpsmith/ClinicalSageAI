@@ -165,6 +165,8 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [workflowStep, setWorkflowStep] = useState(() => loadSavedState('workflowStep', 1));
   const [workflowProgress, setWorkflowProgress] = useState(() => loadSavedState('workflowProgress', 25));
   const [predicatesFound, setPredicatesFound] = useState(() => loadSavedState('predicatesFound', false));
+  const [isPredicateStepCompleted, setIsPredicateStepCompleted] = useState(() => loadSavedState('isPredicateStepCompleted', false));
+  const [predicateSearchError, setPredicateSearchError] = useState(null);
   const [predicateDevices, setPredicateDevices] = useState(() => loadSavedState('predicateDevices', []));
   const [literatureResults, setLiteratureResults] = useState([]);
   
