@@ -1996,6 +1996,18 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const renderContent = () => {
     // If 510k document type is selected, show integrated 510k content
     if (documentType === '510k') {
+      // If no device profile is selected and profile selector is visible, show it
+      if (!deviceProfile && showProfileSelector) {
+        return (
+          <DeviceProfileSelector
+            isOpen={true}
+            onClose={() => setShowProfileSelector(false)}
+            onProfileSelect={handleProfileSelect}
+            k510DocumentId={k510DocumentId || 'new-device'}
+          />
+        );
+      }
+      
       // Show device profile tab if active
       if (activeTab === 'device-profile') {
         return (
