@@ -858,22 +858,31 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           }
         }
         
-        if (step > 2 && (!predicateDevices || predicateDevices.length === 0)) {
+        if (step > 2 && (!predicateDevices || predicateDevices.length === 0) && !isPredicateStepCompleted) {
           // Try to recover predicate devices from localStorage if they exist there
           const savedPredicates = loadSavedState('predicateDevices', []);
           if (savedPredicates && savedPredicates.length > 0) {
             console.log("[CERV2 Recovery] Recovered predicate devices from localStorage:", savedPredicates.length);
             setPredicateDevices(savedPredicates);
             setPredicatesFound(true);
+            setIsPredicateStepCompleted(true); // Mark step as completed
+            saveState('isPredicateStepCompleted', true); // Save to localStorage
           } else {
-            console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 2 (Predicate Finder)");
-            toast({
-              title: "Find Predicates First",
-              description: "Please select at least one predicate device before moving to equivalence building.",
-              variant: "warning"
-            });
-            setIsNavigating(false);
-            return;
+            // Check if the step was previously marked as completed
+            const stepWasCompleted = loadSavedState('isPredicateStepCompleted', false);
+            if (stepWasCompleted) {
+              console.log("[CERV2 Navigation] Predicate step was previously completed, allowing progression");
+              setIsPredicateStepCompleted(true);
+            } else {
+              console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 2 (Predicate Finder)");
+              toast({
+                title: "Find Predicates First",
+                description: "Please select at least one predicate device before moving to equivalence building.",
+                variant: "warning"
+              });
+              setIsNavigating(false);
+              return;
+            }
           }
         }
         
@@ -1058,7 +1067,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
             ${workflowStep === 3 ? 'bg-blue-100 ring-2 ring-blue-400 shadow-md' : 
             (equivalenceCompleted ? 'bg-blue-50 text-blue-800' : 'bg-gray-100 text-gray-600')}
             ${predicatesFound ? 'hover:bg-blue-100' : 'hover:bg-gray-200'}`}
-          onClick={() => predicatesFound && goToStep(3)}
+          onClick={() => (predicatesFound || isPredicateStepCompleted) && goToStep(3)}
         >
           <div className={`rounded-full h-8 w-8 flex items-center justify-center mx-auto mb-1 
             ${equivalenceCompleted ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'}`}>
