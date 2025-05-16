@@ -196,25 +196,21 @@ const PredicateFinderPanel = ({
       return false;
     }
     
-    // Create a complete updated profile with all necessary fields for document structure validation
+    // Create a simple base device profile with minimal required structure
     const updatedProfile = {
-      // Base required fields for document structure
       id: documentId || deviceProfile?.id || `device-${Date.now()}`,
-      createdAt: deviceProfile?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      
-      // Form data with guaranteed fields
-      deviceName: formData.deviceName || '',
-      manufacturer: formData.manufacturer || '',
+      deviceName: formData.deviceName,
+      manufacturer: formData.manufacturer,
       productCode: formData.productCode || '',
       deviceClass: formData.deviceClass || 'II',
-      intendedUse: formData.intendedUse || '',
+      intendedUse: formData.intendedUse,
       description: formData.description || '',
       regulatoryClass: formData.regulatoryClass || 'Class II',
-      technicalSpecifications: formData.technicalSpecifications || '',
-      
-      // Preserve any previously selected predicates
-      predicateDevices: deviceProfile?.predicateDevices || selectedPredicates || []
+      status: 'active',
+      structure: {
+        documentType: '510k',
+        sections: ['device-info', 'predicates', 'compliance']
+      }
     };
     
     // Log profile update for debugging
