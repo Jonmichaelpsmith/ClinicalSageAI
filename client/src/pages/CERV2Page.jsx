@@ -1753,6 +1753,39 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                 setActiveTab('dashboard');
               }}
             />
+            
+            {/* Device profile debugging UI */}
+            {showDebugInfo && (
+              <div className="mt-8 p-4 border border-gray-300 rounded-lg bg-gray-50">
+                <h3 className="text-md font-medium mb-2">Device Profile Debug Information</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-semibold">Profile Structure Integrity:</p>
+                    <pre className="text-xs bg-white p-2 rounded border mt-1 max-h-32 overflow-auto">
+                      {deviceProfile && JSON.stringify(deviceProfile.structure || {}, null, 2)}
+                    </pre>
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold">Profile Metadata:</p>
+                    <pre className="text-xs bg-white p-2 rounded border mt-1 max-h-32 overflow-auto">
+                      {deviceProfile && JSON.stringify(deviceProfile.metadata || {}, null, 2)}
+                    </pre>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <p className="text-sm font-semibold">Last Save Error:</p>
+                  <div className="text-xs bg-white p-2 rounded border mt-1">
+                    {saveError || 'No errors recorded'}
+                  </div>
+                </div>
+                <button 
+                  className="mt-4 px-3 py-1 text-xs bg-blue-100 hover:bg-blue-200 text-blue-800 rounded"
+                  onClick={() => setShowDebugInfo(false)}
+                >
+                  Hide Debug Info
+                </button>
+              </div>
+            )}
           </div>
         );
       }
@@ -1760,6 +1793,13 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       return (
         <div className="p-4 space-y-4">
           {render510kProgressBar()}
+          
+          {saveError && (
+            <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              <p className="font-bold">Save Error:</p>
+              <p>{saveError}</p> {/* Display the error message from state */}
+            </div>
+          )}
           
           {/* Quick Access Panel for Demo */}
           <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
