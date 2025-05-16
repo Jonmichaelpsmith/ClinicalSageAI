@@ -1097,13 +1097,22 @@ const ComplianceCheckPanel = ({
                               Overall Assessment
                             </h3>
                             <div className="flex flex-col">
-                              <div className="text-3xl font-bold mb-2">
+                              <div className="text-3xl font-bold mb-2 flex items-center">
                                 {actualRiskAssessmentData.approvalLikelihood || actualRiskAssessmentData.success === false ? 
                                   (actualRiskAssessmentData.success === false ? "Needs more data" : 
                                    `${Math.round((actualRiskAssessmentData.approvalLikelihood || 0.5) * 100)}%`) : "Analyzing..."}
+                                
+                                {actualRiskAssessmentData.approvalLikelihood > 0.75 && <CheckCircle className="ml-2 h-5 w-5 text-green-500" />}
+                                {actualRiskAssessmentData.approvalLikelihood > 0.5 && actualRiskAssessmentData.approvalLikelihood <= 0.75 && <AlertCircle className="ml-2 h-5 w-5 text-amber-500" />}
+                                {actualRiskAssessmentData.approvalLikelihood <= 0.5 && actualRiskAssessmentData.approvalLikelihood > 0 && <XCircle className="ml-2 h-5 w-5 text-red-500" />}
                               </div>
                               <div className="text-sm text-gray-600">
                                 Estimated FDA clearance likelihood
+                              </div>
+                              <div className="mt-2 text-xs rounded-md py-1 px-2 bg-blue-50 text-blue-800 inline-block">
+                                {actualRiskAssessmentData.approvalLikelihood > 0.75 ? "Favorable" : 
+                                 actualRiskAssessmentData.approvalLikelihood > 0.5 ? "Moderate" : 
+                                 actualRiskAssessmentData.approvalLikelihood > 0 ? "Challenging" : "Insufficient data"}
                               </div>
                             </div>
                           </Card>
@@ -1159,33 +1168,90 @@ const ComplianceCheckPanel = ({
                     
                     <TabsContent value="risks" className="mt-0 p-1">
                       <div className="space-y-4 p-4">
-                        <h3 className="text-base font-medium mb-2 flex items-center">
-                          <AlertTriangle className="mr-2 h-4 w-4 text-amber-600" />
-                          Identified Risk Factors
-                        </h3>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="text-base font-medium flex items-center">
+                            <AlertTriangle className="mr-2 h-4 w-4 text-amber-600" />
+                            Identified Risk Factors
+                          </h3>
+                          <div className="flex space-x-2">
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 rounded-full bg-red-500 mr-1"></div>
+                              <span className="text-xs text-gray-600">High ({actualRiskAssessmentData.riskFactors?.filter(r => r.severity === 'high').length || 0})</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 rounded-full bg-amber-500 mr-1"></div>
+                              <span className="text-xs text-gray-600">Medium ({actualRiskAssessmentData.riskFactors?.filter(r => r.severity === 'medium').length || 0})</span>
+                            </div>
+                            <div className="flex items-center">
+                              <div className="w-3 h-3 rounded-full bg-blue-500 mr-1"></div>
+                              <span className="text-xs text-gray-600">Low ({actualRiskAssessmentData.riskFactors?.filter(r => r.severity === 'low').length || 0})</span>
+                            </div>
+                          </div>
+                        </div>
                         
                         {actualRiskAssessmentData.riskFactors?.length > 0 ? (
                           <div className="space-y-4">
-                            {actualRiskAssessmentData.riskFactors.map((risk, index) => (
-                              <Card key={index} className={`p-4 border-l-4 ${
-                                risk.severity === 'high' ? 'border-l-red-500 bg-red-50' : 
-                                risk.severity === 'medium' ? 'border-l-amber-500 bg-amber-50' : 
-                                'border-l-blue-500 bg-blue-50'
-                              }`}>
-                                <div className="flex flex-col">
-                                  <div className="flex items-start">
-                                    <div className="flex-shrink-0 mr-3">
-                                      {risk.severity === 'high' ? (
-                                        <AlertCircle className="h-5 w-5 text-red-600" />
-                                      ) : risk.severity === 'medium' ? (
-                                        <AlertTriangle className="h-5 w-5 text-amber-600" />
-                                      ) : (
-                                        <AlertCircle className="h-5 w-5 text-blue-600" />
-                                      )}
-                                    </div>
-                                    <div className="flex-1">
-                                      <h4 className="font-medium">{risk.title}</h4>
-                                      <p className="text-sm mt-1 text-gray-700">{risk.description}</p>
+                            {/* High Risk Section */}
+                            {actualRiskAssessmentData.riskFactors.filter(risk => risk.severity === 'high').length > 0 && (
+                              <div className="mb-4">
+                                <h4 className="text-sm font-medium mb-2 flex items-center text-red-700">
+                                  <AlertCircle className="mr-2 h-4 w-4" />
+                                  High Priority Issues
+                                </h4>
+                                {actualRiskAssessmentData.riskFactors.filter(risk => risk.severity === 'high').map((risk, index) => (
+                                  <Card key={`high-${index}`} className="p-4 border-l-4 border-l-red-500 bg-red-50 mb-2">
+                                    <div className="flex flex-col">
+                                      <div className="flex items-start">
+                                        <div className="flex-shrink-0 mr-3">
+                                          <AlertCircle className="h-5 w-5 text-red-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                          <h4 className="font-medium">{risk.title}</h4>
+                                          <p className="text-sm mt-1 text-gray-700">{risk.description}</p>
+                                </div></div></div></Card>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Medium Risk Section */}
+                            {actualRiskAssessmentData.riskFactors.filter(risk => risk.severity === 'medium').length > 0 && (
+                              <div className="mb-4">
+                                <h4 className="text-sm font-medium mb-2 flex items-center text-amber-700">
+                                  <AlertTriangle className="mr-2 h-4 w-4" />
+                                  Medium Priority Issues
+                                </h4>
+                                {actualRiskAssessmentData.riskFactors.filter(risk => risk.severity === 'medium').map((risk, index) => (
+                                  <Card key={`medium-${index}`} className="p-4 border-l-4 border-l-amber-500 bg-amber-50 mb-2">
+                                    <div className="flex flex-col">
+                                      <div className="flex items-start">
+                                        <div className="flex-shrink-0 mr-3">
+                                          <AlertTriangle className="h-5 w-5 text-amber-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                          <h4 className="font-medium">{risk.title}</h4>
+                                          <p className="text-sm mt-1 text-gray-700">{risk.description}</p>
+                                </div></div></div></Card>
+                                ))}
+                              </div>
+                            )}
+
+                            {/* Low Risk Section */}
+                            {actualRiskAssessmentData.riskFactors.filter(risk => risk.severity === 'low').length > 0 && (
+                              <div>
+                                <h4 className="text-sm font-medium mb-2 flex items-center text-blue-700">
+                                  <AlertCircle className="mr-2 h-4 w-4" />
+                                  Low Priority Issues
+                                </h4>
+                                {actualRiskAssessmentData.riskFactors.filter(risk => risk.severity === 'low').map((risk, index) => (
+                                  <Card key={`low-${index}`} className="p-4 border-l-4 border-l-blue-500 bg-blue-50 mb-2">
+                                    <div className="flex flex-col">
+                                      <div className="flex items-start">
+                                        <div className="flex-shrink-0 mr-3">
+                                          <AlertCircle className="h-5 w-5 text-blue-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                          <h4 className="font-medium">{risk.title}</h4>
+                                          <p className="text-sm mt-1 text-gray-700">{risk.description}</p>
                                       {risk.impact && (
                                         <div className="mt-2">
                                           <span className="text-xs font-medium text-gray-600">Potential Impact:</span>
