@@ -2041,13 +2041,15 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             <span className="text-sm">Evidence Report</span>
                             <span className="ml-auto text-xs text-green-600 font-medium">v1.1</span>
                           </a>
-                          <a 
-                            href="/attached_assets/AO_2508_2023_1-3.pdf" 
-                            target="_blank"
-                            className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                            onClick={(e) => {
-                              e.preventDefault();
+                          <button 
+                            type="button"
+                            className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
+                            onClick={() => {
                               window.open('/attached_assets/AO_2508_2023_1-3.pdf', '_blank');
+                              toast({
+                                title: "Document opened",
+                                description: "Viewing PMS Data Analysis document"
+                              });
                             }}
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-gray-500">
@@ -2255,13 +2257,15 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                         </div>
                         {expandedFolders.global && (
                           <div>
-                            <a 
-                              href="/attached_assets/9789240097711-eng.pdf" 
-                              target="_blank"
-                              className="flex items-center py-2 px-3 pl-9 hover:bg-blue-50"
-                              onClick={(e) => {
-                                e.preventDefault();
+                            <button 
+                              type="button"
+                              className="flex w-full items-center py-2 px-3 pl-9 hover:bg-blue-50 cursor-pointer text-left"
+                              onClick={() => {
                                 window.open('/attached_assets/9789240097711-eng.pdf', '_blank');
+                                toast({
+                                  title: "Document opened",
+                                  description: "Viewing Shared Resources document"
+                                });
                               }}
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-purple-500">
@@ -2270,7 +2274,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                               </svg>
                               <span className="text-sm">Shared Resources</span>
                               <span className="ml-auto text-xs text-green-600 font-medium">v2.0</span>
-                            </a>
+                            </button>
                           </div>
                         )}
                       </div>
