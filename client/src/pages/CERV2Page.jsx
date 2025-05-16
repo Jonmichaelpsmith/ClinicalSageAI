@@ -199,117 +199,54 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       deviceProfileId: deviceProfile?.id || 'No device profile ID'
     });
     
-    // First, update state for predicates found
-    setPredicatesFound(true);
-    
-    try {
-      // Check if we have what we need to proceed to equivalence analysis
-      if (deviceProfile?.id) {
-        try {
-          console.log('[CERV2 Workflow] Checking readiness for equivalence analysis with device:', deviceProfile.id);
-          
-          // Check if we have predicate devices to proceed with equivalence analysis
-          if (!data || data.length === 0) {
-            console.warn('[CERV2 Workflow] No predicate devices available for equivalence analysis');
-            toast({
-              title: "Missing Predicate Devices",
-              description: "Please find and select predicate devices before proceeding to equivalence analysis.",
-              variant: "destructive",
-              duration: 3000
-            });
-            return; // Prevent transition if no predicates are found
-          }
-          
-          console.log(`[CERV2 Workflow] Found ${data.length} predicate devices, proceeding with equivalence analysis`);
-          toast({
-            title: "Workflow Check",
-            description: "Predicate devices verified. Proceeding with equivalence analysis...",
-            duration: 2000
-          });
-        } catch (verificationError) {
-          console.error('[CERV2 Workflow] Error during predicate verification:', verificationError);
-          // Log error but continue with transition
-        }
-      } else {
-        console.warn('[CERV2 Workflow] Missing device profile ID for equivalence analysis');
-      }
-    } catch (error) {
-      console.error('[CERV2 Workflow] General error in workflow transition check:', error);
+    // Validation: Check if we have predicate devices
+    if (!data || data.length === 0) {
+      console.warn('[CERV2 Workflow] No predicate devices available for equivalence analysis');
+      toast({
+        title: "Missing Predicate Devices",
+        description: "Please select at least one predicate device before proceeding to equivalence analysis.",
+        variant: "destructive",
+        duration: 3000
+      });
+      return; // Prevent transition if no predicates are found
     }
     
-    // Set predicate devices with a slight delay to ensure proper state update
-    setTimeout(() => {
-      // Update all necessary state values before navigation
-      setPredicateDevices(data || []);
-      
-      // Process any literature results that were found during predicate search
-      if (literatureData && literatureData.length > 0) {
-        setLiteratureResults(literatureData);
-        // Automatically select highly relevant papers (score >= 0.8) up to 5 papers
-        setSelectedLiterature(literatureData.filter(item => item.relevanceScore >= 0.8).slice(0, 5));
-      }
-      
-      toast({
-        title: "Predicate Devices Found",
-        description: `Found ${data?.length || 0} potential predicate devices that match your criteria.`,
-        variant: "success"
-      });
-      
-      try {
-        // First update the workflow step - this is critical for the tab navigation
-        console.log('[CERV2 Workflow] Setting workflow step to 3');
-        setWorkflowStep(3);
-        
-        // Wait for state update to propagate, then update tab
-        // Increased delay to ensure state is fully updated
-        setTimeout(() => {
-          try {
-            console.log('[CERV2 Workflow] Setting active tab to equivalence');
-            setActiveTab('equivalence');
-            
-            // Enhanced verification with multiple retries
-            let verificationAttempts = 0;
-            const verifyTransition = () => {
-              verificationAttempts++;
-              console.log(`[CERV2 Workflow] Verifying tab transition (attempt ${verificationAttempts}): current=${activeTab}`);
-              
-              if (activeTab !== 'equivalence' && verificationAttempts < 3) {
-                console.warn('[CERV2 Workflow] Tab transition incomplete, retrying...');
-                setActiveTab('equivalence');
-                setTimeout(verifyTransition, 200);
-              } else if (activeTab !== 'equivalence') {
-                console.error('[CERV2 Workflow] Tab transition failed after multiple attempts');
-                
-                // Emergency recovery - force both state values synchronously
-                setWorkflowStep(3);
-                setActiveTab('equivalence');
-                
-                // Final confirmation toast to indicate recovery action
-                toast({
-                  title: "Navigation Assistance",
-                  description: "Workflow stabilized. You can continue with equivalence analysis.",
-                  variant: "default",
-                  duration: 3000
-                });
-              } else {
-                console.log('[CERV2 Workflow] Tab transition successful');
-              }
-            };
-            
-            // Start verification process after initial tab change
-            setTimeout(verifyTransition, 300);
-          } catch (tabError) {
-            console.error('[CERV2 Workflow] Error during tab transition:', tabError);
-          }
-        }, 200);
-      } catch (workflowError) {
-        console.error('[CERV2 Workflow] Critical error in workflow step transition:', workflowError);
-        
-        // Hard reset both values as emergency recovery
-        setWorkflowStep(3);
-        setTimeout(() => setActiveTab('equivalence'), 100);
-      }
-    }, 100);
+    // Step 1: Update all state values in a single operation to avoid race conditions
+    setPredicatesFound(true);
+    setPredicateDevices(data || []);
+    
+    // Step 2: Process any literature results
+    if (literatureData && literatureData.length > 0) {
+      setLiteratureResults(literatureData);
+      // Automatically select highly relevant papers (score >= 0.8) up to 5 papers
+      setSelectedLiterature(literatureData.filter(item => item.relevanceScore >= 0.8).slice(0, 5));
+    }
+    
+    // Step 3: Show success notification to user
+    toast({
+      title: "Predicate Devices Found",
+      description: `Found ${data.length} potential predicate devices that match your criteria.`,
+      variant: "success",
+      duration: 2000
+    });
+    
+    // Step 4: Perform the workflow transition directly without delays
+    console.log('[CERV2 Workflow] Transitioning to Equivalence Analysis (step 3)');
+    
+    // Critical fix: Direct workflow transition without timeouts or nested operations
+    setWorkflowStep(3);
+    setActiveTab('equivalence');
+    
+    // Step 5: Update the deviceProfile with predicate information
+    setDeviceProfile(prevProfile => ({
+      ...prevProfile,
+      predicateDevices: data.map(p => ({
+        id: p.id || p.k_number,
+        k_number: p.k_number,
+        name: p.device_name || p.deviceName,
+        applicant: p.applicant_100 || p.manufacturer
+      }))
+    }));
   };
   
   // Handle literature selection updates
