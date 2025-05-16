@@ -138,6 +138,8 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [isFetchingFaers, setIsFetchingFaers] = useState(false);
   const [isFetchingLiterature, setIsFetchingLiterature] = useState(false);
   const [activeTab, setActiveTab] = useState(initialActiveTab || 'predicates');
+  const [showDebugInfo, setShowDebugInfo] = useState(true); // Debug UI visibility toggle
+  const [saveError, setSaveError] = useState(null); // Error state for save operations
   
   // Helper function to load saved state from localStorage
   const loadSavedState = (key, defaultValue) => {
@@ -222,8 +224,6 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     console.log('CERV2Page: Created new profile:', newProfile);
     return newProfile;
   });
-  
-  const [saveError, setSaveError] = useState(null); // State to hold save error messages
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
   const [exportTimestamp, setExportTimestamp] = useState(null);
@@ -1741,9 +1741,11 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                   }, 500);
                 } catch (error) {
                   console.error("Error in device profile processing:", error);
+                  // Set saveError state to display the error message in the UI
+                  setSaveError(error.message || "Error creating document structure. Please check profile data.");
                   toast({
                     title: "Profile Error",
-                    description: "There was a problem saving the device profile. Please try again.",
+                    description: "There was a problem saving the device profile. Please check the error message below.",
                     variant: "destructive"
                   });
                 }
