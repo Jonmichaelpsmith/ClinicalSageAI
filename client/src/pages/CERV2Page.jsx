@@ -491,8 +491,27 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // EMERGENCY FIX: Direct function for manual predicate step completion
   const forcePredicateStepCompletion = () => {
     console.log('[CERV2 EMERGENCY RECOVERY] Forcing predicate step completion');
+    
+    // 1. Directly set the flags in component state
     setIsPredicateStepCompleted(true);
+    setPredicatesFound(true);
+    
+    // 2. Save state to localStorage through stability system 
     saveState('isPredicateStepCompleted', true);
+    saveState('predicatesFound', true);
+    
+    // 3. Direct localStorage backup with multiple keys
+    try {
+      localStorage.setItem('510k_isPredicateStepCompleted', 'true');
+      localStorage.setItem('isPredicateStepCompleted', 'true');
+      localStorage.setItem('510k_predicatesFound', 'true');
+      localStorage.setItem('510k_workflow_step2_completed', 'true');
+      localStorage.setItem('510k_predicate_completion_timestamp', new Date().toISOString());
+      localStorage.setItem('510k_emergency_recovery_applied', 'true');
+      console.log('[CERV2 EMERGENCY FIX] Multiple recovery flags saved to localStorage');
+    } catch (storageError) {
+      console.error('[CERV2 EMERGENCY FIX] Error saving recovery flags:', storageError);
+    }
     
     toast({
       title: "Workflow Fixed",
@@ -501,12 +520,19 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       duration: 5000
     });
     
-    // Force navigation to next step
+    // 4. Force navigation to next step after a short delay
     setTimeout(() => {
       setActiveTab('equivalence');
       setWorkflowStep(3);
       setWorkflowProgress(50);
-    }, 500);
+      
+      toast({
+        title: "Moving to Equivalence Step",
+        description: "You're now in the Equivalence Analysis step of the 510(k) workflow.",
+        variant: "info",
+        duration: 3000
+      });
+    }, 800);
   };
 
   const handlePredicatesComplete = (data, error = null) => {
@@ -558,11 +584,27 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       setPredicateDevices(data);
       setDeviceProfile(updatedDeviceProfile);
       
-      // 3. Save state to localStorage for persistence
+      // 3. Save state to localStorage for persistence - USING MULTIPLE METHODS FOR MAXIMUM RELIABILITY
       saveState('predicatesFound', true);
       saveState('isPredicateStepCompleted', true); // CRITICAL FIX: Save completion flag to localStorage
       saveState('predicateDevices', data);
       saveState('deviceProfile', updatedDeviceProfile);
+      
+      // 4. EMERGENCY DIRECT FIX: Save directly to localStorage with multiple keys and formats
+      try {
+        // Try multiple storage formats to maximize chances of success
+        localStorage.setItem('510k_isPredicateStepCompleted', 'true');
+        localStorage.setItem('isPredicateStepCompleted', 'true');
+        localStorage.setItem('510k_predicatesFound', 'true');
+        localStorage.setItem('510k_workflow_step2_completed', 'true');
+        
+        // Create emergency backup timestamp to verify completion happened
+        localStorage.setItem('510k_predicate_completion_timestamp', new Date().toISOString());
+        
+        console.log('[CERV2 EMERGENCY FIX] Multiple predicate completion flags saved to localStorage');
+      } catch (storageError) {
+        console.error('[CERV2 EMERGENCY FIX] Error saving additional completion flags:', storageError);
+      }
       
       // 4. Process literature if available (from another source)
       // Get literature data from a different source since we changed the parameter structure
@@ -1181,6 +1223,19 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         >
           Previous Step
         </Button>
+        
+        {/* EMERGENCY FIX: Add direct workflow step completion override */}
+        {workflowStep === 2 && !isPredicateStepCompleted && (
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={forcePredicateStepCompletion}
+            className="mx-2 animate-pulse border border-red-700"
+          >
+            <ShieldAlert className="h-4 w-4 mr-1" />
+            Fix Workflow
+          </Button>
+        )}
         
         <Button 
           variant="default" 
