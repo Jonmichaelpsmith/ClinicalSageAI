@@ -2,26 +2,6 @@ import React, { useState, useEffect } from 'react';
 // Safely handle LumenAiAssistant context access with fallbacks
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Card, 
-  CardHeader, 
-  CardTitle, 
-  CardDescription, 
-  CardContent 
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import {
-  AlertTriangle,
-  CheckCircle,
-  Info,
-  Loader2,
-  RefreshCw,
-  Download,
-  ArrowRight,
-  Check
-} from "lucide-react";
 
 // Function to safely open documents and prevent redirection issues
 const openDocumentSafely = (url, documentName, showToast) => {
