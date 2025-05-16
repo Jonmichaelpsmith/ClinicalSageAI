@@ -289,6 +289,9 @@ export default function registerRoutes(app: Express): void {
   // Register AI Document Intelligence routes
   app.use('/api/ai', aiRouter);
   
+  // Register 510(k) Risk Assessment routes
+  app.use('/api/510k-risk-assessment', fda510kRiskAssessmentRouter);
+  
   // Register Google Docs Integration routes
   app.use('/api/google-docs', googleDocsRoutes);
   
