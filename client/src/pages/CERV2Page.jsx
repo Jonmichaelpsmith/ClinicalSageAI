@@ -1068,15 +1068,26 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         return (
           <div className="space-y-4">
             <PredicateFinderPanel 
-              deviceProfile={deviceProfile}
+              deviceProfile={deviceProfile || {
+                id: k510DocumentId,
+                deviceName: deviceName || 'Sample Medical Device',
+                manufacturer: manufacturer || 'Sample Manufacturer',
+                productCode: 'ABC',
+                deviceClass: 'II',
+                intendedUse: intendedUse || 'For diagnostic use in clinical settings'
+              }}
               setDeviceProfile={(newProfile) => {
                 // Just save the updated device profile
                 if (newProfile) {
+                  console.log("Updating device profile from PredicateFinderPanel:", newProfile.deviceName);
                   setDeviceProfile(newProfile);
+                  // Ensure workflow progression
+                  saveState('deviceProfile', newProfile);
                 }
               }}
-              documentId={deviceProfile?.id}
+              documentId={k510DocumentId}
               onPredicatesFound={handlePredicatesComplete}
+              organizationId={1}
             />
           </div>
         );
