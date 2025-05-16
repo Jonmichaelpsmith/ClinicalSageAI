@@ -6,8 +6,8 @@
  * and ensuring query performance.
  */
 
-const { Pool } = require('pg');
-const logger = require('./logger');
+import { Pool } from 'pg';
+import logger from './logger.ts';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL
@@ -18,7 +18,7 @@ const pool = new Pool({
  * 
  * @returns {Promise<boolean>} True if successful
  */
-async function create510kIndexes() {
+export async function create510kIndexes(): Promise<boolean> {
   logger.info('Initializing 510(k) database indexes');
   try {
     // Create index on device_profiles table for faster lookups
@@ -47,8 +47,8 @@ async function create510kIndexes() {
     
     logger.info('Successfully created 510(k) database indexes');
     return true;
-  } catch (error) {
-    logger.error(`Error creating 510(k) database indexes: ${error.message}`);
+  } catch (error: any) {
+    logger.error(`Error creating 510(k) database indexes: ${error?.message || 'Unknown error'}`);
     return false;
   }
 }
@@ -58,7 +58,7 @@ async function create510kIndexes() {
  * 
  * @returns {Promise<{success: boolean, latency: number}>} Test results
  */
-async function test510kDatabasePerformance() {
+export async function test510kDatabasePerformance(): Promise<{success: boolean, latency: number, error?: string}> {
   logger.info('Testing 510(k) database performance');
   try {
     const startTime = Date.now();
@@ -75,12 +75,13 @@ async function test510kDatabasePerformance() {
       success: true,
       latency
     };
-  } catch (error) {
-    logger.error(`Database performance test failed: ${error.message}`);
+  } catch (error: any) {
+    const errorMessage = error?.message || 'Unknown database error';
+    logger.error(`Database performance test failed: ${errorMessage}`);
     return {
       success: false,
       latency: -1,
-      error: error.message
+      error: errorMessage
     };
   }
 }
@@ -90,7 +91,7 @@ async function test510kDatabasePerformance() {
  * 
  * @returns {Promise<void>}
  */
-async function analyzeSlowQueries() {
+export async function analyzeSlowQueries(): Promise<void> {
   try {
     logger.info('Analyzing slow queries for 510(k) module');
     
@@ -122,17 +123,7 @@ async function analyzeSlowQueries() {
     } else {
       logger.info('No slow queries detected for 510(k) module tables');
     }
-  } catch (error) {
-    logger.error(`Error analyzing slow queries: ${error.message}`);
+  } catch (error: any) {
+    logger.error(`Error analyzing slow queries: ${error?.message || 'Unknown error'}`);
   }
 }
-
-// Export both as CommonJS and ESM compatible exports
-module.exports = {
-  create510kIndexes,
-  test510kDatabasePerformance,
-  analyzeSlowQueries
-};
-
-// Also export individual functions for ESM imports
-export { create510kIndexes, test510kDatabasePerformance, analyzeSlowQueries };

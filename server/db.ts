@@ -7,7 +7,7 @@
 import { Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import { createScopedLogger } from './utils/logger';
+import { createScopedLogger } from './utils/logger.ts';
 import * as schema from '../shared/schema';
 import path from 'path';
 

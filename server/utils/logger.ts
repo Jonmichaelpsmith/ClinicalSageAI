@@ -1,48 +1,84 @@
 /**
- * Logger Utility
- * 
- * Provides a unified logging interface for the application.
+ * Simple logger utility for the application
  */
 
-/**
- * Create a logger scoped to a specific module
- * @param scope The logging scope (module name, component, etc.)
- * @returns A logger object with methods for different log levels
- */
-export function createScopedLogger(scope: string) {
-  const formatMessage = (level: string, message: string, data?: any) => {
-    const timestamp = new Date().toISOString();
-    const context = data ? { module: scope, ...data } : { module: scope };
-    
-    return {
-      timestamp,
-      level,
+type LogContext = Record<string, any>;
+
+interface Logger {
+  info(message: string, context?: LogContext): void;
+  error(message: string, context?: LogContext): void;
+  warn(message: string, context?: LogContext): void;
+  debug(message: string, context?: LogContext): void;
+}
+
+// Create a simple logger that outputs to console
+const baseLogger: Logger = {
+  info: (message: string, context: LogContext = {}) => {
+    console.log(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'info',
       message,
       context
-    };
-  };
+    }, null, 2));
+  },
   
+  error: (message: string, context: LogContext = {}) => {
+    console.error(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'error',
+      message,
+      context
+    }, null, 2));
+  },
+  
+  warn: (message: string, context: LogContext = {}) => {
+    console.warn(JSON.stringify({
+      timestamp: new Date().toISOString(),
+      level: 'warn',
+      message,
+      context
+    }, null, 2));
+  },
+  
+  debug: (message: string, context: LogContext = {}) => {
+    if (process.env.DEBUG) {
+      console.debug(JSON.stringify({
+        timestamp: new Date().toISOString(),
+        level: 'debug',
+        message,
+        context
+      }, null, 2));
+    }
+  }
+};
+
+/**
+ * Creates a scoped logger for a specific module or component
+ * 
+ * @param scope The scope/name of the module using the logger
+ * @returns A logger instance that includes the scope in all messages
+ */
+export function createScopedLogger(scope: string): Logger {
   return {
-    debug: (message: string, data?: any) => {
-      console.debug(JSON.stringify(formatMessage('debug', message, data)));
+    info: (message: string, context: LogContext = {}) => {
+      baseLogger.info(`[${scope}] ${message}`, context);
     },
     
-    info: (message: string, data?: any) => {
-      console.info(JSON.stringify(formatMessage('info', message, data)));
+    error: (message: string, context: LogContext = {}) => {
+      baseLogger.error(`[${scope}] ${message}`, context);
     },
     
-    warn: (message: string, data?: any) => {
-      console.warn(JSON.stringify(formatMessage('warn', message, data)));
+    warn: (message: string, context: LogContext = {}) => {
+      baseLogger.warn(`[${scope}] ${message}`, context);
     },
     
-    error: (message: string, error?: any) => {
-      const errorData = error ? { 
-        error: error instanceof Error 
-          ? { message: error.message, stack: error.stack }
-          : error 
-      } : undefined;
-      
-      console.error(JSON.stringify(formatMessage('error', message, errorData)));
+    debug: (message: string, context: LogContext = {}) => {
+      baseLogger.debug(`[${scope}] ${message}`, context);
     }
   };
 }
+
+// Default logger instance for backward compatibility
+const logger = baseLogger;
+
+export default logger;

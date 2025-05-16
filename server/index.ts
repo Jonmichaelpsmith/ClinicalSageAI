@@ -121,7 +121,7 @@ console.log('Unified Device Profile routes registered at /api/device-profiles');
 // All device profile operations now use /api/device-profiles
 
 // Import and register 510(k) eSTAR routes directly
-import { router as estar510kRouter } from './routes/510kEstarRoutes';
+import { router as estar510kRouter } from './routes/510kEstarRoutes.ts';
 app.use('/api/fda510k/estar', estar510kRouter);
 console.log('FDA 510(k) eSTAR routes registered at /api/fda510k/estar');
 
@@ -138,11 +138,32 @@ app.use('/api', createHealthCheckRouter(dbPool));
 
 // Import and initialize Quality Management API
 import { initializeQualityManagementApi } from './initializers/qualityApiInitializer';
-// Use async IIFE to initialize safely
+// Import database optimizer for 510(k) workflow performance
+import { create510kIndexes, test510kDatabasePerformance } from './utils/database-optimizer.ts';
+
+// Use async IIFE to initialize both QMP API and database optimizations safely
 (async () => {
+  // Initialize Quality Management API
   await initializeQualityManagementApi(app);
   console.log('Quality Management API initialized');
-})().catch(err => console.error('Error initializing Quality Management API:', err));
+  
+  // Initialize 510(k) database optimizations
+  try {
+    console.log('Initializing 510(k) database performance optimizations...');
+    await create510kIndexes();
+    
+    // Test database performance after optimization
+    const performance = await test510kDatabasePerformance();
+    if (performance.success) {
+      console.log(`510(k) database optimization complete. Query latency: ${performance.latency}ms`);
+    } else {
+      console.warn('510(k) database optimization completed with warnings. Performance may be degraded.');
+    }
+  } catch (dbOptimizeError) {
+    console.error('Error initializing 510(k) database optimizations:', dbOptimizeError);
+    // Continue server startup despite optimization errors
+  }
+})().catch(err => console.error('Error during initialization:', err));
 
 // Serve the marketing landing page at the root URL
 app.get('/', (req, res) => {
