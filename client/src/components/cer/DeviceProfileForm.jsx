@@ -15,7 +15,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { AlertCircle, HelpCircle, Info, CheckCircle, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import deviceProfileSchema from './schemas/deviceProfile.json';
-import { useTenant } from '@/contexts/TenantContext';
+import { useTenant } from '@/contexts/TenantContext.tsx';
 import { FDA510kService } from '@/services/FDA510kService';
 
 // Enhanced Zod schema with additional fields for 510(k) submission
