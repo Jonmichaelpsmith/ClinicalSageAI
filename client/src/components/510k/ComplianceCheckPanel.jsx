@@ -548,6 +548,286 @@ const ComplianceCheckPanel = ({
           )}
         </div>
       </CardFooter>
+
+      {/* Risk Assessment Dialog */}
+      <Dialog open={showRiskDialog} onOpenChange={setShowRiskDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center text-xl font-semibold">
+              <Gauge className="mr-2 h-5 w-5 text-amber-600" />
+              FDA Submission Risk Assessment
+            </DialogTitle>
+            <DialogDescription>
+              Predictive analysis of potential FDA submission risks and approval likelihood
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex-1 overflow-hidden">
+            {riskAssessmentData ? (
+              <div className="h-full flex flex-col">
+                <Tabs defaultValue="overview" value={activeRiskTab} onValueChange={setActiveRiskTab} className="w-full h-full">
+                  <TabsList className="grid grid-cols-4 mb-4">
+                    <TabsTrigger value="overview">
+                      <PieChart className="mr-2 h-4 w-4" />
+                      Overview
+                    </TabsTrigger>
+                    <TabsTrigger value="risks">
+                      <AlertTriangle className="mr-2 h-4 w-4" />
+                      Risk Factors
+                    </TabsTrigger>
+                    <TabsTrigger value="historical">
+                      <History className="mr-2 h-4 w-4" />
+                      Historical Analysis
+                    </TabsTrigger>
+                    <TabsTrigger value="recommendations">
+                      <ClipboardCheck className="mr-2 h-4 w-4" />
+                      Recommendations
+                    </TabsTrigger>
+                  </TabsList>
+                  
+                  <ScrollArea className="flex-1 h-[60vh]">
+                    <TabsContent value="overview" className="mt-0 p-1">
+                      <div className="space-y-4 p-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <Card className="p-4 bg-slate-50">
+                            <h3 className="font-medium text-base flex items-center mb-2">
+                              <Target className="mr-2 h-4 w-4 text-blue-600" />
+                              Overall Assessment
+                            </h3>
+                            <div className="flex flex-col">
+                              <div className="text-3xl font-bold mb-2">
+                                {riskAssessmentData.approvalLikelihood || riskAssessmentData.success === false ? 
+                                  (riskAssessmentData.success === false ? "Needs more data" : 
+                                   `${Math.round((riskAssessmentData.approvalLikelihood || 0.5) * 100)}%`) : "Analyzing..."}
+                              </div>
+                              <div className="text-sm text-gray-600">
+                                Estimated FDA clearance likelihood
+                              </div>
+                            </div>
+                          </Card>
+                          
+                          <Card className="p-4 bg-slate-50">
+                            <h3 className="font-medium text-base flex items-center mb-2">
+                              <BookOpen className="mr-2 h-4 w-4 text-purple-600" />
+                              Supporting Evidence
+                            </h3>
+                            <div className="flex flex-col">
+                              <div className="flex items-center mb-2">
+                                <div className="text-2xl font-bold">
+                                  {riskAssessmentData.evidenceCount || 0}
+                                </div>
+                                <div className="ml-2 text-sm text-gray-600">
+                                  Literature references
+                                </div>
+                              </div>
+                              <div className="flex items-center">
+                                <div className="text-2xl font-bold">
+                                  {predicateDevices?.length || 0}
+                                </div>
+                                <div className="ml-2 text-sm text-gray-600">
+                                  Predicate devices
+                                </div>
+                              </div>
+                            </div>
+                          </Card>
+                        </div>
+                        
+                        <Card className="p-4 bg-slate-50">
+                          <h3 className="font-medium text-base flex items-center mb-2">
+                            <Award className="mr-2 h-4 w-4 text-green-600" />
+                            Submission Strengths
+                          </h3>
+                          <div className="grid grid-cols-2 gap-4">
+                            {riskAssessmentData.strengths?.length > 0 ? (
+                              riskAssessmentData.strengths.map((strength, index) => (
+                                <div key={index} className="flex items-start">
+                                  <TrendingUp className="h-4 w-4 mr-2 mt-1 text-green-500 flex-shrink-0" />
+                                  <div className="text-sm">{strength}</div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-sm text-gray-600 col-span-2">
+                                No specific strengths identified. Consider adding more supporting evidence or predicate devices.
+                              </div>
+                            )}
+                          </div>
+                        </Card>
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="risks" className="mt-0 p-1">
+                      <div className="space-y-4 p-4">
+                        <h3 className="text-base font-medium mb-2 flex items-center">
+                          <AlertTriangle className="mr-2 h-4 w-4 text-amber-600" />
+                          Identified Risk Factors
+                        </h3>
+                        
+                        {riskAssessmentData.riskFactors?.length > 0 ? (
+                          <div className="space-y-4">
+                            {riskAssessmentData.riskFactors.map((risk, index) => (
+                              <Card key={index} className={`p-4 border-l-4 ${
+                                risk.severity === 'high' ? 'border-l-red-500 bg-red-50' : 
+                                risk.severity === 'medium' ? 'border-l-amber-500 bg-amber-50' : 
+                                'border-l-blue-500 bg-blue-50'
+                              }`}>
+                                <div className="flex items-start">
+                                  <div className="flex-shrink-0 mr-3">
+                                    {risk.severity === 'high' ? (
+                                      <AlertCircle className="h-5 w-5 text-red-600" />
+                                    ) : risk.severity === 'medium' ? (
+                                      <AlertTriangle className="h-5 w-5 text-amber-600" />
+                                    ) : (
+                                      <AlertCircle className="h-5 w-5 text-blue-600" />
+                                    )}
+                                  </div>
+                                  <div className="flex-1">
+                                    <h4 className="font-medium">{risk.title}</h4>
+                                    <p className="text-sm mt-1 text-gray-700">{risk.description}</p>
+                                    {risk.impact && (
+                                      <div className="mt-2">
+                                        <span className="text-xs font-medium text-gray-600">Potential Impact:</span>
+                                        <p className="text-sm text-gray-700">{risk.impact}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                  <div className="ml-4 flex-shrink-0">
+                                    <Badge className={
+                                      risk.severity === 'high' ? 'bg-red-100 text-red-800 hover:bg-red-100' : 
+                                      risk.severity === 'medium' ? 'bg-amber-100 text-amber-800 hover:bg-amber-100' : 
+                                      'bg-blue-100 text-blue-800 hover:bg-blue-100'
+                                    }>
+                                      {risk.severity === 'high' ? 'High' : 
+                                       risk.severity === 'medium' ? 'Medium' : 'Low'} Risk
+                                    </Badge>
+                                  </div>
+                                </div>
+                              </Card>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="flex flex-col items-center justify-center py-8 text-center">
+                            <CheckCircle className="h-12 w-12 text-green-500 mb-4" />
+                            <h3 className="text-lg font-medium text-gray-900">No significant risks identified</h3>
+                            <p className="mt-2 text-sm text-gray-600 max-w-md">
+                              Based on our analysis, your submission has a strong foundation with minimal risk factors.
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="historical" className="mt-0 p-1">
+                      <div className="space-y-4 p-4">
+                        <h3 className="text-base font-medium mb-2 flex items-center">
+                          <History className="mr-2 h-4 w-4 text-indigo-600" />
+                          Historical FDA 510(k) Comparisons
+                        </h3>
+                        
+                        {riskAssessmentData.historicalComparisons?.length > 0 ? (
+                          <div className="space-y-4">
+                            {riskAssessmentData.historicalComparisons.map((comparison, index) => (
+                              <Card key={index} className="p-4 bg-slate-50">
+                                <div className="flex flex-col">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <h4 className="font-medium">{comparison.deviceName}</h4>
+                                    <Badge className={
+                                      comparison.outcome === 'Cleared' ? 'bg-green-100 text-green-800 hover:bg-green-100' : 
+                                      comparison.outcome === 'Rejected' ? 'bg-red-100 text-red-800 hover:bg-red-100' : 
+                                      'bg-blue-100 text-blue-800 hover:bg-blue-100'
+                                    }>
+                                      {comparison.outcome}
+                                    </Badge>
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-4 text-sm">
+                                    <div>
+                                      <span className="text-gray-600">K Number:</span> {comparison.kNumber}
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600">Decision Date:</span> {comparison.decisionDate}
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600">Review Time:</span> {comparison.reviewTime} days
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600">Similar to Current:</span> {comparison.similarityScore}%
+                                    </div>
+                                  </div>
+                                  {comparison.keyDifferences && (
+                                    <div className="mt-2">
+                                      <span className="text-xs font-medium text-gray-600">Key Differences:</span>
+                                      <p className="text-sm text-gray-700">{comparison.keyDifferences}</p>
+                                    </div>
+                                  )}
+                                </div>
+                              </Card>
+                            ))}
+                          </div>
+                        ) : (
+                          <Alert className="bg-blue-50 border-blue-200">
+                            <AlertCircle className="h-4 w-4 text-blue-600" />
+                            <AlertTitle>No historical data available</AlertTitle>
+                            <AlertDescription>
+                              We couldn't find similar 510(k) submissions in our database to compare with your device.
+                              This may be due to the innovative nature of your device or limited data availability.
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                      </div>
+                    </TabsContent>
+                    
+                    <TabsContent value="recommendations" className="mt-0 p-1">
+                      <div className="space-y-4 p-4">
+                        <h3 className="text-base font-medium mb-2 flex items-center">
+                          <ClipboardCheck className="mr-2 h-4 w-4 text-green-600" />
+                          Recommended Actions
+                        </h3>
+                        
+                        {riskAssessmentData.recommendations?.length > 0 ? (
+                          <div className="space-y-3">
+                            {riskAssessmentData.recommendations.map((recommendation, index) => (
+                              <div key={index} className="flex items-start p-2 rounded-md hover:bg-slate-50">
+                                <div className="flex-shrink-0 mr-3 mt-1">
+                                  <CheckSquare className="h-5 w-5 text-green-600" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-gray-700">{recommendation}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <Alert className="bg-green-50 border-green-200">
+                            <CheckCircle className="h-4 w-4 text-green-600" />
+                            <AlertTitle>Your submission appears strong</AlertTitle>
+                            <AlertDescription>
+                              Based on our analysis, your 510(k) submission is well-prepared. 
+                              Continue with final review and submission process.
+                            </AlertDescription>
+                          </Alert>
+                        )}
+                      </div>
+                    </TabsContent>
+                  </ScrollArea>
+                </Tabs>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-[40vh]">
+                <Loader2 className="h-8 w-8 animate-spin text-gray-400 mr-2" />
+                <p className="text-gray-600">Loading risk assessment data...</p>
+              </div>
+            )}
+          </div>
+          
+          <DialogFooter className="border-t pt-4">
+            <div className="mr-auto text-sm text-gray-600">
+              Assessment generated: {riskAssessmentData?.assessmentDate ? new Date(riskAssessmentData.assessmentDate).toLocaleString() : 'N/A'}
+            </div>
+            <Button variant="outline" onClick={() => setShowRiskDialog(false)}>
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
