@@ -69,7 +69,13 @@ export const useTenantContext = () => {
 
 // Export the same hook with an alternate name to maintain backward compatibility
 // with components using the old name
-export const useTenant = useTenantContext;
+export const useTenant = () => {
+  const context = useContext(TenantContext);
+  if (!context) {
+    throw new Error('useTenant must be used within a TenantProvider');
+  }
+  return context;
+};
 
 interface TenantProviderProps {
   children: ReactNode;
