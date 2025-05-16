@@ -27,6 +27,37 @@ export const FDA510kService = {
    * to prevent database schema mismatches
    */
   DeviceProfileAPI: {
+    // The actual database columns that exist in the device_profiles table
+    VALID_FIELDS: [
+      'deviceName',       // Maps to device_name in DB
+      'deviceClass',      // Maps to device_class in DB
+      'intendedUse',      // Maps to intended_use in DB
+      'manufacturer',     // Maps to manufacturer in DB 
+      'modelNumber',      // Maps to model_number in DB
+      'technicalCharacteristics', // Maps to technical_characteristics in DB
+      'documentVaultId',  // Maps to document_vault_id in DB
+      'folderStructure'   // Maps to folder_structure in DB
+    ],
+    
+    // Filter out invalid fields before sending to server
+    validateDeviceProfile(profileData) {
+      // Create a filtered version with only valid fields
+      const filteredData = {};
+      
+      // Only include fields that should be sent to the API
+      this.VALID_FIELDS.forEach(field => {
+        if (profileData[field] !== undefined) {
+          filteredData[field] = profileData[field];
+        }
+      });
+      
+      // Required field validation
+      if (!filteredData.deviceName) {
+        throw new Error('Device name is required');
+      }
+      
+      return filteredData;
+    },
     /**
      * Create a new device profile with validated data structure
      * 
