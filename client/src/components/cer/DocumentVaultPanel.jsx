@@ -43,7 +43,8 @@ import {
   X,
   FileBox,
   Loader2,
-  BookOpen
+  BookOpen,
+  CheckCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
