@@ -195,6 +195,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [showEvidenceReminder, setShowEvidenceReminder] = useState(true);
   const [showSystemHealth, setShowSystemHealth] = useState(false);
   const [showDocumentTree, setShowDocumentTree] = useState(false);
+  const [documentPreview, setDocumentPreview] = useState({ show: false, path: '', title: '' });
   const [systemInfo, setSystemInfo] = useState({
     memory: { used: 0, total: 0, percentage: 0 },
     api: { status: 'unknown', latency: 0 },
@@ -1789,368 +1790,241 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         {renderNavigation()}
         
         <div className="flex">
-          {/* Enhanced Document Tree with FileTree Component */}
+          {/* Document Vault Panel */}
           {showDocumentTree && (
-            <div className="w-72 md:w-80 lg:w-96 bg-white border-r border-gray-200 shadow-md h-full overflow-auto">
-              <div className="h-full">
-                <div className="flex justify-between items-center p-4 border-b">
-                  <h2 className="text-lg font-semibold flex items-center">
-                    <BookOpen className="h-5 w-5 mr-2 text-blue-600" />
+            <div className="w-64 bg-white border-r border-gray-200 shadow-md h-full overflow-auto">
+              <div className="h-full flex flex-col">
+                <div className="flex justify-between items-center p-3 border-b">
+                  <h2 className="text-base font-semibold flex items-center">
+                    <BookOpen className="h-4 w-4 mr-1.5 text-blue-600" />
                     Document Vault
                   </h2>
                   <Button 
                     variant="ghost" 
                     size="sm" 
                     onClick={() => setShowDocumentTree(false)}
-                    className="text-gray-500 hover:text-gray-700"
+                    className="h-7 w-7 p-0 text-gray-500 hover:text-gray-700"
                   >
                     <X className="h-4 w-4" />
                   </Button>
                 </div>
                 
-                {/* Document Stats */}
-                <div className="grid grid-cols-3 gap-3 p-4 border-b">
-                  <Card className="shadow-sm border-blue-100 hover:shadow-md transition-shadow">
-                    <CardContent className="p-3 flex flex-col items-center justify-center">
-                      <div className="text-3xl font-bold text-blue-600">42</div>
-                      <p className="text-xs text-gray-600 font-medium mt-1">Total</p>
-                      <div className="mt-1 h-1 w-16 bg-gray-100 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-blue-500 rounded-full" 
-                          style={{ width: '100%' }}
-                        />
+                {/* Document Tree */}
+                <div className="flex-1 overflow-auto">
+                  <div className="p-2">
+                    {/* Regulatory Folder */}
+                    <div className="mb-2">
+                      <div 
+                        className="flex items-center p-1.5 rounded hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          // Toggle folder code would go here
+                          toast({
+                            title: "Folder opened",
+                            description: "Regulatory documents folder expanded"
+                          });
+                        }}
+                      >
+                        <ChevronRight className="h-3.5 w-3.5 mr-1 text-gray-500" />
+                        <Folder className="h-4 w-4 mr-1.5 text-blue-500" />
+                        <span className="text-sm font-medium">Regulatory</span>
                       </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="shadow-sm border-green-100 hover:shadow-md transition-shadow">
-                    <CardContent className="p-3 flex flex-col items-center justify-center">
-                      <div className="text-3xl font-bold text-green-600">28</div>
-                      <p className="text-xs text-gray-600 font-medium mt-1 flex items-center">
-                        <span className="h-3 w-3 mr-1 text-green-500 rounded-full bg-green-500"></span>
-                        Final
-                      </p>
-                      <div className="mt-1 h-1 w-16 bg-gray-100 rounded-full overflow-hidden">
+                      <div className="ml-6 mt-1">
                         <div 
-                          className="h-full bg-green-500 rounded-full" 
-                          style={{ width: '66%' }}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                  <Card className="shadow-sm border-amber-100 hover:shadow-md transition-shadow">
-                    <CardContent className="p-3 flex flex-col items-center justify-center">
-                      <div className="text-3xl font-bold text-amber-600">14</div>
-                      <p className="text-xs text-gray-600 font-medium mt-1 flex items-center">
-                        <span className="h-3 w-3 mr-1 rounded-full bg-amber-500"></span>
-                        Draft
-                      </p>
-                      <div className="mt-1 h-1 w-16 bg-gray-100 rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-amber-500 rounded-full" 
-                          style={{ width: '33%' }}
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-                
-                {/* Search and Filter */}
-                <div className="p-4 border-b">
-                  <div className="relative">
-                    <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-400" />
-                    <Input 
-                      placeholder="Search documents..." 
-                      className="pl-8 h-9 text-sm"
-                    />
-                  </div>
-                </div>
-                
-                {/* File Tree View with Tabs */}
-                <Tabs defaultValue="all" className="w-full">
-                  <div className="px-4 pt-4 border-b">
-                    <TabsList className="grid grid-cols-3 mb-0">
-                      <TabsTrigger value="all" className="text-xs">All Files</TabsTrigger>
-                      <TabsTrigger value="510k" className="text-xs">510(k)</TabsTrigger>
-                      <TabsTrigger value="cer" className="text-xs">CER</TabsTrigger>
-                    </TabsList>
-                  </div>
-                  
-                  <TabsContent value="all" className="mt-0 p-0">
-                    <ScrollArea className="h-[calc(100vh-350px)]">
-                      <div className="p-4">
-                        <div className="mb-4">
-                          <div className="flex items-center mb-2 text-sm font-medium text-gray-700">
-                            <FolderOpen className="h-4 w-4 mr-1.5 text-blue-600" />
-                            510(k) Documents
-                          </div>
-                          <div className="space-y-2 pl-6">
-                            <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                              <div className="flex justify-between">
-                                <div className="flex items-start">
-                                  <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
-                                  <div>
-                                    <div className="font-medium text-sm">510(k) Summary - OrthoFuse Spinal</div>
-                                    <div className="flex items-center mt-1 text-xs text-gray-500">
-                                      <span>Regulatory</span>
-                                      <span className="mx-1">•</span>
-                                      <span className="text-green-600 font-medium">Final</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v2.1</Badge>
-                              </div>
-                            </div>
-                            <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                              <div className="flex justify-between">
-                                <div className="flex items-start">
-                                  <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
-                                  <div>
-                                    <div className="font-medium text-sm">Substantial Equivalence - CardioMonitor</div>
-                                    <div className="flex items-center mt-1 text-xs text-gray-500">
-                                      <span>Regulatory</span>
-                                      <span className="mx-1">•</span>
-                                      <span className="text-green-600 font-medium">Final</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v1.3</Badge>
-                              </div>
-                            </div>
-                            <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                              <div className="flex justify-between">
-                                <div className="flex items-start">
-                                  <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
-                                  <div>
-                                    <div className="font-medium text-sm">eSTAR Package - PainRelief</div>
-                                    <div className="flex items-center mt-1 text-xs text-gray-500">
-                                      <span>Submission</span>
-                                      <span className="mx-1">•</span>
-                                      <span className="text-green-600 font-medium">Final</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v3.0</Badge>
-                              </div>
-                            </div>
-                          </div>
+                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
+                          onClick={() => {
+                            window.open('/attached_assets/Format-and-Content-of-the-Clinical-and-Statistical-Sections-of-an-Application.pdf', '_blank');
+                            toast({
+                              title: "Document opened",
+                              description: "Viewing 510(k) Summary document"
+                            });
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
+                          <span className="text-sm">510(k) Summary</span>
                         </div>
                         
-                        <div className="mb-4">
-                          <div className="flex items-center mb-2 text-sm font-medium text-gray-700">
-                            <FolderOpen className="h-4 w-4 mr-1.5 text-blue-600" />
-                            CER Documents
-                          </div>
-                          <div className="space-y-2 pl-6">
-                            <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                              <div className="flex justify-between">
-                                <div className="flex items-start">
-                                  <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
-                                  <div>
-                                    <div className="font-medium text-sm">Clinical Evaluation Report - CardioStent</div>
-                                    <div className="flex items-center mt-1 text-xs text-gray-500">
-                                      <span>Clinical</span>
-                                      <span className="mx-1">•</span>
-                                      <span className="text-green-600 font-medium">Final</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v2.4</Badge>
-                              </div>
-                            </div>
-                            <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                              <div className="flex justify-between">
-                                <div className="flex items-start">
-                                  <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
-                                  <div>
-                                    <div className="font-medium text-sm">Literature Search Protocol - DiabetMeter</div>
-                                    <div className="flex items-center mt-1 text-xs text-gray-500">
-                                      <span>Literature</span>
-                                      <span className="mx-1">•</span>
-                                      <span className="text-green-600 font-medium">Final</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v1.1</Badge>
-                              </div>
-                            </div>
-                            <div className="p-3 border border-amber-100 rounded-lg hover:bg-amber-50 cursor-pointer transition-all">
-                              <div className="flex justify-between">
-                                <div className="flex items-start">
-                                  <FileText className="h-4 w-4 mr-2 mt-1 text-amber-600" />
-                                  <div>
-                                    <div className="font-medium text-sm">Post-Market Follow-up - NeuroPulse</div>
-                                    <div className="flex items-center mt-1 text-xs text-gray-500">
-                                      <span>Post-Market</span>
-                                      <span className="mx-1">•</span>
-                                      <span className="text-amber-600 font-medium">Draft</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="text-xs h-5 bg-amber-50 border-amber-200 text-amber-700">v0.8</Badge>
-                              </div>
-                            </div>
-                          </div>
+                        <div 
+                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
+                          onClick={() => {
+                            window.open('/attached_assets/E3-Structure-and-Content-of-Clinical-Study-Reports.pdf', '_blank');
+                            toast({
+                              title: "Document opened",
+                              description: "Viewing Equivalence Report document"
+                            });
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
+                          <span className="text-sm">Equivalence Report</span>
                         </div>
 
-                        <div>
-                          <div className="flex items-center mb-2 text-sm font-medium text-gray-700">
-                            <FolderOpen className="h-4 w-4 mr-1.5 text-blue-600" />
-                            Technical Documentation
-                          </div>
-                          <div className="space-y-2 pl-6">
-                            <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                              <div className="flex justify-between">
-                                <div className="flex items-start">
-                                  <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
-                                  <div>
-                                    <div className="font-medium text-sm">Device Specifications</div>
-                                    <div className="flex items-center mt-1 text-xs text-gray-500">
-                                      <span>Technical</span>
-                                      <span className="mx-1">•</span>
-                                      <span className="text-green-600 font-medium">Final</span>
-                                    </div>
-                                  </div>
-                                </div>
-                                <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v4.2</Badge>
-                              </div>
-                            </div>
-                          </div>
+                        <div 
+                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
+                          onClick={() => {
+                            window.open('/attached_assets/7.19.13.Miller-Clinical-Trials.pdf', '_blank');
+                            toast({
+                              title: "Document opened",
+                              description: "Viewing Regulatory Checklist document"
+                            });
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
+                          <span className="text-sm">Regulatory Checklist</span>
                         </div>
                       </div>
-                    </ScrollArea>
-                  </TabsContent>
-                  
-                  <TabsContent value="510k" className="mt-0 p-0">
-                    <ScrollArea className="h-[calc(100vh-350px)]">
-                      <div className="p-4">
-                        <div className="flex items-center mb-2 text-sm font-medium text-gray-700">
-                          <FolderOpen className="h-4 w-4 mr-1.5 text-blue-600" />
-                          510(k) Documents
+                    </div>
+                    
+                    {/* Clinical Folder */}
+                    <div className="mb-2">
+                      <div 
+                        className="flex items-center p-1.5 rounded hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          // Toggle folder code would go here
+                          toast({
+                            title: "Folder opened",
+                            description: "Clinical documents folder expanded"
+                          });
+                        }}
+                      >
+                        <ChevronRight className="h-3.5 w-3.5 mr-1 text-gray-500" />
+                        <Folder className="h-4 w-4 mr-1.5 text-blue-500" />
+                        <span className="text-sm font-medium">Clinical</span>
+                      </div>
+                      <div className="ml-6 mt-1">
+                        <div 
+                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
+                          onClick={() => {
+                            window.open('/attached_assets/CER REPORT EXAMPLE OUTPUT.pdf', '_blank');
+                            toast({
+                              title: "Document opened",
+                              description: "Viewing Clinical Evaluation Report document"
+                            });
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
+                          <span className="text-sm">CER Report</span>
                         </div>
-                        <div className="space-y-2 pl-6">
-                          <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                            <div className="flex justify-between">
-                              <div className="flex items-start">
-                                <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
-                                <div>
-                                  <div className="font-medium text-sm">510(k) Summary - OrthoFuse Spinal</div>
-                                  <div className="flex items-center mt-1 text-xs text-gray-500">
-                                    <span>Regulatory</span>
-                                    <span className="mx-1">•</span>
-                                    <span className="text-green-600 font-medium">Final</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v2.1</Badge>
-                            </div>
-                          </div>
-                          <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                            <div className="flex justify-between">
-                              <div className="flex items-start">
-                                <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
-                                <div>
-                                  <div className="font-medium text-sm">Substantial Equivalence - CardioMonitor</div>
-                                  <div className="flex items-center mt-1 text-xs text-gray-500">
-                                    <span>Regulatory</span>
-                                    <span className="mx-1">•</span>
-                                    <span className="text-green-600 font-medium">Final</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v1.3</Badge>
-                            </div>
-                          </div>
-                          <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                            <div className="flex justify-between">
-                              <div className="flex items-start">
-                                <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
-                                <div>
-                                  <div className="font-medium text-sm">eSTAR Package - PainRelief</div>
-                                  <div className="flex items-center mt-1 text-xs text-gray-500">
-                                    <span>Submission</span>
-                                    <span className="mx-1">•</span>
-                                    <span className="text-green-600 font-medium">Final</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v3.0</Badge>
-                            </div>
-                          </div>
+                        
+                        <div 
+                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
+                          onClick={() => {
+                            window.open('/attached_assets/ICER_Acute-Pain_Evidence-Report_For-Publication_020525.pdf', '_blank');
+                            toast({
+                              title: "Document opened",
+                              description: "Viewing Literature Analysis document"
+                            });
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
+                          <span className="text-sm">Literature Analysis</span>
                         </div>
                       </div>
-                    </ScrollArea>
-                  </TabsContent>
-                  
-                  <TabsContent value="cer" className="mt-0 p-0">
-                    <ScrollArea className="h-[calc(100vh-350px)]">
-                      <div className="p-4">
-                        <div className="flex items-center mb-2 text-sm font-medium text-gray-700">
-                          <FolderOpen className="h-4 w-4 mr-1.5 text-blue-600" />
-                          CER Documents
+                    </div>
+                    
+                    {/* Technical Folder */}
+                    <div className="mb-2">
+                      <div 
+                        className="flex items-center p-1.5 rounded hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          // Toggle folder code would go here
+                          toast({
+                            title: "Folder opened",
+                            description: "Technical documents folder expanded"
+                          });
+                        }}
+                      >
+                        <ChevronRight className="h-3.5 w-3.5 mr-1 text-gray-500" />
+                        <Folder className="h-4 w-4 mr-1.5 text-blue-500" />
+                        <span className="text-sm font-medium">Technical</span>
+                      </div>
+                      <div className="ml-6 mt-1">
+                        <div 
+                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
+                          onClick={() => {
+                            window.open('/attached_assets/DI_Intelligent-clinical-trials.pdf', '_blank');
+                            toast({
+                              title: "Document opened",
+                              description: "Viewing Design Specifications document"
+                            });
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
+                          <span className="text-sm">Design Specifications</span>
                         </div>
-                        <div className="space-y-2 pl-6">
-                          <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                            <div className="flex justify-between">
-                              <div className="flex items-start">
-                                <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
-                                <div>
-                                  <div className="font-medium text-sm">Clinical Evaluation Report - CardioStent</div>
-                                  <div className="flex items-center mt-1 text-xs text-gray-500">
-                                    <span>Clinical</span>
-                                    <span className="mx-1">•</span>
-                                    <span className="text-green-600 font-medium">Final</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v2.4</Badge>
-                            </div>
-                          </div>
-                          <div className="p-3 border border-blue-100 rounded-lg hover:bg-blue-50 cursor-pointer transition-all">
-                            <div className="flex justify-between">
-                              <div className="flex items-start">
-                                <FileText className="h-4 w-4 mr-2 mt-1 text-blue-600" />
-                                <div>
-                                  <div className="font-medium text-sm">Literature Search Protocol - DiabetMeter</div>
-                                  <div className="flex items-center mt-1 text-xs text-gray-500">
-                                    <span>Literature</span>
-                                    <span className="mx-1">•</span>
-                                    <span className="text-green-600 font-medium">Final</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <Badge variant="outline" className="text-xs h-5 bg-green-50 border-green-200 text-green-700">v1.1</Badge>
-                            </div>
-                          </div>
-                          <div className="p-3 border border-amber-100 rounded-lg hover:bg-amber-50 cursor-pointer transition-all">
-                            <div className="flex justify-between">
-                              <div className="flex items-start">
-                                <FileText className="h-4 w-4 mr-2 mt-1 text-amber-600" />
-                                <div>
-                                  <div className="font-medium text-sm">Post-Market Follow-up - NeuroPulse</div>
-                                  <div className="flex items-center mt-1 text-xs text-gray-500">
-                                    <span>Post-Market</span>
-                                    <span className="mx-1">•</span>
-                                    <span className="text-amber-600 font-medium">Draft</span>
-                                  </div>
-                                </div>
-                              </div>
-                              <Badge variant="outline" className="text-xs h-5 bg-amber-50 border-amber-200 text-amber-700">v0.8</Badge>
-                            </div>
-                          </div>
+                        
+                        <div 
+                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
+                          onClick={() => {
+                            window.open('/attached_assets/ENVIA_Whitepaper_SOTApdf.pdf', '_blank');
+                            toast({
+                              title: "Document opened",
+                              description: "Viewing Testing Protocol document"
+                            });
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-1.5 text-blue-500" />
+                          <span className="text-sm">Testing Protocol</span>
                         </div>
                       </div>
-                    </ScrollArea>
-                  </TabsContent>
-                </Tabs>
+                    </div>
+                    
+                    {/* Submission Folder */}
+                    <div className="mb-2">
+                      <div 
+                        className="flex items-center p-1.5 rounded hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          // Toggle folder code would go here
+                          toast({
+                            title: "Folder opened",
+                            description: "Submission documents folder expanded"
+                          });
+                        }}
+                      >
+                        <ChevronRight className="h-3.5 w-3.5 mr-1 text-gray-500" />
+                        <Folder className="h-4 w-4 mr-1.5 text-green-500" />
+                        <span className="text-sm font-medium">Submission</span>
+                        <Badge variant="outline" className="ml-2 text-[10px] h-4 bg-green-50 text-green-700 border-green-200">NEW</Badge>
+                      </div>
+                      <div className="ml-6 mt-1">
+                        <div 
+                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
+                          onClick={() => {
+                            window.open('/attached_assets/1 - CER 2021 Update - Arthrosurface Shoulder Implant Systems - 10.07.2021 (FINAL).pdf', '_blank');
+                            toast({
+                              title: "Document opened",
+                              description: "Viewing eSTAR Submission Package document"
+                            });
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-1.5 text-green-500" />
+                          <span className="text-sm">eSTAR Package</span>
+                        </div>
+                        
+                        <div 
+                          className="flex items-center p-1.5 rounded hover:bg-blue-50 cursor-pointer"
+                          onClick={() => {
+                            window.open('/attached_assets/Clinical-Evaluation-Reports-How-To-Leverage-Published-Data-–-Pro-Te-Fall-2016.pdf', '_blank');
+                            toast({
+                              title: "Document opened",
+                              description: "Viewing Final Report document"
+                            });
+                          }}
+                        >
+                          <FileText className="h-4 w-4 mr-1.5 text-green-500" />
+                          <span className="text-sm">Final Report</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 
-                {/* Bottom Action Buttons */}
-                <div className="border-t p-4 pt-3">
-                  <div className="flex space-x-2">
-                    <Button size="sm" className="text-xs flex-1">
+                {/* Action bar */}
+                <div className="p-2 border-t">
+                  <div className="flex space-x-1">
+                    <Button size="sm" className="text-xs h-8">
                       <UploadCloud className="h-3.5 w-3.5 mr-1" />
                       Upload
                     </Button>
-                    <Button variant="outline" size="sm" className="text-xs flex-1">
+                    <Button variant="outline" size="sm" className="text-xs h-8">
                       <Download className="h-3.5 w-3.5 mr-1" />
                       Export
                     </Button>
@@ -2158,6 +2032,24 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                 </div>
               </div>
             </div>
+          )}
+          
+          {/* Document Preview Dialog */}
+          {documentPreview.show && (
+            <Dialog open={documentPreview.show} onOpenChange={(open) => !open && setDocumentPreview({ show: false, path: '', title: '' })}>
+              <DialogContent className="max-w-4xl h-[80vh]">
+                <DialogHeader>
+                  <DialogTitle>{documentPreview.title}</DialogTitle>
+                </DialogHeader>
+                <div className="flex-1 h-full">
+                  <iframe
+                    src={documentPreview.path}
+                    className="w-full h-full"
+                    title={documentPreview.title}
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
           )}
           
           <div className={`bg-white rounded-lg border shadow-sm flex-1 ${showDocumentTree ? 'rounded-l-none' : ''}`}>
