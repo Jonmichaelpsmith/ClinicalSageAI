@@ -537,27 +537,40 @@ router.get('/workflow-transition/:fromStep/:toStep', authenticateJWT, async (req
         // For a real implementation, we'd query the database to verify
         // that we have all the necessary data for the equivalence step
         
+        // Enhanced logging for debugging this critical transition
+        logger.info(`Critical transition check: ${fromStep} → ${toStep} for device ${deviceId}`);
+        
         // Simulating a database check
         const validDevice = deviceId && deviceId.length > 3;
         const hasPredicateData = validDevice; // In real implementation, verify this from DB
         
+        // In production, we would run more thorough checks like:
+        // 1. Verify device exists in database 
+        // 2. Verify device has at least one predicate device selected
+        // 3. Verify predicate device data is complete
+        // 4. Verify user has permission for this transition
+        
         if (!validDevice || !hasPredicateData) {
+          logger.warn(`Transition blocked (${fromStep} → ${toStep}): Invalid device or missing predicate data`);
           return res.json({
             canTransition: false,
             message: 'Missing required predicate data for equivalence analysis',
             fromStep,
             toStep,
-            deviceId
+            deviceId,
+            timestamp: new Date().toISOString()
           });
         }
         
         // All checks passed, transition can proceed
+        logger.info(`Transition approved (${fromStep} → ${toStep}) for device ${deviceId}`);
         return res.json({
           canTransition: true,
           message: 'Ready for transition to equivalence analysis',
           fromStep,
           toStep,
-          deviceId
+          deviceId,
+          timestamp: new Date().toISOString()
         });
       } catch (error) {
         logger.error(`Error checking predicate-to-equivalence transition: ${error.message}`);
