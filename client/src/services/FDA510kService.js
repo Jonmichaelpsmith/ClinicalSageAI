@@ -182,5 +182,6 @@ class FDA510kService {
 // Create a singleton instance
 const instance = new FDA510kService();
 
-// Export as named export to match existing imports
+// Export both as default export and named export to support both import styles
+export default instance;
 export { instance as FDA510kService };
