@@ -206,14 +206,47 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
 `).join('')}`;
   };
 
-  // Set up the 510K workflow if initialized with that document type
+  // Set up the 510K workflow if initialized with that document type 
+  // and handle state persistence on page load
   useEffect(() => {
     if (documentType === '510k') {
       console.log("Document type set to 510k, active tab set to: predicates");
+      
+      // Load saved device profile from localStorage if available
+      const savedDeviceProfile = localStorage.getItem('510k_deviceProfile');
+      if (savedDeviceProfile) {
+        try {
+          const parsedProfile = JSON.parse(savedDeviceProfile);
+          setDeviceProfile(parsedProfile);
+          console.log("Restored device profile from local storage:", parsedProfile.deviceName);
+          
+          // Also restore workflow step if available
+          const savedStep = localStorage.getItem('510k_workflowStep');
+          if (savedStep) {
+            const step = parseInt(savedStep);
+            console.log(`Restoring workflow to step ${step}`);
+            setWorkflowStep(step);
+            
+            // Set appropriate tab based on step
+            if (step === 1) setActiveTab('device-profile');
+            else if (step === 2) setActiveTab('predicates');
+            else if (step === 3) setActiveTab('equivalence');
+            else if (step === 4) setActiveTab('compliance');
+            else if (step === 5) setActiveTab('submission');
+          }
+        } catch (error) {
+          console.error("Error restoring saved device profile:", error);
+          toast({
+            title: "Error Restoring Data",
+            description: "We couldn't restore your previous work. Starting with a fresh form.",
+            variant: "destructive"
+          });
+        }
+      }
     }
   }, [documentType]);
 
-  // Update workflow progress when steps change
+  // Update workflow progress when steps change and persist state to localStorage
   useEffect(() => {
     if (documentType === '510k') {
       // Calculate progress based on workflow step
@@ -226,6 +259,16 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       };
       
       setWorkflowProgress(progressMap[workflowStep] || 0);
+      
+      // Save current step to localStorage for persistence across page refreshes
+      localStorage.setItem('510k_workflowStep', workflowStep.toString());
+      console.log(`Saved workflow step ${workflowStep} to localStorage`);
+      
+      // Also save device profile if it exists
+      if (deviceProfile && Object.keys(deviceProfile).length > 0) {
+        localStorage.setItem('510k_deviceProfile', JSON.stringify(deviceProfile));
+        console.log(`Saved device profile to localStorage: ${deviceProfile.deviceName}`);
+      }
     }
   }, [documentType, workflowStep, deviceProfile, predicatesFound, equivalenceCompleted, complianceScore, submissionReady]);
 
@@ -880,17 +923,46 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
               initialData={deviceProfile}
               onSubmit={(savedProfile) => {
                 console.log('Device profile saved with vault integration:', savedProfile);
-                // Update the device profile in state
-                setDeviceProfile(savedProfile);
                 
-                // If the profile has a Document Vault structure, we can proceed to next steps
-                if (savedProfile.folderStructure && savedProfile.folderStructure.rootFolderId) {
-                  // Set the document ID from the saved profile
-                  setK510DocumentId(savedProfile.id);
+                // Show loading toast to provide user feedback
+                toast({
+                  title: "Processing Device Profile",
+                  description: "Saving your device information and preparing for predicate search...",
+                  variant: "default"
+                });
+                
+                try {
+                  // Update the device profile in state
+                  setDeviceProfile(savedProfile);
                   
-                  // Transition to the predicate finder step with the new profile
-                  setActiveTab('predicates');
-                  setWorkflowStep(1);
+                  // Always save profile to localStorage for persistence
+                  localStorage.setItem('510k_deviceProfile', JSON.stringify(savedProfile));
+                  
+                  // If we have an ID from the saved profile, use it
+                  if (savedProfile.id) {
+                    setK510DocumentId(savedProfile.id);
+                  }
+                  
+                  // Transition to predicates step with 500ms delay to ensure UI updates
+                  setTimeout(() => {
+                    // Use the predicates tab and set the workflow step to 2
+                    setActiveTab('predicates');
+                    setWorkflowStep(2);
+                    
+                    // Show success toast after transition
+                    toast({
+                      title: "Device Profile Saved",
+                      description: "Successfully saved your device profile. Now you can search for predicate devices.",
+                      variant: "success"
+                    });
+                  }, 500);
+                } catch (error) {
+                  console.error("Error in device profile transition:", error);
+                  toast({
+                    title: "Navigation Error",
+                    description: "There was a problem moving to the predicate search. Please try again.",
+                    variant: "destructive"
+                  });
                 }
               }}
               onCancel={() => {
