@@ -49,7 +49,8 @@ import KAutomationPanel from '@/components/cer/KAutomationPanel';
 // 510k components - directly importing only what we need
 import PredicateFinderPanel from '@/components/510k/PredicateFinderPanel';
 import ReportGenerator from '@/components/510k/ReportGenerator';
-import SimpleDocumentTreePanel from '@/components/510k/SimpleDocumentTreePanel';
+// Enhanced document management with professional vault system
+import DocumentVaultPanel from '@/components/cer/DocumentVaultPanel';
 import WelcomeDialog from '@/components/510k/WelcomeDialog';
 import DeviceIntakeForm from '@/components/510k/DeviceIntakeForm';
 import DeviceProfileForm from '@/components/cer/DeviceProfileForm';
