@@ -106,9 +106,11 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [newClientMode, setNewClientMode] = useState(false);
   const [deviceIntakeData, setDeviceIntakeData] = useState(null);
   const [deviceType, setDeviceType] = useState('Class II Medical Device');
+  const [showFolderCreate, setShowFolderCreate] = useState(false);
   const [documentType, setDocumentType] = useState(initialDocumentType || '510k'); // Options: 'cer' or '510k'
   const [deviceName, setDeviceName] = useState('');
   const [manufacturer, setManufacturer] = useState('');
+  const [newFolderName, setNewFolderName] = useState('');
   const [intendedUse, setIntendedUse] = useState('');
   const [faers, setFaers] = useState([]);
   const [showESTARDemo, setShowESTARDemo] = useState(false);
