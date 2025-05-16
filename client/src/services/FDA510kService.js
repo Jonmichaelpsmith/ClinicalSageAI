@@ -21,6 +21,90 @@ import docuShareService from './DocuShareService';
 // Export as a singleton object
 export const FDA510kService = {
   /**
+   * Device Profile API
+   * 
+   * This API ensures proper data validation before submitting to the server
+   * to prevent database schema mismatches
+   */
+  DeviceProfileAPI: {
+    /**
+     * Create a new device profile with validated data structure
+     * 
+     * @param {Object} profileData Device profile data
+     * @returns {Promise<Object>} The created device profile
+     */
+    async create(profileData) {
+      // Filter to only include fields that exist in the database
+      const validatedData = {
+        deviceName: profileData.deviceName,
+        deviceClass: profileData.deviceClass,
+        intendedUse: profileData.intendedUse,
+        manufacturer: profileData.manufacturer,
+        modelNumber: profileData.modelNumber,
+        // Technical characteristics will be stored as JSON
+        technicalCharacteristics: profileData.technicalCharacteristics ? 
+          JSON.stringify(profileData.technicalCharacteristics) : 
+          JSON.stringify({})
+        // Explicitly NOT including deviceDescription which causes errors
+      };
+      
+      console.log('Creating device profile with validated data:', validatedData);
+      
+      const response = await apiRequest.post('/api/fda510k/device-profiles', validatedData);
+      return response.data;
+    },
+    
+    /**
+     * Update an existing device profile with validated data structure
+     * 
+     * @param {string} profileId Profile ID to update
+     * @param {Object} profileData Updated profile data
+     * @returns {Promise<Object>} The updated device profile
+     */
+    async update(profileId, profileData) {
+      // Filter to only include fields that exist in the database
+      const validatedData = {
+        id: profileId,
+        deviceName: profileData.deviceName,
+        deviceClass: profileData.deviceClass,
+        intendedUse: profileData.intendedUse,
+        manufacturer: profileData.manufacturer,
+        modelNumber: profileData.modelNumber,
+        // Technical characteristics will be stored as JSON
+        technicalCharacteristics: profileData.technicalCharacteristics ? 
+          JSON.stringify(profileData.technicalCharacteristics) : 
+          JSON.stringify({})
+        // Explicitly NOT including deviceDescription which causes errors
+      };
+      
+      console.log('Updating device profile with validated data:', validatedData);
+      
+      const response = await apiRequest.put(`/api/fda510k/device-profiles/${profileId}`, validatedData);
+      return response.data;
+    },
+    
+    /**
+     * Get a device profile by ID
+     * 
+     * @param {string} profileId Profile ID to retrieve
+     * @returns {Promise<Object>} The device profile
+     */
+    async get(profileId) {
+      const response = await apiRequest.get(`/api/fda510k/device-profiles/${profileId}`);
+      return response.data;
+    },
+    
+    /**
+     * Get all device profiles for the current organization
+     * 
+     * @returns {Promise<Array>} List of device profiles
+     */
+    async list() {
+      const response = await apiRequest.get('/api/fda510k/device-profiles');
+      return response.data;
+    }
+  },
+  /**
    * Check if a workflow transition is safe to perform
    * 
    * @param {string} fromStep - The current workflow step
