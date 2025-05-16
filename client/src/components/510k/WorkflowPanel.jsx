@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import FDA510kService from '../../services/FDA510kService';
+import { FDA510kService } from '../../services/FDA510kService';
 import DeviceProfileList from '../cer/DeviceProfileList';
 import DeviceProfileDialog from '../cer/DeviceProfileDialog';
 import PredicateFinderPanel from './PredicateFinderPanel';
@@ -166,7 +166,7 @@ const WorkflowPanel = ({
   };
 
   // Handle equivalence builder completion
-  const handleEquivalenceComplete = (data) => {
+  const handleEquivalenceComplete = async (data) => {
     console.log('[WorkflowPanel] Equivalence completed with data:', data);
     setEquivalenceCompleted(true);
     
@@ -181,13 +181,19 @@ const WorkflowPanel = ({
       onEquivalenceComplete(data);
     }
     
-    // Enhanced transition with verification and fallbacks
+    // Use the new API-based verification for workflow transitions
     try {
-      console.log('[WorkflowPanel] Transitioning to compliance step');
-      // First update the workflow step
-      setWorkflowStep(4);
+      console.log('[WorkflowPanel] Verifying compliance step transition');
       
-      // Use a delay to ensure step is updated before changing tab
+      // Check if transition is allowed via API
+      const checkResult = await FDA510kService.checkWorkflowTransition(
+        'equivalence', 'compliance', selectedDeviceProfile?.id, organizationId
+      );
+      
+      if (checkResult.canTransition) {
+        console.log('[WorkflowPanel] Transition to compliance step approved by API');
+        // Update the step and tab states
+        setWorkflowStep(4);
       setTimeout(() => {
         try {
           console.log('[WorkflowPanel] Setting active tab to compliance');
@@ -338,29 +344,121 @@ const WorkflowPanel = ({
     });
   };
 
-  // Navigation functions
-  const goToStep = (step) => {
-    // Validate the step can be accessed
-    if (step === 1) {
-      setWorkflowStep(1);
-      setActiveTab('workflow');
-      if (typeof onStepChange === 'function') onStepChange(1);
-    } else if (step === 2 && selectedDeviceProfile) {
-      setWorkflowStep(2);
-      setActiveTab('predicates');
-      if (typeof onStepChange === 'function') onStepChange(2);
-    } else if (step === 3 && predicatesFound) {
-      setWorkflowStep(3);
-      setActiveTab('equivalence');
-      if (typeof onStepChange === 'function') onStepChange(3);
-    } else if (step === 4 && equivalenceCompleted) {
-      setWorkflowStep(4);
-      setActiveTab('compliance');
-      if (typeof onStepChange === 'function') onStepChange(4);
-    } else if (step === 5 && complianceScore) {
-      setWorkflowStep(5);
-      setActiveTab('submission');
-      if (typeof onStepChange === 'function') onStepChange(5);
+  // Enhanced Navigation functions with API verification
+  const goToStep = async (step) => {
+    console.log(`[WorkflowPanel] Attempting to navigate to step ${step}`);
+    
+    try {
+      // Validate the step can be accessed
+      if (step === 1) {
+        // Always allow returning to step 1 (device profile)
+        setWorkflowStep(1);
+        setActiveTab('workflow');
+        if (typeof onStepChange === 'function') onStepChange(1);
+      } else if (step === 2 && selectedDeviceProfile) {
+        // Predicate finder - verify we can transition
+        const checkResult = await FDA510kService.checkWorkflowTransition(
+          'device', 'predicate', selectedDeviceProfile.id, organizationId
+        );
+        
+        if (checkResult.canTransition) {
+          setWorkflowStep(2);
+          setActiveTab('predicates');
+          if (typeof onStepChange === 'function') onStepChange(2);
+        } else {
+          console.warn(`[WorkflowPanel] Transition to step 2 blocked: ${checkResult.message}`);
+          toast({
+            title: "Cannot Proceed",
+            description: checkResult.message || "Device profile data is incomplete",
+            variant: "destructive"
+          });
+        }
+      } else if (step === 3 && predicatesFound) {
+        // Critical transition: Equivalence step requires API verification
+        // This is the problematic transition we're fixing
+        console.log('[WorkflowPanel] Verifying equivalence readiness before transition');
+        
+        try {
+          // First check workflow transition
+          const checkResult = await FDA510kService.checkWorkflowTransition(
+            'predicate', 'equivalence', selectedDeviceProfile.id, organizationId
+          );
+          
+          // Then check equivalence status for added verification
+          const statusResult = await FDA510kService.checkEquivalenceStatus(
+            selectedDeviceProfile.id, organizationId
+          );
+          
+          // Only proceed if both checks pass
+          if (checkResult.canTransition && statusResult.canProceed) {
+            setWorkflowStep(3);
+            setActiveTab('equivalence');
+            if (typeof onStepChange === 'function') onStepChange(3);
+          } else {
+            const errorMessage = checkResult.canTransition ? 
+              statusResult.message : checkResult.message;
+              
+            console.warn(`[WorkflowPanel] Transition to equivalence blocked: ${errorMessage}`);
+            toast({
+              title: "Cannot Proceed to Equivalence",
+              description: errorMessage || "Required predicate data is missing",
+              variant: "destructive"
+            });
+          }
+        } catch (transitionError) {
+          console.error('[WorkflowPanel] Error during equivalence transition:', transitionError);
+          toast({
+            title: "Transition Error",
+            description: "Could not verify readiness for equivalence analysis",
+            variant: "destructive"
+          });
+        }
+      } else if (step === 4 && equivalenceCompleted) {
+        // Verify transition to compliance step
+        const checkResult = await FDA510kService.checkWorkflowTransition(
+          'equivalence', 'compliance', selectedDeviceProfile.id, organizationId
+        );
+        
+        if (checkResult.canTransition) {
+          setWorkflowStep(4);
+          setActiveTab('compliance');
+          if (typeof onStepChange === 'function') onStepChange(4);
+        } else {
+          console.warn(`[WorkflowPanel] Transition to compliance blocked: ${checkResult.message}`);
+          toast({
+            title: "Cannot Proceed",
+            description: checkResult.message || "Equivalence analysis is incomplete",
+            variant: "destructive"
+          });
+        }
+      } else if (step === 5 && complianceScore) {
+        // Verify transition to submission step
+        const checkResult = await FDA510kService.checkWorkflowTransition(
+          'compliance', 'submission', selectedDeviceProfile.id, organizationId
+        );
+        
+        if (checkResult.canTransition) {
+          setWorkflowStep(5);
+          setActiveTab('submission');
+          if (typeof onStepChange === 'function') onStepChange(5);
+        } else {
+          console.warn(`[WorkflowPanel] Transition to submission blocked: ${checkResult.message}`);
+          toast({
+            title: "Cannot Proceed",
+            description: checkResult.message || "Compliance check is incomplete",
+            variant: "destructive"
+          });
+        }
+      } else {
+        console.warn(`[WorkflowPanel] Cannot navigate to step ${step} - preconditions not met`);
+      }
+    } catch (error) {
+      console.error(`[WorkflowPanel] Error in goToStep(${step}):`, error);
+      toast({
+        title: "Navigation Error",
+        description: "An error occurred while changing workflow steps",
+        variant: "destructive"
+      });
     }
   };
   
