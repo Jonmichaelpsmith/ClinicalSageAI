@@ -1,0 +1,26 @@
+The 510(k) submission process getting stuck at the "Predicate Search" step (around 30% progress, as you mentioned) and preventing actions like "Generate FDA Submission" is precisely what happens if the application doesn't correctly register the completion of that predicate search phase.
+
+The updated CERV2Page.jsx code I provided (in the document titled "CERV2Page.jsx (Workflow & Predicate Logic)") is designed to directly address this by:
+
+Explicitly Tracking Predicate Step Completion: It uses the isPredicateStepCompleted state variable. This variable must become true for the workflow to allow navigation to subsequent steps like "Equivalence Builder" or the final "Submission Summary."
+Blocking Navigation: The navigateToStep function in that code specifically checks isPredicateStepCompleted before allowing you to move past step 2 (Predicate Finder). If it's false, you'll see a toast message, and the navigation will be blocked.
+Requiring Communication from PredicateFinderPanel:
+The handlePredicatesFound(foundPredicates, error) callback in CERV2Page.jsx is the key. Your actual PredicateFinderPanel.jsx component must call this function when its process is done.
+If predicates are successfully found and selected, PredicateFinderPanel.jsx should call onPredicatesFound(arrayOfSelectedPredicates, null). This will set isPredicateStepCompleted to true in CERV2Page.jsx.
+If an error occurs during the predicate search, PredicateFinderPanel.jsx should call onPredicatesFound(null, "Error message here"). This will keep isPredicateStepCompleted as false and display an error.
+If the search yields no predicates, PredicateFinderPanel.jsx should call onPredicatesFound([], null). Currently, this also keeps isPredicateStepCompleted as false (as per the logic in handlePredicatesFound, which assumes at least one predicate is needed for completion).
+If the workflow is still stuck after implementing the changes in CERV2Page.jsx and integrating it with your PredicateFinderPanel.jsx and FDA510kService.js (as per the conceptual examples provided earlier):
+
+Check Console Logs: The CERV2Page.jsx code is filled with console.log statements. When you try to navigate or when the predicate search should complete:
+What do the [CERV2 Navigation] logs say? Are they showing that the predicate step is not completed?
+What is the value of isPredicateStepCompleted in the "Workflow Debug Information" section at the bottom of the page?
+Are there any errors logged from PredicateFinderPanel or FDA510kService?
+Verify PredicateFinderPanel.jsx Integration:
+Is PredicateFinderPanel.jsx actually calling the onPredicatesFound prop that it receives from CERV2Page.jsx?
+What arguments is it passing to onPredicatesFound? (e.g., is it passing an array of predicates, or is it passing an error?)
+API Call in FDA510kService.js:
+Is the searchPredicateDevices method in your service successfully making the API call?
+Is it correctly parsing the response and returning the structured object { success: boolean, data?: Array<any>, error?: string } as outlined in the conceptual FDA510kService.js example? The PredicateFinderPanel relies on this structure to then call onPredicatesFound correctly.
+The "Generate FDA Submission" button and "Show eSTAR Builder Demo" likely represent actions or navigation to later stages of the workflow. These will remain inactive or non-functional if the predicate search step (step 2) is not successfully marked as complete. The current 30% progress likely reflects being stuck after the initial Device Profile step.
+
+Focus on ensuring that your PredicateFinderPanel correctly communicates its completion (or failure) status back to CERV2Page.jsx via the onPredicatesFound callback. That's the most common point of failure for this kind of issue.
