@@ -854,6 +854,74 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       return (
         <div className="p-4 space-y-4">
           {render510kProgressBar()}
+          
+          {/* Quick Access Panel for Demo */}
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="text-lg font-medium text-blue-800 mb-2">Investor Demo Quick Access</h3>
+            <p className="text-sm text-blue-700 mb-3">
+              For quick access to the demo components without going through the complete workflow:
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button 
+                onClick={() => {
+                  // Simulate having completed all previous steps
+                  setDeviceProfile(deviceProfile || {
+                    id: 'demo-device-123',
+                    deviceName: 'Demo Medical Device',
+                    manufacturer: 'Demo Manufacturer',
+                    deviceClass: 'II'
+                  });
+                  setPredicatesFound(true);
+                  setEquivalenceCompleted(true);
+                  setComplianceScore(85);
+                  setSubmissionReady(true);
+                  
+                  // Directly show eSTAR Builder by rendering it in this panel
+                  setShowESTARDemo(true);
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              >
+                Show eSTAR Builder Demo
+              </button>
+            </div>
+          </div>
+          
+          {showESTARDemo && (
+            <div className="mb-6">
+              <ESTARBuilderPanel
+                projectId="demo-project-123"
+                deviceProfile={deviceProfile || {
+                  id: 'demo-device-123',
+                  deviceName: 'Demo Medical Device',
+                  manufacturer: 'Demo Manufacturer',
+                  deviceClass: 'II'
+                }}
+                complianceScore={85}
+                equivalenceData={{
+                  subject: { name: 'Demo Medical Device' },
+                  predicate: { name: 'Similar Device' },
+                  comparison: { status: 'complete' }
+                }}
+                onGenerationComplete={(result) => {
+                  console.log('eSTAR Package generated:', result);
+                }}
+                onValidationComplete={(results) => {
+                  console.log('Validation results:', results);
+                }}
+                isValidating={false}
+                isGenerating={false}
+                estarFormat="zip"
+                setEstarFormat={(format) => console.log('Format selected:', format)}
+                validationResults={null}
+                generatedUrl={null}
+                setIsValidating={() => {}}
+                setIsGenerating={() => {}}
+                setValidationResults={() => {}}
+                setGeneratedUrl={() => {}}
+              />
+            </div>
+          )}
+          
           {render510kStepContent()}
         </div>
       );
