@@ -414,8 +414,8 @@ const DeviceProfileForm = ({ initialData = {}, onSubmit, isEditing = false }) =>
                           </FormControl>
                           <SelectContent>
                             <SelectItem value="Limited">Limited (≤24 hours)</SelectItem>
-                            <SelectItem value="Prolonged">Prolonged (>24 hours to 30 days)</SelectItem>
-                            <SelectItem value="Permanent">Permanent (>30 days)</SelectItem>
+                            <SelectItem value="Prolonged">Prolonged (more than 24 hours to 30 days)</SelectItem>
+                            <SelectItem value="Permanent">Permanent (more than 30 days)</SelectItem>
                           </SelectContent>
                         </Select>
                         <FormDescription>
