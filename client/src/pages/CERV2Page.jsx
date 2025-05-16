@@ -581,63 +581,117 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     }
   };
   
-  // Navigation functions for 510k workflow
+  // Track loading state for navigation
+  const [isNavigating, setIsNavigating] = useState(false);
+  
+  // Improved navigation function for 510k workflow with loading state and better error handling
   const goToStep = (step) => {
     if (step >= 1 && step <= 5) {
+      // Set navigating state to show loading indicators
+      setIsNavigating(true);
+      
       try {
         console.log(`[CERV2 Navigation] Transitioning to step ${step}`);
         
         // Map steps to tabs - this is the core navigation logic
         const tabMap = {
-          1: 'predicates', // Device Profile (displayed in Predicate Finder)
-          2: 'predicates', // Predicate Finder
-          3: 'equivalence', // Substantial Equivalence
-          4: 'compliance', // Compliance Check 
-          5: 'submission' // Final Submission
+          1: 'device-profile', // Changed to start at device-profile
+          2: 'predicates',     // Predicate Finder
+          3: 'equivalence',    // Substantial Equivalence
+          4: 'compliance',     // Compliance Check 
+          5: 'submission'      // Final Submission
         };
         
         // Get target tab based on step
-        const targetTab = tabMap[step] || 'predicates';
+        const targetTab = tabMap[step] || 'device-profile';
         
         // Check prerequisite conditions for navigation
         if (step > 1 && !deviceProfile) {
           console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 1 (Device Profile)");
+          toast({
+            title: "Complete Device Profile First",
+            description: "Please create and save a device profile before proceeding to the next step.",
+            variant: "warning"
+          });
+          setIsNavigating(false);
           return;
         }
         
         if (step > 2 && !predicatesFound) {
           console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 2 (Predicate Finder)");
+          toast({
+            title: "Find Predicates First",
+            description: "Please select at least one predicate device before moving to equivalence building.",
+            variant: "warning"
+          });
+          setIsNavigating(false);
           return;
         }
         
         if (step > 3 && !equivalenceCompleted) {
           console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 3 (Equivalence)");
+          toast({
+            title: "Complete Equivalence First",
+            description: "Please complete the substantial equivalence analysis before proceeding to compliance check.",
+            variant: "warning"
+          });
+          setIsNavigating(false);
           return; 
         }
         
         if (step > 4 && !complianceScore) {
           console.warn("[CERV2 Navigation] Cannot advance to step", step, "without completing step 4 (Compliance)");
+          toast({
+            title: "Complete Compliance Check First",
+            description: "Please finish the compliance check before generating your submission.",
+            variant: "warning"
+          });
+          setIsNavigating(false);
           return;
         }
         
-        // Update state with proper persistence
-        setWorkflowStep(step);
-        saveState('workflowStep', step);
-        
-        // Update tab with proper persistence
-        setActiveTab(targetTab);
-        saveState('activeTab', targetTab);
-        
-        console.log(`[CERV2 Navigation] Successfully transitioned to step ${step} and tab "${targetTab}"`);
+        // Use a slight delay to allow the loading state to be visible
+        // and to ensure state updates are processed correctly
+        setTimeout(() => {
+          // Update state with proper persistence
+          setWorkflowStep(step);
+          localStorage.setItem('510k_workflowStep', step.toString());
+          
+          // Update tab with proper persistence
+          setActiveTab(targetTab);
+          localStorage.setItem('510k_activeTab', targetTab);
+          
+          console.log(`[CERV2 Navigation] Successfully transitioned to step ${step} and tab "${targetTab}"`);
+          
+          // Show success toast
+          toast({
+            title: "Navigation Successful",
+            description: `Moved to ${tabMap[step].replace('-', ' ')} step.`,
+            variant: "success"
+          });
+          
+          // Clear navigation loading state
+          setIsNavigating(false);
+        }, 500);
       } catch (error) {
         console.error(`[CERV2 Navigation] Error transitioning to step ${step}:`, error);
+        
+        // Show error to user
+        toast({
+          title: "Navigation Error",
+          description: "There was a problem navigating to the next step. Please try again.",
+          variant: "destructive"
+        });
+        
         // Simple error state recovery - no fake data
         try {
           // Reset to a known good state
           const previousStep = workflowStep;
           console.log(`[CERV2 Navigation] Returning to previous step ${previousStep}`);
+          setTimeout(() => setIsNavigating(false), 300);
         } catch (recoveryError) {
           console.error('[CERV2 Navigation] Recovery attempt failed:', recoveryError);
+          setIsNavigating(false);
         }
       }
     }
@@ -646,6 +700,14 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // Render the 510k workflow progress bar
   const render510kProgressBar = () => (
     <div className="mb-8 bg-white p-6 rounded-lg shadow-sm border border-blue-100">
+      {/* Loading indicator for workflow transitions */}
+      {isNavigating && (
+        <div className="bg-blue-50 p-3 rounded-md flex items-center space-x-2 mb-4 border border-blue-200">
+          <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
+          <span className="text-blue-700">Loading workflow step, please wait...</span>
+        </div>
+      )}
+      
       <div className="flex justify-between mb-3 items-center">
         <h3 className="text-lg font-medium text-blue-800">510(k) Submission Pipeline</h3>
         <div className="flex items-center">

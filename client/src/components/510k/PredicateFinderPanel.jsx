@@ -59,8 +59,12 @@ const PredicateFinderPanel = ({
   const { toast } = useToast();
   
   // Initialize form with existing device profile data if available
+  // and restore any persisted state
   useEffect(() => {
     if (deviceProfile) {
+      console.log('PredicateFinderPanel: Initializing with device profile:', deviceProfile.deviceName);
+      
+      // Set form data from device profile
       setFormData({
         deviceName: deviceProfile.deviceName || '',
         manufacturer: deviceProfile.manufacturer || '',
@@ -75,6 +79,42 @@ const PredicateFinderPanel = ({
       // If profile seems complete, move to search phase
       if (deviceProfile.deviceName && deviceProfile.intendedUse && deviceProfile.manufacturer) {
         setProfileEditing(false);
+      }
+      
+      // Check if we already have predicates saved in deviceProfile
+      if (deviceProfile.predicateDevices && deviceProfile.predicateDevices.length > 0) {
+        console.log('Restoring previously selected predicates:', deviceProfile.predicateDevices.length);
+        setSelectedPredicates(deviceProfile.predicateDevices);
+        // Ensure we're not in profile editing mode if we have predicates
+        setProfileEditing(false);
+      }
+      
+      // Check localStorage for saved search results
+      const savedSearchResults = localStorage.getItem('510k_searchResults');
+      if (savedSearchResults) {
+        try {
+          const parsedResults = JSON.parse(savedSearchResults);
+          if (parsedResults && parsedResults.length > 0) {
+            console.log('Restoring saved search results:', parsedResults.length);
+            setSearchResults(parsedResults);
+          }
+        } catch (error) {
+          console.error('Error restoring saved search results:', error);
+        }
+      }
+      
+      // Check for saved literature results
+      const savedLiterature = localStorage.getItem('510k_literatureResults');
+      if (savedLiterature) {
+        try {
+          const parsedLiterature = JSON.parse(savedLiterature);
+          if (parsedLiterature && parsedLiterature.length > 0) {
+            console.log('Restoring saved literature results:', parsedLiterature.length);
+            setLiteratureResults(parsedLiterature);
+          }
+        } catch (error) {
+          console.error('Error restoring saved literature results:', error);
+        }
       }
     }
   }, [deviceProfile]);
@@ -154,9 +194,17 @@ const PredicateFinderPanel = ({
         // Store predicate search results
         setSearchResults(results.predicateDevices);
         
+        // Save to localStorage for persistence across page reloads
+        localStorage.setItem('510k_searchResults', JSON.stringify(results.predicateDevices));
+        console.log(`Saved ${results.predicateDevices.length} predicate results to localStorage`);
+        
         // Store literature results if they exist
         if (results.literatureReferences && results.literatureReferences.length > 0) {
           setLiteratureResults(results.literatureReferences);
+          
+          // Save literature results to localStorage
+          localStorage.setItem('510k_literatureResults', JSON.stringify(results.literatureReferences));
+          console.log(`Saved ${results.literatureReferences.length} literature results to localStorage`);
         }
         
         // If we have a valid device profile with Document Vault integration, save the search results
