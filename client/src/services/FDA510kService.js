@@ -838,22 +838,41 @@ export const FDA510kService = {
    */
   async findPredicatesAndLiterature(deviceProfile, organizationId) {
     try {
+      // Add validation to ensure deviceProfile contains required fields
+      if (!deviceProfile || !deviceProfile.deviceName) {
+        console.error('[FDA510kService] Invalid device profile for predicate search:', deviceProfile);
+        return {
+          success: false,
+          error: 'Invalid device profile. Device name is required.',
+          predicateDevices: [],
+          literatureReferences: []
+        };
+      }
+      
       // Prepare search parameters based on device profile
       const searchParams = {
         deviceName: deviceProfile.deviceName,
-        productCode: deviceProfile.productCode,
-        deviceClass: deviceProfile.deviceClass,
-        intendedUse: deviceProfile.intendedUse,
-        manufacturer: deviceProfile.manufacturer,
+        productCode: deviceProfile.productCode || '',
+        deviceClass: deviceProfile.deviceClass || '',
+        intendedUse: deviceProfile.intendedUse || '',
+        manufacturer: deviceProfile.manufacturer || '',
         organizationId: organizationId || ''
       };
+      
+      console.log('[FDA510kService] Searching for predicates with params:', searchParams);
       
       // Make API request to the combined search endpoint
       const response = await apiRequest.post('/api/fda510k/search-predicates-literature', searchParams);
       
+      // Validate the response data
+      if (!response.data) {
+        console.error('[FDA510kService] Empty API response from predicate search');
+        throw new Error('Empty API response');
+      }
+      
       // If the response doesn't have the expected structure, create it
       if (!response.data.predicateDevices) {
-        console.warn('API response missing predicate devices, performing fallback search');
+        console.warn('[FDA510kService] API response missing predicate devices, performing fallback search');
         
         // Fallback to separate searches if the combined endpoint fails
         const predicatesResponse = await this.searchPredicateDevices({
@@ -866,23 +885,33 @@ export const FDA510kService = {
           success: true,
           predicateDevices: predicatesResponse.results || [],
           literatureReferences: [],
-          searchQueries: [deviceProfile.deviceName, deviceProfile.productCode].filter(Boolean)
+          searchQueries: [deviceProfile.deviceName, deviceProfile.productCode].filter(Boolean),
+          fromFallback: true
         };
       }
       
+      console.log(`[FDA510kService] Successfully found ${response.data.predicateDevices?.length || 0} predicate devices`);
+      
       return {
         success: true,
-        ...response.data
+        ...response.data,
+        timestamp: new Date().toISOString()
       };
     } catch (error) {
-      console.error('Error in findPredicatesAndLiterature:', error);
+      console.error('[FDA510kService] Error in findPredicatesAndLiterature:', error);
       
-      // Return a structured error response
+      // Return a structured error response with proper error handling
       return {
         success: false,
         error: error.message || 'Failed to search for predicates and literature',
         predicateDevices: [],
-        literatureReferences: []
+        literatureReferences: [],
+        timestamp: new Date().toISOString(),
+        errorDetails: {
+          status: error.response?.status || 500,
+          code: error.code || 'UNKNOWN_ERROR',
+          name: error.name || 'Error'
+        }
       };
     }
   },
