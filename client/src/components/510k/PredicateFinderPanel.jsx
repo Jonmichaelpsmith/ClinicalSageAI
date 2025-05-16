@@ -499,6 +499,7 @@ const PredicateFinderPanel = ({
     }
     
     console.log('[510k] Completing predicate selection with', selectedPredicates.length, 'devices');
+    console.log('[510k] Selected predicates:', JSON.stringify(selectedPredicates));
     
     // CRITICAL FIX: Save selected predicates to multiple locations for maximum reliability
     try {
@@ -577,16 +578,30 @@ const PredicateFinderPanel = ({
     // 4. Notify parent component that predicates have been found and selected
     console.log('[510k] Notifying parent component of selected predicates:', selectedPredicates.length);
     
-    // Small delay to ensure state updates are processed before callback
+    // Increased delay to ensure state updates are fully processed before callback
     setTimeout(() => {
       if (onPredicatesFound) {
         console.log('[510k] Executing onPredicatesFound callback with predicates and null error');
         // This is a critical change - pass null as second parameter to indicate no errors
         onPredicatesFound(selectedPredicates, null);
+        
+        // Add a confirmation toast after calling the callback
+        setTimeout(() => {
+          toast({
+            title: "Workflow Advancing",
+            description: "Moving to next step: Equivalence Builder",
+            variant: "success"
+          });
+        }, 500);
       } else {
         console.warn('[510k] onPredicatesFound callback not available');
+        toast({
+          title: "Error",
+          description: "Could not advance workflow - callback not available",
+          variant: "destructive"
+        });
       }
-    }, 100);
+    }, 300);
   };
   
   // Search for literature related to the device and predicates
