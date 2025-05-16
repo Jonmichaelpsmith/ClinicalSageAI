@@ -502,8 +502,8 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     
     // 3. Direct localStorage backup with multiple keys
     try {
-      localStorage.setItem('510k_isPredicateStepCompleted', 'true');
-      localStorage.setItem('isPredicateStepCompleted', 'true');
+      localStorage.setItem('510k_isPredicateStepCompleted', JSON.stringify(true));
+      localStorage.setItem('isPredicateStepCompleted', JSON.stringify(true));
       localStorage.setItem('510k_predicatesFound', 'true');
       localStorage.setItem('510k_workflow_step2_completed', 'true');
       localStorage.setItem('510k_predicate_completion_timestamp', new Date().toISOString());
