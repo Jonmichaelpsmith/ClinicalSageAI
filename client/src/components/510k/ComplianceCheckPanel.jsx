@@ -494,11 +494,24 @@ const ComplianceCheckPanel = ({
         </div>
         
         <div className="flex space-x-4">
+          {complianceData && (
+            <Button
+              variant="outline"
+              onClick={runRiskAssessment}
+              disabled={isChecking || isAssessingRisks}
+              size="sm"
+              className="bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+            >
+              <Gauge className="mr-2 h-4 w-4" />
+              Risk Assessment
+            </Button>
+          )}
+          
           {complianceData && deviceProfile?.folderStructure?.complianceFolderId && (
             <Button
               variant="outline"
               onClick={saveComplianceReport}
-              disabled={isChecking}
+              disabled={isChecking || isAssessingRisks}
               size="sm"
             >
               <Save className="mr-2 h-4 w-4" />
@@ -510,7 +523,7 @@ const ComplianceCheckPanel = ({
             <Button
               variant="default"
               onClick={runComplianceCheck}
-              disabled={isChecking}
+              disabled={isChecking || isAssessingRisks}
               size="sm"
             >
               <RefreshCw className="mr-2 h-4 w-4" />
@@ -527,7 +540,7 @@ const ComplianceCheckPanel = ({
                   onComplete(Math.round(complianceData.score * 100));
                 }
               }}
-              disabled={isChecking}
+              disabled={isChecking || isAssessingRisks}
             >
               <FileCheck className="mr-2 h-4 w-4" />
               Complete Compliance Check
