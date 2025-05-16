@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, Clock, FileSymlink, Plus, RefreshCw } from 'lucide-react';
 import DeviceProfileForm from './DeviceProfileForm';
-import FDA510kService from '@/services/FDA510kService';
+import { FDA510kService } from '@/services/FDA510kService';
 
 const DeviceProfileDialog = ({ 
   buttonText = 'Create Device Profile', 
@@ -33,20 +33,16 @@ const DeviceProfileDialog = ({
   const handleSubmit = async (data) => {
     setLoading(true);
     try {
-      // Filter out fields that aren't in the database schema to prevent errors
-      const filteredData = {
-        deviceName: data.deviceName,
-        deviceClass: data.deviceClass,
-        intendedUse: data.intendedUse,
-        manufacturer: data.manufacturer,
-        modelNumber: data.modelNumber,
-        // Fields below might not exist in all database setups
-        // If they're included but don't exist in the DB, they'll be ignored by the backend
-        technologyType: data.technologyType,
-        predicateDevice: data.predicateDevice,
-        projectId: data.projectId || `510K-${Math.floor(100000 + Math.random() * 900000)}`
-        // Explicitly NOT including deviceDescription which is causing errors
-      };
+      // Use the DeviceProfileAPI's validation to ensure data consistency
+      // This will filter out fields that aren't in the database schema
+      const filteredData = FDA510kService.DeviceProfileAPI.validateDeviceProfile(data);
+      
+      // Add any additional processing needed for UI-specific fields
+      if (data.projectId) {
+        filteredData.projectId = data.projectId;
+      } else if (isStartingPoint) {
+        filteredData.projectId = `510K-${Math.floor(100000 + Math.random() * 900000)}`;
+      }
       
       console.log('Submitting filtered device profile data:', filteredData);
       

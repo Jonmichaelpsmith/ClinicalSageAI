@@ -65,24 +65,27 @@ export const FDA510kService = {
      * @returns {Promise<Object>} The created device profile
      */
     async create(profileData) {
-      // Filter to only include fields that exist in the database
-      const validatedData = {
-        deviceName: profileData.deviceName,
-        deviceClass: profileData.deviceClass,
-        intendedUse: profileData.intendedUse,
-        manufacturer: profileData.manufacturer,
-        modelNumber: profileData.modelNumber,
-        // Technical characteristics will be stored as JSON
-        technicalCharacteristics: profileData.technicalCharacteristics ? 
-          JSON.stringify(profileData.technicalCharacteristics) : 
-          JSON.stringify({})
-        // Explicitly NOT including deviceDescription which causes errors
-      };
-      
-      console.log('Creating device profile with validated data:', validatedData);
-      
-      const response = await apiRequest.post('/api/fda510k/device-profiles', validatedData);
-      return response.data;
+      try {
+        // Use the validation utility to filter out fields that don't exist in the database
+        const validatedData = this.validateDeviceProfile(profileData);
+        
+        // Ensure proper formatting of JSON fields
+        if (validatedData.technicalCharacteristics && typeof validatedData.technicalCharacteristics !== 'string') {
+          validatedData.technicalCharacteristics = JSON.stringify(validatedData.technicalCharacteristics);
+        }
+        
+        if (validatedData.folderStructure && typeof validatedData.folderStructure !== 'string') {
+          validatedData.folderStructure = JSON.stringify(validatedData.folderStructure);
+        }
+        
+        console.log('Creating device profile with validated data:', validatedData);
+        
+        const response = await apiRequest.post('/api/fda510k/device-profiles', validatedData);
+        return response.data && response.data.data ? response.data.data : response.data;
+      } catch (error) {
+        console.error('Error creating device profile:', error);
+        throw new Error(`Failed to create device profile: ${error.message || 'Unknown error'}`);
+      }
     },
     
     /**
@@ -93,25 +96,30 @@ export const FDA510kService = {
      * @returns {Promise<Object>} The updated device profile
      */
     async update(profileId, profileData) {
-      // Filter to only include fields that exist in the database
-      const validatedData = {
-        id: profileId,
-        deviceName: profileData.deviceName,
-        deviceClass: profileData.deviceClass,
-        intendedUse: profileData.intendedUse,
-        manufacturer: profileData.manufacturer,
-        modelNumber: profileData.modelNumber,
-        // Technical characteristics will be stored as JSON
-        technicalCharacteristics: profileData.technicalCharacteristics ? 
-          JSON.stringify(profileData.technicalCharacteristics) : 
-          JSON.stringify({})
-        // Explicitly NOT including deviceDescription which causes errors
-      };
-      
-      console.log('Updating device profile with validated data:', validatedData);
-      
-      const response = await apiRequest.put(`/api/fda510k/device-profiles/${profileId}`, validatedData);
-      return response.data;
+      try {
+        // Use the validation utility to filter out fields that don't exist in the database
+        const validatedData = this.validateDeviceProfile(profileData);
+        
+        // Add the ID to the validated data
+        validatedData.id = profileId;
+        
+        // Ensure proper formatting of JSON fields
+        if (validatedData.technicalCharacteristics && typeof validatedData.technicalCharacteristics !== 'string') {
+          validatedData.technicalCharacteristics = JSON.stringify(validatedData.technicalCharacteristics);
+        }
+        
+        if (validatedData.folderStructure && typeof validatedData.folderStructure !== 'string') {
+          validatedData.folderStructure = JSON.stringify(validatedData.folderStructure);
+        }
+        
+        console.log('Updating device profile with validated data:', validatedData);
+        
+        const response = await apiRequest.put(`/api/fda510k/device-profile/${profileId}`, validatedData);
+        return response.data && response.data.data ? response.data.data : response.data;
+      } catch (error) {
+        console.error('Error updating device profile:', error);
+        throw new Error(`Failed to update device profile: ${error.message || 'Unknown error'}`);
+      }
     },
     
     /**
@@ -121,8 +129,13 @@ export const FDA510kService = {
      * @returns {Promise<Object>} The device profile
      */
     async get(profileId) {
-      const response = await apiRequest.get(`/api/fda510k/device-profiles/${profileId}`);
-      return response.data;
+      try {
+        const response = await apiRequest.get(`/api/fda510k/device-profile/${profileId}`);
+        return response.data && response.data.data ? response.data.data : response.data;
+      } catch (error) {
+        console.error('Error retrieving device profile:', error);
+        throw new Error(`Failed to retrieve device profile: ${error.message || 'Unknown error'}`);
+      }
     },
     
     /**
@@ -131,8 +144,13 @@ export const FDA510kService = {
      * @returns {Promise<Array>} List of device profiles
      */
     async list() {
-      const response = await apiRequest.get('/api/fda510k/device-profiles');
-      return response.data;
+      try {
+        const response = await apiRequest.get('/api/fda510k/device-profiles');
+        return response.data && response.data.data ? response.data.data : response.data;
+      } catch (error) {
+        console.error('Error retrieving device profiles:', error);
+        throw new Error(`Failed to retrieve device profiles: ${error.message || 'Unknown error'}`);
+      }
     }
   },
   /**
