@@ -115,31 +115,83 @@ router.get('/equivalence-status/:deviceId', authenticateJWT, async (req, res) =>
     }
     
     try {
-      // Perform a database lookup to check if the device actually exists and
+      // Perform real database queries to check if the device exists and
       // has the required data available for the equivalence analysis step
       // This is a critical check for workflow transition stability
       
-      // In production, this would query the database
-      // For now, we'll simulate that check with a conditional based on deviceId format
-      const deviceExists = deviceId && (deviceId.startsWith('DEV-') || deviceId.length > 5);
+      // Use the database pool for these queries
+      const { Pool } = require('pg');
+      const pool = new Pool({
+        connectionString: process.env.DATABASE_URL
+      });
+      
+      // Log the database check 
+      logger.info(`[Equivalence Status] Checking device ${deviceId} in database`);
+      
+      // First check if the device exists
+      const deviceResult = await pool.query(
+        'SELECT id, device_name, manufacturer, device_class FROM device_profiles WHERE id = $1',
+        [deviceId]
+      );
+      
+      const deviceExists = deviceResult.rows.length > 0;
+      
+      // If device exists, check if it has predicate data
+      let hasRequiredData = false;
+      let predicateDataStatus = 'missing';
+      
+      if (deviceExists) {
+        const predicateResult = await pool.query(
+          'SELECT COUNT(*) FROM predicate_selections WHERE device_id = $1',
+          [deviceId]
+        );
+        
+        hasRequiredData = parseInt(predicateResult.rows[0].count) > 0;
+        predicateDataStatus = hasRequiredData ? 'available' : 'missing';
+        
+        logger.info(`[Equivalence Status] Device ${deviceId} exists in DB, predicate data: ${predicateDataStatus}`);
+      } else {
+        logger.warn(`[Equivalence Status] Device ${deviceId} not found in database`);
+      }
       
       if (!deviceExists) {
         logger.warn(`Equivalence status check failed - device not found: ${deviceId}`);
         return res.status(404).json({
           deviceId: deviceId,
           status: 'not_found',
-          message: 'Device not found or data not available for equivalence analysis',
+          message: 'Device not found in database',
           timestamp: new Date().toISOString(),
           apiStatus: 'operational',
           canProceed: false
         });
       }
+
+      // Device exists but may not have predicate data
+      if (!hasRequiredData) {
+        logger.warn(`Equivalence status check failed - missing predicate data for device: ${deviceId}`);
+        return res.json({
+          deviceId: deviceId,
+          status: 'missing_data',
+          message: 'Device found but missing required predicate data for equivalence analysis',
+          deviceName: deviceResult.rows[0].device_name,
+          manufacturer: deviceResult.rows[0].manufacturer,
+          deviceClass: deviceResult.rows[0].device_class,
+          timestamp: new Date().toISOString(),
+          apiStatus: 'operational',
+          canProceed: false,
+          requiredAction: 'Select at least one predicate device before proceeding to equivalence analysis'
+        });
+      }
       
-      // Device exists and has required data
+      // Device exists and has required predicate data
+      logger.info(`Equivalence status check passed for device: ${deviceId}`);
       return res.json({
         deviceId: deviceId,
         status: 'ready',
         message: 'Equivalence analysis is ready to start',
+        deviceName: deviceResult.rows[0].device_name,
+        manufacturer: deviceResult.rows[0].manufacturer,
+        deviceClass: deviceResult.rows[0].device_class,
         timestamp: new Date().toISOString(),
         apiStatus: 'operational',
         canProceed: true
@@ -540,15 +592,38 @@ router.get('/workflow-transition/:fromStep/:toStep', authenticateJWT, async (req
         // Enhanced logging for debugging this critical transition
         logger.info(`Critical transition check: ${fromStep} → ${toStep} for device ${deviceId}`);
         
-        // Simulating a database check
-        const validDevice = deviceId && deviceId.length > 3;
-        const hasPredicateData = validDevice; // In real implementation, verify this from DB
+        // Performing a comprehensive database check
+        // First verify the device exists and has required profile data
+        const { Pool } = require('pg');
+        const pool = new Pool({
+          connectionString: process.env.DATABASE_URL
+        });
         
-        // In production, we would run more thorough checks like:
-        // 1. Verify device exists in database 
-        // 2. Verify device has at least one predicate device selected
-        // 3. Verify predicate device data is complete
-        // 4. Verify user has permission for this transition
+        // Log that we're about to query the database
+        logger.info(`Querying database for device ${deviceId} validation`);
+        
+        // Get device from database
+        const deviceResult = await pool.query(
+          'SELECT id, device_name, manufacturer, device_class FROM device_profiles WHERE id = $1',
+          [deviceId]
+        );
+        
+        const validDevice = deviceResult.rows.length > 0;
+        if (!validDevice) {
+          logger.warn(`Device ${deviceId} not found in database`);
+        }
+        
+        // Check if predicate devices have been selected for this device
+        let hasPredicateData = false;
+        if (validDevice) {
+          const predicateResult = await pool.query(
+            'SELECT COUNT(*) FROM predicate_selections WHERE device_id = $1',
+            [deviceId]
+          );
+          
+          hasPredicateData = parseInt(predicateResult.rows[0].count) > 0;
+          logger.info(`Device ${deviceId} has ${predicateResult.rows[0].count} predicate devices selected`);
+        }
         
         if (!validDevice || !hasPredicateData) {
           logger.warn(`Transition blocked (${fromStep} → ${toStep}): Invalid device or missing predicate data`);

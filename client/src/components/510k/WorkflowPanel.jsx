@@ -406,13 +406,32 @@ const WorkflowPanel = ({
             setActiveTab('equivalence');
             if (typeof onStepChange === 'function') onStepChange(3);
           } else {
-            const errorMessage = checkResult.canTransition ? 
-              statusResult.message : checkResult.message;
+            // Get the most specific error message with improved error handling
+            let errorTitle = "Cannot Proceed to Equivalence"; 
+            let errorMessage = "";
+            
+            if (!statusResult.canProceed) {
+              // Status result shows specific device issues
+              errorMessage = statusResult.message;
+              
+              if (statusResult.status === 'missing_data') {
+                errorMessage = statusResult.requiredAction || statusResult.message;
+                errorTitle = `Incomplete Data: ${statusResult.deviceName || 'Device'}`;
+              } else if (statusResult.status === 'not_found') {
+                errorTitle = "Device Not Found";
+              }
+            } else if (!checkResult.canTransition) {
+              // Workflow transition issue
+              errorMessage = checkResult.message;
+            } else {
+              // Fallback error
+              errorMessage = "Unable to proceed to equivalence analysis at this time";
+            }
               
             console.warn(`[WorkflowPanel] Transition to equivalence blocked: ${errorMessage}`);
             toast({
-              title: "Cannot Proceed to Equivalence",
-              description: errorMessage || "Required predicate data is missing",
+              title: errorTitle,
+              description: errorMessage,
               variant: "destructive"
             });
           }
