@@ -469,8 +469,8 @@ const ComplianceCheckPanel = ({
       return;
     }
     
-    setIsGeneratingFixes(true);
-    setSelectedIssue(issue);
+    actualSetIsGeneratingFixes(true);
+    actualSetSelectedIssue(issue);
     setProgress(20);
     
     try {
@@ -549,7 +549,7 @@ const ComplianceCheckPanel = ({
         variant: "destructive"
       });
     } finally {
-      setIsGeneratingFixes(false);
+      actualSetIsGeneratingFixes(false);
       setProgress(100);
       
       // Reset progress after delay
@@ -660,7 +660,7 @@ const ComplianceCheckPanel = ({
         variant: "destructive"
       });
     } finally {
-      setIsGeneratingTemplate(false);
+      actualSetIsGeneratingTemplate(false);
       setProgress(100);
       
       // Reset progress after delay
