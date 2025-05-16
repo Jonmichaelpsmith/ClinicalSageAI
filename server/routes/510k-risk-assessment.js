@@ -509,8 +509,28 @@ Include sections for:
 Please provide your template in the following JSON format:
 {
   "title": "<template title>",
-  "description": "<brief description of the template purpose>",
+  "description": "<comprehensive description of this document's purpose>",
   "sections": [
+    {
+      "title": "<section title>",
+      "content": "<detailed guidance for this section>",
+      "subSections": [
+        "<subsection 1 guidance>",
+        "<subsection 2 guidance>"
+      ]
+    }
+  ],
+  "referencedStandards": [
+    "<standard 1>",
+    "<standard 2>"
+  ],
+  "fdaGuidanceDocuments": [
+    {
+      "title": "<guidance document title>",
+      "referenceNumber": "<reference number if available>"
+    }
+  ]
+}
     {
       "title": "<section title>",
       "content": "<section content description>",

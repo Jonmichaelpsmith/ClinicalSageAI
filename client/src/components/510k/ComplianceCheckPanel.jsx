@@ -268,6 +268,22 @@ const ComplianceCheckPanel = ({
       return;
     }
     
+    // Validate device profile has essential information
+    const missingFields = [];
+    if (!deviceProfile.deviceName) missingFields.push("Device Name");
+    if (!deviceProfile.manufacturerName) missingFields.push("Manufacturer Name");
+    if (!deviceProfile.deviceDescription) missingFields.push("Device Description");
+    if (!deviceProfile.indicationsForUse) missingFields.push("Indications for Use");
+    
+    if (missingFields.length > 0) {
+      toast({
+        title: "Incomplete Device Profile",
+        description: `Please complete the following fields before running a risk assessment: ${missingFields.join(", ")}`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsAssessingRisks(true);
     setProgress(25);
     
@@ -276,12 +292,44 @@ const ComplianceCheckPanel = ({
       const hasPredicates = predicateDevices && predicateDevices.length > 0;
       const hasEquivalence = equivalenceData !== null;
       
+      // Log device profile information for debugging
+      console.log('Starting risk assessment for device:', deviceProfile.deviceName);
+      console.log('Has predicates:', hasPredicates ? `Yes (${predicateDevices.length})` : 'No');
+      console.log('Has equivalence data:', hasEquivalence ? 'Yes' : 'No');
+      
+      // Check if OpenAI key is available
+      const hasOpenAiKey = process.env.OPENAI_API_KEY || (window.ENV && window.ENV.OPENAI_API_KEY);
+      if (!hasOpenAiKey) {
+        console.warn('No OpenAI API key found - submission may use a backend default key');
+      }
+      
       setProgress(40);
+      
+      // Prepare a clean version of the device profile with only necessary data
+      const cleanDeviceProfile = {
+        id: deviceProfile.id,
+        deviceName: deviceProfile.deviceName,
+        manufacturerName: deviceProfile.manufacturerName,
+        deviceDescription: deviceProfile.deviceDescription,
+        indicationsForUse: deviceProfile.indicationsForUse,
+        deviceClass: deviceProfile.deviceClass || '',
+        productCode: deviceProfile.productCode || '',
+        organizationId: deviceProfile.organizationId
+      };
+      
+      // Clean predicate devices data
+      const cleanPredicateDevices = predicateDevices?.map(predicate => ({
+        id: predicate.id,
+        deviceName: predicate.deviceName,
+        manufacturer: predicate.manufacturer,
+        kNumber: predicate.kNumber,
+        clearanceDate: predicate.clearanceDate
+      })) || [];
       
       // Call the FDA service to analyze submission risks
       const result = await FDA510kService.predictFdaSubmissionRisks(
-        deviceProfile,
-        predicateDevices,
+        cleanDeviceProfile,
+        cleanPredicateDevices,
         equivalenceData,
         {
           includeHistoricalComparisons: true,
@@ -291,22 +339,44 @@ const ComplianceCheckPanel = ({
       
       setProgress(90);
       
+      // Validate result has expected structure
+      if (!result || typeof result !== 'object') {
+        throw new Error('Invalid response from risk assessment service');
+      }
+      
+      // Handle edge cases where API might return unexpected formats
+      const validatedResult = {
+        ...result,
+        // Ensure riskFactors is always an array
+        riskFactors: Array.isArray(result.riskFactors) ? result.riskFactors : [],
+        // Ensure strengths is always an array
+        strengths: Array.isArray(result.strengths) ? result.strengths : [],
+        // Ensure recommendations is always an array
+        recommendations: Array.isArray(result.recommendations) ? result.recommendations : [],
+        // Default approval likelihood if not provided
+        approvalLikelihood: typeof result.approvalLikelihood === 'number' ? result.approvalLikelihood : 0.5,
+        // Add assessment metadata
+        assessmentDate: result.assessmentDate || new Date().toISOString(),
+        deviceName: deviceProfile.deviceName,
+        deviceId: deviceProfile.id
+      };
+      
       // Store the risk assessment data
-      setRiskAssessmentData(result);
+      setRiskAssessmentData(validatedResult);
       
       // Open the risk assessment dialog
       setShowRiskDialog(true);
       
       toast({
         title: "Risk Assessment Complete",
-        description: `Analysis identified ${result.riskFactors?.length || 0} potential risk factors.`,
+        description: `Analysis identified ${validatedResult.riskFactors?.length || 0} potential risk factors.`,
         variant: "success"
       });
     } catch (error) {
       console.error('Error running risk assessment:', error);
       toast({
         title: "Risk Assessment Failed",
-        description: "There was an error analyzing submission risks. Please try again.",
+        description: error.message || "There was an error analyzing submission risks. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -329,15 +399,61 @@ const ComplianceCheckPanel = ({
       return;
     }
     
+    // Validate issue has required properties
+    if (!issue.title || !issue.description) {
+      toast({
+        title: "Invalid Issue Details",
+        description: "The selected issue is missing required information. Please try another issue.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validate device profile has essential information for fix generation
+    if (!deviceProfile.deviceName || !deviceProfile.deviceDescription) {
+      toast({
+        title: "Incomplete Device Profile",
+        description: "Device name and description are required to generate meaningful fixes.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsGeneratingFixes(true);
     setSelectedIssue(issue);
     setProgress(20);
     
     try {
+      console.log('Generating fixes for issue:', issue.title);
+      
+      // Prepare a clean version of the device profile with only necessary data
+      const cleanDeviceProfile = {
+        id: deviceProfile.id,
+        deviceName: deviceProfile.deviceName,
+        manufacturerName: deviceProfile.manufacturerName || 'Unknown Manufacturer',
+        deviceDescription: deviceProfile.deviceDescription,
+        indicationsForUse: deviceProfile.indicationsForUse || '',
+        deviceClass: deviceProfile.deviceClass || '',
+        productCode: deviceProfile.productCode || '',
+        organizationId: deviceProfile.organizationId
+      };
+      
+      // Normalize issue format to ensure compatibility with API expectations
+      const normalizedIssue = {
+        id: issue.id || `issue-${Date.now()}`,
+        title: issue.title,
+        description: issue.description,
+        severity: issue.severity || 'medium',
+        category: issue.category || 'compliance',
+        status: issue.status || 'open'
+      };
+      
+      setProgress(40);
+      
       // Call the FDA service to generate compliance fixes
       const result = await FDA510kService.suggestFixesForComplianceIssues(
-        [issue],
-        deviceProfile,
+        [normalizedIssue],
+        cleanDeviceProfile,
         {
           deepAnalysis: true,
           includeTemplates: true
@@ -346,22 +462,40 @@ const ComplianceCheckPanel = ({
       
       setProgress(80);
       
+      // Validate result has expected structure
+      if (!result || typeof result !== 'object') {
+        throw new Error('Invalid response from fix suggestion service');
+      }
+      
+      // Handle edge cases where API might return unexpected formats
+      const validatedResult = {
+        ...result,
+        // Ensure fixes is always an array
+        fixes: Array.isArray(result.fixes) ? result.fixes : [],
+        // Add metadata
+        deviceName: deviceProfile.deviceName,
+        deviceId: deviceProfile.id,
+        generatedAt: result.generatedAt || new Date().toISOString(),
+        issueTitle: normalizedIssue.title,
+        issueSeverity: normalizedIssue.severity
+      };
+      
       // Store the generated fixes
-      setComplianceFixes(result);
+      setComplianceFixes(validatedResult);
       
       // Open the fixes dialog
       setShowFixesDialog(true);
       
       toast({
         title: "Fix Suggestions Generated",
-        description: `Generated ${result.fixes?.length || 0} potential fixes for "${issue.title}".`,
+        description: `Generated ${validatedResult.fixes?.length || 0} potential fixes for "${issue.title}".`,
         variant: "success"
       });
     } catch (error) {
       console.error('Error generating compliance fixes:', error);
       toast({
         title: "Fix Generation Failed",
-        description: "There was an error generating compliance fixes. Please try again.",
+        description: error.message || "There was an error generating compliance fixes. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -375,6 +509,17 @@ const ComplianceCheckPanel = ({
   
   // Generate documentation template based on type
   const generateDocumentationTemplate = async (templateType) => {
+    // Validate template type
+    const validTemplateTypes = ['software', 'biocompatibility', 'electrical-safety', 'clinical', 'labeling'];
+    if (!validTemplateTypes.includes(templateType)) {
+      toast({
+        title: "Invalid Template Type",
+        description: `The specified template type (${templateType}) is not supported.`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     if (!deviceProfile?.id) {
       toast({
         title: "Missing Device Profile",
@@ -384,10 +529,26 @@ const ComplianceCheckPanel = ({
       return;
     }
     
+    // Validate device profile has essential information for template generation
+    const missingFields = [];
+    if (!deviceProfile.deviceName) missingFields.push("Device Name");
+    if (!deviceProfile.deviceDescription) missingFields.push("Device Description");
+    
+    if (missingFields.length > 0) {
+      toast({
+        title: "Incomplete Device Profile",
+        description: `Please complete the following fields before generating a template: ${missingFields.join(", ")}`,
+        variant: "destructive"
+      });
+      return;
+    }
+    
     setIsGeneratingTemplate(true);
     setProgress(25);
     
     try {
+      console.log(`Generating ${templateType} documentation template for device: ${deviceProfile.deviceName}`);
+      
       // Call the appropriate FDA service to generate template
       let result;
       
@@ -396,13 +557,42 @@ const ComplianceCheckPanel = ({
       } else if (templateType === 'biocompatibility') {
         result = await FDA510kService.generateBiocompatibilityTemplate(deviceProfile.id);
       } else {
-        throw new Error(`Unknown template type: ${templateType}`);
+        // For other template types, use a generic approach that calls the same endpoint
+        // but with the specific template type as a parameter
+        
+        // This would require a server-side implementation that accepts a templateType parameter
+        // Example of how this would work if the backend supported it:
+        // result = await FDA510kService.generateDocumentationTemplate(templateType, deviceProfile.id);
+        
+        // For now, default to unsupported template type error
+        throw new Error(`Template type ${templateType} generation not implemented yet. Please choose software or biocompatibility.`);
       }
       
       setProgress(75);
       
+      // Validate result has expected structure
+      if (!result || !result.templateData || typeof result.templateData !== 'object') {
+        throw new Error('Invalid response from template generation service');
+      }
+      
+      // Process the template data for consistent structure
+      const processedTemplateData = {
+        ...result.templateData,
+        // Ensure title is present
+        title: result.templateData.title || `${templateType.charAt(0).toUpperCase() + templateType.slice(1)} Documentation`,
+        // Ensure description is present
+        description: result.templateData.description || `FDA-compliant ${templateType} documentation template for 510(k) submission`,
+        // Ensure sections is always an array
+        sections: Array.isArray(result.templateData.sections) ? result.templateData.sections : [],
+        // Add metadata
+        templateType: templateType,
+        deviceName: deviceProfile.deviceName,
+        deviceId: deviceProfile.id,
+        generatedAt: result.templateData.generatedAt || new Date().toISOString()
+      };
+      
       // Store the template data
-      setTemplateData(result.templateData);
+      setTemplateData(processedTemplateData);
       
       // Open the template dialog
       setShowTemplateDialog(true);
@@ -416,7 +606,7 @@ const ComplianceCheckPanel = ({
       console.error('Error generating documentation template:', error);
       toast({
         title: "Template Generation Failed",
-        description: "There was an error generating the documentation template. Please try again.",
+        description: error.message || "There was an error generating the documentation template. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -430,44 +620,116 @@ const ComplianceCheckPanel = ({
   
   // Save risk assessment to Document Vault
   const saveRiskAssessment = async () => {
-    if (!riskAssessmentData || !deviceProfile?.folderStructure?.complianceFolderId) {
+    // Validate risk assessment data exists
+    if (!riskAssessmentData) {
       toast({
-        title: "Cannot Save Assessment",
-        description: "No assessment data available or Document Vault integration is missing.",
+        title: "No Assessment Data",
+        description: "Please run a risk assessment before attempting to save it.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validate folder structure exists
+    if (!deviceProfile?.folderStructure?.complianceFolderId) {
+      toast({
+        title: "Document Vault Not Available",
+        description: "This device profile is not configured with Document Vault integration. Please contact your administrator.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validate folder ID is in the correct format (basic validation)
+    const folderId = deviceProfile.folderStructure.complianceFolderId;
+    if (!folderId || typeof folderId !== 'string' || folderId.trim() === '') {
+      toast({
+        title: "Invalid Folder ID",
+        description: "The compliance folder ID is invalid. Please check your device profile configuration.",
         variant: "destructive"
       });
       return;
     }
     
     setIsCheckingSaves(true);
-    setProgress(30);
+    setProgress(20);
     
     try {
-      const reportData = {
-        ...riskAssessmentData,
-        deviceProfile: deviceProfile,
+      console.log('Saving risk assessment to Document Vault for device:', deviceProfile.deviceName);
+      
+      // Create a clean version of the assessment data for storage
+      // Remove any unnecessary or redundant fields to optimize storage
+      const cleanAssessment = {
+        // Core risk assessment data
+        approvalLikelihood: riskAssessmentData.approvalLikelihood,
+        riskFactors: riskAssessmentData.riskFactors || [],
+        strengths: riskAssessmentData.strengths || [],
+        recommendations: riskAssessmentData.recommendations || [],
+        
+        // Add critical device metadata but remove any overly large objects
+        deviceProfile: {
+          id: deviceProfile.id,
+          deviceName: deviceProfile.deviceName,
+          manufacturerName: deviceProfile.manufacturerName,
+          deviceClass: deviceProfile.deviceClass,
+          productCode: deviceProfile.productCode
+        },
+        
+        // Add custom metadata for retrieval
         generatedAt: new Date().toISOString(),
-        status: riskAssessmentData.approvalLikelihood >= 0.75 ? 'favorable' : 'needs_improvement'
+        savedAt: new Date().toISOString(),
+        status: riskAssessmentData.approvalLikelihood >= 0.75 ? 'favorable' : 'needs_improvement',
+        version: '1.0',
+        assessmentType: 'fda-510k-risk',
+        predicateCount: predicateDevices?.length || 0,
+        hasLiteratureEvidence: equivalenceData?.literatureEvidence && 
+          Object.keys(equivalenceData.literatureEvidence).length > 0
       };
       
+      setProgress(40);
+      
       // Create JSON blob for upload
-      const jsonBlob = new Blob([JSON.stringify(reportData, null, 2)], {
+      const jsonBlob = new Blob([JSON.stringify(cleanAssessment, null, 2)], {
         type: 'application/json'
       });
       
+      // Create a timestamped filename for better organization
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `risk-assessment-${deviceProfile.deviceName.replace(/\s+/g, '-')}-${timestamp}.json`;
+      
       // Create file object for upload
-      const jsonFile = new File([jsonBlob], 'risk-assessment-report.json', {
+      const jsonFile = new File([jsonBlob], filename, {
         type: 'application/json'
       });
       
       setProgress(60);
       
-      // Upload to Document Vault
-      await FDA510kService.saveComplianceReport(
-        deviceProfile.folderStructure.complianceFolderId,
-        jsonFile,
-        deviceProfile.id
-      );
+      // Upload to Document Vault with retry logic
+      let retryCount = 0;
+      const maxRetries = 2;
+      let uploadSuccess = false;
+      
+      while (!uploadSuccess && retryCount <= maxRetries) {
+        try {
+          await FDA510kService.saveComplianceReport(
+            folderId,
+            jsonFile,
+            deviceProfile.id
+          );
+          uploadSuccess = true;
+        } catch (uploadError) {
+          console.warn(`Upload attempt ${retryCount + 1} failed:`, uploadError);
+          
+          if (retryCount < maxRetries) {
+            // Wait briefly before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            retryCount++;
+          } else {
+            // Re-throw the error if all retries failed
+            throw uploadError;
+          }
+        }
+      }
       
       setProgress(100);
       
@@ -478,9 +740,19 @@ const ComplianceCheckPanel = ({
       });
     } catch (error) {
       console.error('Error saving risk assessment:', error);
+      
+      // Provide more specific error messages based on the error type
+      const errorMessage = error.response?.status === 403 ? 
+        "You don't have permission to save to this folder." :
+        error.response?.status === 404 ?
+        "The compliance folder could not be found." :
+        error.response?.status === 413 ?
+        "The risk assessment file is too large." :
+        error.message || "There was an error saving the risk assessment.";
+      
       toast({
         title: "Save Failed",
-        description: "There was an error saving the risk assessment.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
