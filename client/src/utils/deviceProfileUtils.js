@@ -1,10 +1,9 @@
 /**
  * Returns the default structure for a device profile.
- * This ensures consistency across the application.
  */
 export const getDefaultDeviceProfileStructure = () => ({
   documentType: '510k',
-  sections: ['device-info', 'predicates', 'compliance'], // Standard sections
+  sections: ['device-info', 'predicates', 'compliance'],
   version: '1.0'
 });
 
@@ -28,7 +27,6 @@ export const createNewDeviceProfile = (initialProps = {}) => {
   const defaultStructure = getDefaultDeviceProfileStructure();
   const defaultMetadata = getDefaultDeviceProfileMetadata();
 
-  // Base profile with all required fields, including structure and metadata
   const baseProfile = {
     id: `device-${Date.now()}`,
     deviceName: 'Sample Medical Device',
@@ -38,14 +36,16 @@ export const createNewDeviceProfile = (initialProps = {}) => {
     intendedUse: 'For diagnostic use in clinical settings',
     description: 'A medical device designed for diagnostic procedures',
     technicalSpecifications: 'Meets ISO 13485 standards',
-    regulatoryClass: 'Class II', // From your attempted fix
+    regulatoryClass: 'Class II',
     status: 'active',
-    structure: { ...defaultStructure }, // Ensure a copy, not a reference
-    metadata: { ...defaultMetadata },   // Ensure a copy
-    ...initialProps, // Apply overrides
+    // Ensure deep copies for structure and metadata
+    structure: { ...defaultStructure },
+    metadata: { ...defaultMetadata },
+    ...initialProps, // Apply overrides from initialProps
   };
 
   // If initialProps includes partial structure or metadata, merge them carefully
+  // ensuring not to just overwrite but to merge with defaults.
   if (initialProps.structure) {
     baseProfile.structure = { ...defaultStructure, ...initialProps.structure };
   }
@@ -53,6 +53,11 @@ export const createNewDeviceProfile = (initialProps = {}) => {
     baseProfile.metadata = { ...defaultMetadata, ...initialProps.metadata };
   }
   
+  // Ensure ID is correctly handled if passed in initialProps
+  if (initialProps.id) {
+    baseProfile.id = initialProps.id;
+  }
+
   return baseProfile;
 };
 
@@ -60,50 +65,73 @@ export const createNewDeviceProfile = (initialProps = {}) => {
  * Ensures an existing profile has the necessary structure and metadata.
  * Useful for migrating profiles loaded from localStorage or other sources.
  * @param {Object} profile - The device profile to check and migrate.
- * @returns {Object} The migrated device profile.
+ * @returns {Object} The migrated device profile, or a new profile if input is null/undefined.
  */
 export const ensureProfileIntegrity = (profile) => {
-  if (!profile) return createNewDeviceProfile(); // Should not happen if called with a profile
+  if (!profile || typeof profile !== 'object') {
+    console.warn("ensureProfileIntegrity received invalid profile, creating new one.");
+    return createNewDeviceProfile();
+  }
 
   let needsUpdate = false;
   const now = new Date().toISOString();
+  
+  // Create a copy to avoid mutating the original object directly if it's from state
+  const newProfile = { ...profile };
 
   // Ensure ID
-  if (!profile.id) {
-    profile.id = `device-${Date.now()}`;
+  if (!newProfile.id) {
+    newProfile.id = `device-${Date.now()}`;
     needsUpdate = true;
+    console.log(`Profile Integrity: Added ID ${newProfile.id}`);
   }
 
-  // Ensure structure
-  if (!profile.structure || typeof profile.structure.documentType !== 'string') {
-    profile.structure = { ...getDefaultDeviceProfileStructure(), ...(profile.structure || {}) };
+  // Ensure structure - merge with defaults to be safe
+  const defaultStructure = getDefaultDeviceProfileStructure();
+  if (!newProfile.structure || typeof newProfile.structure !== 'object' || !newProfile.structure.documentType) {
+    newProfile.structure = { ...defaultStructure, ...(newProfile.structure || {}) };
     needsUpdate = true;
-    console.log(`Profile Migration: Updated structure for profile ID ${profile.id}`);
-  }
-
-  // Ensure metadata
-  if (!profile.metadata || typeof profile.metadata.createdAt !== 'string') {
-    profile.metadata = {
-      createdAt: profile.metadata?.createdAt || now, // Preserve original if exists
-      lastUpdated: now,
-      ...(profile.metadata || {}),
-    };
-    needsUpdate = true;
-    console.log(`Profile Migration: Updated metadata for profile ID ${profile.id}`);
+    console.log(`Profile Integrity: Rebuilt/Ensured structure for profile ID ${newProfile.id}`, newProfile.structure);
   } else {
-    profile.metadata.lastUpdated = now; // Always update lastUpdated
+    // Ensure all default keys are present in structure
+    for (const key in defaultStructure) {
+        if (!(key in newProfile.structure)) {
+            newProfile.structure[key] = defaultStructure[key];
+            needsUpdate = true;
+            console.log(`Profile Integrity: Added missing key '${key}' to structure for profile ID ${newProfile.id}`);
+        }
+    }
+  }
+
+
+  // Ensure metadata - merge with defaults and update lastUpdated
+  const defaultMetadata = getDefaultDeviceProfileMetadata();
+  if (!newProfile.metadata || typeof newProfile.metadata !== 'object' || !newProfile.metadata.createdAt) {
+    newProfile.metadata = { 
+        createdAt: newProfile.metadata?.createdAt || defaultMetadata.createdAt, 
+        ...(newProfile.metadata || {}), // spread existing metadata to keep other custom fields
+        lastUpdated: now, // always set/update this
+    };
+    // Ensure createdAt is present after merge
+    if(!newProfile.metadata.createdAt) newProfile.metadata.createdAt = defaultMetadata.createdAt;
+
+    needsUpdate = true;
+    console.log(`Profile Integrity: Rebuilt/Ensured metadata for profile ID ${newProfile.id}`, newProfile.metadata);
+  } else {
+    newProfile.metadata.lastUpdated = now; // Always update lastUpdated timestamp
   }
 
 
   // Ensure status
-  if (!profile.status) {
-    profile.status = 'active';
+  if (!newProfile.status) {
+    newProfile.status = 'active';
     needsUpdate = true;
+    console.log(`Profile Integrity: Set status to 'active' for profile ID ${newProfile.id}`);
   }
 
   if (needsUpdate) {
-    console.log("Profile was updated for integrity:", profile);
+    console.log("Profile was updated for integrity. Final ensured profile:", newProfile);
   }
 
-  return profile;
+  return newProfile;
 };
