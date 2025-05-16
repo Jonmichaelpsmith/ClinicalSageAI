@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ShieldAlert, RefreshCw } from 'lucide-react';
 import { initializeStates, saveState, loadState, recoverWorkflow, getWorkflowDiagnostics } from '../utils/stabilityPatches';
 import WorkflowContinuityManager from '../components/recovery/WorkflowContinuityManager';
+import DeviceProfileSelector from '../components/510k/DeviceProfileSelector';
 
 // Function to safely open documents and prevent redirection issues
 const openDocumentSafely = (url, documentName, showToast) => {
@@ -341,70 +342,36 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // Using our new utilities for robust device profile creation and validation with pre-filled data
   const [deviceProfile, setDeviceProfile] = useState(() => {
     console.log("CERV2Page: Initializing deviceProfile state...");
-    // Create a complete pre-filled profile to skip data intake steps
-    const completeProfile = createNewDeviceProfile({
-      id: k510DocumentId,
-      deviceName: "CardioMonitor 2000",
-      manufacturer: "MedTech Innovations",
-      intendedUse: "Continuous monitoring of cardiac rhythm and vital signs in clinical settings",
-      deviceType: "Class II Medical Device",
-      regulatoryClass: "II",
-      productCode: "DRT",
-      submissionType: "Traditional",
-      reviewPanel: "Cardiovascular",
-      indications: "For use in hospitals, clinics, and ambulatory care settings to monitor cardiac rhythm and vital signs in patients of all ages with suspected cardiac abnormalities.",
-      contraindications: "Not intended for home use without medical supervision. Not MRI compatible.",
-      classification: {
-        riskLevel: "Moderate",
-        deviceClass: "II",
-        regulatoryPathway: "510(k)",
-        productCodeName: "Monitor, Physiological, Patient (with arrhythmia detection)",
-        regulationNumber: "870.2300"
-      },
-      technicalSpecifications: {
-        dimensions: "10.5 x 8.2 x 3.1 inches",
-        weight: "2.4 lbs",
-        powerSource: "Rechargeable lithium-ion battery and AC power",
-        batteryLife: "12 hours",
-        display: "7-inch color touchscreen, 1280x720 resolution",
-        connectivity: "Bluetooth 5.0, Wi-Fi, USB-C, Ethernet",
-        sensors: "ECG (12-lead), SpO2, NIBP, temperature, respiration",
-        dataStorage: "72 hours of continuous recording, expandable via USB storage",
-        alarmSystems: "Visual and audible with customizable thresholds"
-      },
-      predicate: {
-        deviceName: "Previous generation device - CardioMonitor 1500",
-        manufacturer: "MedTech Innovations",
-        k510Number: "K123456",
-        clearanceDate: "2022-05-15"
-      },
-      clinicalInvestigations: {
-        studies: [
-          {
-            title: "Clinical Validation of CardioMonitor 2000",
-            participants: 120,
-            duration: "6 months",
-            outcomes: "95.7% sensitivity, 98.2% specificity for arrhythmia detection"
-          }
-        ]
-      },
-      qualitySystem: {
-        iso13485Certified: true,
-        qsrCompliant: true,
-        riskManagementProcesses: "ISO 14971:2019 compliant"
-      }
-    });
     
-    // Save this complete profile to localStorage for persistence
-    saveState('deviceProfile', completeProfile);
+    // Check if a profile already exists in localStorage
+    const savedProfile = loadSavedState('deviceProfile', null);
+    if (savedProfile) {
+      console.log('CERV2Page: Loaded device profile from localStorage:', savedProfile);
+      return ensureProfileIntegrity(savedProfile);
+    }
+    
+    // If no saved profile, return null to show the profile selector
+    return null;
+  });
+  
+  // State for device profile selector
+  const [showProfileSelector, setShowProfileSelector] = useState(!deviceProfile);
+  
+  // Handle device profile selection from the selector
+  const handleProfileSelect = (selectedProfile) => {
+    console.log('CERV2Page: Selected device profile:', selectedProfile);
+    
+    // Save the selected profile to localStorage
+    saveState('deviceProfile', selectedProfile);
     saveState('isPredicateStepCompleted', true);
     saveState('predicatesFound', true);
     saveState('workflowStep', 2);
     saveState('workflowProgress', 30);
     
-    console.log('CERV2Page: Created new pre-filled profile:', completeProfile);
-    return completeProfile;
-  });
+    // Update state
+    setDeviceProfile(selectedProfile);
+    setShowProfileSelector(false);
+  };
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
   const [exportTimestamp, setExportTimestamp] = useState(null);
