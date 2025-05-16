@@ -358,7 +358,8 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // State for device profile selector
   const [showProfileSelector, setShowProfileSelector] = useState(!deviceProfile);
   
-  // Handle device profile selection from the selector
+  // Handle device profile selection from the selector 
+  // Updated with proper state handling and user feedback
   const handleProfileSelect = (selectedProfile) => {
     console.log('CERV2Page: Selected device profile:', selectedProfile);
     
@@ -371,7 +372,16 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     
     // Update state
     setDeviceProfile(selectedProfile);
+    setDeviceName(selectedProfile.deviceName || '');
+    setManufacturer(selectedProfile.manufacturer || '');
+    setIntendedUse(selectedProfile.intendedUse || '');
     setShowProfileSelector(false);
+    
+    toast({
+      title: "Device Profile Selected",
+      description: `${selectedProfile.deviceName} profile has been loaded successfully.`,
+      variant: "success",
+    });
   };
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
