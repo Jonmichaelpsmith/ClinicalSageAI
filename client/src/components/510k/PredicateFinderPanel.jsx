@@ -127,7 +127,7 @@ const PredicateFinderPanel = ({
     });
   };
   
-  // Save device profile
+  // Save device profile with enhanced persistence
   const saveDeviceProfile = () => {
     // Validate required fields
     if (!formData.deviceName || !formData.manufacturer || !formData.intendedUse) {
@@ -139,13 +139,23 @@ const PredicateFinderPanel = ({
       return;
     }
     
-    // Update device profile state
+    // Update device profile state with enhanced persistence
     const updatedProfile = {
       ...deviceProfile,
       ...formData,
       id: documentId || deviceProfile?.id || `device-${Date.now()}`,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      // Preserve any previously selected predicates
+      predicateDevices: deviceProfile?.predicateDevices || selectedPredicates || []
     };
+    
+    // Save to localStorage for persistence across page reloads or workflow transitions
+    try {
+      localStorage.setItem('510k_deviceProfile', JSON.stringify(updatedProfile));
+      console.log('Device profile saved to localStorage for workflow persistence');
+    } catch (error) {
+      console.error('Failed to save device profile to localStorage:', error);
+    }
     
     // Call the parent update function
     setDeviceProfile(updatedProfile);
@@ -361,7 +371,7 @@ const PredicateFinderPanel = ({
     }
   };
   
-  // Complete the predicate selection and move to next step
+  // Complete the predicate selection and move to next step with enhanced persistence
   const completePredicateSelection = async () => {
     if (selectedPredicates.length === 0) {
       toast({
@@ -376,12 +386,36 @@ const PredicateFinderPanel = ({
     setIsSearching(true);
     
     try {
+      // First, update the device profile with selected predicates to ensure persistence
+      const updatedDeviceProfile = {
+        ...deviceProfile,
+        predicateDevices: selectedPredicates,
+        selectedLiterature: selectedLiterature.length > 0 ? selectedLiterature : literatureResults.slice(0, 3), // Include top literature if none selected
+        lastUpdated: new Date().toISOString(),
+        completedSteps: {
+          ...(deviceProfile?.completedSteps || {}),
+          predicateSelection: true
+        }
+      };
+      
+      // Save updated profile to localStorage for persistence across page reloads or workflow transitions
+      try {
+        localStorage.setItem('510k_deviceProfile', JSON.stringify(updatedDeviceProfile));
+        localStorage.setItem('510k_selectedPredicates', JSON.stringify(selectedPredicates));
+        localStorage.setItem('510k_selectedLiterature', JSON.stringify(selectedLiterature.length > 0 ? 
+          selectedLiterature : literatureResults.slice(0, 3)));
+        console.log('Predicate selection saved to localStorage for workflow persistence');
+      } catch (storageError) {
+        console.error('Failed to save predicate selection to localStorage:', storageError);
+      }
+      
       // If we have Document Vault integration, save the selected predicates
       if (deviceProfile?.folderStructure?.predicatesFolderId) {
-        // Create data object with selected predicates
+        // Create data object with selected predicates and literature
         const predicateSelectionData = {
           selectedPredicates,
-          deviceProfile,
+          selectedLiterature: selectedLiterature.length > 0 ? selectedLiterature : literatureResults.slice(0, 3),
+          deviceProfile: updatedDeviceProfile,
           selectionDate: new Date().toISOString(),
           selectionRationale: "Selected by user for 510(k) substantial equivalence comparison"
         };
@@ -406,20 +440,29 @@ const PredicateFinderPanel = ({
         console.log('Selected predicates saved to Document Vault successfully');
       }
       
+      // Update parent component with the updated device profile
+      if (setDeviceProfile) {
+        setDeviceProfile(updatedDeviceProfile);
+      }
+      
       // Call the parent component's callback to move to the next step
       if (onPredicatesFound) {
         // Create enhanced predicates with device profile context
         const enhancedPredicates = selectedPredicates.map(predicate => ({
           ...predicate,
           comparisonWithSubject: {
-            subjectDevice: deviceProfile,
+            subjectDevice: updatedDeviceProfile,
             predicateDevice: predicate,
             comparisonInitiated: new Date().toISOString()
           }
         }));
         
         // Pass both the enhanced predicates and literature results to the parent component
-        onPredicatesFound(enhancedPredicates, literatureResults);
+        const literatureToPass = selectedLiterature.length > 0 ? 
+          selectedLiterature : literatureResults.slice(0, 3);
+          
+        console.log(`Passing ${enhancedPredicates.length} predicates and ${literatureToPass.length} literature items to parent component`);
+        onPredicatesFound(enhancedPredicates, literatureToPass);
       }
       
       toast({
@@ -438,7 +481,9 @@ const PredicateFinderPanel = ({
       // Still call the parent callback to continue the workflow
       if (onPredicatesFound) {
         // Also pass literature results along with predicate devices
-        onPredicatesFound(selectedPredicates, literatureResults);
+        const literatureToPass = selectedLiterature.length > 0 ? 
+          selectedLiterature : literatureResults.slice(0, 3);
+        onPredicatesFound(selectedPredicates, literatureToPass);
       }
     } finally {
       setIsSearching(false);
