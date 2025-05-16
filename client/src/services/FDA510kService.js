@@ -1477,6 +1477,389 @@ export const FDA510kService = {
         message: error.message || 'An error occurred during eSTAR integration'
       };
     }
+  },
+  
+  /**
+   * Predict FDA submission risks with OpenAI analysis
+   * 
+   * This method uses OpenAI's GPT-4o to analyze the medical device details,
+   * predicate devices, and supporting evidence to predict FDA submission risks
+   * and approval likelihood. It provides detailed analysis for regulatory planning.
+   * 
+   * @param {Object} deviceProfile - Device information
+   * @param {Array} predicateDevices - List of predicate devices (optional)
+   * @param {Object} equivalenceData - Substantial equivalence data (optional)
+   * @param {Object} options - Additional analysis options
+   * @returns {Promise<Object>} Detailed risk assessment results
+   */
+  async predictFdaSubmissionRisks(deviceProfile, predicateDevices = [], equivalenceData = null, options = {}) {
+    try {
+      console.log('[FDA510kService] Analyzing submission risks with advanced AI techniques');
+      
+      const hasLiteratureEvidence = equivalenceData && 
+        equivalenceData.literatureEvidence && 
+        Object.keys(equivalenceData.literatureEvidence).length > 0;
+      
+      // Extract key device information for AI analysis
+      const deviceInfo = {
+        name: deviceProfile?.deviceName || deviceProfile?.device_name || 'Unknown Device',
+        classification: deviceProfile?.deviceClass || deviceProfile?.classification || 'Unknown',
+        description: deviceProfile?.deviceDescription || deviceProfile?.description || '',
+        indications: deviceProfile?.indications || [],
+        deviceType: deviceProfile?.deviceType || deviceProfile?.type || 'Unknown',
+        mechanism: deviceProfile?.mechanism || deviceProfile?.operatingPrinciple || '',
+        materials: deviceProfile?.materials || [],
+        sterility: deviceProfile?.sterile || false,
+        singleUse: deviceProfile?.singleUse || false,
+        softwareComponents: deviceProfile?.hasSoftware || false
+      };
+      
+      // Extract predicate device information
+      const predicateInfo = predicateDevices
+        .filter(p => p)
+        .map(pred => ({
+          name: pred.deviceName || pred.predicateName || 'Unknown Predicate',
+          k510Number: pred.k510Number || pred.kNumber || '',
+          classification: pred.deviceClass || pred.classification || 'Unknown',
+          clearanceDate: pred.clearanceDate || pred.date || '',
+          indications: pred.indications || []
+        }));
+      
+      // Extract literature evidence information
+      const literatureInfo = hasLiteratureEvidence 
+        ? Object.entries(equivalenceData.literatureEvidence).map(([feature, papers]) => ({
+            feature,
+            papers: papers.map(paper => ({
+              title: paper.title || '',
+              authors: paper.authors || [],
+              journal: paper.journal || '',
+              year: paper.year || '',
+              conclusion: paper.conclusion || ''
+            }))
+          }))
+        : [];
+      
+      // Build comprehensive risk assessment request
+      const requestData = {
+        deviceProfile: deviceInfo,
+        predicateDevices: predicateInfo,
+        literatureEvidence: literatureInfo,
+        equivalenceData: equivalenceData ? {
+          substantial: equivalenceData.substantialEquivalence || false,
+          differenceTypes: equivalenceData.differenceTypes || [],
+          differenceImpact: equivalenceData.differenceImpact || 'Unknown'
+        } : null,
+        options: {
+          ...options,
+          includeHistoricalAnalysis: true,
+          includeSimilarDeviceOutcomes: true,
+          deepComplianceCheck: true,
+          literatureEvidenceStrength: hasLiteratureEvidence ? 'analyzed' : 'none'
+        }
+      };
+      
+      // Call AI-enhanced risk assessment service
+      console.log('[FDA510kService] Sending data to AI risk assessment system');
+      
+      // Use the server-side OpenAI integration
+      const response = await apiRequest.post('/api/510k/predict-risks', requestData);
+      
+      // Return the enhanced response with metadata
+      const enhancedResponse = {
+        ...response.data,
+        assessmentDate: new Date().toISOString(),
+        deviceName: deviceInfo.name,
+        hasLiteratureEvidence,
+        evidenceCount: hasLiteratureEvidence ? 
+          Object.values(equivalenceData.literatureEvidence).reduce((sum, papers) => sum + papers.length, 0) : 0
+      };
+      
+      return enhancedResponse;
+    } catch (error) {
+      console.error('[FDA510kService] Error predicting FDA submission risks:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Generate AI-powered suggestions to fix compliance issues
+   * 
+   * This uses advanced AI to analyze specific compliance issues and 
+   * generate actionable recommendations to address them
+   * 
+   * @param {Array} complianceIssues - List of compliance issues to fix
+   * @param {Object} deviceProfile - Device profile information
+   * @param {Object} options - Additional options for fix generation
+   * @returns {Promise<Object>} Fixes for each compliance issue
+   */
+  async suggestFixesForComplianceIssues(complianceIssues, deviceProfile, options = {}) {
+    try {
+      console.log('[FDA510kService] Generating AI-powered fixes for compliance issues:', complianceIssues.length);
+      
+      // Map issues to summarized format for API request
+      const issueRequests = complianceIssues.map(issue => ({
+        id: issue.id || `issue-${Math.random().toString(36).substring(2, 9)}`,
+        category: issue.category || 'documentation',
+        title: issue.title || issue.name || 'Compliance Issue',
+        description: issue.description || '',
+        severity: issue.severity || 'medium'
+      }));
+      
+      // Get device summary information
+      const deviceSummary = {
+        name: deviceProfile?.deviceName || deviceProfile?.device_name || 'Unknown Device',
+        classification: deviceProfile?.deviceClass || deviceProfile?.classification || 'Unknown',
+        description: deviceProfile?.deviceDescription || deviceProfile?.description || '',
+        type: deviceProfile?.deviceType || deviceProfile?.type || 'Unknown',
+        hasImplantComponent: deviceProfile?.implantable || false,
+        hasSoftwareComponent: deviceProfile?.hasSoftware || false
+      };
+      
+      // Use server-side generation
+      const response = await apiRequest.post('/api/510k/compliance-fixes', {
+        issues: issueRequests,
+        deviceProfile: deviceSummary,
+        options: options
+      });
+      
+      // Process and enrich server response
+      const fixesData = response.data;
+      console.log('[FDA510kService] Received AI-generated fixes:', fixesData);
+      
+      // Enhance with metadata
+      return {
+        ...fixesData,
+        generatedAt: new Date().toISOString(),
+        deviceName: deviceSummary.name,
+        generatedBy: 'AI Regulatory Assistant',
+        fixCount: fixesData.fixes?.length || 0
+      };
+    } catch (error) {
+      console.error('[FDA510kService] Error generating fixes for compliance issues:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Generate software documentation template for medical devices with software components
+   * 
+   * This creates a comprehensive FDA-compliant software documentation template with sections for
+   * software description, development lifecycle, validation procedures, and cybersecurity.
+   * 
+   * @param {string} deviceId - Device ID to associate with the documentation
+   * @returns {Promise<Object>} Result of template generation
+   */
+  async generateSoftwareDocumentationTemplate(deviceId) {
+    try {
+      console.log('[FDA510kService] Generating software documentation template for device', deviceId);
+      
+      // Get the device profile to personalize the template
+      const deviceProfile = await this.getDeviceProfileById(deviceId);
+      if (!deviceProfile) {
+        throw new Error('Device profile not found');
+      }
+      
+      const templateData = {
+        title: `Software Documentation for ${deviceProfile.deviceName || 'Medical Device'}`,
+        generatedAt: new Date().toISOString(),
+        deviceId: deviceId,
+        sections: [
+          {
+            title: 'Software Description',
+            content: 'Provide a comprehensive description of the software, including its purpose, functions, user interface, and architecture.',
+            subSections: [
+              'Software Purpose and Function',
+              'Software Architecture',
+              'User Interface',
+              'Operating Environment',
+              'Programming Language and Development Tools'
+            ]
+          },
+          {
+            title: 'Software Development Lifecycle',
+            content: 'Describe the software development methodology employed for this device software.',
+            subSections: [
+              'Development Methodology',
+              'Design Inputs and Outputs',
+              'Configuration Management',
+              'Quality Assurance'
+            ]
+          },
+          {
+            title: 'Software Requirements Specification',
+            content: 'Detail the functional and performance requirements of the software.',
+            subSections: [
+              'Functional Requirements',
+              'Performance Requirements',
+              'Security Requirements',
+              'Regulatory Requirements'
+            ]
+          },
+          {
+            title: 'Risk Analysis and Mitigations',
+            content: 'Document the software-related risks and corresponding mitigation strategies.',
+            subSections: [
+              'Hazard Analysis',
+              'Failure Mode and Effects Analysis',
+              'Risk Mitigation Strategies',
+              'Residual Risk Assessment'
+            ]
+          },
+          {
+            title: 'Verification and Validation Procedures',
+            content: 'Describe the methods used to verify and validate the software.',
+            subSections: [
+              'Test Strategy',
+              'Unit Testing',
+              'Integration Testing',
+              'System Testing',
+              'User Acceptance Testing',
+              'Test Results Summary'
+            ]
+          },
+          {
+            title: 'Cybersecurity Considerations',
+            content: 'Outline the cybersecurity measures implemented to protect the software.',
+            subSections: [
+              'Threat Model',
+              'Authentication and Authorization',
+              'Data Protection',
+              'Security Testing',
+              'Security Update Process'
+            ]
+          }
+        ]
+      };
+      
+      console.log('[FDA510kService] Generated software documentation template:', templateData.title);
+      
+      return {
+        success: true,
+        templateId: `software-doc-${new Date().getTime()}`,
+        templateData
+      };
+    } catch (error) {
+      console.error('[FDA510kService] Error generating software documentation template:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Generate biocompatibility documentation template for implantable medical devices
+   * 
+   * Creates a comprehensive FDA-compliant biocompatibility documentation template with sections for
+   * material characterization, testing protocols, and safety evaluations.
+   * 
+   * @param {string} deviceId - Device ID to associate with the documentation
+   * @returns {Promise<Object>} Result of template generation
+   */
+  async generateBiocompatibilityTemplate(deviceId) {
+    try {
+      console.log('[FDA510kService] Generating biocompatibility template for device', deviceId);
+      
+      // Get the device profile to personalize the template
+      const deviceProfile = await this.getDeviceProfileById(deviceId);
+      if (!deviceProfile) {
+        throw new Error('Device profile not found');
+      }
+      
+      const templateData = {
+        title: `Biocompatibility Documentation for ${deviceProfile.deviceName || 'Implantable Device'}`,
+        generatedAt: new Date().toISOString(),
+        deviceId: deviceId,
+        sections: [
+          {
+            title: 'Device Material Characterization',
+            content: 'Provide a comprehensive characterization of all materials that come into contact with the body.',
+            subSections: [
+              'Material Composition and Specifications',
+              'Manufacturing Processes',
+              'Material Sourcing and Quality Control',
+              'Previous Use in Medical Devices'
+            ]
+          },
+          {
+            title: 'Biological Risk Assessment',
+            content: 'Assess the biological risks associated with the device materials.',
+            subSections: [
+              'Nature and Duration of Body Contact',
+              'Material-Tissue Interaction Analysis',
+              'Degradation Products Assessment',
+              'Leachables and Extractables Analysis'
+            ]
+          },
+          {
+            title: 'Biocompatibility Testing Strategy',
+            content: 'Describe the testing strategy employed to evaluate biocompatibility.',
+            subSections: [
+              'Test Selection Rationale',
+              'Testing Standards (ISO 10993)',
+              'Testing Protocol Summary',
+              'Sample Preparation Methods'
+            ]
+          },
+          {
+            title: 'Biocompatibility Test Results',
+            content: 'Document the results of all biocompatibility tests conducted.',
+            subSections: [
+              'Cytotoxicity Testing',
+              'Sensitization Testing',
+              'Irritation/Intracutaneous Reactivity',
+              'Acute Systemic Toxicity',
+              'Subchronic Toxicity',
+              'Genotoxicity',
+              'Implantation Testing',
+              'Hemocompatibility'
+            ]
+          },
+          {
+            title: 'Long-term Implant Safety',
+            content: 'Address long-term safety concerns specific to implantable devices.',
+            subSections: [
+              'Chronic Toxicity Assessment',
+              'Carcinogenicity Evaluation',
+              'Degradation Profile',
+              'Long-term Tissue Response'
+            ]
+          }
+        ]
+      };
+      
+      console.log('[FDA510kService] Generated biocompatibility template:', templateData.title);
+      
+      return {
+        success: true,
+        templateId: `biocompat-doc-${new Date().getTime()}`,
+        templateData
+      };
+    } catch (error) {
+      console.error('[FDA510kService] Error generating biocompatibility template:', error);
+      throw error;
+    }
+  },
+  
+  /**
+   * Get device profile by ID
+   * 
+   * Helper method to retrieve device profile for template generation
+   * 
+   * @param {string} deviceId - Device ID to retrieve
+   * @returns {Promise<Object>} Device profile data
+   */
+  async getDeviceProfileById(deviceId) {
+    try {
+      // First try using our DeviceProfileAPI method if available
+      if (this.DeviceProfileAPI && typeof this.DeviceProfileAPI.get === 'function') {
+        return await this.DeviceProfileAPI.get(deviceId);
+      }
+      
+      // Fallback to direct API call
+      const response = await apiRequest.get(`/api/fda510k/device-profile/${deviceId}`);
+      return response.data && response.data.data ? response.data.data : response.data;
+    } catch (error) {
+      console.error('[FDA510kService] Error fetching device profile:', error);
+      throw new Error(`Failed to retrieve device profile: ${error.message || 'Unknown error'}`);
+    }
   }
 };
 
