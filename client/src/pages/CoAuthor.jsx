@@ -38,6 +38,7 @@ import { Label } from '@/components/ui/label';
 import { Slider } from '@/components/ui/slider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, SelectGroup, SelectLabel } from '@/components/ui/select';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useModal } from '@/contexts/ModalProvider';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 // TipTap editor imports 
@@ -217,7 +218,7 @@ const generateFakeEmbedding = () => {
 export default function CoAuthor() {
   // Component state
   const [isTreeOpen, setIsTreeOpen] = useState(false);
-  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const { openModal, closeModal, isModalOpen } = useModal();
   const [showCompareDialog, setShowCompareDialog] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [activeVersion, setActiveVersion] = useState('v4.0');
@@ -2800,10 +2801,10 @@ export default function CoAuthor() {
           </div>
           {selectedDocument && (
             <div className="flex items-center space-x-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setShowVersionHistory(true)}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => openModal('version-history')}
                 className="flex items-center text-blue-700 border-blue-200"
               >
                 <History className="h-4 w-4 mr-2" />
@@ -4600,7 +4601,10 @@ export default function CoAuthor() {
       </Dialog>
       
       {/* Version History Dialog */}
-      <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>
+      <Dialog
+        open={isModalOpen('version-history')}
+        onOpenChange={(v) => v ? openModal('version-history') : closeModal('version-history')}
+      >
         <DialogContent className="sm:max-w-[650px]">
           <DialogHeader>
             <DialogTitle className="flex items-center">
@@ -4643,7 +4647,7 @@ export default function CoAuthor() {
                             base: activeVersion, 
                             compare: version.id
                           });
-                          setShowVersionHistory(false);
+                          closeModal('version-history');
                           setShowCompareDialog(true);
                         }}
                         title="Compare with current version"
@@ -4656,7 +4660,7 @@ export default function CoAuthor() {
                         className="h-7 w-7 p-0"
                         onClick={() => {
                           setActiveVersion(version.id);
-                          setShowVersionHistory(false);
+                          closeModal('version-history');
                         }}
                         title="View this version"
                       >
@@ -4674,7 +4678,7 @@ export default function CoAuthor() {
               <Info className="h-3 w-3 mr-1 text-blue-500" />
               All versions are stored securely in Vault with 21 CFR Part 11 compliant audit trails
             </div>
-            <Button onClick={() => setShowVersionHistory(false)}>Close</Button>
+            <Button onClick={() => closeModal('version-history')}>Close</Button>
           </div>
         </DialogContent>
       </Dialog>

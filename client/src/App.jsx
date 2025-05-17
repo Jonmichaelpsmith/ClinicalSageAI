@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import queryClient from './lib/queryClient';
 import { TenantProvider } from './contexts/TenantContext.tsx';
 import { LumenAiAssistantProvider } from './contexts/LumenAiAssistantContext';
+import { ModalProvider } from './contexts/ModalProvider';
 import { LumenAiAssistantContainer } from '@/components/ai/LumenAiAssistantContainer';
 
 // Import stability utilities
@@ -178,6 +179,7 @@ function App() {
         <QueryClientProvider client={queryClient}>
           <TenantProvider>
             <LumenAiAssistantProvider>
+              <ModalProvider>
               {/* Wrap the entire application in the StabilityEnabledLayout */}
               <StabilityEnabledLayout>
               {/* Only show the UnifiedTopNavV3 if we're not on the landing page, regulatory hub, or dashboard */}
@@ -473,9 +475,10 @@ function App() {
             </Switch>
               </div>
             </StabilityEnabledLayout>
-              
+
               {/* Global AI Assistant that connects to the context */}
               <LumenAiAssistantContainer />
+              </ModalProvider>
             </LumenAiAssistantProvider>
           </TenantProvider>
         </QueryClientProvider>
