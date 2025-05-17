@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 
+// Export both functions to maintain backward compatibility with existing code
 export function useMobile() {
+  return useIsMobile();
+}
+
+export function useIsMobile() {
   const [isMobile, setIsMobile] = useState(
     typeof window !== 'undefined' ? window.innerWidth < 768 : false
   );
