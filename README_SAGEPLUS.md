@@ -141,3 +141,25 @@ After processing your CSR library:
 1. Use the vectorized data for similar trial lookups
 2. Analyze outcome patterns across similar designs
 3. Generate AI-powered design recommendations based on historical precedent
+
+## 🛠 CSR API Client
+
+The front-end includes a lightweight client for the CSR API at
+`client/src/api/csrClient.ts`. It wraps common endpoints such as
+`/api/csrs/query` and `/api/match-protocol`. The client uses Axios and reads the
+base URL from the `CSR_API_URL` environment variable so it can communicate with
+an external CSR service.
+
+Example usage:
+
+```ts
+import { queryCsrs, matchProtocol } from '@/api/csrClient';
+
+const search = await queryCsrs({ query_text: 'phase 2 obesity', limit: 5 });
+const matches = await matchProtocol({
+  title: 'Draft Protocol',
+  indication: 'Obesity',
+  phase: 'phase2',
+  primary_endpoints: ['Weight loss'],
+});
+```

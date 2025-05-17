@@ -1,6 +1,7 @@
 import { ProtocolData } from './protocol-analyzer-service';
 import { huggingFaceService } from './huggingface-service';
 import { isApiKeyAvailable, generateTailoredProtocolRecommendations } from './openai-service';
+import { matchProtocol } from '@/api/csrClient';
 
 export interface OptimizationResult {
   original: ProtocolData;
@@ -34,6 +35,21 @@ export class ProtocolOptimizerService {
     academicReferences: any[] = []
   ): Promise<string> {
     try {
+      // Fetch matching CSRs from the CSR service if none were provided
+      if (matchedCsrs.length === 0) {
+        try {
+          const matchRes = await matchProtocol({
+            title: protocolMeta.title || 'Protocol',
+            indication: protocolMeta.indication,
+            phase: protocolMeta.phase,
+            primary_endpoints: [],
+          });
+          matchedCsrs = matchRes?.similar_csrs || [];
+        } catch (err) {
+          console.warn('Failed to fetch matching CSRs', err);
+        }
+      }
+
       // If OpenAI API is available, use that for more tailored recommendations
       if (isApiKeyAvailable()) {
         return await generateTailoredProtocolRecommendations(
