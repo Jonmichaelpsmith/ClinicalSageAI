@@ -65,7 +65,7 @@ import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
 import LiteratureMethodologyPanel from '@/components/cer/LiteratureMethodologyPanel';
 import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
 import CerAssistantPanel from '@/components/cer/CerAssistantPanel';
-import DocumentVaultPanel from '@/components/cer/DocumentVaultPanel';
+import VaultPanel from '@/components/document-management/VaultPanel';
 import CerDataRetrievalPanel from '@/components/cer/CerDataRetrievalPanel';
 // Using 510k specific components instead of CER ones
 import EquivalenceBuilderPanel from '@/components/510k/EquivalenceBuilderPanel';
@@ -2383,13 +2383,13 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       return <CerAssistantPanel cerDocumentId={cerDocumentId} />;
     }
     else if (activeTab === 'documents') {
-      // Support both CER and 510k documents in the vault
-      return <DocumentVaultPanel 
-        documentType={documentType} 
-        jobId={documentType === 'cer' ? cerDocumentId : k510DocumentId}
-        position="left"
-        isOpen={true}
-      />;
+      // Unified vault panel for managing CER or 510k documents
+      return (
+        <VaultPanel
+          moduleName={documentType === 'cer' ? 'cer' : '510k'}
+          moduleLabel={documentType === 'cer' ? 'CER Documents' : '510(k) Documents'}
+        />
+      );
     }
     else if (documentType === 'cer' && activeTab === 'data-retrieval') {
       return <CerDataRetrievalPanel cerDocumentId={cerDocumentId} />;
