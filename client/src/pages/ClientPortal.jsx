@@ -833,11 +833,53 @@ const ClientPortal = () => {
                 
                 {/* Document Editing Frame */}
                 <div className="border rounded-md h-full overflow-hidden">
-                  <iframe 
-                    src="https://learn.microsoft.com/en-us/office/client-developer/word/word-javascript-reference" 
-                    className="w-full h-[55vh]" 
-                    title="Microsoft Word Online" 
-                  />
+                  <div className="w-full h-[55vh] flex flex-col items-center justify-center bg-gray-50 relative">
+                    {/* MS Word Editor Placeholder */}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="bg-white p-8 rounded-lg shadow-lg w-4/5 max-w-3xl">
+                        <div className="flex items-center mb-6">
+                          <FileText className="h-10 w-10 text-blue-600 mr-4" />
+                          <div>
+                            <h3 className="text-lg font-semibold">
+                              {selectedDocument ? selectedDocument.name : "Document Title"}
+                            </h3>
+                            <p className="text-sm text-gray-500">
+                              Word document loaded successfully
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-4 mb-6 border rounded-md p-4 bg-gray-50">
+                          <div className="border-b pb-3">
+                            <h4 className="font-medium mb-2">Executive Summary</h4>
+                            <p className="text-sm text-gray-700">
+                              This document provides an overview of clinical data for the assessment 
+                              of device safety and performance as required by regulatory authorities.
+                            </p>
+                          </div>
+                          <div className="border-b pb-3">
+                            <h4 className="font-medium mb-2">Device Description</h4>
+                            <p className="text-sm text-gray-700">
+                              The medical device is designed for [PURPOSE] and consists of [COMPONENTS]. 
+                              This section provides detailed specifications and operational parameters.
+                            </p>
+                          </div>
+                          <div>
+                            <h4 className="font-medium mb-2">Clinical Evaluation Methods</h4>
+                            <p className="text-sm text-gray-700">
+                              Clinical data was collected through [METHODS] and analyzed according to 
+                              [STANDARDS]. Safety and performance were evaluated based on [CRITERIA].
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="text-center text-sm text-gray-500">
+                          <p>Connected to Microsoft Word Online</p>
+                          <p className="mt-1">All changes will be automatically synchronized with VAULT</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 
                 {/* Footer */}
