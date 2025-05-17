@@ -50,6 +50,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import * as googleDocsService from '../services/googleDocsService';
 import * as googleAuthService from '../services/googleAuthService';
 import * as copilotService from '../services/copilotService';
+import * as sharePointService from '../services/sharePointIntegrationService';
 
 // AI services
 import * as aiService from '../services/aiService';
@@ -58,6 +59,7 @@ import * as aiService from '../services/aiService';
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
 const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
 const GoogleDocsEmbed = lazy(() => import('../components/GoogleDocsEmbed'));
+const MsWordPopupEditor = lazy(() => import('../components/MsWordPopupEditor'));
 import { 
   FileText, 
   Edit, 
@@ -228,6 +230,7 @@ export default function CoAuthor() {
   const [showValidationDialog, setShowValidationDialog] = useState(false);
   // Document editor integration state
   const [msWordPopupOpen, setMsWordPopupOpen] = useState(false);
+  const [msWordSession, setMsWordSession] = useState(null);
   const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
   const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
   const [isGoogleAuthenticated, setIsGoogleAuthenticated] = useState(false);
@@ -3219,9 +3222,9 @@ export default function CoAuthor() {
                     <FilePlus2 className="h-4 w-4 mr-2" />
                     New Document
                   </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
+                  <Button
+                    size="sm"
+                    variant="outline"
                     className="border-blue-200 text-blue-700"
                     disabled={authLoading}
                     onClick={async () => {
@@ -3334,6 +3337,41 @@ export default function CoAuthor() {
                         Edit in Google Docs
                       </>
                     )}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-blue-200"
+                    onClick={async () => {
+                      if (!selectedDocument) {
+                        toast({
+                          title: 'Select a Document',
+                          description: 'Please select a document to edit first.',
+                          variant: 'destructive'
+                        });
+                        return;
+                      }
+                      try {
+                        toast({
+                          title: 'Opening Microsoft Word',
+                          description: 'Preparing document for editing in Word...',
+                          variant: 'default'
+                        });
+                        const session = await sharePointService.getWordEditingSession('default-container', selectedDocument.id);
+                        setMsWordSession(session);
+                        setMsWordPopupOpen(true);
+                      } catch (error) {
+                        console.error('Error launching Word editor:', error);
+                        toast({
+                          title: 'Microsoft Word Error',
+                          description: 'Failed to open Microsoft Word.',
+                          variant: 'destructive'
+                        });
+                      }
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Edit in Word
                   </Button>
                   <Button size="sm" variant="outline" className="border-blue-200">
                     <Upload className="h-4 w-4 mr-2" />
@@ -4598,7 +4636,33 @@ export default function CoAuthor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
+      {/* Microsoft Word Integration */}
+      <Dialog open={msWordPopupOpen} onOpenChange={setMsWordPopupOpen} className="max-w-[90%] w-[1200px]">
+        <DialogContent className="max-w-[90%] w-[1200px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <FileText className="h-5 w-5 mr-2" />
+              Microsoft Word - {selectedDocument?.title || 'Document'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <Suspense fallback={<div className="py-20 flex items-center justify-center"><Loader2 className="h-10 w-10 animate-spin text-blue-600" /></div>}>
+            {msWordSession && (
+              <MsWordPopupEditor
+                documentId={msWordSession.documentInfo.id}
+                editUrl={msWordSession.editUrl}
+                accessToken={msWordSession.accessToken}
+                onSave={(blob) => {
+                  console.log('Received updated DOCX', blob);
+                }}
+                onClose={() => setMsWordPopupOpen(false)}
+              />
+            )}
+          </Suspense>
+        </DialogContent>
+      </Dialog>
+
       {/* Version History Dialog */}
       <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>
         <DialogContent className="sm:max-w-[650px]">
