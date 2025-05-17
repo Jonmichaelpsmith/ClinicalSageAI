@@ -81,6 +81,7 @@ const PredicateFinderPanel = ({
   const [selectedPredicates, setSelectedPredicates] = useState([]);
   const [profileEditing, setProfileEditing] = useState(true);
   const [activeTab, setActiveTab] = useState("predicates");
+  const [searched, setSearched] = useState(false);
   const [literatureResults, setLiteratureResults] = useState([]);
   const [isSearchingLiterature, setIsSearchingLiterature] = useState(false);
   const [selectedLiterature, setSelectedLiterature] = useState([]);
