@@ -1,4 +1,5 @@
 import React from 'react';
+import ModalPortal from './ModalPortal';
 import DocumentDiffViewer from './DocumentDiffViewer';
 
 interface DocumentDiffDialogProps {
@@ -23,9 +24,10 @@ export default function DocumentDiffDialog({
   }
 
   return (
-    <div className="modal document-diff-dialog" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
-      <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
-        <div className="modal-content">
+    <ModalPortal>
+      <div className="modal document-diff-dialog" style={{ display: 'block', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div className="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+          <div className="modal-content">
           <div className="modal-header">
             <h5 className="modal-title">
               Document Comparison {documentTitle && <span className="text-muted">- {documentTitle}</span>}
@@ -43,5 +45,6 @@ export default function DocumentDiffDialog({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
