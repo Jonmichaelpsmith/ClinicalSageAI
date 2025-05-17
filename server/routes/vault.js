@@ -59,38 +59,30 @@ router.get('/documents/:documentId/open', async (req, res) => {
   try {
     const { documentId } = req.params;
     
-    // Check if this is a draft document
-    const isDraft = documentId.includes('draft') || Math.random() > 0.5; // Simulate some documents being drafts
+    // Always treat as draft document to prevent client portal redirects
+    // This fixes the "does nothing" issue by ensuring documents open directly
+    const documentContent = {
+      id: documentId,
+      status: 'draft',
+      content: {
+        // Basic document content that will be used in the CERV2 component
+        deviceProfile: {
+          id: documentId,
+          deviceName: 'Draft Device',
+          manufacturer: 'Draft Manufacturer',
+          productCode: 'DFT',
+          deviceClass: 'II',
+          intendedUse: 'Draft intended use description',
+          description: 'This is a draft document',
+          regulatoryClass: 'II',
+          status: 'draft'
+        },
+        workflowStep: 2
+      }
+    };
     
-    if (isDraft) {
-      // For draft documents, return content directly rather than redirecting
-      const documentContent = {
-        id: documentId,
-        status: 'draft',
-        content: {
-          // Basic document content that will be used in the CERV2 component
-          deviceProfile: {
-            id: documentId,
-            deviceName: 'Draft Device',
-            manufacturer: 'Draft Manufacturer',
-            productCode: 'DFT',
-            deviceClass: 'II',
-            intendedUse: 'Draft intended use description',
-            description: 'This is a draft document',
-            regulatoryClass: 'II',
-            status: 'draft'
-          },
-          workflowStep: 2
-        }
-      };
-      
-      res.json(documentContent);
-    } else {
-      // For non-draft documents, redirect to client portal (simulated)
-      res.json({
-        redirectUrl: '/client-portal/documents/' + documentId
-      });
-    }
+    // Always return content directly rather than redirecting to client portal
+    res.json(documentContent);
     
   } catch (error) {
     console.error('Error opening document:', error);

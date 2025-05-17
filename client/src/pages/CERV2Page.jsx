@@ -10,7 +10,37 @@ import WorkflowContinuityManager from '../components/recovery/WorkflowContinuity
 import DeviceProfileSelector from '../components/510k/DeviceProfileSelector';
 import NavigationBlocker from '../components/navigation/NavigationBlocker';
 
-// We'll add openDocumentSafely as a class method in the CERV2Page component
+// Implementation of openDocumentSafely function
+const openDocumentSafely = (documentPath, documentName, toast) => {
+  try {
+    console.log(`Opening document: ${documentName} from path: ${documentPath}`);
+    // Check if path starts with / and adjust accordingly
+    const adjustedPath = documentPath.startsWith('/') ? documentPath.substring(1) : documentPath;
+    
+    // Attempt to open the document in a new tab
+    window.open(adjustedPath, '_blank');
+    
+    // Show success toast notification
+    toast({
+      title: "Document opened",
+      description: `Viewing ${documentName}`,
+      variant: "default"
+    });
+    
+    return true;
+  } catch (error) {
+    console.error(`Error opening document: ${documentName}`, error);
+    
+    // Show error toast notification
+    toast({
+      title: "Error opening document",
+      description: `Could not open ${documentName}. ${error.message}`,
+      variant: "destructive"
+    });
+    
+    return false;
+  }
+};
 
 // Create a fallback if context is unavailable
 const safeAssistantHook = () => {
