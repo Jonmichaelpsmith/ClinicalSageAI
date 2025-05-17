@@ -101,21 +101,26 @@ const DocumentUploader = ({ onDocumentsProcessed, regulatoryContext = '510k' }) 
 
   return (
     <div className="flex flex-col gap-4">
-      <Card className={`border-2 ${isDragActive ? 'border-primary border-dashed' : 'border-dashed'}`}>
+      <Card className="border-2 border-dashed">
         <CardContent className="p-6">
-          <div 
-            {...getRootProps()} 
-            className="flex flex-col items-center justify-center p-6 rounded-md cursor-pointer"
-          >
-            <input {...getInputProps()} />
+          <div className="flex flex-col items-center justify-center p-6 rounded-md">
             <Upload className="w-12 h-12 mb-4 text-gray-400" />
-            <p className="mb-2 text-lg font-medium">Drag and drop files here</p>
+            <p className="mb-2 text-lg font-medium">Upload your documents</p>
             <p className="mb-4 text-sm text-gray-500">
-              or click to select files
+              Select files for document intelligence processing
             </p>
-            <Button type="button" variant="outline" size="sm">
-              Select Files
-            </Button>
+            <label>
+              <input 
+                type="file" 
+                multiple 
+                className="hidden" 
+                onChange={handleFileChange}
+                accept=".pdf,.doc,.docx,.txt,.rtf,.xls,.xlsx,.csv,.jpg,.jpeg,.png,.xml,.json,.zip"
+              />
+              <Button type="button" variant="outline" size="sm" className="cursor-pointer">
+                Select Files
+              </Button>
+            </label>
             <p className="mt-4 text-xs text-gray-400">
               Supports PDF, Word, Excel, images, and other document formats (max 50MB per file)
             </p>
