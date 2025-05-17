@@ -14,6 +14,7 @@ TrialSage™ is an advanced multi-tenant AI-powered regulatory document manageme
 
 - [Progress Tracking](./PROGRESS.md) - Current status of project implementation
 - [Quality Gating API Reference](./docs/quality-gating-api-reference.md) - API endpoints for validation
+- Legacy landing pages archived in [./archive/landing_pages](./archive/landing_pages)
 - [Deployment Guide](./DEPLOYMENT.md) - Instructions for deploying the platform
 
 ## Technical Stack
