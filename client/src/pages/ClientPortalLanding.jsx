@@ -180,13 +180,18 @@ const ClientPortalLanding = () => {
               <div className="bg-white rounded-xl shadow-md p-6">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="text-2xl font-semibold text-indigo-700">Project Manager</h2>
-                  
-                  {currentClientWorkspace && (
-                    <div className="flex items-center gap-2 text-sm text-indigo-700">
-                      <span className="text-gray-500">Client:</span>
-                      <span className="font-medium">{currentClientWorkspace.name}</span>
-                    </div>
-                  )}
+
+                  <div className="flex items-center gap-2">
+                    {currentClientWorkspace && (
+                      <div className="flex items-center gap-2 text-sm text-indigo-700">
+                        <span className="text-gray-500">Client:</span>
+                        <span className="font-medium">{currentClientWorkspace.name}</span>
+                      </div>
+                    )}
+                    <Button size="sm" asChild>
+                      <Link to="/project-manager">Full Screen</Link>
+                    </Button>
+                  </div>
                 </div>
                 {loading ? (
                   <div className="flex items-center justify-center py-10">
