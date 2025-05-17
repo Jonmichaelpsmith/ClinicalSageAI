@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,6 +47,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import docuShareService from '@/services/DocuShareService';
 
 // Sample documents for demo purposes with more professional examples
 const sampleDocuments = [
@@ -423,13 +424,13 @@ export default function DocumentVaultPanel({
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showPdfViewerDialog, setShowPdfViewerDialog] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
-  const [documents, setDocuments] = useState(sampleDocuments);
+  const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadFile, setUploadFile] = useState(null);
   const [currentPath, setCurrentPath] = useState('/');
   const [currentPdfUrl, setCurrentPdfUrl] = useState('');
-  
+
   const [uploadMetadata, setUploadMetadata] = useState({
     name: '',
     type: documentType === 'cer' ? 'cer' : documentType === '510k' ? '510k' : 'data',
@@ -439,6 +440,23 @@ export default function DocumentVaultPanel({
     author: 'TrialSage AI',
     tags: documentType === 'cer' ? ['CER'] : ['510k']
   });
+
+  const fetchDocuments = async () => {
+    try {
+      setLoading(true);
+      const result = await docuShareService.getDocuments();
+      setDocuments(result?.documents || []);
+    } catch (err) {
+      console.error('Error loading documents:', err);
+      setError('Failed to load documents');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDocuments();
+  }, []);
   
   // Filter documents based on search query, document type, and current path
   const filteredDocuments = documents.filter(doc => {
@@ -509,44 +527,43 @@ export default function DocumentVaultPanel({
       });
       return;
     }
-    
-    // In a real app, we would upload the file to the server here
-    // For demo, we'll just add it to our local state
-    const newDocument = {
-      id: Date.now().toString(),
-      name: uploadMetadata.name,
-      type: uploadMetadata.type,
-      category: uploadMetadata.category,
-      status: uploadMetadata.status,
-      description: uploadMetadata.description,
-      author: uploadMetadata.author,
-      tags: uploadMetadata.tags,
-      dateCreated: new Date().toISOString(),
-      dateModified: new Date().toISOString(),
-      size: uploadFile.size,
-      path: currentPath
-    };
-    
-    setDocuments([newDocument, ...documents]);
-    setShowUploadDialog(false);
-    
-    toast({
-      title: "Document Uploaded",
-      description: `${uploadMetadata.name} was successfully uploaded`,
-      variant: "default"
-    });
-    
-    // Reset upload form
-    setUploadFile(null);
-    setUploadMetadata({
-      name: '',
-      type: documentType === 'cer' ? 'cer' : documentType === '510k' ? '510k' : 'data',
-      category: documentType === 'cer' ? 'Clinical Evaluation' : 'Regulatory',
-      status: 'draft',
-      description: '',
-      author: 'TrialSage AI',
-      tags: documentType === 'cer' ? ['CER'] : ['510k']
-    });
+
+    try {
+      setLoading(true);
+      await docuShareService.uploadDocument(uploadFile, {
+        ...uploadMetadata,
+        path: currentPath
+      });
+
+      toast({
+        title: "Document Uploaded",
+        description: `${uploadMetadata.name} was successfully uploaded`,
+        variant: "default"
+      });
+
+      setShowUploadDialog(false);
+      setUploadFile(null);
+      setUploadMetadata({
+        name: '',
+        type: documentType === 'cer' ? 'cer' : documentType === '510k' ? '510k' : 'data',
+        category: documentType === 'cer' ? 'Clinical Evaluation' : 'Regulatory',
+        status: 'draft',
+        description: '',
+        author: 'TrialSage AI',
+        tags: documentType === 'cer' ? ['CER'] : ['510k']
+      });
+
+      await fetchDocuments();
+    } catch (err) {
+      console.error('Upload failed:', err);
+      toast({
+        title: 'Upload Failed',
+        description: 'Unable to upload document',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
   
   // Handle document download
