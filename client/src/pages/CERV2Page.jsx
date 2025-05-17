@@ -409,9 +409,11 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   }, [showProfileSelector]);
 
   // Hide profile selector when navigating to Document Intelligence
+  // Persist the state so it remains closed when returning
   useEffect(() => {
     if (activeTab === 'document-intelligence') {
       setShowProfileSelector(false);
+      saveState('showProfileSelector', false);
     }
   }, [activeTab]);
   const [compliance, setCompliance] = useState(null);
