@@ -281,6 +281,13 @@ function App() {
               <Route path="/signature" component={SignaturePage} /> {/* Digital Signature page route */}
               <Route path="/study-architect" component={StudyArchitectPage} />
               <Route path="/analytics" component={AnalyticsDashboard} />
+              <Route path="/submission-storyline">
+                {() => (
+                  <Suspense fallback={<LoadingPage />}>
+                    <SubmissionStorylineDemoPage />
+                  </Suspense>
+                )}
+              </Route> {/* Animated Submission Progress Storyline demo */}
               <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
               <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
               <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
