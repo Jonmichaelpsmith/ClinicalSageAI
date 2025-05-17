@@ -102,6 +102,10 @@ const CitationManagerPage = lazy(() => import('./pages/CitationManagerPage'));
 const AuditPage = lazy(() => import('./pages/AuditPage'));
 const SignaturePage = lazy(() => import('./pages/SignaturePage'));
 
+// Enhanced Template System
+const EnhancedDocumentTemplates = lazy(() => import('./pages/EnhancedDocumentTemplates'));
+const CollaborativeTemplateWorkspace = lazy(() => import('./pages/CollaborativeTemplateWorkspace'));
+
 // Analytical and Stability modules
 const AnalyticalMethodsStubPage = lazy(() => import('./pages/AnalyticalMethodsStubPage'));
 const ComparabilityStudiesStubPage = lazy(() => import('./pages/ComparabilityStudiesStubPage'));
@@ -248,6 +252,9 @@ function App() {
 
               <Route path="/coauthor/validation" component={ValidationDashboard} /> {/* eCTD Validation Dashboard */}
               <Route path="/coauthor/templates" component={DocumentTemplates} /> {/* Document Templates Library */}
+              <Route path="/templates" component={EnhancedDocumentTemplates} /> {/* Enhanced Document Templates Library */}
+              <Route path="/template-workspace" component={CollaborativeTemplateWorkspace} /> {/* Collaborative Template Workspace */}
+              <Route path="/client-portal/templates" component={EnhancedDocumentTemplates} /> {/* Client Portal Templates */}
 
 
               <Route path="/canvas" component={CanvasPage} /> {/* Canvas page route */}
