@@ -4,8 +4,28 @@
 
 import express from 'express';
 import * as templateService from '../services/templateService.js';
+import multer from 'multer';
+import fs from 'fs';
+import path from 'path';
 
 const router = express.Router();
+
+// Configure multer for template file uploads
+const uploadDir = path.join(process.cwd(), 'uploads');
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const timestamp = Date.now();
+    const filename = `${timestamp}-${file.originalname.replace(/\s+/g, '_')}`;
+    cb(null, filename);
+  }
+});
+const upload = multer({ storage });
 
 /**
  * Get all templates
@@ -184,6 +204,45 @@ router.post('/import', async (req, res) => {
     res.status(400).json({
       success: false,
       error: error.message || 'Failed to import template'
+    });
+  }
+});
+
+/**
+ * Upload a template file along with metadata
+ *
+ * @route POST /api/templates/upload
+ * @param {Object} req.body - Template metadata
+ * @param {File} req.file - Template file
+ * @returns {Object} - Saved template data
+ */
+router.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'File is required' });
+    }
+
+    const templateData = {
+      name: req.body.name,
+      category: req.body.category,
+      module: req.body.module,
+      description: req.body.description,
+      uploadedFile: req.file.filename,
+      originalFileName: req.file.originalname
+    };
+
+    const template = await templateService.saveTemplate(templateData);
+
+    res.status(201).json({
+      success: true,
+      template,
+      message: 'Template uploaded successfully'
+    });
+  } catch (error) {
+    console.error('Error uploading template:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to upload template'
     });
   }
 });
