@@ -367,8 +367,12 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     return null;
   });
   
-  // State for device profile selector
-  const [showProfileSelector, setShowProfileSelector] = useState(!deviceProfile);
+  // State for device profile selector with persistence
+  const [showProfileSelector, setShowProfileSelector] = useState(() => {
+    const saved = loadSavedState('showProfileSelector', null);
+    if (saved !== null) return saved;
+    return !deviceProfile;
+  });
   
   // Handle device profile selection from the selector 
   // Updated with proper state handling and user feedback
@@ -389,6 +393,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     if (selectedProfile.deviceName) setDeviceName(selectedProfile.deviceName);
     if (selectedProfile.intendedUse) setIntendedUse(selectedProfile.intendedUse);
     setShowProfileSelector(false);
+    saveState('showProfileSelector', false);
     
     toast({
       title: "Device Profile Selected",
@@ -396,6 +401,18 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       variant: "success",
     });
   };
+
+  // Persist profile selector visibility state
+  useEffect(() => {
+    saveState('showProfileSelector', showProfileSelector);
+  }, [showProfileSelector]);
+
+  // Hide profile selector when navigating to Document Intelligence
+  useEffect(() => {
+    if (activeTab === 'document-intelligence') {
+      setShowProfileSelector(false);
+    }
+  }, [activeTab]);
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
   const [exportTimestamp, setExportTimestamp] = useState(null);
