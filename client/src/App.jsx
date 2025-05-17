@@ -94,6 +94,7 @@ const ProtocolDesignerPage = lazy(() => import('./pages/ProtocolDesignerPage'));
 // Analytics and Dashboard pages
 const AnalyticsDashboard = lazy(() => import('./modules/AnalyticsDashboard'));
 const ModuleDashboard = lazy(() => import('./pages/ModuleDashboard'));
+const ProjectManagerFullScreen = lazy(() => import('./pages/ProjectManagerFullScreen'));
 
 // Other utility pages
 const ContextDemoPage = lazy(() => import('./pages/ContextDemoPage'));
@@ -227,6 +228,9 @@ function App() {
 
               {/* Module Dashboard */}
               <Route path="/dashboard" component={ModuleDashboard} />
+
+              {/* Full Screen Project Manager */}
+              <Route path="/project-manager" component={ProjectManagerFullScreen} />
 
               {/* IND Wizard Routes - ALWAYS USE THE INDWIZARDFIXED (VERSION 5.0) IMPLEMENTATION */}
               <Route path="/ind-wizard" component={IndWizard} /> {/* Using fixed implementation */}
