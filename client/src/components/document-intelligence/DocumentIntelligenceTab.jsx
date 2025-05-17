@@ -1,172 +1,185 @@
 import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BrainCircuit, FileUp, ChevronRight, Microscope, Database } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { FileText, FileCheck, Database, ArrowRight } from 'lucide-react';
 import DocumentUploader from './DocumentUploader';
 import DocumentAnalyzer from './DocumentAnalyzer';
 import DocumentIntakeForm from './DocumentIntakeForm';
+import { useToast } from '@/hooks/use-toast';
 
 /**
- * DocumentIntelligenceTab Component
+ * Document Intelligence Tab
  * 
- * This component serves as the main container for the document intelligence workflow,
- * providing tabs for document upload, processing, and results integration into the
- * regulatory submission workflow.
+ * This component serves as the main container for the document intelligence functionality.
+ * It includes three sub-tabs:
+ * 1. Upload - For uploading documents
+ * 2. Analyze - For analyzing and extracting data from documents
+ * 3. Data Review - For reviewing and applying extracted data
+ * 
+ * @param {Object} props
+ * @param {string} props.deviceType - The type of device (510k, cer, etc.)
+ * @param {Function} props.onDataExtracted - Callback for when data is extracted and ready to apply
  */
 const DocumentIntelligenceTab = ({ deviceType = '510k', onDataExtracted }) => {
-  const [currentStep, setCurrentStep] = useState('upload');
+  const [activeTab, setActiveTab] = useState('upload');
   const [processedDocuments, setProcessedDocuments] = useState([]);
   const [extractedData, setExtractedData] = useState(null);
-  
-  // Handle document selection/upload
-  const handleDocumentsSelected = (documents) => {
+  const [extractionMode, setExtractionMode] = useState('comprehensive');
+  const { toast } = useToast();
+
+  // Handler for when documents are uploaded and processed
+  const handleDocumentsProcessed = (documents) => {
     setProcessedDocuments(documents);
-    setCurrentStep('analyze');
+    
+    // Show success toast
+    toast({
+      title: "Documents Processed",
+      description: `Successfully processed ${documents.length} document(s).`,
+      variant: "success"
+    });
+    
+    // Switch to analyze tab
+    setActiveTab('analyze');
   };
-  
-  // Handle document analysis completion
-  const handleExtractionComplete = (data) => {
+
+  // Handler for when data is extracted from documents
+  const handleDataExtracted = (data) => {
     setExtractedData(data);
     
-    // If parent component needs the extracted data
+    // Show success toast
+    toast({
+      title: "Data Extracted",
+      description: "Successfully extracted data from documents.",
+      variant: "success"
+    });
+    
+    // Switch to data review tab
+    setActiveTab('data-review');
+  };
+
+  // Handler for applying data to device profile
+  const handleApplyData = (data) => {
     if (onDataExtracted) {
-      onDataExtracted(data);
+      onDataExtracted(data, true);
     }
   };
-  
+
   return (
-    <div className="space-y-6">
-      <Card className="border-0 shadow-sm overflow-hidden bg-white">
-        <CardHeader className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6">
-          <CardTitle className="flex items-center text-blue-800">
-            <BrainCircuit className="h-5 w-5 mr-2 text-blue-600" />
-            Document Intelligence
-          </CardTitle>
+    <div className="p-4 space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Document Intelligence</CardTitle>
           <CardDescription>
-            Process regulatory documents with AI-powered document intelligence to
-            automatically extract and validate device information.
+            Upload, analyze, and extract data from regulatory documents to streamline your submission process.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-6">
-          <div className="mb-6">
-            <div className="flex items-center space-x-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'upload' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                <FileUp className="h-4 w-4" />
-              </div>
-              <ChevronRight className="h-4 w-4 text-gray-400" />
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'analyze' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
-                <Microscope className="h-4 w-4" />
-              </div>
-              <ChevronRight className="h-4 w-4 text-gray-400" />
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${currentStep === 'integrate' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid grid-cols-3 mb-6">
+              <TabsTrigger value="upload" className="flex items-center gap-2">
+                <FileText className="h-4 w-4" />
+                <span>1. Upload Documents</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="analyze" 
+                className="flex items-center gap-2"
+                disabled={processedDocuments.length === 0}
+              >
+                <FileCheck className="h-4 w-4" />
+                <span>2. Analyze Content</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="data-review" 
+                className="flex items-center gap-2"
+                disabled={!extractedData}
+              >
                 <Database className="h-4 w-4" />
-              </div>
-            </div>
-          </div>
-          
-          <Tabs value={currentStep} onValueChange={setCurrentStep} className="w-full">
-            <TabsList className="hidden">
-              <TabsTrigger value="upload">Document Upload</TabsTrigger>
-              <TabsTrigger value="analyze">Document Analysis</TabsTrigger>
-              <TabsTrigger value="integrate">Data Integration</TabsTrigger>
+                <span>3. Data Review</span>
+              </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="upload" className="m-0">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <DocumentIntakeForm 
-                  documentType={deviceType}
-                  onDocumentProcessed={(doc) => {
-                    setProcessedDocuments([doc]);
-                    setCurrentStep('analyze');
-                  }}
-                />
-                
-                <DocumentUploader 
-                  deviceType={deviceType}
-                  onDocumentsSelected={handleDocumentsSelected}
-                />
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="analyze" className="m-0">
-              <DocumentAnalyzer 
-                documents={processedDocuments}
-                documentType={deviceType}
-                onExtractionComplete={handleExtractionComplete}
+            <TabsContent value="upload" className="space-y-4">
+              <DocumentUploader 
+                regulatoryContext={deviceType}
+                onDocumentsProcessed={handleDocumentsProcessed}
+                extractionMode={extractionMode}
+                onExtractionModeChange={setExtractionMode}
               />
-              
-              <div className="mt-4 flex justify-between">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentStep('upload')}
-                >
-                  Back to Upload
-                </Button>
-                
-                {extractedData && (
-                  <Button
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={() => setCurrentStep('integrate')}
-                  >
-                    Continue to Integration
-                  </Button>
-                )}
-              </div>
             </TabsContent>
             
-            <TabsContent value="integrate" className="m-0">
-              {extractedData && (
-                <div className="space-y-6">
-                  <div className="bg-green-50 border border-green-200 rounded-md p-4">
-                    <h3 className="text-lg font-medium text-green-800 mb-2">Data Extraction Complete</h3>
-                    <p className="text-sm text-green-700">
-                      The document intelligence system has successfully extracted and validated device information.
-                      This data can now be integrated into your device profile.
-                    </p>
-                  </div>
-                  
-                  <Card className="border border-gray-200">
-                    <CardHeader className="bg-gray-50 pb-3">
-                      <CardTitle className="text-lg">Device Information</CardTitle>
-                    </CardHeader>
-                    <CardContent className="p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {Object.entries(extractedData).map(([key, value]) => (
-                          <div key={key} className="border-b pb-2">
-                            <p className="text-sm font-medium text-gray-600 capitalize">
-                              {key.replace(/([A-Z])/g, ' $1')}:
-                            </p>
-                            <p className="text-sm">{value}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                  
-                  <div className="flex justify-between">
-                    <Button
-                      variant="outline"
-                      onClick={() => setCurrentStep('analyze')}
-                    >
-                      Back to Analysis
-                    </Button>
-                    
-                    <Button
-                      className="bg-green-600 hover:bg-green-700 text-white"
-                      onClick={() => {
-                        if (onDataExtracted) {
-                          onDataExtracted(extractedData, true);
-                        }
-                      }}
-                    >
-                      Apply to Device Profile
-                    </Button>
-                  </div>
-                </div>
-              )}
+            <TabsContent value="analyze" className="space-y-4">
+              <DocumentAnalyzer 
+                processedDocuments={processedDocuments}
+                regulatoryContext={deviceType}
+                onDataExtracted={handleDataExtracted}
+                extractionMode={extractionMode}
+              />
+            </TabsContent>
+            
+            <TabsContent value="data-review" className="space-y-4">
+              <DocumentIntakeForm 
+                extractedData={extractedData}
+                regulatoryContext={deviceType}
+                onApplyData={handleApplyData}
+              />
             </TabsContent>
           </Tabs>
+          
+          <div className="flex justify-between mt-6">
+            <Button
+              variant="outline"
+              onClick={() => {
+                const prevTab = activeTab === 'analyze' ? 'upload' : 
+                  activeTab === 'data-review' ? 'analyze' : null;
+                
+                if (prevTab) {
+                  setActiveTab(prevTab);
+                }
+              }}
+              disabled={activeTab === 'upload'}
+            >
+              Back
+            </Button>
+            
+            <Button
+              onClick={() => {
+                const nextTab = activeTab === 'upload' ? 'analyze' : 
+                  activeTab === 'analyze' ? 'data-review' : null;
+                
+                if (nextTab === 'analyze' && processedDocuments.length === 0) {
+                  toast({
+                    title: "No Documents",
+                    description: "Please upload and process documents first.",
+                    variant: "warning"
+                  });
+                  return;
+                }
+                
+                if (nextTab === 'data-review' && !extractedData) {
+                  toast({
+                    title: "No Data Extracted",
+                    description: "Please extract data from documents first.",
+                    variant: "warning"
+                  });
+                  return;
+                }
+                
+                if (nextTab) {
+                  setActiveTab(nextTab);
+                }
+              }}
+              disabled={
+                (activeTab === 'upload' && processedDocuments.length === 0) ||
+                (activeTab === 'analyze' && !extractedData) ||
+                activeTab === 'data-review'
+              }
+              className="flex items-center gap-2"
+            >
+              <span>Next Step</span>
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

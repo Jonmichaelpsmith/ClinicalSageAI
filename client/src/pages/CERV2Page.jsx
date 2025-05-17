@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 // Safely handle LumenAiAssistant context access with fallbacks
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import { useToast } from '@/hooks/use-toast';
@@ -2289,6 +2289,41 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     }
     else if (documentType === 'cer' && activeTab === 'literature-review') {
       return <LiteratureReviewWorkflow cerDocumentId={cerDocumentId} />;
+    }
+    else if (activeTab === 'document-intelligence') {
+      // Import the DocumentIntelligenceTab component only when needed
+      const DocumentIntelligenceTab = lazy(() => import('../components/document-intelligence/DocumentIntelligenceTab'));
+      
+      return (
+        <Suspense fallback={<div className="p-8 text-center">Loading Document Intelligence...</div>}>
+          <DocumentIntelligenceTab 
+            deviceType={documentType}
+            onDataExtracted={(data, shouldApply) => {
+              if (shouldApply && deviceProfile) {
+                // Apply extracted data to device profile
+                const updatedProfile = {
+                  ...deviceProfile,
+                  ...data,
+                  updatedAt: new Date().toISOString(),
+                  metadata: {
+                    ...deviceProfile.metadata,
+                    lastUpdated: new Date().toISOString()
+                  }
+                };
+                
+                setDeviceProfile(updatedProfile);
+                saveState('deviceProfile', updatedProfile);
+                
+                toast({
+                  title: "Device Profile Updated",
+                  description: "Successfully applied document data to your device profile.",
+                  variant: "success"
+                });
+              }
+            }}
+          />
+        </Suspense>
+      );
     }
     else if (activeTab === 'compliance') {
       return <ComplianceScorePanel 

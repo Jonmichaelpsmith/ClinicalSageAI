@@ -1,240 +1,285 @@
 import React, { useState, useRef } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { FileUp, X, FilePlus, FileText, CheckCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Upload, FileText, AlertTriangle, X, CheckCircle2 } from 'lucide-react';
+import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
+import { useToast } from '@/hooks/use-toast';
 
 /**
- * DocumentUploader Component
+ * Document Uploader Component
  * 
- * This component provides a specialized interface for uploading
- * regulatory documents with document type detection and batch processing.
+ * This component handles the uploading and initial processing of documents
+ * for the document intelligence system.
+ * 
+ * @param {Object} props
+ * @param {string} props.regulatoryContext - The regulatory context (510k, cer, etc.)
+ * @param {Function} props.onDocumentsProcessed - Callback for when documents are processed
+ * @param {string} props.extractionMode - The extraction mode to use
+ * @param {Function} props.onExtractionModeChange - Callback when extraction mode changes
  */
-const DocumentUploader = ({ 
-  deviceType = '510k', 
-  onDocumentsSelected = () => {},
-  className = "" 
+const DocumentUploader = ({
+  regulatoryContext = '510k',
+  onDocumentsProcessed,
+  extractionMode = 'comprehensive',
+  onExtractionModeChange
 }) => {
-  const { toast } = useToast();
+  const [files, setFiles] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState(null);
+  const [compatibleTypes, setCompatibleTypes] = useState([]);
   const fileInputRef = useRef(null);
-  const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  // Detect document type based on file
-  const detectDocumentType = (file) => {
-    // In a real implementation, this would analyze the file content
-    // For the demo, we'll make a guess based on the filename
-    const name = file.name.toLowerCase();
-    
-    if (name.includes('510k') || name.includes('submission')) {
-      return { type: '510k Submission', confidence: 0.92 };
-    } else if (name.includes('technical') || name.includes('spec')) {
-      return { type: 'Technical File', confidence: 0.89 };
-    } else if (name.includes('clinical') || name.includes('study')) {
-      return { type: 'Clinical Study', confidence: 0.95 };
-    } else if (name.includes('instruction') || name.includes('ifu')) {
-      return { type: 'Instructions for Use', confidence: 0.88 };
-    } else if (name.includes('manual') || name.includes('guide')) {
-      return { type: 'User Manual', confidence: 0.85 };
-    }
-    
-    // Default case
-    return { type: 'Regulatory Document', confidence: 0.75 };
+  const { toast } = useToast();
+
+  // Handle file selection through the input element
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files);
+    setFiles(selectedFiles);
+    setUploadError(null);
   };
-  
-  // Handle file selection
-  const handleFileSelect = (e) => {
-    const files = Array.from(e.target.files);
-    if (!files.length) return;
-    
-    // Validate file types
-    const validFiles = files.filter(file => {
-      return file.type === 'application/pdf' || 
-             file.type === 'application/msword' || 
-             file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    });
-    
-    if (validFiles.length !== files.length) {
-      toast({
-        title: "Invalid file type",
-        description: "Some files were skipped. Only PDF and Word documents are supported.",
-        variant: "destructive"
-      });
-    }
-    
-    // Process the valid files
-    const processedFiles = validFiles.map(file => {
-      const { type, confidence } = detectDocumentType(file);
-      return {
-        file,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        documentType: type,
-        confidence: confidence,
-        id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-      };
-    });
-    
-    setUploadedFiles([...uploadedFiles, ...processedFiles]);
-    
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+
+  // Handle files dropped directly on the drop zone
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    setFiles(droppedFiles);
+    setUploadError(null);
   };
-  
-  // Remove a file from the list
-  const handleRemoveFile = (id) => {
-    setUploadedFiles(uploadedFiles.filter(file => file.id !== id));
+
+  // Prevent default behavior for drag events to allow drop
+  const handleDragOver = (e) => {
+    e.preventDefault();
   };
-  
-  // Clear all files
-  const handleClearAll = () => {
-    setUploadedFiles([]);
-  };
-  
-  // Process the uploaded files
-  const handleProcessFiles = () => {
-    if (!uploadedFiles.length) {
-      toast({
-        title: "No files selected",
-        description: "Please select documents to process",
-        variant: "destructive"
-      });
+
+  // Upload and process the selected documents
+  const handleUpload = async () => {
+    if (files.length === 0) {
+      setUploadError('Please select at least one document to upload.');
       return;
     }
-    
-    setIsProcessing(true);
-    
-    // Simulate processing with a timeout
-    setTimeout(() => {
+
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadError(null);
+
+    try {
+      // Progress callback to update upload progress
+      const progressCallback = (progress) => {
+        setUploadProgress(progress);
+      };
+
+      // Process the documents
+      const processedDocs = await documentIntelligenceService.processDocuments(
+        files,
+        regulatoryContext,
+        progressCallback,
+        extractionMode
+      );
+
+      // Reset the file input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+
+      // Call the callback with processed documents
+      if (onDocumentsProcessed) {
+        onDocumentsProcessed(processedDocs);
+      }
+
+      // Show success toast
       toast({
-        title: "Documents processed",
-        description: `Successfully processed ${uploadedFiles.length} document(s)`,
-        variant: "success"
+        title: 'Documents Uploaded',
+        description: `Successfully uploaded ${files.length} document(s).`,
+        variant: 'success',
       });
+
+      // Reset files after successful upload
+      setFiles([]);
+    } catch (error) {
+      console.error('Error uploading documents:', error);
+      setUploadError(error.message || 'An error occurred while uploading documents.');
       
-      // Call the callback with the processed documents
-      onDocumentsSelected(uploadedFiles);
-      
-      setIsProcessing(false);
-    }, 1500);
+      // Show error toast
+      toast({
+        title: 'Upload Failed',
+        description: error.message || 'An error occurred while uploading documents.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
-  
-  // Render file size in a human-readable format
-  const formatFileSize = (bytes) => {
-    if (bytes < 1024) return bytes + ' B';
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    else return (bytes / 1048576).toFixed(1) + ' MB';
+
+  // Get compatible document types on component mount
+  React.useEffect(() => {
+    const getCompatibleTypes = async () => {
+      try {
+        const types = await documentIntelligenceService.getCompatibleDocumentTypes(regulatoryContext);
+        setCompatibleTypes(types);
+      } catch (error) {
+        console.error('Error fetching compatible document types:', error);
+      }
+    };
+
+    getCompatibleTypes();
+  }, [regulatoryContext]);
+
+  // Remove a file from the selection
+  const removeFile = (index) => {
+    const newFiles = [...files];
+    newFiles.splice(index, 1);
+    setFiles(newFiles);
   };
-  
+
   return (
-    <Card className={`overflow-hidden ${className}`}>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold">Document Batch Upload</CardTitle>
-        <CardDescription>
-          Upload multiple regulatory documents for batch processing
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* Drop zone */}
-          <div 
-            className="border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <FileUp className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-            <p className="text-sm text-gray-600 mb-2">
-              Drag and drop documents here or click to browse
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Upload Documents</CardTitle>
+          <CardDescription>
+            Upload regulatory documents to extract device information and streamline your workflow.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Extraction Mode Selector */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Extraction Mode</label>
+            <Select 
+              value={extractionMode} 
+              onValueChange={(value) => {
+                if (onExtractionModeChange) {
+                  onExtractionModeChange(value);
+                }
+              }}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select extraction mode" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="basic">Basic (Fast)</SelectItem>
+                <SelectItem value="enhanced">Enhanced</SelectItem>
+                <SelectItem value="regulatory">Regulatory Focus</SelectItem>
+                <SelectItem value="comprehensive">Comprehensive (Detailed)</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {extractionMode === 'basic' && 'Basic extraction provides quick results with essential information only.'}
+              {extractionMode === 'enhanced' && 'Enhanced extraction balances speed and detail for most use cases.'}
+              {extractionMode === 'regulatory' && 'Regulatory focus optimizes extraction for compliance data and requirements.'}
+              {extractionMode === 'comprehensive' && 'Comprehensive extraction provides the most detailed results but takes longer to process.'}
             </p>
-            <Button variant="outline" size="sm">
-              <FilePlus className="mr-2 h-4 w-4" />
-              Select Files
-            </Button>
+          </div>
+
+          {/* File Drop Zone */}
+          <div
+            className={`border-2 border-dashed rounded-lg p-6 text-center hover:bg-accent/50 transition-colors ${
+              isUploading ? 'pointer-events-none opacity-50' : 'cursor-pointer'
+            }`}
+            onClick={() => fileInputRef.current?.click()}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+          >
             <input
               type="file"
               ref={fileInputRef}
+              onChange={handleFileChange}
               className="hidden"
               multiple
-              accept=".pdf,.doc,.docx"
-              onChange={handleFileSelect}
+              accept=".pdf,.docx,.doc,.xml,.txt"
+              disabled={isUploading}
             />
+            <div className="flex flex-col items-center justify-center py-4">
+              <Upload className="h-10 w-10 mb-2 text-muted-foreground" />
+              <h3 className="text-lg font-semibold mb-1">Upload Documents</h3>
+              <p className="text-sm text-muted-foreground mb-2">
+                Drag and drop files here or click to browse
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Accepted formats: PDF, DOCX, DOC, XML, TXT
+              </p>
+            </div>
           </div>
-          
-          {/* File list */}
-          {uploadedFiles.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <h3 className="text-sm font-medium">Selected Documents ({uploadedFiles.length})</h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={handleClearAll}
-                  disabled={isProcessing}
-                >
-                  Clear All
-                </Button>
-              </div>
-              
-              <div className="max-h-60 overflow-y-auto space-y-2 pr-2">
-                {uploadedFiles.map((file) => (
-                  <div key={file.id} className="flex items-start space-x-2 bg-gray-50 p-2 rounded-md">
-                    <FileText className="h-5 w-5 text-blue-600 mt-1 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{file.name}</p>
-                      <div className="flex items-center text-xs text-gray-500 space-x-2">
-                        <span>{formatFileSize(file.size)}</span>
-                        <span className="text-gray-300">|</span>
-                        <span>Detected: {file.documentType}</span>
-                        <span className="text-gray-300">|</span>
-                        <span>Confidence: {Math.round(file.confidence * 100)}%</span>
-                      </div>
-                    </div>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-6 w-6 p-0"
-                      onClick={() => handleRemoveFile(file.id)}
-                      disabled={isProcessing}
-                    >
-                      <X className="h-4 w-4" />
-                      <span className="sr-only">Remove</span>
-                    </Button>
-                  </div>
+
+          {/* Compatible Document Types */}
+          {compatibleTypes.length > 0 && (
+            <div className="text-xs text-muted-foreground">
+              <p className="font-medium mb-1">Compatible Document Types:</p>
+              <ul className="list-disc list-inside">
+                {compatibleTypes.map((type, index) => (
+                  <li key={index}>{type.name} - {type.description}</li>
                 ))}
-              </div>
-              
-              <Button
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                onClick={handleProcessFiles}
-                disabled={isProcessing}
-              >
-                {isProcessing ? (
-                  <>Processing Documents...</>
-                ) : (
-                  <>
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Process {uploadedFiles.length} Document{uploadedFiles.length !== 1 ? 's' : ''}
-                  </>
-                )}
-              </Button>
+              </ul>
             </div>
           )}
-          
-          {/* Additional info */}
-          <div className="bg-blue-50 text-blue-800 rounded-md p-3 text-xs">
-            <p className="font-medium mb-1">How Intelligent Document Processing Works:</p>
-            <ol className="list-decimal list-inside space-y-1 pl-1">
-              <li>Document type recognition identifies the regulatory document category</li>
-              <li>Multi-layer content extraction captures structured regulatory data</li>
-              <li>Semantic classification organizes content by purpose and meaning</li>
-              <li>Validation layer ensures compliance with regulatory standards</li>
-            </ol>
+
+          {/* Selected Files List */}
+          {files.length > 0 && (
+            <div className="space-y-2">
+              <h4 className="text-sm font-medium">Selected Files ({files.length})</h4>
+              <ul className="divide-y">
+                {files.map((file, index) => (
+                  <li key={index} className="py-2 flex items-center justify-between">
+                    <div className="flex items-center">
+                      <FileText className="h-5 w-5 mr-2 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-medium truncate">{file.name}</p>
+                        <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeFile(index);
+                      }}
+                      disabled={isUploading}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* Upload Progress */}
+          {isUploading && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Uploading...</span>
+                <span className="text-sm">{uploadProgress}%</span>
+              </div>
+              <Progress value={uploadProgress} />
+            </div>
+          )}
+
+          {/* Upload Error */}
+          {uploadError && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Upload Error</AlertTitle>
+              <AlertDescription>{uploadError}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Upload Button */}
+          <div className="flex justify-end">
+            <Button
+              onClick={handleUpload}
+              disabled={isUploading || files.length === 0}
+              className="flex items-center gap-2"
+            >
+              {isUploading ? 'Uploading...' : 'Upload and Process'}
+              {!isUploading && <CheckCircle2 className="h-4 w-4" />}
+            </Button>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
