@@ -515,6 +515,160 @@ const module5Templates = [
   {
     ...createTemplateBase(
       'module5',
+      '5.3.5.2',
+      'Uncontrolled Clinical Study Report',
+      'Reports of uncontrolled or open-label clinical studies',
+      'Clinical'
+    ),
+    sections: [
+      { id: '5.3.5.2.1', title: 'Protocol', required: true },
+      { id: '5.3.5.2.2', title: 'Study Report', required: true }
+    ],
+    structure: {
+      sections: [
+        {
+          title: 'UNCONTROLLED CLINICAL STUDY REPORT',
+          subsections: [
+            { title: '1. Title Page' },
+            { title: '2. Synopsis' },
+            { title: '3. Table of Contents' },
+            { title: '4. Introduction' },
+            { title: '5. Study Objectives' },
+            { title: '6. Study Design' },
+            { title: '7. Subject Information' },
+            { title: '8. Results' },
+            { title: '9. Discussion and Conclusions' },
+            { title: '10. Appendices' }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    ...createTemplateBase(
+      'module5',
+      '5.3.5.3',
+      'Integrated Efficacy Summary',
+      'Integrated analyses of efficacy data from multiple studies',
+      'Clinical'
+    ),
+    sections: [
+      { id: '5.3.5.3.1', title: 'Summary of Efficacy', required: true }
+    ],
+    structure: {
+      sections: [
+        {
+          title: 'INTEGRATED EFFICACY SUMMARY',
+          subsections: [
+            { title: '1. Introduction' },
+            { title: '2. Overall Study Information' },
+            { title: '3. Integrated Analyses' },
+            { title: '4. Conclusions' }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    ...createTemplateBase(
+      'module5',
+      '5.3.5.4',
+      'Other Clinical Study Reports',
+      'Other clinical study reports not covered elsewhere',
+      'Clinical'
+    ),
+    sections: [
+      { id: '5.3.5.4.1', title: 'Study Report', required: true }
+    ],
+    structure: {
+      sections: [
+        {
+          title: 'OTHER CLINICAL STUDY REPORTS',
+          subsections: [
+            { title: '1. Introduction' },
+            { title: '2. Study Details' },
+            { title: '3. Results' },
+            { title: '4. Discussion' }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    ...createTemplateBase(
+      'module5',
+      '5.3.6',
+      'Postmarketing Experience Report',
+      'Summary of postmarketing data and safety updates',
+      'Clinical'
+    ),
+    sections: [
+      { id: '5.3.6.1', title: 'Market Experience', required: true },
+      { id: '5.3.6.2', title: 'Safety Update', required: true }
+    ],
+    structure: {
+      sections: [
+        {
+          title: 'POSTMARKETING EXPERIENCE REPORT',
+          subsections: [
+            { title: '1. Introduction' },
+            { title: '2. Market Experience' },
+            { title: '3. Safety Update' },
+            { title: '4. Conclusions' }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    ...createTemplateBase(
+      'module5',
+      '5.4',
+      'Literature References',
+      'Copies of referenced literature for the clinical documentation',
+      'Clinical'
+    ),
+    sections: [
+      { id: '5.4.1', title: 'Reference List', required: true }
+    ],
+    structure: {
+      sections: [
+        {
+          title: 'LITERATURE REFERENCES',
+          subsections: [
+            { title: 'Reference List' }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    ...createTemplateBase(
+      'module5',
+      '5.5',
+      'Integrated Summaries',
+      'Integrated summaries of safety and efficacy',
+      'Clinical'
+    ),
+    sections: [
+      { id: '5.5.1', title: 'Summary of Safety', required: true },
+      { id: '5.5.2', title: 'Summary of Efficacy', required: true }
+    ],
+    structure: {
+      sections: [
+        {
+          title: 'INTEGRATED SUMMARIES',
+          subsections: [
+            { title: '1. Summary of Safety' },
+            { title: '2. Summary of Efficacy' }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    ...createTemplateBase(
+      'module5',
       '5.2',
       'Tabular Listing of All Clinical Studies',
       'Tabular listing of all clinical studies included in the application',
