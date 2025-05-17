@@ -7,9 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import DocumentUploader from "@/components/document-intelligence/DocumentUploader";
-import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
+// Document Intelligence components and services moved to combined import below
 import { 
   Form, 
   FormControl, 
@@ -63,7 +61,7 @@ import {
 import { useTenant } from '@/contexts/TenantContext.tsx';
 import { useToast } from '@/hooks/use-toast';
 import DocumentUploader from '@/components/document-intelligence/DocumentUploader';
-import documentIntelligenceService from '@/services/DocumentIntelligenceService';
+import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
 
 // Highly structured schema following FDA 510(k) requirements for device intake
 const fdaDeviceIntakeSchema = z.object({
