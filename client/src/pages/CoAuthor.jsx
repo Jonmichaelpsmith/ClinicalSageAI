@@ -58,6 +58,7 @@ import * as aiService from '../services/aiService';
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
 const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
 const GoogleDocsEmbed = lazy(() => import('../components/GoogleDocsEmbed'));
+const EctdFileTree = lazy(() => import('../components/ectd/EctdFileTree'));
 import { 
   FileText, 
   Edit, 
@@ -235,6 +236,7 @@ export default function CoAuthor() {
   const [editorType, setEditorType] = useState('google'); // Changed default to 'google'
   // AI Assistant state
   const [aiAssistantOpen, setAiAssistantOpen] = useState(false);
+  const [ectdTreeOpen, setEctdTreeOpen] = useState(false);
   const [aiAssistantMode, setAiAssistantMode] = useState('suggestions'); // 'suggestions', 'compliance', 'formatting'
   const [aiUserQuery, setAiUserQuery] = useState('');
   const [aiResponse, setAiResponse] = useState(null);
@@ -2752,7 +2754,7 @@ export default function CoAuthor() {
               <Users className="h-4 w-4 mr-2" />
               Team Collaboration
             </Button>
-            <Button 
+            <Button
               variant={aiAssistantOpen ? "default" : "outline"}
               size="sm"
               onClick={() => setAiAssistantOpen(!aiAssistantOpen)}
@@ -2760,6 +2762,15 @@ export default function CoAuthor() {
             >
               <Sparkles className="h-4 w-4 mr-2" />
               AI Assistant
+            </Button>
+            <Button
+              variant={ectdTreeOpen ? "default" : "outline"}
+              size="sm"
+              onClick={() => setEctdTreeOpen(!ectdTreeOpen)}
+              className={`flex items-center ${ectdTreeOpen ? "bg-blue-600 text-white" : ""}`}
+            >
+              <FolderOpen className="h-4 w-4 mr-2" />
+              eCTD Files
             </Button>
           </div>
         </div>
@@ -3183,7 +3194,14 @@ export default function CoAuthor() {
             </div>
           </div>
         )}
-      
+        {ectdTreeOpen && (
+          <div className="w-64 border rounded-md overflow-hidden bg-white shadow-md flex-shrink-0 mr-6">
+            <Suspense fallback={<div className="p-2 text-sm">Loading...</div>}>
+              <EctdFileTree projectId={documentMetadata.applicationId} sequence={documentMetadata.sequence} />
+            </Suspense>
+          </div>
+        )}
+
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 flex-grow">
           {/* AI-Powered Document Editor Card - Enterprise-Grade Enhanced */}
