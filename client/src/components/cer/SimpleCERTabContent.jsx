@@ -1,6 +1,6 @@
 import React from 'react';
 import CerBuilderPanel from './CerBuilderPanel';
-import DocumentVaultPanel from './DocumentVaultPanel';
+import VaultPanel from '@/components/document-management/VaultPanel';
 import CerDataRetrievalPanel from './CerDataRetrievalPanel';
 import InternalClinicalDataPanel from './InternalClinicalDataPanel';
 import GSPRMappingPanel from './GSPRMappingPanel';
@@ -277,9 +277,7 @@ export default function SimpleCERTabContent({
   
   if (activeTab === 'documents') {
     return (
-      <DocumentVaultPanel 
-        jobId={`cer-${Date.now()}`} 
-      />
+      <VaultPanel moduleName="cer" moduleLabel="CER Documents" />
     );
   }
   
