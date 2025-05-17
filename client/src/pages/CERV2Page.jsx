@@ -1,13 +1,41 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 // Safely handle LumenAiAssistant context access with fallbacks
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, RefreshCw } from 'lucide-react';
+import { ShieldAlert, RefreshCw, AlertCircle } from 'lucide-react';
 import { initializeStates, saveState, loadState, recoverWorkflow, getWorkflowDiagnostics } from '../utils/stabilityPatches';
 import WorkflowContinuityManager from '../components/recovery/WorkflowContinuityManager';
 import DeviceProfileSelector from '../components/510k/DeviceProfileSelector';
+
+// Block navigation from the page during critical operations
+const NavigationBlocker = ({ isBlocking }) => {
+  const blockingRef = useRef(false);
+  
+  useEffect(() => {
+    blockingRef.current = isBlocking;
+    
+    // Handle before unload event to prevent leaving page 
+    const handleBeforeUnload = (e) => {
+      if (blockingRef.current) {
+        e.preventDefault();
+        e.returnValue = "Changes you made may not be saved. Are you sure you want to leave?";
+        return "Changes you made may not be saved. Are you sure you want to leave?";
+      }
+    };
+    
+    // Add the event listener
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    // Clean up
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isBlocking]);
+  
+  return null;
+};
 
 // Function to safely open documents and prevent redirection issues
 const openDocumentSafely = (url, documentName, showToast) => {
