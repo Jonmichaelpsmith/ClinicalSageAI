@@ -87,6 +87,11 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [isFetchingLiterature, setIsFetchingLiterature] = useState(false);
   const [activeTab, setActiveTab] = useState(initialActiveTab || 'predicates');
   
+  // Document Intelligence state variables
+  const [processedDocuments, setProcessedDocuments] = useState([]);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractedData, setExtractedData] = useState(null);
+  
   // 510k workflow specific state
   const [workflowStep, setWorkflowStep] = useState(1);
   const [workflowProgress, setWorkflowProgress] = useState(25);
