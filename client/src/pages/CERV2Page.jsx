@@ -2291,38 +2291,70 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       return <LiteratureReviewWorkflow cerDocumentId={cerDocumentId} />;
     }
     else if (activeTab === 'document-intelligence') {
-      // Import DocumentIntelligenceTab directly without lazy loading for better performance
+      // Import modules directly without lazy loading for immediate access
       const DocumentIntelligenceTab = require('../components/document-intelligence/DocumentIntelligenceTab').default;
       
-      // Simply prevent the profile selector when document intelligence is active
-      if (showProfileSelector) {
-        setShowProfileSelector(false);
-      }
+      // Forcefully hide any conflicting modals
+      useEffect(() => {
+        // Close the profile selector if it's open
+        if (showProfileSelector) {
+          setShowProfileSelector(false);
+        }
+        
+        // Store original body overflow to restore later
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        
+        // Hide any existing modals/dialogs (except our document intelligence modal)
+        const styleEl = document.createElement('style');
+        styleEl.id = 'di-override';
+        styleEl.textContent = `
+          /* Hide ANY dialog/modal except our document intelligence modal */
+          body > div[role="dialog"]:not(#di-modal),
+          body > div[aria-modal="true"]:not(#di-modal) {
+            display: none !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+          }
+        `;
+        document.head.appendChild(styleEl);
+        
+        // Clean up when unmounting
+        return () => {
+          document.body.style.overflow = originalOverflow;
+          if (styleEl && styleEl.parentNode) {
+            styleEl.parentNode.removeChild(styleEl);
+          }
+        };
+      }, []);
 
       return (
         <div 
-          className="fixed inset-0 bg-gray-600/70 z-[100]"
+          id="di-modal"
+          className="fixed inset-0 bg-black/50 z-[9999]" 
           role="dialog"
+          aria-modal="true"
         >
-          <div className="absolute inset-4 bg-white rounded-lg shadow-lg overflow-auto">
+          <div className="absolute inset-8 bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="bg-blue-50 flex items-center justify-between p-4 border-b">
               <div className="flex items-center gap-2">
                 <Brain className="h-6 w-6 text-blue-600" />
                 <h2 className="text-xl font-semibold">Document Intelligence</h2>
               </div>
               
               <Button 
-                variant="ghost" 
-                size="icon"
+                variant="secondary" 
+                size="sm"
                 onClick={() => setActiveTab('device')}
               >
-                <X className="h-5 w-5" />
+                Close
               </Button>
             </div>
             
-            {/* Main content */}
-            <div className="p-4">
+            {/* Main content with proper scrolling */}
+            <div className="flex-1 overflow-auto p-6">
               <DocumentIntelligenceTab 
                 regulatoryContext={documentType}
                 deviceProfile={deviceProfile}
