@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -47,6 +47,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import docuShareService from '@/services/DocuShareService';
 
 // Sample documents for demo purposes with more professional examples
 const sampleDocuments = [
@@ -423,7 +424,7 @@ export default function DocumentVaultPanel({
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [showPdfViewerDialog, setShowPdfViewerDialog] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState(null);
-  const [documents, setDocuments] = useState(sampleDocuments);
+  const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [uploadFile, setUploadFile] = useState(null);
@@ -439,6 +440,30 @@ export default function DocumentVaultPanel({
     author: 'TrialSage AI',
     tags: documentType === 'cer' ? ['CER'] : ['510k']
   });
+
+  // Fetch documents on component mount
+  useEffect(() => {
+    const fetchDocs = async () => {
+      try {
+        setLoading(true);
+        const res = await docuShareService.getDocuments();
+        if (res?.documents) {
+          setDocuments(res.documents);
+        } else if (Array.isArray(res)) {
+          setDocuments(res);
+        } else {
+          setDocuments([]);
+        }
+      } catch (err) {
+        console.error('Error fetching documents:', err);
+        setError('Failed to load documents');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDocs();
+  }, []);
   
   // Filter documents based on search query, document type, and current path
   const filteredDocuments = documents.filter(doc => {
@@ -475,8 +500,8 @@ export default function DocumentVaultPanel({
     return result;
   }
   
-  // Metrics for document dashboard
-  const documentMetrics = {
+  // Metrics for document dashboard computed from current documents
+  const documentMetrics = React.useMemo(() => ({
     total: documents.length,
     cer: documents.filter(d => d.type === 'cer').length,
     fivetenk: documents.filter(d => d.type === '510k').length,
@@ -484,7 +509,7 @@ export default function DocumentVaultPanel({
     final: documents.filter(d => d.status === 'final').length,
     draft: documents.filter(d => d.status === 'draft').length,
     approved: documents.filter(d => d.status === 'approved').length
-  };
+  }), [documents]);
   
   // Handle file selection for upload
   const handleFileChange = (e) => {
@@ -510,31 +535,37 @@ export default function DocumentVaultPanel({
       return;
     }
     
-    // In a real app, we would upload the file to the server here
-    // For demo, we'll just add it to our local state
-    const newDocument = {
-      id: Date.now().toString(),
-      name: uploadMetadata.name,
-      type: uploadMetadata.type,
-      category: uploadMetadata.category,
-      status: uploadMetadata.status,
-      description: uploadMetadata.description,
-      author: uploadMetadata.author,
-      tags: uploadMetadata.tags,
-      dateCreated: new Date().toISOString(),
-      dateModified: new Date().toISOString(),
-      size: uploadFile.size,
-      path: currentPath
-    };
-    
-    setDocuments([newDocument, ...documents]);
-    setShowUploadDialog(false);
-    
-    toast({
-      title: "Document Uploaded",
-      description: `${uploadMetadata.name} was successfully uploaded`,
-      variant: "default"
-    });
+    try {
+      setLoading(true);
+      await docuShareService.uploadDocument(uploadFile, {
+        ...uploadMetadata,
+        path: currentPath
+      });
+
+      const refreshed = await docuShareService.getDocuments();
+      if (refreshed?.documents) {
+        setDocuments(refreshed.documents);
+      } else if (Array.isArray(refreshed)) {
+        setDocuments(refreshed);
+      }
+
+      setShowUploadDialog(false);
+
+      toast({
+        title: "Document Uploaded",
+        description: `${uploadMetadata.name} was successfully uploaded`,
+        variant: "default"
+      });
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      toast({
+        title: 'Upload Failed',
+        description: 'Could not upload document',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
     
     // Reset upload form
     setUploadFile(null);
