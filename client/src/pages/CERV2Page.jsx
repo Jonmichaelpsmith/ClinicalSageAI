@@ -1494,10 +1494,11 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                   saveState('deviceProfile', newProfile);
                 }
               }}
-              initialError={predicateSearchError} // Pass any existing error
+              /* Keep workflow on the current page even if errors occur */
               documentId={k510DocumentId}
               onPredicatesFound={handlePredicatesComplete} // CRITICAL FIX: Connect onPredicatesFound callback
               organizationId={1}
+              onSearchStateChange={setIsSearching} // Connect search state to the parent's isSearching state
             />
           </div>
         );
