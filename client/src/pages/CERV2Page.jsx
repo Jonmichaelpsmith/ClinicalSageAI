@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 // Safely handle LumenAiAssistant context access with fallbacks
 import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import { useToast } from '@/hooks/use-toast';
@@ -8,34 +8,7 @@ import { ShieldAlert, RefreshCw } from 'lucide-react';
 import { initializeStates, saveState, loadState, recoverWorkflow, getWorkflowDiagnostics } from '../utils/stabilityPatches';
 import WorkflowContinuityManager from '../components/recovery/WorkflowContinuityManager';
 import DeviceProfileSelector from '../components/510k/DeviceProfileSelector';
-
-// Block navigation from the page during critical operations
-const NavigationBlocker = ({ isBlocking }) => {
-  const blockingRef = useRef(false);
-  
-  useEffect(() => {
-    blockingRef.current = isBlocking;
-    
-    // Handle before unload event to prevent leaving page 
-    const handleBeforeUnload = (e) => {
-      if (blockingRef.current) {
-        e.preventDefault();
-        e.returnValue = "Changes you made may not be saved. Are you sure you want to leave?";
-        return "Changes you made may not be saved. Are you sure you want to leave?";
-      }
-    };
-    
-    // Add the event listener
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    
-    // Clean up
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isBlocking]);
-  
-  return null;
-};
+import NavigationBlocker from '../components/navigation/NavigationBlocker';
 
 // Function to safely open documents and prevent redirection issues
 const openDocumentSafely = (url, documentName, showToast) => {
@@ -2750,6 +2723,9 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   // Render page
   return (
     <div className="min-h-screen bg-gray-50 pb-8">
+      {/* Navigation Blocker - prevents accidental navigation during critical operations */}
+      <NavigationBlocker isBlocking={isSearching || isNavigating || isLoading} />
+      
       <header className="bg-white border-b">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
