@@ -108,6 +108,35 @@ router.post('/', upload.single('file'), async (req, res) => {
 });
 
 /**
+ * @route POST /api/templates/upload
+ * @description Create a new template with file upload
+ */
+router.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    const templateData = {
+      ...req.body,
+      required: req.body.required === 'true',
+      fileContent: req.file ? req.file.buffer : null,
+    };
+
+    if (typeof templateData.sections === 'string') {
+      try {
+        templateData.sections = JSON.parse(templateData.sections);
+      } catch (err) {
+        logger.warn('Error parsing sections JSON:', err);
+        templateData.sections = [];
+      }
+    }
+
+    const template = await templateService.createTemplate(templateData);
+    res.status(201).json(template);
+  } catch (error) {
+    logger.error('Error uploading template:', error);
+    res.status(500).json({ error: error.message || 'Failed to upload template' });
+  }
+});
+
+/**
  * @route PUT /api/templates/:id
  * @description Update an existing template
  */
