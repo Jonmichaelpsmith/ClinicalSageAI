@@ -98,6 +98,7 @@ import {
   BookOpen,
   ArrowUpRight,
   Filter,
+  PlayCircle,
   Bell,
   HelpCircle,
   CheckSquare,
