@@ -1,7 +1,7 @@
 // Toast notification system using SecureToast
 
 import React, { createContext, useContext, ReactNode } from 'react';
-import { useToast as useSecureToast } from '../components/security/SecureToast';
+import { useToast as useSecureToast } from '../../client/src/components/security/SecureToast';
 
 // Define options type
 interface ToastOptions {

@@ -261,8 +261,11 @@ export default function registerRoutes(app: Express): void {
   // Register our enhanced CER routes (using emergency-fix for client demo)
   app.use('/api/cer', emergencyFixRouter);
   
-  // Register FAERS API routes  
+  // Register FAERS API routes
   app.use('/api/faers', faersRouter);
+
+  // Register Collaboration API routes
+  app.use('/api/collaboration', collaborationRoutes);
 
   // Register Literature API routes
   app.use('/api/literature', literatureRouter);

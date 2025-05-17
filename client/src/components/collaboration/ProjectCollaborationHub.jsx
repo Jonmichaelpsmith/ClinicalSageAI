@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import axios from 'axios';
+import { secureFetch } from '@/lib/api-security';
 // Only import icons that are used in the initial render
 // Other icons will be imported dynamically as needed
 import { 
@@ -127,15 +127,14 @@ const ProjectCollaborationHub = ({
   const fetchProjectData = async () => {
     setLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock data - in real implementation, these would be API calls
-      setMessages(generateMockMessages());
-      setTasks(generateMockTasks());
-      setMilestones(generateMockMilestones());
-      setApprovalRequests(generateMockApprovalRequests());
-      
+      const res = await secureFetch(`/api/projects/${projectId}/collaboration`);
+      const data = await res.json();
+
+      setMessages(data.messages || []);
+      setTasks(data.tasks || []);
+      setMilestones(data.milestones || []);
+      setApprovalRequests(data.approvalRequests || []);
+
       // Request AI suggestions
       generateAiSuggestions();
     } catch (error) {
@@ -153,38 +152,10 @@ const ProjectCollaborationHub = ({
   // Generate AI suggestions based on project status
   const generateAiSuggestions = async () => {
     try {
-      // Simulate API call - in real implementation, this would call the AI service
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Add AI suggestions to messages
-      const aiSuggestions = [
-        {
-          id: `suggestion-${Date.now()}-1`,
-          type: MESSAGE_TYPE.AI_SUGGESTION,
-          content: "Based on your clinical evaluation data, consider adding a comparison with the latest similar device (MedTech XR200) that received FDA clearance last month.",
-          timestamp: new Date().toISOString(),
-          sender: { id: 'ai', name: 'TrialSage AI', avatar: '/ai-avatar.png' },
-          confidence: 0.92,
-          actions: [
-            { id: 'action-1', label: 'Add to Tasks', action: 'create-task' },
-            { id: 'action-2', label: 'Dismiss', action: 'dismiss' }
-          ]
-        },
-        {
-          id: `suggestion-${Date.now()}-2`,
-          type: MESSAGE_TYPE.AI_SUGGESTION,
-          content: "I noticed your predicate device section is missing comparative data for electrical characteristics. This could delay your 510(k) submission approval.",
-          timestamp: new Date().toISOString(),
-          sender: { id: 'ai', name: 'TrialSage AI', avatar: '/ai-avatar.png' },
-          confidence: 0.87,
-          actions: [
-            { id: 'action-3', label: 'View Details', action: 'view-details' },
-            { id: 'action-4', label: 'Dismiss', action: 'dismiss' }
-          ]
-        }
-      ];
-      
-      setMessages(prevMessages => [...prevMessages, ...aiSuggestions]);
+      const res = await secureFetch(`/api/projects/${projectId}/ai-suggestions`);
+      const aiSuggestions = await res.json();
+
+      setMessages(prevMessages => [...prevMessages, ...(aiSuggestions || [])]);
     } catch (error) {
       console.error("Error generating AI suggestions:", error);
     }
