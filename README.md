@@ -36,6 +36,19 @@ TrialSage™ is an advanced multi-tenant AI-powered regulatory document manageme
 
 The platform uses a multi-tenant architecture similar to Salesforce's model, with strict tenant isolation at both application and database levels. All tables include organization_id columns enforced through Row-Level Security policies, and API requests pass through tenant context middleware.
 
+## CSR Intelligence Engine
+
+TrialSage's CSR Intelligence Engine converts clinical study reports into structured knowledge that powers search and benchmarking across thousands of documents. The `knowledge_scheduler.js` script keeps this knowledge current by automatically importing new CSRs, enhancing academic sources, and monitoring journal feeds.
+
+### Scheduler Commands
+
+```bash
+node knowledge_scheduler.js
+node knowledge_scheduler.js status
+```
+
+For advanced configuration and manual task options, see [KNOWLEDGE_ENHANCEMENT_README.md](./KNOWLEDGE_ENHANCEMENT_README.md).
+
 ## License
 
 Proprietary software - All rights reserved
