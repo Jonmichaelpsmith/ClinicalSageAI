@@ -229,6 +229,8 @@ export default function CoAuthor() {
   // Document editor integration state
   const [msWordPopupOpen, setMsWordPopupOpen] = useState(false);
   const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
+  const [wordDocBlob, setWordDocBlob] = useState(null);
+  const [wordDocUrl, setWordDocUrl] = useState(null);
   const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
   const [isGoogleAuthenticated, setIsGoogleAuthenticated] = useState(false);
   const [googleUserInfo, setGoogleUserInfo] = useState(null);
@@ -426,7 +428,16 @@ export default function CoAuthor() {
     
     checkGoogleAuth();
   }, []);
-  
+
+  // Clean up temporary Word document resources when popup closes
+  useEffect(() => {
+    if (!msWordPopupOpen && wordDocUrl) {
+      URL.revokeObjectURL(wordDocUrl);
+      setWordDocUrl(null);
+      setWordDocBlob(null);
+    }
+  }, [msWordPopupOpen]);
+
   const [validationResults] = useState({
     completeness: 78,
     consistency: 92,
