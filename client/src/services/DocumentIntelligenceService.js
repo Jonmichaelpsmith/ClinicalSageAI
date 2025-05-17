@@ -1,5 +1,3 @@
-import axios from 'axios';
-
 /**
  * Document Intelligence Service
  * 
@@ -8,7 +6,7 @@ import axios from 'axios';
  */
 class DocumentIntelligenceService {
   constructor() {
-    this.baseURL = '/api/document-intelligence';
+    this.baseUrl = '/api/document-intelligence';
   }
 
   /**
@@ -20,37 +18,53 @@ class DocumentIntelligenceService {
    * @returns {Promise<Array>} The processed document metadata
    */
   async processDocuments(files, regulatoryContext, progressCallback = null) {
-    const formData = new FormData();
-    
-    // Add each file to the form data
-    files.forEach((file, index) => {
-      formData.append('documents', file);
-    });
-    
-    // Add the regulatory context parameter
-    formData.append('regulatoryContext', regulatoryContext || '510k');
-
-    // Configure the request with progress tracking
-    const config = {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    };
-    
-    // Add upload progress tracking if a callback was provided
-    if (progressCallback && typeof progressCallback === 'function') {
-      config.onUploadProgress = (progressEvent) => {
-        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-        progressCallback(percentCompleted);
-      };
-    }
-
     try {
-      const response = await axios.post(`${this.baseURL}/process`, formData, config);
-      return response.data.processedDocuments || [];
+      const formData = new FormData();
+      
+      // Add each file to the form data
+      files.forEach(file => {
+        formData.append('documents', file);
+      });
+      
+      // Add regulatory context
+      formData.append('regulatoryContext', regulatoryContext);
+      
+      const xhr = new XMLHttpRequest();
+      
+      // Return a promise that resolves when the upload is complete
+      const uploadPromise = new Promise((resolve, reject) => {
+        xhr.open('POST', `${this.baseUrl}/process`, true);
+        
+        // Set up progress tracking if callback provided
+        if (progressCallback) {
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              const percentComplete = Math.round((event.loaded / event.total) * 100);
+              progressCallback(percentComplete);
+            }
+          };
+        }
+        
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response.processedDocuments || []);
+          } else {
+            reject(new Error(`Upload failed with status ${xhr.status}: ${xhr.statusText}`));
+          }
+        };
+        
+        xhr.onerror = () => {
+          reject(new Error('Network error occurred during upload'));
+        };
+        
+        xhr.send(formData);
+      });
+      
+      return await uploadPromise;
     } catch (error) {
       console.error('Error processing documents:', error);
-      throw new Error(error.response?.data?.message || 'Failed to process documents');
+      throw error;
     }
   }
 
@@ -63,15 +77,27 @@ class DocumentIntelligenceService {
    */
   async extractData(processedDocuments, regulatoryContext) {
     try {
-      const response = await axios.post(`${this.baseURL}/extract`, {
-        processedDocuments,
-        regulatoryContext
+      const response = await fetch(`${this.baseUrl}/extract`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          processedDocuments,
+          regulatoryContext
+        })
       });
       
-      return response.data.extractedData || {};
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Data extraction failed');
+      }
+      
+      const data = await response.json();
+      return data.extractedData;
     } catch (error) {
-      console.error('Error extracting data from documents:', error);
-      throw new Error(error.response?.data?.message || 'Failed to extract data from documents');
+      console.error('Error extracting data:', error);
+      throw error;
     }
   }
 
@@ -84,15 +110,27 @@ class DocumentIntelligenceService {
    */
   async applyExtractedData(extractedData, deviceProfileId) {
     try {
-      const response = await axios.post(`${this.baseURL}/apply`, {
-        extractedData,
-        deviceProfileId
+      const response = await fetch(`${this.baseUrl}/apply`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          extractedData,
+          deviceProfileId
+        })
       });
       
-      return response.data.updatedProfile || {};
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to apply extracted data');
+      }
+      
+      const data = await response.json();
+      return data.updatedProfile;
     } catch (error) {
       console.error('Error applying extracted data:', error);
-      throw new Error(error.response?.data?.message || 'Failed to apply extracted data');
+      throw error;
     }
   }
 
@@ -104,22 +142,22 @@ class DocumentIntelligenceService {
    */
   async getCompatibleDocumentTypes(regulatoryContext) {
     try {
-      const response = await axios.get(`${this.baseURL}/document-types`, {
-        params: { regulatoryContext }
-      });
+      const response = await fetch(
+        `${this.baseUrl}/document-types?regulatoryContext=${regulatoryContext}`
+      );
       
-      return response.data.documentTypes || [];
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to get document types');
+      }
+      
+      const data = await response.json();
+      return data.documentTypes || [];
     } catch (error) {
-      console.error('Error fetching compatible document types:', error);
-      return [
-        { id: 'technical', name: 'Technical Documentation', description: 'Technical specifications and engineering documents' },
-        { id: 'regulatory', name: 'Regulatory Filings', description: 'Previous regulatory submissions and approvals' },
-        { id: 'clinical', name: 'Clinical Studies', description: 'Clinical trial protocols and results' },
-        { id: 'quality', name: 'Quality Management', description: 'Quality system documentation and procedures' }
-      ];
+      console.error('Error getting compatible document types:', error);
+      throw error;
     }
   }
 }
 
-// Export a singleton instance of the service
 export const documentIntelligenceService = new DocumentIntelligenceService();
