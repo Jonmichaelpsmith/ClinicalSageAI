@@ -1,480 +1,390 @@
-import { useState, useRef, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Upload, FileText, AlertCircle, RefreshCw, CheckCircle2, FileUp } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
+/**
+ * DocumentUploader Component
+ * 
+ * A component for uploading and extracting structured data from regulatory documents.
+ * Supports PDF, DOCX, DOC, and TXT files with AI-assisted extraction.
+ */
 
-const DocumentUploader = ({ onExtractedData, maxFiles = 5 }) => {
-  const { toast } = useToast();
+import { useState, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  Upload, 
+  FileText, 
+  File, 
+  AlertCircle, 
+  CheckCircle, 
+  Loader2, 
+  X 
+} from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+
+/**
+ * Document Uploader Component
+ * 
+ * @param {Object} props Component properties
+ * @param {function} props.onExtractedData Callback function to receive extracted data
+ * @param {function} props.onError Callback function for errors
+ * @param {string[]} props.acceptedTypes Array of accepted file extensions (default: ['.pdf', '.docx', '.doc', '.txt'])
+ * @param {string} props.documentType Type of document being uploaded (default: 'technical')
+ * @param {boolean} props.showResults Whether to display extraction results (default: true)
+ * @param {number} props.confidenceThreshold Minimum confidence threshold for field extraction (default: 0.7)
+ * @param {number} props.maxFiles Maximum number of files allowed (default: 5)
+ * @param {number} props.maxSize Maximum file size in MB (default: 20)
+ */
+const DocumentUploader = ({ 
+  onExtractedData, 
+  onError,
+  acceptedTypes = ['.pdf', '.docx', '.doc', '.txt'],
+  documentType = 'technical',
+  showResults = true,
+  confidenceThreshold = 0.7,
+  maxFiles = 5,
+  maxSize = 20
+}) => {
+  // Component state
   const [files, setFiles] = useState([]);
-  const [documentType, setDocumentType] = useState("510k");
-  const [confidenceThreshold, setConfidenceThreshold] = useState(0.7);
-  const [processingState, setProcessingState] = useState({
-    isProcessing: false,
-    phase: null,
-    progress: 0,
-    message: ""
-  });
-  const [extractionResults, setExtractionResults] = useState(null);
-  const [activeTab, setActiveTab] = useState("upload");
+  const [uploading, setUploading] = useState(false);
+  const [processing, setProcessing] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [extractedFields, setExtractedFields] = useState([]);
+  const [error, setError] = useState(null);
+  const [selectedDocType, setSelectedDocType] = useState(documentType);
   const fileInputRef = useRef(null);
+  const { toast } = useToast();
   
+  // Format file size for display
+  const formatFileSize = (size) => {
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+  };
+  
+  // Check if file type is allowed
+  const isValidFileType = (file) => {
+    const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+    return acceptedTypes.includes(fileExt);
+  };
+  
+  // Check file size
+  const isValidFileSize = (file) => {
+    return file.size <= maxSize * 1024 * 1024;
+  };
+  
+  // Handle file selection
   const handleFileChange = (e) => {
     const selectedFiles = Array.from(e.target.files);
     
-    // Validate total file count
-    if (selectedFiles.length + files.length > maxFiles) {
+    // Check number of files
+    if (selectedFiles.length > maxFiles) {
+      setError(`You can only upload up to ${maxFiles} files at once.`);
       toast({
+        variant: "destructive",
         title: "Too many files",
-        description: `You can upload a maximum of ${maxFiles} files in a single batch`,
-        variant: "destructive"
+        description: `You can only upload up to ${maxFiles} files at once.`
       });
       return;
     }
     
-    // Validate file types
-    const validTypes = [
-      'application/pdf', 
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'application/msword',
-      'text/plain'
-    ];
-    
-    const invalidFiles = selectedFiles.filter(file => !validTypes.includes(file.type));
-    
-    if (invalidFiles.length > 0) {
-      toast({
-        title: "Invalid file type",
-        description: `Only PDF, DOCX, DOC, and TXT files are accepted`,
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Add new files to the list
-    setFiles(prevFiles => [...prevFiles, ...selectedFiles]);
-  };
-  
-  const handleRemoveFile = (index) => {
-    setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
-  };
-  
-  const handleDragOver = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.currentTarget.classList.add('border-primary');
-  };
-  
-  const handleDragLeave = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.currentTarget.classList.remove('border-primary');
-  };
-  
-  const handleDrop = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.currentTarget.classList.remove('border-primary');
-    
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const droppedFiles = Array.from(e.dataTransfer.files);
-      
-      // Validate total file count
-      if (droppedFiles.length + files.length > maxFiles) {
+    // Validate each file
+    const validFiles = selectedFiles.filter(file => {
+      // Check file type
+      if (!isValidFileType(file)) {
         toast({
-          title: "Too many files",
-          description: `You can upload a maximum of ${maxFiles} files in a single batch`,
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      // Validate file types
-      const validTypes = [
-        'application/pdf', 
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/msword',
-        'text/plain'
-      ];
-      
-      const invalidFiles = droppedFiles.filter(file => !validTypes.includes(file.type));
-      
-      if (invalidFiles.length > 0) {
-        toast({
+          variant: "destructive",
           title: "Invalid file type",
-          description: `Only PDF, DOCX, DOC, and TXT files are accepted`,
-          variant: "destructive"
+          description: `${file.name} is not a supported file type. Please upload ${acceptedTypes.join(', ')} files.`
         });
-        return;
+        return false;
       }
       
-      // Add dropped files to the list
-      setFiles(prevFiles => [...prevFiles, ...droppedFiles]);
-    }
+      // Check file size
+      if (!isValidFileSize(file)) {
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: `${file.name} exceeds the maximum file size of ${maxSize}MB.`
+        });
+        return false;
+      }
+      
+      return true;
+    });
+    
+    // Update files state
+    setFiles(validFiles);
+    setError(null);
+    setExtractedFields([]);
+    
+    // Clear file input
+    e.target.value = null;
   };
   
-  const handleProcessDocuments = async () => {
+  // Handle file removal
+  const handleRemoveFile = (index) => {
+    setFiles(files.filter((_, i) => i !== index));
+    setExtractedFields([]);
+  };
+  
+  // Handle document type selection
+  const handleDocTypeChange = (value) => {
+    setSelectedDocType(value);
+  };
+  
+  // Handle file upload and processing
+  const handleUpload = async () => {
     if (files.length === 0) {
+      setError("Please select at least one file to upload.");
       toast({
+        variant: "destructive",
         title: "No files selected",
-        description: "Please select files to process",
-        variant: "destructive"
+        description: "Please select at least one file to upload."
       });
       return;
     }
+    
+    setUploading(true);
+    setProcessing(true);
+    setUploadProgress(0);
+    setError(null);
     
     try {
-      setProcessingState({
-        isProcessing: true,
-        phase: 'starting',
-        progress: 0,
-        message: "Initializing document processing..."
+      // Create form data for upload
+      const formData = new FormData();
+      
+      // Add files to form data
+      files.forEach(file => {
+        formData.append('documents', file);
       });
       
-      setExtractionResults(null);
+      // Add document type and confidence threshold
+      formData.append('documentType', selectedDocType);
+      formData.append('confidenceThreshold', confidenceThreshold.toString());
       
-      // Process the documents
-      const results = await documentIntelligenceService.extractDataFromDocuments(
-        files,
-        {
-          documentType,
-          confidenceThreshold,
-          onProgress: (update) => {
-            setProcessingState({
-              isProcessing: true,
-              phase: update.phase,
-              progress: update.progress * 100,
-              message: update.message
-            });
-          }
-        }
-      );
+      // Create fake progress updates (since we can't track actual progress)
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          const newProgress = prev + Math.random() * 10;
+          return newProgress > 90 ? 90 : newProgress;
+        });
+      }, 300);
       
-      // Update with results
-      setExtractionResults(results);
-      
-      // Switch to results tab
-      setActiveTab("results");
-      
-      // Reset processing state
-      setProcessingState({
-        isProcessing: false,
-        phase: null,
-        progress: 0,
-        message: ""
+      // Send the files to the backend
+      const response = await fetch('/api/document-intelligence/process', {
+        method: 'POST',
+        body: formData,
       });
       
-      // Show success message
+      // Clear progress interval
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      // Process response
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Error processing documents');
+      }
+      
+      // Parse response data
+      const data = await response.json();
+      
+      // Update state with extracted fields
+      setExtractedFields(data.extractedFields || []);
+      
+      // Notify parent component
+      if (onExtractedData) {
+        onExtractedData(data.extractedFields);
+      }
+      
+      // Show success toast
       toast({
-        title: "Document Processing Complete",
-        description: `Successfully extracted ${results.length} fields from your documents`,
+        title: "Processing complete",
+        description: `Successfully extracted ${data.extractedFields.length} fields from your document${files.length > 1 ? 's' : ''}.`,
         variant: "default"
       });
     } catch (error) {
-      console.error("Document processing error:", error);
+      console.error('Document processing error:', error);
+      setError(error.message || 'Error processing document');
       
-      // Reset processing state
-      setProcessingState({
-        isProcessing: false,
-        phase: null,
-        progress: 0,
-        message: ""
-      });
+      if (onError) {
+        onError(error);
+      }
       
-      // Show error message
       toast({
-        title: "Document Processing Failed",
-        description: error.message || "An error occurred while processing your documents",
-        variant: "destructive"
+        variant: "destructive",
+        title: "Processing failed",
+        description: error.message || 'Error processing document'
       });
+    } finally {
+      setUploading(false);
+      setProcessing(false);
     }
   };
   
-  const handleClearFiles = () => {
-    setFiles([]);
-    setExtractionResults(null);
-    setActiveTab("upload");
-  };
-  
-  const handleApplyData = useCallback(() => {
-    if (!extractionResults || extractionResults.length === 0) {
-      toast({
-        title: "No Data to Apply",
-        description: "There are no extracted fields to apply to your form",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Call the parent component with the extracted data
-    if (onExtractedData) {
-      onExtractedData(extractionResults);
-    }
-    
-    toast({
-      title: "Data Applied",
-      description: "The extracted data has been applied to your form",
-      variant: "default"
-    });
-  }, [extractionResults, onExtractedData, toast]);
-  
-  const formatFileSize = (bytes) => {
-    if (bytes < 1024) return bytes + ' bytes';
-    else if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-    else return (bytes / 1048576).toFixed(1) + ' MB';
-  };
-  
-  const getPhaseIcon = () => {
-    switch (processingState.phase) {
-      case 'uploading':
-        return <FileUp className="mr-2 h-4 w-4 animate-pulse" />;
-      case 'analyzing':
-        return <RefreshCw className="mr-2 h-4 w-4 animate-spin" />;
-      case 'complete':
-        return <CheckCircle2 className="mr-2 h-4 w-4" />;
-      default:
-        return null;
-    }
-  };
-  
-  const renderProcessingIndicator = () => {
-    if (!processingState.isProcessing) return null;
-    
-    return (
-      <div className="mt-4">
-        <div className="flex items-center mb-2">
-          {getPhaseIcon()}
-          <span className="text-sm font-medium">{processingState.message}</span>
-        </div>
-        <Progress value={processingState.progress} className="h-2" />
-      </div>
-    );
-  };
-  
-  const renderFileList = () => {
-    if (files.length === 0) {
-      return (
-        <div className="py-4 text-center text-muted-foreground">
-          <FileText className="mx-auto h-8 w-8 mb-2" />
-          <p>No files selected</p>
-        </div>
-      );
-    }
-    
-    return (
-      <ul className="divide-y">
-        {files.map((file, index) => (
-          <li key={index} className="py-2 flex justify-between items-center">
-            <div className="flex items-center">
-              <FileText className="h-5 w-5 mr-2 flex-shrink-0" />
-              <div className="truncate max-w-[200px]">
-                <p className="text-sm font-medium truncate">{file.name}</p>
-                <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
-              </div>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => handleRemoveFile(index)}
-              disabled={processingState.isProcessing}
-            >
-              Remove
-            </Button>
-          </li>
-        ))}
-      </ul>
-    );
-  };
-  
-  const renderExtractedFields = () => {
-    if (!extractionResults || extractionResults.length === 0) {
-      return (
-        <div className="py-4 text-center text-muted-foreground">
-          <AlertCircle className="mx-auto h-8 w-8 mb-2" />
-          <p>No fields were extracted</p>
-        </div>
-      );
-    }
-    
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-sm font-medium">Extracted Fields ({extractionResults.length})</h3>
-          <p className="text-xs text-muted-foreground">Confidence threshold: {confidenceThreshold}</p>
-        </div>
-        
-        <div className="bg-muted p-3 rounded-md">
-          <p className="text-sm mb-3 text-muted-foreground">These fields were extracted from your documents with at least {confidenceThreshold * 100}% confidence:</p>
-          
-          <div className="max-h-[300px] overflow-y-auto pr-2">
-            <ul className="divide-y divide-border">
-              {extractionResults.map((field, index) => (
-                <li key={index} className="py-2">
-                  <div className="flex justify-between">
-                    <span className="text-sm font-medium">{field.name}</span>
-                    <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
-                      {Math.round(field.confidence * 100)}%
-                    </span>
-                  </div>
-                  <p className="text-sm truncate">{field.value}</p>
-                  {field.source && (
-                    <p className="text-xs text-muted-foreground mt-1">Source: {field.source}</p>
-                  )}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-        
-        <div className="flex justify-end space-x-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleClearFiles}
-          >
-            Clear All
-          </Button>
-          <Button 
-            variant="default" 
-            size="sm" 
-            onClick={handleApplyData}
-          >
-            Apply to Form
-          </Button>
-        </div>
-      </div>
-    );
+  // Trigger file selection dialog
+  const triggerFileSelection = () => {
+    fileInputRef.current.click();
   };
   
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center">
-          <Upload className="mr-2 h-5 w-5" />
-          Document Intelligence
-        </CardTitle>
-        <CardDescription>
-          Upload regulatory documents to automatically extract device information
-        </CardDescription>
-      </CardHeader>
+    <div className="w-full">
+      {/* Document type selector */}
+      <div className="mb-4">
+        <Label htmlFor="document-type">Document Type</Label>
+        <Select 
+          value={selectedDocType} 
+          onValueChange={handleDocTypeChange}
+          disabled={uploading || processing}
+        >
+          <SelectTrigger id="document-type" className="w-full">
+            <SelectValue placeholder="Select document type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="technical">Technical File/Technical Documentation</SelectItem>
+            <SelectItem value="510k">510(k) Submission</SelectItem>
+            <SelectItem value="clinical">Clinical Study Report</SelectItem>
+            <SelectItem value="instructions">Instructions for Use (IFU)</SelectItem>
+            <SelectItem value="risk">Risk Analysis Document</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
       
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="px-6">
-          <TabsList className="w-full">
-            <TabsTrigger value="upload" className="flex-1">Upload</TabsTrigger>
-            <TabsTrigger value="results" className="flex-1" disabled={!extractionResults}>Results</TabsTrigger>
-          </TabsList>
-        </div>
-        
-        <CardContent className="pt-4">
-          <TabsContent value="upload" className="m-0">
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="text-sm font-medium">Document Type</label>
-                  <Select value={documentType} onValueChange={setDocumentType} disabled={processingState.isProcessing}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select document type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="510k">510(k) Submission</SelectItem>
-                      <SelectItem value="technical">Technical File</SelectItem>
-                      <SelectItem value="clinical">Clinical Report</SelectItem>
-                      <SelectItem value="ifu">Instructions for Use</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div>
-                  <label className="text-sm font-medium">Confidence Threshold: {confidenceThreshold.toFixed(1)}</label>
-                  <Slider
-                    value={[confidenceThreshold * 10]}
-                    min={5}
-                    max={10}
-                    step={1}
-                    disabled={processingState.isProcessing}
-                    onValueChange={(value) => setConfidenceThreshold(value[0] / 10)}
-                    className="mt-2"
-                  />
-                </div>
-              </div>
-              
-              <div
-                className="border-2 border-dashed rounded-md p-6 text-center cursor-pointer hover:border-primary transition-colors"
-                onClick={() => fileInputRef.current?.click()}
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-              >
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileChange}
-                  accept=".pdf,.docx,.doc,.txt"
-                  multiple
-                  disabled={processingState.isProcessing}
-                />
-                
-                <div className="space-y-2">
-                  <Upload className="mx-auto h-10 w-10 text-muted-foreground" />
-                  <h3 className="text-sm font-medium">Drag files here or click to browse</h3>
-                  <p className="text-xs text-muted-foreground">
-                    Upload up to {maxFiles} files (PDF, DOCX, DOC, TXT)
-                  </p>
-                </div>
-              </div>
-              
-              {renderFileList()}
-              {renderProcessingIndicator()}
-              
-              {files.length > 0 && !processingState.isProcessing && (
-                <div className="flex justify-end space-x-2 mt-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleClearFiles}
-                    disabled={processingState.isProcessing}
-                  >
-                    Clear
-                  </Button>
-                  <Button 
-                    variant="default" 
-                    size="sm" 
-                    onClick={handleProcessDocuments}
-                    disabled={processingState.isProcessing}
-                  >
-                    Process Documents
-                  </Button>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="results" className="m-0">
-            {renderExtractedFields()}
-          </TabsContent>
-        </CardContent>
-      </Tabs>
+      {/* File input (hidden) */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        multiple
+        accept={acceptedTypes.join(',')}
+        className="hidden"
+        disabled={uploading || processing}
+      />
       
-      <CardFooter className="bg-muted/50 flex justify-between py-2 px-6">
-        <div className="text-xs text-muted-foreground">
-          Powered by Document Intelligence
-        </div>
-        
-        {processingState.isProcessing && (
-          <div className="text-xs text-muted-foreground animate-pulse">
-            Processing...
+      {/* File upload area */}
+      <div 
+        className={`border-2 border-dashed rounded-lg p-6 text-center mb-4 cursor-pointer transition-colors ${
+          uploading || processing ? 'bg-gray-100 border-gray-300' : 'hover:border-primary hover:bg-gray-50'
+        }`}
+        onClick={!uploading && !processing ? triggerFileSelection : undefined}
+      >
+        <Upload className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+        <h3 className="text-lg font-medium mb-1">Upload Documents</h3>
+        <p className="text-sm text-gray-500 mb-2">
+          Drag and drop your documents here or click to browse
+        </p>
+        <p className="text-xs text-gray-400">
+          Supported formats: {acceptedTypes.join(', ')} · Max file size: {maxSize}MB · Max files: {maxFiles}
+        </p>
+      </div>
+      
+      {/* Selected files list */}
+      {files.length > 0 && (
+        <div className="mb-4">
+          <h4 className="font-medium mb-2">Selected Documents ({files.length})</h4>
+          <div className="space-y-2">
+            {files.map((file, index) => (
+              <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                <div className="flex items-center space-x-2">
+                  <FileText className="h-5 w-5 text-gray-500" />
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{file.name}</span>
+                    <span className="text-xs text-gray-500">{formatFileSize(file.size)}</span>
+                  </div>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleRemoveFile(index);
+                  }}
+                  disabled={uploading || processing}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ))}
           </div>
+        </div>
+      )}
+      
+      {/* Upload progress */}
+      {uploading && (
+        <div className="mb-4">
+          <div className="flex justify-between mb-1">
+            <span className="text-sm">Uploading and processing...</span>
+            <span className="text-sm">{Math.round(uploadProgress)}%</span>
+          </div>
+          <Progress value={uploadProgress} className="h-2" />
+        </div>
+      )}
+      
+      {/* Process button */}
+      <Button 
+        onClick={handleUpload} 
+        disabled={files.length === 0 || uploading || processing}
+        className="w-full mb-4"
+      >
+        {processing ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Processing
+          </>
+        ) : (
+          <>
+            <FileText className="mr-2 h-4 w-4" />
+            Extract Data
+          </>
         )}
-      </CardFooter>
-    </Card>
+      </Button>
+      
+      {/* Error message */}
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
+      {/* Extraction results */}
+      {showResults && extractedFields.length > 0 && (
+        <div className="mb-4">
+          <h4 className="font-medium mb-2">Extraction Results</h4>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="space-y-3">
+                {extractedFields.map((field, index) => (
+                  <div key={index} className="border-b pb-2 last:border-0">
+                    <div className="flex justify-between items-start mb-1">
+                      <div className="font-medium text-sm">{field.name}</div>
+                      <Badge variant={field.confidence >= 0.8 ? "default" : "outline"}>
+                        {Math.round(field.confidence * 100)}% confidence
+                      </Badge>
+                    </div>
+                    <div className="text-sm">{field.value}</div>
+                    {field.source && (
+                      <div className="text-xs text-gray-500 mt-1">Source: {field.source}</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+    </div>
   );
 };
 
