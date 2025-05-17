@@ -2291,108 +2291,54 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       return <LiteratureReviewWorkflow cerDocumentId={cerDocumentId} />;
     }
     else if (activeTab === 'document-intelligence') {
-      // The lazy import for DocumentIntelligenceTab remains the same.
-      // Make sure DocumentIntelligenceTab is correctly imported via React.lazy
-      const DocumentIntelligenceTab = lazy(() => import('../components/document-intelligence/DocumentIntelligenceTab'));
+      // Import DocumentIntelligenceTab directly without lazy loading for better performance
+      const DocumentIntelligenceTab = require('../components/document-intelligence/DocumentIntelligenceTab').default;
       
-      // Handle modal prevention for document intelligence mode
-      useEffect(() => {
-        // Force close profile selector if it's open
-        if (showProfileSelector) {
-          setShowProfileSelector(false);
-        }
-        
-        // Store current document body scroll state
-        const originalBodyOverflow = document.body.style.overflow;
-        
-        // Prevent scrolling on the main document body
-        document.body.style.overflow = 'hidden';
-        
-        // Create a style element to prevent other modals from displaying
-        const preventModalsStyle = document.createElement('style');
-        preventModalsStyle.id = 'docint-modal-prevention';
-        preventModalsStyle.textContent = `
-          /* Hide any dialogs that aren't document intelligence */
-          [role="dialog"]:not([data-docint="true"]) {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-          }
-        `;
-        document.head.appendChild(preventModalsStyle);
-        
-        // Clean up when document intelligence mode is exited
-        return () => {
-          // Remove the style element
-          if (preventModalsStyle.parentNode) {
-            preventModalsStyle.parentNode.removeChild(preventModalsStyle);
-          }
-          
-          // Restore original body scroll state
-          document.body.style.overflow = originalBodyOverflow;
-        };
-      }, [showProfileSelector]);
+      // Simply prevent the profile selector when document intelligence is active
+      if (showProfileSelector) {
+        setShowProfileSelector(false);
+      }
 
       return (
         <div 
-          className="fixed inset-0 bg-gray-600/70 backdrop-blur-md z-[9999] flex items-center justify-center p-4" // Increased z-index, added flex for centering
-          aria-modal="true" // ARIA: Indicates this is a modal dialog
-          role="dialog"     // ARIA: Role for the dialog
-          aria-labelledby="document-intelligence-title" // ARIA: Links to the title for screen readers
-          data-docint="true" // Special marker for our modal prevention code
+          className="fixed inset-0 bg-gray-600/70 z-[100]"
+          role="dialog"
         >
-          <div className="bg-white w-full max-w-6xl h-[calc(100vh-4rem)] rounded-xl shadow-2xl overflow-hidden flex flex-col"> {/* Adjusted sizing and added max-width */}
+          <div className="absolute inset-4 bg-white rounded-lg shadow-lg overflow-auto">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 md:p-5 border-b shrink-0"> {/* Added shrink-0 */}
-              <div className="flex items-center gap-3">
-                {/* Replace with your actual Brain icon component */}
-                {typeof Brain === 'function' ? <Brain className="h-7 w-7 text-indigo-600" /> : <span role="img" aria-label="Brain icon" className="text-2xl">🧠</span>}
-                <h2 id="document-intelligence-title" className="text-lg md:text-xl font-semibold text-gray-800">Document Intelligence</h2> {/* ARIA: Title for the dialog */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center gap-2">
+                <Brain className="h-6 w-6 text-blue-600" />
+                <h2 className="text-xl font-semibold">Document Intelligence</h2>
               </div>
               
-              {/* Replace with your actual Button and X icon components */}
-              {typeof Button === 'function' && typeof X === 'function' ? (
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  aria-label="Close Document Intelligence" // ARIA: Label for close button
-                  onClick={() => setActiveTab('device')} // Or your default tab
-                >
-                  <X className="h-5 w-5 text-gray-600 hover:text-gray-800" />
-                </Button>
-              ) : (
-                <button
-                  type="button"
-                  aria-label="Close Document Intelligence"
-                  className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500"
-                  onClick={() => setActiveTab('device')} // Or your default tab
-                >
-                  <span role="img" aria-label="Close" className="text-xl block">❌</span>
-                </button>
-              )}
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setActiveTab('device')}
+              >
+                <X className="h-5 w-5" />
+              </Button>
             </div>
             
-            {/* Main content area */}
-            <div className="flex-1 p-4 md:p-6 overflow-y-auto"> {/* Ensure vertical scroll for content */}
-              <Suspense fallback={
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-gray-500 text-lg">Loading Document Intelligence Module...</p>
-                  {/* You can add a spinner here if you have one */}
-                </div>
-              }>
-                <DocumentIntelligenceTab 
-                  regulatoryContext={documentType} // Assuming documentType is a state/prop from CERV2Page
-                  deviceProfile={deviceProfile}     // Assuming deviceProfile is a state/prop from CERV2Page
-                  onDeviceProfileUpdate={(updatedProfile) => {
-                    // Implement your update logic for the device profile here
-                    console.log("Document Intelligence Tab updated profile:", updatedProfile);
-                    // Example: setDeviceProfile(prev => ({ ...prev, ...updatedProfile }));
-                  }}
-                  // Pass the DocumentIntakeForm (id: document_intake_form_ui_v1) here if it's part of DocumentIntelligenceTab
-                  // or if DocumentIntelligenceTab itself is that form.
-                />
-              </Suspense>
+            {/* Main content */}
+            <div className="p-4">
+              <DocumentIntelligenceTab 
+                regulatoryContext={documentType}
+                deviceProfile={deviceProfile}
+                onDeviceProfileUpdate={(updatedProfile) => {
+                  if (updatedProfile) {
+                    setDeviceProfile(updatedProfile);
+                    saveState('deviceProfile', updatedProfile);
+                    setActiveTab('device');
+                    toast({
+                      title: "Device Profile Updated",
+                      description: "Document data successfully applied to your device profile.",
+                      variant: "success",
+                    });
+                  }
+                }}
+              />
             </div>
           </div>
         </div>
