@@ -33,8 +33,8 @@ const LoadingPage = () => (
 import ClientPortalLanding from './pages/ClientPortalLanding';
 import HomeLanding from './pages/HomeLanding';
 
-// Placeholder import for SubmissionBuilder - REPLACE WITH ACTUAL PATH
-const SubmissionBuilder = lazy(() => import('./modules/SubmissionBuilder')); // Added placeholder
+// Placeholder import for SubmissionBuilder - temporarily commented out
+// const SubmissionBuilder = lazy(() => import('./modules/SubmissionBuilder')); // Added placeholder
 
 // Lazy load all other pages grouped by related functionality
 // CER-related pages
@@ -318,28 +318,28 @@ function App() {
                   <Route path="/client-management" component={ClientManagement} />
                   <Route path="/settings" component={Settings} />
 
-                  {/* Unified Submission Builder routes (combines eCTD and IND Wizard) */}
-                  {/* Ensure SubmissionBuilder is correctly imported and lazy-loaded */}
+                  {/* Unified Submission Builder routes - temporarily disabled */}
+                  {/* These routes will be enabled once SubmissionBuilder module is available */}
                   <Route path="/ectd-planner">
-                    {() => <SubmissionBuilder initialModule="ectd" />}
+                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">eCTD Planner</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
                   </Route>
-                  <Route path="/module-1-sb"> {/* Renamed to avoid conflict with direct module pages if SubmissionBuilder is different */}
-                    {() => <SubmissionBuilder initialModule="m1" />}
+                  <Route path="/module-1-sb">
+                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">Module 1</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
                   </Route>
                   <Route path="/module-2-sb">
-                    {() => <SubmissionBuilder initialModule="m2" />}
+                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">Module 2</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
                   </Route>
                   <Route path="/module-3-sb">
-                    {() => <SubmissionBuilder initialModule="m3" />}
+                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">Module 3</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
                   </Route>
                   <Route path="/module-4-sb">
-                    {() => <SubmissionBuilder initialModule="m4" />}
+                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">Module 4</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
                   </Route>
                   <Route path="/module-5-sb">
-                    {() => <SubmissionBuilder initialModule="m5" />}
+                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">Module 5</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
                   </Route>
                   <Route path="/ectd-module">
-                    {() => <SubmissionBuilder />}
+                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">eCTD Module</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
                   </Route>
 
                   {/* Error fallback and catch-all routes for specific modules */}
