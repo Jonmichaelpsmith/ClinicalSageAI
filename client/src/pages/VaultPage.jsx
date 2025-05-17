@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react';
 import VaultUploader from '../components/vault/VaultUploader';
 import VaultDocumentViewer from '../components/vault/VaultDocumentViewer';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
+import { AlertTriangle } from 'lucide-react';
 
 export default function VaultPage() {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -13,48 +17,48 @@ export default function VaultPage() {
     byProject: {}
   });
   const [loading, setLoading] = useState(true);
+  const [statsError, setStatsError] = useState(false);
+
+  const fetchStats = async () => {
+    try {
+      setStatsError(false);
+      setLoading(true);
+      const res = await fetch('/api/vault/list');
+      const data = await res.json();
+
+      if (data.success) {
+        const stats = {
+          total: data.metadata.totalCount || 0,
+          byModule: {},
+          byType: {},
+          byProject: {}
+        };
+
+        data.documents.forEach(doc => {
+          const module = doc.moduleLinked || 'Unknown';
+          stats.byModule[module] = (stats.byModule[module] || 0) + 1;
+
+          const type = doc.documentType || 'Unspecified';
+          stats.byType[type] = (stats.byType[type] || 0) + 1;
+
+          const project = doc.projectId || 'Unassigned';
+          stats.byProject[project] = (stats.byProject[project] || 0) + 1;
+        });
+
+        setDocumentStats(stats);
+      } else {
+        setStatsError(true);
+      }
+    } catch (error) {
+      console.error('Error fetching vault statistics:', error);
+      setStatsError(true);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Load document statistics on mount and when documents are updated
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch('/api/vault/list');
-        const data = await res.json();
-        
-        if (data.success) {
-          // Calculate statistics
-          const stats = {
-            total: data.metadata.totalCount || 0,
-            byModule: {},
-            byType: {},
-            byProject: {}
-          };
-          
-          // Count documents by module
-          data.documents.forEach(doc => {
-            // By module
-            const module = doc.moduleLinked || 'Unknown';
-            stats.byModule[module] = (stats.byModule[module] || 0) + 1;
-            
-            // By document type
-            const type = doc.documentType || 'Unspecified';
-            stats.byType[type] = (stats.byType[type] || 0) + 1;
-            
-            // By project
-            const project = doc.projectId || 'Unassigned';
-            stats.byProject[project] = (stats.byProject[project] || 0) + 1;
-          });
-          
-          setDocumentStats(stats);
-        }
-      } catch (error) {
-        console.error('Error fetching vault statistics:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchStats();
   }, [refreshTrigger]);
 
@@ -75,7 +79,20 @@ export default function VaultPage() {
         <h2 className="text-lg font-semibold mb-3">Vault Statistics</h2>
         
         {loading ? (
-          <p className="text-sm text-gray-500">Loading statistics...</p>
+          <div className="flex justify-center py-4">
+            <Spinner />
+          </div>
+        ) : statsError ? (
+          <div className="space-y-2">
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Error loading statistics</AlertTitle>
+              <AlertDescription>
+                Unable to load vault statistics.
+              </AlertDescription>
+            </Alert>
+            <Button variant="outline" onClick={fetchStats}>Retry</Button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="bg-indigo-50 rounded-lg p-4 text-center">
