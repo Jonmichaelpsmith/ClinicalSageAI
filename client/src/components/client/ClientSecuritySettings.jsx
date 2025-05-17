@@ -31,7 +31,8 @@ import {
   FileCheck,
   ClipboardCheck,
   CheckSquare,
-  Globe as GlobeIcon
+  Globe as GlobeIcon,
+  MessageSquare
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -99,6 +100,11 @@ const ClientSecuritySettings = () => {
         autoExportFrequency: data?.auditSettings?.autoExportFrequency || 24,
         trackUserActivity: data?.auditSettings?.trackUserActivity || true
       },
+      collaborationLogs: {
+        retentionDays: data?.collaborationLogs?.retentionDays || 30,
+        enableBlockchainBackup: data?.collaborationLogs?.enableBlockchainBackup || false,
+        realTimeMonitoring: data?.collaborationLogs?.realTimeMonitoring || false
+      },
       fdaCompliance: {
         enforceElectronicSignatures: data?.fdaCompliance?.enforceElectronicSignatures || true,
         requireReason: data?.fdaCompliance?.requireReason || true,
@@ -148,6 +154,11 @@ const ClientSecuritySettings = () => {
       realTimeMonitoring: true,
       autoExportFrequency: 24,
       trackUserActivity: true
+    },
+    collaborationLogs: {
+      retentionDays: 30,
+      enableBlockchainBackup: false,
+      realTimeMonitoring: false
     },
     fdaCompliance: {
       enforceElectronicSignatures: true,
@@ -282,7 +293,7 @@ const ClientSecuritySettings = () => {
       <CardContent>
         <form onSubmit={handleSubmit}>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid grid-cols-5 mb-6">
+            <TabsList className="grid grid-cols-6 mb-6">
               <TabsTrigger value="password-policy" className="flex items-center">
                 <Key className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Password Policy</span>
@@ -302,6 +313,11 @@ const ClientSecuritySettings = () => {
                 <FileText className="h-4 w-4 mr-2" />
                 <span className="hidden sm:inline">Audit Settings</span>
                 <span className="inline sm:hidden">Audit</span>
+              </TabsTrigger>
+              <TabsTrigger value="collaboration-logs" className="flex items-center">
+                <MessageSquare className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Collaboration Logs</span>
+                <span className="inline sm:hidden">Logs</span>
               </TabsTrigger>
               <TabsTrigger value="compliance" className="flex items-center">
                 <Shield className="h-4 w-4 mr-2" />
@@ -639,6 +655,58 @@ const ClientSecuritySettings = () => {
                     id="realTimeMonitoring" 
                     checked={formValues.auditSettings.realTimeMonitoring}
                     onCheckedChange={() => handleToggleChange('auditSettings', 'realTimeMonitoring')}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* Collaboration Logs Tab */}
+            <TabsContent value="collaboration-logs" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="logRetentionDays">Log Retention (Days)</Label>
+                  <Input
+                    id="logRetentionDays"
+                    type="number"
+                    min="1"
+                    max="3650"
+                    value={formValues.collaborationLogs.retentionDays}
+                    onChange={(e) => handleInputChange('collaborationLogs', 'retentionDays', parseInt(e.target.value))}
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    How long collaboration chat logs are retained
+                  </p>
+                </div>
+              </div>
+
+              <Separator />
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="collabBlockchain">Blockchain Backup</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Store logs immutably using blockchain
+                    </p>
+                  </div>
+                  <Switch
+                    id="collabBlockchain"
+                    checked={formValues.collaborationLogs.enableBlockchainBackup}
+                    onCheckedChange={() => handleToggleChange('collaborationLogs', 'enableBlockchainBackup')}
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="collabRealtime">Real-Time Monitoring</Label>
+                    <p className="text-sm text-muted-foreground">
+                      Monitor chats for policy violations
+                    </p>
+                  </div>
+                  <Switch
+                    id="collabRealtime"
+                    checked={formValues.collaborationLogs.realTimeMonitoring}
+                    onCheckedChange={() => handleToggleChange('collaborationLogs', 'realTimeMonitoring')}
                   />
                 </div>
               </div>
