@@ -53,10 +53,13 @@ import {
   CheckCircle, 
   HelpCircle, 
   FileText,
-  FileQuestion
+  FileQuestion,
+  FilePlus
 } from 'lucide-react';
 import { useTenant } from '@/contexts/TenantContext.tsx';
 import { useToast } from '@/hooks/use-toast';
+import DocumentUploader from '@/components/document-intelligence/DocumentUploader';
+import documentIntelligenceService from '@/services/DocumentIntelligenceService';
 
 // Highly structured schema following FDA 510(k) requirements for device intake
 const fdaDeviceIntakeSchema = z.object({
@@ -114,6 +117,8 @@ const DeviceIntakeForm = ({ initialData, onSubmit, onCancel }) => {
   const { toast } = useToast();
   const { currentOrganization, currentClientWorkspace } = useTenant();
   const [activeTab, setActiveTab] = useState("admin");
+  const [isProcessingDocuments, setIsProcessingDocuments] = useState(false);
+  const [documentExtractionResults, setDocumentExtractionResults] = useState([]);
   
   // FDA device specialty panels for the dropdown
   const specialtyPanels = [
@@ -280,7 +285,54 @@ const DeviceIntakeForm = ({ initialData, onSubmit, onCancel }) => {
     else if (activeTab === "additional") setActiveTab("predicate");
   };
   
-  // Helper to check if current tab fields are valid
+  // Handle document data extraction and apply to form
+  const handleExtractedData = async (extractedFields) => {
+    try {
+      setIsProcessingDocuments(true);
+      setDocumentExtractionResults(extractedFields);
+      
+      // Map the extracted fields to form data structure
+      const formData = documentIntelligenceService.mapExtractedFieldsToFormData(extractedFields);
+      
+      // Update form with extracted data
+      Object.entries(formData).forEach(([fieldName, value]) => {
+        // Only update if the field exists in our form schema
+        if (form.getValues(fieldName) !== undefined) {
+          form.setValue(fieldName, value, { 
+            shouldValidate: true,
+            shouldDirty: true,
+            shouldTouch: true
+          });
+        }
+      });
+      
+      // Show success message
+      toast({
+        title: "Data Extraction Complete",
+        description: `Successfully applied ${Object.keys(formData).length} extracted fields to your device profile.`,
+        variant: "success"
+      });
+      
+      // Navigate to appropriate tab based on extracted data
+      if (formData.deviceClass && formData.productCode) {
+        setActiveTab("classification");
+      } else if (formData.intendedUse || formData.indications) {
+        setActiveTab("device");
+      }
+      
+      setIsProcessingDocuments(false);
+    } catch (error) {
+      console.error("Error applying extracted data:", error);
+      setIsProcessingDocuments(false);
+      
+      toast({
+        title: "Data Application Error",
+        description: "There was an error applying the extracted data to your form. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+  
   const isCurrentTabValid = () => {
     if (activeTab === "admin") {
       return form.getFieldState('deviceName').invalid === false &&

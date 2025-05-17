@@ -7,6 +7,7 @@ import path from 'path';
 import googleDocsRoutes from './routes/googleDocs';
 import moduleIntegrationRoutes from './routes/moduleIntegrationRoutes';
 import vaultRoutes from './routes/vaultRoutes';
+import documentIntelligenceRoutes from './routes/documentIntelligenceRoutes';
 
 // Declare module types to avoid TypeScript errors
 declare module './routes/googleDocs' {
