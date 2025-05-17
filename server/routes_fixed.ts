@@ -8,6 +8,7 @@
 import express, { Express, Request, Response } from 'express';
 import { router as estar510kRouter } from './routes/510kEstarRoutes';
 import cerDeviceProfileRoutes from './routes/cerDeviceProfileRoutes';
+import coauthorRoutes from './routes/coauthorRoutes.js';
 
 /**
  * Register all routes with the Express application
@@ -60,6 +61,10 @@ export default function registerRoutes(app: Express): void {
     }
   });
   console.log('FDA 510(k) Predicate search route registered');
-  
+
+  // Register Co-Author routes for drafting assistance
+  app.use('/api/coauthor', coauthorRoutes);
+  console.log('Co-Author routes registered');
+
   // Additional routes can be registered here
 }
