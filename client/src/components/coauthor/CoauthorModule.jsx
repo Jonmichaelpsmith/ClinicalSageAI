@@ -7,6 +7,8 @@ import GuidancePanel from './GuidancePanel';
 import RiskAnalysisWidget from './RiskAnalysisWidget';
 import LumenChatPane from './LumenChatPane';
 import SectionHeader from './SectionHeader';
+import EditorArea from './EditorArea';
+import AIAssistantPanel from './AIAssistantPanel';
 
 // Sample template for CTD sections
 const SECTION_TEMPLATES = {
@@ -114,64 +116,67 @@ export default function CoauthorModule({ sectionId = '2.7', sectionTitle = 'Clin
       
       <Tabs value={activeTab} className="w-full">
         <TabsContent value="edit" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
-              <DraftEditor 
-                content={content} 
-                onChange={handleContentChange}
-              />
-            </div>
-            <div className="space-y-6">
-              <LumenChatPane contextId={sectionId} />
-              <RiskAnalysisWidget sectionId={sectionId} />
-            </div>
-          </div>
+          <EditorArea
+            main={<DraftEditor content={content} onChange={handleContentChange} />}
+            sidebar={
+              <AIAssistantPanel>
+                <LumenChatPane contextId={sectionId} />
+                <RiskAnalysisWidget sectionId={sectionId} />
+              </AIAssistantPanel>
+            }
+          />
         </TabsContent>
         
         <TabsContent value="template" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
-              <TemplateEditor 
+          <EditorArea
+            main={
+              <TemplateEditor
                 sectionId={sectionId}
                 template={SECTION_TEMPLATES[sectionId] || SECTION_TEMPLATES['2.7']}
                 onSave={handleTemplateOutput}
               />
-            </div>
-            <div className="space-y-6">
-              <LumenChatPane contextId={sectionId} />
-            </div>
-          </div>
+            }
+            sidebar={
+              <AIAssistantPanel>
+                <LumenChatPane contextId={sectionId} />
+              </AIAssistantPanel>
+            }
+          />
         </TabsContent>
         
         <TabsContent value="guidance" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
+          <EditorArea
+            main={
               <div className="space-y-4">
                 <GuidancePanel sectionId={sectionId} />
                 <RegulatorySearch sectionId={sectionId} />
               </div>
-            </div>
-            <div className="space-y-6">
-              <LumenChatPane contextId={sectionId} />
-            </div>
-          </div>
+            }
+            sidebar={
+              <AIAssistantPanel>
+                <LumenChatPane contextId={sectionId} />
+              </AIAssistantPanel>
+            }
+          />
         </TabsContent>
         
         <TabsContent value="review" className="mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
+          <EditorArea
+            main={
               <div className="p-6 border rounded-md bg-white">
                 <h3 className="text-lg font-semibold mb-4">{sectionId} {sectionTitle} - Review</h3>
                 <div className="prose prose-sm max-w-none">
                   <div dangerouslySetInnerHTML={{ __html: content.replace(/\n/g, '<br />') }} />
                 </div>
               </div>
-            </div>
-            <div className="space-y-6">
-              <RiskAnalysisWidget sectionId={sectionId} />
-              <GuidancePanel sectionId={sectionId} />
-            </div>
-          </div>
+            }
+            sidebar={
+              <AIAssistantPanel>
+                <RiskAnalysisWidget sectionId={sectionId} />
+                <GuidancePanel sectionId={sectionId} />
+              </AIAssistantPanel>
+            }
+          />
         </TabsContent>
       </Tabs>
     </div>
