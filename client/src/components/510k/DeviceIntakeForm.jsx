@@ -335,6 +335,31 @@ const DeviceIntakeForm = ({ initialData, onSubmit, onCancel }) => {
           
           {/* Section A: Administrative Information */}
           <TabsContent value="admin" className="space-y-4">
+            {/* Document Intelligence Panel */}
+            <div className="bg-white p-4 rounded-md border border-blue-100 border-l-4">
+              <div className="flex items-center mb-3">
+                <FilePlus className="h-5 w-5 text-blue-500 mr-2" />
+                <h3 className="font-medium text-blue-800">Intelligent Document Import</h3>
+              </div>
+              <p className="text-sm text-gray-600 mb-4">
+                Upload existing documentation to automatically extract device data and populate the form.
+                Our AI will analyze your documents and extract relevant regulatory information.
+              </p>
+              
+              {/* Document Uploader Component */}
+              <DocumentUploader
+                onExtractedData={handleExtractedData}
+                allowedFileTypes={['.pdf', '.docx', '.doc']}
+                maxFileSize={20}
+                documentTypes={[
+                  { value: '510k', label: '510(k) Submission' },
+                  { value: 'technical', label: 'Technical File' },
+                  { value: 'ifu', label: 'Instructions for Use' },
+                  { value: 'dhf', label: 'Design History File' }
+                ]}
+              />
+            </div>
+            
             <div className="bg-white p-4 rounded-md border border-gray-200">
               <div className="flex items-center mb-3">
                 <FileText className="h-5 w-5 text-blue-500 mr-2" />
