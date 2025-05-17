@@ -305,11 +305,19 @@ const PredicateFinderPanel = ({
         manufacturer: deviceProfile.manufacturer
       });
       
+      // Prevent navigation away from page during search
+      window.onbeforeunload = function() {
+        return "Please don't navigate away while searching...";
+      };
+      
       const results = await FDA510kService.searchPredicateDevices({
         deviceName: deviceProfile.deviceName,
         productCode: deviceProfile.productCode,
         manufacturer: deviceProfile.manufacturer
       });
+      
+      // Search complete, remove navigation blocker
+      window.onbeforeunload = null;
       
       console.log(`[510k] Found ${results.length} potential predicate devices from API`);
       
@@ -383,50 +391,67 @@ const PredicateFinderPanel = ({
     } catch (error) {
       console.error('[510k] Error searching for predicate devices:', error);
       
+      // Make sure to clear navigation blocker on error
+      window.onbeforeunload = null;
+      
+      // Set error state to show error UI
+      setErrorState({
+        message: "Error searching for predicate devices",
+        details: error.message || "Could not retrieve predicate devices from the FDA database",
+        timestamp: new Date().toISOString()
+      });
+      
       // First try to use previously loaded results if available
       if (previousResults.length > 0) {
         console.log('[510k] Using previous results during error recovery');
-        // We already set these earlier, so just show a toast
+        
         toast({
-          title: "Search Error - Using Previous Results",
+          title: "Using Previous Results",
           description: `Showing ${previousResults.length} previously found devices.`,
           variant: "warning"
         });
+        
+        // Notify parent component about found devices but mention they're from cache
+        if (onPredicatesFound) {
+          console.log('[510k] Notifying parent of cached results:', previousResults.length);
+          onPredicatesFound(previousResults, "Cached results used due to search error");
+        }
+        
+        setShowRecoveryUI(false);
       } 
-      // Otherwise try recovery
+      // Otherwise try emergency recovery
       else {
         // Attempt to recover using our emergency recovery function
         const recoverySuccessful = recoverPredicateSearch(deviceProfile, setSearchResults, toast);
         
         if (!recoverySuccessful) {
-          console.warn('[510k] Recovery failed, generating reliable predicate devices');
-          // Create reliable predicate data as last resort
-          const reliablePredicate = generateReliablePredicateDevices(deviceProfile);
-          
-          setSearchResults(reliablePredicate);
-          saveState('predicateDevices', reliablePredicate);
-          
-          // Also store these reliable results for future use
-          try {
-            localStorage.setItem('510k_searchResults', JSON.stringify(reliablePredicate));
-          } catch (storageError) {
-            console.error('[510k] Failed to save reliable predicate results to localStorage:', storageError);
-          }
-          
-          setErrorState('search-failed');
+          console.warn('[510k] Recovery failed, displaying error UI');
           setShowRecoveryUI(true);
           
-          // Notify parent component about the error
+          // Make sure we stay on this page by creating an empty result set
+          // instead of redirecting user to another page
+          setSearchResults([]);
+          
+          // Notify parent component about the error but stay on current page
           if (onPredicatesFound) {
             console.log('[510k] Notifying parent component of search error');
-            onPredicatesFound(null, "API search failed - using recovery data");
+            onPredicatesFound([], "No predicate devices found");
           }
           
           toast({
-            title: "Search Error - Using Sample Data",
-            description: "We've provided sample predicate devices based on your device profile.",
-            variant: "warning"
+            title: "No Predicate Devices Found",
+            description: "We couldn't find any predicate devices matching your search criteria. You can modify your device profile and try again.",
+            variant: "destructive"
           });
+        } 
+        else {
+          // Recovery was successful, notify parent
+          setShowRecoveryUI(false);
+          
+          if (onPredicatesFound) {
+            console.log('[510k] Notifying parent of recovery results');
+            onPredicatesFound(searchResults, "Recovery successful");
+          }
         }
       }
     } finally {
