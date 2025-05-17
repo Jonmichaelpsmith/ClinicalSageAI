@@ -73,10 +73,18 @@ const PredicateFinderPanel = ({
   deviceProfile, 
   setDeviceProfile, 
   documentId, 
-  onPredicatesFound 
+  onPredicatesFound,
+  onSearchStateChange = null // New prop to inform parent component about search state
 }) => {
   // State management
   const [isSearching, setIsSearching] = useState(false);
+  
+  // Update the parent component whenever isSearching changes
+  useEffect(() => {
+    if (onSearchStateChange) {
+      onSearchStateChange(isSearching);
+    }
+  }, [isSearching, onSearchStateChange]);
   const [searchResults, setSearchResults] = useState([]);
   const [selectedPredicates, setSelectedPredicates] = useState([]);
   const [profileEditing, setProfileEditing] = useState(true);
