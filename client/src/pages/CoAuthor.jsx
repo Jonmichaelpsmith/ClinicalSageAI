@@ -50,6 +50,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import * as googleDocsService from '../services/googleDocsService';
 import * as googleAuthService from '../services/googleAuthService';
 import * as copilotService from '../services/copilotService';
+import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
 
 // AI services
 import * as aiService from '../services/aiService';
@@ -58,6 +59,7 @@ import * as aiService from '../services/aiService';
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
 const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
 const GoogleDocsEmbed = lazy(() => import('../components/GoogleDocsEmbed'));
+const MsWordPopupEditor = lazy(() => import('../components/MsWordPopupEditor'));
 import { 
   FileText, 
   Edit, 
@@ -228,6 +230,7 @@ export default function CoAuthor() {
   // Document editor integration state
   const [msWordPopupOpen, setMsWordPopupOpen] = useState(false);
   const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
+  const [msWordDocUrl, setMsWordDocUrl] = useState(null);
   const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
   const [isGoogleAuthenticated, setIsGoogleAuthenticated] = useState(false);
   const [googleUserInfo, setGoogleUserInfo] = useState(null);
@@ -425,6 +428,74 @@ export default function CoAuthor() {
     
     checkGoogleAuth();
   }, []);
+
+  const handleOpenMsWord = async () => {
+    if (!selectedDocument) {
+      toast({
+        title: 'Select a Document',
+        description: 'Please select a document to edit first.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    try {
+      toast({
+        title: 'Opening Word Online',
+        description: 'Preparing document for editing in Word Online...',
+        variant: 'default',
+      });
+
+      const blob = await msOfficeVaultBridge.downloadDocx(selectedDocument.id);
+      const url = URL.createObjectURL(blob);
+      setMsWordDocUrl(url);
+      setMsWordPopupOpen(true);
+    } catch (error) {
+      console.error('Error opening Word document:', error);
+      toast({
+        title: 'Error Opening Document',
+        description: 'Failed to open Word document.',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleMsWordSave = async () => {
+    try {
+      if (!msWordDocUrl) return;
+      toast({
+        title: 'Saving to VAULT',
+        description: 'Uploading document to VAULT...',
+        variant: 'default',
+      });
+
+      const response = await fetch(msWordDocUrl);
+      const blob = await response.blob();
+
+      await msOfficeVaultBridge.uploadDocx(blob, {
+        title: selectedDocument?.title,
+        module: selectedDocument?.module || '2.5',
+        status: 'Draft',
+        organizationId: 1,
+        savedBy: googleUserInfo?.name || 'Current User',
+        timestamp: new Date().toISOString(),
+      });
+
+      toast({
+        title: 'Document Saved',
+        description: 'Your document has been saved to the VAULT successfully.',
+        variant: 'default',
+      });
+      setMsWordPopupOpen(false);
+    } catch (error) {
+      console.error('Error saving Word document:', error);
+      toast({
+        title: 'Error Saving Document',
+        description: 'There was an error saving your document to VAULT.',
+        variant: 'destructive',
+      });
+    }
+  };
   
   const [validationResults] = useState({
     completeness: 78,
@@ -3218,9 +3289,9 @@ export default function CoAuthor() {
                     <FilePlus2 className="h-4 w-4 mr-2" />
                     New Document
                   </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
+                  <Button
+                    size="sm"
+                    variant="outline"
                     className="border-blue-200 text-blue-700"
                     disabled={authLoading}
                     onClick={async () => {
@@ -3334,6 +3405,17 @@ export default function CoAuthor() {
                       </>
                     )}
                   </Button>
+                  {msWordAvailable && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-blue-200 text-blue-700"
+                      onClick={handleOpenMsWord}
+                    >
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Edit in Word
+                    </Button>
+                  )}
                   <Button size="sm" variant="outline" className="border-blue-200">
                     <Upload className="h-4 w-4 mr-2" />
                     Import
@@ -4597,7 +4679,26 @@ export default function CoAuthor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
+      {/* Word Online Integration */}
+      <Suspense
+        fallback={
+          <div className="py-20 flex flex-col items-center justify-center">
+            <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
+            <p>Loading Word Online...</p>
+          </div>
+        }
+      >
+        <MsWordPopupEditor
+          open={msWordPopupOpen}
+          onOpenChange={setMsWordPopupOpen}
+          documentId={selectedDocument?.id?.toString()}
+          documentUrl={msWordDocUrl}
+          onSave={handleMsWordSave}
+          onOpen={() => console.log('Word editor opened')}
+        />
+      </Suspense>
+
       {/* Version History Dialog */}
       <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>
         <DialogContent className="sm:max-w-[650px]">
