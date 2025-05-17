@@ -29,7 +29,7 @@ TrialSage™ is an advanced multi-tenant AI-powered regulatory document manageme
 
 1. Clone the repository
 2. Install dependencies using `npm install`
-3. Set up environment variables (see `.env.example`)
+3. Set up environment variables (see `env.sample`)
 4. Run the development server with `npm run dev`
 
 ## Architecture
