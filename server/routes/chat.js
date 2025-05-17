@@ -7,6 +7,8 @@
 
 import { Router } from 'express';
 import * as aiUtils from '../services/aiUtils.js';
+import { db } from '../db.js';
+import { conversationLogs } from '../../shared/schema.js';
 
 const router = Router();
 
@@ -15,7 +17,7 @@ const router = Router();
  */
 router.post('/chat/message', async (req, res, next) => {
   try {
-    const { message, context, history = [] } = req.body;
+    const { message, context, history = [], projectId, userId } = req.body;
     
     if (!message) {
       return res.status(400).json({ error: 'Message is required' });
@@ -69,7 +71,21 @@ router.post('/chat/message', async (req, res, next) => {
     
     const data = await response.json();
     const aiResponse = data.choices[0].message.content;
-    
+
+    // Log user and assistant messages
+    try {
+      await db.query(
+        'INSERT INTO conversation_logs (project_id, user_id, module_type, message, role, timestamp) VALUES ($1,$2,$3,$4,$5,$6)',
+        [projectId || null, userId || null, context || null, message, 'user', new Date()]
+      );
+      await db.query(
+        'INSERT INTO conversation_logs (project_id, user_id, module_type, message, role, timestamp) VALUES ($1,$2,$3,$4,$5,$6)',
+        [projectId || null, null, context || null, aiResponse, 'assistant', new Date()]
+      );
+    } catch (logErr) {
+      console.error('Failed to save conversation log', logErr);
+    }
+
     res.json({
       response: aiResponse,
       timestamp: new Date().toISOString()

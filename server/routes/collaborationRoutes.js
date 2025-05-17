@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const logger = require('../utils/logger').createLogger('collaboration-routes');
-const { validateCSRF } = require('../middleware/security');
+
+// Merged Imports: Keeping necessary parts from both branches
+const { db } = require('../db'); // From codex branch, for /logs GET route
+// const { conversationLogs } = require('../../shared/schema'); // Schema not directly used in the final merged routes below, can be kept if needed elsewhere
+const logger = require('../utils/logger').createLogger('collaboration-routes'); // From main branch
+const { validateCSRF } = require('../middleware/security'); // From main branch
 
 // In-memory message store (for demo - will be replaced with database storage)
 let messages = [];
@@ -39,6 +43,9 @@ router.get('/messages', validateCSRF, async (req, res) => {
 /**
  * @route POST /api/collaboration/messages
  * @description Add a new message
+ * This version is from the 'main' branch, which includes CSRF validation and audit logging.
+ * The database insertion logic from the 'codex' branch for conversation_logs 
+ * would need to be integrated here if both in-memory and DB storage are desired for messages.
  */
 router.post('/messages', validateCSRF, async (req, res) => {
   try {
@@ -58,7 +65,7 @@ router.post('/messages', validateCSRF, async (req, res) => {
       sender
     };
     
-    // Add to messages array
+    // Add to in-memory messages array
     messages.push(newMessage);
     
     // Add to audit log
@@ -68,13 +75,25 @@ router.post('/messages', validateCSRF, async (req, res) => {
       resourceType: 'message',
       projectId,
       moduleType,
-      userId: sender.id,
+      userId: sender.id, // Assuming sender has an id property
       timestamp: new Date().toISOString(),
       metadata: {
         messageType,
         contentLength: content.length
       }
     });
+
+    // Optional: If database logging for messages is also required (from the codex branch intent)
+    // try {
+    //   await db.query(
+    //     'INSERT INTO conversation_logs (project_id, user_id, module_type, message, role, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+    //     [newMessage.projectId, newMessage.sender.id, newMessage.moduleType, newMessage.content, newMessage.sender.role || 'user', newMessage.timestamp]
+    //   );
+    //   logger.info('Conversation log saved to database for message:', newMessage.id);
+    // } catch (dbError) {
+    //   logger.error('Failed to save conversation log to database for message:', newMessage.id, dbError);
+    //   // Decide if this should be a critical error or just a warning
+    // }
     
     res.status(201).json(newMessage);
   } catch (error) {
@@ -126,7 +145,7 @@ router.post('/tasks', validateCSRF, async (req, res) => {
     } = req.body;
     
     if (!projectId || !moduleType || !title || !creator) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: 'Missing required fields (projectId, moduleType, title, creator)' });
     }
     
     const newTask = {
@@ -135,29 +154,27 @@ router.post('/tasks', validateCSRF, async (req, res) => {
       moduleType,
       title,
       description,
-      assignee,
-      dueDate,
+      assignee, // Can be null or an object/ID
+      dueDate,  // Can be null
       priority,
       status,
       createdAt: new Date().toISOString(),
-      createdBy: creator
+      createdBy: creator // Assuming creator is an object with an id, e.g., { id: 'userId', name: 'User Name'}
     };
     
-    // Add to tasks array
     tasks.push(newTask);
     
-    // Add to audit log
     auditLog.push({
       action: 'task_created',
       resourceId: newTask.id,
       resourceType: 'task',
       projectId,
       moduleType,
-      userId: creator.id,
+      userId: creator.id, // Assuming creator has an id
       timestamp: new Date().toISOString(),
       metadata: {
         title,
-        assignee,
+        assignee: assignee ? (assignee.id || assignee) : null, // Log assignee ID or the object itself
         priority,
         status
       }
@@ -177,9 +194,12 @@ router.post('/tasks', validateCSRF, async (req, res) => {
 router.patch('/tasks/:id', validateCSRF, async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, assignee, priority, dueDate, updatedBy } = req.body;
+    const { status, assignee, priority, dueDate, updatedBy } = req.body; // updatedBy is crucial for audit
     
-    // Find the task
+    if (!updatedBy || !updatedBy.id) {
+        return res.status(400).json({ error: 'updatedBy field with an id is required for audit.' });
+    }
+
     const taskIndex = tasks.findIndex(task => task.id === id);
     
     if (taskIndex === -1) {
@@ -188,21 +208,18 @@ router.patch('/tasks/:id', validateCSRF, async (req, res) => {
     
     const originalTask = { ...tasks[taskIndex] };
     
-    // Update the task
     const updatedTask = {
       ...originalTask,
-      status: status || originalTask.status,
-      assignee: assignee || originalTask.assignee,
-      priority: priority || originalTask.priority,
-      dueDate: dueDate || originalTask.dueDate,
+      status: status !== undefined ? status : originalTask.status,
+      assignee: assignee !== undefined ? assignee : originalTask.assignee,
+      priority: priority !== undefined ? priority : originalTask.priority,
+      dueDate: dueDate !== undefined ? dueDate : originalTask.dueDate,
       updatedAt: new Date().toISOString(),
-      updatedBy
+      updatedBy 
     };
     
-    // Replace the task in the array
     tasks[taskIndex] = updatedTask;
     
-    // Add to audit log
     auditLog.push({
       action: 'task_updated',
       resourceId: updatedTask.id,
@@ -212,11 +229,11 @@ router.patch('/tasks/:id', validateCSRF, async (req, res) => {
       userId: updatedBy.id,
       timestamp: new Date().toISOString(),
       metadata: {
-        changes: {
-          status: status !== originalTask.status ? { from: originalTask.status, to: status } : undefined,
-          assignee: assignee !== originalTask.assignee ? { from: originalTask.assignee, to: assignee } : undefined,
-          priority: priority !== originalTask.priority ? { from: originalTask.priority, to: priority } : undefined,
-          dueDate: dueDate !== originalTask.dueDate ? { from: originalTask.dueDate, to: dueDate } : undefined
+        changes: { // Log what actually changed
+          status: status !== undefined && status !== originalTask.status ? { from: originalTask.status, to: status } : undefined,
+          assignee: assignee !== undefined && assignee !== originalTask.assignee ? { from: originalTask.assignee, to: assignee } : undefined,
+          priority: priority !== undefined && priority !== originalTask.priority ? { from: originalTask.priority, to: priority } : undefined,
+          dueDate: dueDate !== undefined && dueDate !== originalTask.dueDate ? { from: originalTask.dueDate, to: dueDate } : undefined
         }
       }
     });
@@ -240,7 +257,6 @@ router.get('/milestones', validateCSRF, async (req, res) => {
       return res.status(400).json({ error: 'Project ID and module type are required' });
     }
     
-    // Filter milestones by project and module
     const filteredMilestones = milestones.filter(
       milestone => milestone.projectId === projectId && milestone.moduleType === moduleType
     );
@@ -264,12 +280,12 @@ router.post('/milestones', validateCSRF, async (req, res) => {
       title, 
       description, 
       dueDate, 
-      status = 'active',
+      status = 'active', // Default status
       creator 
     } = req.body;
     
     if (!projectId || !moduleType || !title || !creator) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: 'Missing required fields (projectId, moduleType, title, creator)' });
     }
     
     const newMilestone = {
@@ -284,17 +300,15 @@ router.post('/milestones', validateCSRF, async (req, res) => {
       createdBy: creator
     };
     
-    // Add to milestones array
     milestones.push(newMilestone);
     
-    // Add to audit log
     auditLog.push({
       action: 'milestone_created',
       resourceId: newMilestone.id,
       resourceType: 'milestone',
       projectId,
       moduleType,
-      userId: creator.id,
+      userId: creator.id, // Assuming creator has an id
       timestamp: new Date().toISOString(),
       metadata: {
         title,
@@ -317,9 +331,12 @@ router.post('/milestones', validateCSRF, async (req, res) => {
 router.patch('/milestones/:id', validateCSRF, async (req, res) => {
   try {
     const { id } = req.params;
-    const { status, dueDate, updatedBy } = req.body;
+    const { status, dueDate, updatedBy } = req.body; // updatedBy is crucial
     
-    // Find the milestone
+    if (!updatedBy || !updatedBy.id) {
+        return res.status(400).json({ error: 'updatedBy field with an id is required for audit.' });
+    }
+
     const milestoneIndex = milestones.findIndex(milestone => milestone.id === id);
     
     if (milestoneIndex === -1) {
@@ -328,19 +345,16 @@ router.patch('/milestones/:id', validateCSRF, async (req, res) => {
     
     const originalMilestone = { ...milestones[milestoneIndex] };
     
-    // Update the milestone
     const updatedMilestone = {
       ...originalMilestone,
-      status: status || originalMilestone.status,
-      dueDate: dueDate || originalMilestone.dueDate,
+      status: status !== undefined ? status : originalMilestone.status,
+      dueDate: dueDate !== undefined ? dueDate : originalMilestone.dueDate,
       updatedAt: new Date().toISOString(),
       updatedBy
     };
     
-    // Replace the milestone in the array
     milestones[milestoneIndex] = updatedMilestone;
     
-    // Add to audit log
     auditLog.push({
       action: 'milestone_updated',
       resourceId: updatedMilestone.id,
@@ -351,8 +365,8 @@ router.patch('/milestones/:id', validateCSRF, async (req, res) => {
       timestamp: new Date().toISOString(),
       metadata: {
         changes: {
-          status: status !== originalMilestone.status ? { from: originalMilestone.status, to: status } : undefined,
-          dueDate: dueDate !== originalMilestone.dueDate ? { from: originalMilestone.dueDate, to: dueDate } : undefined
+          status: status !== undefined && status !== originalMilestone.status ? { from: originalMilestone.status, to: status } : undefined,
+          dueDate: dueDate !== undefined && dueDate !== originalMilestone.dueDate ? { from: originalMilestone.dueDate, to: dueDate } : undefined
         }
       }
     });
@@ -376,7 +390,6 @@ router.get('/approvals', validateCSRF, async (req, res) => {
       return res.status(400).json({ error: 'Project ID and module type are required' });
     }
     
-    // Filter approvals by project and module
     const filteredApprovals = approvals.filter(
       approval => approval.projectId === projectId && approval.moduleType === moduleType
     );
@@ -399,14 +412,14 @@ router.post('/approvals', validateCSRF, async (req, res) => {
       moduleType, 
       title, 
       description, 
-      documentId,
-      type = 'Document Approval',
-      approvers,
+      documentId, // ID of the document/item needing approval
+      type = 'Document Approval', // Type of approval
+      approvers, // Array of user IDs or user objects
       requester 
     } = req.body;
     
-    if (!projectId || !moduleType || !title || !requester) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    if (!projectId || !moduleType || !title || !requester || !approvers || !Array.isArray(approvers) || approvers.length === 0) {
+      return res.status(400).json({ error: 'Missing required fields (projectId, moduleType, title, requester, approvers array)' });
     }
     
     const newApproval = {
@@ -417,29 +430,27 @@ router.post('/approvals', validateCSRF, async (req, res) => {
       description,
       documentId,
       type,
-      status: 'pending',
-      approvers,
+      status: 'pending', // Initial status
+      approvers: approvers.map(appr => ({ userId: appr.id || appr, status: 'pending', comment: null })), // Store approver status
       requestedBy: requester,
       requestedAt: new Date().toISOString()
     };
     
-    // Add to approvals array
     approvals.push(newApproval);
     
-    // Add to audit log
     auditLog.push({
       action: 'approval_requested',
       resourceId: newApproval.id,
       resourceType: 'approval',
       projectId,
       moduleType,
-      userId: requester.id,
+      userId: requester.id, // Assuming requester has an id
       timestamp: new Date().toISOString(),
       metadata: {
         title,
         type,
         documentId,
-        approvers
+        approvers: approvers.map(appr => appr.id || appr) // Log IDs of approvers
       }
     });
     
@@ -452,14 +463,17 @@ router.post('/approvals', validateCSRF, async (req, res) => {
 
 /**
  * @route PATCH /api/collaboration/approvals/:id
- * @description Update an approval request
+ * @description Update an approval request (e.g., approve/reject by an approver)
  */
 router.patch('/approvals/:id', validateCSRF, async (req, res) => {
   try {
-    const { id } = req.params;
-    const { status, comment, approver } = req.body;
+    const { id } = req.params; // Approval ID
+    const { status, comment, approver } = req.body; // 'approved' or 'rejected', comment, and the approver object {id, name}
     
-    // Find the approval
+    if (!status || !approver || !approver.id || (status !== 'approved' && status !== 'rejected')) {
+      return res.status(400).json({ error: 'Missing required fields (status: "approved"|"rejected", approver object with id)' });
+    }
+
     const approvalIndex = approvals.findIndex(approval => approval.id === id);
     
     if (approvalIndex === -1) {
@@ -467,32 +481,49 @@ router.patch('/approvals/:id', validateCSRF, async (req, res) => {
     }
     
     const originalApproval = { ...approvals[approvalIndex] };
-    
-    // Update the approval
-    const updatedApproval = {
-      ...originalApproval,
-      status: status || originalApproval.status,
-      approvedBy: status === 'approved' ? approver : undefined,
-      approvedAt: status === 'approved' ? new Date().toISOString() : undefined,
-      rejectedBy: status === 'rejected' ? approver : undefined,
-      rejectedAt: status === 'rejected' ? new Date().toISOString() : undefined,
-      comment
-    };
-    
-    // Replace the approval in the array
+    const updatedApproval = JSON.parse(JSON.stringify(originalApproval)); // Deep copy
+
+    let individualApproverUpdated = false;
+    updatedApproval.approvers = updatedApproval.approvers.map(appr => {
+        if (appr.userId === approver.id && appr.status === 'pending') {
+            appr.status = status;
+            appr.comment = comment || null;
+            appr.actionTimestamp = new Date().toISOString();
+            individualApproverUpdated = true;
+        }
+        return appr;
+    });
+
+    if (!individualApproverUpdated) {
+        return res.status(403).json({ error: `Approver ${approver.id} not pending or not found in this request.`});
+    }
+
+    // Update overall status if all have approved or if one rejects
+    const allApproved = updatedApproval.approvers.every(appr => appr.status === 'approved');
+    const anyRejected = updatedApproval.approvers.some(appr => appr.status === 'rejected');
+
+    if (anyRejected) {
+        updatedApproval.status = 'rejected';
+    } else if (allApproved) {
+        updatedApproval.status = 'approved';
+    }
+    // else it remains 'pending' if some are still pending and none rejected
+
+    updatedApproval.updatedAt = new Date().toISOString(); // General update timestamp for the request
+        
     approvals[approvalIndex] = updatedApproval;
     
-    // Add to audit log
     auditLog.push({
-      action: `approval_${status}`,
+      action: `approval_action_${status}`, // e.g., approval_action_approved
       resourceId: updatedApproval.id,
       resourceType: 'approval',
       projectId: updatedApproval.projectId,
       moduleType: updatedApproval.moduleType,
-      userId: approver.id,
+      userId: approver.id, // The user who took the action
       timestamp: new Date().toISOString(),
       metadata: {
-        status,
+        individualAction: status, // 'approved' or 'rejected'
+        overallStatus: updatedApproval.status,
         comment
       }
     });
@@ -510,44 +541,103 @@ router.patch('/approvals/:id', validateCSRF, async (req, res) => {
  */
 router.get('/audit', validateCSRF, async (req, res) => {
   try {
-    const { projectId, moduleType, resourceType, userId, startDate, endDate } = req.query;
+    const { projectId, moduleType, resourceType, userId, startDate, endDate, page = 1, pageSize = 20 } = req.query;
     
-    let filteredLogs = [...auditLog];
+    let filteredLogs = [...auditLog]; // Start with a copy of all logs
     
     // Apply filters
     if (projectId) {
       filteredLogs = filteredLogs.filter(log => log.projectId === projectId);
     }
-    
     if (moduleType) {
       filteredLogs = filteredLogs.filter(log => log.moduleType === moduleType);
     }
-    
     if (resourceType) {
       filteredLogs = filteredLogs.filter(log => log.resourceType === resourceType);
     }
-    
     if (userId) {
       filteredLogs = filteredLogs.filter(log => log.userId === userId);
     }
-    
     if (startDate) {
       const start = new Date(startDate);
       filteredLogs = filteredLogs.filter(log => new Date(log.timestamp) >= start);
     }
-    
     if (endDate) {
       const end = new Date(endDate);
+      // Ensure comparison includes the whole end day if time is not specified
+      end.setHours(23, 59, 59, 999); 
       filteredLogs = filteredLogs.filter(log => new Date(log.timestamp) <= end);
     }
     
     // Sort by timestamp (newest first)
     filteredLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     
-    res.json(filteredLogs);
+    // Pagination
+    const limit = parseInt(pageSize, 10);
+    const currentPage = parseInt(page, 10);
+    const offset = (currentPage - 1) * limit;
+    const paginatedLogs = filteredLogs.slice(offset, offset + limit);
+    const totalCount = filteredLogs.length;
+
+    res.json({
+        logs: paginatedLogs,
+        totalCount,
+        page: currentPage,
+        pageSize: limit,
+        totalPages: Math.ceil(totalCount / limit)
+    });
+
   } catch (error) {
     logger.error('Error fetching audit logs:', error);
     res.status(500).json({ error: error.message || 'Failed to fetch audit logs' });
+  }
+});
+
+// Retrieve conversation logs with pagination (from codex branch, using 'db')
+router.get('/logs', validateCSRF, async (req, res) => { // Added validateCSRF from main branch pattern
+  const { projectId, moduleType, page = 1, pageSize = 20 } = req.query;
+
+  const conditions = [];
+  const params = [];
+  let paramIndex = 1;
+
+  if (projectId) {
+    params.push(projectId);
+    conditions.push(`project_id = $${paramIndex++}`);
+  }
+
+  if (moduleType) {
+    params.push(moduleType);
+    conditions.push(`module_type = $${paramIndex++}`);
+  }
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const limit = parseInt(pageSize, 10);
+  const offset = (parseInt(page, 10) - 1) * limit;
+
+  try {
+    const countQuery = `SELECT COUNT(*) FROM conversation_logs ${whereClause}`;
+    logger.debug('Conversation logs count query:', countQuery, params.slice(0, paramIndex -1)); // Log query and params for count
+    const countRes = await db.query(countQuery, params.slice(0, paramIndex -1)); // Params for count query shouldn't include limit/offset
+
+    const queryParamsForLogs = [...params.slice(0, paramIndex -1), limit, offset];
+    const logsQuery = `SELECT * FROM conversation_logs ${whereClause} ORDER BY timestamp DESC LIMIT $${paramIndex++} OFFSET $${paramIndex++}`;
+    logger.debug('Conversation logs data query:', logsQuery, queryParamsForLogs); // Log query and params for data
+    const logsRes = await db.query(logsQuery, queryParamsForLogs);
+
+    const total = parseInt(countRes.rows[0].count, 10);
+
+    res.json({
+      logs: logsRes.rows,
+      totalCount: total,
+      page: parseInt(page, 10),
+      pageSize: limit,
+      totalPages: Math.ceil(total / limit)
+    });
+  } catch (err) {
+    logger.error('Failed to retrieve conversation logs from DB', err); // Use logger
+    res.status(500).json({ message: 'Error retrieving logs from database' });
   }
 });
 
