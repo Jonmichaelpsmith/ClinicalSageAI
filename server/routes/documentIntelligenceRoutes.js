@@ -1,24 +1,25 @@
 /**
  * Document Intelligence Routes
  * 
- * This module provides API routes for the document intelligence functionality.
- * It handles document uploads, data extraction, and application of extracted
- * data to device profiles.
+ * This file defines the API routes for document intelligence functionality,
+ * including document processing, data extraction, and profile integration.
  */
 const express = require('express');
-const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const axios = require('axios');
 const { v4: uuidv4 } = require('uuid');
-const { OpenAI } = require('openai');
 
-// Set up multer for handling file uploads
+// Create router
+const router = express.Router();
+
+// Configure multer for file uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, '../../uploads/documents');
+    const uploadDir = path.join(process.cwd(), 'uploads', 'document-intelligence');
     
-    // Ensure the directory exists
+    // Create directory if it doesn't exist
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -26,352 +27,333 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    // Generate a unique filename with original extension
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1E9)}`;
+    // Generate unique filename with original extension
     const ext = path.extname(file.originalname);
-    cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
+    const id = uuidv4();
+    cb(null, `${id}${ext}`);
   }
 });
 
-// Filter for accepted file types
+// File filter for acceptable document types
 const fileFilter = (req, file, cb) => {
-  const acceptedTypes = [
-    // Documents
-    '.pdf', '.docx', '.doc', '.txt', '.rtf',
-    // Spreadsheets 
-    '.xlsx', '.xls', '.csv',
-    // Images
-    '.jpg', '.jpeg', '.png', '.gif',
-    // XML/JSON
-    '.xml', '.json',
-    // Archive
-    '.zip'
+  // Accept common document file types
+  const allowedTypes = [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain',
+    'application/rtf',
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/csv',
+    'image/jpeg',
+    'image/png',
+    'application/xml',
+    'application/json',
+    'application/zip'
   ];
   
-  const ext = path.extname(file.originalname).toLowerCase();
-  
-  if (acceptedTypes.includes(ext)) {
+  if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error(`File type ${ext} is not supported`), false);
+    cb(new Error(`Unsupported file type: ${file.mimetype}`), false);
   }
 };
 
-// Initialize multer with storage and file filter
-const upload = multer({ 
-  storage, 
+// Configure upload middleware
+const upload = multer({
+  storage,
   fileFilter,
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB max file size
-    files: 10 // Maximum 10 files at once
+    fileSize: 50 * 1024 * 1024, // 50 MB
   }
 });
 
-// Initialize OpenAI client if API key is available
-let openaiClient;
-try {
-  if (process.env.OPENAI_API_KEY) {
-    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-    console.log('OpenAI client initialized for document intelligence');
-  } else {
-    console.warn('OPENAI_API_KEY not found, document intelligence will use fallback modes');
-  }
-} catch (error) {
-  console.error('Error initializing OpenAI client:', error);
-}
-
 /**
- * Upload documents for processing
- * POST /api/document-intelligence/upload
+ * Process documents route
+ * Handles document upload and initial processing
  */
-router.post('/upload', upload.array('files', 10), async (req, res) => {
+router.post('/process', upload.array('documents', 10), async (req, res) => {
   try {
-    const files = req.files || [];
+    // Get regulatory context from request
     const regulatoryContext = req.body.regulatoryContext || '510k';
     
-    if (!files.length) {
-      return res.status(400).json({ success: false, message: 'No files uploaded' });
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'No files uploaded'
+      });
     }
     
-    console.log(`Received ${files.length} files for processing in context: ${regulatoryContext}`);
-    
-    // Process uploaded files
-    const processedDocuments = await Promise.all(files.map(async (file, index) => {
-      // Recognize document type using filename patterns or content analysis
-      const documentType = await recognizeDocumentType(file, regulatoryContext);
+    // Mock document processing
+    // In a real implementation, this would connect to OCR and document analysis services
+    const processedDocuments = req.files.map(file => {
+      // Get file metadata
+      const { filename, originalname, size, mimetype } = file;
+      const filepath = path.join('uploads', 'document-intelligence', filename);
       
+      // Detect document type based on filename and context
+      let recognizedType = 'Unknown Document';
+      const filenameLower = originalname.toLowerCase();
+      
+      if (regulatoryContext === '510k') {
+        if (filenameLower.includes('510') || filenameLower.includes('k')) {
+          recognizedType = '510k Submission';
+        } else if (filenameLower.includes('predicate')) {
+          recognizedType = 'Predicate Device';
+        } else if (filenameLower.includes('test') || filenameLower.includes('study')) {
+          recognizedType = 'Test Report';
+        } else if (filenameLower.includes('spec') || filenameLower.includes('technical')) {
+          recognizedType = 'Technical Specifications';
+        }
+      } else if (regulatoryContext === 'cer') {
+        if (filenameLower.includes('cer')) {
+          recognizedType = 'Clinical Evaluation Report';
+        } else if (filenameLower.includes('clinical')) {
+          recognizedType = 'Clinical Study';
+        } else if (filenameLower.includes('literature')) {
+          recognizedType = 'Literature Review';
+        } else if (filenameLower.includes('post') || filenameLower.includes('market')) {
+          recognizedType = 'Post-Market Data';
+        }
+      }
+      
+      // Default document types based on file extension
+      if (recognizedType === 'Unknown Document') {
+        const ext = path.extname(filenameLower);
+        if (ext === '.pdf') recognizedType = 'PDF Document';
+        else if (ext === '.docx' || ext === '.doc') recognizedType = 'Word Document';
+        else if (ext === '.xlsx' || ext === '.xls') recognizedType = 'Excel Spreadsheet';
+        else if (ext === '.jpg' || ext === '.jpeg' || ext === '.png') recognizedType = 'Image';
+      }
+      
+      // Return processed document metadata
       return {
-        id: `doc-${uuidv4()}`,
-        name: file.originalname,
-        path: file.path,
-        size: file.size,
-        mimetype: file.mimetype,
-        recognizedType: documentType.type,
-        confidence: documentType.confidence,
-        pageCount: await estimatePageCount(file),
-        processedAt: new Date().toISOString(),
+        id: path.parse(filename).name, // Use filename without extension as ID
+        name: originalname,
+        size,
+        type: mimetype,
+        path: filepath,
+        recognizedType,
+        status: 'processed'
       };
-    }));
-    
-    return res.status(200).json({
-      success: true,
-      processedDocuments,
-      message: 'Documents processed successfully'
     });
-    
+
+    // Send response
+    res.json({
+      success: true,
+      message: `Successfully processed ${processedDocuments.length} documents`,
+      processedDocuments
+    });
   } catch (error) {
-    console.error('Error processing uploaded documents:', error);
-    return res.status(500).json({
+    console.error('Error processing documents:', error);
+    res.status(500).json({
       success: false,
-      message: error.message || 'Failed to process documents'
+      message: error.message || 'Error processing documents'
     });
   }
 });
 
 /**
- * Extract data from processed documents
- * POST /api/document-intelligence/extract
+ * Extract data from documents route
+ * Performs detailed analysis and data extraction on processed documents
  */
 router.post('/extract', async (req, res) => {
   try {
-    const { documents, regulatoryContext, extractionMode } = req.body;
+    const { processedDocuments, regulatoryContext } = req.body;
     
-    if (!documents || !Array.isArray(documents) || !documents.length) {
+    if (!processedDocuments || !Array.isArray(processedDocuments) || processedDocuments.length === 0) {
       return res.status(400).json({
         success: false,
-        message: 'No documents provided for extraction'
+        message: 'No processed documents provided'
       });
     }
     
-    console.log(`Extracting data from ${documents.length} documents in ${regulatoryContext} context`);
+    // Mock data extraction based on document types
+    // In a real implementation, this would use OCR, NLP, and AI services
     
-    // Extract data from documents
-    const extractedData = await extractDocumentData(documents, regulatoryContext, extractionMode);
+    // Identify document types for specialized extraction
+    const docTypes = processedDocuments.map(doc => doc.recognizedType);
+    const hasTechnicalDoc = docTypes.some(type => 
+      type.includes('Technical') || type.includes('Specification'));
+    const has510kDoc = docTypes.some(type => 
+      type.includes('510k') || type.includes('Submission'));
+    const hasStudyDoc = docTypes.some(type => 
+      type.includes('Study') || type.includes('Clinical'));
     
-    return res.status(200).json({
-      success: true,
-      extractedData,
-      message: 'Data extracted successfully',
-      confidence: 0.89, // This would be calculated based on actual extraction confidence
-    });
-    
-  } catch (error) {
-    console.error('Error extracting document data:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to extract data from documents'
-    });
-  }
-});
-
-/**
- * Apply extracted data to a device profile
- * POST /api/document-intelligence/apply/:deviceId
- */
-router.post('/apply/:deviceId', async (req, res) => {
-  try {
-    const { deviceId } = req.params;
-    const { extractedData } = req.body;
-    
-    if (!deviceId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Device ID is required'
-      });
-    }
-    
-    if (!extractedData || Object.keys(extractedData).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'No data provided to apply to device profile'
-      });
-    }
-    
-    console.log(`Applying extracted data to device profile: ${deviceId}`);
-    
-    // Apply extracted data to device profile
-    const updatedDevice = await applyDataToDeviceProfile(deviceId, extractedData);
-    
-    return res.status(200).json({
-      success: true,
-      deviceId,
-      updatedFields: Object.keys(extractedData),
-      message: 'Data applied to device profile successfully',
-    });
-    
-  } catch (error) {
-    console.error('Error applying data to device profile:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to apply data to device profile'
-    });
-  }
-});
-
-/**
- * Get document type recognition model info
- * GET /api/document-intelligence/model-info
- */
-router.get('/model-info', (req, res) => {
-  try {
-    const modelInfo = {
-      documentTypeRecognition: {
-        model: 'GPT-4o',
-        version: '2025-05-01',
-        supportedTypes: [
-          '510(k) Submission',
-          'Technical File',
-          'Instructions for Use',
-          'Test Report',
-          'Clinical Study'
-        ]
-      },
-      dataExtraction: {
-        model: 'GPT-4o',
-        version: '2025-05-01',
-      }
+    // Prepare extracted data object
+    let extractedData = {
+      deviceName: '',
+      manufacturer: '',
+      modelNumber: '',
+      intendedUse: '',
+      deviceClass: '',
+      regulatoryStatus: '',
+      technicalSpecifications: {},
+      predicateDevices: [],
+      clinicalData: {},
+      extractionTimestamp: new Date().toISOString()
     };
     
-    return res.status(200).json({
-      success: true,
-      modelInfo
-    });
+    // Populate with contextual mock data
+    if (regulatoryContext === '510k') {
+      extractedData = {
+        ...extractedData,
+        deviceName: has510kDoc ? 'Advanced Medical Device XR-5' : 'Sample Medical Device',
+        manufacturer: 'MedTech Innovations, Inc.',
+        modelNumber: 'XR-5-2025',
+        intendedUse: 'For diagnostic use in clinical settings to monitor patient vital signs',
+        deviceClass: 'Class II',
+        regulatoryStatus: 'Pending 510(k) Clearance',
+        predicateDevices: [
+          { name: 'XR-4 Monitoring System', manufacturer: 'MedTech Innovations', k_number: 'K220789' }
+        ]
+      };
+    } else if (regulatoryContext === 'cer') {
+      extractedData = {
+        ...extractedData,
+        deviceName: 'Clinical Monitoring System CMS-3',
+        manufacturer: 'EuroMed Devices GmbH',
+        modelNumber: 'CMS-3-2025',
+        intendedUse: 'For continuous monitoring of patient vital signs in clinical settings',
+        deviceClass: 'Class IIb',
+        regulatoryStatus: 'CE Marked',
+        clinicalData: {
+          studies: 3,
+          totalPatients: 250,
+          adverseEvents: 2,
+          effectiveness: '97.8%'
+        }
+      };
+    }
     
+    // Add technical specifications if technical document is present
+    if (hasTechnicalDoc) {
+      extractedData.technicalSpecifications = {
+        dimensions: '12 x 8 x 3 cm',
+        weight: '320g',
+        powerSupply: 'Rechargeable Li-ion battery, 3.7V, 5000mAh',
+        batteryLife: '12 hours continuous operation',
+        display: '5-inch HD touchscreen',
+        connectivity: 'Bluetooth 5.0, Wi-Fi 6',
+        operatingTemperature: '10°C to 40°C',
+        storageTemperature: '-20°C to 60°C',
+        waterResistance: 'IPX4 rated',
+        certifications: 'ISO 13485, IEC 60601-1'
+      };
+    }
+    
+    // Add clinical data if study documents are present
+    if (hasStudyDoc) {
+      extractedData.clinicalData = {
+        ...extractedData.clinicalData,
+        studySummary: 'Prospective multi-center study with 250 patients across 5 clinical sites',
+        primaryEndpoint: 'Device accuracy compared to standard of care',
+        results: 'Demonstrated 97.8% accuracy with 95% confidence interval of (96.2%, 99.1%)',
+        adverseEvents: '2 minor adverse events reported, both resolved without intervention',
+        conclusion: 'The device demonstrated safety and effectiveness for its intended use'
+      };
+    }
+
+    // Send response with extracted data
+    res.json({
+      success: true,
+      message: 'Successfully extracted data from documents',
+      extractedData
+    });
   } catch (error) {
-    console.error('Error getting model info:', error);
-    return res.status(500).json({
+    console.error('Error extracting data:', error);
+    res.status(500).json({
       success: false,
-      message: error.message || 'Failed to get model info'
+      message: error.message || 'Error extracting data from documents'
     });
   }
 });
-
-/**
- * Search for documents in the repository
- * GET /api/document-intelligence/search
- */
-router.get('/search', (req, res) => {
-  try {
-    const { query, documentType, dateRange, limit = 10, page = 1 } = req.query;
-    
-    // This would be implemented with actual database search
-    // For now, return empty results
-    return res.status(200).json({
-      success: true,
-      results: [],
-      totalCount: 0,
-      page,
-      limit,
-    });
-    
-  } catch (error) {
-    console.error('Error searching documents:', error);
-    return res.status(500).json({
-      success: false,
-      message: error.message || 'Failed to search documents'
-    });
-  }
-});
-
-// Helper functions
-
-/**
- * Recognize document type from file
- * @param {Object} file - The uploaded file object
- * @param {string} regulatoryContext - Regulatory context (510k, mdr, etc.)
- * @returns {Promise<Object>} - Recognized document type and confidence
- */
-async function recognizeDocumentType(file, regulatoryContext) {
-  // In a real implementation, this would use AI to analyze the document content
-  // For this prototype, use the filename to guess the document type
-  
-  const filename = file.originalname.toLowerCase();
-  
-  // Simple pattern matching for document types
-  if (filename.includes('510k') || filename.includes('submission')) {
-    return { type: '510(k) Submission', confidence: 0.9 };
-  } else if (filename.includes('ifu') || filename.includes('instructions')) {
-    return { type: 'Instructions for Use', confidence: 0.85 };
-  } else if (filename.includes('test') || filename.includes('report')) {
-    return { type: 'Test Report', confidence: 0.8 };
-  } else if (filename.includes('technical') || filename.includes('tech file')) {
-    return { type: 'Technical File', confidence: 0.85 };
-  } else if (filename.includes('clinical') || filename.includes('study')) {
-    return { type: 'Clinical Study', confidence: 0.8 };
-  } else {
-    // If no clear pattern, return a generic type with low confidence
-    return { type: 'Unknown', confidence: 0.5 };
-  }
-}
-
-/**
- * Estimate page count from a file
- * @param {Object} file - The uploaded file object
- * @returns {Promise<number>} - Estimated page count
- */
-async function estimatePageCount(file) {
-  // In a real implementation, this would analyze the file to determine page count
-  // For this prototype, return a random number between 1 and 50
-  return Math.floor(Math.random() * 50) + 1;
-}
-
-/**
- * Extract data from documents
- * @param {Array} documents - The processed documents
- * @param {string} regulatoryContext - Regulatory context (510k, mdr, etc.)
- * @param {string} extractionMode - Extraction mode (basic, comprehensive, etc.)
- * @returns {Promise<Object>} - Extracted data
- */
-async function extractDocumentData(documents, regulatoryContext, extractionMode) {
-  // In a real implementation, this would use AI to extract data from the documents
-  // For this prototype, return mock data based on document types
-  
-  const extractedData = {};
-  
-  // Extract different fields based on document types
-  const documentTypes = documents.map(doc => doc.recognizedType);
-  
-  // Basic device information that might be in any document
-  extractedData.deviceName = 'Cardiovascular Monitoring System';
-  extractedData.manufacturer = 'MedTech Innovations';
-  
-  // Add additional fields based on document types
-  if (documentTypes.includes('510(k) Submission')) {
-    extractedData.modelNumber = 'CVS-2000';
-    extractedData.deviceType = 'Cardiovascular';
-    extractedData.deviceClass = 'II';
-    extractedData.regulatoryClass = 'II';
-    extractedData.productCode = 'DRT';
-    extractedData.regulationNumber = '870.2300';
-  }
-  
-  if (documentTypes.includes('Technical File')) {
-    extractedData.specifications = 'Wireless monitoring, 48-hour battery life, IP67 rated';
-    extractedData.dimensions = '120mm x 80mm x 15mm';
-    extractedData.materials = 'Medical-grade silicone, biocompatible plastics';
-    extractedData.sterilization = 'EtO sterilization validated';
-  }
-  
-  if (documentTypes.includes('Instructions for Use') || documentTypes.includes('Clinical Study')) {
-    extractedData.intendedUse = 'Continuous monitoring of cardiac rhythm and vital signs in clinical settings';
-    extractedData.indications = 'For patients requiring continuous cardiac monitoring in hospital environments';
-    extractedData.contraindications = 'Not for use in MRI environments';
-    extractedData.warnings = 'Device contains small parts, keep away from children';
-  }
-  
-  return extractedData;
-}
 
 /**
  * Apply extracted data to a device profile
- * @param {string} deviceId - The device ID
- * @param {Object} extractedData - The extracted data
- * @returns {Promise<Object>} - Updated device profile
  */
-async function applyDataToDeviceProfile(deviceId, extractedData) {
-  // In a real implementation, this would update the device profile in the database
-  // For this prototype, just return success
-  return { success: true, deviceId, updatedFields: Object.keys(extractedData) };
-}
+router.post('/apply', async (req, res) => {
+  try {
+    const { extractedData, deviceProfileId } = req.body;
+    
+    if (!extractedData) {
+      return res.status(400).json({
+        success: false,
+        message: 'No extracted data provided'
+      });
+    }
+    
+    if (!deviceProfileId) {
+      return res.status(400).json({
+        success: false,
+        message: 'No device profile ID provided'
+      });
+    }
+    
+    // Mock profile update
+    // In a real implementation, this would update the device profile in the database
+    const updatedProfile = {
+      id: deviceProfileId,
+      ...extractedData,
+      updatedAt: new Date().toISOString(),
+      lastUpdatedBy: 'Document Intelligence System',
+      dataSource: 'Automated Extraction'
+    };
+    
+    // Send response
+    res.json({
+      success: true,
+      message: 'Successfully applied extracted data to device profile',
+      updatedProfile
+    });
+  } catch (error) {
+    console.error('Error applying extracted data:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Error applying extracted data to device profile'
+    });
+  }
+});
+
+/**
+ * Get compatible document types
+ */
+router.get('/document-types', (req, res) => {
+  const { regulatoryContext } = req.query;
+  
+  let documentTypes = [];
+  
+  // Return different document types based on regulatory context
+  if (regulatoryContext === '510k') {
+    documentTypes = [
+      { id: '510k', name: '510(k) Submission', description: 'FDA 510(k) submission documents' },
+      { id: 'predicate', name: 'Predicate Device', description: 'Information about predicate devices' },
+      { id: 'test', name: 'Test Reports', description: 'Performance and safety testing documentation' },
+      { id: 'technical', name: 'Technical Documentation', description: 'Device specifications and technical details' }
+    ];
+  } else if (regulatoryContext === 'cer') {
+    documentTypes = [
+      { id: 'cer', name: 'Clinical Evaluation Report', description: 'Full or partial CER documents' },
+      { id: 'clinical', name: 'Clinical Study', description: 'Clinical study protocols and results' },
+      { id: 'literature', name: 'Literature Review', description: 'Scientific literature and publications' },
+      { id: 'post-market', name: 'Post-Market Data', description: 'Post-market surveillance data' },
+      { id: 'risk', name: 'Risk Analysis', description: 'Risk management documentation' }
+    ];
+  } else {
+    // Default document types for any context
+    documentTypes = [
+      { id: 'technical', name: 'Technical Documentation', description: 'Technical specifications and engineering documents' },
+      { id: 'regulatory', name: 'Regulatory Filings', description: 'Previous regulatory submissions and approvals' },
+      { id: 'clinical', name: 'Clinical Studies', description: 'Clinical trial protocols and results' },
+      { id: 'quality', name: 'Quality Management', description: 'Quality system documentation and procedures' }
+    ];
+  }
+  
+  res.json({
+    success: true,
+    documentTypes
+  });
+});
 
 module.exports = router;
