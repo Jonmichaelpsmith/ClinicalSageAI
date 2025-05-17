@@ -32,7 +32,7 @@ The Microsoft Word integration uses a bridge approach that connects Microsoft Wo
 
 ### Key Components
 
-- `MsWordPopupEditor.jsx`: Provides a popup Microsoft Word Online editor experience
+ - `MsWordPopupEditor.jsx`: Popup Word editor with an AI suggestions sidebar
 - `msOfficeVaultBridge.js`: Bridges Microsoft Office editing with VAULT document management
 - `msCopilotService.js`: Integrates Microsoft Copilot AI features for document authoring
 - `EnhancedDocumentEditor.jsx`: Wrapper component that provides a unified editing experience
@@ -55,6 +55,12 @@ The Microsoft Word integration uses a bridge approach that connects Microsoft Wo
    - Specialized regulatory knowledge enhances suggestions
    - Contextual awareness of document structure and purpose
    - Citation and reference management automation
+
+### Copilot Sidebar Usage
+
+`MsWordPopupEditor.jsx` exposes buttons for **Get Suggestions** and **Run Compliance**. These
+call functions in `msCopilotService` and display the results in a sidebar next to the
+embedded Word iframe. Press either button to refresh the AI-generated guidance at any time.
 
 ## Best Practices
 
