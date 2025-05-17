@@ -509,7 +509,18 @@ export async function simulateOpenAIResponse(data, responseType = 'general') {
         ],
         summary: "The specification is generally aligned with regulatory expectations but requires modifications to fully comply with current standards."
       };
-      
+
+    case 'regulatoryGapMatrix':
+      return {
+        matrix: (data.regions || []).reduce((acc, region) => {
+          acc[region] = [
+            { item: 'Stability data', status: 'missing' },
+            { item: 'Process validation', status: 'non-compliant' }
+          ];
+          return acc;
+        }, {})
+      };
+
     default:
       return {
         status: "success",
@@ -651,6 +662,47 @@ export async function generateEctdDraft(moduleType, sectionCode, region, product
   }
 }
 
+/**
+ * Generate a regulatory gap matrix for CMC requirements across regions
+ * @param {Object} cmcData - Chemistry, Manufacturing and Controls information
+ * @param {Array<string>} regions - Regulatory regions to evaluate
+ * @returns {Promise<Object>} Structured gap matrix by region
+ */
+export async function generateRegulatoryGapMatrix(cmcData, regions) {
+  try {
+    // Fallback to simulated response when API key is missing
+    if (!import.meta.env.VITE_OPENAI_API_KEY) {
+      return simulateOpenAIResponse({ cmcData, regions }, 'regulatoryGapMatrix');
+    }
+
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "system",
+          content: `You are a regulatory affairs expert specializing in CMC compliance. Generate a gap matrix indicating missing or noncompliant items for each specified region.`
+        },
+        {
+          role: "user",
+          content: JSON.stringify({
+            task: "Generate CMC regulatory gap matrix",
+            cmcData,
+            regions
+          })
+        }
+      ],
+      temperature: 0.2,
+      max_tokens: 2000,
+      response_format: { type: "json_object" }
+    });
+
+    return JSON.parse(response.choices[0].message.content);
+  } catch (error) {
+    console.error("Error generating regulatory gap matrix:", error);
+    throw new Error(`Failed to generate regulatory gap matrix: ${error.message}`);
+  }
+}
+
 export default {
   generateCER,
   analyzeClinicalData,
@@ -663,5 +715,6 @@ export default {
   validateEctdDocument,
   generateEctdSuggestions,
   generateEctdDraft,
+  generateRegulatoryGapMatrix,
   simulateOpenAIResponse
 };
