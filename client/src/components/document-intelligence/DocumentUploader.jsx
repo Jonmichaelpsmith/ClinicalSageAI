@@ -1,111 +1,156 @@
 import React, { useState, useRef } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Upload, FileText, AlertTriangle, X, CheckCircle2 } from 'lucide-react';
-import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
+import { Separator } from '@/components/ui/separator';
+import { Upload, FileX, FileCheck, X, Info, File, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
 
 /**
  * Document Uploader Component
  * 
- * This component handles the uploading and initial processing of documents
+ * This component handles uploading and initial processing of documents
  * for the document intelligence system.
  * 
  * @param {Object} props
  * @param {string} props.regulatoryContext - The regulatory context (510k, cer, etc.)
- * @param {Function} props.onDocumentsProcessed - Callback for when documents are processed
- * @param {string} props.extractionMode - The extraction mode to use
- * @param {Function} props.onExtractionModeChange - Callback when extraction mode changes
+ * @param {Function} props.onProcessingComplete - Callback when processing is complete
  */
 const DocumentUploader = ({
   regulatoryContext = '510k',
-  onDocumentsProcessed,
-  extractionMode = 'comprehensive',
-  onExtractionModeChange
+  onProcessingComplete
 }) => {
   const [files, setFiles] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadError, setUploadError] = useState(null);
+  const [processedDocuments, setProcessedDocuments] = useState([]);
   const [compatibleTypes, setCompatibleTypes] = useState([]);
+  const [dragActive, setDragActive] = useState(false);
   const fileInputRef = useRef(null);
   const { toast } = useToast();
 
-  // Handle file selection through the input element
-  const handleFileChange = (e) => {
-    const selectedFiles = Array.from(e.target.files);
-    setFiles(selectedFiles);
-    setUploadError(null);
+  // Load compatible document types when component mounts
+  React.useEffect(() => {
+    const loadCompatibleTypes = async () => {
+      try {
+        const types = await documentIntelligenceService.getCompatibleDocumentTypes(regulatoryContext);
+        setCompatibleTypes(types);
+      } catch (error) {
+        console.error('Error loading compatible document types:', error);
+      }
+    };
+    
+    loadCompatibleTypes();
+  }, [regulatoryContext]);
+
+  // Handle file selection via button click
+  const handleFileSelect = (event) => {
+    const selectedFiles = Array.from(event.target.files);
+    
+    if (selectedFiles.length === 0) return;
+    
+    // Add files to state
+    setFiles(prev => [...prev, ...selectedFiles]);
+    
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
-  // Handle files dropped directly on the drop zone
+  // Handle drag events
+  const handleDrag = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  // Handle drop event
   const handleDrop = (e) => {
     e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    
     const droppedFiles = Array.from(e.dataTransfer.files);
-    setFiles(droppedFiles);
-    setUploadError(null);
+    setFiles(prev => [...prev, ...droppedFiles]);
   };
 
-  // Prevent default behavior for drag events to allow drop
-  const handleDragOver = (e) => {
-    e.preventDefault();
+  // Remove a file from the list
+  const removeFile = (index) => {
+    setFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Upload and process the selected documents
-  const handleUpload = async () => {
+  // Clear all files
+  const clearFiles = () => {
+    setFiles([]);
+  };
+
+  // Process the uploaded files
+  const processFiles = async () => {
     if (files.length === 0) {
-      setUploadError('Please select at least one document to upload.');
+      toast({
+        title: 'No Files Selected',
+        description: 'Please select at least one document to process.',
+        variant: 'destructive',
+      });
       return;
     }
 
     setIsUploading(true);
     setUploadProgress(0);
-    setUploadError(null);
-
+    
     try {
-      // Progress callback to update upload progress
-      const progressCallback = (progress) => {
-        setUploadProgress(progress);
-      };
-
+      // Simulate upload progress
+      const uploadInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(uploadInterval);
+            return 90;
+          }
+          return prev + 10;
+        });
+      }, 500);
+      
       // Process the documents
-      const processedDocs = await documentIntelligenceService.processDocuments(
+      const processed = await documentIntelligenceService.processDocuments(
         files,
         regulatoryContext,
-        progressCallback,
-        extractionMode
+        (progress) => {
+          if (progress >= 0 && progress <= 100) {
+            setUploadProgress(progress);
+          }
+        }
       );
-
-      // Reset the file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-
-      // Call the callback with processed documents
-      if (onDocumentsProcessed) {
-        onDocumentsProcessed(processedDocs);
-      }
-
-      // Show success toast
+      
+      clearInterval(uploadInterval);
+      setUploadProgress(100);
+      
+      // Update state with processed documents
+      setProcessedDocuments(processed);
+      
+      // Show success message
       toast({
-        title: 'Documents Uploaded',
-        description: `Successfully uploaded ${files.length} document(s).`,
+        title: 'Processing Complete',
+        description: `Successfully processed ${processed.length} document(s).`,
         variant: 'success',
       });
-
-      // Reset files after successful upload
-      setFiles([]);
-    } catch (error) {
-      console.error('Error uploading documents:', error);
-      setUploadError(error.message || 'An error occurred while uploading documents.');
       
-      // Show error toast
+      // Call callback with processed documents
+      if (onProcessingComplete) {
+        onProcessingComplete(processed);
+      }
+    } catch (error) {
+      console.error('Error processing documents:', error);
+      
       toast({
-        title: 'Upload Failed',
-        description: error.message || 'An error occurred while uploading documents.',
+        title: 'Processing Failed',
+        description: error.message || 'An error occurred during document processing.',
         variant: 'destructive',
       });
     } finally {
@@ -113,171 +158,158 @@ const DocumentUploader = ({
     }
   };
 
-  // Get compatible document types on component mount
-  React.useEffect(() => {
-    const getCompatibleTypes = async () => {
-      try {
-        const types = await documentIntelligenceService.getCompatibleDocumentTypes(regulatoryContext);
-        setCompatibleTypes(types);
-      } catch (error) {
-        console.error('Error fetching compatible document types:', error);
-      }
-    };
-
-    getCompatibleTypes();
-  }, [regulatoryContext]);
-
-  // Remove a file from the selection
-  const removeFile = (index) => {
-    const newFiles = [...files];
-    newFiles.splice(index, 1);
-    setFiles(newFiles);
+  // Reset the upload process
+  const resetUpload = () => {
+    setFiles([]);
+    setUploadProgress(0);
+    setProcessedDocuments([]);
   };
 
   return (
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Upload Documents</CardTitle>
+          <CardTitle>Document Upload</CardTitle>
           <CardDescription>
-            Upload regulatory documents to extract device information and streamline your workflow.
+            Upload your regulatory documents for intelligent analysis and data extraction.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Extraction Mode Selector */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Extraction Mode</label>
-            <Select 
-              value={extractionMode} 
-              onValueChange={(value) => {
-                if (onExtractionModeChange) {
-                  onExtractionModeChange(value);
-                }
-              }}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select extraction mode" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="basic">Basic (Fast)</SelectItem>
-                <SelectItem value="enhanced">Enhanced</SelectItem>
-                <SelectItem value="regulatory">Regulatory Focus</SelectItem>
-                <SelectItem value="comprehensive">Comprehensive (Detailed)</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-muted-foreground">
-              {extractionMode === 'basic' && 'Basic extraction provides quick results with essential information only.'}
-              {extractionMode === 'enhanced' && 'Enhanced extraction balances speed and detail for most use cases.'}
-              {extractionMode === 'regulatory' && 'Regulatory focus optimizes extraction for compliance data and requirements.'}
-              {extractionMode === 'comprehensive' && 'Comprehensive extraction provides the most detailed results but takes longer to process.'}
-            </p>
-          </div>
-
-          {/* File Drop Zone */}
-          <div
-            className={`border-2 border-dashed rounded-lg p-6 text-center hover:bg-accent/50 transition-colors ${
-              isUploading ? 'pointer-events-none opacity-50' : 'cursor-pointer'
-            }`}
-            onClick={() => fileInputRef.current?.click()}
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              multiple
-              accept=".pdf,.docx,.doc,.xml,.txt"
-              disabled={isUploading}
-            />
-            <div className="flex flex-col items-center justify-center py-4">
-              <Upload className="h-10 w-10 mb-2 text-muted-foreground" />
-              <h3 className="text-lg font-semibold mb-1">Upload Documents</h3>
-              <p className="text-sm text-muted-foreground mb-2">
-                Drag and drop files here or click to browse
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Accepted formats: PDF, DOCX, DOC, XML, TXT
-              </p>
-            </div>
-          </div>
-
-          {/* Compatible Document Types */}
+          {/* Document Type Info */}
           {compatibleTypes.length > 0 && (
-            <div className="text-xs text-muted-foreground">
-              <p className="font-medium mb-1">Compatible Document Types:</p>
-              <ul className="list-disc list-inside">
+            <div className="mb-4">
+              <h3 className="text-sm font-medium mb-2">Compatible Document Types</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 {compatibleTypes.map((type, index) => (
-                  <li key={index}>{type.name} - {type.description}</li>
+                  <div key={index} className="bg-muted rounded-md p-2 text-sm">
+                    <div className="font-medium">{type.name}</div>
+                    <div className="text-xs text-muted-foreground">{type.description}</div>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
-
+          
+          {/* File Drop Area */}
+          <div
+            className={`border-2 border-dashed rounded-lg p-6 text-center ${
+              dragActive ? 'border-primary bg-primary/5' : 'border-gray-300'
+            }`}
+            onDragEnter={handleDrag}
+            onDragOver={handleDrag}
+            onDragLeave={handleDrag}
+            onDrop={handleDrop}
+          >
+            <div className="flex flex-col items-center justify-center space-y-3">
+              <Upload className="h-10 w-10 text-muted-foreground" />
+              <h3 className="text-lg font-medium">Drop your documents here</h3>
+              <p className="text-sm text-muted-foreground">
+                or click the button below to select files
+              </p>
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.txt,.xml"
+                  onChange={handleFileSelect}
+                />
+                <Button 
+                  onClick={() => fileInputRef.current.click()}
+                  disabled={isUploading}
+                >
+                  Select Files
+                </Button>
+              </div>
+            </div>
+          </div>
+          
           {/* Selected Files List */}
           {files.length > 0 && (
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium">Selected Files ({files.length})</h4>
-              <ul className="divide-y">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <h3 className="text-sm font-medium">Selected Files ({files.length})</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFiles}
+                  disabled={isUploading}
+                  className="h-8 px-2 text-xs"
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Clear All
+                </Button>
+              </div>
+              
+              <div className="max-h-40 overflow-auto">
                 {files.map((file, index) => (
-                  <li key={index} className="py-2 flex items-center justify-between">
+                  <div key={index} className="flex items-center justify-between py-2">
                     <div className="flex items-center">
-                      <FileText className="h-5 w-5 mr-2 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-medium truncate">{file.name}</p>
-                        <p className="text-xs text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                      </div>
+                      <File className="h-4 w-4 mr-2 text-blue-500" />
+                      <span className="text-sm truncate" style={{ maxWidth: '200px' }}>
+                        {file.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground ml-2">
+                        {(file.size / 1024).toFixed(1)} KB
+                      </span>
                     </div>
                     <Button
                       variant="ghost"
-                      size="icon"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeFile(index);
-                      }}
+                      size="sm"
+                      onClick={() => removeFile(index)}
                       disabled={isUploading}
+                      className="h-6 w-6 p-0"
                     >
                       <X className="h-4 w-4" />
                     </Button>
-                  </li>
+                  </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
-
+          
           {/* Upload Progress */}
           {isUploading && (
             <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Uploading...</span>
-                <span className="text-sm">{uploadProgress}%</span>
+              <div className="flex justify-between items-center">
+                <span className="text-sm font-medium">
+                  {uploadProgress === 100 ? 'Processing Complete' : 'Processing Documents...'}
+                </span>
+                <span className="text-sm text-muted-foreground">{uploadProgress}%</span>
               </div>
-              <Progress value={uploadProgress} />
+              <Progress value={uploadProgress} className="h-2" />
             </div>
           )}
-
-          {/* Upload Error */}
-          {uploadError && (
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertTitle>Upload Error</AlertTitle>
-              <AlertDescription>{uploadError}</AlertDescription>
-            </Alert>
+          
+          {/* Processing Success Message */}
+          {processedDocuments.length > 0 && !isUploading && (
+            <div className="bg-green-50 border border-green-200 rounded-md p-3 flex">
+              <FileCheck className="h-5 w-5 text-green-500 mr-2 flex-shrink-0" />
+              <div>
+                <h4 className="text-sm font-medium text-green-800">Processing Complete</h4>
+                <p className="text-xs text-green-700 mt-1">
+                  Successfully processed {processedDocuments.length} document(s). You can now proceed to analyzing the documents.
+                </p>
+              </div>
+            </div>
           )}
-
-          {/* Upload Button */}
-          <div className="flex justify-end">
-            <Button
-              onClick={handleUpload}
-              disabled={isUploading || files.length === 0}
-              className="flex items-center gap-2"
-            >
-              {isUploading ? 'Uploading...' : 'Upload and Process'}
-              {!isUploading && <CheckCircle2 className="h-4 w-4" />}
-            </Button>
-          </div>
         </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button
+            variant="outline"
+            onClick={resetUpload}
+            disabled={isUploading || (files.length === 0 && processedDocuments.length === 0)}
+          >
+            Reset
+          </Button>
+          <Button
+            onClick={processFiles}
+            disabled={isUploading || files.length === 0}
+          >
+            Process Documents
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );
