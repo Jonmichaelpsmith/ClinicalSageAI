@@ -11,6 +11,7 @@ import {
   userMetrics,
   InsertLearningModule,
   InsertDocumentTemplate,
+  DocumentTemplate,
   InsertUserProgress,
   InsertAiInsight,
   InsertUserActivity,
@@ -52,28 +53,28 @@ export class LearningRepository {
   }
 
   // Document Templates
-  async getDocumentTemplates() {
+  async getDocumentTemplates(): Promise<DocumentTemplate[]> {
     return db.select().from(documentTemplates);
   }
 
-  async getDocumentTemplateById(id: number) {
+  async getDocumentTemplateById(id: number): Promise<DocumentTemplate | undefined> {
     const [template] = await db.select().from(documentTemplates).where(eq(documentTemplates.id, id));
     return template;
   }
 
-  async getDocumentTemplatesByDomain(domain: string) {
+  async getDocumentTemplatesByDomain(domain: string): Promise<DocumentTemplate[]> {
     const templates = await db.select().from(documentTemplates);
-    return templates.filter(template => 
+    return templates.filter(template =>
       Array.isArray(template.domains) && template.domains.includes(domain)
     );
   }
 
-  async createDocumentTemplate(data: InsertDocumentTemplate) {
+  async createDocumentTemplate(data: InsertDocumentTemplate): Promise<DocumentTemplate> {
     const [template] = await db.insert(documentTemplates).values(data).returning();
     return template;
   }
 
-  async updateDocumentTemplate(id: number, data: Partial<InsertDocumentTemplate>) {
+  async updateDocumentTemplate(id: number, data: Partial<InsertDocumentTemplate>): Promise<DocumentTemplate | undefined> {
     const [updatedTemplate] = await db
       .update(documentTemplates)
       .set(data)
@@ -82,10 +83,10 @@ export class LearningRepository {
     return updatedTemplate;
   }
 
-  async incrementTemplateUseCount(id: number) {
+  async incrementTemplateUseCount(id: number): Promise<DocumentTemplate | undefined> {
     const [updatedTemplate] = await db
       .update(documentTemplates)
-      .set({ 
+      .set({
         useCount: sql`${documentTemplates.useCount} + 1`
       })
       .where(eq(documentTemplates.id, id))
