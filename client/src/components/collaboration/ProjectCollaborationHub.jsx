@@ -65,10 +65,11 @@ const ProjectCollaborationHub = ({
   moduleName, 
   currentUser, 
   onTaskSelect, 
-  onMilestoneComplete 
+  onMilestoneComplete,
+  isExpanded,
+  onCollapse
 }) => {
   // State variables
-  const [isExpanded, setIsExpanded] = useState(true);
   const [messages, setMessages] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [milestones, setMilestones] = useState([]);
