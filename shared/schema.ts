@@ -9,9 +9,19 @@
  * 2. ClientWorkspaces (sub-tenants under an organization)
  */
 import { relations, InferSelectModel } from 'drizzle-orm';
-import { 
-  integer, pgTable, serial, text, timestamp, boolean, 
-  uuid, json, unique, primaryKey, varchar, pgEnum
+import {
+  integer,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  boolean,
+  uuid,
+  json,
+  unique,
+  primaryKey,
+  varchar,
+  pgEnum
 } from 'drizzle-orm/pg-core';
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from 'zod';
@@ -1539,3 +1549,27 @@ export const documentVersionsRelations = relations(documentVersions, ({ one }) =
     references: [users.id],
   }),
 }));
+
+/**
+ * Document Templates
+ *
+ * Generic templates used for generating regulatory documents.
+ */
+export const documentTemplates = pgTable('document_templates', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  moduleSection: text('module_section').notNull(),
+  description: text('description'),
+  structure: json('structure').$type<Record<string, any>>(),
+  fields: json('fields').$type<Record<string, any>>(),
+  version: text('version').default('1.0'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export const insertDocumentTemplateSchema = createInsertSchema(documentTemplates).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type DocumentTemplate = InferSelectModel<typeof documentTemplates>;
+export type InsertDocumentTemplate = z.infer<typeof insertDocumentTemplateSchema>;
