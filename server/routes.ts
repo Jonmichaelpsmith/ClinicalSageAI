@@ -284,6 +284,9 @@ export default function registerRoutes(app: Express): void {
   
   // Register Organization API routes
   app.use('/api/organizations', organizationsRouter);
+
+  // Register Collaboration API routes
+  app.use('/api/collaboration', collaborationRoutes);
   
   // Regulatory Submissions Hub functionality removed as per client request
   // app.use('/api/regulatory-submissions', regulatorySubmissionsRouter);
