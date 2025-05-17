@@ -1973,7 +1973,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                             </svg>
                             <span className="text-sm">510(k) Summary</span>
                             <span className="ml-auto text-xs text-green-600 font-medium">v1.3</span>
-                          </a>
+                          </button>
                           <button 
                             type="button"
                             className="flex items-center w-full text-left py-2 px-3 pl-9 hover:bg-blue-50"
