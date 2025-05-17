@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileText, 
   Search, 
@@ -28,95 +28,31 @@ const DocumentTemplates = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTab, setSelectedTab] = useState('templates');
+  const [templates, setTemplates] = useState([]);
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState('');
+  const [moduleField, setModuleField] = useState('');
+  const [description, setDescription] = useState('');
+  const [file, setFile] = useState(null);
   const { toast } = useToast();
-  
-  // Mock template data
-  const templates = [
-    {
-      id: 1,
-      title: 'Clinical Overview Template',
-      category: 'clinical',
-      module: 'Module 2.5',
-      lastUpdated: 'May 5, 2025',
-      version: '2.3',
-      creator: 'Regulatory Team',
-      usageCount: 128,
-      description: 'Standard template for creating eCTD-compliant Clinical Overview documents with proper formatting and structure.',
-      tags: ['eCTD', 'clinical', 'module 2.5'],
-      compliance: 'FDA, EMA, PMDA',
-      templateID: '09933'
-    },
-    {
-      id: 2,
-      title: 'Module 3 Quality Template',
-      category: 'quality',
-      module: 'Module 3',
-      lastUpdated: 'Apr 23, 2025',
-      version: '1.5',
-      creator: 'CMC Department',
-      usageCount: 87,
-      description: 'Comprehensive template for all Module 3 Chemistry, Manufacturing and Controls sections with pre-defined headings.',
-      tags: ['eCTD', 'quality', 'module 3', 'CMC'],
-      compliance: 'FDA, EMA, Health Canada',
-      templateID: 'QU3002'
-    },
-    {
-      id: 3,
-      title: 'NDA Cover Letter Template',
-      category: 'administrative',
-      module: 'Module 1.1',
-      lastUpdated: 'Feb 11, 2025',
-      version: '3.1',
-      creator: 'Regulatory Affairs',
-      usageCount: 215,
-      description: 'Standard format for cover letters to accompany New Drug Application submissions.',
-      tags: ['eCTD', 'administrative', 'cover letter', 'NDA'],
-      compliance: 'FDA, Health Canada',
-      templateID: 'CL1001'
-    },
-    {
-      id: 4,
-      title: 'Clinical Study Report Template',
-      category: 'clinical',
-      module: 'Module 5',
-      lastUpdated: 'Mar 17, 2025',
-      version: '2.0',
-      creator: 'Clinical Team',
-      usageCount: 93,
-      description: 'Structured template for creating ICH E3-compliant clinical study reports with all required sections.',
-      tags: ['eCTD', 'clinical', 'CSR', 'module 5'],
-      compliance: 'ICH, FDA, EMA, PMDA',
-      templateID: 'CSR5001'
-    },
-    {
-      id: 5,
-      title: 'Nonclinical Overview Template',
-      category: 'nonclinical',
-      module: 'Module 2.4',
-      lastUpdated: 'Jan 24, 2025',
-      version: '1.8',
-      creator: 'Toxicology Team',
-      usageCount: 62,
-      description: 'Template for creating the Nonclinical Overview section with predefined formatting and guidance.',
-      tags: ['eCTD', 'nonclinical', 'toxicology', 'module 2.4'],
-      compliance: 'FDA, EMA',
-      templateID: 'NC2401'
-    },
-    {
-      id: 6,
-      title: 'Risk Management Plan Template',
-      category: 'clinical',
-      module: 'Module 1.8.2',
-      lastUpdated: 'Apr 2, 2025',
-      version: '3.2',
-      creator: 'Pharmacovigilance',
-      usageCount: 48,
-      description: 'EMA-compliant Risk Management Plan template with all required sections and formatting.',
-      tags: ['eCTD', 'clinical', 'RMP', 'risk management'],
-      compliance: 'EMA',
-      templateID: 'RMP1001'
+
+  const fetchTemplates = async () => {
+    try {
+      const response = await fetch('/api/templates');
+      const data = await response.json();
+      if (data.success) {
+        setTemplates(data.templates);
+      }
+    } catch (err) {
+      console.error('Error fetching templates:', err);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchTemplates();
+  }, []);
+  
   
   // Recent Documents
   const recentDocuments = [
@@ -148,15 +84,18 @@ const DocumentTemplates = () => {
   
   // Filter templates based on search query and category
   const filteredTemplates = templates.filter(template => {
-    const matchesSearch = 
-      template.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      template.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-      
-    const matchesCategory = 
-      selectedCategory === 'all' || 
-      template.category === selectedCategory;
-      
+    const nameField = (template.name || template.title || '').toLowerCase();
+    const descField = (template.description || '').toLowerCase();
+    const tags = Array.isArray(template.tags) ? template.tags : [];
+
+    const matchesSearch =
+      nameField.includes(searchQuery.toLowerCase()) ||
+      descField.includes(searchQuery.toLowerCase()) ||
+      tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesCategory =
+      selectedCategory === 'all' || template.category === selectedCategory;
+
     return matchesSearch && matchesCategory;
   });
   
@@ -173,12 +112,50 @@ const DocumentTemplates = () => {
     }, 1000);
   };
   
-  const handleUploadTemplate = () => {
-    toast({
-      title: "Template Uploaded",
-      description: "Your new template has been added to the library",
-      status: "success",
-    });
+  const handleUploadTemplate = async () => {
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('category', category);
+    formData.append('module', moduleField);
+    formData.append('description', description);
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/templates/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await response.json();
+      if (data.success) {
+        toast({
+          title: 'Template Uploaded',
+          description: 'Your new template has been added to the library',
+          status: 'success',
+        });
+        setUploadDialogOpen(false);
+        setName('');
+        setCategory('');
+        setModuleField('');
+        setDescription('');
+        setFile(null);
+        fetchTemplates();
+      } else {
+        toast({
+          title: 'Upload Failed',
+          description: data.error || 'Failed to upload template',
+          status: 'error',
+        });
+      }
+    } catch (err) {
+      console.error('Upload error:', err);
+      toast({
+        title: 'Upload Failed',
+        description: 'An error occurred while uploading',
+        status: 'error',
+      });
+    }
   };
 
   return (
@@ -191,7 +168,7 @@ const DocumentTemplates = () => {
           </p>
         </div>
         
-        <Dialog>
+        <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
           <DialogTrigger asChild>
             <Button className="mt-4 md:mt-0 flex items-center">
               <PlusCircle className="mr-2 h-4 w-4" /> Upload Template
@@ -207,11 +184,11 @@ const DocumentTemplates = () => {
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
                 <label className="text-right font-medium">Template Name</label>
-                <Input className="col-span-3" placeholder="Enter template name" />
+                <Input className="col-span-3" placeholder="Enter template name" value={name} onChange={(e) => setName(e.target.value)} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <label className="text-right font-medium">Category</label>
-                <Select className="col-span-3">
+                <Select className="col-span-3" value={category} onValueChange={setCategory}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
@@ -225,19 +202,19 @@ const DocumentTemplates = () => {
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <label className="text-right font-medium">Module</label>
-                <Input className="col-span-3" placeholder="e.g., Module 2.5" />
+                <Input className="col-span-3" placeholder="e.g., Module 2.5" value={moduleField} onChange={(e) => setModuleField(e.target.value)} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <label className="text-right font-medium">Description</label>
-                <Input className="col-span-3" placeholder="Brief description of the template" />
+                <Input className="col-span-3" placeholder="Brief description of the template" value={description} onChange={(e) => setDescription(e.target.value)} />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
                 <label className="text-right font-medium">File</label>
-                <Input className="col-span-3" type="file" />
+                <Input className="col-span-3" type="file" onChange={(e) => setFile(e.target.files[0])} />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
               <Button onClick={handleUploadTemplate}>Upload Template</Button>
             </DialogFooter>
           </DialogContent>
@@ -294,9 +271,9 @@ const DocumentTemplates = () => {
                   <CardHeader>
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="text-lg">{template.title}</CardTitle>
+                        <CardTitle className="text-lg">{template.name || template.title}</CardTitle>
                         <CardDescription>
-                          {template.module} • Version {template.version}
+                          {template.module || ''}{template.version ? ` • Version ${template.version}` : ''}
                         </CardDescription>
                       </div>
                       <Badge variant="outline" className="capitalize">{template.category}</Badge>
@@ -307,7 +284,7 @@ const DocumentTemplates = () => {
                       {template.description}
                     </p>
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {template.tags.map((tag, index) => (
+                      {(template.tags || []).map((tag, index) => (
                         <Badge key={index} variant="secondary" className="text-xs">
                           {tag}
                         </Badge>
@@ -315,12 +292,14 @@ const DocumentTemplates = () => {
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
                       <Clock className="h-4 w-4 mr-1" />
-                      <span>Updated {template.lastUpdated}</span>
+                      <span>Updated {template.updatedAt || template.lastUpdated}</span>
                     </div>
-                    <div className="flex items-center text-sm text-gray-500 mt-1">
-                      <ClipboardList className="h-4 w-4 mr-1" />
-                      <span>Template ID: {template.templateID}</span>
-                    </div>
+                    {template.id && (
+                      <div className="flex items-center text-sm text-gray-500 mt-1">
+                        <ClipboardList className="h-4 w-4 mr-1" />
+                        <span>Template ID: {template.id}</span>
+                      </div>
+                    )}
                   </CardContent>
                   <CardFooter className="border-t pt-4 flex justify-between">
                     <Button 
