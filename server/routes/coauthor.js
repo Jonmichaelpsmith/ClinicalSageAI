@@ -1,4 +1,8 @@
 import express from 'express';
+import { v4 as uuidv4 } from 'uuid';
+import { PDFDocument, StandardFonts } from 'pdf-lib';
+import { generateDraft as aiGenerateDraft } from '../brain/draftGenerator.js';
+
 const router = express.Router();
 
 // Mock in-memory store—swap for your DB
@@ -13,6 +17,9 @@ let sections = [
 
 // In-memory store for annotations
 const annotations = {};
+
+// In-memory drafts store keyed by sectionId
+const drafts = {};
 
 // AI advice templates based on section type
 const adviceTemplates = {
@@ -108,6 +115,112 @@ router.post('/advice', (req, res) => {
     
     res.json({ advice: enhancedAdvice });
   }, 1000);
+});
+
+/**
+ * Save a draft of a section
+ */
+router.post('/drafts', (req, res) => {
+  const { sectionId, content, author = 'anonymous' } = req.body;
+
+  if (!sectionId || !content) {
+    return res.status(400).json({ error: 'sectionId and content are required' });
+  }
+
+  const version = {
+    id: uuidv4(),
+    timestamp: new Date().toISOString(),
+    author,
+    content
+  };
+
+  if (!drafts[sectionId]) drafts[sectionId] = [];
+  drafts[sectionId].unshift(version);
+
+  res.status(201).json(version);
+});
+
+/**
+ * Retrieve draft history for a section
+ */
+router.get('/history/:sectionId', (req, res) => {
+  const { sectionId } = req.params;
+  res.json(drafts[sectionId] || []);
+});
+
+/**
+ * Generate a draft using AI
+ */
+router.post('/generate-draft', async (req, res) => {
+  const { moduleId, sectionId, currentText = '', query = '' } = req.body;
+
+  if (!moduleId || !sectionId) {
+    return res.status(400).json({ error: 'moduleId and sectionId are required' });
+  }
+
+  try {
+    const draft = await aiGenerateDraft({
+      moduleId,
+      sectionId,
+      currentContent: currentText,
+      query
+    });
+
+    res.json({ draft });
+  } catch (err) {
+    console.error('Draft generation error:', err);
+    res.status(500).json({ error: 'Failed to generate draft' });
+  }
+});
+
+/**
+ * Export content in the requested format
+ */
+router.post('/export', async (req, res) => {
+  const { content, format = 'txt' } = req.body;
+
+  if (!content) {
+    return res.status(400).json({ error: 'Content is required' });
+  }
+
+  try {
+    if (format === 'pdf') {
+      const pdfDoc = await PDFDocument.create();
+      let page = pdfDoc.addPage();
+      const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+      let { height } = page.getSize();
+      let y = height - 50;
+
+      content.split('\n').forEach(line => {
+        page.drawText(line, { x: 50, y, size: 12, font });
+        y -= 15;
+        if (y < 50) {
+          page = pdfDoc.addPage();
+          height = page.getSize().height;
+          y = height - 50;
+        }
+      });
+
+      const bytes = await pdfDoc.save();
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', 'attachment; filename="export.pdf"');
+      return res.send(Buffer.from(bytes));
+    }
+
+    const mime =
+      format === 'html'
+        ? 'text/html'
+        : format === 'docx'
+        ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        : 'text/plain';
+
+    res.setHeader('Content-Type', mime);
+    res.setHeader('Content-Disposition', `attachment; filename="export.${format}"`);
+    return res.send(content);
+  } catch (err) {
+    console.error('Export error:', err);
+    res.status(500).json({ error: 'Failed to export content' });
+  }
 });
 
 export default router;

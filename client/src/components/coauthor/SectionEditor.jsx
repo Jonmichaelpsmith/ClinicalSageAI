@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Loader2 } from 'lucide-react';
+import coauthorService from '@/services/coauthorService';
 
 /**
  * SectionEditor
@@ -14,8 +15,17 @@ export default function SectionEditor() {
   const [moduleId, setModuleId] = useState('2');
   const [sectionId, setSectionId] = useState('2.7');
   
+  const saveTimeout = useRef(null);
+
   const handleContentChange = (e) => {
-    setSectionContent(e.target.value);
+    const value = e.target.value;
+    setSectionContent(value);
+    if (saveTimeout.current) clearTimeout(saveTimeout.current);
+    saveTimeout.current = setTimeout(() => {
+      coauthorService
+        .saveDraft({ sectionId, content: value })
+        .catch((err) => console.error('Auto-save failed:', err));
+    }, 1000);
   };
   
   // Generate draft using the API
@@ -24,57 +34,15 @@ export default function SectionEditor() {
     
     try {
       console.log('Generating draft for', { moduleId, sectionId });
-      
-      const res = await fetch('/api/coauthor/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          module: moduleId,
-          section: sectionId,
-          currentText: sectionContent,
-          contextSnippets: [] // We would get these from the AICopilotPanel in a complete integration
-        })
-      });
-      
-      if (!res.ok) {
-        const text = await res.text();
-        console.error(`Server ${res.status}: ${text}`);
-        
-        // For demo purposes, simulate a successful response
-        setTimeout(() => {
-          setSectionContent(
-            sectionContent + '\n\n' +
-            '## Clinical Summary Draft\n\n' +
-            'This section provides a comprehensive summary of the clinical studies conducted for our investigational product. ' +
-            'The studies demonstrate statistically significant efficacy in the primary endpoint with a p-value of 0.003 compared to placebo. ' +
-            'Safety analysis showed the treatment was generally well-tolerated with no serious adverse events attributed to the study drug.'
-          );
-          setIsGenerating(false);
-        }, 1500);
-        return;
-      }
-      
-      const data = await res.json();
-      
+      const data = await coauthorService.generateDraft({ moduleId, sectionId, currentText: sectionContent });
       if (data.draft) {
-        console.log('Draft generated successfully');
         setSectionContent(data.draft);
+        await coauthorService.saveDraft({ sectionId, content: data.draft }).catch(() => {});
       } else {
         throw new Error(data.error || 'Failed to generate draft content');
       }
     } catch (err) {
       console.error('Generate Draft error:', err);
-      
-      // For demo purposes, simulate a successful response
-      setTimeout(() => {
-        setSectionContent(
-          sectionContent + '\n\n' +
-          '## Clinical Summary Draft\n\n' +
-          'This section provides a comprehensive summary of the clinical studies conducted for our investigational product. ' +
-          'The studies demonstrate statistically significant efficacy in the primary endpoint with a p-value of 0.003 compared to placebo. ' +
-          'Safety analysis showed the treatment was generally well-tolerated with no serious adverse events attributed to the study drug.'
-        );
-      }, 1500);
     } finally {
       setIsGenerating(false);
     }
