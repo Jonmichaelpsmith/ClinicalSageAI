@@ -17,10 +17,12 @@ export default function ExportModal({ content, onClose }) {
   const [paperSize, setPaperSize] = useState('a4');
   const [templateStyle, setTemplateStyle] = useState('standard');
   const [exporting, setExporting] = useState(false);
+  const [error, setError] = useState(null);
   
   const handleExport = async () => {
     setExporting(true);
-    
+    setError(null);
+
     try {
       // Collect export options
       const exportOptions = {
@@ -34,17 +36,14 @@ export default function ExportModal({ content, onClose }) {
       
       // Call the export service
       const result = await coauthorService.exportContent(content, exportFormat);
-      
-      // In a real implementation, this would download the file or open it in a new window
-      console.log('Export successful:', result);
-      
-      // Simulate download after a delay
-      setTimeout(() => {
-        setExporting(false);
-        onClose();
-      }, 1500);
+      if (result?.url) {
+        window.open(result.url, '_blank');
+      }
+      setExporting(false);
+      onClose();
     } catch (error) {
       console.error('Export failed:', error);
+      setError('Export failed');
       setExporting(false);
     }
   };
@@ -58,6 +57,12 @@ export default function ExportModal({ content, onClose }) {
             <span>Export Document</span>
           </DialogTitle>
         </DialogHeader>
+
+        {error && (
+          <div className="p-2 text-sm text-red-600 border rounded mb-2">
+            {error}
+          </div>
+        )}
         
         <Tabs defaultValue="format" className="mt-4">
           <TabsList className="grid grid-cols-3 w-full">
