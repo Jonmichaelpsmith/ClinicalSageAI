@@ -569,5 +569,3 @@ class DocumentIntelligenceService {
 }
 
 export const documentIntelligenceService = new DocumentIntelligenceService();
-
-export const documentIntelligenceService = new DocumentIntelligenceService();
