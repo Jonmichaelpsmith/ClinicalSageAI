@@ -7,6 +7,8 @@
 
 const express = require('express');
 const router = express.Router();
+const { db } = require('../db');
+const { conversationLogs } = require('../../shared/schema');
 
 // Mock database for demonstration purposes
 const mockDb = {
@@ -34,16 +36,25 @@ router.get('/messages', (req, res) => {
 });
 
 // Send a new message
-router.post('/messages', (req, res) => {
+router.post('/messages', async (req, res) => {
   const message = {
     id: `msg-${Date.now()}`,
     ...req.body,
     timestamp: new Date().toISOString()
   };
-  
+
   // In a real implementation, save to database
   mockDb.messages.push(message);
-  
+
+  try {
+    await db.query(
+      'INSERT INTO conversation_logs (project_id, user_id, module_type, message, role, timestamp) VALUES ($1, $2, $3, $4, $5, $6)',
+      [message.projectId, message.userId, message.moduleType, message.content || message.message, message.role || 'user', message.timestamp]
+    );
+  } catch (err) {
+    console.error('Failed to save conversation log', err);
+  }
+
   res.status(201).json(message);
 });
 
@@ -269,6 +280,55 @@ router.post('/ai-assistance', async (req, res) => {
   } catch (error) {
     console.error('Error generating AI assistance:', error);
     res.status(500).json({ message: 'Error generating AI assistance' });
+  }
+});
+
+// Retrieve conversation logs with pagination
+router.get('/logs', async (req, res) => {
+  const { projectId, moduleType, page = 1, pageSize = 20 } = req.query;
+
+  const conditions = [];
+  const params = [];
+
+  if (projectId) {
+    params.push(projectId);
+    conditions.push(`project_id = $${params.length}`);
+  }
+
+  if (moduleType) {
+    params.push(moduleType);
+    conditions.push(`module_type = $${params.length}`);
+  }
+
+  const whereClause = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  const limit = parseInt(pageSize);
+  const offset = (parseInt(page) - 1) * limit;
+
+  try {
+    const countRes = await db.query(
+      `SELECT COUNT(*) FROM conversation_logs ${whereClause}`,
+      params
+    );
+
+    params.push(limit, offset);
+    const logsRes = await db.query(
+      `SELECT * FROM conversation_logs ${whereClause} ORDER BY timestamp DESC LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params
+    );
+
+    const total = parseInt(countRes.rows[0].count, 10);
+
+    res.json({
+      logs: logsRes.rows,
+      totalCount: total,
+      page: parseInt(page),
+      pageSize: limit,
+      totalPages: Math.ceil(total / limit)
+    });
+  } catch (err) {
+    console.error('Failed to retrieve conversation logs', err);
+    res.status(500).json({ message: 'Error retrieving logs' });
   }
 });
 
