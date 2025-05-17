@@ -87,7 +87,8 @@ The Microsoft Word integration uses a bridge approach that connects Microsoft Wo
 The Microsoft Word integration requires the following environment variables:
 
 ```
-VITE_MS_CLIENT_ID=your-microsoft-client-id
+VITE_MICROSOFT_CLIENT_ID=your-microsoft-client-id
+VITE_MICROSOFT_TENANT_ID=your-tenant-id
 VITE_MS_AUTHORITY=https://login.microsoftonline.com/common
 VITE_MS_GRAPH_API_ENDPOINT=https://graph.microsoft.com/v1.0
 VITE_MS_COPILOT_ENABLED=true
