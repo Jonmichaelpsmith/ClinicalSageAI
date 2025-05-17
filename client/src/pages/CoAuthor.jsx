@@ -53,6 +53,13 @@ import * as copilotService from '../services/copilotService';
 
 // AI services
 import * as aiService from '../services/aiService';
+import DocumentIntelligencePanel from '../components/coauthor/DocumentIntelligencePanel';
+import {
+  initializeIntelligence,
+  generateSectionContent,
+  analyzeDocumentQuality,
+  getWritingImprovements
+} from '../services/documentIntelligenceHub';
 
 // Import the components with lazy loading for better performance
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
@@ -241,6 +248,13 @@ export default function CoAuthor() {
   const [aiResponse, setAiResponse] = useState(null);
   const [aiIsLoading, setAiIsLoading] = useState(false);
   const [aiError, setAiError] = useState(null);
+
+  // Document Intelligence state
+  const [intelSessionId, setIntelSessionId] = useState(null);
+  const [intelSectionContent, setIntelSectionContent] = useState('');
+  const [intelQuality, setIntelQuality] = useState(null);
+  const [intelImprovements, setIntelImprovements] = useState([]);
+  const [intelLoading, setIntelLoading] = useState(false);
   
   // Structured Content Blocks state
   const [newDocumentDialogOpen, setNewDocumentDialogOpen] = useState(false);
@@ -426,6 +440,18 @@ export default function CoAuthor() {
     
     checkGoogleAuth();
   }, []);
+
+  // Initialize Document Intelligence when a document is selected
+  useEffect(() => {
+    if (!selectedDocument) return;
+    let isMounted = true;
+    initializeIntelligence(selectedDocument.id, selectedDocument.module || 'document')
+      .then(session => {
+        if (isMounted) setIntelSessionId(session.sessionId);
+      })
+      .catch(err => console.error('Intelligence initialization failed', err));
+    return () => { isMounted = false; };
+  }, [selectedDocument]);
   
   const [validationResults] = useState({
     completeness: 78,
@@ -526,6 +552,46 @@ export default function CoAuthor() {
       });
     } finally {
       setAiIsLoading(false);
+    }
+  };
+
+  // Document Intelligence handlers
+  const handleGenerateSectionContent = async () => {
+    if (!intelSessionId) return;
+    setIntelLoading(true);
+    try {
+      const result = await generateSectionContent(intelSessionId, 'discussion', {});
+      setIntelSectionContent(result.content);
+    } catch (err) {
+      console.error('generateSectionContent failed', err);
+    } finally {
+      setIntelLoading(false);
+    }
+  };
+
+  const handleAnalyzeQuality = async () => {
+    if (!intelSessionId || !selectedDocument) return;
+    setIntelLoading(true);
+    try {
+      const result = await analyzeDocumentQuality(intelSessionId, selectedDocument.id);
+      setIntelQuality(result);
+    } catch (err) {
+      console.error('analyzeDocumentQuality failed', err);
+    } finally {
+      setIntelLoading(false);
+    }
+  };
+
+  const handleGetImprovements = async () => {
+    if (!intelSessionId) return;
+    setIntelLoading(true);
+    try {
+      const result = await getWritingImprovements(intelSessionId, 'Sample text');
+      setIntelImprovements(result);
+    } catch (err) {
+      console.error('getWritingImprovements failed', err);
+    } finally {
+      setIntelLoading(false);
     }
   };
   
@@ -3379,6 +3445,28 @@ export default function CoAuthor() {
                   </div>
                 </div>
               </div>
+          </CardContent>
+          </Card>
+
+          {/* Document Intelligence Panel */}
+          <Card className="border-purple-200 shadow-sm hover:shadow-md transition-shadow duration-300">
+            <CardHeader className="pb-2 bg-gradient-to-r from-purple-50 to-white">
+              <CardTitle className="flex items-center text-lg">
+                <Sparkles className="h-5 w-5 mr-2 text-purple-600" />
+                Document Intelligence
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DocumentIntelligencePanel
+                onGenerate={handleGenerateSectionContent}
+                onAnalyze={handleAnalyzeQuality}
+                onImprove={handleGetImprovements}
+                sectionContent={intelSectionContent}
+                qualityAnalysis={intelQuality}
+                improvements={intelImprovements}
+                loading={intelLoading}
+                sessionInitialized={!!intelSessionId}
+              />
             </CardContent>
           </Card>
 
