@@ -217,6 +217,19 @@ async def get_history(project_id: str):
 from fastapi.responses import StreamingResponse
 from .form_generator import generate_form as generate_form_document
 
+def _build_file_tree(path: Path) -> Dict[str, Any]:
+    """Recursively build a file tree dictionary for a path."""
+    item = {"name": path.name}
+    if path.is_dir():
+        item["type"] = "folder"
+        item["children"] = [_build_file_tree(p) for p in sorted(path.iterdir())]
+    else:
+        item["type"] = "file"
+        stat = path.stat()
+        item["size"] = stat.st_size
+        item["modified"] = datetime.fromtimestamp(stat.st_mtime).isoformat()
+    return item
+
 @app.get("/api/ind/{project_id}/forms/{form_type}")
 async def generate_form(project_id: str, form_type: str, background_tasks: BackgroundTasks):
     """Generate an FDA form for an IND project."""
@@ -245,7 +258,7 @@ async def generate_form(project_id: str, form_type: str, background_tasks: Backg
         
         # Return the form as a streaming response
         return StreamingResponse(
-            form_data, 
+            form_data,
             media_type=media_type,
             headers={
                 "Content-Disposition": f'attachment; filename="Form{form_type}_{project_id}.txt"'
@@ -255,6 +268,15 @@ async def generate_form(project_id: str, form_type: str, background_tasks: Backg
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating form: {str(e)}")
+
+
+@app.get("/api/ectd/{project_id}/{sequence}")
+async def get_sequence_files(project_id: str, sequence: str):
+    """List files and folders for a given eCTD sequence."""
+    base_dir = Path("ectd") / project_id / sequence
+    if not base_dir.exists():
+        raise HTTPException(status_code=404, detail="Sequence not found")
+    return _build_file_tree(base_dir)
 
 # Add a demo endpoint for the ENZYMAX FORTE sample project
 @app.get("/api/demo/enzymax")
