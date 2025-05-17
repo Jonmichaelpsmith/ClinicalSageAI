@@ -44,8 +44,15 @@ PGUSER=postgres
 PGPASSWORD=password
 PGDATABASE=trialsage
 
-# MongoDB (optional)
+# MongoDB (for CSR storage)
 MONGODB_URI=mongodb://localhost:27017/
+
+# Health Canada API (scheduler)
+HEALTH_CANADA_API_URL=https://api.hc-sc.gc.ca
+HEALTH_CANADA_API_KEY=your-health-canada-api-key
+
+# PubMed API (scheduler)
+PUBMED_API_KEY=your_pubmed_api_key
 ```
 
 This snippet provides a working local configuration. Adjust the values to match your environment.
