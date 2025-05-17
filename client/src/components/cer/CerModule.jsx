@@ -19,7 +19,7 @@ import GenerateFullCerButton from './GenerateFullCerButton';
 import InputDataPanel from './InputDataPanel';
 import LitReviewPanel from './LitReviewPanel';
 import GeneratedReportPanel from './GeneratedReportPanel';
-import DocumentVaultPanel from './DocumentVaultPanel';
+import VaultPanel from '@/components/document-management/VaultPanel';
 import CerHistoryPanel from './CerHistoryPanel';
 import TemplateSettingsPanel from './TemplateSettingsPanel';
 import ApprovalsPanel from './ApprovalsPanel';
@@ -126,7 +126,7 @@ export default function CerModule() {
             </TabsContent>
 
             <TabsContent value="document-vault" className="space-y-4">
-              <DocumentVaultPanel jobId={currentJobId} />
+              <VaultPanel mode="vault" jobId={currentJobId} />
             </TabsContent>
             
             <TabsContent value="quality-gating" className="space-y-4">

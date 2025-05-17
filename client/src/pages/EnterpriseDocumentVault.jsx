@@ -8,7 +8,7 @@ import {
   ListChecks, BookType, FileArchive, Folder,
   Search, FileSearch, Filter, Sparkles
 } from 'lucide-react';
-import DocuShareIntegration from '@/components/document-management/DocuShareIntegration';
+import VaultPanel from '@/components/document-management/VaultPanel';
 import { Button } from '@/components/ui/button';
 import SemanticSearchBar from '@/components/search/SemanticSearchBar';
 import SemanticSearchResults from '@/components/search/SemanticSearchResults';
@@ -204,7 +204,7 @@ export default function EnterpriseDocumentVault() {
                 </p>
               </div>
               <div className="p-4">
-                <DocuShareIntegration 
+                <VaultPanel
                   moduleName="enterprise"
                   moduleLabel="Enterprise Document Vault"
                 />
