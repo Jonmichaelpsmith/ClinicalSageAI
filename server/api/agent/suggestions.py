@@ -5,7 +5,6 @@ This module provides FastAPI endpoints for generating and retrieving
 proactive suggestions from the IND Copilot agent.
 """
 
-import json
 import logging
 from typing import Dict, List, Optional, Any
 
@@ -15,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from agent.core import generate_suggestions
 from server.db import SessionLocal
+from server.models.suggestion_record import SuggestionRecord
 
 # Configure logger
 logger = logging.getLogger(__name__)
@@ -52,6 +52,7 @@ async def get_suggestions(
     project_id: int = Query(..., description="Project ID to get suggestions for"),
     status: Optional[str] = Query(None, description="Filter by status (e.g., 'pending', 'accepted', 'rejected')"),
     limit: int = Query(10, description="Maximum number of suggestions to return")
+    db: Session = Depends(get_db),
 ):
     """
     Get proactive suggestions for a project
@@ -65,34 +66,38 @@ async def get_suggestions(
         List of suggestions
     """
     try:
-        # TODO: Implement database storage for suggestions
-        # For now, generate suggestions on-demand
-        suggestions = await generate_suggestions(project_id)
-        
-        # Apply status filter if provided
+        query = db.query(SuggestionRecord).filter(SuggestionRecord.project_id == project_id)
         if status:
-            suggestions = [s for s in suggestions if s.get("status", "pending") == status]
-        
-        # Limit results
-        suggestions = suggestions[:limit]
-        
-        # Format response
-        return [
-            Suggestion(
-                project_id=s.get("project_id", project_id),
-                text=s.get("text", ""),
-                action=SuggestionAction(
-                    name=s.get("action", {}).get("name", ""),
-                    arguments=s.get("action", {}).get("arguments", {})
-                ) if s.get("action") else None,
-                status=s.get("status", "pending"),
-                created_at=s.get("created_at")
+            query = query.filter(SuggestionRecord.status == status)
+
+        records = (
+            query.order_by(SuggestionRecord.created_at.desc())
+            .limit(limit)
+            .all()
+        )
+
+        result: List[Suggestion] = []
+        for rec in records:
+            action = None
+            if rec.action_name:
+                action = SuggestionAction(
+                    name=rec.action_name,
+                    arguments=rec.action_args or {}
+                )
+            result.append(
+                Suggestion(
+                    id=rec.id,
+                    project_id=rec.project_id,
+                    text=rec.text,
+                    action=action,
+                    status=rec.status,
+                    created_at=rec.created_at.isoformat() if rec.created_at else None,
+                )
             )
-            for s in suggestions
-        ]
+        return result
     except Exception as e:
-        logger.error(f"Error generating suggestions for project {project_id}: {str(e)}")
-        raise HTTPException(500, f"Error generating suggestions: {str(e)}")
+        logger.error(f"Error retrieving suggestions for project {project_id}: {str(e)}")
+        raise HTTPException(500, f"Error retrieving suggestions: {str(e)}")
 
 class UpdateSuggestionRequest(BaseModel):
     """
@@ -104,7 +109,8 @@ class UpdateSuggestionRequest(BaseModel):
 async def update_suggestion_status(
     suggestion_id: int,
     request: UpdateSuggestionRequest,
-    project_id: int = Query(..., description="Project ID the suggestion belongs to")
+    project_id: int = Query(..., description="Project ID the suggestion belongs to"),
+    db: Session = Depends(get_db),
 ):
     """
     Update a suggestion's status (accept or reject)
@@ -117,8 +123,18 @@ async def update_suggestion_status(
     Returns:
         Status update confirmation
     """
-    # TODO: Implement database storage for suggestions
-    # For now, return a mock response
+    suggestion = db.query(SuggestionRecord).filter(
+        SuggestionRecord.id == suggestion_id,
+        SuggestionRecord.project_id == project_id,
+    ).first()
+
+    if not suggestion:
+        raise HTTPException(404, "Suggestion not found")
+
+    suggestion.status = request.status
+    db.commit()
+    db.refresh(suggestion)
+
     return {
         "success": True,
         "message": f"Suggestion {suggestion_id} for project {project_id} marked as {request.status}",
@@ -127,7 +143,8 @@ async def update_suggestion_status(
 @router.post("/suggestions/execute/{suggestion_id}")
 async def execute_suggestion(
     suggestion_id: int,
-    project_id: int = Query(..., description="Project ID the suggestion belongs to")
+    project_id: int = Query(..., description="Project ID the suggestion belongs to"),
+    db: Session = Depends(get_db),
 ):
     """
     Execute a suggested action
@@ -139,9 +156,19 @@ async def execute_suggestion(
     Returns:
         Execution results
     """
-    # TODO: Implement database storage for suggestions
-    # TODO: Implement suggestion execution
-    # For now, return a mock response
+    suggestion = db.query(SuggestionRecord).filter(
+        SuggestionRecord.id == suggestion_id,
+        SuggestionRecord.project_id == project_id,
+    ).first()
+
+    if not suggestion:
+        raise HTTPException(404, "Suggestion not found")
+
+    # Placeholder for actual execution logic
+    suggestion.status = "executed"
+    db.commit()
+    db.refresh(suggestion)
+
     return {
         "success": True,
         "message": f"Suggestion {suggestion_id} for project {project_id} executed successfully",
@@ -149,7 +176,8 @@ async def execute_suggestion(
 
 @router.post("/suggestions/generate")
 async def trigger_suggestion_generation(
-    project_id: int = Query(..., description="Project ID to generate suggestions for")
+    project_id: int = Query(..., description="Project ID to generate suggestions for"),
+    db: Session = Depends(get_db),
 ):
     """
     Manually trigger suggestion generation for a project
@@ -162,6 +190,19 @@ async def trigger_suggestion_generation(
     """
     try:
         suggestions = await generate_suggestions(project_id)
+
+        for s in suggestions:
+            record = SuggestionRecord(
+                project_id=project_id,
+                text=s.get("text", ""),
+                action_name=s.get("action", {}).get("name") if s.get("action") else None,
+                action_args=s.get("action", {}).get("arguments") if s.get("action") else None,
+                status=s.get("status", "pending"),
+            )
+            db.add(record)
+
+        db.commit()
+
         return {
             "success": True,
             "message": f"Generated {len(suggestions)} suggestions for project {project_id}",
@@ -170,3 +211,4 @@ async def trigger_suggestion_generation(
     except Exception as e:
         logger.error(f"Error generating suggestions for project {project_id}: {str(e)}")
         raise HTTPException(500, f"Error generating suggestions: {str(e)}")
+
