@@ -2291,184 +2291,108 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       return <LiteratureReviewWorkflow cerDocumentId={cerDocumentId} />;
     }
     else if (activeTab === 'document-intelligence') {
-      // Import the DocumentIntelligenceTab component only when needed
+      // The lazy import for DocumentIntelligenceTab remains the same.
+      // Make sure DocumentIntelligenceTab is correctly imported via React.lazy
       const DocumentIntelligenceTab = lazy(() => import('../components/document-intelligence/DocumentIntelligenceTab'));
       
-      // Modal conflict prevention with document intelligence
-      const [modalKey] = useState(() => `docint-modal-${Date.now()}`);
-      
-      // Use a ref to store a reference to any timer we might create
-      const cleanupTimerRef = useRef(null);
-      
-      // Prevent profile selector conflicts
+      // Handle modal prevention for document intelligence mode
       useEffect(() => {
-        // Immediately force close any profile selector
+        // Force close profile selector if it's open
         if (showProfileSelector) {
           setShowProfileSelector(false);
         }
         
-        // Safety: Set a flag in localStorage to prevent profile selector from opening
-        localStorage.setItem('docint-active', 'true');
+        // Store current document body scroll state
+        const originalBodyOverflow = document.body.style.overflow;
         
-        // Block UI scrolling while document intelligence is open
+        // Prevent scrolling on the main document body
         document.body.style.overflow = 'hidden';
         
-        // Store references to any existing modals to restore later
-        const existingModals = document.querySelectorAll('[role="dialog"]:not([data-docint-key="' + modalKey + '"])');
-        const modalStates = Array.from(existingModals).map(modal => ({
-          element: modal,
-          display: modal.style.display,
-          visibility: modal.style.visibility,
-          pointerEvents: modal.style.pointerEvents,
-          zIndex: modal.style.zIndex
-        }));
-        
-        // Remove any existing modals from the DOM entirely (most reliable approach)
-        modalStates.forEach(modal => {
-          if (modal.element.parentNode) {
-            modal.element.style.display = 'none';
-            modal.element.style.visibility = 'hidden';
-            modal.element.style.pointerEvents = 'none';
-            modal.element.style.zIndex = '-1';
+        // Create a style element to prevent other modals from displaying
+        const preventModalsStyle = document.createElement('style');
+        preventModalsStyle.id = 'docint-modal-prevention';
+        preventModalsStyle.textContent = `
+          /* Hide any dialogs that aren't document intelligence */
+          [role="dialog"]:not([data-docint="true"]) {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
           }
-        });
+        `;
+        document.head.appendChild(preventModalsStyle);
         
-        // Create an event listener to block all other dialog openings
-        const blockOtherDialogs = (e) => {
-          // If the dialog isn't our document intelligence dialog, block it
-          if (e.target.getAttribute('data-docint-key') !== modalKey) {
-            e.preventDefault();
-            e.stopPropagation();
-            return false;
-          }
-        };
-        
-        // Add listeners for various dialog-related events
-        document.addEventListener('dialog', blockOtherDialogs, true);
-        document.addEventListener('show', blockOtherDialogs, true);
-        document.addEventListener('toggle', blockOtherDialogs, true);
-        
-        // Cleanup function
+        // Clean up when document intelligence mode is exited
         return () => {
-          // Clear any pending timer
-          if (cleanupTimerRef.current) {
-            clearTimeout(cleanupTimerRef.current);
+          // Remove the style element
+          if (preventModalsStyle.parentNode) {
+            preventModalsStyle.parentNode.removeChild(preventModalsStyle);
           }
           
-          // Remove the localStorage flag
-          localStorage.removeItem('docint-active');
-          
-          // Remove event listeners
-          document.removeEventListener('dialog', blockOtherDialogs, true);
-          document.removeEventListener('show', blockOtherDialogs, true);
-          document.removeEventListener('toggle', blockOtherDialogs, true);
-          
-          // Restore original body scrolling
-          document.body.style.overflow = '';
-          
-          // Give time for our modal to fully close before restoring others
-          cleanupTimerRef.current = setTimeout(() => {
-            // Restore any modals we hid
-            modalStates.forEach(modal => {
-              if (modal.element) {
-                modal.element.style.display = modal.display || '';
-                modal.element.style.visibility = modal.visibility || '';
-                modal.element.style.pointerEvents = modal.pointerEvents || '';
-                modal.element.style.zIndex = modal.zIndex || '';
-              }
-            });
-          }, 100);
+          // Restore original body scroll state
+          document.body.style.overflow = originalBodyOverflow;
         };
-      }, [modalKey, showProfileSelector]);
-      
-      // Create a portal-style modal pattern that takes full control of the screen
+      }, [showProfileSelector]);
+
       return (
         <div 
-          role="dialog" 
-          aria-modal="true"
-          data-docint-key={modalKey}
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[9999]"
-          style={{
-            position: 'fixed',
-            isolation: 'isolate',
-          }}
+          className="fixed inset-0 bg-gray-600/70 backdrop-blur-md z-[9999] flex items-center justify-center p-4" // Increased z-index, added flex for centering
+          aria-modal="true" // ARIA: Indicates this is a modal dialog
+          role="dialog"     // ARIA: Role for the dialog
+          aria-labelledby="document-intelligence-title" // ARIA: Links to the title for screen readers
+          data-docint="true" // Special marker for our modal prevention code
         >
-          <div 
-            className="absolute inset-0 p-4 flex items-center justify-center"
-            onClick={(e) => {
-              // Only handle backdrop clicks, not content clicks
-              if (e.target === e.currentTarget) {
-                setActiveTab('device');
-              }
-            }}
-          >
-            <div 
-              className="bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col w-full max-w-6xl max-h-[calc(100vh-40px)]"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Header */}
-              <div className="sticky top-0 flex items-center justify-between p-4 bg-gradient-to-r from-blue-50 to-white border-b z-10">
-                <div className="flex items-center space-x-3">
-                  <div className="bg-blue-100 p-2 rounded-full">
-                    <Brain className="h-6 w-6 text-blue-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold">Document Intelligence</h2>
-                    <p className="text-sm text-gray-500">Extract and apply data from regulatory documents</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <Badge variant="outline" className="bg-blue-50 border-blue-200 text-blue-700">
-                    Enterprise Feature
-                  </Badge>
-                  <Button 
-                    variant="outline"
-                    onClick={() => setActiveTab('device')}
-                    className="flex items-center gap-1"
-                  >
-                    <X className="h-4 w-4" />
-                    <span>Close</span>
-                  </Button>
-                </div>
+          <div className="bg-white w-full max-w-6xl h-[calc(100vh-4rem)] rounded-xl shadow-2xl overflow-hidden flex flex-col"> {/* Adjusted sizing and added max-width */}
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 md:p-5 border-b shrink-0"> {/* Added shrink-0 */}
+              <div className="flex items-center gap-3">
+                {/* Replace with your actual Brain icon component */}
+                {typeof Brain === 'function' ? <Brain className="h-7 w-7 text-indigo-600" /> : <span role="img" aria-label="Brain icon" className="text-2xl">🧠</span>}
+                <h2 id="document-intelligence-title" className="text-lg md:text-xl font-semibold text-gray-800">Document Intelligence</h2> {/* ARIA: Title for the dialog */}
               </div>
               
-              {/* Main content area */}
-              <div className="flex-1 overflow-auto p-6">
-                <Suspense fallback={
-                  <div className="flex items-center justify-center h-64">
-                    <div className="text-center">
-                      <div className="inline-block rounded-full bg-blue-100 p-3 mb-4">
-                        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                      </div>
-                      <p className="text-gray-600">Loading Document Intelligence...</p>
-                      <p className="text-xs text-gray-500 mt-2">Preparing document analysis tools</p>
-                    </div>
-                  </div>
-                }>
-                  <DocumentIntelligenceTab 
-                    regulatoryContext={documentType}
-                    deviceProfile={deviceProfile}
-                    onDeviceProfileUpdate={(updatedProfile) => {
-                      if (updatedProfile) {
-                        // Update device profile
-                        setDeviceProfile(updatedProfile);
-                        saveState('deviceProfile', updatedProfile);
-                        
-                        // Return to device tab
-                        setActiveTab('device');
-                        
-                        // Show success notification
-                        toast({
-                          title: "Profile Updated Successfully",
-                          description: "Document data has been applied to your device profile.",
-                          variant: "success",
-                        });
-                      }
-                    }}
-                  />
-                </Suspense>
-              </div>
+              {/* Replace with your actual Button and X icon components */}
+              {typeof Button === 'function' && typeof X === 'function' ? (
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  aria-label="Close Document Intelligence" // ARIA: Label for close button
+                  onClick={() => setActiveTab('device')} // Or your default tab
+                >
+                  <X className="h-5 w-5 text-gray-600 hover:text-gray-800" />
+                </Button>
+              ) : (
+                <button
+                  type="button"
+                  aria-label="Close Document Intelligence"
+                  className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500"
+                  onClick={() => setActiveTab('device')} // Or your default tab
+                >
+                  <span role="img" aria-label="Close" className="text-xl block">❌</span>
+                </button>
+              )}
+            </div>
+            
+            {/* Main content area */}
+            <div className="flex-1 p-4 md:p-6 overflow-y-auto"> {/* Ensure vertical scroll for content */}
+              <Suspense fallback={
+                <div className="flex items-center justify-center h-full">
+                  <p className="text-gray-500 text-lg">Loading Document Intelligence Module...</p>
+                  {/* You can add a spinner here if you have one */}
+                </div>
+              }>
+                <DocumentIntelligenceTab 
+                  regulatoryContext={documentType} // Assuming documentType is a state/prop from CERV2Page
+                  deviceProfile={deviceProfile}     // Assuming deviceProfile is a state/prop from CERV2Page
+                  onDeviceProfileUpdate={(updatedProfile) => {
+                    // Implement your update logic for the device profile here
+                    console.log("Document Intelligence Tab updated profile:", updatedProfile);
+                    // Example: setDeviceProfile(prev => ({ ...prev, ...updatedProfile }));
+                  }}
+                  // Pass the DocumentIntakeForm (id: document_intake_form_ui_v1) here if it's part of DocumentIntelligenceTab
+                  // or if DocumentIntelligenceTab itself is that form.
+                />
+              </Suspense>
             </div>
           </div>
         </div>
