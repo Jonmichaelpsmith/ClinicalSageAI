@@ -113,6 +113,42 @@ class DocuShareService {
       throw error;
     }
   }
+
+  /**
+   * Upload a DOCX file to the vault
+   * @param {File} file DOCX file
+   * @param {Object} metadata Document metadata
+   */
+  async uploadDocx(file, metadata = {}) {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('metadata', JSON.stringify(metadata));
+      const response = await apiRequest.post('/api/vault/documents/word', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error uploading DOCX:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Retrieve a DOCX document from the vault
+   * @param {string} documentId Document ID
+   */
+  async getDocx(documentId) {
+    try {
+      const response = await apiRequest.get(`/api/vault/documents/${documentId}/download`, {
+        responseType: 'blob'
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error retrieving DOCX ${documentId}:`, error);
+      throw error;
+    }
+  }
   
   /**
    * Upload a file to a specific folder in the vault
