@@ -7,15 +7,15 @@
 import path from 'path';
 
 /**
- * Serve the client portal direct page
+ * Serve the client portal page
  * This page requires authentication
  */
-export function serveClientPortalDirectPage(req, res) {
+export function serveClientPortalPage(req, res) {
   // In production you might want to log access attempts
   console.log('[PORTAL] Serving authenticated client portal to user');
   
   // Send the client portal page
-  res.sendFile(path.resolve('./client/public/client-portal-direct.html'));
+  res.sendFile(path.resolve('./client/public/client-portal.html'));
 }
 
 /**
