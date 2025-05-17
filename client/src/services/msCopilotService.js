@@ -187,3 +187,125 @@ export async function checkCompliance(documentContent, regulationType) {
     };
   }
 }
+/**
+ * Initialize a Microsoft Copilot session for a document
+ * @param {string} documentId - Document identifier
+ * @returns {Promise<Object>} Session details
+ */
+export async function initializeCopilot(documentId) {
+  try {
+    const token = localStorage.getItem('ms_access_token');
+    if (!token) {
+      throw new Error('Microsoft authentication required');
+    }
+
+    const response = await axios.post(
+      '/api/microsoft-office/copilot/init',
+      { documentId },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Error initializing Copilot:', error);
+    return { sessionId: `copilot-${Date.now()}`, status: 'offline' };
+  }
+}
+
+/**
+ * Generate document content using Copilot
+ * @param {string} prompt - Prompt or instruction for generation
+ * @param {string} sessionId - Copilot session identifier
+ * @returns {Promise<Object>} Generated content and quality info
+ */
+export async function generateContent(prompt, sessionId) {
+  try {
+    const token = localStorage.getItem('ms_access_token');
+    if (!token) {
+      throw new Error('Microsoft authentication required');
+    }
+
+    const response = await axios.post(
+      '/api/microsoft-office/copilot/generate',
+      { prompt, sessionId },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Error generating content:', error);
+    return { content: '[Copilot service unavailable]', quality: 'unknown' };
+  }
+}
+
+/**
+ * Analyze a document using Copilot
+ * @param {string} documentId - Document identifier
+ * @param {string} sessionId - Copilot session identifier
+ * @returns {Promise<Object>} Analysis results
+ */
+export async function analyzeDocument(documentId, sessionId) {
+  try {
+    const token = localStorage.getItem('ms_access_token');
+    if (!token) {
+      throw new Error('Microsoft authentication required');
+    }
+
+    const response = await axios.post(
+      '/api/microsoft-office/copilot/analyze',
+      { documentId, sessionId },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Error analyzing document:', error);
+    return {
+      readability: { score: 0 },
+      clinicalAccuracy: { score: 0 },
+      regulatoryCompliance: { score: 0 },
+      formattingConsistency: { score: 0 }
+    };
+  }
+}
+
+/**
+ * End a Copilot session
+ * @param {string} sessionId - Copilot session identifier
+ * @returns {Promise<boolean>} Whether the session ended successfully
+ */
+export async function endCopilotSession(sessionId) {
+  try {
+    const token = localStorage.getItem('ms_access_token');
+    if (!token) {
+      throw new Error('Microsoft authentication required');
+    }
+
+    await axios.post(
+      '/api/microsoft-office/copilot/end',
+      { sessionId },
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    return true;
+  } catch (error) {
+    console.error('Error ending Copilot session:', error);
+    return false;
+  }
+}
