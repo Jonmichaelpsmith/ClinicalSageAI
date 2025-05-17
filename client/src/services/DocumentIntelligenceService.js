@@ -1,225 +1,105 @@
-/**
- * Document Intelligence Service
- * 
- * This service handles communication with the document intelligence API endpoints
- * and processes document extraction data.
- */
-
 import { apiRequest } from "@/lib/queryClient";
 
+/**
+ * Service for document intelligence features
+ */
 class DocumentIntelligenceService {
   /**
-   * Extract data from documents using AI
-   * 
-   * @param {Object} extractionConfig Configuration for extraction
-   * @param {string} extractionConfig.regulatoryContext The regulatory context
-   * @param {number} extractionConfig.confidenceThreshold Confidence threshold
-   * @param {string} extractionConfig.extractionMode Extraction mode
-   * @param {Array} extractionConfig.documents List of documents to extract from
-   * @returns {Promise<Object>} Extracted data
+   * Upload and process documents for data extraction
+   * @param {FormData} formData The form data containing files to be uploaded
+   * @returns {Promise<Object>} The processed documents with recognition data
    */
-  async extractDocumentData(extractionConfig) {
+  async uploadDocuments(formData) {
     try {
-      const response = await apiRequest(
-        "POST", 
-        "/api/document-intelligence/extract", 
-        extractionConfig
-      );
+      const response = await apiRequest("POST", "/api/document-intelligence/upload", formData, {
+        headers: {
+          // Do not set Content-Type here as it will be automatically set with the FormData boundary
+        },
+      });
       
       return await response.json();
     } catch (error) {
-      console.error("Document extraction error:", error);
-      throw new Error("Failed to extract data from documents");
+      console.error("Error uploading documents:", error);
+      throw error;
     }
   }
-
+  
   /**
-   * Process OCR'd documents for recognition
-   * 
-   * @param {Array} documents List of OCR'd documents
-   * @returns {Promise<Object>} Document recognition results
+   * Extract data from processed documents
+   * @param {Object} params Parameters for extraction
+   * @param {Array} params.documents The list of documents to extract data from
+   * @param {string} params.regulatoryContext The regulatory context for extraction (e.g., "510k", "mdr")
+   * @param {string} params.extractionMode The level of detail for extraction
+   * @param {number} params.confidenceThreshold The minimum confidence threshold for extracted data
+   * @returns {Promise<Object>} The extracted data
    */
-  async recognizeDocumentTypes(documents) {
+  async extractDocumentData(params) {
     try {
-      const response = await apiRequest(
-        "POST", 
-        "/api/document-intelligence/recognize-types", 
-        { documents }
-      );
+      const response = await apiRequest("POST", "/api/document-intelligence/extract", {
+        ...params,
+        documents: params.documents.map(doc => ({
+          id: doc.id,
+          name: doc.name,
+          recognizedType: doc.recognizedType,
+          confidence: doc.confidence
+        }))
+      });
       
       return await response.json();
     } catch (error) {
-      console.error("Document type recognition error:", error);
-      throw new Error("Failed to recognize document types");
+      console.error("Error extracting document data:", error);
+      throw error;
     }
   }
-
+  
   /**
-   * Validate extracted fields for compliance
-   * 
-   * @param {Array} extractedFields List of extracted fields
-   * @param {string} regulatoryContext The regulatory context
-   * @returns {Promise<Object>} Validation results
+   * Apply extracted data to a device profile
+   * @param {string} deviceId The ID of the device profile to update
+   * @param {Object} extractedData The data extracted from documents
+   * @returns {Promise<Object>} The updated device profile
    */
-  async validateExtractedFields(extractedFields, regulatoryContext) {
+  async applyDataToDeviceProfile(deviceId, extractedData) {
     try {
-      const response = await apiRequest(
-        "POST", 
-        "/api/document-intelligence/validate", 
-        { extractedFields, regulatoryContext }
-      );
+      const response = await apiRequest("POST", `/api/document-intelligence/apply/${deviceId}`, {
+        extractedData
+      });
       
       return await response.json();
     } catch (error) {
-      console.error("Field validation error:", error);
-      throw new Error("Failed to validate extracted fields");
+      console.error("Error applying data to device profile:", error);
+      throw error;
     }
   }
-
+  
   /**
-   * Map extracted fields to device profile form data
-   * 
-   * @param {Array} extractedFields List of extracted fields
-   * @returns {Object} Mapped device profile data
+   * Get available document types with their schemas
+   * @returns {Promise<Array>} List of document types and their schemas
    */
-  mapExtractedFieldsToFormData(extractedFields) {
-    // Initialize device profile with empty sections
-    const deviceProfile = {
-      deviceName: '',
-      manufacturer: '',
-      modelNumber: '',
-      deviceDescription: '',
-      intendedUse: '',
-      classification: '',
-      regulatoryClass: '',
-      productCode: '',
-      riskLevel: '',
-      technicalSpecifications: [],
-      materials: [],
-      sterilization: {
-        isPreSterilized: false,
-        method: '',
-        details: ''
-      },
-      biocompatibility: {
-        hasTests: false,
-        testResults: '',
-        materials: []
-      }
-    };
-
-    // Map extracted fields to device profile properties
-    extractedFields.forEach(field => {
-      const { name, value, confidence } = field;
-      
-      // Only use fields with sufficient confidence
-      if (confidence < 0.6) return;
-      
-      // Map based on field name
-      switch (name.toLowerCase()) {
-        case 'device name':
-        case 'devicename':
-        case 'device_name':
-          deviceProfile.deviceName = value;
-          break;
-          
-        case 'manufacturer':
-        case 'manufacturer name':
-        case 'company':
-          deviceProfile.manufacturer = value;
-          break;
-          
-        case 'model number':
-        case 'modelnumber':
-        case 'model':
-        case 'model_number':
-          deviceProfile.modelNumber = value;
-          break;
-          
-        case 'device description':
-        case 'devicedescription':
-        case 'description':
-          deviceProfile.deviceDescription = value;
-          break;
-          
-        case 'intended use':
-        case 'intendeduse':
-        case 'indication for use':
-        case 'indications':
-          deviceProfile.intendedUse = value;
-          break;
-          
-        case 'classification':
-        case 'device classification':
-          deviceProfile.classification = value;
-          break;
-          
-        case 'regulatory class':
-        case 'regulatoryclass':
-        case 'class':
-          deviceProfile.regulatoryClass = value;
-          break;
-          
-        case 'product code':
-        case 'productcode':
-          deviceProfile.productCode = value;
-          break;
-          
-        case 'risk level':
-        case 'risklevel':
-        case 'risk':
-          deviceProfile.riskLevel = value;
-          break;
-          
-        // Material extraction with potential array handling
-        case 'materials':
-        case 'material':
-        case 'device materials':
-          if (Array.isArray(value)) {
-            deviceProfile.materials = value;
-          } else if (typeof value === 'string') {
-            // Split comma separated values into array
-            deviceProfile.materials = value.split(',').map(item => item.trim()).filter(Boolean);
-          }
-          break;
-          
-        // Technical specs extraction
-        case 'technical specifications':
-        case 'technicalspecifications':
-        case 'specifications':
-        case 'specs':
-          if (Array.isArray(value)) {
-            deviceProfile.technicalSpecifications = value;
-          } else if (typeof value === 'string') {
-            // Split newlines or commas into array items
-            deviceProfile.technicalSpecifications = value
-              .split(/[\n,]/)
-              .map(item => item.trim())
-              .filter(Boolean);
-          }
-          break;
-          
-        // Sterilization information
-        case 'sterilization method':
-        case 'sterilizationmethod':
-          deviceProfile.sterilization.method = value;
-          deviceProfile.sterilization.isPreSterilized = 
-            value && value.toLowerCase() !== 'none' && value.toLowerCase() !== 'n/a';
-          break;
-          
-        // Handle biocompatibility fields
-        case 'biocompatibility':
-        case 'biocompatibility tests':
-          deviceProfile.biocompatibility.hasTests = 
-            value && value.toLowerCase() !== 'none' && value.toLowerCase() !== 'n/a';
-          deviceProfile.biocompatibility.testResults = value;
-          break;
-      }
-    });
-
-    return deviceProfile;
+  async getDocumentTypes() {
+    try {
+      const response = await apiRequest("GET", "/api/document-intelligence/document-types");
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting document types:", error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get extraction history for a device
+   * @param {string} deviceId The device ID to get history for
+   * @returns {Promise<Array>} List of extraction records
+   */
+  async getExtractionHistory(deviceId) {
+    try {
+      const response = await apiRequest("GET", `/api/document-intelligence/history/${deviceId}`);
+      return await response.json();
+    } catch (error) {
+      console.error("Error getting extraction history:", error);
+      throw error;
+    }
   }
 }
 
-// Export as singleton
+// Create a singleton instance
 export const documentIntelligenceService = new DocumentIntelligenceService();
