@@ -84,6 +84,30 @@ All components can be configured through their respective files:
 - `journal_rss_monitor.js`: Journal RSS feeds and relevance thresholds
 - `import_batch_of_50.js`: Import settings and tracking
 
+### Required Environment Variables
+
+Create a `.env` file similar to the following:
+
+```env
+HF_API_KEY=your_huggingface_api_key_here
+
+# PostgreSQL connection
+DATABASE_URL=postgresql://user:password@localhost:5432/trialsage
+PGHOST=localhost
+PGPORT=5432
+PGUSER=postgres
+PGPASSWORD=password
+PGDATABASE=trialsage
+
+# MongoDB (for CSR storage)
+MONGODB_URI=mongodb://localhost:27017/
+
+# PubMed API (optional)
+PUBMED_API_KEY=your_pubmed_api_key
+```
+
+This snippet provides defaults for running the enhancement tasks locally. Adjust values for your environment.
+
 ## Integration with TrialSage Platform
 
 The automated knowledge system integrates with:

@@ -31,15 +31,24 @@ This pipeline processes CSRs through three main phases:
 
 ### Configuration
 
-Configure the pipeline by editing the `.env` file:
+Create a `.env` file with the following variables:
 
-```
-# Required
+```env
 HF_API_KEY=your_huggingface_api_key_here
 
-# Optional - for database integration
+# PostgreSQL connection
+DATABASE_URL=postgresql://user:password@localhost:5432/trialsage
+PGHOST=localhost
+PGPORT=5432
+PGUSER=postgres
+PGPASSWORD=password
+PGDATABASE=trialsage
+
+# MongoDB (optional)
 MONGODB_URI=mongodb://localhost:27017/
 ```
+
+This snippet provides a working local configuration. Adjust the values to match your environment.
 
 ## 🚀 Usage
 
