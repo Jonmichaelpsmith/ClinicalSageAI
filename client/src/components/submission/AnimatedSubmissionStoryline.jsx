@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   FileText, 
   BarChart2, 
-  Flask, 
+  Beaker, 
   Package, 
   Upload, 
   CheckCircle,
@@ -34,7 +34,7 @@ const AnimatedSubmissionStoryline = ({
     "510k": [
       { id: "preparation", name: "Preparation", icon: FileText, color: "blue" },
       { id: "predicate", name: "Predicate Analysis", icon: BarChart2, color: "indigo" },
-      { id: "testing", name: "Performance Testing", icon: Flask, color: "purple" },
+      { id: "testing", name: "Performance Testing", icon: Beaker, color: "purple" },
       { id: "package", name: "Package Assembly", icon: Package, color: "emerald" },
       { id: "submission", name: "FDA Submission", icon: Upload, color: "amber" },
       { id: "review", name: "FDA Review", icon: Clock, color: "orange" },
@@ -43,7 +43,7 @@ const AnimatedSubmissionStoryline = ({
     "ind": [
       { id: "forms", name: "Forms", icon: FileText, color: "blue" },
       { id: "module2", name: "Module 2", icon: BarChart2, color: "indigo" },
-      { id: "module3", name: "Module 3", icon: Flask, color: "purple" },
+      { id: "module3", name: "Module 3", icon: Beaker, color: "purple" },
       { id: "ectd", name: "eCTD", icon: Package, color: "emerald" },
       { id: "esg", name: "ESG", icon: Upload, color: "amber" },
       { id: "review", name: "FDA Review", icon: Clock, color: "orange" },
@@ -52,7 +52,7 @@ const AnimatedSubmissionStoryline = ({
     "pma": [
       { id: "planning", name: "Planning", icon: FileText, color: "blue" },
       { id: "clinical", name: "Clinical Data", icon: BarChart2, color: "indigo" },
-      { id: "manufacturing", name: "Manufacturing", icon: Flask, color: "purple" },
+      { id: "manufacturing", name: "Manufacturing", icon: Beaker, color: "purple" },
       { id: "assembly", name: "Assembly", icon: Package, color: "emerald" },
       { id: "submission", name: "Submission", icon: Upload, color: "amber" },
       { id: "review", name: "FDA Review", icon: Clock, color: "orange" },
@@ -61,7 +61,7 @@ const AnimatedSubmissionStoryline = ({
     "cer": [
       { id: "planning", name: "Planning", icon: FileText, color: "blue" },
       { id: "literature", name: "Literature Review", icon: BarChart2, color: "indigo" },
-      { id: "clinical", name: "Clinical Evaluation", icon: Flask, color: "purple" },
+      { id: "clinical", name: "Clinical Evaluation", icon: Beaker, color: "purple" },
       { id: "report", name: "Report Generation", icon: Package, color: "emerald" },
       { id: "review", name: "Notified Body Review", icon: Clock, color: "orange" },
       { id: "approval", name: "CE Marking", icon: CheckCircle, color: "green" }
@@ -165,7 +165,7 @@ const AnimatedSubmissionStoryline = ({
       ],
       
       // Generic stages
-      "review": [
+      "regulatory_review": [
         "Regulatory authorities conduct a comprehensive evaluation of the submission.",
         "Subject matter experts assess the technical, clinical, and safety aspects.",
         "Interactive communication may address questions or clarifications needed."
