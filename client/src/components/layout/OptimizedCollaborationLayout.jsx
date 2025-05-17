@@ -1,4 +1,5 @@
 import React, { lazy, Suspense } from 'react';
+import { SecurityProvider } from '../security/SecurityProvider';
 
 // Lazy load the collaboration hub
 const LazyCollaborationHub = lazy(() => 
@@ -26,30 +27,32 @@ const OptimizedCollaborationLayout = ({ children }) => {
   const moduleName = 'cer'; // or '510k', 'ind', etc.
 
   return (
-    <div className="flex h-screen w-full">
-      <div className="flex-1 overflow-auto">
-        {children}
-      </div>
-      <Suspense fallback={
-        <div className="w-12 border-l h-full">
-          {/* Minimal placeholder while loading */}
+    <SecurityProvider>
+      <div className="flex h-screen w-full">
+        <div className="flex-1 overflow-auto">
+          {children}
         </div>
-      }>
-        <LazyCollaborationHub
-          projectId={projectId}
-          moduleName={moduleName}
-          currentUser={currentUser}
-          onTaskSelect={(task) => {
-            console.log('Task selected:', task);
-            // In a real implementation, this would navigate to the task or open a detail panel
-          }}
-          onMilestoneComplete={(milestone) => {
-            console.log('Milestone completed:', milestone);
-            // In a real implementation, this would update the milestone status
-          }}
-        />
-      </Suspense>
-    </div>
+        <Suspense fallback={
+          <div className="w-12 border-l h-full">
+            {/* Minimal placeholder while loading */}
+          </div>
+        }>
+          <LazyCollaborationHub
+            projectId={projectId}
+            moduleName={moduleName}
+            currentUser={currentUser}
+            onTaskSelect={(task) => {
+              console.log('Task selected:', task);
+              // In a real implementation, this would navigate to the task or open a detail panel
+            }}
+            onMilestoneComplete={(milestone) => {
+              console.log('Milestone completed:', milestone);
+              // In a real implementation, this would update the milestone status
+            }}
+          />
+        </Suspense>
+      </div>
+    </SecurityProvider>
   );
 };
 
