@@ -13,6 +13,19 @@ import fs from 'fs';
 import { initializeDatabase } from './db/initDatabase';
 import OpenAI from 'openai';
 import multer from 'multer';
+import { Pool } from 'pg';
+import { fileURLToPath } from 'url';
+import qmpRoutes from './routes/qmp.js';
+import qmpAuditRoutes from './routes/qmp-audit.js';
+import reportsRoutes from './routes/reports.js';
+import cerv2ProtectionRoutes from './routes/cerv2-protection.js';
+import tenantSectionGatingRoutes from './routes/tenant-section-gating.js';
+import moduleIntegrationRoutes from './routes/moduleIntegrationRoutes';
+import deviceProfileRoutes from './routes/deviceProfileRoutes';
+import { router as estar510kRouter } from './routes/510kEstarRoutes.ts';
+import fda510kRoutes from './routes/fda510kRoutes.js';
+import { createHealthCheckRouter } from './routes/healthCheck';
+import { create510kIndexes, test510kDatabasePerformance } from './utils/database-optimizer.ts';
 
 // Load environment variables
 dotenv.config();
@@ -23,7 +36,6 @@ const port = process.env.PORT || 5000;
 const isDev = process.env.NODE_ENV !== 'production';
 
 // Create database connection pool
-import { Pool } from 'pg';
 const dbPool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
@@ -56,9 +68,6 @@ app.use(express.json());
 app.use(tenantContextMiddleware);
 
 // Serve static files from the root directory
-import path from 'path';
-import fs from 'fs';
-import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -80,38 +89,31 @@ app.use('/public', express.static(path.join(process.cwd(), 'public')));
 registerRoutes(app);
 
 // Import and register QMP routes
-import qmpRoutes from './routes/qmp.js';
 app.use('/api/qmp', qmpRoutes);
 console.log('QMP API routes registered');
 
 // Import and register QMP audit trail routes
-import qmpAuditRoutes from './routes/qmp-audit.js';
 app.use('/api/qmp', qmpAuditRoutes);
 console.log('QMP Audit Trail routes registered');
 
 // Import and register Reports API routes
-import reportsRoutes from './routes/reports.js';
 app.use('/api/reports', reportsRoutes);
 console.log('Reports API routes registered');
 
 // Import and register CERV2 protection routes
-import cerv2ProtectionRoutes from './routes/cerv2-protection.js';
 app.use('/api/cerv2', cerv2ProtectionRoutes);
 console.log('CERV2 Protection API routes registered');
 
 // Import and register tenant section gating API routes
-import tenantSectionGatingRoutes from './routes/tenant-section-gating.js';
 app.use('/api/tenant-section-gating', tenantSectionGatingRoutes);
 console.log('Tenant Section Gating routes registered');
 
 // Import and register module integration routes
-import moduleIntegrationRoutes from './routes/moduleIntegrationRoutes';
 app.use('/api/module-integration', moduleIntegrationRoutes);
 console.log('Module Integration routes registered');
 
 // Import and register 510(k) automation routes
 // Legacy imports have been removed in favor of the unified API
-import deviceProfileRoutes from './routes/deviceProfileRoutes';
 
 // Register the new unified device profile routes
 app.use('/api/device-profiles', deviceProfileRoutes);
@@ -121,25 +123,20 @@ console.log('Unified Device Profile routes registered at /api/device-profiles');
 // All device profile operations now use /api/device-profiles
 
 // Import and register 510(k) eSTAR routes directly
-import { router as estar510kRouter } from './routes/510kEstarRoutes.ts';
 app.use('/api/fda510k/estar', estar510kRouter);
 console.log('FDA 510(k) eSTAR routes registered at /api/fda510k/estar');
 
 // Import and register FDA 510(k) Routes
-import fda510kRoutes from './routes/fda510kRoutes.js';
 app.use('/api/fda510k', fda510kRoutes);
 console.log('FDA 510(k) routes registered at /api/fda510k');
 
 // We'll register the regulatory AI routes below with FDA 510(k) routes
 
 // Import and register health check routes
-import { createHealthCheckRouter } from './routes/healthCheck';
 app.use('/api', createHealthCheckRouter(dbPool));
 
 // Import and initialize Quality Management API
-import { initializeQualityManagementApi } from './initializers/qualityApiInitializer';
 // Import database optimizer for 510(k) workflow performance
-import { create510kIndexes, test510kDatabasePerformance } from './utils/database-optimizer.ts';
 
 // Use async IIFE to initialize both QMP API and database optimizations safely
 (async () => {
