@@ -44,6 +44,7 @@ import { cerApiService } from '@/services/CerAPIService';
 import { literatureAPIService } from '@/services/LiteratureAPIService';
 import LiteratureFeatureService from '@/services/LiteratureFeatureService';
 import { FileText, BookOpen, CheckSquare, Download, MessageSquare, Clock, FileCheck, CheckCircle, AlertCircle, RefreshCw, ZapIcon, BarChart, FolderOpen, Database, GitCompare, BookMarked, Lightbulb, ClipboardList, FileSpreadsheet, Layers, Trophy, ShieldCheck, Shield, Play, Archive, Activity, Cpu, HardDrive, Network, Code, XCircle, DownloadCloud, Search, Calendar, Info, ArrowRight, AlertTriangle, Files, FolderTree, X, FilePlus, FolderPlus, PlusCircle } from 'lucide-react';
+import DocumentIntakePanel from '@/components/document-intelligence/DocumentIntakePanel';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -1145,6 +1146,10 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           label: "510(k) Submission:",
           tabs: [
             { id: "device-profile", label: "Device Profile", icon: <FileText className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
+            { id: "document-intelligence", label: <div className="flex flex-col items-center leading-tight">
+              <span>Document Intelligence</span>
+              <span className="text-[0.65rem] text-blue-600">AI-Powered Data Extraction</span>
+            </div>, icon: <Layers className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
             { id: "predicates", label: "Predicate Finder", icon: <Search className="h-3.5 w-3.5 mr-1.5 text-blue-600" /> },
             { id: "equivalence", label: <div className="flex flex-col items-center leading-tight">
               <span>Substantial Equivalence</span>
