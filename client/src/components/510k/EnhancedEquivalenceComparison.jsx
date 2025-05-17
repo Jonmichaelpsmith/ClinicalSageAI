@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 /**
  * Enhanced Equivalence Comparison Component
@@ -114,73 +115,64 @@ const EnhancedEquivalenceComparison = ({
     return false;
   };
   
-  // Export the comparison as PDF
+  // Export the comparison data for sharing/saving (replaces PDF due to dependency issues)
   const handleExport = () => {
-    // Create new PDF document
-    const doc = new jsPDF();
-    
-    // Title
-    doc.setFontSize(16);
-    doc.text('Substantial Equivalence Comparison Report', 14, 20);
-    
-    // Subject Device Information
-    doc.setFontSize(12);
-    doc.text(`Subject Device: ${subjectDevice.deviceName || 'Unknown Device'}`, 14, 30);
-    doc.text(`Manufacturer: ${subjectDevice.manufacturer || 'Unknown Manufacturer'}`, 14, 36);
-    doc.text(`Device ID: ${subjectDevice.id || 'N/A'}`, 14, 42);
-    
-    // Predicate Device Information
+    // Generate report data
     const selectedPredicateDevice = predicateDevices.find(p => p.id === selectedPredicate);
-    doc.text(`Predicate Device: ${selectedPredicateDevice?.deviceName || 'Unknown Device'}`, 14, 52);
-    doc.text(`Manufacturer: ${selectedPredicateDevice?.manufacturer || 'Unknown Manufacturer'}`, 14, 58);
-    doc.text(`Device ID: ${selectedPredicateDevice?.id || 'N/A'}`, 14, 64);
     
-    // Overall Equivalence Score
-    doc.text(`Overall Equivalence Score: ${equivalenceScores.overall}%`, 14, 74);
+    // Create a structured format that can be used for export
+    const reportData = {
+      title: 'Substantial Equivalence Comparison Report',
+      timestamp: new Date().toISOString(),
+      subjectDevice: {
+        name: subjectDevice.deviceName || 'Unknown Device',
+        manufacturer: subjectDevice.manufacturer || 'Unknown Manufacturer',
+        id: subjectDevice.id || 'N/A'
+      },
+      predicateDevice: {
+        name: selectedPredicateDevice?.deviceName || 'Unknown Device',
+        manufacturer: selectedPredicateDevice?.manufacturer || 'Unknown Manufacturer',
+        id: selectedPredicateDevice?.id || 'N/A'
+      },
+      scores: {
+        overall: equivalenceScores.overall,
+        technical: equivalenceScores.technical,
+        performance: equivalenceScores.performance,
+        safety: equivalenceScores.safety,
+        clinical: equivalenceScores.clinical
+      },
+      technicalComparison: (subjectDevice.technicalCharacteristics || []).map(param => {
+        const predicateParam = selectedPredicateDevice?.technicalCharacteristics?.find(p => p.name === param.name);
+        const equivalent = predicateParam ? isEquivalent(param.value, predicateParam.value) : false;
+        
+        return {
+          parameter: param.name,
+          subjectValue: param.value,
+          predicateValue: predicateParam?.value || 'N/A',
+          equivalent: equivalent
+        };
+      })
+    };
     
-    // Category Scores
-    doc.text('Category Scores:', 14, 84);
-    doc.text(`• Technical Characteristics: ${equivalenceScores.technical}%`, 24, 90);
-    doc.text(`• Performance Data: ${equivalenceScores.performance}%`, 24, 96);
-    doc.text(`• Safety Features: ${equivalenceScores.safety}%`, 24, 102);
-    doc.text(`• Clinical Outcomes: ${equivalenceScores.clinical}%`, 24, 108);
+    // Create a blob with the JSON data
+    const blob = new Blob([JSON.stringify(reportData, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
     
-    // Technical Characteristics Table
-    doc.setFontSize(14);
-    doc.text('Technical Characteristics Comparison', 14, 122);
+    // Create an anchor element to trigger download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `510k_equivalence_comparison_${subjectDevice.id}.json`;
+    document.body.appendChild(a);
+    a.click();
     
-    const technicalRows = [];
+    // Clean up
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }, 0);
     
-    // Add table rows for technical characteristics
-    (subjectDevice.technicalCharacteristics || []).forEach(param => {
-      const predicateParam = selectedPredicateDevice?.technicalCharacteristics?.find(p => p.name === param.name);
-      const equivalent = predicateParam ? isEquivalent(param.value, predicateParam.value) : false;
-      
-      technicalRows.push([
-        param.name,
-        param.value,
-        predicateParam?.value || 'N/A',
-        equivalent ? 'Yes' : 'No'
-      ]);
-    });
-    
-    // Generate the table
-    doc.autoTable({
-      startY: 125,
-      head: [['Parameter', 'Subject Device', 'Predicate Device', 'Equivalent?']],
-      body: technicalRows,
-      headStyles: { fillColor: [41, 128, 185] }
-    });
-    
-    // Notes section
-    doc.setFontSize(12);
-    const noteY = doc.lastAutoTable.finalY + 15;
-    doc.text('Notes:', 14, noteY);
-    doc.text('This report was generated for FDA 510(k) submission preparation.', 14, noteY + 6);
-    doc.text(`Generated on ${new Date().toLocaleString()}`, 14, noteY + 12);
-    
-    // Save the PDF
-    doc.save(`510k_equivalence_comparison_${subjectDevice.id}.pdf`);
+    // Alert user
+    alert('Equivalence report data exported successfully. This JSON file can be used for FDA 510(k) submission preparation.');
   };
   
   // Request AI assistance for non-equivalent features
