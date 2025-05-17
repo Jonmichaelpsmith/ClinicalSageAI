@@ -158,6 +158,54 @@ class DocuShareService {
   }
   
   /**
+   * Get document content by document ID - specific to draft documents
+   * 
+   * @param {string} documentId Document ID
+   * @returns {Promise<any>} Document content
+   */
+  async getDocumentContent(documentId) {
+    try {
+      const response = await apiRequest.get(`/api/vault/documents/${documentId}/content`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error retrieving document content for ${documentId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Open a document for viewing/editing
+   * 
+   * @param {string} documentId Document ID
+   * @returns {Promise<any>} Document access information
+   */
+  async openDocument(documentId) {
+    try {
+      const response = await apiRequest.get(`/api/vault/documents/${documentId}/open`);
+      
+      // If response contains a redirect URL, handle it
+      if (response.data && response.data.redirectUrl) {
+        // For draft documents, we need to intercept this to prevent client portal redirects
+        if (response.data.status === 'draft') {
+          return {
+            status: 'draft',
+            documentId: documentId,
+            content: response.data.content || null
+          };
+        }
+        
+        // For other documents, redirect as normal
+        window.location.href = response.data.redirectUrl;
+      }
+      
+      return response.data;
+    } catch (error) {
+      console.error(`Error opening document ${documentId}:`, error);
+      throw error;
+    }
+  }
+  
+  /**
    * List files in a folder with optional filters
    * 
    * @param {string} folderId Folder ID
