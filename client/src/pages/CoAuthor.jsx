@@ -58,6 +58,7 @@ import * as aiService from '../services/aiService';
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
 const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
 const GoogleDocsEmbed = lazy(() => import('../components/GoogleDocsEmbed'));
+import EctdFileTree from '@/components/ectd/EctdFileTree';
 import { 
   FileText, 
   Edit, 
@@ -2838,68 +2839,10 @@ export default function CoAuthor() {
                 </Button>
               </div>
               
-              <div className="space-y-1">
-                <div className="border-l-4 border-blue-600 pl-2 py-1 font-medium">
-                  Module 1: Administrative Information
-                </div>
-                <div className="pl-4 space-y-1">
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 1.1: Cover Letter
-                  </div>
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer text-blue-600">
-                    <FileText className="h-4 w-4 mr-2 text-blue-600" />
-                    Section 1.2: Table of Contents
-                    <Badge className="ml-2 h-5 bg-blue-100 text-blue-700 border-blue-200 text-[10px]">Current</Badge>
-                  </div>
-                </div>
-                
-                <div className="border-l-4 border-green-600 pl-2 py-1 font-medium flex items-center justify-between group">
-                  <span>Module 2: Common Technical Document</span>
-                  <ChevronDown className="h-4 w-4 opacity-0 group-hover:opacity-100" />
-                </div>
-                <div className="pl-4 space-y-1">
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 2.1: CTD Table of Contents
-                  </div>
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 2.2: Introduction
-                  </div>
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    <span>Section 2.3: Quality Overall Summary</span>
-                  </div>
-                  <div className="flex items-center text-sm py-1 bg-slate-50 rounded px-2 cursor-pointer font-medium">
-                    <FileText className="h-4 w-4 mr-2 text-slate-600" />
-                    <span>Section 2.5: Clinical Overview</span>
-                    <Badge className="ml-2 h-5 bg-amber-100 text-amber-700 border-amber-200 text-[10px]">In Review</Badge>
-                  </div>
-                </div>
-                
-                <div className="border-l-4 border-amber-600 pl-2 py-1 font-medium">
-                  Module 3: Quality
-                </div>
-                <div className="pl-4 space-y-1">
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 3.2.P: Drug Product
-                  </div>
-                  <div className="flex items-center text-sm py-1 hover:bg-slate-50 rounded px-2 cursor-pointer">
-                    <FileText className="h-4 w-4 mr-2 text-slate-400" />
-                    Section 3.2.S: Drug Substance
-                  </div>
-                </div>
-                
-                <div className="border-l-4 border-purple-600 pl-2 py-1 font-medium">
-                  Module 4: Nonclinical Study Reports
-                </div>
-                
-                <div className="border-l-4 border-indigo-600 pl-2 py-1 font-medium">
-                  Module 5: Clinical Study Reports
-                </div>
-              </div>
+              <EctdFileTree
+                projectId={documentMetadata.applicationId}
+                sequence={documentMetadata.sequence}
+              />
               
               <div className="mt-6 pt-6 border-t">
                 <div className="text-sm font-medium mb-2">Document Health</div>
