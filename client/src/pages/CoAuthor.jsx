@@ -50,6 +50,9 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import * as googleDocsService from '../services/googleDocsService';
 import * as googleAuthService from '../services/googleAuthService';
 import * as copilotService from '../services/copilotService';
+import * as wordIntegration from '../services/wordIntegration';
+import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
+import * as microsoftAuthService from '../services/microsoftAuthService';
 
 // AI services
 import * as aiService from '../services/aiService';
@@ -58,6 +61,7 @@ import * as aiService from '../services/aiService';
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
 const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
 const GoogleDocsEmbed = lazy(() => import('../components/GoogleDocsEmbed'));
+const MsWordPopupEditor = lazy(() => import('../components/MsWordPopupEditor'));
 import { 
   FileText, 
   Edit, 
@@ -3335,6 +3339,30 @@ export default function CoAuthor() {
                       </>
                     )}
                   </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-blue-200 mr-2"
+                    onClick={async () => {
+                      try {
+                        toast({
+                          title: 'Opening Microsoft Word',
+                          description: 'Preparing document for editing in Microsoft Word...',
+                          variant: 'default',
+                        });
+                        await wordIntegration.initializeOfficeJS();
+                        if (selectedDocument) {
+                          await msOfficeVaultBridge.downloadDocxFromVault(selectedDocument.id);
+                        }
+                        setMsWordPopupOpen(true);
+                      } catch (error) {
+                        console.error('Error opening in Word:', error);
+                      }
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Edit in MS Word
+                  </Button>
                   <Button size="sm" variant="outline" className="border-blue-200">
                     <Upload className="h-4 w-4 mr-2" />
                     Import
@@ -4598,7 +4626,15 @@ export default function CoAuthor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
+      {/* Microsoft Word Integration */}
+      <MsWordPopupEditor
+        open={msWordPopupOpen}
+        onOpenChange={setMsWordPopupOpen}
+        vaultId={selectedDocument?.id}
+        title={selectedDocument?.title || 'Document'}
+      />
+
       {/* Version History Dialog */}
       <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>
         <DialogContent className="sm:max-w-[650px]">
