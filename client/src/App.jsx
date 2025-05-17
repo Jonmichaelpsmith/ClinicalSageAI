@@ -101,6 +101,7 @@ const BlueprintPage = lazy(() => import('./pages/BlueprintPage'));
 const CitationManagerPage = lazy(() => import('./pages/CitationManagerPage'));
 const AuditPage = lazy(() => import('./pages/AuditPage'));
 const SignaturePage = lazy(() => import('./pages/SignaturePage'));
+const SubmissionStorylineDemoPage = lazy(() => import('./pages/SubmissionStorylineDemoPage'));
 
 // Enhanced Template System
 const EnhancedDocumentTemplates = lazy(() => import('./pages/EnhancedDocumentTemplates'));
