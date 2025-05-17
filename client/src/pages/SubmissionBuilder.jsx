@@ -23,6 +23,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableBody, TableHead, TableRow, TableCell } from '@/components/ui/table';
 import axios from 'axios';
+import OptimizedCollaborationLayout from '@/components/layout/OptimizedCollaborationLayout';
 
 // Region‑specific folder hierarchy definitions
 const REGION_TREE = {
@@ -180,6 +181,8 @@ export default function SubmissionBuilder({
   // Get tenant context
   const tenantContext = useTenant();
   const { currentOrganization, currentClientWorkspace, getTenantHeaders } = tenantContext || {};
+  const projectId = currentClientWorkspace?.id || 'current-project';
+  const moduleName = 'submission-builder';
   
   // Network resilience and UI hooks
   const { request, isNetworkError, retryRequest } = useNetworkResilience();
@@ -518,6 +521,7 @@ export default function SubmissionBuilder({
   };
 
   if (loading) return (
+    <OptimizedCollaborationLayout projectId={projectId} moduleName={moduleName}>
     <div className="container max-w-7xl mx-auto py-4">
       <div className="mb-4 flex justify-between items-center">
         <h2 className="text-2xl font-bold">Submission Builder</h2>
@@ -539,9 +543,11 @@ export default function SubmissionBuilder({
         </Card>
       </div>
     </div>
+    </OptimizedCollaborationLayout>
   );
 
   return (
+    <OptimizedCollaborationLayout projectId={projectId} moduleName={moduleName}>
     <div className="container max-w-7xl mx-auto py-4">
       {/* Tenant context selectors */}
       <div className="mb-6 grid md:grid-cols-2 gap-4">
@@ -967,5 +973,6 @@ export default function SubmissionBuilder({
         </TabsContent>
       </Tabs>
     </div>
+    </OptimizedCollaborationLayout>
   );
 }
