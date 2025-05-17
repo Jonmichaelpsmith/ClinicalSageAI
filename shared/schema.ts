@@ -787,6 +787,35 @@ export type Document = InferSelectModel<typeof documents>;
 export type InsertDocument = z.infer<typeof insertDocumentSchema>;
 
 /**
+ * Document Templates Table
+ *
+ * Stores reusable templates for document generation.
+ */
+export const documentTemplates = pgTable('document_templates', {
+  id: serial('id').primaryKey(),
+  title: text('title').notNull(),
+  moduleSection: text('module_section').notNull(),
+  description: text('description'),
+  structure: json('structure'),
+  domains: text('domains').array(),
+  recommendedFor: text('recommended_for').array(),
+  useCount: integer('use_count').default(0).notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+// Document Template Insert Schema
+export const insertDocumentTemplateSchema = createInsertSchema(documentTemplates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true
+});
+
+// Document Template Types
+export type DocumentTemplate = InferSelectModel<typeof documentTemplates>;
+export type InsertDocumentTemplate = z.infer<typeof insertDocumentTemplateSchema>;
+
+/**
  * Projects Table
  * 
  * Core project entity that spans across all modules.
