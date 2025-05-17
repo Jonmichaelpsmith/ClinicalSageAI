@@ -1,15 +1,5 @@
 import express from 'express';
-import fs from 'fs';
-import path from 'path';
-import { generateDraft } from '../brain/draftGenerator.js';
-
 const router = express.Router();
-
-// Directory to persist drafts
-const draftsDir = path.join(process.cwd(), 'data', 'drafts');
-if (!fs.existsSync(draftsDir)) {
-  fs.mkdirSync(draftsDir, { recursive: true });
-}
 
 // Mock in-memory store—swap for your DB
 let sections = [
@@ -118,90 +108,6 @@ router.post('/advice', (req, res) => {
     
     res.json({ advice: enhancedAdvice });
   }, 1000);
-});
-
-/**
- * Save a draft for a section
- */
-router.post('/draft', (req, res) => {
-  const { sectionId, content } = req.body;
-
-  if (!sectionId || !content) {
-    return res.status(400).json({ error: 'sectionId and content are required' });
-  }
-
-  const file = path.join(draftsDir, `${sectionId}.json`);
-  let history = [];
-  if (fs.existsSync(file)) {
-    try {
-      history = JSON.parse(fs.readFileSync(file, 'utf-8'));
-    } catch {
-      history = [];
-    }
-  }
-
-  const entry = {
-    id: `version-${history.length + 1}`,
-    timestamp: new Date().toISOString(),
-    content,
-  };
-  history.unshift(entry);
-  fs.writeFileSync(file, JSON.stringify(history, null, 2));
-
-  res.json({ success: true, version: entry.id });
-});
-
-/**
- * Retrieve draft history for a section
- */
-router.get('/history/:sectionId', (req, res) => {
-  const { sectionId } = req.params;
-  const file = path.join(draftsDir, `${sectionId}.json`);
-  if (!fs.existsSync(file)) {
-    return res.json([]);
-  }
-
-  try {
-    const history = JSON.parse(fs.readFileSync(file, 'utf-8'));
-    res.json(history);
-  } catch (err) {
-    console.error('Failed to read history:', err);
-    res.status(500).json({ error: 'Failed to read history' });
-  }
-});
-
-/**
- * Generate a draft via AI
- */
-router.post('/generate', async (req, res) => {
-  try {
-    const { moduleId = 'm2', sectionId, currentContent = '', contextIds = [], query = '' } = req.body;
-    if (!sectionId) {
-      return res.status(400).json({ error: 'sectionId is required' });
-    }
-
-    const draft = await generateDraft({ moduleId, sectionId, currentContent, contextIds, query });
-    res.json({ draft });
-  } catch (err) {
-    console.error('generate error:', err);
-    res.status(500).json({ error: 'Failed to generate draft' });
-  }
-});
-
-/**
- * Export content in a given format
- */
-router.post('/export', (req, res) => {
-  const { content = '', format = 'txt' } = req.body;
-  if (!content) {
-    return res.status(400).json({ error: 'content is required' });
-  }
-
-  const ext = ['pdf', 'docx', 'html', 'txt'].includes(format) ? format : 'txt';
-  const filename = `draft-${Date.now()}.${ext}`;
-  const filePath = path.join(draftsDir, filename);
-  fs.writeFileSync(filePath, content);
-  res.json({ url: `/drafts/${filename}`, filename });
 });
 
 export default router;

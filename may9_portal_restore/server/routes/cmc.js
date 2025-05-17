@@ -3,7 +3,7 @@
  */
 
 import express from 'express';
-import { analyzeGMPCompliance } from '../services/aiService.js';
+import { generateProtocolRecommendations } from '../services/aiService.js';
 
 const router = express.Router();
 
@@ -98,32 +98,6 @@ router.post('/analyze-manufacturing', async (req, res) => {
     res.status(500).json({
       success: false,
       error: error.message || 'Failed to analyze manufacturing process'
-    });
-  }
-});
-
-/**
- * Analyze GMP compliance
- *
- * @route POST /api/cmc/gmp-analysis
- * @param {Object} req.body.documentation - Manufacturing documentation (text or images)
- * @returns {Object} - Compliance analysis results
- */
-router.post('/gmp-analysis', async (req, res) => {
-  try {
-    console.log('Analyzing GMP compliance with data:', JSON.stringify(req.body, null, 2));
-
-    const analysis = await analyzeGMPCompliance(req.body.documentation);
-
-    res.json({
-      success: true,
-      analysis
-    });
-  } catch (error) {
-    console.error('Error analyzing GMP compliance:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to analyze GMP compliance'
     });
   }
 });
