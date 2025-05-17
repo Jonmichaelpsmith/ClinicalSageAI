@@ -17,7 +17,20 @@ import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
+
+// Use disk storage with a reasonable file size limit
+const tempUploads = path.join('/tmp', 'uploads');
+if (!fs.existsSync(tempUploads)) {
+  fs.mkdirSync(tempUploads, { recursive: true });
+}
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, tempUploads),
+    filename: (_req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
 
 /**
  * @route GET /api/reference-model/types

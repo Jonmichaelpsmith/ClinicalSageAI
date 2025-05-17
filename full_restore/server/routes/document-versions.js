@@ -23,7 +23,19 @@ import { logger } from '../utils/logger.js';
 import DiffChecker from '../services/diffChecker.js';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
+// Use disk storage to avoid buffering large files in memory
+const tempUploads = path.join('/tmp', 'uploads');
+if (!fs.existsSync(tempUploads)) {
+  fs.mkdirSync(tempUploads, { recursive: true });
+}
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, tempUploads),
+    filename: (_req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 } // limit upload size to 10MB
+});
 const writeFile = promisify(fs.writeFile);
 const readFile = promisify(fs.readFile);
 

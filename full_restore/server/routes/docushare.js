@@ -5,7 +5,20 @@ import multer from "multer";
 import { Readable } from 'stream';
 
 const router = Router();
-const upload = multer({ storage: multer.memoryStorage() });
+
+// Store uploaded files on disk to prevent unbounded memory usage
+const tempUploads = path.join('/tmp', 'uploads');
+if (!fs.existsSync(tempUploads)) {
+  fs.mkdirSync(tempUploads, { recursive: true });
+}
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, tempUploads),
+    filename: (_req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
+  }),
+  limits: { fileSize: 10 * 1024 * 1024 }
+});
 
 /**
  * Enhanced DocuShare API routes
