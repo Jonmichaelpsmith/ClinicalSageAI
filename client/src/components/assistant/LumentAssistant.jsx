@@ -13,6 +13,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { getDocumentContent } from '@/services/wordIntegration';
+import { getWritingSuggestions } from '@/services/msCopilotService';
 
 /**
  * Lument ASSISTANT Component
@@ -29,10 +31,34 @@ const LumentAssistant = ({ context = {}, active = false }) => {
       content: "I'm Lument ASSISTANT, your regulatory AI guide. I can help with document creation, regulatory requirements, and workflow guidance. How can I assist you today?"
     }
   ]);
+  const [isFetchingSuggestions, setIsFetchingSuggestions] = useState(false);
 
   // Toggle expanded view
   const toggleExpanded = () => {
     setIsExpanded(!isExpanded);
+  };
+
+  const getInlineSuggestions = async () => {
+    try {
+      setIsFetchingSuggestions(true);
+      const content = await getDocumentContent();
+      const suggestions = await getWritingSuggestions(content);
+      const formatted = suggestions.length
+        ? suggestions.map((s) => `• ${s}`).join('\n')
+        : 'No suggestions available.';
+      setMessages((prev) => [
+        ...prev,
+        { type: 'assistant', content: `Here are some suggestions:\n${formatted}` }
+      ]);
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+      setMessages((prev) => [
+        ...prev,
+        { type: 'assistant', content: 'Failed to retrieve suggestions.' }
+      ]);
+    } finally {
+      setIsFetchingSuggestions(false);
+    }
   };
 
   // Handle form submission
@@ -198,6 +224,14 @@ const LumentAssistant = ({ context = {}, active = false }) => {
           <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700">
             <Send size={16} className="mr-2" />
             Send
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={getInlineSuggestions}
+            disabled={isFetchingSuggestions}
+          >
+            {isFetchingSuggestions ? 'Fetching...' : 'Get Suggestions'}
           </Button>
         </form>
       </CardFooter>
