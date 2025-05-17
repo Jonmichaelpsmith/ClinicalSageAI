@@ -1,22 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
+// Only import icons that are used in the initial render
+// Other icons will be imported dynamically as needed
 import { 
-  Users, 
   MessageSquare, 
-  CheckCircle, 
-  Clock, 
-  Lightbulb, 
-  Calendar, 
-  FileCheck, 
-  AlertTriangle, 
-  ChevronRight, 
-  ChevronDown,
   CheckSquare,
-  X,
-  PlusCircle,
-  UserCheck,
-  PlayCircle
+  PlayCircle,
+  FileCheck,
+  ChevronDown,
+  Clock,
+  Info
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -1152,37 +1146,10 @@ const ProjectCollaborationHub = ({
     ];
   };
 
-  // Main component render
+  // Main component render - optimized to avoid re-rendering the header
   return (
-    <div className={`border-l h-full flex flex-col ${isExpanded ? 'w-80' : 'w-12'} transition-all duration-200 ease-in-out`}>
-      {/* Header */}
-      <div className="p-3 border-b flex items-center justify-between bg-secondary/20">
-        {isExpanded ? (
-          <>
-            <div className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              <h2 className="font-semibold text-sm">Project Collaboration</h2>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              className="h-7 w-7 p-0"
-              onClick={() => setIsExpanded(false)}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </>
-        ) : (
-          <Button 
-            variant="ghost" 
-            size="sm"
-            className="h-7 w-7 p-0 mx-auto"
-            onClick={() => setIsExpanded(true)}
-          >
-            <Users className="h-5 w-5" />
-          </Button>
-        )}
-      </div>
+    <div className="flex-1 flex flex-col h-full">
+      {/* Navigation and content - header is now handled by LazyCollaborationHub */}
       
       {/* Content */}
       {isExpanded && (
