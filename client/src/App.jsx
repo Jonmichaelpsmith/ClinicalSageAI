@@ -1,3 +1,4 @@
+// /client/src/App.jsx
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { Switch, Route, useLocation } from 'wouter';
@@ -30,14 +31,14 @@ const LoadingPage = () => (
 import ClientPortalLanding from './pages/ClientPortalLanding';
 import HomeLanding from './pages/HomeLanding';
 
-// Placeholder import for SubmissionBuilder - temporarily commented out
-// const SubmissionBuilder = lazy(() => import('./modules/SubmissionBuilder')); 
+// Placeholder import for SubmissionBuilder - REPLACE WITH ACTUAL PATH
+const SubmissionBuilder = lazy(() => import('./modules/SubmissionBuilder')); 
 
 // Lazy load all other pages grouped by related functionality
 const CERPage = lazy(() => import('./pages/CerPage'));
 const CERV2Page = lazy(() => import('./pages/CERV2Page'));
 const CerGeneratorLandingPage = lazy(() => import('./pages/CerGeneratorLandingPage'));
-const CerGenerator = lazy(() => import('./modules/CerGenerator')); // Unused? CERV2Page is primary
+const CerGenerator = lazy(() => import('./modules/CerGenerator'));
 const CmcWizard = lazy(() => import('./modules/CmcWizard'));
 const CMCPage = lazy(() => import('./pages/CMCPage'));
 const CsrAnalyzer = lazy(() => import('./modules/CsrAnalyzer'));
@@ -50,8 +51,8 @@ const CanvasPage = lazy(() => import('./pages/CanvasPage'));
 const TimelinePage = lazy(() => import('./pages/TimelinePage'));
 const ValidationDashboard = lazy(() => import('./pages/ValidationDashboard'));
 const DocumentTemplates = lazy(() => import('./pages/DocumentTemplates'));
-const ProjectManagerPage = lazy(() => import('./pages/ProjectManagerPage')); 
-const ProjectManagerFullScreen = lazy(() => import('./pages/ProjectManagerFullScreen'));
+const ProjectManagerPage = lazy(() => import('./pages/ProjectManagerPage')); // Retained for potential use, though /project-manager now points to FullScreen
+const ProjectManagerFullScreen = lazy(() => import('./pages/ProjectManagerFullScreen')); // Added this new component
 const RegulatoryRiskDashboard = lazy(() => import('./pages/RegulatoryRiskDashboard'));
 const RegulatoryDashboard = lazy(() => import('./pages/RegulatoryDashboard'));
 const RegulatoryIntelligenceHub = lazy(() => import('./pages/RegulatoryIntelligenceHub'));
@@ -83,6 +84,8 @@ const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 const TenantManagement = lazy(() => import('./pages/TenantManagement'));
 const ClientManagement = lazy(() => import('./pages/ClientManagement'));
 const Settings = lazy(() => import('./pages/Settings'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 
 
 function App() {
@@ -114,9 +117,10 @@ function App() {
                          location === '/canvas' ||
                          location === '/timeline';
   const isDashboardPage = location === '/dashboard';
-  const isProjectManagerFullScreen = location === '/project-manager';
+  const isProjectManagerFullScreen = location === '/project-manager'; // Added check for full screen project manager
   const isCERV2Page = location === '/cerv2' || location.startsWith('/cerv2/');
 
+  // Show nav if it's CERV2Page OR if none of the other specific no-nav conditions are met
   const shouldShowNav = isCERV2Page || (!isLandingPage && !isRegulatoryHub && !isCoAuthorPage && !isDashboardPage && !isProjectManagerFullScreen);
 
   return (
@@ -134,7 +138,7 @@ function App() {
                 isRegulatoryHub ? "p-0" : 
                 isCoAuthorPage ? "p-0" : 
                 isDashboardPage ? "p-0" :
-                isProjectManagerFullScreen ? "p-0" :
+                isProjectManagerFullScreen ? "p-0" : // No padding for full screen project manager
                 "p-4 mt-24" 
               }>
               <Suspense fallback={<LoadingPage />}>
@@ -172,7 +176,7 @@ function App() {
                   <Route path="/ind-full-solution" component={INDFullSolution} />
                   
                   {/* Other Module Pages */}
-                  <Route path="/cer-generator" component={CERPage} /> {/* Consider if this should be CERV2Page */}
+                  <Route path="/cer-generator" component={CERPage} />
                   <Route path="/cmc-wizard" component={CmcWizard} />
                   <Route path="/csr-analyzer" component={CSRPage} />
                   <Route path="/vault" component={VaultPage} />
@@ -199,7 +203,7 @@ function App() {
                   <Route path="/csr" component={CSRPage} />
                   <Route path="/csr-library" component={CSRLibraryPage} />
                   <Route path="/cmc" component={CMCPage} />
-                  <Route path="/cer" component={CERPage} /> {/* Consider if this should be CERV2Page */}
+                  <Route path="/cer" component={CERPage} />
                   <Route path="/cerV2" component={CERV2Page} />
                   <Route path="/cerv2" component={CERV2Page} />
                   <Route path="/cerv2/info" component={CerGeneratorLandingPage} />
@@ -210,95 +214,98 @@ function App() {
                   <Route path="/study-architect" component={StudyArchitectPage} />
                   <Route path="/analytics" component={AnalyticsDashboard} />
                   <Route path="/submission-storyline" component={SubmissionStorylineDemoPage} />
-                  
-                  {/* These direct module routes help users navigate directly to specific CTD modules */}
-                  {/* Note: These routes use SubmissionBuilder which needs to be correctly imported */}
-                  <Route path="/module-1" component={Module1AdminPage} /> {/* Kept original module pages, SubmissionBuilder routes below */}
+                  <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
+                  <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
+                  <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
+                  <Route path="/regulatory-ai-test" component={RegulatoryAITestPage} />
+
+                  {/* Direct Module Routes (IND) */}
+                  <Route path="/module-1" component={Module1AdminPage} />
                   <Route path="/module-2" component={Module2SummaryPage} />
                   <Route path="/module-3" component={Module3QualityPage} />
                   <Route path="/module-4" component={Module4NonclinicalPage} />
                   <Route path="/module-5" component={Module5ClinicalPage} />
-                  
                   <Route path="/ind-wizard/module-3" component={Module3QualityPage} />
                   <Route path="/ind-wizard/module-4" component={Module4NonclinicalPage} />
 
-                  {/* Analytical Control & Method Management Routes */}
+                  {/* Analytical, Stability, Reports */}
                   <Route path="/analytical" component={AnalyticalMethodsStubPage} />
                   <Route path="/comparability" component={ComparabilityStudiesStubPage} />
-
-                  {/* Stability Study Management Routes */}
                   <Route path="/stability" component={StabilityStudiesStubPage} />
                   <Route path="/stability/shelf-life-predictor" component={ShelfLifePredictorStubPage} />
-
-                  {/* Reports Module Routes */}
                   <Route path="/reports" component={ReportsPage} />
                   <Route path="/cer-reports" component={ReportsPage} />
                   <Route path="/cerv2/reports" component={ReportsPage} />
 
-                  {/* Tenant Management Route */}
+                  {/* Admin/Management Pages */}
                   <Route path="/tenant-management" component={TenantManagement} />
-
-                  {/* Client Management & Settings Routes */}
                   <Route path="/client-management" component={ClientManagement} />
                   <Route path="/settings" component={Settings} />
+                  <Route path="/privacy" component={PrivacyPolicy} />
+                  <Route path="/terms" component={TermsOfService} />
 
-                  {/* Unified Submission Builder routes - temporarily disabled */}
-                  {/* These routes will be enabled once SubmissionBuilder module is available */}
+                  {/* Unified Submission Builder Routes */}
                   <Route path="/ectd-planner">
-                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">eCTD Planner</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
+                    {() => <SubmissionBuilder initialModule="ectd" />}
                   </Route>
                   <Route path="/module-1-sb">
-                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">Module 1</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
+                    {() => <SubmissionBuilder initialModule="m1" />}
                   </Route>
                   <Route path="/module-2-sb">
-                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">Module 2</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
+                    {() => <SubmissionBuilder initialModule="m2" />}
                   </Route>
                   <Route path="/module-3-sb">
-                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">Module 3</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
+                    {() => <SubmissionBuilder initialModule="m3" />}
                   </Route>
                   <Route path="/module-4-sb">
-                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">Module 4</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
+                    {() => <SubmissionBuilder initialModule="m4" />}
                   </Route>
                   <Route path="/module-5-sb">
-                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">Module 5</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
+                    {() => <SubmissionBuilder initialModule="m5" />}
                   </Route>
                   <Route path="/ectd-module">
-                    {() => <div className="p-8"><h2 className="text-2xl font-bold mb-4">eCTD Module</h2><p>SubmissionBuilder module is currently unavailable.</p></div>}
+                    {() => <SubmissionBuilder />}
                   </Route>
 
-                  {/* Error fallback and catch-all routes for specific modules */}
+                  {/* CER Fallback/Catch-all */}
                   <Route path="/cer-*">
                     {() => (
-                      <div className="p-8">
-                        <h2 className="text-2xl font-bold mb-4">Page Not Found</h2>
-                        <p>The CER page you are looking for doesn't exist. Perhaps you should go to our main CER page.</p>
-                        <div className="mt-4">
-                          <Button variant="default" asChild>
-                            <a href="/cerv2">Go to CER Dashboard</a>
-                          </Button>
-                        </div>
+                      <div className="flex flex-col items-center justify-center p-8">
+                        <h2 className="text-2xl font-bold mb-4 text-indigo-700">Redirecting to CER Generator</h2>
+                        <p className="mb-4 text-gray-600">The URL you're trying to access is being redirected to the CER Generator module.</p>
+                        <Button 
+                          onClick={() => window.location.href = '/cerv2'}
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded"
+                        >
+                          Go to CER Generator
+                        </Button>
                       </div>
                     )}
                   </Route>
-                  
+                  <Route path="/cer-generator/*" component={CERV2Page} />
+                  <Route path="/client-portal/cer-generator/*" component={CERV2Page} />
+                  <Route path="/cerv2/*" component={CERV2Page} />
+                  <Route path="/cerV2/*" component={CERV2Page} />
+
+                  {/* Default Redirect */}
                   <Route>
-                    {() => (
-                      <div className="p-8">
-                        <h2 className="text-2xl font-bold mb-4">Page Not Found</h2>
-                        <p>The page you are looking for doesn't exist or has been moved.</p>
-                        <div className="mt-4">
-                          <Button variant="default" asChild>
-                            <a href="/">Go Home</a>
-                          </Button>
+                    {() => {
+                      if (typeof window !== 'undefined') {
+                        window.location.href = '/client-portal';
+                      }
+                      return (
+                        <div className="flex flex-col items-center justify-center p-8 h-screen">
+                          <h2 className="text-xl font-medium mb-4">Redirecting to Client Portal...</h2>
+                          <div className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
                         </div>
-                      </div>
-                    )}
+                      );
+                    }}
                   </Route>
                 </Switch>
               </Suspense>
               </div>
-              <LumenAiAssistantContainer />
               </StabilityEnabledLayout>
+              <LumenAiAssistantContainer />
             </LumenAiAssistantProvider>
           </TenantProvider>
         </QueryClientProvider>

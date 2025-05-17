@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TrialSage™ Client Portal</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="css/tailwind-built.css">
   <script src="/js/resilience-service.js"></script>
   <style>
     body {
@@ -246,7 +246,7 @@
           </div>
           <p class="text-sm text-gray-600">Manage and access all your clinical trial documents securely.</p>
           <div class="mt-3">
-            <button class="module-btn w-full bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-opacity-90" data-module="Vault">
+            <button class="module-btn w-full bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-opacity-90" data-module="Vault" data-path="/client-portal/vault">
               Access Module
             </button>
           </div>
@@ -262,7 +262,7 @@
           </div>
           <p class="text-sm text-gray-600">Streamline IND application preparation with AI-powered guidance.</p>
           <div class="mt-3">
-            <button class="module-btn w-full bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-opacity-90" data-module="IND Wizard">
+            <button class="module-btn w-full bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-opacity-90" data-module="IND Wizard" data-path="/client-portal/ind-wizard">
               Access Module
             </button>
           </div>
@@ -278,7 +278,7 @@
           </div>
           <p class="text-sm text-gray-600">Generate and analyze clinical study reports with AI assistance.</p>
           <div class="mt-3">
-            <button class="module-btn w-full bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-opacity-90" data-module="CSR Intelligence">
+            <button class="module-btn w-full bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-opacity-90" data-module="CSR Intelligence" data-path="/client-portal/csr-intelligence">
               Access Module
             </button>
           </div>
@@ -294,7 +294,7 @@
           </div>
           <p class="text-sm text-gray-600">Design clinical trials with protocol optimization and template automation.</p>
           <div class="mt-3">
-            <button class="module-btn w-full bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-opacity-90" data-module="Study Architect">
+            <button class="module-btn w-full bg-primary text-white px-3 py-1.5 rounded text-sm hover:bg-opacity-90" data-module="Study Architect" data-path="/client-portal/study-architect">
               Access Module
             </button>
           </div>
@@ -410,8 +410,10 @@
       const moduleButtons = document.querySelectorAll('.module-btn');
       moduleButtons.forEach(button => {
         button.addEventListener('click', function() {
-          const module = this.getAttribute('data-module');
-          alert(`You clicked on the ${module} module. This would navigate to the module interface.`);
+          const path = this.getAttribute('data-path');
+          if (path) {
+            window.location.href = path;
+          }
         });
       });
       
