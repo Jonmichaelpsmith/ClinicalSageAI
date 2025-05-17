@@ -1,6 +1,7 @@
 // Simplified toast context that doesn't depend on external components
 
 import React, { createContext, useContext, ReactNode, useState } from 'react';
+import { cn } from "@/lib/utils";
 
 // Define our own simple toast system to avoid circular dependencies
 export interface ToastMessage {
@@ -66,45 +67,24 @@ export const ToastProvider = ({ children }: { children: ReactNode }) => {
       
       {/* Simple toast container */}
       {toasts.length > 0 && (
-        <div style={{
-          position: 'fixed',
-          top: '20px',
-          right: '20px',
-          zIndex: 9999,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px'
-        }}>
+        <div className="fixed top-5 right-5 z-[9999] flex flex-col gap-2.5">
           {toasts.map(toast => (
-            <div 
+            <div
               key={toast.id}
-              style={{
-                padding: '10px 15px',
-                backgroundColor: 
-                  toast.type === 'success' ? '#4caf50' :
-                  toast.type === 'error' ? '#f44336' :
-                  toast.type === 'warning' ? '#ff9800' : '#2196f3',
-                color: 'white',
-                borderRadius: '4px',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                minWidth: '200px',
-                maxWidth: '350px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}
+              className={cn(
+                "px-4 py-2 rounded shadow-md min-w-[200px] max-w-[350px] text-white flex justify-between items-center",
+                {
+                  'bg-green-600': toast.type === 'success',
+                  'bg-red-600': toast.type === 'error',
+                  'bg-orange-500': toast.type === 'warning',
+                  'bg-blue-600': toast.type === 'info',
+                }
+              )}
             >
               <span>{toast.message}</span>
-              <button 
+              <button
                 onClick={() => removeToast(toast.id)}
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  color: 'white',
-                  cursor: 'pointer',
-                  fontSize: '16px',
-                  marginLeft: '10px'
-                }}
+                className="bg-transparent border-0 ml-2 text-white cursor-pointer text-base"
               >
                 ×
               </button>

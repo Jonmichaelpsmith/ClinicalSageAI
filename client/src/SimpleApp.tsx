@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Route, Switch, Link, useLocation } from 'wouter';
+import { cn } from "@/lib/utils";
 
 // WebSocket status component (simplified)
 const WebSocketStatus = () => {
@@ -23,14 +24,12 @@ const WebSocketStatus = () => {
   }, []);
   
   return (
-    <div style={{ 
-      display: 'inline-block',
-      fontSize: '0.75rem',
-      padding: '0.25rem 0.5rem',
-      borderRadius: '9999px',
-      backgroundColor: wsStatus === 'Connected' ? '#22c55e' : '#ef4444',
-      color: 'white'
-    }}>
+    <div
+      className={cn(
+        "inline-block text-xs px-2 py-1 rounded-full text-white",
+        wsStatus === 'Connected' ? 'bg-green-500' : 'bg-red-500'
+      )}
+    >
       WebSocket: {wsStatus}
     </div>
   );
@@ -41,48 +40,37 @@ const Navigation = () => {
   const [location] = useLocation();
   
   return (
-    <nav style={{ 
-      padding: '1rem', 
-      borderBottom: '1px solid #e5e7eb',
-      marginBottom: '1rem',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between'
-    }}>
-      <div style={{ display: 'flex', gap: '1rem' }}>
+    <nav className="p-4 border-b border-gray-300 mb-4 flex items-center justify-between">
+      <div className="flex gap-4">
         <Link href="/">
-          <a style={{ 
-            fontWeight: location === '/' ? 'bold' : 'normal',
-            textDecoration: 'none',
-            color: '#2563eb'
-          }}>
+          <a className={cn(
+            'text-blue-600 no-underline',
+            location === '/' ? 'font-bold' : 'font-normal'
+          )}>
             TrialSage Home
           </a>
         </Link>
         <Link href="/ind-wizard">
-          <a style={{ 
-            fontWeight: location === '/ind-wizard' ? 'bold' : 'normal',
-            textDecoration: 'none',
-            color: '#2563eb'
-          }}>
+          <a className={cn(
+            'text-blue-600 no-underline',
+            location === '/ind-wizard' ? 'font-bold' : 'font-normal'
+          )}>
             IND Wizard
           </a>
         </Link>
         <Link href="/reports">
-          <a style={{ 
-            fontWeight: location === '/reports' ? 'bold' : 'normal',
-            textDecoration: 'none',
-            color: '#2563eb'
-          }}>
+          <a className={cn(
+            'text-blue-600 no-underline',
+            location === '/reports' ? 'font-bold' : 'font-normal'
+          )}>
             CSR Reports
           </a>
         </Link>
         <Link href="/diagnostic">
-          <a style={{ 
-            fontWeight: location === '/diagnostic' ? 'bold' : 'normal',
-            textDecoration: 'none',
-            color: '#2563eb'
-          }}>
+          <a className={cn(
+            'text-blue-600 no-underline',
+            location === '/diagnostic' ? 'font-bold' : 'font-normal'
+          )}>
             System Diagnostic
           </a>
         </Link>
@@ -132,42 +120,41 @@ const WebSocketDiagnostic = () => {
   }, []);
   
   return (
-    <div style={{ padding: '1rem', maxWidth: '800px', margin: '0 auto' }}>
+    <div className="p-4 max-w-[800px] mx-auto">
       <h1>System Diagnostic</h1>
       
-      <div style={{ padding: '1rem', border: '1px solid #e5e7eb', borderRadius: '0.5rem', marginBottom: '1rem' }}>
+      <div className="p-4 border border-gray-300 rounded mb-4">
         <h2>API Connectivity</h2>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <table className="w-full border-collapse">
           <thead>
             <tr>
-              <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #e5e7eb' }}>Endpoint</th>
-              <th style={{ textAlign: 'left', padding: '0.5rem', borderBottom: '1px solid #e5e7eb' }}>Status</th>
+              <th className="text-left p-2 border-b border-gray-300">Endpoint</th>
+              <th className="text-left p-2 border-b border-gray-300">Status</th>
             </tr>
           </thead>
           <tbody>
-            {Object.entries(testResults).map(([test, result]) => (
-              <tr key={test}>
-                <td style={{ padding: '0.5rem', borderBottom: '1px solid #e5e7eb' }}>{test}</td>
-                <td style={{ 
-                  padding: '0.5rem', 
-                  borderBottom: '1px solid #e5e7eb',
-                  color: result.includes('Working') || result.includes('Available') ? 'green' : 'red',
-                  fontWeight: 'bold'
-                }}>{result}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              {Object.entries(testResults).map(([test, result]) => (
+                <tr key={test}>
+                  <td className="p-2 border-b border-gray-300">{test}</td>
+                  <td
+                    className={cn(
+                      "p-2 border-b border-gray-300 font-bold",
+                      result.includes('Working') || result.includes('Available')
+                        ? 'text-green-600'
+                        : 'text-red-600'
+                    )}
+                  >
+                    {result}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       
-      <div style={{ 
-        padding: '1rem', 
-        border: '1px solid #e5e7eb', 
-        borderRadius: '0.5rem',
-        backgroundColor: '#fef9c3'
-      }}>
+      <div className="p-4 border border-gray-300 rounded bg-yellow-100">
         <h2>Known Issues</h2>
-        <ul style={{ paddingLeft: '1.5rem' }}>
+        <ul className="pl-6">
           <li>WebSocket connections are failing with code 1006</li>
           <li>FastAPI server at port 8000 is not accessible</li>
         </ul>
@@ -206,7 +193,7 @@ const INDWizard = () => {
   
   if (loading) {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
+      <div className="p-8 text-center">
         <p>Loading IND Wizard data...</p>
       </div>
     );
@@ -214,20 +201,12 @@ const INDWizard = () => {
   
   if (error) {
     return (
-      <div style={{ padding: '2rem', textAlign: 'center', color: 'red' }}>
+      <div className="p-8 text-center text-red-600">
         <h2>Error Loading IND Wizard</h2>
         <p>{error}</p>
-        <button 
+        <button
           onClick={() => window.location.reload()}
-          style={{
-            marginTop: '1rem',
-            padding: '0.5rem 1rem',
-            backgroundColor: '#2563eb',
-            color: 'white',
-            border: 'none',
-            borderRadius: '0.25rem',
-            cursor: 'pointer'
-          }}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded cursor-pointer"
         >
           Try Again
         </button>
@@ -236,203 +215,104 @@ const INDWizard = () => {
   }
   
   return (
-    <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+    <div className="p-4 max-w-[1200px] mx-auto">
+      <div className="flex justify-between items-center mb-4">
         <h1>IND Wizard</h1>
         <div>
-          <span style={{ 
-            display: 'inline-block',
-            padding: '0.25rem 0.5rem',
-            backgroundColor: '#f3f4f6',
-            borderRadius: '0.25rem',
-            fontSize: '0.875rem'
-          }}>
+          <span className="inline-block px-2 py-1 bg-gray-100 rounded text-sm">
             Draft ID: {wizardData?.id || 'N/A'}
           </span>
         </div>
       </div>
-      
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: '250px 1fr',
-        gap: '1rem',
-        border: '1px solid #e5e7eb',
-        borderRadius: '0.5rem',
-        overflow: 'hidden'
-      }}>
-        <div style={{ 
-          backgroundColor: '#f9fafb', 
-          padding: '1rem',
-          borderRight: '1px solid #e5e7eb'
-        }}>
-          <h3 style={{ marginTop: 0 }}>Sections</h3>
-          <ul style={{ 
-            listStyle: 'none', 
-            padding: 0, 
-            margin: 0 
-          }}>
-            <li style={{ 
-              padding: '0.5rem', 
-              borderRadius: '0.25rem',
-              backgroundColor: '#2563eb',
-              color: 'white',
-              marginBottom: '0.5rem'
-            }}>
+
+      <div className="grid [grid-template-columns:250px_1fr] gap-4 border border-gray-300 rounded overflow-hidden">
+        <div className="bg-gray-50 p-4 border-r border-gray-300">
+          <h3 className="mt-0">Sections</h3>
+          <ul className="list-none p-0 m-0">
+            <li className="p-2 rounded bg-blue-600 text-white mb-2">
               Pre-IND Information
             </li>
-            <li style={{ 
-              padding: '0.5rem', 
-              borderRadius: '0.25rem',
-              marginBottom: '0.5rem'
-            }}>
+            <li className="p-2 rounded mb-2">
               Nonclinical Studies
             </li>
-            <li style={{ 
-              padding: '0.5rem', 
-              borderRadius: '0.25rem',
-              marginBottom: '0.5rem',
-              opacity: 0.5
-            }}>
+            <li className="p-2 rounded mb-2 opacity-50">
               Clinical Studies
             </li>
-            <li style={{ 
-              padding: '0.5rem', 
-              borderRadius: '0.25rem',
-              marginBottom: '0.5rem',
-              opacity: 0.5
-            }}>
+            <li className="p-2 rounded mb-2 opacity-50">
               CMC Information
             </li>
-            <li style={{ 
-              padding: '0.5rem', 
-              borderRadius: '0.25rem',
-              marginBottom: '0.5rem',
-              opacity: 0.5
-            }}>
+            <li className="p-2 rounded mb-2 opacity-50">
               Additional Information
             </li>
           </ul>
         </div>
         
-        <div style={{ padding: '1rem' }}>
+        <div className="p-4">
           <h2>Pre-IND Information</h2>
           
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '0.25rem',
-              fontWeight: 'bold'
-            }}>
+          <div className="mb-4">
+            <label className="block mb-1 font-bold">
               Drug Name
             </label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={wizardData?.sections?.preIndData?.drugName || ''}
               readOnly
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.25rem'
-              }}
+              className="w-full p-2 border border-gray-300 rounded"
             />
           </div>
           
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '0.25rem',
-              fontWeight: 'bold'
-            }}>
+          <div className="mb-4">
+            <label className="block mb-1 font-bold">
               Indication
             </label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={wizardData?.sections?.preIndData?.indicationName || ''}
               readOnly
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.25rem'
-              }}
+              className="w-full p-2 border border-gray-300 rounded"
             />
           </div>
           
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '0.25rem',
-              fontWeight: 'bold'
-            }}>
+          <div className="mb-4">
+            <label className="block mb-1 font-bold">
               Sponsor Information
             </label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={wizardData?.sections?.preIndData?.sponsorInfo || ''}
               readOnly
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.25rem'
-              }}
+              className="w-full p-2 border border-gray-300 rounded"
             />
           </div>
           
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '0.25rem',
-              fontWeight: 'bold'
-            }}>
+          <div className="mb-4">
+            <label className="block mb-1 font-bold">
               IND Number
             </label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={wizardData?.sections?.preIndData?.indNumber || ''}
               readOnly
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.25rem'
-              }}
+              className="w-full p-2 border border-gray-300 rounded"
             />
           </div>
           
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '0.25rem',
-              fontWeight: 'bold'
-            }}>
+          <div className="mb-4">
+            <label className="block mb-1 font-bold">
               Target Submission Date
             </label>
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={wizardData?.sections?.preIndData?.targetSubmissionDate || ''}
               readOnly
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.25rem'
-              }}
+              className="w-full p-2 border border-gray-300 rounded"
             />
           </div>
           
-          <div style={{ marginTop: '2rem', textAlign: 'right' }}>
+          <div className="mt-8 text-right">
             <button
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#2563eb',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.25rem',
-                cursor: 'pointer',
-                marginLeft: '0.5rem'
-              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded ml-2"
             >
               Next: Nonclinical Studies
             </button>
@@ -446,16 +326,10 @@ const INDWizard = () => {
 // CSR Reports component (simplified)
 const CSRReports = () => {
   return (
-    <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="p-4 max-w-[1200px] mx-auto">
       <h1>CSR Reports</h1>
-      
-      <div style={{ 
-        padding: '2rem', 
-        textAlign: 'center', 
-        border: '1px solid #e5e7eb',
-        borderRadius: '0.5rem',
-        backgroundColor: '#f9fafb'
-      }}>
+
+      <div className="p-8 text-center border border-gray-300 rounded bg-gray-100">
         <h2>CSR Library</h2>
         <p>This feature requires a working WebSocket connection.</p>
         <p>Please check the system diagnostic for more information.</p>
@@ -467,82 +341,40 @@ const CSRReports = () => {
 // Home component (simplified)
 const Home = () => {
   return (
-    <div style={{ padding: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ 
-        padding: '2rem',
-        backgroundColor: '#f0f9ff',
-        borderRadius: '0.5rem',
-        marginBottom: '2rem'
-      }}>
-        <h1 style={{ 
-          fontSize: '2rem', 
-          marginTop: 0,
-          marginBottom: '1rem',
-          color: '#0369a1'
-        }}>
+    <div className="p-4 max-w-[1200px] mx-auto">
+      <div className="p-8 bg-sky-50 rounded mb-8">
+        <h1 className="text-2xl mt-0 mb-4 text-sky-700">
           Welcome to TrialSage
         </h1>
-        <p style={{ fontSize: '1.125rem', marginBottom: '1.5rem' }}>
+        <p className="text-lg mb-6">
           The Clinical Intelligence System That Thinks Like a Biotech Founder
         </p>
-        <div style={{ 
-          display: 'flex',
-          gap: '1rem'
-        }}>
+        <div className="flex gap-4">
           <Link href="/ind-wizard">
-            <a style={{
-              display: 'inline-block',
-              padding: '0.75rem 1.5rem',
-              backgroundColor: '#2563eb',
-              color: 'white',
-              borderRadius: '0.25rem',
-              textDecoration: 'none',
-              fontWeight: 'bold'
-            }}>
+            <a className="inline-block px-6 py-3 bg-blue-600 text-white rounded font-bold no-underline">
               Open IND Wizard
             </a>
           </Link>
           <Link href="/reports">
-            <a style={{
-              display: 'inline-block',
-              padding: '0.75rem 1.5rem',
-              backgroundColor: 'white',
-              color: '#2563eb',
-              border: '1px solid #2563eb',
-              borderRadius: '0.25rem',
-              textDecoration: 'none',
-              fontWeight: 'bold'
-            }}>
+            <a className="inline-block px-6 py-3 bg-white text-blue-600 border border-blue-600 rounded font-bold no-underline">
               View CSR Reports
             </a>
           </Link>
         </div>
       </div>
       
-      <div style={{ 
-        display: 'grid',
-        gridTemplateColumns: 'repeat(2, 1fr)',
-        gap: '1rem'
-      }}>
-        <div style={{ 
-          padding: '1.5rem',
-          border: '1px solid #e5e7eb',
-          borderRadius: '0.5rem'
-        }}>
-          <h2 style={{ marginTop: 0 }}>IND & NDA Submission Accelerator</h2>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="p-6 border border-gray-300 rounded">
+          <h2 className="mt-0">IND & NDA Submission Accelerator</h2>
           <ul>
             <li>2× faster INDs</li>
             <li>Eliminates 90% manual formatting</li>
             <li>One-click eCTD → ESG</li>
           </ul>
         </div>
-        
-        <div style={{ 
-          padding: '1.5rem',
-          border: '1px solid #e5e7eb',
-          borderRadius: '0.5rem'
-        }}>
-          <h2 style={{ marginTop: 0 }}>Global CSR Intelligent Library</h2>
+
+        <div className="p-6 border border-gray-300 rounded">
+          <h2 className="mt-0">Global CSR Intelligent Library</h2>
           <ul>
             <li>Advanced CSR analytics</li>
             <li>Automated report generation</li>
@@ -561,7 +393,7 @@ const Home = () => {
  */
 export default function SimpleApp() {
   return (
-    <div className="app-container" style={{ fontFamily: 'system-ui, sans-serif' }}>
+    <div className="app-container font-sans">
       <Navigation />
       
       <Switch>
@@ -570,19 +402,11 @@ export default function SimpleApp() {
         <Route path="/reports" component={CSRReports} />
         <Route path="/diagnostic" component={WebSocketDiagnostic} />
         <Route path="*">
-          <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <div className="p-8 text-center">
             <h1>Page Not Found</h1>
             <p>The requested page could not be found.</p>
             <Link href="/">
-              <a style={{
-                display: 'inline-block',
-                marginTop: '1rem',
-                padding: '0.5rem 1rem',
-                backgroundColor: '#2563eb',
-                color: 'white',
-                borderRadius: '0.25rem',
-                textDecoration: 'none'
-              }}>
+              <a className="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded no-underline">
                 Go Home
               </a>
             </Link>
