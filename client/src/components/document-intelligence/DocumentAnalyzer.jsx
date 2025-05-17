@@ -1,84 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, AlertTriangle, CheckCircle, RotateCw, Zap, BookOpen, Layers, Microscope } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { AlertTriangle, FileText, CheckCircle2, RotateCw, Microscope, Layers, Shield } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
 
 /**
  * Document Analyzer Component
  * 
- * This component handles document analysis and data extraction
- * after documents have been processed by the DocumentUploader.
+ * This component allows the user to analyze processed documents
+ * and extract structured data from them.
  * 
  * @param {Object} props
- * @param {Array} props.processedDocuments - Array of processed document objects
+ * @param {Array} props.processedDocuments - The processed documents to analyze
+ * @param {Array} props.documentTypes - The identified document types
  * @param {string} props.regulatoryContext - The regulatory context (510k, cer, etc.)
- * @param {Function} props.onAnalysisComplete - Callback when analysis is complete
- * @param {Function} props.onReset - Callback to reset the analysis process
+ * @param {Function} props.onAnalysisComplete - Callback for when analysis is complete
  */
 const DocumentAnalyzer = ({
   processedDocuments = [],
+  documentTypes = [],
   regulatoryContext = '510k',
-  onAnalysisComplete,
-  onReset
+  onAnalysisComplete
 }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [extractionMode, setExtractionMode] = useState('basic');
+  const [validateData, setValidateData] = useState(true);
   const [analysisProgress, setAnalysisProgress] = useState(0);
-  const [extractionMode, setExtractionMode] = useState('comprehensive');
   const [extractedData, setExtractedData] = useState(null);
-  const [documentTypes, setDocumentTypes] = useState([]);
-  const [validationResults, setValidationResults] = useState(null);
-  const [activeDocument, setActiveDocument] = useState(null);
-  const [selectedTab, setSelectedTab] = useState('content');
+  const [activeTab, setActiveTab] = useState('documents');
   const { toast } = useToast();
 
-  // Select the first document when documents are loaded
-  useEffect(() => {
-    if (processedDocuments && processedDocuments.length > 0 && !activeDocument) {
-      setActiveDocument(processedDocuments[0]);
-    }
-  }, [processedDocuments, activeDocument]);
-
-  // Identify document types on component mount
-  useEffect(() => {
-    if (processedDocuments && processedDocuments.length > 0) {
-      identifyDocumentTypes();
-    }
-  }, [processedDocuments]);
-
-  // Identify the types of documents that have been uploaded
-  const identifyDocumentTypes = async () => {
-    try {
-      setIsAnalyzing(true);
-      const types = await documentIntelligenceService.identifyDocumentTypes(
-        processedDocuments,
-        regulatoryContext
-      );
-      setDocumentTypes(types);
-      setIsAnalyzing(false);
-    } catch (error) {
-      console.error('Error identifying document types:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to identify document types.',
-        variant: 'destructive',
-      });
-      setIsAnalyzing(false);
-    }
-  };
-
   // Start the analysis process
-  const startAnalysis = async () => {
+  const handleStartAnalysis = async () => {
     if (processedDocuments.length === 0) {
       toast({
-        title: 'No Documents',
-        description: 'There are no documents to analyze.',
+        title: 'No Documents to Analyze',
+        description: 'Please upload and process documents before starting analysis.',
         variant: 'destructive',
       });
       return;
@@ -86,56 +50,38 @@ const DocumentAnalyzer = ({
 
     setIsAnalyzing(true);
     setAnalysisProgress(0);
-    
+    setExtractedData(null);
+
     try {
-      // Simulate gradual progress updates
-      const progressInterval = setInterval(() => {
-        setAnalysisProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return 90;
-          }
-          return prev + 5;
-        });
-      }, 500);
-      
-      // Perform the actual analysis
+      // Call the document intelligence service to analyze the documents
       const data = await documentIntelligenceService.analyzeDocuments(
         processedDocuments,
         {
           regulatoryContext,
           extractionMode,
-          validateData: true,
+          validateData
         },
         (progress) => {
-          if (progress >= 0 && progress <= 100) {
-            setAnalysisProgress(progress);
-          }
+          setAnalysisProgress(progress);
         }
       );
-      
-      clearInterval(progressInterval);
-      setAnalysisProgress(100);
-      
-      // Set the extracted data and validation results
+
+      // Update state with the extracted data
       setExtractedData(data);
-      setValidationResults(data.validation || {
-        valid: true,
-        issues: [],
-        warnings: []
-      });
-      
-      // Show success message
-      toast({
-        title: 'Analysis Complete',
-        description: 'Successfully extracted data from the documents.',
-        variant: 'success',
-      });
-      
-      // Call callback with extracted data
+
+      // Switch to results tab
+      setActiveTab('results');
+
+      // Notify parent component that analysis is complete
       if (onAnalysisComplete) {
         onAnalysisComplete(data);
       }
+
+      toast({
+        title: 'Analysis Complete',
+        description: `Successfully analyzed ${processedDocuments.length} document(s).`,
+        variant: 'success',
+      });
     } catch (error) {
       console.error('Error analyzing documents:', error);
       
@@ -149,253 +95,198 @@ const DocumentAnalyzer = ({
     }
   };
 
-  // Get document type badge color based on confidence
-  const getDocumentTypeBadgeColor = (confidence) => {
-    if (confidence >= 0.8) return 'bg-green-100 text-green-800';
-    if (confidence >= 0.5) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
+  // Get document confidence level class
+  const getConfidenceClass = (confidence) => {
+    if (confidence >= 0.8) return 'text-green-600';
+    if (confidence >= 0.5) return 'text-yellow-600';
+    return 'text-red-600';
   };
 
-  // Reset the analysis
-  const handleReset = () => {
-    setExtractedData(null);
-    setValidationResults(null);
-    setAnalysisProgress(0);
-    if (onReset) {
-      onReset();
-    }
+  // Get extraction mode description
+  const getExtractionModeDescription = (mode) => {
+    const descriptions = {
+      basic: 'Extract essential device information and basic details only.',
+      enhanced: 'Extract device information with additional technical details and specifications.',
+      regulatory: 'Focus on regulatory-specific information and compliance details.',
+      comprehensive: 'Extract all available information including technical, regulatory, and clinical details.'
+    };
+    
+    return descriptions[mode] || 'Custom extraction mode.';
   };
 
-  // Render document type identification results
-  const renderDocumentTypes = () => {
-    if (!documentTypes || documentTypes.length === 0) {
+  // Render document cards
+  const renderDocumentCards = () => {
+    return processedDocuments.map((doc, index) => {
+      // Find document type information
+      const typeInfo = documentTypes.find(type => type.documentId === doc.id) || {
+        type: 'Unknown',
+        confidence: 0.5
+      };
+      
       return (
-        <div className="text-center py-4 text-muted-foreground">
-          No document types identified yet.
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        {documentTypes.map((docType, index) => (
-          <div key={index} className="border rounded-md p-3">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <h4 className="font-medium">{docType.filename}</h4>
-                <div className="flex mt-1">
-                  <Badge variant="outline" className={getDocumentTypeBadgeColor(docType.confidence)}>
-                    {docType.type} ({Math.round(docType.confidence * 100)}% confidence)
-                  </Badge>
-                </div>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setActiveDocument(processedDocuments.find(doc => doc.id === docType.documentId))}
-              >
-                View
-              </Button>
+        <Card key={doc.id} className="mb-4">
+          <CardHeader>
+            <CardTitle className="flex items-center text-base font-medium">
+              <FileText className="h-5 w-5 mr-2" />
+              {doc.filename}
+            </CardTitle>
+            <CardDescription className="flex items-center justify-between">
+              <span>{doc.fileType}, {doc.pages} pages</span>
+              <Badge variant="outline" className={getConfidenceClass(typeInfo.confidence)}>
+                {typeInfo.type}
+              </Badge>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="text-sm text-muted-foreground max-h-32 overflow-y-auto bg-muted/30 p-3 rounded-md">
+              <p className="whitespace-pre-line">
+                {doc.textContent ? doc.textContent.substring(0, 300) + '...' : 'No text content available.'}
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground mt-2">{docType.description}</p>
-          </div>
-        ))}
+          </CardContent>
+        </Card>
+      );
+    });
+  };
+
+  // Render analysis settings
+  const renderAnalysisSettings = () => {
+    return (
+      <div className="space-y-6">
+        {/* Extraction Mode */}
+        <div className="space-y-2">
+          <Label htmlFor="extraction-mode">Extraction Mode</Label>
+          <Select
+            value={extractionMode}
+            onValueChange={setExtractionMode}
+            disabled={isAnalyzing}
+          >
+            <SelectTrigger id="extraction-mode">
+              <SelectValue placeholder="Select extraction mode" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="basic">Basic</SelectItem>
+              <SelectItem value="enhanced">Enhanced</SelectItem>
+              <SelectItem value="regulatory">Regulatory</SelectItem>
+              <SelectItem value="comprehensive">Comprehensive</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            {getExtractionModeDescription(extractionMode)}
+          </p>
+        </div>
+
+        {/* Validation Option */}
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="validate-data"
+            checked={validateData}
+            onCheckedChange={setValidateData}
+            disabled={isAnalyzing}
+          />
+          <Label htmlFor="validate-data">Validate Extracted Data</Label>
+        </div>
+        
+        <div className="text-xs text-muted-foreground">
+          Validation performs additional checks on extracted data to ensure completeness and consistency.
+        </div>
       </div>
     );
   };
 
-  // Render extracted data preview
-  const renderExtractedData = () => {
+  // Render analysis results
+  const renderAnalysisResults = () => {
     if (!extractedData) {
       return (
-        <div className="text-center py-4 text-muted-foreground">
-          No data extracted yet. Click the "Start Analysis" button to begin.
-        </div>
-      );
-    }
-
-    // Group the data for better display
-    const groups = {
-      'Device Information': ['deviceName', 'manufacturer', 'productCode', 'deviceClass', 'intendedUse', 'description'],
-      'Regulatory Information': ['regulatoryClass', 'status', 'classification', 'riskLevel'],
-      'Technical Specifications': ['technicalSpecifications', 'performance', 'standards'],
-      'Clinical Data': ['clinicalEvaluation', 'clinicalStudies', 'adverseEvents'],
-      'Other Information': []
-    };
-
-    // Put any fields not explicitly categorized into "Other Information"
-    Object.keys(extractedData).forEach(key => {
-      if (!Object.values(groups).flat().includes(key) && 
-          !['validation', 'confidence', 'sourceDocuments'].includes(key)) {
-        groups['Other Information'].push(key);
-      }
-    });
-
-    return (
-      <div className="space-y-4">
-        {/* Overall confidence score */}
-        <div className="mb-4">
-          <div className="flex justify-between items-center mb-1">
-            <span className="text-sm font-medium">Overall Confidence</span>
-            <span className="text-sm font-medium">
-              {Math.round((extractedData.confidence || 0) * 100)}%
-            </span>
+        <div className="text-center py-8">
+          <div className="mb-4">
+            <AlertTriangle className="h-12 w-12 text-yellow-500 mx-auto" />
           </div>
-          <Progress 
-            value={(extractedData.confidence || 0) * 100} 
-            className="h-2" 
-            indicatorClassName={
-              extractedData.confidence > 0.75 ? "bg-green-500" : 
-              extractedData.confidence > 0.5 ? "bg-yellow-500" : 
-              "bg-red-500"
-            }
-          />
-        </div>
-        
-        <Separator />
-        
-        {/* Extracted fields by group */}
-        {Object.entries(groups).map(([groupName, fields]) => {
-          if (fields.length === 0) return null;
-          
-          return (
-            <div key={groupName} className="space-y-3">
-              <h3 className="text-base font-medium">{groupName}</h3>
-              
-              {fields.map(field => {
-                if (!extractedData[field]) return null;
-                
-                return (
-                  <div key={field} className="space-y-1">
-                    <div className="flex justify-between">
-                      <span className="text-sm font-medium capitalize">
-                        {field.replace(/([A-Z])/g, ' $1').trim()}
-                      </span>
-                      {extractedData[`${field}Confidence`] && (
-                        <Badge variant="outline" className={
-                          extractedData[`${field}Confidence`] > 0.75 ? "bg-green-50 text-green-700" : 
-                          extractedData[`${field}Confidence`] > 0.5 ? "bg-yellow-50 text-yellow-700" : 
-                          "bg-red-50 text-red-700"
-                        }>
-                          {Math.round(extractedData[`${field}Confidence`] * 100)}% confidence
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="text-sm p-2 bg-muted rounded-md max-h-28 overflow-auto">
-                      {typeof extractedData[field] === 'object' 
-                        ? JSON.stringify(extractedData[field], null, 2) 
-                        : extractedData[field]}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
-    );
-  };
-
-  // Render validation results
-  const renderValidation = () => {
-    if (!validationResults) {
-      return (
-        <div className="text-center py-4 text-muted-foreground">
-          No validation results available. Complete the analysis first.
+          <h3 className="text-lg font-medium mb-2">No Analysis Results</h3>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            No analysis results are available. Please complete the document analysis process first.
+          </p>
         </div>
       );
     }
 
     return (
-      <div className="space-y-4">
-        <div className={`flex items-center p-3 rounded-md ${
-          validationResults.valid ? 'bg-green-50' : 'bg-yellow-50'
-        }`}>
-          {validationResults.valid 
-            ? <CheckCircle className="h-5 w-5 text-green-500 mr-2" />
-            : <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2" />
-          }
-          <span className={`font-medium ${
-            validationResults.valid ? 'text-green-700' : 'text-yellow-700'
-          }`}>
-            {validationResults.valid 
-              ? 'Data validation passed' 
-              : 'Data validation found issues'
-            }
-          </span>
-        </div>
-        
-        {/* Issues */}
-        {validationResults.issues && validationResults.issues.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">Issues</h3>
-            <div className="space-y-2">
-              {validationResults.issues.map((issue, index) => (
-                <div key={index} className="flex p-2 bg-red-50 rounded-md">
-                  <AlertTriangle className="h-4 w-4 text-red-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <div className="text-sm font-medium text-red-700">{issue.field}</div>
-                    <div className="text-xs text-red-600">{issue.message}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* Warnings */}
-        {validationResults.warnings && validationResults.warnings.length > 0 && (
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">Warnings</h3>
-            <div className="space-y-2">
-              {validationResults.warnings.map((warning, index) => (
-                <div key={index} className="flex p-2 bg-yellow-50 rounded-md">
-                  <AlertTriangle className="h-4 w-4 text-yellow-500 mr-2 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <div className="text-sm font-medium text-yellow-700">{warning.field}</div>
-                    <div className="text-xs text-yellow-600">{warning.message}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* If no issues or warnings */}
-        {(!validationResults.issues || validationResults.issues.length === 0) && 
-         (!validationResults.warnings || validationResults.warnings.length === 0) && (
-          <div className="text-center py-2 text-green-600">
-            No issues or warnings detected.
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  // Render document content preview
-  const renderDocumentContent = () => {
-    if (!activeDocument) {
-      return (
-        <div className="text-center py-4 text-muted-foreground">
-          No document selected.
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h3 className="text-base font-medium">{activeDocument.filename}</h3>
-          <Badge variant="outline">
-            {activeDocument.fileType || 'Unknown type'}
+      <div className="space-y-6">
+        {/* Overall Confidence */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium">Overall Confidence:</span>
+          <Badge 
+            variant="outline" 
+            className={getConfidenceClass(extractedData.confidence)}
+          >
+            {Math.round(extractedData.confidence * 100)}%
           </Badge>
         </div>
-        
-        <ScrollArea className="h-[300px] w-full rounded-md border p-4">
-          <div className="text-sm font-mono whitespace-pre-wrap">
-            {activeDocument.textContent || 'No text content available.'}
+
+        {/* Validation Issues */}
+        {extractedData.validation && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium">Validation Results:</h3>
+            
+            {extractedData.validation.valid ? (
+              <div className="flex items-center text-green-600">
+                <CheckCircle2 className="h-4 w-4 mr-2" />
+                <span>All validation checks passed</span>
+              </div>
+            ) : (
+              <div>
+                {extractedData.validation.issues.length > 0 && (
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium text-red-600">Issues:</span>
+                    <ul className="text-xs space-y-1">
+                      {extractedData.validation.issues.map((issue, index) => (
+                        <li key={index} className="flex items-start">
+                          <AlertTriangle className="h-3 w-3 text-red-600 mr-1 mt-0.5" />
+                          <span>{issue.message}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                
+                {extractedData.validation.warnings.length > 0 && (
+                  <div className="space-y-2 mt-3">
+                    <span className="text-xs font-medium text-yellow-600">Warnings:</span>
+                    <ul className="text-xs space-y-1">
+                      {extractedData.validation.warnings.map((warning, index) => (
+                        <li key={index} className="flex items-start">
+                          <AlertTriangle className="h-3 w-3 text-yellow-600 mr-1 mt-0.5" />
+                          <span>{warning.message}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-        </ScrollArea>
+        )}
+
+        {/* Extracted Data */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-medium">Extracted Data:</h3>
+          
+          <div className="bg-muted/30 p-3 rounded-md max-h-60 overflow-y-auto">
+            <pre className="text-xs whitespace-pre-wrap">
+              {JSON.stringify(
+                Object.fromEntries(
+                  Object.entries(extractedData).filter(([key]) => 
+                    !key.endsWith('Confidence') && 
+                    key !== 'validation' && 
+                    key !== 'sourceDocuments'
+                  )
+                ), 
+                null, 
+                2
+              )}
+            </pre>
+          </div>
+        </div>
       </div>
     );
   };
@@ -404,131 +295,83 @@ const DocumentAnalyzer = ({
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Document Analysis</CardTitle>
+          <CardTitle className="flex items-center">
+            <Microscope className="h-5 w-5 mr-2" />
+            Document Analysis
+          </CardTitle>
           <CardDescription>
-            Analyze documents to extract structured data for your regulatory submission.
+            Analyze documents to extract structured data for your device profile.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Extraction Mode Selection */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium">Extraction Mode</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <div
-                className={`flex flex-col items-center justify-center p-3 border rounded-md cursor-pointer hover:bg-muted transition-colors ${
-                  extractionMode === 'basic' ? 'border-primary bg-primary/5' : ''
-                }`}
-                onClick={() => setExtractionMode('basic')}
-              >
-                <FileText className="h-5 w-5 mb-1 text-blue-500" />
-                <div className="font-medium text-sm">Basic</div>
-                <div className="text-xs text-muted-foreground text-center">Simple extraction of key fields</div>
-              </div>
-              
-              <div
-                className={`flex flex-col items-center justify-center p-3 border rounded-md cursor-pointer hover:bg-muted transition-colors ${
-                  extractionMode === 'enhanced' ? 'border-primary bg-primary/5' : ''
-                }`}
-                onClick={() => setExtractionMode('enhanced')}
-              >
-                <Zap className="h-5 w-5 mb-1 text-yellow-500" />
-                <div className="font-medium text-sm">Enhanced</div>
-                <div className="text-xs text-muted-foreground text-center">Deeper extraction with confidence scores</div>
-              </div>
-              
-              <div
-                className={`flex flex-col items-center justify-center p-3 border rounded-md cursor-pointer hover:bg-muted transition-colors ${
-                  extractionMode === 'regulatory' ? 'border-primary bg-primary/5' : ''
-                }`}
-                onClick={() => setExtractionMode('regulatory')}
-              >
-                <BookOpen className="h-5 w-5 mb-1 text-green-500" />
-                <div className="font-medium text-sm">Regulatory</div>
-                <div className="text-xs text-muted-foreground text-center">Focus on regulatory compliance fields</div>
-              </div>
-              
-              <div
-                className={`flex flex-col items-center justify-center p-3 border rounded-md cursor-pointer hover:bg-muted transition-colors ${
-                  extractionMode === 'comprehensive' ? 'border-primary bg-primary/5' : ''
-                }`}
-                onClick={() => setExtractionMode('comprehensive')}
-              >
-                <Layers className="h-5 w-5 mb-1 text-purple-500" />
-                <div className="font-medium text-sm">Comprehensive</div>
-                <div className="text-xs text-muted-foreground text-center">Full extraction with validation</div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Document Type Identification */}
-          <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <h3 className="text-sm font-medium">Document Types</h3>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={identifyDocumentTypes}
-                disabled={isAnalyzing || processedDocuments.length === 0}
-              >
-                <RotateCw className="h-3 w-3 mr-2" />
-                Refresh
-              </Button>
-            </div>
-            
-            {renderDocumentTypes()}
-          </div>
-          
-          {/* Analysis Progress */}
-          {isAnalyzing && (
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm font-medium">Analyzing Documents...</span>
-                <span className="text-sm text-muted-foreground">{analysisProgress}%</span>
-              </div>
-              <Progress value={analysisProgress} className="h-2" />
-            </div>
-          )}
-          
-          {/* Document Content and Extracted Data Tabs */}
-          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full mt-6">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="content">
+        
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="documents">
                 <FileText className="h-4 w-4 mr-2" />
-                Document Content
+                Documents
               </TabsTrigger>
-              <TabsTrigger value="data" disabled={!extractedData}>
-                <Microscope className="h-4 w-4 mr-2" />
-                Extracted Data
-              </TabsTrigger>
-              <TabsTrigger value="validation" disabled={!validationResults}>
-                <CheckCircle className="h-4 w-4 mr-2" />
-                Validation
+              <TabsTrigger value="results" disabled={!extractedData && !isAnalyzing}>
+                <Layers className="h-4 w-4 mr-2" />
+                Results
               </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="content" className="mt-4">
-              {renderDocumentContent()}
+            <TabsContent value="documents" className="space-y-4 pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Document List</h3>
+                  {processedDocuments.length > 0 ? (
+                    renderDocumentCards()
+                  ) : (
+                    <div className="text-center py-4 bg-muted/30 rounded-md">
+                      <AlertTriangle className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">
+                        No documents available for analysis.
+                      </p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Analysis Settings</h3>
+                  {renderAnalysisSettings()}
+                </div>
+              </div>
             </TabsContent>
             
-            <TabsContent value="data" className="mt-4 space-y-4">
-              {renderExtractedData()}
-            </TabsContent>
-            
-            <TabsContent value="validation" className="mt-4 space-y-4">
-              {renderValidation()}
+            <TabsContent value="results" className="pt-4">
+              {renderAnalysisResults()}
             </TabsContent>
           </Tabs>
+          
+          {/* Progress Bar */}
+          {isAnalyzing && (
+            <div className="mt-6 space-y-2">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">Analyzing documents...</span>
+                <span className="text-sm text-muted-foreground">{analysisProgress}%</span>
+              </div>
+              <Progress value={analysisProgress} className="h-2" />
+              <p className="text-xs text-muted-foreground">
+                {analysisProgress < 25 ? 'Initializing analysis...' :
+                 analysisProgress < 50 ? 'Processing document content...' :
+                 analysisProgress < 75 ? 'Extracting structured data...' :
+                 analysisProgress < 100 ? 'Validating and finalizing results...' :
+                 'Complete!'}
+              </p>
+            </div>
+          )}
         </CardContent>
+        
         <CardFooter className="flex justify-between">
+          <div className="flex items-center text-sm text-muted-foreground">
+            <Shield className="h-4 w-4 mr-1" />
+            {regulatoryContext === '510k' ? 'FDA 510(k) Context' : 'CER Context'}
+          </div>
+          
           <Button
-            variant="outline"
-            onClick={handleReset}
-            disabled={isAnalyzing}
-          >
-            Reset
-          </Button>
-          <Button
-            onClick={startAnalysis}
+            onClick={handleStartAnalysis}
             disabled={isAnalyzing || processedDocuments.length === 0}
           >
             {isAnalyzing ? (
@@ -537,7 +380,7 @@ const DocumentAnalyzer = ({
                 Analyzing...
               </>
             ) : (
-              'Start Analysis'
+              <>Start Analysis</>
             )}
           </Button>
         </CardFooter>
