@@ -1018,6 +1018,22 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       variant: "success"
     });
   };
+
+  // Generate a detailed predicate comparison report
+  const handleGenerateComparisonReport = () => {
+    toast({
+      title: "Generating Comparison Report",
+      description: "Creating detailed predicate device comparison...",
+    });
+  };
+
+  // Request AI assistance for non-equivalent parameters
+  const handleAIAssistanceRequest = (parameter) => {
+    toast({
+      title: "AI Assistance Requested",
+      description: `Analyzing differences for ${parameter}`,
+    });
+  };
   
   /**
    * Validate the eSTAR package against FDA requirements
@@ -1590,7 +1606,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
               </div>
             )}
             
-            <EquivalenceBuilderPanel 
+            <EquivalenceBuilderPanel
               deviceProfile={deviceProfile}
               setDeviceProfile={(newProfile) => {
                 // Just save the updated device profile
@@ -1602,6 +1618,13 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
               onComplete={handleEquivalenceComplete}
               predicateDevices={predicateDevices}
               selectedLiterature={selectedLiterature}
+            />
+
+            <EnhancedEquivalenceComparison
+              subjectDevice={deviceProfile}
+              predicateDevices={predicateDevices}
+              onGenerateReport={handleGenerateComparisonReport}
+              onRequestAIAssistance={handleAIAssistanceRequest}
             />
           </div>
         );
@@ -2368,7 +2391,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
               </div>
             )}
             
-            <EquivalenceBuilderPanel 
+            <EquivalenceBuilderPanel
               deviceProfile={deviceProfile}
               setDeviceProfile={(newProfile) => {
                 // Just save the updated device profile
@@ -2380,6 +2403,13 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
               onComplete={handleEquivalenceComplete}
               predicateDevices={predicateDevices}
               selectedLiterature={selectedLiterature}
+            />
+
+            <EnhancedEquivalenceComparison
+              subjectDevice={deviceProfile}
+              predicateDevices={predicateDevices}
+              onGenerateReport={handleGenerateComparisonReport}
+              onRequestAIAssistance={handleAIAssistanceRequest}
             />
           </div>
         );
@@ -2511,13 +2541,23 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     }
     else if (activeTab === 'equivalence') {
       // Support both CER and 510k document types for the equivalence tab
-      return <EquivalenceBuilderPanel 
-        deviceProfile={deviceProfile}
-        documentId={documentType === 'cer' ? cerDocumentId : k510DocumentId}
-        predicateDevices={predicateDevices}
-        selectedLiterature={selectedLiterature}
-        onComplete={handleEquivalenceComplete}
-      />;
+      return (
+        <>
+          <EquivalenceBuilderPanel
+            deviceProfile={deviceProfile}
+            documentId={documentType === 'cer' ? cerDocumentId : k510DocumentId}
+            predicateDevices={predicateDevices}
+            selectedLiterature={selectedLiterature}
+            onComplete={handleEquivalenceComplete}
+          />
+          <EnhancedEquivalenceComparison
+            subjectDevice={deviceProfile}
+            predicateDevices={predicateDevices}
+            onGenerateReport={handleGenerateComparisonReport}
+            onRequestAIAssistance={handleAIAssistanceRequest}
+          />
+        </>
+      );
     }
     else if (documentType === 'cer' && activeTab === 'sota') {
       return <StateOfArtPanel cerDocumentId={cerDocumentId} />;
