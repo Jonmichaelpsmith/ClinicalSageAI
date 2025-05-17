@@ -3,6 +3,14 @@
  */
 
 import express from 'express';
+import { spawn } from 'child_process';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import logger from '../../../server/utils/logger.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const router = express.Router();
 
@@ -15,100 +23,37 @@ const router = express.Router();
  */
 router.post('/generate', async (req, res) => {
   try {
-    console.log('Generating eCTD blueprint with data:', JSON.stringify(req.body, null, 2));
-    
-    // Mock blueprint generation (replace with actual implementation)
-    const blueprint = {
-      submissionType: req.body.submissionType || 'IND',
-      region: req.body.region || 'US-FDA',
-      structure: {
-        module1: {
-          regional: {
-            coverLetter: { included: true, template: 'cover_letter_template.docx' },
-            forms: { included: true, items: ['1571', '3674'] },
-            toc: { included: true, generated: true }
-          }
-        },
-        module2: {
-          ctd: {
-            m2_2_intro: { included: true, template: 'm2_2_intro_template.docx' },
-            m2_3_quality: { included: true, template: 'm2_3_quality_template.docx' },
-            m2_4_nonclinical: { included: req.body.includeNonclinical === false ? false : true, template: 'm2_4_nonclinical_template.docx' },
-            m2_5_clinical: { included: req.body.includeClinical === false ? false : true, template: 'm2_5_clinical_template.docx' },
-            m2_7_summaries: { included: req.body.includeClinical === false ? false : true }
-          }
-        },
-        module3: {
-          quality: {
-            drugSubstance: { included: true },
-            drugProduct: { included: true },
-            appendices: { included: true },
-            literatureReferences: { included: false }
-          }
-        },
-        module4: {
-          nonclinicalStudyReports: {
-            pharmacology: { included: req.body.includeNonclinical === false ? false : true },
-            pharmacokinetics: { included: req.body.includeNonclinical === false ? false : true },
-            toxicology: { included: req.body.includeNonclinical === false ? false : true }
-          }
-        },
-        module5: {
-          clinicalStudyReports: {
-            included: req.body.includeClinical === false ? false : true,
-            reports: []
-          }
-        }
-      },
-      validationRules: [
-        'All study reports must include synopsis',
-        'Module 2.7 must be consistent with Module 5 data',
-        'Module 2.3 must be consistent with Module 3 data'
-      ],
-      generatedAt: new Date().toISOString(),
-      id: `blueprint-${Date.now()}`
-    };
-    
-    // If clinical studies were provided, add them to the blueprint
-    if (req.body.clinicalStudies && req.body.clinicalStudies.length > 0) {
-      blueprint.structure.module5.clinicalStudyReports.reports = req.body.clinicalStudies.map(study => ({
-        studyId: study.id,
-        title: study.title,
-        path: `m5/53-clin-stud-rep/${study.type}/${study.id}`,
-        documents: [
-          {
-            name: 'Clinical Study Report',
-            template: 'csr_template.docx',
-            required: true
-          },
-          {
-            name: 'Statistical Analysis Plan',
-            template: 'sap_template.docx',
-            required: true
-          },
-          {
-            name: 'Protocol',
-            template: 'protocol_template.docx',
-            required: true
-          }
-        ]
-      }));
-    }
-    
-    res.json({
-      success: true,
-      blueprint,
-      validationResults: {
-        status: 'valid',
-        messages: []
+    logger.info('Generating eCTD blueprint', { payload: req.body });
+
+    const script = path.join(__dirname, '..', '..', '..', 'ind_automation', 'build_blueprint.py');
+    const proc = spawn('python3', [script], { stdio: ['pipe', 'pipe', 'pipe'] });
+
+    proc.stdin.write(JSON.stringify(req.body));
+    proc.stdin.end();
+
+    let stdout = '';
+    let stderr = '';
+
+    proc.stdout.on('data', (d) => { stdout += d.toString(); });
+    proc.stderr.on('data', (d) => { stderr += d.toString(); });
+
+    proc.on('close', (code) => {
+      if (code !== 0) {
+        logger.error('Blueprint generation script failed', { code, stderr });
+        return res.status(500).json({ success: false, error: 'Blueprint generation failed' });
+      }
+
+      try {
+        const result = JSON.parse(stdout);
+        res.json({ success: true, zipPath: result.zip_path, validationResults: result.validation });
+      } catch (e) {
+        logger.error('Failed to parse blueprint script output', { error: e.message, stdout });
+        res.status(500).json({ success: false, error: 'Invalid generation output' });
       }
     });
   } catch (error) {
-    console.error('Error generating blueprint:', error);
-    res.status(500).json({
-      success: false,
-      error: error.message || 'Failed to generate blueprint'
-    });
+    logger.error('Error generating blueprint', { error: error.message });
+    res.status(500).json({ success: false, error: error.message || 'Failed to generate blueprint' });
   }
 });
 
@@ -164,7 +109,7 @@ router.post('/validate', async (req, res) => {
       validationResults
     });
   } catch (error) {
-    console.error('Error validating blueprint:', error);
+    logger.error('Error validating blueprint', { error: error.message });
     res.status(500).json({
       success: false,
       error: error.message || 'Failed to validate blueprint'
@@ -181,7 +126,7 @@ router.post('/validate', async (req, res) => {
  */
 router.post('/generate-toc', async (req, res) => {
   try {
-    console.log('Generating ToC for blueprint:', JSON.stringify(req.body.blueprintId, null, 2));
+    logger.info('Generating ToC for blueprint', { id: req.body.blueprintId });
     
     // Mock ToC generation (replace with actual implementation)
     const toc = {
@@ -224,7 +169,7 @@ router.post('/generate-toc', async (req, res) => {
       toc
     });
   } catch (error) {
-    console.error('Error generating ToC:', error);
+    logger.error('Error generating ToC', { error: error.message });
     res.status(500).json({
       success: false,
       error: error.message || 'Failed to generate table of contents'
@@ -253,7 +198,7 @@ router.post('/export', async (req, res) => {
       estimatedCompletionTime: '5-10 minutes'
     });
   } catch (error) {
-    console.error('Error starting export job:', error);
+    logger.error('Error starting export job', { error: error.message });
     res.status(500).json({
       success: false,
       error: error.message || 'Failed to start export job'
@@ -294,7 +239,7 @@ router.get('/export/:jobId', (req, res) => {
       ...status
     });
   } catch (error) {
-    console.error('Error checking export job status:', error);
+    logger.error('Error checking export job status', { error: error.message });
     res.status(500).json({
       success: false,
       error: error.message || 'Failed to check export job status'
