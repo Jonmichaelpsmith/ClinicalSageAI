@@ -1330,6 +1330,9 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
           setWorkflowProgress(progressMap[step]);
           saveState('workflowProgress', progressMap[step]);
           
+          // Clean up any open modals or overlays before switching tabs
+          cleanupModals();
+          
           // Update tab with proper persistence
           setActiveTab(targetTab);
           saveState('activeTab', targetTab);
@@ -2030,6 +2033,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
                           const newProgress = Math.round((7 / 8) * 100);
                           setWorkflowProgress(newProgress);
                           saveState('workflowProgress', newProgress);
+                          cleanupModals();
                           setActiveTab('estar-builder');
                           
                           toast({
