@@ -1,144 +1,213 @@
-import { useState } from 'react';
-import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
-import { FileUploader } from '@/components/ui/file-uploader';
+import React, { useState, useCallback } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
+import { X, FileText, Upload, AlertCircle, CheckCircle } from 'lucide-react';
 import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
 
-/**
- * DocumentUploader component that handles uploading and processing
- * documents for the document intelligence system.
- */
-export const DocumentUploader = ({ 
-  onDocumentsProcessed, 
-  maxFiles = 10,
-  regulatoryContext = '510k',
-}) => {
-  const [isUploading, setIsUploading] = useState(false);
+const DocumentUploader = ({ onDocumentsProcessed, regulatoryContext = '510k' }) => {
+  const [files, setFiles] = useState([]);
+  const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [processingStatus, setProcessingStatus] = useState(null);
   const { toast } = useToast();
-  
-  /**
-   * Handle file selection and upload
-   * @param {File[]} files - Array of selected files
-   */
-  const handleFilesSelected = async (files) => {
-    if (!files.length) return;
-    
-    setIsUploading(true);
-    setUploadProgress(0);
-    setProcessingStatus('Uploading documents...');
-    
-    try {
-      // Create FormData object for file upload
-      const formData = new FormData();
-      
-      // Add files to the FormData object
-      files.forEach((file, index) => {
-        formData.append('files', file);
+
+  const onDrop = useCallback((acceptedFiles) => {
+    // Filter out any duplicate files
+    const newFiles = acceptedFiles.filter(
+      newFile => !files.some(existingFile => 
+        existingFile.name === newFile.name && 
+        existingFile.size === newFile.size
+      )
+    );
+
+    if (newFiles.length > 0) {
+      setFiles(prevFiles => [...prevFiles, ...newFiles]);
+    }
+  }, [files]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      'application/pdf': ['.pdf'],
+      'application/msword': ['.doc'],
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+      'text/plain': ['.txt'],
+      'application/rtf': ['.rtf'],
+      'application/vnd.ms-excel': ['.xls'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'text/csv': ['.csv'],
+      'image/jpeg': ['.jpg', '.jpeg'],
+      'image/png': ['.png'],
+      'application/xml': ['.xml'],
+      'application/json': ['.json'],
+      'application/zip': ['.zip']
+    },
+    maxFiles: 10,
+    maxSize: 50 * 1024 * 1024, // 50 MB
+  });
+
+  const removeFile = (fileToRemove) => {
+    setFiles(files.filter(file => file !== fileToRemove));
+  };
+
+  const clearFiles = () => {
+    setFiles([]);
+  };
+
+  const uploadFiles = async () => {
+    if (files.length === 0) {
+      toast({
+        title: "No files selected",
+        description: "Please select files to upload first.",
+        variant: "destructive",
       });
-      
-      // Add metadata - regulatory context helps with document recognition
-      formData.append('regulatoryContext', regulatoryContext);
-      
-      // Simulate upload progress (in a real implementation, you could use XMLHttpRequest or fetch with progress tracking)
+      return;
+    }
+
+    setUploading(true);
+    setUploadProgress(0);
+
+    try {
+      // Simulate progress updates
       const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          const newProgress = Math.min(prev + Math.random() * 10, 90);
-          return newProgress;
+        setUploadProgress(prev => {
+          const newProgress = prev + (100 - prev) * 0.1;
+          return newProgress > 95 ? 95 : newProgress;
         });
       }, 300);
-      
-      // Upload files
-      setProcessingStatus('Uploading documents...');
+
+      // Create FormData
+      const formData = new FormData();
+      files.forEach(file => {
+        formData.append('files', file);
+      });
+      formData.append('regulatoryContext', regulatoryContext);
+
+      // Use the service to upload files
       const response = await documentIntelligenceService.uploadDocuments(formData);
       
-      // Stop the progress simulation
       clearInterval(progressInterval);
       setUploadProgress(100);
-      setProcessingStatus('Processing documents...');
-      
-      // Allow the 100% progress state to render before proceeding
-      setTimeout(() => {
-        setIsUploading(false);
-        setProcessingStatus(null);
-        setUploadProgress(0);
-        
-        // Pass processed documents back to parent component
-        if (response.processedDocuments && response.processedDocuments.length) {
-          onDocumentsProcessed(response.processedDocuments);
-          
-          toast({
-            title: 'Documents Processed',
-            description: `Successfully processed ${response.processedDocuments.length} document(s)`,
-            variant: 'success',
-          });
-        } else {
-          toast({
-            title: 'Processing Complete',
-            description: 'No documents were successfully processed',
-            variant: 'warning',
-          });
-        }
-      }, 500);
-      
-    } catch (error) {
-      console.error('Error uploading documents:', error);
-      setIsUploading(false);
-      setProcessingStatus(null);
-      setUploadProgress(0);
-      
+
+      // Notify success
       toast({
-        title: 'Upload Failed',
-        description: error.message || 'Failed to upload documents. Please try again.',
-        variant: 'destructive',
+        title: "Upload Complete",
+        description: `${files.length} document${files.length !== 1 ? 's' : ''} processed successfully.`,
       });
+
+      // Pass processed documents to parent
+      if (onDocumentsProcessed && response.processedDocuments) {
+        onDocumentsProcessed(response.processedDocuments);
+      }
+
+      // Reset files after successful upload
+      setFiles([]);
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      toast({
+        title: "Upload Failed",
+        description: error.message || "Failed to upload documents. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
     }
   };
-  
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-xl">Document Upload</CardTitle>
-        <CardDescription>
-          Upload regulatory documents to extract device data automatically
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isUploading ? (
-          <div className="space-y-4">
-            <div className="flex items-center space-x-2">
-              {uploadProgress < 100 ? (
-                <Loader2 className="h-5 w-5 animate-spin text-primary" />
-              ) : (
-                <CheckCircle className="h-5 w-5 text-green-600" />
-              )}
-              <span className="text-sm font-medium">{processingStatus}</span>
-            </div>
-            <Progress value={uploadProgress} max={100} className="h-2" variant={uploadProgress < 100 ? "primary" : "success"} />
-            <p className="text-xs text-muted-foreground">
-              {uploadProgress < 100 ? 'Please wait while your documents are being uploaded and processed' : 'Documents uploaded, processing content...'}
+    <div className="flex flex-col gap-4">
+      <Card className={`border-2 ${isDragActive ? 'border-primary border-dashed' : 'border-dashed'}`}>
+        <CardContent className="p-6">
+          <div 
+            {...getRootProps()} 
+            className="flex flex-col items-center justify-center p-6 rounded-md cursor-pointer"
+          >
+            <input {...getInputProps()} />
+            <Upload className="w-12 h-12 mb-4 text-gray-400" />
+            <p className="mb-2 text-lg font-medium">Drag and drop files here</p>
+            <p className="mb-4 text-sm text-gray-500">
+              or click to select files
+            </p>
+            <Button type="button" variant="outline" size="sm">
+              Select Files
+            </Button>
+            <p className="mt-4 text-xs text-gray-400">
+              Supports PDF, Word, Excel, images, and other document formats (max 50MB per file)
             </p>
           </div>
-        ) : (
-          <FileUploader
-            onFilesSelected={handleFilesSelected}
-            maxFiles={maxFiles}
-            multiple={true}
-            acceptedFileTypesMessage="PDF, Word, Excel, Images, Text, and XML files are supported"
-          />
-        )}
-        
-        <div className="mt-4 text-xs text-muted-foreground flex items-start">
-          <AlertCircle className="h-4 w-4 mr-2 mt-0.5 flex-shrink-0" />
-          <p>
-            Upload regulatory documents such as technical files, 510(k) submissions, instructions for use, 
-            or test reports to automatically extract device information and specifications.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {files.length > 0 && (
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium">Selected Files ({files.length})</h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={clearFiles} 
+                disabled={uploading}
+              >
+                Clear All
+              </Button>
+            </div>
+            
+            <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2">
+              {files.map((file, i) => (
+                <div key={`${file.name}-${i}`} className="flex items-center justify-between p-2 border rounded-md">
+                  <div className="flex items-center gap-2 overflow-hidden">
+                    <FileText className="flex-shrink-0 w-5 h-5 text-gray-500" />
+                    <span className="truncate">{file.name}</span>
+                    <span className="text-xs text-gray-500 whitespace-nowrap">
+                      ({(file.size / 1024 / 1024).toFixed(2)} MB)
+                    </span>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => removeFile(file)} 
+                    disabled={uploading}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+
+            {uploading && (
+              <div className="mt-4">
+                <div className="flex justify-between mb-1 text-sm">
+                  <span>Uploading...</span>
+                  <span>{Math.round(uploadProgress)}%</span>
+                </div>
+                <Progress value={uploadProgress} max={100} />
+              </div>
+            )}
+
+            <div className="flex justify-end mt-4 gap-2">
+              <Button 
+                variant="outline" 
+                onClick={clearFiles} 
+                disabled={uploading}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={uploadFiles} 
+                disabled={files.length === 0 || uploading}
+              >
+                {uploading ? 'Uploading...' : 'Upload and Process'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
   );
 };
+
+export default DocumentUploader;

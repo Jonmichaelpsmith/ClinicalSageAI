@@ -1,97 +1,114 @@
-import { useState, useEffect } from 'react';
-import { DocumentIntakePanel } from '@/components/document-intelligence/DocumentIntakePanel';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DocumentCheck, FileUp, FileSearch } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
+
+// Import components with dynamic import to avoid startup issues with react-dropzone
+const DocumentUploader = React.lazy(() => import('./DocumentUploader'));
+const DocumentIntakePanel = React.lazy(() => import('./DocumentIntakePanel'));
 
 /**
- * Main Document Intelligence Panel that integrates document processing capabilities
- * within TrialSage.
+ * Document Intelligence Panel Component
+ * 
+ * This component provides a unified interface for document intelligence features:
+ * 1. Upload and process documents
+ * 2. Extract data from documents
+ * 3. Apply extracted data to device profiles
+ * 
+ * It uses tabs to organize the workflow and maintains state between steps.
  */
-export const DocumentIntelligencePanel = ({ 
-  deviceId,
-  onDataExtracted,
-  regulatoryContext = '510k'
-}) => {
-  const [activeMode, setActiveMode] = useState('intake');
+const DocumentIntelligencePanel = () => {
+  const [activeTab, setActiveTab] = useState('upload');
   const [processedDocuments, setProcessedDocuments] = useState([]);
   const [extractedData, setExtractedData] = useState(null);
-  
-  /**
-   * Handle documents processed by the document uploader
-   */
+  const [regulatoryContext, setRegulatoryContext] = useState('510k');
+  const { toast } = useToast();
+
+  // Handle the documents after they are processed
   const handleDocumentsProcessed = (documents) => {
     setProcessedDocuments(documents);
-  };
-  
-  /**
-   * Handle data extracted from documents
-   */
-  const handleDataExtracted = (data) => {
-    setExtractedData(data);
     
-    if (onDataExtracted) {
-      onDataExtracted(data);
+    // Switch to the intake tab after documents are processed
+    if (documents && documents.length > 0) {
+      setActiveTab('intake');
+      
+      // Display types of documents detected
+      const documentTypes = [...new Set(documents.map(doc => doc.recognizedType))];
+      const typesMessage = documentTypes.length > 1 
+        ? `${documentTypes.length} document types detected: ${documentTypes.join(', ')}`
+        : `${documentTypes[0]} documents detected`;
+        
+      toast({
+        title: "Documents Processed",
+        description: typesMessage,
+      });
     }
   };
-  
+
+  // Handle the extracted data
+  const handleExtractedData = (data) => {
+    setExtractedData(data);
+  };
+
+  // Go back to the upload tab
+  const handleBackToUpload = () => {
+    setActiveTab('upload');
+  };
+
+  // Handle regulatory context change
+  const handleContextChange = (context) => {
+    setRegulatoryContext(context);
+  };
+
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="flex items-center">
-          <DocumentCheck className="h-6 w-6 mr-2 text-primary" />
-          Document Intelligence
-        </CardTitle>
-        <CardDescription>
-          Upload and process regulatory documents to extract device data automatically
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs value={activeMode} onValueChange={setActiveMode} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="intake" className="flex items-center">
-              <FileUp className="h-4 w-4 mr-2" /> 
-              Document Intake
-            </TabsTrigger>
-            <TabsTrigger value="search" className="flex items-center">
-              <FileSearch className="h-4 w-4 mr-2" /> 
-              Document Search
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="intake">
-            <DocumentIntakePanel 
-              deviceId={deviceId}
-              onDocumentsProcessed={handleDocumentsProcessed}
-              onDataExtracted={handleDataExtracted}
-              regulatoryContext={regulatoryContext}
-            />
-          </TabsContent>
-          
-          <TabsContent value="search">
-            <Card className="w-full">
-              <CardHeader>
-                <CardTitle className="text-xl">Document Search</CardTitle>
-                <CardDescription>
-                  Search for and import data from existing regulatory documents
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="h-[400px] flex items-center justify-center">
-                  <div className="text-center">
-                    <FileSearch className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-lg font-medium">Document Search</h3>
-                    <p className="text-sm text-muted-foreground mt-2 max-w-md">
-                      Search functionality is coming soon. This will allow you to find and reuse 
-                      regulatory documents from your organization's document repository.
-                    </p>
-                  </div>
+    <div className="flex flex-col gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-xl font-bold">Document Intelligence</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="upload">Upload Documents</TabsTrigger>
+              <TabsTrigger 
+                value="intake" 
+                disabled={processedDocuments.length === 0}
+              >
+                Document Analysis
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="upload" className="mt-4">
+              <React.Suspense fallback={<div>Loading document uploader...</div>}>
+                <DocumentUploader 
+                  onDocumentsProcessed={handleDocumentsProcessed} 
+                  regulatoryContext={regulatoryContext} 
+                />
+              </React.Suspense>
+            </TabsContent>
+            
+            <TabsContent value="intake" className="mt-4">
+              {processedDocuments.length > 0 ? (
+                <React.Suspense fallback={<div>Loading document intake panel...</div>}>
+                  <DocumentIntakePanel 
+                    processedDocuments={processedDocuments}
+                    onExtractedData={handleExtractedData}
+                    onBack={handleBackToUpload}
+                    regulatoryContext={regulatoryContext}
+                  />
+                </React.Suspense>
+              ) : (
+                <div className="text-center p-6">
+                  <p>No documents processed yet. Please upload and process documents first.</p>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+              )}
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
+
+export default DocumentIntelligencePanel;
