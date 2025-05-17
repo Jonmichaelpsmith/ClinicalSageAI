@@ -59,7 +59,7 @@ import {
  * document templates, and collaborative features.
  */
 // Add Microsoft Word integration component for document editing
-const MsWordIntegrationPanel = lazy(() => import('./ECTDMsWordIntegration'));
+const MsWordIntegrationPanel = lazy(() => import('./MsWordIntegrationPanel'));
 
 const ECTDCoAuthorDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -67,6 +67,58 @@ const ECTDCoAuthorDashboard = () => {
   const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
   const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
   const { toast } = useToast();
+  
+  // Mock data for templates
+  const recentTemplates = [
+    {
+      id: 'temp-001',
+      title: 'Module 3.2.P Drug Product',
+      module: 'Module 3',
+      section: '3.2.P',
+      status: 'active',
+      lastUpdated: '2025-05-15',
+    },
+    {
+      id: 'temp-002',
+      title: 'Module 3.2.S Drug Substance',
+      module: 'Module 3',
+      section: '3.2.S',
+      status: 'active',
+      lastUpdated: '2025-05-12',
+    },
+    {
+      id: 'temp-003',
+      title: 'Module 2.3 Quality Overall Summary',
+      module: 'Module 2',
+      section: '2.3',
+      status: 'draft',
+      lastUpdated: '2025-05-10',
+    },
+    {
+      id: 'temp-004',
+      title: 'Module 5.3.5 Clinical Study Reports',
+      module: 'Module 5',
+      section: '5.3.5',
+      status: 'active',
+      lastUpdated: '2025-05-08',
+    },
+    {
+      id: 'temp-005',
+      title: 'Module 1.3.3 Patent Information',
+      module: 'Module 1',
+      section: '1.3.3',
+      status: 'active',
+      lastUpdated: '2025-05-05',
+    },
+    {
+      id: 'temp-006',
+      title: 'Module 2.5 Clinical Overview',
+      module: 'Module 2',
+      section: '2.5',
+      status: 'draft',
+      lastUpdated: '2025-05-01',
+    }
+  ];
   
   // Mock data for demonstration
   const recentSubmissions = [
