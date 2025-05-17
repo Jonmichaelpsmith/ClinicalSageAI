@@ -553,100 +553,53 @@ const PredicateFinderPanel = ({
     }
     
     console.log('[510k] Completing predicate selection with', selectedPredicates.length, 'devices');
-    console.log('[510k] Selected predicates:', JSON.stringify(selectedPredicates));
     
-    // CRITICAL FIX: Save selected predicates to multiple locations for maximum reliability
+    // Prevent React suspension errors by ensuring synchronous work completes before any async actions
     try {
-      // 1. Browser localStorage
-      localStorage.setItem('510k_selectedPredicates', JSON.stringify(selectedPredicates));
-      console.log('[510k] Saved selected predicates to localStorage');
+      // Update local state safely
+      const updatedProfile = {
+        ...deviceProfile,
+        predicateDevices: selectedPredicates,
+        updatedAt: new Date().toISOString()
+      };
       
-      // 2. Application state persistence system 
-      saveState('selectedPredicates', selectedPredicates);
-      console.log('[510k] Saved selected predicates to application state system');
-      
-      // 3. Create a backup copy with timestamp
-      localStorage.setItem(`510k_selectedPredicates_backup_${Date.now()}`, JSON.stringify(selectedPredicates));
-      console.log('[510k] Created backup copy of selected predicates');
-    } catch (saveError) {
-      console.error('[510k] Error saving predicate selections:', saveError);
-      // Continue despite error - we'll rely on state variables if storage fails
-    }
-    
-    // Update the device profile with selected predicates
-    const updatedProfile = {
-      ...deviceProfile,
-      predicateDevices: selectedPredicates,
-      updatedAt: new Date().toISOString()
-    };
-    
-    // Save updated profile
-    setDeviceProfile(updatedProfile);
-    
-    // ENHANCED PERSISTENCE: Save profile with predicates in multiple locations
-    try {
-      // Save to localStorage
-      localStorage.setItem('510k_deviceProfile', JSON.stringify(updatedProfile));
-      
-      // Save to persistence system
-      saveState('deviceProfile', updatedProfile);
-      
-      console.log('[510k] Saved updated device profile with predicates');
-    } catch (error) {
-      console.error('[510k] Failed to save updated device profile:', error);
-    }
-    
-    // CRITICAL STABILITY FIX: Safely transition to next workflow step
-    console.log('[510k] Preparing to transition to literature analysis step');
-    
-    // 1. Double check predicate data is ready before transition
-    const predicateDataReady = selectedPredicates && selectedPredicates.length > 0;
-    
-    if (!predicateDataReady) {
-      console.warn('[510k] Attempting to transition with missing predicate data');
-      
+      // First, notify UI about the pending operation
       toast({
-        title: "Selection Error",
-        description: "Please select at least one predicate device to continue",
-        variant: "destructive"
+        title: "Processing Selection",
+        description: "Saving your predicate device selections...",
+        variant: "default"
       });
-      return;
-    }
-    
-    // 2. Ensure predicates are saved one last time before transition
-    try {
-      localStorage.setItem('510k_selectedPredicates_final', JSON.stringify(selectedPredicates));
-      console.log('[510k] Final save of predicate data before transition');
-    } catch (error) {
-      console.warn('[510k] Error during final predicate data save:', error);
-      // Continue despite error - we have other backup mechanisms
-    }
-    
-    // 3. Display success message to user
-    toast({
-      title: "Predicates Selected",
-      description: `You have selected ${selectedPredicates.length} predicate device(s) for your 510(k) submission.`,
-      variant: "success"
-    });
-    
-    // 4. Notify parent component that predicates have been found and selected
-    console.log('[510k] Notifying parent component of selected predicates:', selectedPredicates.length);
-    
-    // Increased delay to ensure state updates are fully processed before callback
-    setTimeout(() => {
+      
+      // CRITICAL FIX: Batch synchronous state updates
+      setDeviceProfile(updatedProfile);
+      
+      // Perform storage operations synchronously to avoid React suspension
+      try {
+        // Save to localStorage - all in try/catch to avoid crashes
+        localStorage.setItem('510k_selectedPredicates', JSON.stringify(selectedPredicates));
+        saveState('selectedPredicates', selectedPredicates);
+        localStorage.setItem('510k_deviceProfile', JSON.stringify(updatedProfile));
+        saveState('deviceProfile', updatedProfile);
+        
+        console.log('[510k] Saved predicate selections and profile');
+      } catch (storageError) {
+        console.error('[510k] Storage error:', storageError);
+        // Continue despite storage errors, we still have state
+      }
+      
+      // Safely perform the callback notification synchronously
       if (onPredicatesFound) {
-        console.log('[510k] Executing onPredicatesFound callback with predicates and null error');
-        // This is a critical change - pass null as second parameter to indicate no errors
+        console.log('[510k] Notifying parent component of predicates');
+        
+        // CRITICAL FIX: Move this notification outside of setTimeout to avoid suspensions
         onPredicatesFound(selectedPredicates, null);
         
-        // Add a confirmation toast after calling the callback
-        setTimeout(() => {
-          toast({
-            title: "Workflow Advancing",
-            description: "Moving to next step: Equivalence Builder",
-            variant: "success"
-          });
-        }, 500);
+        // Show success after completing all potentially suspending operations
+        toast({
+          title: "Predicates Selected",
+          description: `You have selected ${selectedPredicates.length} predicate device(s) for your 510(k) submission.`,
+          variant: "success"
+        });
       } else {
         console.warn('[510k] onPredicatesFound callback not available');
         toast({
@@ -655,7 +608,15 @@ const PredicateFinderPanel = ({
           variant: "destructive"
         });
       }
-    }, 300);
+    } catch (error) {
+      // Global error handler to catch any issues
+      console.error('[510k] Error in predicate selection completion:', error);
+      toast({
+        title: "Selection Error",
+        description: "An error occurred while processing your selection. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   
   // Search for literature related to the device and predicates
@@ -1613,6 +1574,6 @@ const PredicateFinderPanel = ({
       </Dialog>
     </div>
   );
-};
+}
 
 export default PredicateFinderPanel;
