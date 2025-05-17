@@ -2294,93 +2294,62 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       // Import the DocumentIntelligenceTab component only when needed
       const DocumentIntelligenceTab = lazy(() => import('../components/document-intelligence/DocumentIntelligenceTab'));
       
-      // Force close any profile selectors to prevent modal conflicts
-      React.useEffect(() => {
-        if (showProfileSelector) {
-          setShowProfileSelector(false);
-        }
-        
-        // Force hide FDA device selection modal by adding a style override
-        const style = document.createElement('style');
-        style.id = 'document-intelligence-modal-fix';
-        style.innerHTML = `
-          [role="dialog"]:not(.document-intelligence-container) { 
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-          }
-          .backdrop, .modal-backdrop, .dialog-overlay {
-            display: none !important;
-            visibility: hidden !important;
-            opacity: 0 !important;
-            pointer-events: none !important;
-          }
-        `;
-        document.head.appendChild(style);
-        
-        return () => {
-          const existingStyle = document.getElementById('document-intelligence-modal-fix');
-          if (existingStyle) existingStyle.remove();
-        };
-      }, []);
+      // Ensure no profile selector is showing
+      if (showProfileSelector) {
+        setShowProfileSelector(false);
+      }
       
+      // Create a standalone fixed-position container that won't conflict with dialogs
       return (
-        <div 
-          className="document-intelligence-container w-full h-full bg-gradient-to-b from-blue-50 to-slate-50 rounded-lg"
-          style={{
-            position: 'relative',
-            zIndex: 50,
-            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-          }}
-        >
-          <div className="flex justify-between items-center p-4 bg-white border-b border-slate-200">
-            <div className="flex items-center">
-              <Brain className="h-6 w-6 text-blue-600 mr-2" />
-              <div>
+        <div className="fixed inset-0 bg-gray-600/30 backdrop-blur-sm z-[999]" style={{position: 'fixed'}}>
+          <div className="absolute inset-4 bg-white rounded-lg shadow-2xl overflow-auto flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <div className="flex items-center gap-2">
+                <Brain className="h-6 w-6 text-blue-600" />
                 <h2 className="text-xl font-semibold">Document Intelligence</h2>
-                <p className="text-sm text-slate-500">Extract and analyze data from regulatory documents</p>
               </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-amber-50 text-amber-700 border-amber-200">Beta</Badge>
+              
               <Button 
-                variant="outline" 
-                size="sm" 
+                variant="ghost" 
+                size="icon"
                 onClick={() => setActiveTab('device')}
-                className="hover:bg-slate-100"
               >
-                <X className="h-4 w-4 mr-1" />
-                Close
+                <X className="h-5 w-5" />
               </Button>
             </div>
-          </div>
-          
-          <div className="p-4">
-            <Suspense fallback={
-              <div className="p-8 text-center">
-                <div className="inline-block rounded-full bg-blue-100 p-3 mb-3">
-                  <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            
+            {/* Main content */}
+            <div className="flex-1 p-4 overflow-auto">
+              <Suspense fallback={
+                <div className="h-full flex items-center justify-center">
+                  <div className="text-center">
+                    <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
+                    <p>Loading Document Intelligence...</p>
+                  </div>
                 </div>
-                <p className="text-slate-600">Loading Document Intelligence...</p>
-              </div>
-            }>
-              <DocumentIntelligenceTab 
-                regulatoryContext={documentType}
-                deviceProfile={deviceProfile}
-                onDeviceProfileUpdate={(updatedProfile) => {
-                  if (updatedProfile) {
-                    setDeviceProfile(updatedProfile);
-                    saveState('deviceProfile', updatedProfile);
-                    toast({
-                      title: "Device Profile Updated",
-                      description: "Successfully applied document data to your device profile.",
-                      variant: "success"
-                    });
-                  }
-                }}
-              />
-            </Suspense>
+              }>
+                <DocumentIntelligenceTab 
+                  regulatoryContext={documentType}
+                  deviceProfile={deviceProfile}
+                  onDeviceProfileUpdate={(updatedProfile) => {
+                    if (updatedProfile) {
+                      setDeviceProfile(updatedProfile);
+                      saveState('deviceProfile', updatedProfile);
+                      
+                      // Return to the device tab after update
+                      setActiveTab('device');
+                      
+                      toast({
+                        title: "Device Profile Updated",
+                        description: "Document data successfully applied to your device profile.",
+                        variant: "success"
+                      });
+                    }
+                  }}
+                />
+              </Suspense>
+            </div>
           </div>
         </div>
       );
