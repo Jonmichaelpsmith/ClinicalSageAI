@@ -1037,29 +1037,36 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const renderContent = () => {
     // If 510k document type is selected, show integrated 510k content
     if (documentType === '510k') {
-      // Show document intelligence tab if active
+      // Show advanced document intelligence tab if active
       if (activeTab === 'document-intelligence') {
         return (
           <div className="p-4 space-y-4">
-            <DocumentIntakePanel
-              onExtractComplete={(data) => {
+            <DocumentIntelligenceTab
+              documentType={documentType}
+              deviceProfileId={documentType === '510k' ? k510DocumentId : cerDocumentId}
+              onDataApplied={(data) => {
+                // Update device profile with extracted data
                 setExtractedData(data);
                 setIsExtracting(false);
-                // If data contains device profile information and we don't have a device profile yet,
-                // we can pre-populate the device profile form with this information
-                if (data && !deviceProfile) {
-                  // Create a stub deviceProfile with extracted data
-                  const extractedProfile = {
-                    deviceName: data.deviceName || '',
-                    description: data.description || '',
-                    manufacturer: data.manufacturer || '',
-                    regulatoryClass: data.regulatoryClass || 'Class II',
-                    intendedUse: data.indications || '',
+                
+                // If we have extracted data and a device profile, update it
+                if (data) {
+                  // Create an updated profile with the extracted data
+                  const updatedProfile = {
+                    ...(deviceProfile || {}),
+                    deviceName: data.deviceName || deviceProfile?.deviceName || '',
+                    manufacturer: data.manufacturer || deviceProfile?.manufacturer || '',
+                    deviceClass: data.deviceClass || deviceProfile?.deviceClass || 'II',
+                    intendedUse: data.intendedUse || deviceProfile?.intendedUse || '',
+                    productCode: data.productCode || deviceProfile?.productCode || '',
+                    description: data.description || deviceProfile?.description || 'A medical device',
+                    technicalSpecifications: data.deviceSpecifications || deviceProfile?.technicalSpecifications || '',
+                    regulatoryClass: data.deviceClass || deviceProfile?.regulatoryClass || 'Class II',
                     // Add any other fields that might be extracted
                   };
                   
                   // Update device profile with extracted data
-                  setDeviceProfile(extractedProfile);
+                  setDeviceProfile(updatedProfile);
                   
                   toast({
                     title: "Data Extracted Successfully",
