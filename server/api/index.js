@@ -4,8 +4,12 @@ import * as cerRoutesModule from './cer.js';
 const router = express.Router();
 const cerRoutes = cerRoutesModule.default || cerRoutesModule;
 
+// Import templates routes
+import templatesRoutes from './templates/index.js';
+
 // Register API routes
 router.use('/cer', cerRoutes);
+router.use('/templates', templatesRoutes);
 
 // Register CMC Blueprint Generator routes (legacy method - will be deprecated)
 (async () => {

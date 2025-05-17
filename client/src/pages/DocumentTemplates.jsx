@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   FileText, 
   Search, 
@@ -23,100 +23,21 @@ import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
 import { useToast } from '../hooks/use-toast';
+import templateService from '../services/templateService';
 
 const DocumentTemplates = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTab, setSelectedTab] = useState('templates');
+  const [templates, setTemplates] = useState([]);
   const { toast } = useToast();
-  
-  // Mock template data
-  const templates = [
-    {
-      id: 1,
-      title: 'Clinical Overview Template',
-      category: 'clinical',
-      module: 'Module 2.5',
-      lastUpdated: 'May 5, 2025',
-      version: '2.3',
-      creator: 'Regulatory Team',
-      usageCount: 128,
-      description: 'Standard template for creating eCTD-compliant Clinical Overview documents with proper formatting and structure.',
-      tags: ['eCTD', 'clinical', 'module 2.5'],
-      compliance: 'FDA, EMA, PMDA',
-      templateID: '09933'
-    },
-    {
-      id: 2,
-      title: 'Module 3 Quality Template',
-      category: 'quality',
-      module: 'Module 3',
-      lastUpdated: 'Apr 23, 2025',
-      version: '1.5',
-      creator: 'CMC Department',
-      usageCount: 87,
-      description: 'Comprehensive template for all Module 3 Chemistry, Manufacturing and Controls sections with pre-defined headings.',
-      tags: ['eCTD', 'quality', 'module 3', 'CMC'],
-      compliance: 'FDA, EMA, Health Canada',
-      templateID: 'QU3002'
-    },
-    {
-      id: 3,
-      title: 'NDA Cover Letter Template',
-      category: 'administrative',
-      module: 'Module 1.1',
-      lastUpdated: 'Feb 11, 2025',
-      version: '3.1',
-      creator: 'Regulatory Affairs',
-      usageCount: 215,
-      description: 'Standard format for cover letters to accompany New Drug Application submissions.',
-      tags: ['eCTD', 'administrative', 'cover letter', 'NDA'],
-      compliance: 'FDA, Health Canada',
-      templateID: 'CL1001'
-    },
-    {
-      id: 4,
-      title: 'Clinical Study Report Template',
-      category: 'clinical',
-      module: 'Module 5',
-      lastUpdated: 'Mar 17, 2025',
-      version: '2.0',
-      creator: 'Clinical Team',
-      usageCount: 93,
-      description: 'Structured template for creating ICH E3-compliant clinical study reports with all required sections.',
-      tags: ['eCTD', 'clinical', 'CSR', 'module 5'],
-      compliance: 'ICH, FDA, EMA, PMDA',
-      templateID: 'CSR5001'
-    },
-    {
-      id: 5,
-      title: 'Nonclinical Overview Template',
-      category: 'nonclinical',
-      module: 'Module 2.4',
-      lastUpdated: 'Jan 24, 2025',
-      version: '1.8',
-      creator: 'Toxicology Team',
-      usageCount: 62,
-      description: 'Template for creating the Nonclinical Overview section with predefined formatting and guidance.',
-      tags: ['eCTD', 'nonclinical', 'toxicology', 'module 2.4'],
-      compliance: 'FDA, EMA',
-      templateID: 'NC2401'
-    },
-    {
-      id: 6,
-      title: 'Risk Management Plan Template',
-      category: 'clinical',
-      module: 'Module 1.8.2',
-      lastUpdated: 'Apr 2, 2025',
-      version: '3.2',
-      creator: 'Pharmacovigilance',
-      usageCount: 48,
-      description: 'EMA-compliant Risk Management Plan template with all required sections and formatting.',
-      tags: ['eCTD', 'clinical', 'RMP', 'risk management'],
-      compliance: 'EMA',
-      templateID: 'RMP1001'
-    }
-  ];
+
+  useEffect(() => {
+    templateService
+      .getTemplates()
+      .then(setTemplates)
+      .catch((err) => console.error('Failed to load templates', err));
+  }, []);
   
   // Recent Documents
   const recentDocuments = [
