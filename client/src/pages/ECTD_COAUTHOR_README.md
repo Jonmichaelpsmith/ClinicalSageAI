@@ -84,15 +84,40 @@ The Microsoft Word integration uses a bridge approach that connects Microsoft Wo
 
 ## Environment Variables
 
-The Microsoft Word integration requires the following environment variables:
+Configure the following variables to enable Microsoft Word Online and the AI assistant.
+Values marked `VITE_` must also be available to the front‑end build.
 
 ```
-VITE_MS_CLIENT_ID=your-microsoft-client-id
-VITE_MS_AUTHORITY=https://login.microsoftonline.com/common
-VITE_MS_GRAPH_API_ENDPOINT=https://graph.microsoft.com/v1.0
-VITE_MS_COPILOT_ENABLED=true
-VITE_MS_COPILOT_API_ENDPOINT=https://api.ms-copilot.com
+MICROSOFT_CLIENT_ID=<your Azure application client ID>
+MICROSOFT_CLIENT_SECRET=<your Azure application client secret>
+MICROSOFT_TENANT_ID=<your Azure tenant ID>
+
+VITE_MICROSOFT_CLIENT_ID=<same as MICROSOFT_CLIENT_ID>
+VITE_MICROSOFT_TENANT_ID=<same as MICROSOFT_TENANT_ID>
+VITE_SHAREPOINT_EMBEDDED_API=https://graph.microsoft.com/v1.0
+VITE_SHAREPOINT_CONTAINER_TYPE_ID=<your SharePoint container type ID>
 ```
+
+### Obtaining Microsoft Credentials
+
+1. Sign in to the [Azure Portal](https://portal.azure.com/) and create a new **App Registration**.
+2. Under **Overview**, copy the **Application (client) ID** and **Directory (tenant) ID**.
+3. In **Certificates & secrets**, create a new client secret and copy the value.
+4. Add **Microsoft Graph** API permissions:
+   - `Files.ReadWrite.All`
+   - `Sites.ReadWrite.All`
+   - `User.Read`
+   - `offline_access`
+5. Add your application's redirect URI (e.g. `https://your-domain.com/auth-callback`).
+6. Use the collected IDs and secret in the variables listed above.
+
+### Enabling Word Integration and the AI Assistant
+
+1. Ensure all environment variables are set and restart the server.
+2. Open the **eCTD Co-Author** module in the application.
+3. Choose **Edit in Word** on any document to launch the Microsoft Word Online editor.
+4. Authenticate with your Microsoft account when prompted.
+5. Use the **AI Assistant** panel inside the editor to generate or refine content.
 
 ## Common Issues and Troubleshooting
 
