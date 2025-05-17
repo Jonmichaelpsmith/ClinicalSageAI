@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { useDropzone } from 'react-dropzone';
+// Using manual file input instead of react-dropzone due to dependency issues
+// import { useDropzone } from 'react-dropzone';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -13,9 +14,11 @@ const DocumentUploader = ({ onDocumentsProcessed, regulatoryContext = '510k' }) 
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
 
-  const onDrop = useCallback((acceptedFiles) => {
+  const handleFileChange = (e) => {
+    const selectedFiles = Array.from(e.target.files || []);
+    
     // Filter out any duplicate files
-    const newFiles = acceptedFiles.filter(
+    const newFiles = selectedFiles.filter(
       newFile => !files.some(existingFile => 
         existingFile.name === newFile.name && 
         existingFile.size === newFile.size
@@ -25,28 +28,7 @@ const DocumentUploader = ({ onDocumentsProcessed, regulatoryContext = '510k' }) 
     if (newFiles.length > 0) {
       setFiles(prevFiles => [...prevFiles, ...newFiles]);
     }
-  }, [files]);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      'application/pdf': ['.pdf'],
-      'application/msword': ['.doc'],
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-      'text/plain': ['.txt'],
-      'application/rtf': ['.rtf'],
-      'application/vnd.ms-excel': ['.xls'],
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
-      'text/csv': ['.csv'],
-      'image/jpeg': ['.jpg', '.jpeg'],
-      'image/png': ['.png'],
-      'application/xml': ['.xml'],
-      'application/json': ['.json'],
-      'application/zip': ['.zip']
-    },
-    maxFiles: 10,
-    maxSize: 50 * 1024 * 1024, // 50 MB
-  });
+  };
 
   const removeFile = (fileToRemove) => {
     setFiles(files.filter(file => file !== fileToRemove));
