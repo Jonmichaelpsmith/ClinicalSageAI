@@ -14,8 +14,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { apiRequest } from '@/lib/queryClient';
+import { useQueryClient } from '@tanstack/react-query';
 import { Loader2, Upload } from 'lucide-react';
 
 /**
@@ -39,47 +38,7 @@ const TemplateUploadDialog = ({ open, onOpenChange }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
-  // Create template mutation
-  const createTemplateMutation = useMutation({
-    mutationFn: async (data) => {
-      const formData = new FormData();
-      
-      // Add template metadata
-      Object.keys(data).forEach(key => {
-        if (key !== 'file') {
-          formData.append(key, data[key]);
-        }
-      });
-      
-      // Add file if provided
-      if (data.file) {
-        formData.append('file', data.file);
-      }
-      
-      return apiRequest('POST', '/api/templates', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['/api/templates'] });
-      toast({
-        title: 'Template Created',
-        description: 'Your new template has been added to the library',
-        variant: 'success',
-      });
-      onOpenChange(false);
-      resetForm();
-    },
-    onError: (error) => {
-      toast({
-        title: 'Error Creating Template',
-        description: error.message || 'An error occurred while creating the template',
-        variant: 'destructive',
-      });
-    },
-  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -126,7 +85,7 @@ const TemplateUploadDialog = ({ open, onOpenChange }) => {
     }
   };
   
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     // Validate required fields
@@ -149,8 +108,46 @@ const TemplateUploadDialog = ({ open, onOpenChange }) => {
       return;
     }
     
-    // Submit form
-    createTemplateMutation.mutate(formData);
+    setIsSubmitting(true);
+
+    try {
+      const payload = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (key !== 'file') {
+          payload.append(key, formData[key]);
+        }
+      });
+      if (formData.file) {
+        payload.append('file', formData.file);
+      }
+
+      const response = await fetch('/api/templates/upload', {
+        method: 'POST',
+        body: payload,
+      });
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to upload template');
+      }
+
+      queryClient.invalidateQueries({ queryKey: ['/api/templates'] });
+      toast({
+        title: 'Template Created',
+        description: 'Your new template has been added to the library',
+        variant: 'success',
+      });
+      onOpenChange(false);
+      resetForm();
+    } catch (error) {
+      toast({
+        title: 'Error Creating Template',
+        description: error.message || 'An error occurred while creating the template',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   const resetForm = () => {
@@ -319,15 +316,15 @@ const TemplateUploadDialog = ({ open, onOpenChange }) => {
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
-              disabled={createTemplateMutation.isPending}
+              disabled={isSubmitting}
             >
               Cancel
             </Button>
             <Button 
               type="submit"
-              disabled={createTemplateMutation.isPending}
+              disabled={isSubmitting}
             >
-              {createTemplateMutation.isPending ? (
+              {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Uploading...
