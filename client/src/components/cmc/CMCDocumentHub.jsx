@@ -58,6 +58,7 @@ import {
   FlaskConical
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import docuShareService from '@/services/DocuShareService';
 
 /**
  * CMC Document Hub
@@ -249,18 +250,30 @@ const CMCDocumentHub = () => {
   ];
   
   useEffect(() => {
-    // Initialize document list
-    setDocuments(sampleDocuments);
-    setFilteredDocuments(sampleDocuments);
-    
-    // Extract unique document types
-    const types = [...new Set(sampleDocuments.map(doc => doc.type))];
-    setDocumentTypes(types);
-    
-    toast({
-      title: "Document Hub Loaded",
-      description: "Connected to CMC document repository."
-    });
+    const loadDocuments = async () => {
+      try {
+        const response = await docuShareService.getDocuments();
+        const docs = response?.documents || [];
+        setDocuments(docs);
+        setFilteredDocuments(docs);
+        const types = [...new Set(docs.map(doc => doc.type))];
+        setDocumentTypes(types);
+
+        toast({
+          title: "Document Hub Loaded",
+          description: "Connected to CMC document repository."
+        });
+      } catch (err) {
+        console.error('Failed to load documents:', err);
+        toast({
+          title: 'Load Error',
+          description: 'Failed to fetch documents',
+          variant: 'destructive'
+        });
+      }
+    };
+
+    loadDocuments();
   }, []);
   
   // Apply filters and search
@@ -322,20 +335,35 @@ const CMCDocumentHub = () => {
     setFilteredDocuments(filtered);
   }, [documents, searchQuery, activeTab, selectedTags, selectedStatus, sortField, sortDirection]);
   
-  const handleUpload = () => {
+  const handleUpload = async () => {
+    if (uploadFiles.length === 0) return;
     setUploading(true);
-    
-    // Simulate upload delay
-    setTimeout(() => {
-      setUploading(false);
-      setUploadFiles([]);
-      setShowUploadDialog(false);
-      
+
+    try {
+      for (const file of uploadFiles) {
+        await docuShareService.uploadDocument(file);
+      }
+      const response = await docuShareService.getDocuments();
+      const docs = response?.documents || [];
+      setDocuments(docs);
+      setFilteredDocuments(docs);
+
       toast({
         title: "Upload Complete",
         description: `${uploadFiles.length} document(s) uploaded successfully.`
       });
-    }, 2000);
+    } catch (err) {
+      console.error('Upload failed:', err);
+      toast({
+        title: 'Upload Failed',
+        description: 'Could not upload documents',
+        variant: 'destructive'
+      });
+    } finally {
+      setUploading(false);
+      setUploadFiles([]);
+      setShowUploadDialog(false);
+    }
   };
   
   const handleCreateFolder = () => {
