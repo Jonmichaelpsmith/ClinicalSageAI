@@ -43,7 +43,10 @@ const ClientPortal = () => {
       icon: <Beaker className="h-6 w-6" />,
       status: "active",
       route: "/solutions/ind-wizard",
-      stats: { completedDocs: 12, inProgress: 3 }
+      stats: { completedDocs: 12, inProgress: 3 },
+      lastActivity: "2025-05-16",
+      progress: 68,
+      msOfficeIntegration: true
     },
     {
       id: 2,
@@ -52,7 +55,10 @@ const ClientPortal = () => {
       icon: <Brain className="h-6 w-6" />,
       status: "active",
       route: "/solutions/csr-intelligence",
-      stats: { analyzedReports: 28, insights: 142 }
+      stats: { analyzedReports: 28, insights: 142 },
+      lastActivity: "2025-05-15",
+      progress: 75,
+      msOfficeIntegration: true
     },
     {
       id: 3,
@@ -61,7 +67,10 @@ const ClientPortal = () => {
       icon: <Beaker className="h-6 w-6" />,
       status: "active",
       route: "/solutions/cmc-insights",
-      stats: { activePlans: 5, validations: 17 }
+      stats: { activePlans: 5, validations: 17 },
+      lastActivity: "2025-05-12",
+      progress: 42,
+      msOfficeIntegration: false
     },
     {
       id: 4,
@@ -70,7 +79,10 @@ const ClientPortal = () => {
       icon: <HelpCircle className="h-6 w-6" />,
       status: "active",
       route: "/solutions/ask-lumen",
-      stats: { queries: 64, avgResponseTime: "1.2s" }
+      stats: { queries: 64, avgResponseTime: "1.2s" },
+      lastActivity: "2025-05-17",
+      progress: 100,
+      msOfficeIntegration: false
     },
     {
       id: 5,
@@ -79,16 +91,47 @@ const ClientPortal = () => {
       icon: <LineChart className="h-6 w-6" />,
       status: "active",
       route: "/solutions/protocol-optimization",
-      stats: { optimizedProtocols: 8, improvements: 32 }
+      stats: { optimizedProtocols: 8, improvements: 32 },
+      lastActivity: "2025-05-10",
+      progress: 35,
+      msOfficeIntegration: true
     },
     {
       id: 6,
+      name: "eCTD Co-Author",
+      description: "AI-assisted co-authoring of regulatory submissions with Microsoft Word integration",
+      icon: <FileEdit className="h-6 w-6" />,
+      status: "active",
+      route: "/coauthor",
+      stats: { documents: 15, submissionReady: 8 },
+      lastActivity: "2025-05-17",
+      progress: 85,
+      msOfficeIntegration: true,
+      isNew: true
+    },
+    {
+      id: 7,
+      name: "Medical Device RA",
+      description: "CER and 510(k) regulatory automation for medical devices",
+      icon: <Stethoscope className="h-6 w-6" />,
+      status: "active",
+      route: "/cerv2",
+      stats: { documents: 7, validationPassed: 5 },
+      lastActivity: "2025-05-14",
+      progress: 62,
+      msOfficeIntegration: true
+    },
+    {
+      id: 8,
       name: "Validation Hub",
       description: "21 CFR Part 11 compliance validation",
       icon: <CheckCircle className="h-6 w-6" />,
       status: "active",
       route: "/validation-hub-enhanced",
-      stats: { validations: 23, compliance: "98%" }
+      stats: { validations: 23, compliance: "98%" },
+      lastActivity: "2025-05-08",
+      progress: 98,
+      msOfficeIntegration: false
     }
   ];
 
