@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { 
   Tabs, 
   TabsContent, 
@@ -25,6 +25,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from '@/hooks/use-toast';
 import {
   CheckCircle2,
@@ -39,7 +40,16 @@ import {
   ChevronRight,
   BarChart3,
   RefreshCcw,
-  Download
+  Download,
+  PlusCircle,
+  FileEdit,
+  ExternalLink,
+  Cloud,
+  Lock,
+  Save,
+  History,
+  Loader2,
+  ShieldCheck
 } from 'lucide-react';
 
 /**
@@ -48,8 +58,14 @@ import {
  * A comprehensive dashboard for managing eCTD submissions with validation status,
  * document templates, and collaborative features.
  */
+// Add Microsoft Word integration component for document editing
+const MsWordIntegrationPanel = lazy(() => import('./ECTDMsWordIntegration'));
+
 const ECTDCoAuthorDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [showWordIntegration, setShowWordIntegration] = useState(false);
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState(null);
+  const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
   const { toast } = useToast();
   
   // Mock data for demonstration
@@ -229,6 +245,22 @@ const ECTDCoAuthorDashboard = () => {
     }
   };
   
+  // Handle opening document in Microsoft Word
+  const handleOpenInWord = (submissionId) => {
+    setSelectedSubmissionId(submissionId);
+    setShowWordIntegration(true);
+  };
+  
+  // Handle close Word integration panel
+  const handleCloseWordIntegration = () => {
+    setShowWordIntegration(false);
+    
+    toast({
+      title: "Document Saved",
+      description: "All changes have been synchronized with VAULT.",
+    });
+  };
+
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
@@ -249,6 +281,33 @@ const ECTDCoAuthorDashboard = () => {
           </Button>
         </div>
       </div>
+      
+      {/* Microsoft Word Integration Dialog */}
+      <Dialog open={showWordIntegration} onOpenChange={setShowWordIntegration}>
+        <DialogContent className="max-w-5xl h-[85vh]">
+          <DialogHeader>
+            <DialogTitle>Microsoft Word Integration</DialogTitle>
+            <DialogDescription>
+              Edit your eCTD document using Microsoft Word with automatic VAULT synchronization
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            <Suspense fallback={
+              <div className="flex items-center justify-center h-[65vh]">
+                <div className="text-center">
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
+                  <p>Loading Microsoft Word integration...</p>
+                </div>
+              </div>
+            }>
+              <MsWordIntegrationPanel
+                documentId={selectedSubmissionId}
+                onClose={handleCloseWordIntegration}
+              />
+            </Suspense>
+          </div>
+        </DialogContent>
+      </Dialog>
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList className="mb-2">
@@ -379,14 +438,24 @@ const ECTDCoAuthorDashboard = () => {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button 
-                          variant="ghost" 
-                          size="sm"
-                          onClick={() => handleViewSubmission(submission.id)}
-                        >
-                          View
-                          <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleOpenInWord(submission.id)}
+                          >
+                            <FileEdit className="h-3.5 w-3.5 mr-1" />
+                            Edit
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => handleViewSubmission(submission.id)}
+                          >
+                            View
+                            <ChevronRight className="h-4 w-4 ml-1" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -621,23 +690,137 @@ const ECTDCoAuthorDashboard = () => {
         
         {/* Templates Tab */}
         <TabsContent value="templates">
+          <Card className="mb-6">
+            <CardHeader className="pb-4">
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle>Document Templates</CardTitle>
+                  <CardDescription>
+                    Manage templates for all CTD modules and sections
+                  </CardDescription>
+                </div>
+                <Button onClick={() => toast({
+                  title: "New Template",
+                  description: "Creating a new template with Microsoft Word integration",
+                })}>
+                  <PlusCircle className="h-4 w-4 mr-2" />
+                  New Template
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {recentTemplates.map((template) => (
+                  <Card key={template.id} className="flex flex-col h-full">
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <CardTitle className="text-base">{template.title}</CardTitle>
+                          <CardDescription className="text-xs">
+                            {template.module} • Section {template.section}
+                          </CardDescription>
+                        </div>
+                        <Badge className={template.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-slate-100'}>
+                          {template.status}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="flex-1">
+                      <div className="text-sm text-muted-foreground mb-2">
+                        Last updated: {template.lastUpdated}
+                      </div>
+                      <div className="flex items-center space-x-1 text-sm text-muted-foreground">
+                        <FileText className="h-3.5 w-3.5" />
+                        <span>eCTD-compliant template</span>
+                      </div>
+                      <div className="flex items-center space-x-1 text-sm text-muted-foreground mt-1">
+                        <ShieldCheck className="h-3.5 w-3.5" />
+                        <span>ICH M4 validated</span>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="pt-2 border-t flex justify-between">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => toast({
+                          title: "Template Downloaded",
+                          description: `Template ${template.title} has been downloaded.`,
+                        })}
+                      >
+                        <Download className="h-3.5 w-3.5 mr-1" /> 
+                        Download
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => handleOpenInWord(template.id)}
+                      >
+                        <FileEdit className="h-3.5 w-3.5 mr-1" />
+                        Edit in Word
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+            <CardFooter className="flex justify-center border-t pt-4">
+              <Button variant="outline">
+                View All Templates
+              </Button>
+            </CardFooter>
+          </Card>
+          
           <Card>
             <CardHeader>
-              <CardTitle>Document Templates</CardTitle>
+              <CardTitle>Microsoft Word Integration</CardTitle>
               <CardDescription>
-                Manage templates for all CTD modules and sections
+                Seamlessly edit eCTD documents using familiar Microsoft Office tools
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-12">
-                <FileText className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">Template Management</h3>
-                <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-                  Create, edit, and organize document templates for all CTD modules to ensure consistency across submissions.
-                </p>
-                <Button className="mt-6">
-                  Go to Template Workspace
-                </Button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col border rounded-lg p-4">
+                  <div className="flex items-center mb-4">
+                    <FileEdit className="h-8 w-8 text-blue-600 mr-3" />
+                    <div>
+                      <h3 className="font-medium">Microsoft Word Online</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Web-based editing with automatic saving to VAULT
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground flex-1 mb-4">
+                    Edit documents directly in your browser using Microsoft Word Online. 
+                    All changes are automatically synchronized with VAULT document management.
+                  </p>
+                  <Button className="w-full" onClick={() => setShowWordIntegration(true)}>
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Launch Word Online
+                  </Button>
+                </div>
+                
+                <div className="flex flex-col border rounded-lg p-4">
+                  <div className="flex items-center mb-4">
+                    <FileEdit className="h-8 w-8 text-blue-600 mr-3" />
+                    <div>
+                      <h3 className="font-medium">Microsoft 365 Desktop</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Desktop application with enhanced features
+                      </p>
+                    </div>
+                  </div>
+                  <p className="text-sm text-muted-foreground flex-1 mb-4">
+                    Use full-featured Microsoft Word desktop application with document check-out/check-in 
+                    functionality for offline editing with version control.
+                  </p>
+                  <Button variant="outline" className="w-full" onClick={() => toast({
+                    title: "Desktop Integration",
+                    description: "Opening document in Microsoft Word desktop application",
+                  })}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Open in Desktop App
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
