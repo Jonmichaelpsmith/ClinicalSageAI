@@ -21,8 +21,6 @@ app.use(express.json());
 
 // Serve static files from the public directory
 app.use('/static', express.static(path.join(__dirname, '../public/static')));
-// Serve exported drafts
-app.use('/drafts', express.static(path.join(process.cwd(), 'data/drafts')));
 
 // Add CORS middleware to allow cross-origin requests
 app.use((req, res, next) => {
