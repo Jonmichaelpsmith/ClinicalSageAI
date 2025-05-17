@@ -49,6 +49,12 @@
       </div>
     </header>
 
+    <!-- Hero Section -->
+    <section class="bg-primary text-white rounded-lg p-6 mb-8 text-center">
+      <h1 class="text-3xl font-semibold mb-2">Welcome to TrialSage</h1>
+      <p class="text-sm">Your central hub for regulatory projects and documentation</p>
+    </section>
+
     <!-- Notification Message -->
     <div class="bg-green-50 border border-green-200 text-green-800 rounded-md p-4 mb-8">
       <div class="flex">
@@ -60,6 +66,7 @@
           <p class="text-sm">Welcome to the TrialSage Client Portal. This standalone portal provides access to all modules.</p>
         </div>
       </div>
+
     </div>
 
     <!-- Dashboard Grid -->
@@ -235,14 +242,14 @@
     <!-- Module Access Section -->
     <div class="mt-8">
       <h2 class="text-xl font-bold text-gray-800 mb-4">TrialSage™ Modules</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        <!-- Vault Module -->
-        <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <!-- Vault Module -->
+          <div class="block bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow p-4 lg:col-span-2 ring-2 ring-primary">
           <div class="flex items-center mb-3">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
             </svg>
-            <h3 class="font-semibold text-gray-800">TrialSage Vault™</h3>
+            <h3 class="font-semibold text-gray-800 text-lg">TrialSage Vault™</h3>
           </div>
           <p class="text-sm text-gray-600">Manage and access all your clinical trial documents securely.</p>
           <div class="mt-3">
@@ -300,10 +307,33 @@
           </div>
         </div>
       </div>
+      </div>
     </div>
-  </div>
-  
-  <!-- Footer -->
+
+    <!-- Project Management Section -->
+    <div class="mt-12">
+      <h2 class="text-xl font-bold text-gray-800 mb-4">Project Management</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white rounded-lg shadow-sm border p-4">
+          <h3 class="font-semibold mb-2">Upcoming Milestones</h3>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li>BX-107 First Patient In - May 20, 2025</li>
+            <li>BTX-331 IND Submission - May 30, 2025</li>
+            <li>Phase II CSR Draft - Jun 15, 2025</li>
+          </ul>
+        </div>
+        <div class="bg-white rounded-lg shadow-sm border p-4">
+          <h3 class="font-semibold mb-2">Open Tasks</h3>
+          <ul class="text-sm text-gray-600 space-y-1">
+            <li>Review BX-107 protocol updates</li>
+            <li>Complete CSR quality check</li>
+            <li>Upload investigator brochure</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
   <footer class="bg-gray-100 mt-12 border-t border-gray-200">
     <div class="container mx-auto px-4 py-8">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
