@@ -84,6 +84,8 @@ const ReportsPage = lazy(() => import('./pages/ReportsPage'));
 const TenantManagement = lazy(() => import('./pages/TenantManagement'));
 const ClientManagement = lazy(() => import('./pages/ClientManagement'));
 const Settings = lazy(() => import('./pages/Settings'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 
 
 function App() {
@@ -239,6 +241,8 @@ function App() {
                   <Route path="/tenant-management" component={TenantManagement} />
                   <Route path="/client-management" component={ClientManagement} />
                   <Route path="/settings" component={Settings} />
+                  <Route path="/privacy" component={PrivacyPolicy} />
+                  <Route path="/terms" component={TermsOfService} />
 
                   {/* Unified Submission Builder Routes */}
                   <Route path="/ectd-planner">
