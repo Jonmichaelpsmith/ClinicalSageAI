@@ -36,6 +36,8 @@ const EnhancedEquivalenceComparison = ({
   });
   const [comparisonMode, setComparisonMode] = useState('detailed');
   const [selectedPredicate, setSelectedPredicate] = useState(predicateDevices[0]?.id);
+  const [filterNonEquivalent, setFilterNonEquivalent] = useState(false);
+  const [showEquivalenceCriteria, setShowEquivalenceCriteria] = useState(false);
   
   // Calculate equivalence scores when devices change
   useEffect(() => {
@@ -263,8 +265,53 @@ const EnhancedEquivalenceComparison = ({
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setShowEquivalenceCriteria(!showEquivalenceCriteria)}
+                  >
+                    <HelpCircle className="h-4 w-4 mr-1" />
+                    Criteria
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Show/hide substantial equivalence criteria information
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </div>
+        
+        {/* Equivalence Criteria Information Panel */}
+        {showEquivalenceCriteria && (
+          <Alert className="mt-4">
+            <HelpCircle className="h-4 w-4" />
+            <AlertTitle>Substantial Equivalence Criteria</AlertTitle>
+            <AlertDescription>
+              <div className="text-sm mt-2">
+                <p className="mb-2">
+                  Two devices are considered substantially equivalent when they have:
+                </p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li>The same intended use; and</li>
+                  <li>Either the same technological characteristics or different technological characteristics that don't raise different questions of safety and effectiveness.</li>
+                </ul>
+                <p className="mt-2 mb-2">
+                  <strong>Equivalence thresholds:</strong>
+                </p>
+                <ul className="list-disc pl-5 space-y-1">
+                  <li><span className="text-green-600 font-medium">Numeric values:</span> Within 10% difference (e.g., weight, dimensions, power)</li>
+                  <li><span className="text-green-600 font-medium">Categorical values:</span> Exact match or functionally equivalent (e.g., connectivity types)</li>
+                  <li><span className="text-green-600 font-medium">Performance metrics:</span> Subject device must be at least as good as predicate</li>
+                </ul>
+              </div>
+            </AlertDescription>
+          </Alert>
+        )}
         
         <div className="mt-4 grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="col-span-1">
@@ -345,12 +392,39 @@ const EnhancedEquivalenceComparison = ({
       
       <CardContent>
         <Tabs defaultValue="technical" onValueChange={setActiveTab}>
-          <TabsList className="mb-4">
-            <TabsTrigger value="technical">Technical Characteristics</TabsTrigger>
-            <TabsTrigger value="performance">Performance Data</TabsTrigger>
-            <TabsTrigger value="safety">Safety & Compliance</TabsTrigger>
-            <TabsTrigger value="clinical">Clinical Outcomes</TabsTrigger>
-          </TabsList>
+          <div className="flex justify-between items-center mb-4">
+            <TabsList>
+              <TabsTrigger value="technical">Technical Characteristics</TabsTrigger>
+              <TabsTrigger value="performance">Performance Data</TabsTrigger>
+              <TabsTrigger value="safety">Safety & Compliance</TabsTrigger>
+              <TabsTrigger value="clinical">Clinical Outcomes</TabsTrigger>
+            </TabsList>
+            
+            <div className="flex items-center gap-2">
+              <label className="flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 mr-2"
+                  checked={filterNonEquivalent}
+                  onChange={() => setFilterNonEquivalent(!filterNonEquivalent)}
+                />
+                <span className="text-sm font-medium">Show non-equivalent only</span>
+              </label>
+              
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                      <HelpCircle className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    Filter to show only parameters that are not equivalent between devices
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
           
           <TabsContent value="technical">
             <div className="rounded-md border">
