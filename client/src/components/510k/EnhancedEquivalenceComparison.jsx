@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   ArrowRight, Download, Check, X, AlertTriangle, Lightbulb, 
-  FileText, HelpCircle, Plus, Minus, Maximize2
+  FileText, HelpCircle, Plus, Minus
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -97,7 +97,7 @@ const EnhancedEquivalenceComparison = ({
   };
   
   // Determine if two parameter values are equivalent
-  const isEquivalent = (value1, value2) => {
+  const isEquivalent = (value1, value2, parameterType = 'general') => {
     if (value1 === value2) return true;
     
     // For numeric comparisons, allow small differences
@@ -105,6 +105,27 @@ const EnhancedEquivalenceComparison = ({
       const num1 = parseFloat(value1);
       const num2 = parseFloat(value2);
       return Math.abs((num1 - num2) / Math.max(num1, num2)) < 0.1; // Allow 10% difference
+    }
+    
+    // Special handling for performance metrics
+    if (parameterType === 'performance') {
+      // For percentage values in performance metrics, subject device should be at least as good
+      if (String(value1).includes('%') && String(value2).includes('%')) {
+        const num1 = parseFloat(String(value1));
+        const num2 = parseFloat(String(value2));
+        if (!isNaN(num1) && !isNaN(num2)) {
+          return num1 >= num2;
+        }
+      }
+      
+      // For time/latency metrics, lower is better
+      if (String(value1).includes('ms') && String(value2).includes('ms')) {
+        const num1 = parseFloat(String(value1));
+        const num2 = parseFloat(String(value2));
+        if (!isNaN(num1) && !isNaN(num2)) {
+          return num1 <= num2;
+        }
+      }
     }
     
     // String comparisons - could be enhanced with more sophisticated equivalence logic
@@ -117,7 +138,56 @@ const EnhancedEquivalenceComparison = ({
     return false;
   };
   
-  // Export the comparison data for sharing/saving (replaces PDF due to dependency issues)
+  // Get filtered parameters based on the non-equivalent filter setting
+  const getFilteredParameters = (paramType) => {
+    let parameters = [];
+    
+    // Get the appropriate parameter list based on tab
+    if (paramType === 'technical') {
+      parameters = subjectDevice.technicalCharacteristics || [];
+    } else if (paramType === 'performance') {
+      parameters = subjectDevice.performanceData || [];
+    } else if (paramType === 'safety') {
+      parameters = subjectDevice.safetyFeatures || [];
+    } else {
+      parameters = []; // No clinical parameters in this demo
+    }
+    
+    // If filter is off, return all parameters
+    if (!filterNonEquivalent) {
+      return parameters;
+    }
+    
+    // If filter is on, only return non-equivalent parameters
+    const selectedPredicateData = predicateDevices.find(p => p.id === selectedPredicate);
+    if (!selectedPredicateData) return parameters;
+    
+    return parameters.filter(param => {
+      // Get the matching parameter from the predicate device
+      let predicateParams = [];
+      if (paramType === 'technical') {
+        predicateParams = selectedPredicateData.technicalCharacteristics || [];
+      } else if (paramType === 'performance') {
+        predicateParams = selectedPredicateData.performanceData || [];
+      } else if (paramType === 'safety') {
+        predicateParams = selectedPredicateData.safetyFeatures || [];
+      }
+      
+      const predicateParam = predicateParams.find(p => p.name === param.name);
+      
+      // If no matching parameter found in predicate, consider it non-equivalent
+      if (!predicateParam) return true;
+      
+      // Check equivalence with appropriate parameter type
+      return !isEquivalent(
+        param.value, 
+        predicateParam.value,
+        paramType === 'performance' ? 'performance' : 'general'
+      );
+    });
+  };
+  
+  // Export the comparison data for sharing/saving
   const handleExport = () => {
     // Generate report data
     const selectedPredicateDevice = predicateDevices.find(p => p.id === selectedPredicate);
@@ -247,7 +317,7 @@ const EnhancedEquivalenceComparison = ({
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  Export comparison as PDF for 510(k) submission
+                  Export comparison as JSON for 510(k) submission
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -380,9 +450,9 @@ const EnhancedEquivalenceComparison = ({
                 onClick={() => setSelectedPredicate(device.id)}
               >
                 <div className="font-medium">{device.deviceName}</div>
-                <div className="text-xs text-gray-500">{device.manufacturer}</div>
-                <Badge className="mt-1" variant={device.predicateType === 'Primary' ? 'default' : 'outline'}>
-                  {device.predicateType}
+                <div className="text-sm text-gray-500 dark:text-gray-400">{device.manufacturer}</div>
+                <Badge variant="outline" className="mt-1">
+                  {device.predicateType || 'Predicate'}
                 </Badge>
               </div>
             ))}
@@ -436,46 +506,47 @@ const EnhancedEquivalenceComparison = ({
                 <div className="col-span-1">Actions</div>
               </div>
               
-              <ScrollArea className="h-[500px]">
-                {(subjectDevice.technicalCharacteristics || []).map((param, index) => {
+              <ScrollArea className="h-[400px]">
+                {getFilteredParameters('technical').map((param, index) => {
                   const predicateDevice = getPredicateById(selectedPredicate);
                   const predicateParam = predicateDevice?.technicalCharacteristics?.find(p => p.name === param.name);
+                  const equivalent = predicateParam ? isEquivalent(param.value, predicateParam.value) : false;
                   const isExpanded = expandedParameters[param.name] || false;
-                  const hasAiSuggestion = aiSuggestions[param.name];
-                  const isParameterEquivalent = predicateParam ? isEquivalent(param.value, predicateParam?.value) : false;
                   
                   return (
-                    <div key={`${param.name}-${index}`} className="border-b last:border-b-0">
-                      <div className={`grid grid-cols-12 p-3 ${
-                        isParameterEquivalent 
-                          ? 'bg-green-50 dark:bg-green-900/10' 
-                          : 'bg-amber-50 dark:bg-amber-900/10'
-                      }`}>
+                    <div key={`${param.name}-${index}`} className="border-b last:border-0">
+                      <div 
+                        className={`grid grid-cols-12 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                          !equivalent ? 'bg-amber-50 dark:bg-amber-900/20' : ''
+                        }`}
+                      >
                         <div className="col-span-3 font-medium">{param.name}</div>
                         <div className="col-span-3">{param.value}</div>
                         <div className="col-span-3">{predicateParam?.value || 'N/A'}</div>
                         <div className="col-span-2 flex items-center">
-                          {predicateParam 
-                            ? getEquivalenceIcon(param.value, predicateParam.value)
-                            : <X className="h-5 w-5 text-red-600 dark:text-red-400" />
-                          }
+                          {predicateParam ? getEquivalenceIcon(param.value, predicateParam.value) : <X className="h-5 w-5 text-red-600 dark:text-red-400" />}
                           <span className="ml-1">
-                            {isParameterEquivalent ? 'Equivalent' : 'Non-equivalent'}
+                            {equivalent ? 'Equivalent' : 'Not Equivalent'}
                           </span>
                         </div>
-                        <div className="col-span-1 flex gap-1">
-                          {!isParameterEquivalent && (
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
-                              onClick={() => handleRequestAI(param.name)}
-                            >
-                              <Lightbulb className="h-4 w-4 text-amber-500" />
-                            </Button>
+                        <div className="col-span-1 flex justify-end">
+                          {!equivalent && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" onClick={() => handleRequestAI(param.name)}>
+                                    <Lightbulb className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Get AI suggestions for addressing this non-equivalent feature
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           )}
                           <Button 
                             variant="ghost" 
-                            size="sm" 
+                            size="icon" 
                             onClick={() => toggleParameter(param.name)}
                           >
                             {isExpanded ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
@@ -483,61 +554,15 @@ const EnhancedEquivalenceComparison = ({
                         </div>
                       </div>
                       
-                      {/* Expanded details panel */}
-                      {isExpanded && (
-                        <div className="p-4 bg-gray-50 dark:bg-gray-800/50 border-t">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Expanded content with AI suggestions */}
+                      {isExpanded && !equivalent && aiSuggestions[param.name] && (
+                        <div className="p-3 bg-gray-50 dark:bg-gray-800 border-t border-dashed">
+                          <div className="flex items-start gap-2">
+                            <Lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
                             <div>
-                              <h4 className="font-medium">Comparison Details</h4>
-                              <p className="mt-1 text-sm">
-                                {isParameterEquivalent
-                                  ? 'This parameter is substantially equivalent to the predicate device.'
-                                  : 'This parameter differs from the predicate device and may require additional justification.'
-                                }
-                              </p>
-                              
-                              {/* Regulatory guidance */}
-                              <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md">
-                                <h5 className="text-sm font-medium flex items-center">
-                                  <HelpCircle className="h-4 w-4 mr-1 text-blue-500" />
-                                  FDA Guidance
-                                </h5>
-                                <p className="mt-1 text-xs">
-                                  According to FDA guidance, differences in {param.name.toLowerCase()} 
-                                  {isParameterEquivalent 
-                                    ? ' are acceptable if they do not affect safety and effectiveness.'
-                                    : ' must be justified through performance testing or scientific rationale.'
-                                  }
-                                </p>
-                              </div>
+                              <div className="font-medium">AI Suggestion</div>
+                              <div className="text-sm mt-1">{aiSuggestions[param.name]}</div>
                             </div>
-                            
-                            {/* AI suggestions for non-equivalent parameters */}
-                            {!isParameterEquivalent && (
-                              <div>
-                                <h4 className="font-medium flex items-center">
-                                  <Lightbulb className="h-4 w-4 mr-1 text-amber-500" />
-                                  AI Suggestions
-                                </h4>
-                                <div className="mt-1 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-md">
-                                  <p className="text-sm">
-                                    {hasAiSuggestion || (
-                                      <>
-                                        No AI suggestions available. 
-                                        <Button 
-                                          variant="link" 
-                                          size="sm" 
-                                          className="px-1 h-auto"
-                                          onClick={() => handleRequestAI(param.name)}
-                                        >
-                                          Get suggestions
-                                        </Button>
-                                      </>
-                                    )}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
                           </div>
                         </div>
                       )}
@@ -548,54 +573,173 @@ const EnhancedEquivalenceComparison = ({
             </div>
           </TabsContent>
           
-          {/* Placeholder for other tabs - in a real implementation, these would be fully fleshed out */}
           <TabsContent value="performance">
-            <div className="flex flex-col items-center justify-center h-[300px] border rounded-md bg-gray-50 dark:bg-gray-800/50">
-              <FileText className="h-10 w-10 text-gray-400 mb-2" />
-              <p className="text-center text-gray-600 dark:text-gray-400">
-                Performance data comparison would be displayed here.<br />
-                This includes test results, standards compliance, and benchmark data.
-              </p>
+            <div className="rounded-md border">
+              <div className="grid grid-cols-12 p-3 bg-gray-50 dark:bg-gray-800 border-b font-medium">
+                <div className="col-span-3">Parameter</div>
+                <div className="col-span-3">Subject Device</div>
+                <div className="col-span-3">Predicate Device</div>
+                <div className="col-span-2">Equivalence</div>
+                <div className="col-span-1">Actions</div>
+              </div>
+              
+              <ScrollArea className="h-[400px]">
+                {getFilteredParameters('performance').map((param, index) => {
+                  const predicateDevice = getPredicateById(selectedPredicate);
+                  const predicateParam = predicateDevice?.performanceData?.find(p => p.name === param.name);
+                  const equivalent = predicateParam ? isEquivalent(param.value, predicateParam.value, 'performance') : false;
+                  const isExpanded = expandedParameters[param.name] || false;
+                  
+                  return (
+                    <div key={`${param.name}-${index}`} className="border-b last:border-0">
+                      <div 
+                        className={`grid grid-cols-12 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                          !equivalent ? 'bg-amber-50 dark:bg-amber-900/20' : ''
+                        }`}
+                      >
+                        <div className="col-span-3 font-medium">{param.name}</div>
+                        <div className="col-span-3">{param.value}</div>
+                        <div className="col-span-3">{predicateParam?.value || 'N/A'}</div>
+                        <div className="col-span-2 flex items-center">
+                          {predicateParam ? getEquivalenceIcon(param.value, predicateParam.value) : <X className="h-5 w-5 text-red-600 dark:text-red-400" />}
+                          <span className="ml-1">
+                            {equivalent ? 'Equivalent' : 'Not Equivalent'}
+                          </span>
+                        </div>
+                        <div className="col-span-1 flex justify-end">
+                          {!equivalent && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" onClick={() => handleRequestAI(param.name)}>
+                                    <Lightbulb className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Get AI suggestions for addressing this non-equivalent feature
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => toggleParameter(param.name)}
+                          >
+                            {isExpanded ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Expanded content with AI suggestions */}
+                      {isExpanded && !equivalent && aiSuggestions[param.name] && (
+                        <div className="p-3 bg-gray-50 dark:bg-gray-800 border-t border-dashed">
+                          <div className="flex items-start gap-2">
+                            <Lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                            <div>
+                              <div className="font-medium">AI Suggestion</div>
+                              <div className="text-sm mt-1">{aiSuggestions[param.name]}</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </ScrollArea>
             </div>
           </TabsContent>
           
           <TabsContent value="safety">
-            <div className="flex flex-col items-center justify-center h-[300px] border rounded-md bg-gray-50 dark:bg-gray-800/50">
-              <FileText className="h-10 w-10 text-gray-400 mb-2" />
-              <p className="text-center text-gray-600 dark:text-gray-400">
-                Safety and compliance data would be displayed here.<br />
-                This includes risk assessment, hazard analysis, and standards conformance.
-              </p>
+            <div className="rounded-md border">
+              <div className="grid grid-cols-12 p-3 bg-gray-50 dark:bg-gray-800 border-b font-medium">
+                <div className="col-span-3">Parameter</div>
+                <div className="col-span-3">Subject Device</div>
+                <div className="col-span-3">Predicate Device</div>
+                <div className="col-span-2">Equivalence</div>
+                <div className="col-span-1">Actions</div>
+              </div>
+              
+              <ScrollArea className="h-[400px]">
+                {getFilteredParameters('safety').map((param, index) => {
+                  const predicateDevice = getPredicateById(selectedPredicate);
+                  const predicateParam = predicateDevice?.safetyFeatures?.find(p => p.name === param.name);
+                  const equivalent = predicateParam ? isEquivalent(param.value, predicateParam.value) : false;
+                  const isExpanded = expandedParameters[param.name] || false;
+                  
+                  return (
+                    <div key={`${param.name}-${index}`} className="border-b last:border-0">
+                      <div 
+                        className={`grid grid-cols-12 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                          !equivalent ? 'bg-amber-50 dark:bg-amber-900/20' : ''
+                        }`}
+                      >
+                        <div className="col-span-3 font-medium">{param.name}</div>
+                        <div className="col-span-3">{param.value}</div>
+                        <div className="col-span-3">{predicateParam?.value || 'N/A'}</div>
+                        <div className="col-span-2 flex items-center">
+                          {predicateParam ? getEquivalenceIcon(param.value, predicateParam.value) : <X className="h-5 w-5 text-red-600 dark:text-red-400" />}
+                          <span className="ml-1">
+                            {equivalent ? 'Equivalent' : 'Not Equivalent'}
+                          </span>
+                        </div>
+                        <div className="col-span-1 flex justify-end">
+                          {!equivalent && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" onClick={() => handleRequestAI(param.name)}>
+                                    <Lightbulb className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  Get AI suggestions for addressing this non-equivalent feature
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => toggleParameter(param.name)}
+                          >
+                            {isExpanded ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {/* Expanded content with AI suggestions */}
+                      {isExpanded && !equivalent && aiSuggestions[param.name] && (
+                        <div className="p-3 bg-gray-50 dark:bg-gray-800 border-t border-dashed">
+                          <div className="flex items-start gap-2">
+                            <Lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400 mt-0.5" />
+                            <div>
+                              <div className="font-medium">AI Suggestion</div>
+                              <div className="text-sm mt-1">{aiSuggestions[param.name]}</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </ScrollArea>
             </div>
           </TabsContent>
           
           <TabsContent value="clinical">
-            <div className="flex flex-col items-center justify-center h-[300px] border rounded-md bg-gray-50 dark:bg-gray-800/50">
-              <FileText className="h-10 w-10 text-gray-400 mb-2" />
-              <p className="text-center text-gray-600 dark:text-gray-400">
-                Clinical outcomes comparison would be displayed here.<br />
-                This includes clinical study results, published literature, and real-world evidence.
-              </p>
+            <div className="flex items-center justify-center h-[400px]">
+              <div className="text-center p-8 max-w-md">
+                <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+                <h3 className="font-semibold text-lg mb-2">Clinical Data Under Development</h3>
+                <p className="text-gray-500 dark:text-gray-400">
+                  Clinical outcomes comparison tools are currently being built. In the full 510(k) submission, 
+                  this section will include detailed analysis of clinical data supporting substantial equivalence.
+                </p>
+              </div>
             </div>
           </TabsContent>
         </Tabs>
-        
-        {/* Action buttons */}
-        <div className="mt-6 flex justify-between">
-          <Button variant="outline" size="sm">
-            <ArrowRight className="h-4 w-4 mr-1" />
-            Save and Continue
-          </Button>
-          
-          <Button 
-            variant={equivalenceScores.overall >= 80 ? "default" : "outline"}
-            disabled={equivalenceScores.overall < 70}
-            onClick={() => onGenerateReport?.()}
-          >
-            <FileText className="h-4 w-4 mr-1" />
-            Generate FDA Comparison Report
-          </Button>
-        </div>
       </CardContent>
     </Card>
   );
