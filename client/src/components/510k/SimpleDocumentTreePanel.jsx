@@ -103,13 +103,59 @@ const SimpleDocumentTreePanel = ({ isOpen, onClose, documentId }) => {
     }));
   };
   
-  // Handle document click
+  // Handle document click - updated to keep user in CERV2 for drafts
   const handleDocumentClick = (document) => {
-    toast({
-      title: "Document Selected",
-      description: `Opening ${document.name}`,
-      variant: "default"
-    });
+    // Prevent redirection for draft documents
+    if (document.status === 'draft') {
+      // If it's a draft, load it directly in CERV2 without redirecting
+      try {
+        // Get document data from service
+        docuShareService.getDocumentContent(document.id)
+          .then(docData => {
+            // Trigger local document load event
+            const loadEvent = new CustomEvent('cerv2-load-document', {
+              detail: {
+                document: {
+                  ...document,
+                  content: docData
+                }
+              }
+            });
+            window.dispatchEvent(loadEvent);
+            
+            toast({
+              title: "Draft Loaded",
+              description: `Opened draft: ${document.name}`,
+              variant: "default"
+            });
+          })
+          .catch(error => {
+            console.error('Error loading draft document:', error);
+            toast({
+              title: "Error Loading Draft",
+              description: "Could not load the draft document. Please try again.",
+              variant: "destructive"
+            });
+          });
+      } catch (error) {
+        console.error('Error in draft document handling:', error);
+        toast({
+          title: "Error",
+          description: "There was a problem opening this draft document.",
+          variant: "destructive"
+        });
+      }
+    } else {
+      // For non-draft documents, use the normal flow
+      toast({
+        title: "Document Selected",
+        description: `Opening ${document.name}`,
+        variant: "default"
+      });
+      
+      // Open document normally
+      docuShareService.openDocument(document.id);
+    }
   };
   
   // Render a document icon based on format
