@@ -1,4 +1,5 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useContext } from 'react';
+import CollaborationContext from '@/contexts/CollaborationContext';
 
 // Lazy load the collaboration hub
 const LazyCollaborationHub = lazy(() => 
@@ -12,18 +13,24 @@ const LazyCollaborationHub = lazy(() =>
  * only when needed. This prevents the collaboration features from negatively impacting
  * initial page load performance, especially important for large pages like CERV2.
  */
-const OptimizedCollaborationLayout = ({ children }) => {
-  // Mock data for demonstration - in a real implementation, this would come from authentication
-  const currentUser = {
-    id: '0',
-    name: 'Current User',
-    avatar: '/avatars/user.jpg',
-    role: 'Regulatory Affairs Specialist'
-  };
+const OptimizedCollaborationLayout = ({
+  children,
+  projectId: propProjectId,
+  moduleName: propModuleName,
+  currentUser: propCurrentUser
+}) => {
+  const context = useContext(CollaborationContext);
 
-  // Get current project info - in a real implementation this would come from context or URL
-  const projectId = 'current-project';
-  const moduleName = 'cer'; // or '510k', 'ind', etc.
+  const currentUser =
+    propCurrentUser || context?.currentUser || {
+      id: '0',
+      name: 'Current User',
+      avatar: '/avatars/user.jpg',
+      role: 'Regulatory Affairs Specialist'
+    };
+
+  const projectId = propProjectId || context?.projectId || 'current-project';
+  const moduleName = propModuleName || context?.moduleType || 'cer'; // or '510k', 'ind', etc.
 
   return (
     <div className="flex h-screen w-full">

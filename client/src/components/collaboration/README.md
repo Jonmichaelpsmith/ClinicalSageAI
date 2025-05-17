@@ -12,15 +12,28 @@ This is a high-performance collaboration hub that integrates with all modules of
 
 ## How to Integrate
 
-To add the collaboration hub to any module, simply wrap your page component with the `OptimizedCollaborationLayout`:
+To add the collaboration hub to any module, wrap your page component with `OptimizedCollaborationLayout` and provide your current project information:
 
 ```jsx
 // Example usage in CERV2Page.jsx or any other module
 import OptimizedCollaborationLayout from '@/components/layout/OptimizedCollaborationLayout';
 
 const YourModule = () => {
+  const projectId = 'prj-001';
+  const moduleName = 'cer';
+  const currentUser = {
+    id: '0',
+    name: 'Current User',
+    avatar: '/avatars/user.jpg',
+    role: 'Regulatory Affairs Specialist'
+  };
+
   return (
-    <OptimizedCollaborationLayout>
+    <OptimizedCollaborationLayout
+      projectId={projectId}
+      moduleName={moduleName}
+      currentUser={currentUser}
+    >
       {/* Your existing module content */}
       <div>Your module content here</div>
     </OptimizedCollaborationLayout>

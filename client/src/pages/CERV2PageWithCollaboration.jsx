@@ -10,8 +10,21 @@ import CERV2Page from './CERV2Page';
  * component.
  */
 const CERV2PageWithCollaboration = () => {
+  const projectId = 'prj-001';
+  const moduleName = 'cer';
+  const currentUser = {
+    id: '0',
+    name: 'Current User',
+    avatar: '/avatars/user.jpg',
+    role: 'Regulatory Affairs Specialist'
+  };
+
   return (
-    <OptimizedCollaborationLayout>
+    <OptimizedCollaborationLayout
+      projectId={projectId}
+      moduleName={moduleName}
+      currentUser={currentUser}
+    >
       <CERV2Page />
     </OptimizedCollaborationLayout>
   );
