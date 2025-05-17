@@ -2332,45 +2332,64 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       return (
         <div 
           id="di-modal"
-          className="fixed inset-0 bg-black/50 z-[9999]" 
+          className="fixed inset-0 z-[9999]" 
           role="dialog"
           aria-modal="true"
         >
-          <div className="absolute inset-8 bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col">
-            {/* Header */}
-            <div className="bg-blue-50 flex items-center justify-between p-4 border-b">
-              <div className="flex items-center gap-2">
-                <Brain className="h-6 w-6 text-blue-600" />
-                <h2 className="text-xl font-semibold">Document Intelligence</h2>
+          {/* Backdrop with blur effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-indigo-900/80 to-purple-900/80 backdrop-blur-sm"></div>
+          
+          {/* Modal container with glass effect */}
+          <div className="absolute inset-6 md:inset-12 lg:inset-16 bg-white/95 dark:bg-gray-900/95 rounded-xl shadow-2xl overflow-hidden flex flex-col border border-indigo-200 dark:border-indigo-800">
+            {/* Decorative elements */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-400/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-400/20 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl pointer-events-none"></div>
+            
+            {/* Header with gradient */}
+            <div className="relative bg-gradient-to-r from-indigo-600 to-purple-600 flex items-center justify-between px-6 py-4 border-b border-indigo-300/20 dark:border-indigo-800/20">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <Brain className="h-6 w-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-white">Document Intelligence</h2>
+                  <p className="text-indigo-100 text-sm mt-0.5">Extract and analyze regulatory document data</p>
+                </div>
               </div>
               
-              <Button 
-                variant="secondary" 
-                size="sm"
-                onClick={() => setActiveTab('device')}
-              >
-                Close
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="ghost" 
+                  className="text-white hover:bg-white/20 hover:text-white"
+                  onClick={() => setActiveTab('device')}
+                >
+                  <X className="h-5 w-5 mr-1" />
+                  Close
+                </Button>
+              </div>
             </div>
             
             {/* Main content with proper scrolling */}
-            <div className="flex-1 overflow-auto p-6">
-              <DocumentIntelligenceTab 
-                regulatoryContext={documentType}
-                deviceProfile={deviceProfile}
-                onDeviceProfileUpdate={(updatedProfile) => {
-                  if (updatedProfile) {
-                    setDeviceProfile(updatedProfile);
-                    saveState('deviceProfile', updatedProfile);
-                    setActiveTab('device');
-                    toast({
-                      title: "Device Profile Updated",
-                      description: "Document data successfully applied to your device profile.",
-                      variant: "success",
-                    });
-                  }
-                }}
-              />
+            <div className="flex-1 overflow-auto relative">
+              {/* Content card with shadow */}
+              <div className="m-6 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-100 dark:border-gray-700">
+                <DocumentIntelligenceTab 
+                  regulatoryContext={documentType}
+                  deviceProfile={deviceProfile}
+                  onDeviceProfileUpdate={(updatedProfile) => {
+                    if (updatedProfile) {
+                      setDeviceProfile(updatedProfile);
+                      saveState('deviceProfile', updatedProfile);
+                      setActiveTab('device');
+                      toast({
+                        title: "Device Profile Updated",
+                        description: "Document data successfully applied to your device profile.",
+                        variant: "success",
+                      });
+                    }
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
