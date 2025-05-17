@@ -6,6 +6,10 @@ import { Input as BaseInput } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import DocumentUploader from "@/components/document-intelligence/DocumentUploader";
+import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
 import { 
   Form, 
   FormControl, 
