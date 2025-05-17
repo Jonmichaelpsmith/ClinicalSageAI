@@ -1,333 +1,339 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, AlertTriangle, CheckCircle, FileText, Brain, Table } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FileText, FileSearch, AlertTriangle, Info, CheckCircle, Database, Search } from 'lucide-react';
+import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
+import { useToast } from '@/hooks/use-toast';
 
 /**
- * DocumentAnalyzer Component
+ * Document Analyzer Component
  * 
- * This component handles the AI-powered analysis of regulatory documents, including:
- * 1. Document content extraction
- * 2. Regulatory data identification
- * 3. Device information extraction
- * 4. Structured data formatting
- * 5. Multi-layer validation
+ * This component analyzes processed documents and extracts structured data
+ * from them based on the selected regulatory context.
+ * 
+ * @param {Object} props
+ * @param {Array} props.processedDocuments - The array of processed documents
+ * @param {string} props.regulatoryContext - The regulatory context (510k, cer, etc.)
+ * @param {Function} props.onDataExtracted - Callback for when data is extracted
+ * @param {string} props.extractionMode - The extraction mode to use
  */
-const DocumentAnalyzer = ({ documents, documentType, onExtractionComplete }) => {
-  const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('extraction');
-  const [analysisProgress, setAnalysisProgress] = useState(0);
+const DocumentAnalyzer = ({
+  processedDocuments = [],
+  regulatoryContext = '510k',
+  onDataExtracted,
+  extractionMode = 'comprehensive'
+}) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analyzeProgress, setAnalyzeProgress] = useState(0);
+  const [analyzeError, setAnalyzeError] = useState(null);
   const [extractedData, setExtractedData] = useState(null);
-  const [analysisError, setAnalysisError] = useState(null);
-  const [layerResults, setLayerResults] = useState({
-    layer1: { status: 'pending', message: 'Raw text extraction' },
-    layer2: { status: 'pending', message: 'Document section recognition' },
-    layer3: { status: 'pending', message: 'Regulatory data identification' },
-    layer4: { status: 'pending', message: 'Semantic classification' },
-    layer5: { status: 'pending', message: 'Data validation' }
-  });
-  
-  // Start analysis automatically when component mounts with documents
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [processingStages, setProcessingStages] = useState([]);
+  const [currentStage, setCurrentStage] = useState(0);
+  const { toast } = useToast();
+
+  // Fetch processing stages on mount
   useEffect(() => {
-    if (documents.length > 0 && !isAnalyzing && !extractedData) {
-      handleStartAnalysis();
-    }
-  }, [documents]);
-  
-  // Handle the analysis progress simulation
-  useEffect(() => {
-    let progressInterval;
-    
-    if (isAnalyzing) {
-      progressInterval = setInterval(() => {
-        setAnalysisProgress(prev => {
-          // Simulate different processing speeds at different stages
-          let increment = 0;
-          if (prev < 20) increment = 1.8;
-          else if (prev < 40) increment = 0.6;
-          else if (prev < 70) increment = 0.8;
-          else if (prev < 90) increment = 0.3;
-          else increment = 0.1;
-          
-          const newProgress = Math.min(prev + increment, 99.5);
-          
-          // Update layer statuses based on progress
-          updateLayerStatus(newProgress);
-          
-          return newProgress;
-        });
-      }, 120);
-    }
-    
-    return () => {
-      if (progressInterval) clearInterval(progressInterval);
-    };
-  }, [isAnalyzing]);
-  
-  // Update process layer status based on current progress
-  const updateLayerStatus = (progress) => {
-    const newLayerResults = { ...layerResults };
-    
-    if (progress >= 20) {
-      newLayerResults.layer1 = { status: 'complete', message: 'Raw text extraction complete' };
-    }
-    
-    if (progress >= 40) {
-      newLayerResults.layer2 = { status: 'complete', message: 'Document sections identified' };
-    }
-    
-    if (progress >= 60) {
-      newLayerResults.layer3 = { status: 'complete', message: 'Regulatory data matched' };
-    }
-    
-    if (progress >= 80) {
-      newLayerResults.layer4 = { status: 'complete', message: 'Semantic classification completed' };
-    }
-    
-    if (progress >= 95) {
-      newLayerResults.layer5 = { status: 'complete', message: 'Data validation passed' };
-    }
-    
-    setLayerResults(newLayerResults);
-  };
-  
-  // Start the document analysis process
-  const handleStartAnalysis = () => {
-    setIsAnalyzing(true);
-    setAnalysisProgress(0);
-    setAnalysisError(null);
-    setExtractedData(null);
-    
-    // Reset layer statuses
-    setLayerResults({
-      layer1: { status: 'pending', message: 'Raw text extraction' },
-      layer2: { status: 'pending', message: 'Document section recognition' },
-      layer3: { status: 'pending', message: 'Regulatory data identification' },
-      layer4: { status: 'pending', message: 'Semantic classification' },
-      layer5: { status: 'pending', message: 'Data validation' }
-    });
-    
-    // Simulate document analysis
-    setTimeout(() => {
-      completeAnalysis();
-    }, 8000);
-  };
-  
-  // Simulate analysis completion
-  const completeAnalysis = () => {
-    try {
-      // Generate device data based on document type
-      const data = generateDeviceData(documentType);
-      
-      // Set final progress and show completion
-      setAnalysisProgress(100);
-      setIsAnalyzing(false);
-      setExtractedData(data);
-      
-      toast({
-        title: "Analysis Complete",
-        description: "Document intelligence process successfully extracted device information.",
-        variant: "success"
-      });
-      
-      // Signal completion to parent component
-      if (onExtractionComplete) {
-        onExtractionComplete(data);
+    const fetchProcessingStages = async () => {
+      try {
+        const stages = await documentIntelligenceService.getProcessingStages();
+        setProcessingStages(stages);
+      } catch (error) {
+        console.error('Error fetching processing stages:', error);
       }
+    };
+
+    fetchProcessingStages();
+  }, []);
+
+  // Start document analysis
+  const handleAnalyzeDocuments = async () => {
+    if (processedDocuments.length === 0) {
+      setAnalyzeError('No documents available for analysis.');
+      return;
+    }
+
+    setIsAnalyzing(true);
+    setAnalyzeProgress(0);
+    setAnalyzeError(null);
+    setCurrentStage(0);
+
+    try {
+      // Simulate the progress of each stage (in a real implementation, this would come from the backend)
+      const timer = setInterval(() => {
+        setAnalyzeProgress((prevProgress) => {
+          const newProgress = prevProgress + 1;
+          
+          // Update current stage based on progress
+          if (processingStages.length > 0) {
+            const stageSize = 100 / processingStages.length;
+            const newStage = Math.min(
+              Math.floor(newProgress / stageSize),
+              processingStages.length - 1
+            );
+            
+            if (newStage !== currentStage) {
+              setCurrentStage(newStage);
+              
+              // Show toast for stage transition
+              toast({
+                title: `Stage ${newStage + 1}: ${processingStages[newStage].name}`,
+                description: processingStages[newStage].description,
+                variant: 'default',
+              });
+            }
+          }
+          
+          return newProgress > 100 ? 100 : newProgress;
+        });
+      }, 300);
+
+      // Extract data from documents
+      const data = await documentIntelligenceService.extractData(
+        processedDocuments,
+        regulatoryContext,
+        extractionMode
+      );
+
+      clearInterval(timer);
+      setAnalyzeProgress(100);
+      setExtractedData(data);
+
+      // Call the callback with extracted data
+      if (onDataExtracted) {
+        onDataExtracted(data);
+      }
+
+      // Show success toast
+      toast({
+        title: 'Analysis Complete',
+        description: 'Successfully extracted and structured document data.',
+        variant: 'success',
+      });
     } catch (error) {
-      console.error('Error during analysis completion:', error);
-      setAnalysisError('Failed to complete document analysis. Please try again.');
+      console.error('Error analyzing documents:', error);
+      setAnalyzeError(error.message || 'An error occurred during document analysis.');
+      
+      // Show error toast
+      toast({
+        title: 'Analysis Failed',
+        description: error.message || 'An error occurred during document analysis.',
+        variant: 'destructive',
+      });
+    } finally {
       setIsAnalyzing(false);
     }
   };
-  
-  // Generate appropriate device data based on document type
-  const generateDeviceData = (docType) => {
-    if (docType === '510k') {
-      return {
-        deviceName: "CardioMonitor 2000",
-        manufacturer: "MedTech Innovations",
-        deviceClass: "II",
-        productCode: "DRT",
-        intendedUse: "Continuous monitoring of cardiac rhythm and vital signs in clinical settings",
-        description: "The CardioMonitor 2000 is a compact cardiac monitoring device designed for both inpatient and outpatient use, providing continuous ECG, heart rate, and oxygen saturation monitoring.",
-        deviceSpecifications: "Dimensions: 120mm x 70mm x 22mm, Weight: 150g, Battery life: 48 hours continuous use, Wireless connectivity: Bluetooth 5.0",
-        indications: "For use in adult patients (18 years and older) requiring cardiac monitoring in hospital settings or under physician supervision."
-      };
-    } else {
-      // Generic device data for other document types
-      return {
-        deviceName: "Medical Device X-1000",
-        manufacturer: "ABC Medical Devices",
-        deviceClass: "II",
-        productCode: "XYZ",
-        intendedUse: "Treatment and monitoring of health conditions",
-        description: "A medical device designed for diagnostic procedures",
-        deviceSpecifications: "Standard medical-grade specifications",
-        indications: "For use in clinical settings under physician supervision"
-      };
-    }
+
+  // Select a document to view details
+  const handleSelectDocument = (document) => {
+    setSelectedDocument(document);
   };
-  
-  const renderLayerStatus = (layer) => {
-    const status = layerResults[layer].status;
-    const message = layerResults[layer].message;
-    
-    if (status === 'complete') {
-      return (
-        <div className="flex items-center text-green-600">
-          <CheckCircle className="h-4 w-4 mr-2" />
-          <span>{message}</span>
-        </div>
-      );
-    } else if (status === 'error') {
-      return (
-        <div className="flex items-center text-red-600">
-          <AlertTriangle className="h-4 w-4 mr-2" />
-          <span>{message}</span>
-        </div>
-      );
-    } else {
-      return (
-        <div className="flex items-center text-gray-600">
-          {isAnalyzing ? (
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-          ) : (
-            <div className="h-4 w-4 mr-2 rounded-full border border-gray-300" />
-          )}
-          <span>{message}</span>
-        </div>
-      );
-    }
+
+  // Calculate document confidence score (0-100)
+  const getDocumentConfidence = (document) => {
+    if (!document || !document.confidenceScore) return 0;
+    return Math.round(document.confidenceScore * 100);
   };
-  
+
+  // Get badge variant based on confidence score
+  const getConfidenceBadgeVariant = (score) => {
+    if (score >= 80) return 'success';
+    if (score >= 60) return 'default';
+    if (score >= 40) return 'warning';
+    return 'destructive';
+  };
+
   return (
-    <div className="space-y-6">
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-2 bg-gray-100 p-0 rounded-none">
-              <TabsTrigger 
-                value="extraction" 
-                className="py-3 rounded-none data-[state=active]:bg-white data-[state=active]:shadow-none"
-              >
-                <Brain className="h-4 w-4 mr-2" />
-                AI Document Analysis
-              </TabsTrigger>
-              <TabsTrigger 
-                value="results" 
-                className="py-3 rounded-none data-[state=active]:bg-white data-[state=active]:shadow-none"
-                disabled={!extractedData}
-              >
-                <Table className="h-4 w-4 mr-2" />
-                Extracted Information
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="extraction" className="p-6 m-0">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-lg font-medium">Document Intelligence Processing</h3>
-                  {!isAnalyzing && !extractedData && (
-                    <Button 
-                      onClick={handleStartAnalysis}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      Start Analysis
-                    </Button>
-                  )}
-                </div>
-                
-                <div className="space-y-4">
-                  {documents.map((doc, idx) => (
-                    <div key={idx} className="flex items-center p-2 bg-gray-50 rounded-md border border-gray-100">
-                      <FileText className="h-5 w-5 text-blue-600 mr-2" />
-                      <div>
-                        <p className="text-sm font-medium">{doc.name}</p>
-                        <p className="text-xs text-gray-500">
-                          Detected: {doc.documentType} (Confidence: {Math.round((doc.confidence || 0.5) * 100)}%)
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Document Analysis</CardTitle>
+          <CardDescription>
+            Analyze and extract structured data from your regulatory documents.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Document List */}
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold mb-2">Documents to Analyze ({processedDocuments.length})</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {processedDocuments.map((doc, index) => (
+                <Card 
+                  key={index} 
+                  className={`cursor-pointer hover:bg-accent/20 transition-colors ${
+                    selectedDocument === doc ? 'ring-2 ring-primary' : ''
+                  }`}
+                  onClick={() => handleSelectDocument(doc)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-start space-x-3">
+                      <FileText className="h-8 w-8 text-muted-foreground flex-shrink-0" />
+                      <div className="space-y-1">
+                        <h4 className="font-medium truncate">{doc.filename || `Document ${index + 1}`}</h4>
+                        <p className="text-xs text-muted-foreground">
+                          {doc.documentType || 'Unknown document type'}
                         </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                
-                {isAnalyzing && (
-                  <div className="space-y-2 mt-4">
-                    <div className="flex justify-between items-center text-sm">
-                      <span>Processing documents...</span>
-                      <span>{Math.round(analysisProgress)}%</span>
-                    </div>
-                    <Progress value={analysisProgress} className="h-2" />
-                    
-                    <div className="mt-4 space-y-3 text-sm">
-                      {Object.keys(layerResults).map((layer) => (
-                        <div key={layer} className="flex items-center">
-                          {renderLayerStatus(layer)}
+                        <div className="flex items-center space-x-1 mt-1">
+                          <Badge variant={getConfidenceBadgeVariant(getDocumentConfidence(doc))}>
+                            {getDocumentConfidence(doc)}% confidence
+                          </Badge>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {analysisError && (
-                  <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{analysisError}</AlertDescription>
-                  </Alert>
-                )}
-                
-                {extractedData && !isAnalyzing && (
-                  <Alert className="bg-green-50 text-green-800 border-green-200 mt-4">
-                    <CheckCircle className="h-4 w-4" />
-                    <AlertTitle>Analysis Complete</AlertTitle>
-                    <AlertDescription>
-                      All document data has been successfully extracted. View the results in the "Extracted Information" tab.
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            </TabsContent>
-            
-            <TabsContent value="results" className="p-6 m-0">
-              {extractedData && (
-                <div className="space-y-4">
-                  <h3 className="text-lg font-medium">Extracted Device Information</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {Object.entries(extractedData).map(([key, value]) => (
-                      <div key={key} className="border rounded-md p-3 bg-gray-50">
-                        <p className="text-sm font-medium capitalize text-gray-700 mb-1">
-                          {key.replace(/([A-Z])/g, ' $1')}:
-                        </p>
-                        <p className="text-sm">{value}</p>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+
+          {/* Selected Document Details */}
+          {selectedDocument && (
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">{selectedDocument.filename || 'Document Details'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="metadata">
+                  <TabsList className="mb-4">
+                    <TabsTrigger value="metadata">Metadata</TabsTrigger>
+                    <TabsTrigger value="content">Content Summary</TabsTrigger>
+                    <TabsTrigger value="sections">Detected Sections</TabsTrigger>
+                  </TabsList>
                   
-                  <div className="pt-4 flex justify-end">
-                    <Button
-                      onClick={() => {
-                        if (onExtractionComplete) {
-                          onExtractionComplete(extractedData);
-                        }
-                      }}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      Apply Extracted Data
-                    </Button>
-                  </div>
-                </div>
+                  <TabsContent value="metadata" className="space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <p className="text-sm font-medium">Document Type</p>
+                        <p className="text-xs text-muted-foreground">
+                          {selectedDocument.documentType || 'Unknown'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Page Count</p>
+                        <p className="text-xs text-muted-foreground">
+                          {selectedDocument.pageCount || 'N/A'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">File Size</p>
+                        <p className="text-xs text-muted-foreground">
+                          {selectedDocument.fileSize
+                            ? `${(selectedDocument.fileSize / 1024 / 1024).toFixed(2)} MB`
+                            : 'N/A'}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Confidence Score</p>
+                        <p className="text-xs text-muted-foreground">
+                          {getDocumentConfidence(selectedDocument)}%
+                        </p>
+                      </div>
+                    </div>
+                  </TabsContent>
+                  
+                  <TabsContent value="content">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {selectedDocument.summary || 'No summary available for this document.'}
+                    </p>
+                    
+                    {selectedDocument.keywords && selectedDocument.keywords.length > 0 && (
+                      <>
+                        <p className="text-sm font-medium mt-4 mb-2">Key Terms</p>
+                        <div className="flex flex-wrap gap-1">
+                          {selectedDocument.keywords.map((keyword, idx) => (
+                            <Badge key={idx} variant="outline">
+                              {keyword}
+                            </Badge>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </TabsContent>
+                  
+                  <TabsContent value="sections">
+                    {selectedDocument.sections && selectedDocument.sections.length > 0 ? (
+                      <ul className="space-y-2">
+                        {selectedDocument.sections.map((section, idx) => (
+                          <li key={idx} className="text-sm">
+                            <span className="font-medium">{section.title || `Section ${idx + 1}`}</span>
+                            {section.confidence && (
+                              <Badge variant="outline" className="ml-2">
+                                {Math.round(section.confidence * 100)}%
+                              </Badge>
+                            )}
+                            {section.summary && (
+                              <p className="text-xs text-muted-foreground mt-1">{section.summary}</p>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No sections detected in this document.</p>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Progress Indicator */}
+          {isAnalyzing && (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">
+                  {currentStage < processingStages.length
+                    ? `Stage ${currentStage + 1}: ${processingStages[currentStage]?.name || 'Processing'}`
+                    : 'Finalizing'}
+                </span>
+                <span className="text-sm">{analyzeProgress}%</span>
+              </div>
+              <Progress value={analyzeProgress} />
+              {currentStage < processingStages.length && (
+                <p className="text-xs text-muted-foreground">
+                  {processingStages[currentStage]?.description || 'Processing documents...'}
+                </p>
               )}
-            </TabsContent>
-          </Tabs>
+            </div>
+          )}
+
+          {/* Analysis Error */}
+          {analyzeError && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Analysis Error</AlertTitle>
+              <AlertDescription>{analyzeError}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Analysis Success */}
+          {extractedData && !isAnalyzing && (
+            <Alert variant="success" className="bg-green-50 border-green-200">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertTitle className="text-green-800">Analysis Complete</AlertTitle>
+              <AlertDescription className="text-green-700">
+                Successfully extracted data from {processedDocuments.length} document(s).
+                Proceed to the next step to review the extracted data.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Extract Button */}
+          <div className="flex justify-end">
+            <Button
+              onClick={handleAnalyzeDocuments}
+              disabled={isAnalyzing || processedDocuments.length === 0 || !!extractedData}
+              className="flex items-center gap-2"
+            >
+              {isAnalyzing ? 'Analyzing...' : extractedData ? 'Analysis Complete' : 'Start Analysis'}
+              {!isAnalyzing && !extractedData && <Search className="h-4 w-4" />}
+              {!isAnalyzing && extractedData && <CheckCircle className="h-4 w-4" />}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>

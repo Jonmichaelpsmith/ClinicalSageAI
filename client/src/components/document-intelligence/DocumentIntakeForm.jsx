@@ -1,232 +1,311 @@
-import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FileText, Upload, FileUp, AlertTriangle, Server } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Separator } from '@/components/ui/separator';
+import { CheckCircle2, XCircle, AlertTriangle, Info, FileCheck, Edit } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { documentIntelligenceService } from '@/services/DocumentIntelligenceService';
 
 /**
- * DocumentIntakeForm Component
+ * Document Intake Form Component
  * 
- * This component provides a dedicated form for document upload and initial 
- * processing with integrated OCR for regulatory documents like 510(k) submissions,
- * technical files, and instructions for use.
+ * This component displays the extracted data from documents and allows
+ * users to review, edit, and apply it to the device profile.
+ * 
+ * @param {Object} props
+ * @param {Object} props.extractedData - The extracted data from documents
+ * @param {string} props.regulatoryContext - The regulatory context (510k, cer, etc.)
+ * @param {Function} props.onApplyData - Callback for when data is applied
  */
-const DocumentIntakeForm = ({ 
-  documentType,
-  onDocumentProcessed,
-  className = "" 
+const DocumentIntakeForm = ({
+  extractedData = null,
+  regulatoryContext = '510k',
+  onApplyData
 }) => {
+  const [formData, setFormData] = useState({});
+  const [validationResults, setValidationResults] = useState(null);
+  const [isValidating, setIsValidating] = useState(false);
+  const [selectedFields, setSelectedFields] = useState({});
+  const [editedFields, setEditedFields] = useState({});
+  const [validationError, setValidationError] = useState(null);
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('upload');
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [processingError, setProcessingError] = useState(null);
-  
-  // Handle file selection
-  const handleFileSelect = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    
-    const isValidType = file.type === 'application/pdf' || 
-                      file.type === 'application/msword' || 
-                      file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-    
-    if (!isValidType) {
-      toast({
-        title: "Invalid file type",
-        description: "Please select a PDF or Word document",
-        variant: "destructive"
+
+  // Initialize form data from extracted data
+  useEffect(() => {
+    if (extractedData) {
+      setFormData(extractedData);
+      
+      // Initialize all checkboxes as checked
+      const initialSelectedFields = {};
+      Object.keys(extractedData).forEach(key => {
+        initialSelectedFields[key] = true;
       });
-      return;
+      setSelectedFields(initialSelectedFields);
     }
-    
-    setSelectedFile(file);
+  }, [extractedData]);
+
+  // Toggle selection for a field
+  const toggleFieldSelection = (fieldName) => {
+    setSelectedFields(prev => ({
+      ...prev,
+      [fieldName]: !prev[fieldName]
+    }));
   };
-  
-  // Process the selected document
-  const handleProcessDocument = async () => {
-    if (!selectedFile) {
-      toast({
-        title: "No file selected",
-        description: "Please select a document to process",
-        variant: "destructive"
-      });
+
+  // Handle field value change
+  const handleFieldChange = (fieldName, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [fieldName]: value
+    }));
+    
+    // Mark field as edited
+    setEditedFields(prev => ({
+      ...prev,
+      [fieldName]: true
+    }));
+  };
+
+  // Validate the extracted data against regulatory requirements
+  const validateData = async () => {
+    if (!formData) {
+      setValidationError('No data to validate.');
       return;
     }
-    
-    setIsProcessing(true);
-    setProcessingError(null);
-    
+
+    setIsValidating(true);
+    setValidationError(null);
+
     try {
-      // Here we would normally upload the file to the server for OCR processing
-      // For now, we'll simulate the process with a timeout
+      const results = await documentIntelligenceService.validateExtractedData(
+        formData,
+        regulatoryContext
+      );
       
-      setTimeout(() => {
-        // Simulate successful processing
-        setIsProcessing(false);
-        
-        // Call parent callback with processed document data
-        if (onDocumentProcessed) {
-          onDocumentProcessed({
-            id: `doc-${Date.now()}`,
-            name: selectedFile.name,
-            size: selectedFile.size,
-            type: selectedFile.type,
-            processed: true,
-            documentType: guessDocumentType(selectedFile.name),
-            extractedContent: {
-              deviceName: documentType === '510k' ? "CardioMonitor 2000" : "Generic Medical Device",
-              manufacturer: "MedTech Innovations",
-              intendedUse: "Continuous monitoring of cardiac rhythm and vital signs in clinical settings",
-              deviceClass: "II"
-            }
-          });
-        }
-        
-        // Reset the form
-        setSelectedFile(null);
-        
+      setValidationResults(results);
+      
+      // Show toast based on validation results
+      if (results.valid) {
         toast({
-          title: "Document processed",
-          description: "Document has been successfully processed and data extracted",
-          variant: "success"
+          title: 'Validation Successful',
+          description: 'The extracted data meets regulatory requirements.',
+          variant: 'success',
         });
-      }, 2000);
+      } else {
+        toast({
+          title: 'Validation Warning',
+          description: 'Some fields may need attention. Please review the validation results.',
+          variant: 'warning',
+        });
+      }
     } catch (error) {
-      console.error('Error processing document:', error);
-      setIsProcessing(false);
-      setProcessingError("Failed to process document. Please try again.");
+      console.error('Error validating data:', error);
+      setValidationError(error.message || 'An error occurred during validation.');
       
       toast({
-        title: "Processing failed",
-        description: "There was an error processing your document",
-        variant: "destructive"
+        title: 'Validation Failed',
+        description: error.message || 'An error occurred during validation.',
+        variant: 'destructive',
       });
+    } finally {
+      setIsValidating(false);
     }
   };
-  
-  // Guess document type based on filename
-  const guessDocumentType = (filename) => {
-    const lowerFilename = filename.toLowerCase();
-    if (lowerFilename.includes('510k') || lowerFilename.includes('submission')) return '510k Submission';
-    if (lowerFilename.includes('technical') || lowerFilename.includes('file')) return 'Technical File';
-    if (lowerFilename.includes('ifu') || lowerFilename.includes('instruction')) return 'Instructions for Use';
-    if (lowerFilename.includes('clinical') || lowerFilename.includes('study')) return 'Clinical Study';
-    return 'Regulatory Document';
+
+  // Apply the selected fields to the device profile
+  const applyData = () => {
+    // Create a new object with only the selected fields
+    const selectedData = {};
+    Object.keys(selectedFields).forEach(key => {
+      if (selectedFields[key]) {
+        selectedData[key] = formData[key];
+      }
+    });
+    
+    // Call the callback with the selected data
+    if (onApplyData) {
+      onApplyData(selectedData);
+    }
   };
-  
+
+  // Get the field label from a camelCase field name
+  const getFieldLabel = (fieldName) => {
+    if (!fieldName) return '';
+    
+    // Handle special cases
+    if (fieldName === 'id') return 'ID';
+    if (fieldName === 'ifu') return 'IFU';
+    if (fieldName === 'ndc') return 'NDC';
+    if (fieldName === 'fda') return 'FDA';
+    
+    // Convert camelCase to Title Case with spaces
+    return fieldName
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/^./, str => str.toUpperCase());
+  };
+
+  // Get the appropriate validation icon for a field
+  const getValidationIcon = (fieldName) => {
+    if (!validationResults || !validationResults.fieldResults) return null;
+    
+    const fieldResult = validationResults.fieldResults[fieldName];
+    if (!fieldResult) return null;
+    
+    if (fieldResult.valid) {
+      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+    } else {
+      return <AlertTriangle className="h-4 w-4 text-amber-500" />;
+    }
+  };
+
+  // Determine if a field has been edited
+  const isFieldEdited = (fieldName) => {
+    return editedFields[fieldName] || false;
+  };
+
   return (
-    <Card className={`border-0 shadow-none overflow-hidden ${className}`}>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-xl font-semibold text-blue-800">
-          Document Intake
-        </CardTitle>
-        <CardDescription>
-          Upload regulatory documents for intelligent processing
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-4">
-          <TabsList className="grid grid-cols-2 mb-4">
-            <TabsTrigger value="upload" disabled={isProcessing}>
-              <Upload className="h-4 w-4 mr-2" />
-              Upload
-            </TabsTrigger>
-            <TabsTrigger value="server" disabled={isProcessing}>
-              <Server className="h-4 w-4 mr-2" />
-              Server Files
-            </TabsTrigger>
-          </TabsList>
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Review Extracted Data</CardTitle>
+          <CardDescription>
+            Review the data extracted from your documents and apply it to your device profile.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {!extractedData && (
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertTitle>No Data Available</AlertTitle>
+              <AlertDescription>No data has been extracted from documents yet.</AlertDescription>
+            </Alert>
+          )}
           
-          <TabsContent value="upload" className="space-y-4">
-            <div className="border border-dashed border-gray-300 rounded-md p-6 text-center">
-              {selectedFile ? (
-                <div className="space-y-2">
-                  <FileText className="h-12 w-12 text-blue-600 mx-auto" />
-                  <p className="text-sm font-medium">{selectedFile.name}</p>
-                  <p className="text-xs text-gray-500">
-                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                  </p>
-                  <div className="flex space-x-2 justify-center mt-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setSelectedFile(null)}
-                      disabled={isProcessing}
-                    >
-                      Remove
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={handleProcessDocument}
-                      disabled={isProcessing}
-                      className="bg-blue-600 hover:bg-blue-700 text-white"
-                    >
-                      {isProcessing ? 'Processing...' : 'Process Document'}
-                    </Button>
-                  </div>
-                </div>
-              ) : (
+          {extractedData && (
+            <>
+              {/* Validation Controls */}
+              <div className="flex items-center justify-between mb-4">
                 <div>
-                  <FileUp className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-600 mb-2">
-                    Drag and drop your document here or click to browse
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    onClick={() => document.getElementById('document-file-upload').click()}
-                  >
-                    Select Document
-                  </Button>
-                  <input
-                    id="document-file-upload"
-                    type="file"
-                    className="hidden"
-                    accept=".pdf,.doc,.docx"
-                    onChange={handleFileSelect}
-                  />
-                  <p className="text-xs text-gray-400 mt-2">
-                    Supported formats: PDF, DOC, DOCX
+                  <h3 className="text-lg font-semibold">Extracted Data</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Review and edit the extracted data before applying it to your device profile.
                   </p>
                 </div>
-              )}
-            </div>
-            
-            {processingError && (
-              <div className="bg-red-50 border border-red-200 rounded-md p-3 flex items-start">
-                <AlertTriangle className="h-5 w-5 text-red-600 mr-2 mt-0.5" />
-                <div>
-                  <h4 className="text-sm font-medium text-red-800">Processing Error</h4>
-                  <p className="text-xs text-red-700">{processingError}</p>
-                </div>
-              </div>
-            )}
-            
-            <div className="text-xs text-gray-600 p-3 bg-gray-50 rounded-md">
-              <p><span className="font-medium">Document Intelligence:</span> Our system will automatically extract key regulatory information from your document using multi-layer analysis.</p>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="server" className="space-y-4">
-            <div className="border border-gray-200 rounded-md p-4">
-              <p className="text-sm text-gray-600 text-center mb-3">
-                Access previously uploaded documents from the server
-              </p>
-              <div className="text-center">
-                <Button variant="outline" disabled className="opacity-70">
-                  <Server className="h-4 w-4 mr-2" />
-                  Browse Server Files
+                <Button
+                  onClick={validateData}
+                  disabled={isValidating || !extractedData}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  {isValidating ? 'Validating...' : 'Validate Data'}
+                  <FileCheck className="h-4 w-4" />
                 </Button>
-                <p className="text-xs text-gray-400 mt-2">
-                  Server browsing will be available in a future update
-                </p>
               </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
+              
+              {/* Validation Error */}
+              {validationError && (
+                <Alert variant="destructive" className="mb-4">
+                  <AlertTriangle className="h-4 w-4" />
+                  <AlertTitle>Validation Error</AlertTitle>
+                  <AlertDescription>{validationError}</AlertDescription>
+                </Alert>
+              )}
+              
+              {/* Validation Results */}
+              {validationResults && (
+                <Alert 
+                  variant={validationResults.valid ? 'success' : 'warning'}
+                  className={validationResults.valid ? 'bg-green-50 border-green-200' : 'bg-amber-50 border-amber-200'}
+                >
+                  {validationResults.valid ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                  ) : (
+                    <AlertTriangle className="h-4 w-4 text-amber-600" />
+                  )}
+                  <AlertTitle className={validationResults.valid ? 'text-green-800' : 'text-amber-800'}>
+                    {validationResults.valid ? 'Validation Successful' : 'Validation Warning'}
+                  </AlertTitle>
+                  <AlertDescription className={validationResults.valid ? 'text-green-700' : 'text-amber-700'}>
+                    {validationResults.message}
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              {/* Extracted Data Fields */}
+              <ScrollArea className="h-[400px] pr-4">
+                <div className="space-y-4">
+                  {Object.keys(formData).map((fieldName) => (
+                    <div key={fieldName} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`select-${fieldName}`}
+                            checked={selectedFields[fieldName] || false}
+                            onCheckedChange={() => toggleFieldSelection(fieldName)}
+                          />
+                          <Label 
+                            htmlFor={`select-${fieldName}`}
+                            className="font-medium cursor-pointer"
+                          >
+                            {getFieldLabel(fieldName)}
+                          </Label>
+                          {isFieldEdited(fieldName) && (
+                            <Badge variant="outline" className="text-xs">
+                              Edited
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {getValidationIcon(fieldName)}
+                          {validationResults?.fieldResults?.[fieldName]?.confidence && (
+                            <span className="text-xs text-muted-foreground">
+                              {Math.round(validationResults.fieldResults[fieldName].confidence * 100)}% confidence
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <Input
+                        value={formData[fieldName] || ''}
+                        onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+                        disabled={!selectedFields[fieldName]}
+                        className={`${validationResults?.fieldResults?.[fieldName]?.valid === false ? 'border-amber-300' : ''}`}
+                      />
+                      
+                      {validationResults?.fieldResults?.[fieldName]?.message && (
+                        <p className="text-xs text-amber-600">
+                          {validationResults.fieldResults[fieldName].message}
+                        </p>
+                      )}
+                      
+                      <Separator className="my-2" />
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </>
+          )}
+        </CardContent>
+        <CardFooter className="flex justify-between">
+          <Button variant="outline">
+            Reset Changes
+          </Button>
+          <Button
+            onClick={applyData}
+            disabled={!extractedData || Object.keys(selectedFields).length === 0}
+            className="flex items-center gap-2"
+          >
+            Apply to Device Profile
+            <CheckCircle2 className="h-4 w-4" />
+          </Button>
+        </CardFooter>
+      </Card>
+    </div>
   );
 };
 
