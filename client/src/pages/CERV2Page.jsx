@@ -4,7 +4,7 @@ import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, RefreshCw } from 'lucide-react';
+import { ShieldAlert, RefreshCw, Brain, X } from 'lucide-react';
 import { initializeStates, saveState, loadState, recoverWorkflow, getWorkflowDiagnostics } from '../utils/stabilityPatches';
 import WorkflowContinuityManager from '../components/recovery/WorkflowContinuityManager';
 import DeviceProfileSelector from '../components/510k/DeviceProfileSelector';
@@ -2291,27 +2291,64 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       return <LiteratureReviewWorkflow cerDocumentId={cerDocumentId} />;
     }
     else if (activeTab === 'document-intelligence') {
-      // Use the standalone component that's specifically designed to avoid modal conflicts
-      const StandaloneDocumentIntelligence = require('../components/document-intelligence/StandaloneDocumentIntelligence').default;
+      // Import DocumentIntelligenceTab directly for better performance
+      const DocumentIntelligenceTab = require('../components/document-intelligence/DocumentIntelligenceTab').default;
+      // Import ModalPortal to render the modal with proper isolation
+      const ModalPortal = require('../components/ModalPortal').default;
+      
+      // Close the profile selector if it's open
+      if (showProfileSelector) {
+        setShowProfileSelector(false);
+      }
       
       return (
-        <StandaloneDocumentIntelligence
-          regulatoryContext={documentType}
-          deviceProfile={deviceProfile}
-          onDeviceProfileUpdate={(updatedProfile) => {
-            if (updatedProfile) {
-              setDeviceProfile(updatedProfile);
-              saveState('deviceProfile', updatedProfile);
-              setActiveTab('device');
-              toast({
-                title: "Device Profile Updated",
-                description: "Document data successfully applied to your device profile.",
-                variant: "success",
-              });
-            }
-          }}
-          onClose={() => setActiveTab('device')}
-        />
+        <ModalPortal zIndex={9999}>
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+            <div className="bg-white dark:bg-slate-800 w-11/12 max-w-5xl h-[90vh] rounded-xl shadow-2xl flex flex-col overflow-hidden">
+              {/* Header */}
+              <div className="bg-gradient-to-r from-primary to-primary/80 text-white px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="bg-white/20 p-2 rounded-lg">
+                    <Brain className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-semibold">Document Intelligence</h2>
+                    <p className="text-sm text-white/80">Extract and analyze regulatory document data</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setActiveTab('device')}
+                  className="border-white/30 text-white hover:bg-white/20 hover:text-white"
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Close
+                </Button>
+              </div>
+              
+              {/* Content */}
+              <div className="flex-1 overflow-auto p-6">
+                <DocumentIntelligenceTab 
+                  regulatoryContext={documentType}
+                  deviceProfile={deviceProfile}
+                  onDeviceProfileUpdate={(updatedProfile) => {
+                    if (updatedProfile) {
+                      setDeviceProfile(updatedProfile);
+                      saveState('deviceProfile', updatedProfile);
+                      setActiveTab('device');
+                      toast({
+                        title: "Device Profile Updated",
+                        description: "Document data successfully applied to your device profile.",
+                        variant: "success",
+                      });
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </ModalPortal>
       );
     }
     else if (activeTab === 'compliance') {
