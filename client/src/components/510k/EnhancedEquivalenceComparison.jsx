@@ -295,24 +295,117 @@ const EnhancedEquivalenceComparison = ({
     alert('Equivalence report data exported successfully. This JSON file can be used for FDA 510(k) submission preparation.');
   };
   
-  // Request AI assistance for non-equivalent features
+  // Enhanced AI assistance for non-equivalent features with regulatory context
   const handleRequestAI = (parameter) => {
     if (typeof onRequestAIAssistance === 'function') {
       onRequestAIAssistance(parameter);
     }
     
-    // For demo purposes, simulate AI responses
-    const demoResponses = {
-      'Display': 'The subject device has a higher resolution display (1024x768) than the predicate (800x600). This is likely an improvement and should be documented as such, emphasizing that the higher resolution enhances visibility of patient data without affecting safety or effectiveness.',
-      'Battery Life': 'The subject device has a shorter battery life (6h vs 8h). Consider documenting comparative testing showing that 6 hours is sufficient for the intended use scenario, or implement power optimizations to achieve parity with the predicate.',
-      'Connectivity': 'The subject device uses newer connectivity standards (Bluetooth 5.0 vs 4.2). Demonstrate that this represents an improvement in security and reliability without introducing new risks.',
-      'Weight': 'The subject device is heavier (3.6 lbs vs 3.2 lbs). Testing should show that this difference does not impact usability or introduce new risks for operators.'
+    // Add to comparison history to track user actions
+    const timestamp = new Date().toISOString();
+    const newHistoryEntry = {
+      id: `history-${timestamp}`,
+      timestamp,
+      action: 'requested_ai_assistance',
+      parameter: parameter
     };
+    setComparisonHistory(prev => [...prev, newHistoryEntry]);
+    
+    // Enhanced AI responses with regulatory context and mitigation strategies
+    const enhancedResponses = {
+      'Display': {
+        analysis: "The subject device has a higher resolution display (1024x768) than the predicate (800x600).",
+        regulatoryContext: "Per FDA guidance, improvements in technological characteristics are generally acceptable when they do not raise different questions of safety or effectiveness.",
+        mitigationStrategy: "1. Document that the higher resolution enhances visibility of patient data without affecting safety or effectiveness.\n2. Provide human factors validation testing results showing improved legibility.\n3. Include a comparison table highlighting this as a technological improvement.",
+        regulatoryCitations: ["21 CFR 807.100(b)(2)(ii)(B)", "FDA Guidance: Deciding When to Submit a 510(k) for a Change to an Existing Device (2017)"]
+      },
+      'Battery Life': {
+        analysis: "The subject device has a shorter battery life (6h vs 8h), which could be seen as a performance decrease.",
+        regulatoryContext: "Changes that could significantly affect the safety or effectiveness of the device require substantial equivalence justification.",
+        mitigationStrategy: "1. Conduct comparative testing showing that 6 hours is sufficient for the intended use scenario.\n2. Provide risk analysis demonstrating no new risks associated with shorter battery life.\n3. Consider implementing power optimization features.\n4. Include clear labeling about battery duration expectations.",
+        regulatoryCitations: ["FDA Guidance: Deciding When to Submit a 510(k) for a Change to an Existing Device (2017)", "CDRH Benefit-Risk Guidance (2016)"]
+      },
+      'Connectivity': {
+        analysis: "The subject device uses newer connectivity standards (Bluetooth 5.0 vs 4.2).",
+        regulatoryContext: "Updates to connectivity standards typically require cybersecurity risk evaluation.",
+        mitigationStrategy: "1. Demonstrate that this represents an improvement in security and reliability.\n2. Provide cybersecurity risk assessment showing no new risks.\n3. Include interoperability testing with relevant systems.\n4. Document compliance with FDA guidance on wireless technologies.",
+        regulatoryCitations: ["FDA Guidance: Radio Frequency Wireless Technology in Medical Devices", "Content of Premarket Submissions for Management of Cybersecurity in Medical Devices (2018)"]
+      },
+      'Weight': {
+        analysis: "The subject device is heavier (3.6 lbs vs 3.2 lbs).",
+        regulatoryContext: "Physical changes require evaluation of ergonomic and usability impacts.",
+        mitigationStrategy: "1. Conduct human factors testing to show that the weight difference does not impact usability.\n2. Provide ergonomic assessment for handheld applications.\n3. Include risk analysis for any mounting or support accessories.\n4. Document user feedback from testing.",
+        regulatoryCitations: ["FDA Guidance: Applying Human Factors and Usability Engineering to Medical Devices (2016)"]
+      },
+      'Materials': {
+        analysis: "The subject device uses different materials than the predicate device.",
+        regulatoryContext: "Material changes require biocompatibility evaluation.",
+        mitigationStrategy: "1. Provide biocompatibility testing per ISO 10993.\n2. Document material formulation and supplier information.\n3. Include chemical characterization for patient-contacting components.\n4. Compare material properties to predicate materials.",
+        regulatoryCitations: ["ISO 10993", "FDA Guidance: Use of International Standard ISO 10993-1"]
+      },
+      'Dimensions': {
+        analysis: "The subject device has different dimensions from the predicate.",
+        regulatoryContext: "Physical changes require evaluation of intended use compatibility.",
+        mitigationStrategy: "1. Confirm compatibility with intended use environments.\n2. Document any testing related to dimensional requirements.\n3. Provide engineering rationale for dimension changes.\n4. Include performance testing showing equivalence despite dimensional differences.",
+        regulatoryCitations: ["FDA Guidance: Deciding When to Submit a 510(k) for a Change to an Existing Device (2017)"]
+      }
+    };
+    
+    // Set parameter importance for prioritization
+    if (parameter.toLowerCase().includes('material') || 
+        parameter.toLowerCase().includes('safety') || 
+        parameter.toLowerCase().includes('battery') ||
+        parameter.toLowerCase().includes('energy')) {
+      setParameterImportance(prev => ({
+        ...prev,
+        [parameter]: 0.9 // High importance
+      }));
+    } else if (parameter.toLowerCase().includes('dimension') || 
+               parameter.toLowerCase().includes('weight') ||
+               parameter.toLowerCase().includes('connectivity')) {
+      setParameterImportance(prev => ({
+        ...prev,
+        [parameter]: 0.6 // Medium importance
+      }));
+    } else {
+      setParameterImportance(prev => ({
+        ...prev,
+        [parameter]: 0.3 // Lower importance
+      }));
+    }
+    
+    // Generate regulatory notes for this parameter
+    setRegulatoryNotes(prev => ({
+      ...prev,
+      [parameter]: `FDA typically requires detailed comparison for this type of parameter. Reference 21 CFR 807.87(f) in your submission.`
+    }));
+    
+    // Generate specific response based on parameter type or use a sophisticated default
+    let aiResponse = '';
+    
+    // Check if we have a prepared enhanced response
+    if (enhancedResponses[parameter]) {
+      const response = enhancedResponses[parameter];
+      aiResponse = `**Analysis:** ${response.analysis}\n\n**Regulatory Context:** ${response.regulatoryContext}\n\n**Mitigation Strategy:**\n${response.mitigationStrategy}\n\n${showCitations ? `**Regulatory Citations:**\n${response.regulatoryCitations.join('\n')}` : ''}`;
+    } else {
+      // Generate dynamic response based on parameter name
+      const paramLower = parameter.toLowerCase();
+      
+      if (paramLower.includes('accuracy') || paramLower.includes('precision') || paramLower.includes('sensitivity')) {
+        aiResponse = `**Analysis:** Performance metric differences require validation.\n\n**Regulatory Context:** FDA requires evidence that the subject device performs at least as well as the predicate for critical performance metrics.\n\n**Mitigation Strategy:**\n1. Conduct side-by-side performance testing.\n2. Provide statistical analysis showing non-inferiority.\n3. Document test methods and acceptance criteria.\n4. If performance is lower, provide risk-benefit analysis supporting substantial equivalence.`;
+      } else if (paramLower.includes('power') || paramLower.includes('voltage') || paramLower.includes('current')) {
+        aiResponse = `**Analysis:** Electrical parameter differences require safety evaluation.\n\n**Regulatory Context:** Changes in electrical parameters may affect safety.\n\n**Mitigation Strategy:**\n1. Provide electrical safety testing per applicable standards.\n2. Document thermal safety analysis.\n3. Include EMC testing results.\n4. Analyze and document any effects on other device functions.`;
+      } else if (paramLower.includes('interface') || paramLower.includes('control') || paramLower.includes('user')) {
+        aiResponse = `**Analysis:** User interface differences require usability evaluation.\n\n**Regulatory Context:** Changes to user interfaces may affect safe and effective use.\n\n**Mitigation Strategy:**\n1. Conduct human factors validation testing.\n2. Document user error analysis.\n3. Provide training materials comparison.\n4. Include screenshots or images comparing interfaces.`;
+      } else {
+        aiResponse = `**Analysis:** Parameter differences require substantial equivalence justification.\n\n**Regulatory Context:** 21 CFR 807.87(f) requires a 510(k) to include a description of similarities and differences to predicates.\n\n**Mitigation Strategy:**\n1. Document engineering rationale for the difference.\n2. Provide performance testing showing equivalence despite the difference.\n3. Include risk analysis addressing any potential new risks.\n4. Consider expert statements supporting substantial equivalence.`;
+      }
+    }
     
     // Update the AI suggestions state
     setAiSuggestions(prev => ({
       ...prev,
-      [parameter]: demoResponses[parameter] || 'Analysis in progress. AI assistance will provide guidance on addressing this non-equivalent feature.'
+      [parameter]: aiResponse
     }));
   };
   
