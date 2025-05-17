@@ -232,10 +232,20 @@ class DocuShareService {
       throw error;
     }
   }
-  
+
+  /**
+   * Get the current DocuShare connection status for the IND module
+   *
+   * @returns {Promise<Object>} Status information
+   */
+  async getDocuShareStatus() {
+    const res = await apiRequest.get('/api/ind/docushare/status');
+    return res.data;
+  }
+
   /**
    * Get the folder structure for the document vault
-   * 
+   *
    * @param {string} rootFolderId Optional root folder ID to start from
    * @param {Object} options Optional parameters for controlling the tree depth and filters
    * @returns {Promise<Object>} Hierarchical folder structure with files
@@ -271,4 +281,9 @@ class DocuShareService {
 
 // Create and export singleton instance
 const docuShareService = new DocuShareService();
+
+// Named export for convenience in functional imports
+export const getDocuShareStatus = (...args) =>
+  docuShareService.getDocuShareStatus(...args);
+
 export default docuShareService;
