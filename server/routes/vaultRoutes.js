@@ -115,6 +115,43 @@ router.post('/upload', upload.single('document'), (req, res) => {
   }
 });
 
+// Route specifically for uploading Word documents (DOCX)
+router.post('/documents/word', upload.single('file'), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    }
+
+    // Ensure file is a DOCX
+    const ext = path.extname(req.file.originalname).toLowerCase();
+    if (ext !== '.docx') {
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ success: false, message: 'Only DOCX files are allowed' });
+    }
+
+    const documentMetadata = {
+      originalName: req.file.originalname,
+      storedName: req.file.filename,
+      moduleLinked: req.body.module || 'Unknown',
+      projectId: req.body.projectId || 'Unknown',
+      uploader: req.body.uploader || 'Anonymous',
+      fileSize: req.file.size,
+      mimeType: req.file.mimetype,
+      uploadDate: new Date().toISOString(),
+    };
+
+    const metadata = readMetadata();
+    metadata.push(documentMetadata);
+    if (writeMetadata(metadata)) {
+      return res.status(200).json({ success: true, file: documentMetadata });
+    }
+    return res.status(500).json({ success: false, message: 'Failed to save document metadata' });
+  } catch (error) {
+    console.error('Error uploading Word document:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // Route to list all documents
 router.get('/list', (req, res) => {
   try {
