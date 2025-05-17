@@ -50,6 +50,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import * as googleDocsService from '../services/googleDocsService';
 import * as googleAuthService from '../services/googleAuthService';
 import * as copilotService from '../services/copilotService';
+import * as msOfficeVaultBridge from '../services/msOfficeVaultBridge';
 
 // AI services
 import * as aiService from '../services/aiService';
@@ -58,6 +59,7 @@ import * as aiService from '../services/aiService';
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
 const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
 const GoogleDocsEmbed = lazy(() => import('../components/GoogleDocsEmbed'));
+const MsWordPopupEditor = lazy(() => import('../components/MsWordPopupEditor'));
 import { 
   FileText, 
   Edit, 
@@ -228,6 +230,8 @@ export default function CoAuthor() {
   // Document editor integration state
   const [msWordPopupOpen, setMsWordPopupOpen] = useState(false);
   const [msWordAvailable, setMsWordAvailable] = useState(true); // Set to true for demo
+  const [wordDocUrl, setWordDocUrl] = useState(null);
+  const [wordDocBlob, setWordDocBlob] = useState(null);
   const [googleDocsPopupOpen, setGoogleDocsPopupOpen] = useState(false);
   const [isGoogleAuthenticated, setIsGoogleAuthenticated] = useState(false);
   const [googleUserInfo, setGoogleUserInfo] = useState(null);
@@ -3203,8 +3207,8 @@ export default function CoAuthor() {
             <CardContent>
               <div className="space-y-4">
                 <div className="flex space-x-2">
-                  <Button 
-                    size="sm" 
+                  <Button
+                    size="sm"
                     className="bg-blue-600 hover:bg-blue-700"
                     onClick={() => {
                       // Open the new document dialog instead of immediately creating
@@ -3218,9 +3222,47 @@ export default function CoAuthor() {
                     <FilePlus2 className="h-4 w-4 mr-2" />
                     New Document
                   </Button>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-blue-200 text-blue-700"
+                    onClick={async () => {
+                      if (!selectedDocument) {
+                        toast({
+                          title: 'Select a Document',
+                          description: 'Please select a document to edit first.',
+                          variant: 'destructive'
+                        });
+                        return;
+                      }
+
+                      try {
+                        toast({
+                          title: 'Opening Microsoft Word',
+                          description: 'Preparing document for editing in Word...',
+                          variant: 'default'
+                        });
+
+                        const { url, blob } = await msOfficeVaultBridge.openDocx(selectedDocument.id);
+                        setWordDocUrl(url);
+                        setWordDocBlob(blob);
+                        setMsWordPopupOpen(true);
+                      } catch (error) {
+                        console.error('Error opening Word document:', error);
+                        toast({
+                          title: 'Error',
+                          description: 'Failed to open document in Microsoft Word.',
+                          variant: 'destructive'
+                        });
+                      }
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Edit in Word
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
                     className="border-blue-200 text-blue-700"
                     disabled={authLoading}
                     onClick={async () => {
@@ -4341,7 +4383,61 @@ export default function CoAuthor() {
           </div>
         )}
       </div>
-      
+
+      {/* Microsoft Word Integration */}
+      <Dialog open={msWordPopupOpen} onOpenChange={setMsWordPopupOpen} className="max-w-[90%] w-[1200px]">
+        <DialogContent className="max-w-[90%] w-[1200px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center">
+              <FileText className="h-5 w-5 mr-2" />
+              Microsoft Word - {selectedDocument?.title || 'Module 2.5 Clinical Overview'}
+            </DialogTitle>
+            <DialogDescription>
+              Edit your document with Microsoft Word Online.
+            </DialogDescription>
+          </DialogHeader>
+
+          <Suspense fallback={
+            <div className="py-20 flex flex-col items-center justify-center">
+              <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
+              <p>Loading Microsoft Word...</p>
+              <p className="text-xs text-gray-500 mt-2">This may take a few moments</p>
+            </div>
+          }>
+            {wordDocUrl && (
+              <MsWordPopupEditor
+                documentUrl={wordDocUrl}
+                documentId={selectedDocument?.id?.toString()}
+                onSave={async () => {
+                  try {
+                    await msOfficeVaultBridge.saveDocx(wordDocBlob, {
+                      title: selectedDocument?.title,
+                      sourceId: selectedDocument?.id
+                    });
+                    toast({
+                      title: 'Document Saved',
+                      description: 'Your document has been saved to the VAULT.',
+                      variant: 'default'
+                    });
+                  } catch (error) {
+                    console.error('Error saving Word document:', error);
+                    toast({
+                      title: 'Save Error',
+                      description: 'Failed to save document to VAULT.',
+                      variant: 'destructive'
+                    });
+                  }
+                }}
+              />
+            )}
+          </Suspense>
+
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setMsWordPopupOpen(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Google Docs Integration */}
       <Dialog open={googleDocsPopupOpen} onOpenChange={setGoogleDocsPopupOpen} className="max-w-[90%] w-[1200px]">
         <DialogContent className="max-w-[90%] w-[1200px] max-h-[90vh] overflow-y-auto">
