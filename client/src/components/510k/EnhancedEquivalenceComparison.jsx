@@ -1,16 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   ArrowRight, Download, Check, X, AlertTriangle, Lightbulb, 
-  FileText, HelpCircle, Plus, Minus
+  FileText, HelpCircle, Plus, Minus, Filter, BarChart, Printer,
+  Share2, Star, ChevronsUpDown, ExternalLink, Search, Copy
 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 /**
  * Enhanced Equivalence Comparison Component
@@ -24,6 +29,7 @@ const EnhancedEquivalenceComparison = ({
   onGenerateReport,
   onRequestAIAssistance
 }) => {
+  // Core state variables
   const [activeTab, setActiveTab] = useState('technical');
   const [expandedParameters, setExpandedParameters] = useState({});
   const [aiSuggestions, setAiSuggestions] = useState({});
@@ -38,6 +44,19 @@ const EnhancedEquivalenceComparison = ({
   const [selectedPredicate, setSelectedPredicate] = useState(predicateDevices[0]?.id);
   const [filterNonEquivalent, setFilterNonEquivalent] = useState(false);
   const [showEquivalenceCriteria, setShowEquivalenceCriteria] = useState(false);
+  
+  // Advanced features and enhancements
+  const [searchTerm, setSearchTerm] = useState('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [parameterImportance, setParameterImportance] = useState({});
+  const [showVisualComparison, setShowVisualComparison] = useState(false);
+  const [exportFormat, setExportFormat] = useState('json');
+  const [showCitations, setShowCitations] = useState(false);
+  const [regulatoryNotes, setRegulatoryNotes] = useState({});
+  const [comparisonHistory, setComparisonHistory] = useState([]);
+  const [equivalenceThreshold, setEquivalenceThreshold] = useState(0.1); // 10% default
+  const [autoSuggestMitigations, setAutoSuggestMitigations] = useState(true);
+  const [highlightCriticalParameters, setHighlightCriticalParameters] = useState(true);
   
   // Calculate equivalence scores when devices change
   useEffect(() => {
@@ -138,7 +157,7 @@ const EnhancedEquivalenceComparison = ({
     return false;
   };
   
-  // Get filtered parameters based on the non-equivalent filter setting
+  // Enhanced filtered parameters with search, advanced filtering, and importance scoring
   const getFilteredParameters = (paramType) => {
     let parameters = [];
     
@@ -153,38 +172,67 @@ const EnhancedEquivalenceComparison = ({
       parameters = []; // No clinical parameters in this demo
     }
     
-    // If filter is off, return all parameters
-    if (!filterNonEquivalent) {
-      return parameters;
-    }
-    
-    // If filter is on, only return non-equivalent parameters
     const selectedPredicateData = predicateDevices.find(p => p.id === selectedPredicate);
     if (!selectedPredicateData) return parameters;
     
-    return parameters.filter(param => {
-      // Get the matching parameter from the predicate device
-      let predicateParams = [];
-      if (paramType === 'technical') {
-        predicateParams = selectedPredicateData.technicalCharacteristics || [];
-      } else if (paramType === 'performance') {
-        predicateParams = selectedPredicateData.performanceData || [];
-      } else if (paramType === 'safety') {
-        predicateParams = selectedPredicateData.safetyFeatures || [];
-      }
-      
-      const predicateParam = predicateParams.find(p => p.name === param.name);
-      
-      // If no matching parameter found in predicate, consider it non-equivalent
-      if (!predicateParam) return true;
-      
-      // Check equivalence with appropriate parameter type
-      return !isEquivalent(
-        param.value, 
-        predicateParam.value,
-        paramType === 'performance' ? 'performance' : 'general'
+    // Apply search term filtering if present
+    if (searchTerm.trim()) {
+      const lowercaseSearch = searchTerm.toLowerCase().trim();
+      parameters = parameters.filter(param => 
+        param.name.toLowerCase().includes(lowercaseSearch) || 
+        String(param.value).toLowerCase().includes(lowercaseSearch)
       );
-    });
+    }
+    
+    // Get the appropriate predicate parameters
+    let predicateParams = [];
+    if (paramType === 'technical') {
+      predicateParams = selectedPredicateData.technicalCharacteristics || [];
+    } else if (paramType === 'performance') {
+      predicateParams = selectedPredicateData.performanceData || [];
+    } else if (paramType === 'safety') {
+      predicateParams = selectedPredicateData.safetyFeatures || [];
+    }
+    
+    // Apply non-equivalent filtering if enabled
+    if (filterNonEquivalent) {
+      parameters = parameters.filter(param => {
+        const predicateParam = predicateParams.find(p => p.name === param.name);
+        
+        // If no matching parameter found in predicate, consider it non-equivalent
+        if (!predicateParam) return true;
+        
+        // Check equivalence with appropriate parameter type
+        return !isEquivalent(
+          param.value, 
+          predicateParam.value,
+          paramType === 'performance' ? 'performance' : 'general'
+        );
+      });
+    }
+    
+    // Highlight critical parameters if enabled
+    if (highlightCriticalParameters) {
+      // Mark parameters as critical based on importance to equivalence determination
+      // In a real implementation, this would use a more sophisticated algorithm
+      parameters = parameters.map(param => ({
+        ...param,
+        isCritical: ["accuracy", "material", "energy", "sensitivity", "specificity", "detection", "safety", "fail-safe", "biocompatibility", "alarm"].some(
+          keyword => param.name.toLowerCase().includes(keyword)
+        )
+      }));
+    }
+    
+    // Sort parameters by importance if importance scores exist
+    if (Object.keys(parameterImportance).length > 0) {
+      parameters.sort((a, b) => {
+        const importanceA = parameterImportance[a.name] || 0;
+        const importanceB = parameterImportance[b.name] || 0;
+        return importanceB - importanceA; // Sort by descending importance
+      });
+    }
+    
+    return parameters;
   };
   
   // Export the comparison data for sharing/saving
@@ -297,6 +345,69 @@ const EnhancedEquivalenceComparison = ({
     return <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400" />;
   };
   
+  // Create memoized parameter statistics for overall analysis
+  const parameterStats = useMemo(() => {
+    if (!subjectDevice || !predicateDevices.length) return null;
+    
+    const selectedPredicateDevice = predicateDevices.find(p => p.id === selectedPredicate);
+    if (!selectedPredicateDevice) return null;
+    
+    // Get all parameters from subject device
+    const allParams = [
+      ...(subjectDevice.technicalCharacteristics || []),
+      ...(subjectDevice.performanceData || []),
+      ...(subjectDevice.safetyFeatures || [])
+    ];
+    
+    // Get all parameters from predicate device
+    const allPredicateParams = [
+      ...(selectedPredicateDevice.technicalCharacteristics || []),
+      ...(selectedPredicateDevice.performanceData || []),
+      ...(selectedPredicateDevice.safetyFeatures || [])
+    ];
+    
+    // Create a map for faster lookup
+    const predicateParamMap = allPredicateParams.reduce((map, param) => {
+      map[param.name] = param.value;
+      return map;
+    }, {});
+    
+    // Count equivalent and non-equivalent parameters
+    let equivalentCount = 0;
+    let nonEquivalentCount = 0;
+    let uniqueToSubjectCount = 0;
+    let uniqueToPredicateCount = 0;
+    
+    // Check each parameter in subject device
+    allParams.forEach(param => {
+      if (predicateParamMap[param.name]) {
+        if (isEquivalent(param.value, predicateParamMap[param.name])) {
+          equivalentCount++;
+        } else {
+          nonEquivalentCount++;
+        }
+      } else {
+        uniqueToSubjectCount++;
+      }
+    });
+    
+    // Check for parameters unique to predicate
+    allPredicateParams.forEach(param => {
+      if (!allParams.some(p => p.name === param.name)) {
+        uniqueToPredicateCount++;
+      }
+    });
+    
+    return {
+      totalParameters: allParams.length,
+      equivalentCount,
+      nonEquivalentCount,
+      uniqueToSubjectCount,
+      uniqueToPredicateCount,
+      equivalencePercentage: Math.round((equivalentCount / (equivalentCount + nonEquivalentCount)) * 100)
+    };
+  }, [subjectDevice, predicateDevices, selectedPredicate]);
+
   return (
     <Card>
       <CardHeader>
@@ -308,33 +419,91 @@ const EnhancedEquivalenceComparison = ({
             </CardDescription>
           </div>
           <div className="flex gap-2">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={handleExport}>
-                    <Download className="h-4 w-4 mr-1" />
-                    Export
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Export comparison as JSON for 510(k) submission
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Filter className="h-4 w-4 mr-1" />
+                  Options
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80">
+                <div className="space-y-3">
+                  <h4 className="font-medium">Display Options</h4>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="highlight-critical">Highlight Critical Parameters</Label>
+                    <Switch 
+                      id="highlight-critical" 
+                      checked={highlightCriticalParameters}
+                      onCheckedChange={setHighlightCriticalParameters}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="auto-suggest">Auto-Suggest Mitigations</Label>
+                    <Switch 
+                      id="auto-suggest" 
+                      checked={autoSuggestMitigations}
+                      onCheckedChange={setAutoSuggestMitigations}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="show-citations">Show Citations</Label>
+                    <Switch 
+                      id="show-citations" 
+                      checked={showCitations}
+                      onCheckedChange={setShowCitations}
+                    />
+                  </div>
+                  <h4 className="font-medium pt-2">Equivalence Threshold</h4>
+                  <div className="grid grid-cols-4 items-center gap-2">
+                    <Label htmlFor="threshold" className="col-span-3">
+                      Numeric tolerance ({Math.round(equivalenceThreshold * 100)}%)
+                    </Label>
+                    <Input
+                      id="threshold"
+                      type="range"
+                      min="0.05"
+                      max="0.25"
+                      step="0.01"
+                      value={equivalenceThreshold}
+                      onChange={(e) => setEquivalenceThreshold(parseFloat(e.target.value))}
+                      className="col-span-1"
+                    />
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
             
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button variant="outline" size="sm" onClick={() => onGenerateReport?.()}>
-                    <FileText className="h-4 w-4 mr-1" />
-                    Full Report
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                  Generate comprehensive FDA-ready comparison report
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Share2 className="h-4 w-4 mr-1" />
+                  Export
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-60">
+                <div className="space-y-2">
+                  <h4 className="font-medium">Export Options</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button variant="outline" size="sm" onClick={handleExport}>
+                      <Download className="h-4 w-4 mr-1" />
+                      JSON
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => onGenerateReport?.()}>
+                      <FileText className="h-4 w-4 mr-1" />
+                      Full Report
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => alert('PDF generation feature coming soon!')}>
+                      <Printer className="h-4 w-4 mr-1" />
+                      Print PDF
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => alert('Chart export feature coming soon!')}>
+                      <BarChart className="h-4 w-4 mr-1" />
+                      Charts
+                    </Button>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
             
             <TooltipProvider>
               <Tooltip>
@@ -355,6 +524,56 @@ const EnhancedEquivalenceComparison = ({
             </TooltipProvider>
           </div>
         </div>
+        
+        {/* Search panel for filtering parameters */}
+        <div className="flex mt-2 items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500 dark:text-gray-400" />
+            <Input
+              type="search"
+              placeholder="Search parameters..."
+              className="pl-8"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
+          <Button
+            variant={filterNonEquivalent ? "default" : "outline"}
+            size="sm"
+            onClick={() => setFilterNonEquivalent(!filterNonEquivalent)}
+            className="whitespace-nowrap"
+          >
+            <AlertTriangle className={`h-4 w-4 mr-1 ${filterNonEquivalent ? 'text-white' : 'text-amber-500'}`} />
+            Non-Equivalent Only
+          </Button>
+        </div>
+        
+        {parameterStats && (
+          <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-md">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
+              <div>
+                <div className="text-sm text-gray-500">Total Parameters</div>
+                <div className="text-2xl font-bold">{parameterStats.totalParameters}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Equivalent</div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">{parameterStats.equivalentCount}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Non-Equivalent</div>
+                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{parameterStats.nonEquivalentCount}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Unique to Subject</div>
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{parameterStats.uniqueToSubjectCount}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Unique to Predicate</div>
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{parameterStats.uniqueToPredicateCount}</div>
+              </div>
+            </div>
+          </div>
+        )}
         
         {/* Equivalence Criteria Information Panel */}
         {showEquivalenceCriteria && (
