@@ -10,15 +10,15 @@ The eCTD Co-Author Module integrates several key components:
 
 1. **Enhanced Document Editor**: A versatile editing environment with support for:
    - Standard built-in text editor
-   - Microsoft Word Online integration
+   - Microsoft Word Online embedding via `Office365WordEmbed` (basic iframe)
    - AI-assisted content generation
    - Preview mode with formatting display
 
-2. **Microsoft Office Integration**: An enterprise-grade integration with Microsoft Word Online that:
-   - Connects to VAULT Document Management system
-   - Provides a familiar Word editing experience
-   - Maintains all document versioning in VAULT
-   - Supports Microsoft Copilot AI features
+2. **Microsoft Office Integration**: Planned enterprise integration with Microsoft Word Online that will:
+   - Connect to the VAULT Document Management system *(TODO)*
+   - Provide a familiar Word editing experience via embed *(partial)*
+   - Maintain all document versioning in VAULT *(TODO)*
+   - Support Microsoft Copilot AI features *(in progress)*
 
 3. **Document Intelligence Hub**: An AI-powered system that:
    - Analyzes document content
@@ -26,16 +26,25 @@ The eCTD Co-Author Module integrates several key components:
    - Checks for compliance with regulatory standards
    - Provides citation and reference management
 
+## Feature Status
+
+| Feature                      | Status       |
+| ---------------------------- | ------------ |
+| Word Online Embed            | **Implemented** (via `Office365WordEmbed`) |
+| Word ↔ VAULT Sync            | **TODO** |
+| Microsoft Copilot Services   | **Partial** (`msCopilotService` available) |
+| Document Intelligence Hub    | **Implemented** |
+
 ## Microsoft Word Integration
 
-The Microsoft Word integration uses a bridge approach that connects Microsoft Word Online with our existing VAULT Document Management system, avoiding the complexity of SharePoint integration while providing a familiar Word editing experience.
+The current implementation simply embeds Microsoft Word Online using an iframe. A future update will bridge Word Online with the VAULT Document Management system for seamless editing and version control.
 
 ### Key Components
 
-- `MsWordPopupEditor.jsx`: Provides a popup Microsoft Word Online editor experience
-- `msOfficeVaultBridge.js`: Bridges Microsoft Office editing with VAULT document management
+- `Office365WordEmbed.jsx`: Basic Word Online embed component
 - `msCopilotService.js`: Integrates Microsoft Copilot AI features for document authoring
 - `EnhancedDocumentEditor.jsx`: Wrapper component that provides a unified editing experience
+- `googleDocsService.js`: Allows saving documents to VAULT (current sync method)
 
 ### Implementation Details
 
@@ -45,12 +54,13 @@ The Microsoft Word integration uses a bridge approach that connects Microsoft Wo
    - Server-side token exchange handles secure document access
 
 2. **Document Editing Flow**:
-   - Document is retrieved from VAULT
+   - Document is currently loaded from local state or Google Docs
    - Microsoft Word Online displays the document in a secure iframe
-   - Changes are automatically synchronized back to VAULT
-   - Versioning and audit trail maintained in VAULT
+   - VAULT synchronization is not yet automated *(TODO)*
+   - Planned versioning and audit trail will be handled in VAULT
 
 3. **Microsoft Copilot Integration**:
+   - `msCopilotService` provides API calls to our backend
    - GPT-4o integration (latest model released May 13, 2024)
    - Specialized regulatory knowledge enhances suggestions
    - Contextual awareness of document structure and purpose
@@ -115,6 +125,32 @@ VITE_MS_COPILOT_API_ENDPOINT=https://api.ms-copilot.com
    - Verify license includes Copilot access
    - Check organization policies regarding AI features
    - Ensure connectivity to Copilot services
+
+## Collaboration Components (New)
+
+Recent tasks added real-time collaboration tools that can be used with the eCTD Co-Author:
+
+- `hooks/useCollaboration.js` – React hook for connecting to the collaboration service
+- `components/layout/OptimizedCollaborationLayout.jsx` – layout wrapper that loads the collaboration hub on demand
+- `components/collaboration/ProjectCollaborationHub.jsx` and `components/collaboration/LazyCollaborationHub.jsx` – UI for messages, tasks and approvals
+- `pages/CERV2PageWithCollaboration.jsx` – example page showing how to wrap an existing module
+
+To enable these tools, wrap your page component with `OptimizedCollaborationLayout` and call the `useCollaboration` hook inside your page if you need access to collaboration state.
+
+```jsx
+import OptimizedCollaborationLayout from '@/components/layout/OptimizedCollaborationLayout';
+import useCollaboration from '@/hooks/useCollaboration';
+
+const CoAuthorWithCollab = () => {
+  const collab = useCollaboration();
+
+  return (
+    <OptimizedCollaborationLayout>
+      {/* Co-author UI here */}
+    </OptimizedCollaborationLayout>
+  );
+};
+```
 
 ## Future Enhancements
 
