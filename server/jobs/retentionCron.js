@@ -10,7 +10,10 @@
 
 import { createClient } from '@supabase/supabase-js';
 import nodemailer from 'nodemailer';
+import fs from 'fs';
+import path from 'path';
 import { logSystemEvent, logAction } from '../utils/audit-logger.js';
+import { loadSecuritySettings } from '../utils/securitySettingsStore.js';
 
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -180,6 +183,28 @@ async function deleteDocument(document, wasArchived) {
     });
     return false;
   }
+}
+
+/**
+ * Purge conversation log files based on workspace settings
+ */
+function purgeConversationLogs() {
+  const settings = loadSecuritySettings();
+  const logsDir = path.join(process.cwd(), 'logs');
+  if (!fs.existsSync(logsDir)) return;
+
+  Object.entries(settings).forEach(([id, cfg]) => {
+    const retention = cfg?.collaborationLogs?.retentionDays;
+    if (!retention) return;
+    const files = fs.readdirSync(logsDir).filter(f => f.startsWith(`conversation_${id}`));
+    for (const file of files) {
+      const filePath = path.join(logsDir, file);
+      const ageDays = (Date.now() - fs.statSync(filePath).mtimeMs) / (1000 * 60 * 60 * 24);
+      if (ageDays > retention) {
+        fs.unlinkSync(filePath);
+      }
+    }
+  });
 }
 
 /**
@@ -533,7 +558,10 @@ export async function runRetentionJob() {
     if (approachingDocs.length > 0) {
       await sendExpirationNotifications(approachingDocs);
     }
-    
+
+    // Purge collaboration conversation logs based on workspace settings
+    purgeConversationLogs();
+
     logSystemEvent({
       event: 'job_completed',
       component: 'retention_job',

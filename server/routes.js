@@ -18,6 +18,7 @@ const { router: sseRoutes, sendEventToJob } = require('./routes/sseRoutes');
 const cerGenerationRoutes = require('./routes/cerGenerationRoutes');
 const discoveryRoutes = require('./routes/discovery');
 const documentAssemblyRoutes = require('./routes/document-assembly');
+const clientSecurityRoutes = require('./routes/clientSecurityRoutes').default || require('./routes/clientSecurityRoutes');
 
 /**
  * Register routes on the Express app
@@ -68,6 +69,9 @@ function registerRoutes(app) {
   
   console.log('Registering document management routes');
   app.use('/api/documents', documentRoutes);
+
+  console.log('Registering client security routes');
+  app.use('/api/clients', clientSecurityRoutes);
   
   console.log('Registering SSE routes for real-time updates');
   app.use('/api', sseRoutes);
