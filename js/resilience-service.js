@@ -22,15 +22,6 @@ class ResilienceService {
     this.prewarmIntervalId = null;
     this.initialized = false;
     
-    // User defaults for auto-login
-    this.defaultUser = {
-      id: 1,
-      username: 'admin',
-      email: 'admin@trialsage.ai',
-      role: 'admin',
-      name: 'Admin User',
-      subscribed: true
-    };
   }
   
   /**
@@ -101,27 +92,43 @@ class ResilienceService {
   /**
    * Ensure user is authenticated
    */
-  ensureAuthentication() {
-    const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-    this._log('Authentication state:', isAuthenticated);
-    
-    if (!isAuthenticated) {
-      this._log('User not authenticated, performing auto-login');
-      this.performAutoLogin();
-    }
+  async ensureAuthentication() {
+    this._log('Checking authentication state');
+    await this.performAutoLogin();
   }
   
   /**
    * Perform auto-login with default credentials
    */
-  performAutoLogin() {
-    // Set authentication flag
-    localStorage.setItem('isAuthenticated', 'true');
-    
-    // Store user info
-    localStorage.setItem('user', JSON.stringify(this.defaultUser));
-    
-    this._log('Auto-login completed');
+  async performAutoLogin() {
+    const token = localStorage.getItem('jwt');
+    if (!token) {
+      this._log('No stored authentication token found');
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/auth/profile', {
+        headers: { 'Authorization': `Bearer ${token}` },
+        credentials: 'include'
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data && data.user) {
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('user', JSON.stringify(data.user));
+          this._log('Auto-login completed');
+        }
+      } else {
+        this._log('Authentication token invalid');
+        localStorage.removeItem('jwt');
+        localStorage.removeItem('isAuthenticated');
+        localStorage.removeItem('user');
+      }
+    } catch (err) {
+      console.error('Auto-login error:', err);
+    }
   }
   
   /**
@@ -139,7 +146,8 @@ class ResilienceService {
    * Check if user is authenticated
    */
   isAuthenticated() {
-    return localStorage.getItem('isAuthenticated') === 'true';
+    const token = localStorage.getItem('jwt');
+    return localStorage.getItem('isAuthenticated') === 'true' && !!token;
   }
   
   /**
@@ -163,6 +171,8 @@ class ResilienceService {
   logout() {
     localStorage.removeItem('isAuthenticated');
     localStorage.removeItem('user');
+    localStorage.removeItem('jwt');
+    fetch('/api/logout', { method: 'POST', credentials: 'include' }).catch(() => {});
     this._log('User logged out');
   }
   
