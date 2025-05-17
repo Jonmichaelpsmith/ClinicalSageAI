@@ -145,6 +145,7 @@ export class DigitalSigner {
   }
 }
 
+
 /**
  * Mock ESG client for FDA Electronic Submissions Gateway
  */
@@ -1321,7 +1322,6 @@ The package contains ${sections.length} sections including: ${sections.map(s => 
     
     console.log(`Created mock ZIP file: ${zipPath} with ${filesToZip.length} files`);
   }
-}
 
   /**
    * Get all sections for a 510(k) project

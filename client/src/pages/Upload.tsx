@@ -44,10 +44,10 @@ export default function Upload() {
       setIsProcessing(false);
       // toast call replaced
   // Original: toast({
-        title: "Upload Failed",
-        description: error.message || "There was an error uploading your CSR. Please try again.",
-        variant: "destructive"
-      })
+  //   title: "Upload Failed",
+  //   description: error.message || "There was an error uploading your CSR. Please try again.",
+  //   variant: "destructive"
+  // })
   console.log('Toast would show:', {
         title: "Upload Failed",
         description: error.message || "There was an error uploading your CSR. Please try again.",
@@ -96,10 +96,10 @@ export default function Upload() {
     if (!file) {
       // toast call replaced
   // Original: toast({
-        title: "No File Selected",
-        description: "Please select a PDF file to upload.",
-        variant: "destructive"
-      })
+  //   title: "No File Selected",
+  //   description: "Please select a PDF file to upload.",
+  //   variant: "destructive"
+  // })
   console.log('Toast would show:', {
         title: "No File Selected",
         description: "Please select a PDF file to upload.",
@@ -111,10 +111,10 @@ export default function Upload() {
     if (!formData.title || !formData.sponsor || !formData.indication || !formData.phase) {
       // toast call replaced
   // Original: toast({
-        title: "Missing Information",
-        description: "Please fill in all the required fields.",
-        variant: "destructive"
-      })
+  //   title: "Missing Information",
+  //   description: "Please fill in all the required fields.",
+  //   variant: "destructive"
+  // })
   console.log('Toast would show:', {
         title: "Missing Information",
         description: "Please fill in all the required fields.",
