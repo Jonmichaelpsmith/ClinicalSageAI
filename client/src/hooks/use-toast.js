@@ -73,4 +73,15 @@ function useToast() {
   };
 }
 
-export { useToast, dismissToast };
+// Helper to allow direct import of toast without using the hook
+const toast = (props) => {
+  const id = props.id || genId();
+  addToast({ ...props, id });
+  return {
+    id,
+    dismiss: () => dismissToast(id),
+    update: (props) => addToast({ ...props, id })
+  };
+};
+
+export { useToast, dismissToast, toast };
