@@ -181,6 +181,7 @@ The user interface will follow these design principles:
    - Clean, modern design with white background
    - Clear hierarchy and navigation
    - Consistent component styling
+   - Tailwind configuration mirrors Microsoft Fluent UI color palette
 
 2. **Role-Based Customization**
    - Color-coded sections for different modules

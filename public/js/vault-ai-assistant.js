@@ -11,7 +11,7 @@ class VaultAIAssistant {
             initialDelay: 1500,
             typingSpeed: 30,
             assistantName: 'Vault™ Assistant',
-            primaryColor: '#ff1493', // Hot pink
+            primaryColor: '#0078d4', // MS 365 blue
             ...options
         };
 
