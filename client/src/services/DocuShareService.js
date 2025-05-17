@@ -267,8 +267,20 @@ class DocuShareService {
       throw error;
     }
   }
+
+  /**
+   * Retrieve the current DocuShare connection status
+   *
+   * @returns {Promise<Object>} Status information from the API
+   */
+  async getDocuShareStatus() {
+    const res = await apiRequest.get('/api/ind/docushare/status');
+    return res.data;
+  }
 }
 
 // Create and export singleton instance
 const docuShareService = new DocuShareService();
+export const getDocuShareStatus = (...args) =>
+  docuShareService.getDocuShareStatus(...args);
 export default docuShareService;
