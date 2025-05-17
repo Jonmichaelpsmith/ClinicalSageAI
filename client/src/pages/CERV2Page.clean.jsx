@@ -5,7 +5,7 @@ import LiteratureSearchPanel from '@/components/cer/LiteratureSearchPanel';
 import LiteratureMethodologyPanel from '@/components/cer/LiteratureMethodologyPanel';
 import ComplianceScorePanel from '@/components/cer/ComplianceScorePanel';
 import CerAssistantPanel from '@/components/cer/CerAssistantPanel';
-import DocumentVaultPanel from '@/components/cer/DocumentVaultPanel';
+import VaultPanel from '@/components/document-management/VaultPanel';
 import CerDataRetrievalPanel from '@/components/cer/CerDataRetrievalPanel';
 import EquivalenceBuilderPanel from '@/components/cer/EquivalenceBuilderPanel';
 import StateOfArtPanel from '@/components/cer/StateOfArtPanel';
@@ -419,9 +419,7 @@ export default function CERV2Page() {
     
     if (activeTab === 'documents') {
       return (
-        <DocumentVaultPanel 
-          jobId={`cer-${Date.now()}`} 
-        />
+        <VaultPanel mode="vault" jobId={`cer-${Date.now()}`} />
       );
     }
     
