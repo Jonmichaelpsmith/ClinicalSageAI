@@ -165,7 +165,7 @@ app.use('/api', createHealthCheckRouter(dbPool));
 // Serve the marketing landing page at the root URL
 app.get('/', (req, res) => {
   console.log('Serving marketing landing page');
-  const landingPath = path.join(process.cwd(), 'clean_landing_page.html');
+  const landingPath = path.join(process.cwd(), 'reorganized_landing_page.html');
   if (fs.existsSync(landingPath)) {
     res.sendFile(landingPath);
   } else {
@@ -177,7 +177,7 @@ app.get('/', (req, res) => {
 // Alternative marketing page route
 app.get('/marketing', (req, res) => {
   console.log('Serving marketing page from /marketing route');
-  const landingPath = path.join(process.cwd(), 'clean_landing_page.html');
+  const landingPath = path.join(process.cwd(), 'reorganized_landing_page.html');
   if (fs.existsSync(landingPath)) {
     res.sendFile(landingPath);
   } else {

@@ -10,8 +10,8 @@ export function setupStaticRoutes(app) {
   
   // Serve the main landing page
   app.get('/', (req, res) => {
-    console.log('[StaticRoutes] Serving clean landing page');
-    const cleanLandingPath = path.join(process.cwd(), 'clean_landing_page.html');
+    console.log('[StaticRoutes] Serving reorganized landing page');
+    const cleanLandingPath = path.join(process.cwd(), 'reorganized_landing_page.html');
     if (fs.existsSync(cleanLandingPath)) {
       res.sendFile(cleanLandingPath);
     } else {
