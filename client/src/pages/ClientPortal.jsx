@@ -1,7 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '../hooks/use-auth';
 import Layout from '../components/Layout';
+import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { 
   CheckCircle, 
   ChevronRight, 
@@ -18,9 +28,14 @@ import {
   FilePlus,
   Clock,
   Tag,
+  FileEdit,
+  Download,
+  Save,
+  Loader2,
+  FileCheck,
+  AlertCircle,
   Search,
   Filter,
-  AlertCircle,
   Lock,
   Download,
   ExternalLink,
@@ -501,6 +516,16 @@ const ClientPortal = () => {
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex justify-end space-x-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedDocument(document);
+                                  setShowWordIntegration(true);
+                                }}
+                                className="text-blue-600 hover:text-blue-800" 
+                                title="Edit in Word"
+                              >
+                                <FileEdit className="h-4 w-4" />
+                              </button>
                               <button className="text-blue-600 hover:text-blue-800" title="Download">
                                 <Download className="h-4 w-4" />
                               </button>
