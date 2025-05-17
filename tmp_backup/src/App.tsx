@@ -37,13 +37,13 @@ import './styles/tour-animations.css';
 
 /* ------------ Global Toast Context Import ------------- */
 // We now import the useToast hook from our secure toast implementation
-import { useToast } from '../client/src/components/security/SecureToast';
+import { useToast } from './components/security/SecureToast';
 export { useToast };
 /* ------------------------------------------------------------------ */
 
 // Import for useQCWebSocket now moved to SubmissionBuilder component
 // Each page that needs WebSocket will initialize its own connection
-import { ToastProvider as SecureToastProvider } from '../client/src/components/security/SecureToast';
+import { ToastProvider as SecureToastProvider } from './components/security/SecureToast';
 
 export default function App() {
   const [tourCompleted, setTourCompleted] = useState(false);

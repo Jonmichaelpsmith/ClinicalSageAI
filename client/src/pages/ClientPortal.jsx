@@ -1,17 +1,7 @@
-import React, { useState, Suspense } from 'react';
+import React, { useState } from 'react';
 import { useLocation } from 'wouter';
 import { useAuth } from '../hooks/use-auth';
 import Layout from '../components/Layout';
-import { useToast } from "@/hooks/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { 
   CheckCircle, 
   ChevronRight, 
@@ -28,14 +18,9 @@ import {
   FilePlus,
   Clock,
   Tag,
-  FileEdit,
-  Download,
-  Save,
-  Loader2,
-  FileCheck,
-  AlertCircle,
   Search,
   Filter,
+  AlertCircle,
   Lock,
   Download,
   ExternalLink,
@@ -48,9 +33,6 @@ const ClientPortal = () => {
   const [, setLocation] = useLocation();
   const [activeDocumentTab, setActiveDocumentTab] = useState('recent');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showWordIntegration, setShowWordIntegration] = useState(false);
-  const [selectedDocument, setSelectedDocument] = useState(null);
-  const { toast } = useToast();
 
   // Hardcoded solutions for demo purposes
   const subscribedSolutions = [
@@ -61,10 +43,7 @@ const ClientPortal = () => {
       icon: <Beaker className="h-6 w-6" />,
       status: "active",
       route: "/solutions/ind-wizard",
-      stats: { completedDocs: 12, inProgress: 3 },
-      lastActivity: "2025-05-16",
-      progress: 68,
-      msOfficeIntegration: true
+      stats: { completedDocs: 12, inProgress: 3 }
     },
     {
       id: 2,
@@ -73,10 +52,7 @@ const ClientPortal = () => {
       icon: <Brain className="h-6 w-6" />,
       status: "active",
       route: "/solutions/csr-intelligence",
-      stats: { analyzedReports: 28, insights: 142 },
-      lastActivity: "2025-05-15",
-      progress: 75,
-      msOfficeIntegration: true
+      stats: { analyzedReports: 28, insights: 142 }
     },
     {
       id: 3,
@@ -85,10 +61,7 @@ const ClientPortal = () => {
       icon: <Beaker className="h-6 w-6" />,
       status: "active",
       route: "/solutions/cmc-insights",
-      stats: { activePlans: 5, validations: 17 },
-      lastActivity: "2025-05-12",
-      progress: 42,
-      msOfficeIntegration: false
+      stats: { activePlans: 5, validations: 17 }
     },
     {
       id: 4,
@@ -97,10 +70,7 @@ const ClientPortal = () => {
       icon: <HelpCircle className="h-6 w-6" />,
       status: "active",
       route: "/solutions/ask-lumen",
-      stats: { queries: 64, avgResponseTime: "1.2s" },
-      lastActivity: "2025-05-17",
-      progress: 100,
-      msOfficeIntegration: false
+      stats: { queries: 64, avgResponseTime: "1.2s" }
     },
     {
       id: 5,
@@ -109,47 +79,16 @@ const ClientPortal = () => {
       icon: <LineChart className="h-6 w-6" />,
       status: "active",
       route: "/solutions/protocol-optimization",
-      stats: { optimizedProtocols: 8, improvements: 32 },
-      lastActivity: "2025-05-10",
-      progress: 35,
-      msOfficeIntegration: true
+      stats: { optimizedProtocols: 8, improvements: 32 }
     },
     {
       id: 6,
-      name: "eCTD Co-Author",
-      description: "AI-assisted co-authoring of regulatory submissions with Microsoft Word integration",
-      icon: <FileEdit className="h-6 w-6" />,
-      status: "active",
-      route: "/coauthor",
-      stats: { documents: 15, submissionReady: 8 },
-      lastActivity: "2025-05-17",
-      progress: 85,
-      msOfficeIntegration: true,
-      isNew: true
-    },
-    {
-      id: 7,
-      name: "Medical Device RA",
-      description: "CER and 510(k) regulatory automation for medical devices",
-      icon: <Stethoscope className="h-6 w-6" />,
-      status: "active",
-      route: "/cerv2",
-      stats: { documents: 7, validationPassed: 5 },
-      lastActivity: "2025-05-14",
-      progress: 62,
-      msOfficeIntegration: true
-    },
-    {
-      id: 8,
       name: "Validation Hub",
       description: "21 CFR Part 11 compliance validation",
       icon: <CheckCircle className="h-6 w-6" />,
       status: "active",
       route: "/validation-hub-enhanced",
-      stats: { validations: 23, compliance: "98%" },
-      lastActivity: "2025-05-08",
-      progress: 98,
-      msOfficeIntegration: false
+      stats: { validations: 23, compliance: "98%" }
     }
   ];
 
@@ -408,13 +347,6 @@ const ClientPortal = () => {
                 <h2 className="text-xl font-semibold text-gray-800">Document Management</h2>
                 <div className="flex items-center space-x-2">
                   <button
-                    onClick={() => setShowWordIntegration(true)}
-                    className="mr-2 px-3 py-1 text-sm bg-blue-600 text-white rounded-md flex items-center hover:bg-blue-700"
-                  >
-                    <FileEdit className="h-3.5 w-3.5 mr-1" />
-                    Edit in Word
-                  </button>
-                  <button
                     onClick={() => setLocation('/document-management')}
                     className="text-blue-600 text-sm flex items-center hover:text-blue-800"
                   >
@@ -516,16 +448,6 @@ const ClientPortal = () => {
                           </td>
                           <td className="px-4 py-3 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex justify-end space-x-2">
-                              <button
-                                onClick={() => {
-                                  setSelectedDocument(document);
-                                  setShowWordIntegration(true);
-                                }}
-                                className="text-blue-600 hover:text-blue-800" 
-                                title="Edit in Word"
-                              >
-                                <FileEdit className="h-4 w-4" />
-                              </button>
                               <button className="text-blue-600 hover:text-blue-800" title="Download">
                                 <Download className="h-4 w-4" />
                               </button>
@@ -764,141 +686,6 @@ const ClientPortal = () => {
           </div>
         </div>
       </div>
-      
-      {/* Microsoft Word Integration Dialog */}
-      <Dialog open={showWordIntegration} onOpenChange={setShowWordIntegration}>
-        <DialogContent className="max-w-5xl h-[85vh]">
-          <DialogHeader>
-            <DialogTitle>Microsoft Word Integration</DialogTitle>
-            <DialogDescription>
-              Edit your documents using Microsoft Word with automatic VAULT synchronization
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex-1 overflow-hidden">
-            <Suspense fallback={
-              <div className="flex items-center justify-center h-[65vh]">
-                <div className="text-center">
-                  <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
-                  <p>Loading Microsoft Word integration...</p>
-                </div>
-              </div>
-            }>
-              <div className="h-full flex flex-col">
-                {/* Document Header */}
-                <div className="flex justify-between items-center mb-4 pb-3 border-b">
-                  <div>
-                    <h2 className="text-xl font-semibold">
-                      {selectedDocument ? selectedDocument.name : "Document Editor"}
-                    </h2>
-                    <div className="flex items-center gap-3 mt-1">
-                      <span className="text-sm text-muted-foreground">
-                        Last modified: {selectedDocument ? selectedDocument.modified : "Just now"}
-                      </span>
-                      <Badge variant="outline">
-                        {selectedDocument ? selectedDocument.status : "Draft"}
-                      </Badge>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => toast({
-                        title: "Document Downloaded",
-                        description: "Document has been downloaded for offline editing.",
-                      })}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
-                    </Button>
-                    <Button 
-                      onClick={() => {
-                        toast({
-                          title: "Document Saved",
-                          description: "All changes have been synchronized with VAULT.",
-                        });
-                        
-                        // Close dialog after saving
-                        setTimeout(() => {
-                          setShowWordIntegration(false);
-                        }, 1500);
-                      }}
-                      size="sm"
-                    >
-                      <Save className="h-4 w-4 mr-2" />
-                      Save to VAULT
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Document Editing Frame */}
-                <div className="border rounded-md h-full overflow-hidden">
-                  <div className="w-full h-[55vh] flex flex-col items-center justify-center bg-gray-50 relative">
-                    {/* MS Word Editor Placeholder */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-white p-8 rounded-lg shadow-lg w-4/5 max-w-3xl">
-                        <div className="flex items-center mb-6">
-                          <FileText className="h-10 w-10 text-blue-600 mr-4" />
-                          <div>
-                            <h3 className="text-lg font-semibold">
-                              {selectedDocument ? selectedDocument.name : "Document Title"}
-                            </h3>
-                            <p className="text-sm text-gray-500">
-                              Word document loaded successfully
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="space-y-4 mb-6 border rounded-md p-4 bg-gray-50">
-                          <div className="border-b pb-3">
-                            <h4 className="font-medium mb-2">Executive Summary</h4>
-                            <p className="text-sm text-gray-700">
-                              This document provides an overview of clinical data for the assessment 
-                              of device safety and performance as required by regulatory authorities.
-                            </p>
-                          </div>
-                          <div className="border-b pb-3">
-                            <h4 className="font-medium mb-2">Device Description</h4>
-                            <p className="text-sm text-gray-700">
-                              The medical device is designed for [PURPOSE] and consists of [COMPONENTS]. 
-                              This section provides detailed specifications and operational parameters.
-                            </p>
-                          </div>
-                          <div>
-                            <h4 className="font-medium mb-2">Clinical Evaluation Methods</h4>
-                            <p className="text-sm text-gray-700">
-                              Clinical data was collected through [METHODS] and analyzed according to 
-                              [STANDARDS]. Safety and performance were evaluated based on [CRITERIA].
-                            </p>
-                          </div>
-                        </div>
-                        
-                        <div className="text-center text-sm text-gray-500">
-                          <p>Connected to Microsoft Word Online</p>
-                          <p className="mt-1">All changes will be automatically synchronized with VAULT</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Footer */}
-                <div className="mt-4 border-t pt-4 flex items-center justify-between">
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <FileCheck className="h-4 w-4 mr-2" />
-                    <span>VAULT synchronized • </span>
-                    <AlertCircle className="h-4 w-4 mx-2" />
-                    <span>All changes automatically tracked</span>
-                  </div>
-                  <Button onClick={() => setShowWordIntegration(false)}>
-                    Complete Editing
-                  </Button>
-                </div>
-              </div>
-            </Suspense>
-          </div>
-        </DialogContent>
-      </Dialog>
     </Layout>
   );
 };

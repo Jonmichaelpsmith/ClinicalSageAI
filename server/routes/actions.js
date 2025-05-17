@@ -10,7 +10,6 @@ router.get('/', actionsController.getAllActions);
 
 // GET /api/next-actions/user/:userId - Get actions for a specific user
 router.get('/user/:userId', actionsController.getActionsByUser);
-router.get('/user/:userId/aggregate', actionsController.aggregateActionsByUser);
 
 // GET /api/next-actions/project/:projectId - Get actions for a specific project
 router.get('/project/:projectId', actionsController.getActionsByProject);

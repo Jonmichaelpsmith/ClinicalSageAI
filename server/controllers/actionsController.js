@@ -86,7 +86,7 @@ export const getActionsByUser = (req, res) => {
   try {
     const { userId } = req.params;
     const userActions = nextActions.filter(action => action.assignedTo === userId);
-
+    
     res.status(200).json({
       success: true,
       data: userActions
@@ -96,33 +96,6 @@ export const getActionsByUser = (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch user actions'
-    });
-  }
-};
-
-// GET /api/next-actions/user/:userId/aggregate - Group actions by project for a user
-export const aggregateActionsByUser = (req, res) => {
-  try {
-    const { userId } = req.params;
-    const userActions = nextActions.filter(action => action.assignedTo === userId);
-
-    const aggregated = userActions.reduce((acc, action) => {
-      if (!acc[action.projectId]) {
-        acc[action.projectId] = [];
-      }
-      acc[action.projectId].push(action);
-      return acc;
-    }, {});
-
-    res.status(200).json({
-      success: true,
-      data: aggregated
-    });
-  } catch (error) {
-    console.error('Error aggregating user actions:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to aggregate user actions'
     });
   }
 };

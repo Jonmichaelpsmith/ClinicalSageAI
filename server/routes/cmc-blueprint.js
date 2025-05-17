@@ -435,10 +435,7 @@ router.get('/ai-settings', verifyJwt, async (req, res) => {
       temperature: 0.7,
       max_tokens: 2000,
       content_style: 'FORMAL',
-      citations_required: true,
-      preferred_guidance: null,
-      region_priority: [],
-      terminology_overrides: {}
+      citations_required: true
     };
     
     res.json(settings || defaultSettings);

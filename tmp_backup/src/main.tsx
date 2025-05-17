@@ -4,7 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import App from './App';
 import './index.css';
 // Custom SecureToast is used instead of React Toastify
-import { SecurityProvider } from '../client/src/components/security/SecurityProvider';
+import { SecurityProvider } from './components/security/SecurityProvider';
 import { setupCSP } from './lib/security';
 
 // Initialize Content Security Policy before rendering
