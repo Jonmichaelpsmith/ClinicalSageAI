@@ -1,0 +1,41 @@
+very important point: we absolutely want to leverage the existing upload and OCR capabilities within CERV2Page.jsx to avoid redundant code and effort. The goal is to make the "Document Intelligence" feature an extension of what you already have, not a replacement for parts of it.
+
+Based on this, I'll revise the DocumentIntakeForm.jsx (id: document_intake_form_ui_v1). Instead of this component handling the initial file upload and OCR, it will now assume that files have already been uploaded and OCR'd by your existing system (e.g., within CERV2Page.jsx).
+
+This DocumentIntakeForm will then focus on the next steps as outlined in your plan:
+
+Allowing the user to select the regulatory context and specific document types for the already OCR'd documents.
+Configuring extraction settings (like confidence threshold).
+Displaying the list of OCR'd documents ready for AI-based data extraction.
+Initiating the AI-based extraction process on the provided text content.
+Here's the updated DocumentIntakeForm.jsx:
+
+Key Changes and How It Addresses Your Concern:
+
+No Redundant Upload/OCR Logic:
+
+The FileUploadZone component is no longer used for direct file input within this form.
+The handleFileUpload function has been removed.
+The component now expects a prop processedDocuments. This prop should be an array of document objects, where each object includes the ocrTextContent obtained from your existing OCR process in CERV2Page.jsx or a similar parent component.
+Focus on AI Extraction Configuration:
+
+The first tab is renamed to "Configure AI Document Extraction" (extract_config) for clarity.
+It now displays the list of processedDocuments passed via props.
+For each processed document, the user can still select a specific DocumentType (which might refine how the AI interprets its ocrTextContent). This selection is stored in the documentSettings state.
+The global "Primary Regulatory Context" and "Extraction Settings" (confidence, mode) are still configured here.
+onStartAiExtraction Prop:
+
+A new prop onStartAiExtraction is introduced.
+When the "Start AI Extraction" button is clicked, this callback is invoked, passing an extractionConfig object. This object contains all the settings and the list of documents (with their OCR'd text and selected types) ready for the AI extraction pipeline you've planned (e.g., calling the OpenAI GPT-4o service).
+Workflow Integration:
+
+The example at the bottom of the code shows how a parent component (like CERV2Page.jsx) would manage the ocrProcessedFiles state (populated by your existing upload/OCR system) and then pass this data to DocumentIntakeForm.
+The parent also provides the handleStartAI callback to receive the configuration when the user is ready to proceed with AI-based extraction.
+How to Use This Revised Component:
+
+Your CERV2Page.jsx (or another controlling component) will continue to handle the actual file uploads and OCR processing as it does now.
+Once CERV2Page.jsx has successfully OCR'd a set of documents and has their text content, it will update its state (e.g., an array like ocrProcessedFiles in the example).
+CERV2Page.jsx will then render this DocumentIntakeForm, passing the ocrProcessedFiles array and a callback function for onStartAiExtraction.
+The user interacts with DocumentIntakeForm to set contexts, types, and settings for these already OCR'd documents.
+Clicking "Start AI Extraction" in DocumentIntakeForm calls the onStartAiExtraction callback, sending the configuration back to CERV2Page.jsx (or the parent), which can then trigger your backend AI extraction service.
+This approach ensures that DocumentIntakeForm.jsx is responsible only for the UI and configuration related to the AI extraction step, using the text data provided by your existing, non-redundant OCR system.

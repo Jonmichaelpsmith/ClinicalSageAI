@@ -436,5 +436,6 @@ const processDocuments = async (req, res) => {
 };
 
 module.exports = {
-  processDocuments
+  processDocuments,
+  extractStructuredData
 };
