@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { setupCSP, setupSessionTimeout, validateSession } from '../../lib/security';
+import { useToast } from '../../hooks/use-toast';
 
 // Create security context for global access
 const SecurityContext = createContext({
@@ -26,8 +27,7 @@ export function SecurityProvider({ children }) {
   const [initialized, setInitialized] = useState(false);
   const [sessionActive, setSessionActive] = useState(true);
   const [csrfToken, setCsrfToken] = useState(null);
-  // No longer using toast directly
-  // const { toast } = useToast();
+  const { toast } = useToast();
 
   // Generate CSRF token
   const generateCsrfToken = () => {
@@ -62,8 +62,11 @@ export function SecurityProvider({ children }) {
     // Add session timeout listener
     const handleSessionTimeout = () => {
       setSessionActive(false);
-      // Toast notification for session expiration
-      console.log('Session expired notification would be shown');
+      toast({
+        title: "Session Expired",
+        description: "Your session has expired due to inactivity. Please log in again.",
+        variant: "destructive",
+      });
     };
     
     window.addEventListener('session-timeout', handleSessionTimeout);
@@ -81,7 +84,7 @@ export function SecurityProvider({ children }) {
     return () => {
       window.removeEventListener('session-timeout', handleSessionTimeout);
     };
-  }, []);
+  }, [toast]);
   
   // Check session validity periodically
   useEffect(() => {
