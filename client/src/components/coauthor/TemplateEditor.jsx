@@ -26,13 +26,15 @@ export default function TemplateEditor({
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [output, setOutput] = useState('');
+  const [error, setError] = useState('');
 
   useEffect(() => {
-    // Initialize form values from initial values or empty strings
+    // Initialize form values from template defaults or provided initial values
     if (template?.fields) {
       const defaultValues = {};
       template.fields.forEach(field => {
-        defaultValues[field.name] = initialValues[field.name] || '';
+        defaultValues[field.name] =
+          initialValues[field.name] ?? field.defaultValue ?? '';
       });
       setValues(defaultValues);
     }
@@ -43,6 +45,17 @@ export default function TemplateEditor({
   };
 
   const handleGenerate = async () => {
+    const missing = template.fields.filter(
+      f => f.required && !(values[f.name] && values[f.name].trim())
+    );
+    if (missing.length > 0) {
+      setError(`Please fill required fields: ${missing
+        .map(f => f.label)
+        .join(', ')}`);
+      return;
+    }
+
+    setError('');
     setLoading(true);
     setProgress(0);
     
@@ -115,7 +128,7 @@ Based on the provided information, this ${template.title.toLowerCase()} meets re
   const handleTemplateReset = () => {
     const defaultValues = {};
     template.fields.forEach(field => {
-      defaultValues[field.name] = '';
+      defaultValues[field.name] = field.defaultValue ?? '';
     });
     setValues(defaultValues);
     setOutput('');
@@ -163,6 +176,10 @@ Based on the provided information, this ${template.title.toLowerCase()} meets re
             </div>
           ))}
         </div>
+
+        {error && (
+          <p className="text-sm text-red-500">{error}</p>
+        )}
         
         <div className="flex justify-between items-center">
           <div className="space-x-2">
