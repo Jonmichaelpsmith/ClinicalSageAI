@@ -2239,8 +2239,123 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       console.log('[CERV2 Content] Explicitly rendering Equivalence tab content');
       
       try {
+        // Prepare the subject device data from device profile
+        const subjectDevice = {
+          id: deviceProfile?.id || 'device-001',
+          deviceName: deviceProfile?.deviceName || 'Subject Device',
+          manufacturer: deviceProfile?.manufacturer || 'Your Company',
+          technicalCharacteristics: deviceProfile?.technicalCharacteristics || [
+            { name: 'Display', value: '1024x768' },
+            { name: 'Battery Life', value: '6h' },
+            { name: 'Connectivity', value: 'Bluetooth 5.0' },
+            { name: 'Weight', value: '3.6 lbs' }
+          ],
+          performanceData: deviceProfile?.performanceData || [
+            { name: 'Accuracy', value: '98.5%' },
+            { name: 'Response Time', value: '120ms' },
+            { name: 'Detection Limit', value: '0.5mg/dL' }
+          ],
+          safetyFeatures: deviceProfile?.safetyFeatures || [
+            { name: 'Alarms', value: 'Visual and Audible' },
+            { name: 'Fail-safe Mode', value: 'Automatic Shutdown' },
+            { name: 'Error Detection', value: 'Continuous Monitoring' }
+          ]
+        };
+        
+        // Prepare predicate devices data
+        const predicateDevices = predicateData?.map(predicate => ({
+          id: predicate.id || `predicate-${Math.random().toString(36).substring(2, 9)}`,
+          deviceName: predicate.deviceName || 'Predicate Device',
+          manufacturer: predicate.manufacturer || 'Predicate Manufacturer',
+          predicateType: predicate.primary ? 'Primary' : 'Reference',
+          technicalCharacteristics: predicate.technicalCharacteristics || [
+            { name: 'Display', value: '800x600' },
+            { name: 'Battery Life', value: '8h' },
+            { name: 'Connectivity', value: 'Bluetooth 4.2' },
+            { name: 'Weight', value: '3.2 lbs' }
+          ],
+          performanceData: predicate.performanceData || [
+            { name: 'Accuracy', value: '97%' },
+            { name: 'Response Time', value: '150ms' },
+            { name: 'Detection Limit', value: '1.0mg/dL' }
+          ],
+          safetyFeatures: predicate.safetyFeatures || [
+            { name: 'Alarms', value: 'Audible' },
+            { name: 'Fail-safe Mode', value: 'Manual Reset' },
+            { name: 'Error Detection', value: 'Periodic Checks' }
+          ]
+        })) || [
+          {
+            id: 'predicate-default',
+            deviceName: 'Sample Predicate Device',
+            manufacturer: 'ABC Medical',
+            predicateType: 'Primary',
+            technicalCharacteristics: [
+              { name: 'Display', value: '800x600' },
+              { name: 'Battery Life', value: '8h' },
+              { name: 'Connectivity', value: 'Bluetooth 4.2' },
+              { name: 'Weight', value: '3.2 lbs' }
+            ],
+            performanceData: [
+              { name: 'Accuracy', value: '97%' },
+              { name: 'Response Time', value: '150ms' },
+              { name: 'Detection Limit', value: '1.0mg/dL' }
+            ],
+            safetyFeatures: [
+              { name: 'Alarms', value: 'Audible' },
+              { name: 'Fail-safe Mode', value: 'Manual Reset' },
+              { name: 'Error Detection', value: 'Periodic Checks' }
+            ]
+          }
+        ];
+        
+        // Handle AI assistance requests
+        const handleAIAssistance = (parameter) => {
+          if (lumenAiAssistant && lumenAiAssistant.showAssistant) {
+            lumenAiAssistant.setPrompt(`Help me address this non-equivalent feature in my 510(k) submission: The parameter "${parameter}" is not equivalent between my device and the predicate device. What strategies can I use to demonstrate substantial equivalence despite this difference?`);
+          } else {
+            toast({
+              title: "AI Assistant",
+              description: "Opening AI assistant to help with non-equivalent feature: " + parameter,
+            });
+            
+            if (lumenAiAssistant) {
+              lumenAiAssistant.setShowAssistant(true);
+              lumenAiAssistant.setPrompt(`Help me address this non-equivalent feature in my 510(k) submission: The parameter "${parameter}" is not equivalent between my device and the predicate device. What strategies can I use to demonstrate substantial equivalence despite this difference?`);
+            }
+          }
+        };
+        
+        // Handle report generation
+        const handleGenerateReport = () => {
+          toast({
+            title: "Generating Full Report",
+            description: "Preparing comprehensive 510(k) substantial equivalence report...",
+          });
+          
+          // In a real implementation, this would trigger a report generation process
+          setTimeout(() => {
+            toast({
+              title: "Report Generated",
+              description: "510(k) substantial equivalence report is ready for review.",
+              variant: "success"
+            });
+            
+            // Mark equivalence as completed in workflow
+            setEquivalenceCompleted(true);
+          }, 1500);
+        };
+        
         return (
           <div className="p-4 space-y-4">
+            {/* Show the Enhanced Equivalence Comparison component */}
+            <EnhancedEquivalenceComparison 
+              subjectDevice={subjectDevice}
+              predicateDevices={predicateDevices}
+              onRequestAIAssistance={handleAIAssistance}
+              onGenerateReport={handleGenerateReport}
+            />
+            
             {/* Display literature visualization if literature results exist */}
             {literatureResults.length > 0 && (
               <div className="mb-6">
