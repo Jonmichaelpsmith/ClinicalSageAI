@@ -48,6 +48,10 @@ const module1Templates = [
       { id: '1.1.1', title: 'Table of Contents', required: true },
       { id: '1.1.2', title: 'List of Documents', required: true }
     ],
+    fields: [
+      { name: 'DocumentTitle', label: 'Document Title', type: 'text', required: true, defaultValue: 'Comprehensive Table of Contents' },
+      { name: 'SponsorName', label: 'Sponsor Name', type: 'text', defaultValue: '' }
+    ],
     structure: {
       sections: [
         { title: 'TABLE OF CONTENTS', content: 'Table of contents for the entire submission' },
@@ -67,10 +71,16 @@ const module1Templates = [
       { id: '1.2.1', title: 'Cover Letter', required: true },
       { id: '1.2.2', title: 'Application Form', required: false }
     ],
+    fields: [
+      { name: 'ApplicantName', label: 'Applicant Name', type: 'text', required: true, defaultValue: 'ACME Pharma' },
+      { name: 'ProductName', label: 'Product Name', type: 'text', required: true },
+      { name: 'ApplicationType', label: 'Application Type', type: 'text' },
+      { name: 'Summary', label: 'Letter Summary', type: 'textarea' }
+    ],
     structure: {
       sections: [
-        { 
-          title: 'COVER LETTER', 
+        {
+          title: 'COVER LETTER',
           content: 'Cover letter on company letterhead\n\n' +
                   '[Date]\n\n' +
                   '[Regulatory Authority Name and Address]\n\n' +
@@ -104,6 +114,11 @@ const module2Templates = [
       { id: '2.3.P', title: 'Drug Product', required: true },
       { id: '2.3.A', title: 'Appendices', required: false },
       { id: '2.3.R', title: 'Regional Information', required: false }
+    ],
+    fields: [
+      { name: 'DrugName', label: 'Drug Name', type: 'text', required: true, defaultValue: 'Compound ABC' },
+      { name: 'ManufacturingProcess', label: 'Manufacturing Process', type: 'textarea' },
+      { name: 'QualityControls', label: 'Quality Controls', type: 'textarea' }
     ],
     structure: {
       sections: [
@@ -158,9 +173,14 @@ const module2Templates = [
       { id: '2.4.5', title: 'Integrated Overview and Conclusions', required: true },
       { id: '2.4.6', title: 'List of Literature References', required: true }
     ],
+    fields: [
+      { name: 'DrugName', label: 'Drug Name', type: 'text', required: true, defaultValue: 'Compound ABC' },
+      { name: 'PharmacologySummary', label: 'Pharmacology Summary', type: 'textarea' },
+      { name: 'ToxicologySummary', label: 'Toxicology Summary', type: 'textarea' }
+    ],
     structure: {
       sections: [
-        { title: 'NONCLINICAL OVERVIEW', 
+        { title: 'NONCLINICAL OVERVIEW',
           subsections: [
             { title: '2.4.1 Overview of Nonclinical Testing Strategy' },
             { title: '2.4.2 Pharmacology' },
@@ -190,9 +210,14 @@ const module2Templates = [
       { id: '2.5.6', title: 'Benefits and Risks Conclusions', required: true },
       { id: '2.5.7', title: 'Literature References', required: true }
     ],
+    fields: [
+      { name: 'Indication', label: 'Indication', type: 'text', required: true },
+      { name: 'EfficacySummary', label: 'Efficacy Summary', type: 'textarea', required: true },
+      { name: 'SafetySummary', label: 'Safety Summary', type: 'textarea', required: true }
+    ],
     structure: {
       sections: [
-        { title: 'CLINICAL OVERVIEW', 
+        { title: 'CLINICAL OVERVIEW',
           subsections: [
             { title: '2.5.1 Product Development Rationale' },
             { title: '2.5.2 Overview of Biopharmaceutics' },
@@ -227,10 +252,15 @@ const module3Templates = [
       { id: '3.2.S.6', title: 'Container Closure System', required: true },
       { id: '3.2.S.7', title: 'Stability', required: true }
     ],
+    fields: [
+      { name: 'DrugName', label: 'Drug Name', type: 'text', required: true },
+      { name: 'Manufacturer', label: 'Manufacturer', type: 'text' },
+      { name: 'QualityControls', label: 'Quality Controls', type: 'textarea' }
+    ],
     structure: {
       sections: [
-        { 
-          title: 'DRUG SUBSTANCE', 
+        {
+          title: 'DRUG SUBSTANCE',
           subsections: [
             { 
               title: '3.2.S.1 General Information',
@@ -301,10 +331,15 @@ const module3Templates = [
       { id: '3.2.P.7', title: 'Container Closure System', required: true },
       { id: '3.2.P.8', title: 'Stability', required: true }
     ],
+    fields: [
+      { name: 'DrugName', label: 'Drug Name', type: 'text', required: true },
+      { name: 'Formulation', label: 'Formulation', type: 'textarea' },
+      { name: 'ManufacturingProcess', label: 'Manufacturing Process', type: 'textarea' }
+    ],
     structure: {
       sections: [
-        { 
-          title: 'DRUG PRODUCT', 
+        {
+          title: 'DRUG PRODUCT',
           subsections: [
             { title: '3.2.P.1 Description and Composition of the Drug Product' },
             { 
@@ -383,10 +418,15 @@ const module4Templates = [
       { id: '4.2.1.3', title: 'Safety Pharmacology', required: true },
       { id: '4.2.1.4', title: 'Pharmacodynamic Drug Interactions', required: false }
     ],
+    fields: [
+      { name: 'DrugName', label: 'Drug Name', type: 'text', required: true },
+      { name: 'PrimaryPD', label: 'Primary Pharmacodynamics', type: 'textarea' },
+      { name: 'SafetyFindings', label: 'Safety Findings', type: 'textarea' }
+    ],
     structure: {
       sections: [
-        { 
-          title: 'PHARMACOLOGY STUDY REPORTS', 
+        {
+          title: 'PHARMACOLOGY STUDY REPORTS',
           subsections: [
             { title: '4.2.1.1 Primary Pharmacodynamics' },
             { title: '4.2.1.2 Secondary Pharmacodynamics' },
@@ -410,10 +450,16 @@ const module4Templates = [
       { id: '4.2.3.2.2', title: 'Study Report 2', required: false },
       { id: '4.2.3.2.3', title: 'Study Report 3', required: false }
     ],
+    fields: [
+      { name: 'DrugName', label: 'Drug Name', type: 'text', required: true },
+      { name: 'Species', label: 'Species', type: 'text' },
+      { name: 'Duration', label: 'Study Duration', type: 'text' },
+      { name: 'KeyFindings', label: 'Key Findings', type: 'textarea' }
+    ],
     structure: {
       sections: [
-        { 
-          title: 'REPEAT-DOSE TOXICITY', 
+        {
+          title: 'REPEAT-DOSE TOXICITY',
           subsections: [
             { 
               title: 'STUDY REPORT FORMAT',
@@ -452,10 +498,16 @@ const module5Templates = [
       { id: '5.3.5.1.3', title: 'Study Report', required: true },
       { id: '5.3.5.1.4', title: 'Case Report Forms', required: false }
     ],
+    fields: [
+      { name: 'StudyTitle', label: 'Study Title', type: 'text', required: true },
+      { name: 'Indication', label: 'Indication', type: 'text' },
+      { name: 'EfficacyResults', label: 'Efficacy Results', type: 'textarea' },
+      { name: 'SafetyResults', label: 'Safety Results', type: 'textarea' }
+    ],
     structure: {
       sections: [
-        { 
-          title: 'CONTROLLED CLINICAL STUDY REPORT', 
+        {
+          title: 'CONTROLLED CLINICAL STUDY REPORT',
           subsections: [
             { title: '1. Title Page' },
             { title: '2. Synopsis' },
@@ -492,10 +544,15 @@ const module5Templates = [
       { id: '5.3.1.1.3', title: 'Study Report', required: true },
       { id: '5.3.1.1.4', title: 'Bioanalytical Method Validation', required: true }
     ],
+    fields: [
+      { name: 'StudyTitle', label: 'Study Title', type: 'text', required: true },
+      { name: 'Formulation', label: 'Formulation', type: 'text' },
+      { name: 'BAResults', label: 'BA Results', type: 'textarea' }
+    ],
     structure: {
       sections: [
-        { 
-          title: 'BIOAVAILABILITY STUDY REPORT', 
+        {
+          title: 'BIOAVAILABILITY STUDY REPORT',
           subsections: [
             { title: '1. Title Page' },
             { title: '2. Synopsis' },
@@ -523,10 +580,14 @@ const module5Templates = [
     sections: [
       { id: '5.2.1', title: 'Tabular Listing', required: true }
     ],
+    fields: [
+      { name: 'ProductName', label: 'Product Name', type: 'text', required: true },
+      { name: 'ListingNotes', label: 'Listing Notes', type: 'textarea' }
+    ],
     structure: {
       sections: [
-        { 
-          title: 'TABULAR LISTING OF ALL CLINICAL STUDIES', 
+        {
+          title: 'TABULAR LISTING OF ALL CLINICAL STUDIES',
           subsections: [
             { 
               title: 'Table Format',
