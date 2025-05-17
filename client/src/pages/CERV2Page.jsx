@@ -156,6 +156,23 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [showDebugInfo, setShowDebugInfo] = useState(true); // Debug UI visibility toggle
   const [saveError, setSaveError] = useState(null); // Error state for save operations
   
+  // Global modal cleanup function - call this whenever switching tabs or views
+  const cleanupModals = useCallback(() => {
+    // Close any open modals, dialogs, or overlays
+    setShowWelcomeDialog(false);
+    setShowDeviceIntakeForm(false);
+    setShowFolderCreate(false);
+    setShowESTARDemo(false);
+    setShowProcessingResults(false);
+    
+    // Force any modal-related DOM elements to be unmounted
+    document.querySelectorAll('.modal-overlay, .modal-backdrop, .dialog-container').forEach(el => {
+      el.remove();
+    });
+    
+    console.log('UI cleanup: All modals and overlays have been forcibly unmounted');
+  }, []);
+  
   // Enhanced helper function to load saved state from localStorage with multi-key support
   const loadSavedState = (key, defaultValue) => {
     try {
