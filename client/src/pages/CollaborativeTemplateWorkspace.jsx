@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Helmet } from 'react-helmet';
 import CollaborativeTemplateEditor from '@/components/templates/CollaborativeTemplateEditor';
 import EnhancedDocumentTemplates from './EnhancedDocumentTemplates';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -31,11 +30,7 @@ const CollaborativeTemplateWorkspace = () => {
   };
   
   return (
-    <>
-      <Helmet>
-        <title>Collaborative Template Workspace | TrialSage</title>
-      </Helmet>
-      
+    <>      
       <div className="flex flex-col h-screen">
         {/* Header */}
         <header className="border-b bg-white dark:bg-slate-950 px-6 py-3">
