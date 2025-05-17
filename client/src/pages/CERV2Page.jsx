@@ -4,7 +4,7 @@ import { useLumenAiAssistant } from '@/contexts/LumenAiAssistantContext';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { ShieldAlert, RefreshCw, AlertCircle } from 'lucide-react';
+import { ShieldAlert, RefreshCw } from 'lucide-react';
 import { initializeStates, saveState, loadState, recoverWorkflow, getWorkflowDiagnostics } from '../utils/stabilityPatches';
 import WorkflowContinuityManager from '../components/recovery/WorkflowContinuityManager';
 import DeviceProfileSelector from '../components/510k/DeviceProfileSelector';
@@ -165,6 +165,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const [sections, setSections] = useState([]);
   const [equivalenceData, setEquivalenceData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [isFetchingFaers, setIsFetchingFaers] = useState(false);
   const [isFetchingLiterature, setIsFetchingLiterature] = useState(false);
   const [activeTab, setActiveTab] = useState(initialActiveTab || 'predicates');
