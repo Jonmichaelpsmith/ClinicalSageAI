@@ -963,6 +963,46 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   const renderContent = () => {
     // If 510k document type is selected, show integrated 510k content
     if (documentType === '510k') {
+      // Show document intelligence tab if active
+      if (activeTab === 'document-intelligence') {
+        return (
+          <div className="p-4 space-y-4">
+            <DocumentIntakePanel
+              onExtractComplete={(data) => {
+                setExtractedData(data);
+                setIsExtracting(false);
+                // If data contains device profile information and we don't have a device profile yet,
+                // we can pre-populate the device profile form with this information
+                if (data && !deviceProfile) {
+                  // Create a stub deviceProfile with extracted data
+                  const extractedProfile = {
+                    deviceName: data.deviceName || '',
+                    description: data.description || '',
+                    manufacturer: data.manufacturer || '',
+                    regulatoryClass: data.regulatoryClass || 'Class II',
+                    intendedUse: data.indications || '',
+                    // Add any other fields that might be extracted
+                  };
+                  
+                  // Update device profile with extracted data
+                  setDeviceProfile(extractedProfile);
+                  
+                  toast({
+                    title: "Data Extracted Successfully",
+                    description: "Device information has been extracted and is ready for review.",
+                    variant: "success",
+                  });
+                }
+              }}
+              processedDocuments={processedDocuments}
+              setProcessedDocuments={setProcessedDocuments}
+              isExtracting={isExtracting}
+              setIsExtracting={setIsExtracting}
+            />
+          </div>
+        );
+      }
+      
       // Show device profile tab if active
       if (activeTab === 'device-profile') {
         return (
@@ -1516,6 +1556,16 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
               >
                 <FolderTree className="mr-1.5 h-4 w-4" />
                 Document Vault
+              </Button>
+              
+              <Button 
+                variant={activeTab === 'document-intelligence' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setActiveTab('document-intelligence')}
+                className={`flex items-center ${activeTab === 'document-intelligence' ? 'text-white bg-blue-600 hover:bg-blue-700' : 'text-gray-600'}`}
+              >
+                <Layers className="mr-1.5 h-4 w-4" />
+                Document Intelligence
               </Button>
               
               {documentType === '510k' && (
