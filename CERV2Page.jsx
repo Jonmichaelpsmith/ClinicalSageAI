@@ -180,6 +180,80 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
       console.log("Document type set to 510k, active tab set to: predicates");
     }
   }, [documentType]);
+  
+  // Set up event listener for draft document loading within CERV2
+  useEffect(() => {
+    // Create event handler for loading draft documents
+    const handleDraftDocumentLoad = (event) => {
+      const { document } = event.detail;
+      
+      if (document && document.content) {
+        console.log("Loading draft document in CERV2:", document.name);
+        
+        try {
+          // Update document state based on content type
+          if (document.type === '510k') {
+            // Update 510k document state
+            setDocumentType('510k');
+            
+            // Apply content to device profile if available
+            if (document.content.deviceProfile) {
+              setDeviceProfile(document.content.deviceProfile);
+              setDeviceName(document.content.deviceProfile.deviceName || '');
+              setManufacturer(document.content.deviceProfile.manufacturer || '');
+              setIntendedUse(document.content.deviceProfile.intendedUse || '');
+              setK510DocumentId(document.content.deviceProfile.id || document.id);
+            }
+            
+            // Set appropriate active tab based on document content
+            if (document.content.workflowStep) {
+              setWorkflowStep(document.content.workflowStep);
+              const tabMap = {
+                1: 'predicates',
+                2: 'predicates',
+                3: 'equivalence',
+                4: 'compliance',
+                5: 'submission'
+              };
+              setActiveTab(tabMap[document.content.workflowStep] || 'predicates');
+            } else {
+              // Default to predicates if no workflow step is specified
+              setActiveTab('predicates');
+            }
+          } else if (document.type === 'cer') {
+            // Update CER document state
+            setDocumentType('cer');
+            setCerDocumentId(document.id);
+            setActiveTab('builder');
+          }
+          
+          // Close document tree after loading
+          setShowDocumentTree(false);
+          
+          toast({
+            title: "Draft Loaded",
+            description: `Successfully loaded draft: ${document.name}`,
+            variant: "default"
+          });
+        } catch (error) {
+          console.error("Error loading draft document in CERV2:", error);
+          toast({
+            title: "Error Loading Draft",
+            description: "There was a problem loading the draft document.",
+            variant: "destructive"
+          });
+        }
+      }
+    };
+    
+    // Add event listener for draft document loading
+    window.addEventListener('cerv2-load-document', handleDraftDocumentLoad);
+    
+    // Clean up listener on component unmount
+    return () => {
+      window.removeEventListener('cerv2-load-document', handleDraftDocumentLoad);
+    };
+  }, []);
 
   // Update workflow progress when steps change
   useEffect(() => {
