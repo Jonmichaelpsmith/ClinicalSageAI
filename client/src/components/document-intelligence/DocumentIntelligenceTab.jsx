@@ -1,11 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Separator } from '@/components/ui/separator';
-import { CheckCircle, FileText, FlaskConical, Library, BookOpen } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
-
-// Import sub-components
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Brain, FileText, Microscope, ExternalLink, AlertTriangle, Shield } from 'lucide-react';
 import DocumentUploader from './DocumentUploader';
 import DocumentAnalyzer from './DocumentAnalyzer';
 import DocumentIntakeForm from './DocumentIntakeForm';
@@ -13,199 +11,229 @@ import DocumentIntakeForm from './DocumentIntakeForm';
 /**
  * Document Intelligence Tab Component
  * 
- * This component serves as the main container for the document intelligence
- * functionality, coordinating the workflow between document upload, analysis,
- * and data application.
+ * This component coordinates the document intelligence workflow:
+ * 1. Upload and process documents
+ * 2. Analyze documents to extract structured data
+ * 3. Review and apply extracted data to device profile
  * 
  * @param {Object} props
- * @param {string} props.deviceType - The type of device (510k, cer, etc.)
+ * @param {string} props.regulatoryContext - The regulatory context (510k, cer, etc.)
  * @param {Object} props.deviceProfile - The current device profile
- * @param {Function} props.onUpdateDeviceProfile - Callback for updating the device profile
+ * @param {Function} props.onDeviceProfileUpdate - Callback for when device profile is updated
  */
 const DocumentIntelligenceTab = ({
-  deviceType = '510k',
-  deviceProfile = null,
-  onUpdateDeviceProfile = null
+  regulatoryContext = '510k',
+  deviceProfile,
+  onDeviceProfileUpdate
 }) => {
-  const [activeStep, setActiveStep] = useState('upload');
+  const [activeTab, setActiveTab] = useState('upload');
   const [processedDocuments, setProcessedDocuments] = useState([]);
+  const [documentTypes, setDocumentTypes] = useState([]);
   const [extractedData, setExtractedData] = useState(null);
-  const [regulatoryContext, setRegulatoryContext] = useState(deviceType || '510k');
-  const { toast } = useToast();
 
-  // Update regulatory context when device type changes
-  useEffect(() => {
-    setRegulatoryContext(deviceType || '510k');
-  }, [deviceType]);
-
-  // Handle completion of document processing
-  const handleProcessingComplete = (documents) => {
+  // Handle when documents are processed
+  const handleDocumentsProcessed = (documents, types) => {
     setProcessedDocuments(documents);
-    setActiveStep('analyze');
+    setDocumentTypes(types);
     
-    toast({
-      title: 'Documents Processed',
-      description: 'Your documents are ready for analysis.',
-      variant: 'success',
-    });
+    // If no documents, reset the state
+    if (documents.length === 0) {
+      setExtractedData(null);
+    }
+    
+    // If documents are processed and we're on the upload tab, advance to analysis tab
+    if (documents.length > 0 && activeTab === 'upload') {
+      setActiveTab('analyze');
+    }
   };
 
-  // Handle completion of document analysis
+  // Handle when document analysis is complete
   const handleAnalysisComplete = (data) => {
     setExtractedData(data);
-    setActiveStep('apply');
     
-    toast({
-      title: 'Analysis Complete',
-      description: 'Data has been extracted and is ready for review.',
-      variant: 'success',
-    });
+    // Advance to intake tab
+    setActiveTab('intake');
   };
 
-  // Handle application of extracted data to device profile
-  const handleApplyData = (data) => {
-    // Create updated device profile with the extracted data
+  // Handle when data is applied to device profile
+  const handleApplyData = (dataToApply) => {
+    // Create updated device profile with applied data
     const updatedProfile = {
       ...deviceProfile,
-      ...data,
+      ...dataToApply,
       updatedAt: new Date().toISOString()
     };
     
-    // Call the callback with the updated profile
-    if (onUpdateDeviceProfile) {
-      onUpdateDeviceProfile(updatedProfile);
+    // Call callback with updated profile
+    if (onDeviceProfileUpdate) {
+      onDeviceProfileUpdate(updatedProfile);
     }
-    
-    toast({
-      title: 'Data Applied',
-      description: 'The extracted data has been applied to your device profile.',
-      variant: 'success',
-    });
-    
-    // Reset for new document processing
-    setTimeout(() => {
-      setActiveStep('upload');
-      setProcessedDocuments([]);
-      setExtractedData(null);
-    }, 2000);
   };
 
-  // Handle resetting the document intelligence workflow
-  const handleReset = () => {
-    setActiveStep('upload');
-    setProcessedDocuments([]);
-    setExtractedData(null);
+  // Render workflow status
+  const renderWorkflowStatus = () => {
+    const steps = [
+      { id: 'upload', label: 'Document Upload', icon: FileText },
+      { id: 'analyze', label: 'Document Analysis', icon: Microscope },
+      { id: 'intake', label: 'Data Review & Application', icon: Shield }
+    ];
+    
+    return (
+      <div className="flex items-center justify-between mb-6 px-2">
+        {steps.map((step, index) => {
+          const StepIcon = step.icon;
+          const isActive = step.id === activeTab;
+          const isComplete = getStepCompletionStatus(step.id);
+          const isDisabled = !canAccessStep(step.id);
+          
+          return (
+            <React.Fragment key={step.id}>
+              {index > 0 && (
+                <div 
+                  className={`h-1 flex-1 mx-2 ${
+                    isComplete || (index === 1 && processedDocuments.length > 0) || (index === 2 && extractedData)
+                      ? 'bg-primary/60'
+                      : 'bg-muted'
+                  }`}
+                />
+              )}
+              
+              <div className="flex flex-col items-center">
+                <div 
+                  className={`
+                    flex items-center justify-center rounded-full w-10 h-10 mb-1
+                    ${isActive ? 'bg-primary text-white' : 
+                      isComplete ? 'bg-primary/20 text-primary' : 
+                      'bg-muted text-muted-foreground'}
+                  `}
+                >
+                  <StepIcon className="h-5 w-5" />
+                </div>
+                <span className={`text-xs ${isActive ? 'font-medium' : 'text-muted-foreground'}`}>
+                  {step.label}
+                </span>
+              </div>
+            </React.Fragment>
+          );
+        })}
+      </div>
+    );
+  };
+
+  // Determine if a step is complete
+  const getStepCompletionStatus = (stepId) => {
+    switch (stepId) {
+      case 'upload':
+        return processedDocuments.length > 0;
+      case 'analyze':
+        return extractedData !== null;
+      case 'intake':
+        return false; // Intake is the final step
+      default:
+        return false;
+    }
+  };
+
+  // Determine if a step can be accessed
+  const canAccessStep = (stepId) => {
+    switch (stepId) {
+      case 'upload':
+        return true; // Always accessible
+      case 'analyze':
+        return processedDocuments.length > 0;
+      case 'intake':
+        return extractedData !== null;
+      default:
+        return false;
+    }
   };
 
   return (
-    <div className="space-y-6 p-4">
-      <div className="flex flex-col space-y-2">
-        <h2 className="text-2xl font-bold tracking-tight">Document Intelligence</h2>
-        <p className="text-muted-foreground">
-          Upload and analyze regulatory documents to automatically extract structured data.
-        </p>
-      </div>
-
-      <Separator className="my-6" />
-      
-      {/* Step Progress Tabs */}
-      <Tabs value={activeStep} className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger 
-            value="upload" 
-            onClick={() => setActiveStep('upload')}
-            disabled={false}
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            <FileText className="h-4 w-4 mr-2" />
-            Document Upload
-          </TabsTrigger>
-          <TabsTrigger 
-            value="analyze" 
-            onClick={() => setActiveStep('analyze')}
-            disabled={processedDocuments.length === 0}
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            <FlaskConical className="h-4 w-4 mr-2" />
-            Analysis
-          </TabsTrigger>
-          <TabsTrigger 
-            value="apply" 
-            onClick={() => setActiveStep('apply')}
-            disabled={!extractedData}
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-          >
-            <CheckCircleIcon className="h-4 w-4 mr-2" />
-            Apply Data
-          </TabsTrigger>
-        </TabsList>
-        
-        <div className="mt-6">
-          <TabsContent value="upload" className="mt-0">
-            <DocumentUploader
-              regulatoryContext={regulatoryContext}
-              onProcessingComplete={handleProcessingComplete}
-            />
-            
-            {/* Educational Section */}
-            <Card className="mt-6">
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <LibraryIcon className="h-5 w-5 mr-2" />
-                  About Document Intelligence
-                </CardTitle>
-                <CardDescription>
-                  Learn how the document intelligence system can accelerate your regulatory workflow.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <h3 className="text-base font-medium">Key Features</h3>
-                      <ul className="list-disc list-inside text-sm text-muted-foreground">
-                        <li>Automatically extract device data from regulatory documents</li>
-                        <li>Multiple extraction modes for different document types</li>
-                        <li>High accuracy document type recognition</li>
-                        <li>Regulatory validation of extracted data</li>
-                        <li>Seamless integration with device profiles</li>
-                      </ul>
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-base font-medium">Supported Document Types</h3>
-                      <ul className="list-disc list-inside text-sm text-muted-foreground">
-                        <li>510(k) Submissions</li>
-                        <li>Clinical Evaluation Reports (CER)</li>
-                        <li>Technical Documentation</li>
-                        <li>Instructions for Use (IFU)</li>
-                        <li>Classification Documents</li>
-                        <li>Predicate Device Information</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="analyze" className="mt-0">
-            <DocumentAnalyzer
-              processedDocuments={processedDocuments}
-              regulatoryContext={regulatoryContext}
-              onAnalysisComplete={handleAnalysisComplete}
-              onReset={handleReset}
-            />
-          </TabsContent>
-          
-          <TabsContent value="apply" className="mt-0">
-            <DocumentIntakeForm
-              extractedData={extractedData}
-              regulatoryContext={regulatoryContext}
-              onApplyData={handleApplyData}
-            />
-          </TabsContent>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight flex items-center">
+            <Brain className="mr-2 h-6 w-6 text-primary" />
+            Document Intelligence
+          </h2>
+          <p className="text-muted-foreground">
+            Upload regulatory documents to automatically extract and apply device data.
+          </p>
         </div>
-      </Tabs>
+        
+        <Badge variant="outline" className="flex items-center">
+          <AlertTriangle className="h-3.5 w-3.5 mr-1 text-yellow-500" />
+          <span>Beta Feature</span>
+        </Badge>
+      </div>
+      
+      {renderWorkflowStatus()}
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Document Processing Workflow</CardTitle>
+          <CardDescription>
+            Follow the steps below to extract and apply data from your regulatory documents.
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="upload" disabled={false}>
+                <FileText className="h-4 w-4 mr-2" />
+                Upload
+              </TabsTrigger>
+              <TabsTrigger value="analyze" disabled={!canAccessStep('analyze')}>
+                <Microscope className="h-4 w-4 mr-2" />
+                Analyze
+              </TabsTrigger>
+              <TabsTrigger value="intake" disabled={!canAccessStep('intake')}>
+                <Shield className="h-4 w-4 mr-2" />
+                Review & Apply
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="upload" className="pt-4">
+              <DocumentUploader
+                regulatoryContext={regulatoryContext}
+                onDocumentsProcessed={handleDocumentsProcessed}
+              />
+            </TabsContent>
+            
+            <TabsContent value="analyze" className="pt-4">
+              <DocumentAnalyzer
+                processedDocuments={processedDocuments}
+                documentTypes={documentTypes}
+                regulatoryContext={regulatoryContext}
+                onAnalysisComplete={handleAnalysisComplete}
+              />
+            </TabsContent>
+            
+            <TabsContent value="intake" className="pt-4">
+              <DocumentIntakeForm
+                extractedData={extractedData}
+                regulatoryContext={regulatoryContext}
+                onApplyData={handleApplyData}
+              />
+            </TabsContent>
+          </Tabs>
+        </CardContent>
+      </Card>
+      
+      <div className="text-xs text-muted-foreground bg-muted/40 rounded-md p-4">
+        <div className="flex items-start">
+          <AlertTriangle className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5 text-yellow-500" />
+          <p>
+            <span className="font-medium">Beta Feature Notice:</span> The Document Intelligence system is currently in beta. 
+            Results may vary depending on document quality and format. Always review extracted data carefully before applying it to your device profile.
+            <a href="#" className="text-primary inline-flex items-center ml-2 hover:underline">
+              Learn more 
+              <ExternalLink className="h-3 w-3 ml-1" />
+            </a>
+          </p>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,377 +1,627 @@
 /**
  * Document Intelligence Service
  * 
- * This service handles all API calls related to document intelligence operations
- * including document processing, data extraction, and model management.
- * 
- * The enhanced version includes:
- * - Multi-stage document analysis pipeline
- * - Advanced document type recognition
- * - Specialized regulatory document classification
- * - Deep metadata extraction from complex structured documents
- * - Confidence scoring for extracted data elements
- * - Advanced entity validation and cross-reference checking
+ * This service provides the core functionality for the document intelligence system,
+ * including document processing, document type identification, analysis, and data enhancement.
  */
+
+// No API import needed for the demo implementation
+
 class DocumentIntelligenceService {
-  constructor() {
-    this.apiBaseUrl = '/api/document-intelligence';
-  }
-
   /**
-   * Upload and process documents for intelligence analysis
+   * Process documents for analysis
    * 
-   * @param {File[]} files Array of document files to process
-   * @param {string} regulatoryContext The regulatory context for processing ('510k', 'cer', etc.)
-   * @param {Function} progressCallback Optional callback for upload progress updates
-   * @param {string} extractionMode The level of extraction detail ('basic', 'enhanced', 'regulatory', 'comprehensive')
-   * @returns {Promise<Array>} The processed document metadata
+   * @param {Array} files - The files to process
+   * @param {string} regulatoryContext - The regulatory context (510k, cer, etc.)
+   * @param {Function} progressCallback - Callback for progress updates
+   * @returns {Promise<Array>} - Array of processed document objects
    */
-  async processDocuments(files, regulatoryContext, progressCallback = null, extractionMode = 'comprehensive') {
-    // For development/demo purposes, we'll use a mock implementation
-    // In a production environment, this would make an actual API call
-    return this._mockProcessDocuments(files, regulatoryContext, extractionMode);
-  }
-
-  /**
-   * Extract data from processed documents
-   * 
-   * @param {Array} processedDocuments Array of processed document metadata
-   * @param {string} regulatoryContext The regulatory context for extraction ('510k', 'cer', etc.)
-   * @param {string} extractionMode The level of extraction detail ('basic', 'enhanced', 'regulatory', 'comprehensive')
-   * @returns {Promise<Object>} The extracted data from the documents
-   */
-  async extractData(processedDocuments, regulatoryContext, extractionMode = 'comprehensive') {
-    // In a production environment, this would make an actual API call
-    return this._mockExtractedData(processedDocuments, regulatoryContext, extractionMode);
-  }
-
-  /**
-   * Apply extracted data to a device profile
-   * 
-   * @param {Object} extractedData The data extracted from documents
-   * @param {string} deviceProfileId The ID of the device profile to update
-   * @param {Object} options Additional options for data application
-   * @returns {Promise<Object>} The updated device profile
-   */
-  async applyExtractedData(extractedData, deviceProfileId, options = {}) {
+  async processDocuments(files, regulatoryContext, progressCallback) {
     try {
-      // Create an updated device profile with the extracted data
-      const updatedProfile = this._createUpdatedDeviceProfile(extractedData, deviceProfileId);
+      // For demo purposes, we'll simulate processing without actual file upload
+      // In a real implementation, this would upload files to the server
+      const processedDocuments = [];
       
-      return updatedProfile;
-    } catch (error) {
-      console.error('Error applying extracted data:', error);
-      throw new Error('Failed to apply extracted data to device profile: ' + error.message);
-    }
-  }
-
-  /**
-   * Validate extracted data against regulatory requirements
-   * 
-   * @param {Object} extractedData The data extracted from documents
-   * @param {string} regulatoryContext The regulatory context for validation
-   * @returns {Promise<Object>} Validation results
-   */
-  async validateExtractedData(extractedData, regulatoryContext) {
-    try {
-      // Simulate validation process
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Basic validation logic - in a real implementation, this would be a much more
-      // sophisticated validation based on regulatory requirements
-      const fieldResults = {};
-      let valid = true;
-      let warningCount = 0;
-      
-      Object.keys(extractedData).forEach(key => {
-        const value = extractedData[key];
-        const fieldValid = value && value.trim && value.trim().length > 0;
-        const confidence = Math.random() * 0.4 + 0.6; // Random confidence between 0.6 and 1.0
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
         
-        if (!fieldValid) {
-          valid = false;
-          warningCount++;
+        // Update progress
+        if (progressCallback) {
+          progressCallback(Math.round((i / files.length) * 90));
         }
         
-        fieldResults[key] = {
-          valid: fieldValid,
-          confidence,
-          message: fieldValid ? null : 'This field is required for regulatory compliance.'
-        };
-      });
+        // Simulate processing delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Add processed document
+        processedDocuments.push({
+          id: `doc-${Date.now()}-${i}`,
+          filename: file.name,
+          fileType: this._getFileType(file.name),
+          fileSize: file.size,
+          pages: this._estimatePageCount(file.size),
+          textContent: await this._extractTextContent(file),
+          processed: true,
+          metadata: {
+            regulatoryContext,
+            processingTimestamp: new Date().toISOString()
+          }
+        });
+      }
       
-      return {
-        valid,
-        fieldResults,
-        message: valid 
-          ? 'All extracted data meets regulatory requirements.'
-          : `${warningCount} field(s) require attention to meet regulatory requirements.`
-      };
+      // Complete progress
+      if (progressCallback) {
+        progressCallback(100);
+      }
+      
+      return processedDocuments;
     } catch (error) {
-      console.error('Error validating extracted data:', error);
-      throw new Error('Failed to validate extracted data: ' + error.message);
+      console.error('Error processing documents:', error);
+      throw new Error('Failed to process documents: ' + (error.message || 'Unknown error'));
     }
   }
-
+  
   /**
-   * Get a list of documents that are compatible with the document intelligence system
+   * Identify the types of documents that have been uploaded
    * 
-   * @param {string} regulatoryContext The regulatory context ('510k', 'cer', etc.)
-   * @returns {Promise<Array>} List of compatible document types
+   * @param {Array} processedDocuments - Array of processed document objects
+   * @param {string} regulatoryContext - The regulatory context (510k, cer, etc.)
+   * @returns {Promise<Array>} - Array of document type objects
+   */
+  async identifyDocumentTypes(processedDocuments, regulatoryContext) {
+    try {
+      // For demo purposes, we'll simulate document type identification
+      // In a real implementation, this would call a server API
+      const documentTypes = [];
+      
+      for (const doc of processedDocuments) {
+        // Simulate processing delay
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
+        // Determine document type based on filename and content
+        const filename = doc.filename.toLowerCase();
+        let type, confidence, description;
+        
+        if (filename.includes('510k') || filename.includes('submission')) {
+          type = '510(k) Submission';
+          confidence = 0.95;
+          description = 'A 510(k) submission document containing device details, intended use, and regulatory information.';
+        } else if (filename.includes('technical') || filename.includes('spec')) {
+          type = 'Technical File';
+          confidence = 0.87;
+          description = 'Technical documentation containing specifications, performance data, and engineering details.';
+        } else if (filename.includes('clinical') || filename.includes('study')) {
+          type = 'Clinical Study Report';
+          confidence = 0.92;
+          description = 'Clinical investigation documentation containing study protocols, results, and analysis.';
+        } else if (filename.includes('instruction') || filename.includes('ifu') || filename.includes('manual')) {
+          type = 'Instructions For Use';
+          confidence = 0.89;
+          description = 'Instructions for use document describing how to properly use the device.';
+        } else if (filename.includes('predicate') || filename.includes('comparison')) {
+          type = 'Predicate Device Information';
+          confidence = 0.91;
+          description = 'Documentation about predicate devices used for substantial equivalence claims.';
+        } else {
+          // Default to a generic regulatory document
+          type = 'Regulatory Document';
+          confidence = 0.65;
+          description = 'A regulatory document with unspecified content type. Further analysis required.';
+        }
+        
+        documentTypes.push({
+          documentId: doc.id,
+          filename: doc.filename,
+          type,
+          confidence,
+          description,
+          regulatoryContext
+        });
+      }
+      
+      return documentTypes;
+    } catch (error) {
+      console.error('Error identifying document types:', error);
+      throw new Error('Failed to identify document types: ' + (error.message || 'Unknown error'));
+    }
+  }
+  
+  /**
+   * Analyze documents to extract structured data
+   * 
+   * @param {Array} processedDocuments - Array of processed document objects
+   * @param {Object} options - Analysis options
+   * @param {string} options.regulatoryContext - The regulatory context (510k, cer, etc.)
+   * @param {string} options.extractionMode - The extraction mode (basic, enhanced, regulatory, comprehensive)
+   * @param {boolean} options.validateData - Whether to validate the extracted data
+   * @param {Function} progressCallback - Callback for progress updates
+   * @returns {Promise<Object>} - Extracted data object
+   */
+  async analyzeDocuments(processedDocuments, options, progressCallback) {
+    try {
+      const { regulatoryContext, extractionMode, validateData } = options;
+      
+      // For demo purposes, we'll simulate document analysis
+      // In a real implementation, this would call a server API
+      
+      // Update progress
+      if (progressCallback) {
+        progressCallback(10);
+      }
+      
+      // Simulate analysis delay based on extraction mode
+      const delayTime = {
+        basic: 1000,
+        enhanced: 2000,
+        regulatory: 2500,
+        comprehensive: 3000
+      }[extractionMode] || 1500;
+      
+      await new Promise(resolve => setTimeout(resolve, delayTime));
+      
+      // Update progress
+      if (progressCallback) {
+        progressCallback(50);
+      }
+      
+      // Generate extracted data
+      const extractedData = this._generateExtractedData(processedDocuments, regulatoryContext, extractionMode);
+      
+      // Validate data if requested
+      if (validateData) {
+        extractedData.validation = this._validateExtractedData(extractedData, regulatoryContext);
+      }
+      
+      // Update progress
+      if (progressCallback) {
+        progressCallback(90);
+      }
+      
+      // Add confidence scores for each field
+      Object.keys(extractedData).forEach(key => {
+        if (
+          key !== 'validation' && 
+          key !== 'confidence' && 
+          key !== 'sourceDocuments' &&
+          !key.endsWith('Confidence')
+        ) {
+          extractedData[`${key}Confidence`] = this._generateConfidenceScore();
+        }
+      });
+      
+      // Simulate final processing delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Complete progress
+      if (progressCallback) {
+        progressCallback(100);
+      }
+      
+      return extractedData;
+    } catch (error) {
+      console.error('Error analyzing documents:', error);
+      throw new Error('Failed to analyze documents: ' + (error.message || 'Unknown error'));
+    }
+  }
+  
+  /**
+   * Enhance extracted data with AI-powered insights
+   * 
+   * @param {Object} extractedData - The data extracted from documents
+   * @param {string} regulatoryContext - The regulatory context (510k, cer, etc.)
+   * @returns {Promise<Object>} - Enhanced data object
+   */
+  async enhanceExtractedData(extractedData, regulatoryContext) {
+    try {
+      // For demo purposes, we'll simulate data enhancement
+      // In a real implementation, this would call a server API
+      
+      // Simulate enhancement delay
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Start with the original data
+      const enhancedData = { ...extractedData };
+      
+      // Enhance existing fields
+      if (enhancedData.description) {
+        enhancedData.description = this._enhanceDescription(enhancedData.description);
+        enhancedData.descriptionConfidence = Math.min(1, (enhancedData.descriptionConfidence || 0) + 0.15);
+      }
+      
+      if (enhancedData.intendedUse) {
+        enhancedData.intendedUse = this._enhanceIntendedUse(enhancedData.intendedUse);
+        enhancedData.intendedUseConfidence = Math.min(1, (enhancedData.intendedUseConfidence || 0) + 0.1);
+      }
+      
+      // Add new fields based on regulatory context
+      if (regulatoryContext === '510k') {
+        if (!enhancedData.substEquivalence) {
+          enhancedData.substEquivalence = this._generateSubstantialEquivalence(enhancedData);
+          enhancedData.substEquivalenceConfidence = 0.78;
+        }
+        
+        if (!enhancedData.riskLevel) {
+          enhancedData.riskLevel = this._determineRiskLevel(enhancedData);
+          enhancedData.riskLevelConfidence = 0.82;
+        }
+      } else if (regulatoryContext === 'cer') {
+        if (!enhancedData.clinicalEvaluation) {
+          enhancedData.clinicalEvaluation = this._generateClinicalEvaluation(enhancedData);
+          enhancedData.clinicalEvaluationConfidence = 0.75;
+        }
+        
+        if (!enhancedData.benefitRiskAssessment) {
+          enhancedData.benefitRiskAssessment = this._generateBenefitRiskAssessment(enhancedData);
+          enhancedData.benefitRiskAssessmentConfidence = 0.79;
+        }
+      }
+      
+      // Update overall confidence
+      enhancedData.confidence = Math.min(1, (enhancedData.confidence || 0) + 0.1);
+      
+      return enhancedData;
+    } catch (error) {
+      console.error('Error enhancing data:', error);
+      throw new Error('Failed to enhance data: ' + (error.message || 'Unknown error'));
+    }
+  }
+  
+  /**
+   * Get compatible document types for a regulatory context
+   * 
+   * @param {string} regulatoryContext - The regulatory context (510k, cer, etc.)
+   * @returns {Promise<Array>} - Array of compatible document type objects
    */
   async getCompatibleDocumentTypes(regulatoryContext) {
     try {
-      // In a production environment, this would fetch from the backend
-      await new Promise(resolve => setTimeout(resolve, 500));
+      // For demo purposes, we'll return hardcoded compatible document types
+      // In a real implementation, this would call a server API
       
       const commonTypes = [
-        { name: 'PDF Documents', description: 'Standard PDF files containing regulatory information' },
-        { name: 'Word Documents', description: 'Microsoft Word documents (.doc, .docx)' },
-        { name: 'Text Files', description: 'Plain text files (.txt)' }
+        {
+          name: 'Technical Documentation',
+          description: 'Device specifications, engineering details, and technical characteristics',
+        },
+        {
+          name: 'Instructions For Use (IFU)',
+          description: 'User manuals and instructions for using the device',
+        }
       ];
       
-      if (regulatoryContext === '510k') {
-        return [
-          ...commonTypes,
-          { name: 'FDA 510(k) Submission', description: 'Complete 510(k) submission package' },
-          { name: 'Technical Documentation', description: 'Device technical specifications' },
-          { name: 'Instructions for Use (IFU)', description: 'Device usage instructions' }
-        ];
-      } else if (regulatoryContext === 'cer') {
-        return [
-          ...commonTypes,
-          { name: 'Clinical Studies', description: 'Clinical study reports and data' },
-          { name: 'Literature Reviews', description: 'Published literature and reviews' },
-          { name: 'Post-Market Surveillance', description: 'Post-market surveillance reports' }
-        ];
-      }
-      
-      return commonTypes;
-    } catch (error) {
-      console.error('Error fetching compatible document types:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Get the processing stages for document intelligence
-   * 
-   * @returns {Promise<Array>} List of processing stages
-   */
-  async getProcessingStages() {
-    try {
-      // In a production environment, this would fetch from the backend
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const contextSpecificTypes = {
+        '510k': [
+          {
+            name: '510(k) Submission',
+            description: 'Premarket notification submission for FDA clearance',
+          },
+          {
+            name: 'Predicate Device Information',
+            description: 'Documentation about predicate devices for substantial equivalence claims',
+          },
+          {
+            name: 'Substantial Equivalence Report',
+            description: 'Report demonstrating equivalence to predicate devices',
+          }
+        ],
+        'cer': [
+          {
+            name: 'Clinical Evaluation Report',
+            description: 'Comprehensive evaluation of clinical data for CE marking',
+          },
+          {
+            name: 'Clinical Study Report',
+            description: 'Documentation of clinical investigations and their results',
+          },
+          {
+            name: 'Literature Review',
+            description: 'Systematic review of published scientific literature',
+          }
+        ],
+        // Add more contexts as needed
+      };
       
       return [
-        {
-          id: 'document-recognition',
-          name: 'Document Recognition',
-          description: 'Identifying document type and structure'
-        },
-        {
-          id: 'text-extraction',
-          name: 'Text Extraction',
-          description: 'Extracting text content from documents'
-        },
-        {
-          id: 'entity-recognition',
-          name: 'Entity Recognition',
-          description: 'Identifying and extracting key entities and data points'
-        },
-        {
-          id: 'regulatory-mapping',
-          name: 'Regulatory Mapping',
-          description: 'Mapping extracted data to regulatory requirements'
-        },
-        {
-          id: 'data-validation',
-          name: 'Data Validation',
-          description: 'Validating extracted data for completeness and accuracy'
-        }
+        ...(contextSpecificTypes[regulatoryContext] || []),
+        ...commonTypes
       ];
     } catch (error) {
-      console.error('Error fetching processing stages:', error);
-      return [];
+      console.error('Error getting compatible document types:', error);
+      throw new Error('Failed to get compatible document types: ' + (error.message || 'Unknown error'));
     }
   }
-
+  
   /**
-   * Mock method to simulate document processing
-   * This will be replaced with actual API calls when the backend is ready
+   * Estimate page count based on file size
+   * @private
    */
-  _mockProcessDocuments(files, regulatoryContext, extractionMode = 'comprehensive') {
-    return new Promise((resolve) => {
-      // Simulate processing time based on extraction mode
-      const processingTime = {
-        'basic': 1000,
-        'enhanced': 2000,
-        'regulatory': 3000,
-        'comprehensive': 4000
-      }[extractionMode] || 2000;
+  _estimatePageCount(fileSize) {
+    // Rough estimate: 100 KB per page for PDFs
+    return Math.max(1, Math.round(fileSize / (100 * 1024)));
+  }
+  
+  /**
+   * Get file type based on filename
+   * @private
+   */
+  _getFileType(filename) {
+    const extension = filename.split('.').pop().toLowerCase();
+    
+    const typeMap = {
+      pdf: 'PDF Document',
+      doc: 'Word Document',
+      docx: 'Word Document',
+      xls: 'Excel Spreadsheet',
+      xlsx: 'Excel Spreadsheet',
+      txt: 'Text File',
+      xml: 'XML File',
+      json: 'JSON File'
+    };
+    
+    return typeMap[extension] || 'Unknown File Type';
+  }
+  
+  /**
+   * Extract text content from a file
+   * @private
+   */
+  async _extractTextContent(file) {
+    // For demo purposes, we'll return a placeholder text based on file type
+    // In a real implementation, this would extract actual text from the file
+    const extension = file.name.split('.').pop().toLowerCase();
+    
+    if (['pdf', 'doc', 'docx'].includes(extension)) {
+      return `[Extracted text content from ${file.name}]\n\nThis device is designed for continuous monitoring of cardiac rhythm and vital signs in clinical settings. The CardioMonitor 2000 is a Class II medical device with product code DRT, manufactured by MedTech Innovations. It provides real-time monitoring of heart rate, ECG, blood pressure, and oxygen saturation levels.\n\nThe device is intended for use in hospitals, clinics, and other healthcare facilities under the supervision of healthcare professionals. It features advanced algorithms for arrhythmia detection and provides audible and visual alerts for abnormal vital signs.`;
+    } else if (['xls', 'xlsx'].includes(extension)) {
+      return `[Tabular data extracted from ${file.name}]\n\nSpecification Value\nDimensions 12.5" x 8.3" x 3.2"\nWeight 2.4 kg\nDisplay 10.1" color touchscreen\nBattery life 8 hours\nWireless connectivity Wi-Fi, Bluetooth\nMemory capacity 64 GB\nSampling rate 250 Hz`;
+    } else {
+      return `[Text content from ${file.name}]\n\nThis is simulated content for demonstration purposes. In a real implementation, the actual content of the file would be extracted and processed using OCR for images or direct text extraction for text-based files.`;
+    }
+  }
+  
+  /**
+   * Generate extracted data based on processed documents
+   * @private
+   */
+  _generateExtractedData(processedDocuments, regulatoryContext, extractionMode) {
+    // Base data for demonstration
+    const baseData = {
+      deviceName: 'CardioMonitor 2000',
+      manufacturer: 'MedTech Innovations',
+      productCode: 'DRT',
+      deviceClass: 'II',
+      intendedUse: 'Continuous monitoring of cardiac rhythm and vital signs in clinical settings',
+      description: 'A medical device designed for diagnostic procedures',
+      regulatoryClass: 'II',
+      status: 'active',
+      confidence: 0.82,
+      sourceDocuments: processedDocuments.map(doc => doc.id)
+    };
+    
+    // Add fields based on extraction mode
+    if (extractionMode === 'basic') {
+      return baseData;
+    }
+    
+    if (extractionMode === 'enhanced' || extractionMode === 'regulatory' || extractionMode === 'comprehensive') {
+      const enhancedData = {
+        ...baseData,
+        modelNumber: 'CM2000-X1',
+        softwareVersion: '3.2.1',
+        powerSource: 'Rechargeable lithium-ion battery and AC power',
+        standards: [
+          'IEC 60601-1',
+          'IEC 60601-1-2',
+          'IEC 60601-2-27'
+        ],
+        confidence: 0.85
+      };
       
-      setTimeout(() => {
-        const processedDocuments = files.map((file, index) => {
-          // Generate random confidence score between 0.7 and 0.95
-          const confidenceScore = 0.7 + Math.random() * 0.25;
-          
-          return {
-            id: `doc-${Date.now()}-${index}`,
-            filename: file.name,
-            fileSize: file.size,
-            documentType: this._guessDocumentType(file.name, regulatoryContext),
-            confidenceScore,
-            pageCount: Math.floor(Math.random() * 50) + 5, // Random page count
-            extractionMode,
-            processingStatus: 'complete',
-            keywords: this._generateRandomKeywords(regulatoryContext),
-            summary: `This appears to be a ${regulatoryContext.toUpperCase()} related document containing information about medical devices.`,
-            sections: this._generateRandomSections(3 + Math.floor(Math.random() * 8)) // 3-10 random sections
-          };
-        });
+      if (extractionMode === 'regulatory' || extractionMode === 'comprehensive') {
+        const regulatoryData = {
+          ...enhancedData,
+          regulatoryPath: regulatoryContext === '510k' ? '510(k) Premarket Notification' : 'CE Marking (MDR)',
+          classification: regulatoryContext === '510k' ? 'Class II (21 CFR 870.2300)' : 'Class IIa (Rule 10)',
+          reviewPanel: 'Cardiovascular',
+          confidence: 0.88
+        };
         
-        resolve(processedDocuments);
-      }, processingTime);
-    });
-  }
-
-  /**
-   * Mock method to simulate data extraction
-   * This will be replaced with actual API calls when the backend is ready
-   */
-  _mockExtractedData(processedDocuments, regulatoryContext, extractionMode) {
-    return new Promise((resolve) => {
-      // Simulate extraction time based on extraction mode
-      const extractionTime = {
-        'basic': 1000,
-        'enhanced': 2000,
-        'regulatory': 3000,
-        'comprehensive': 4000
-      }[extractionMode] || 2000;
-      
-      setTimeout(() => {
-        if (regulatoryContext === '510k') {
-          resolve({
-            deviceName: 'Advanced Monitoring System',
-            manufacturer: 'MedTech Innovations',
-            productCode: 'DRT',
-            deviceClass: 'II',
-            intendedUse: 'Continuous monitoring of cardiac rhythm and vital signs in clinical settings',
-            description: 'A medical device designed for diagnostic procedures',
-            regulatoryClass: 'II',
-            status: 'active'
-          });
-        } else if (regulatoryContext === 'cer') {
-          resolve({
-            deviceName: 'CeraPatch Wound Dressing',
-            manufacturer: 'BioTech Medical',
-            deviceType: 'Wound Care',
-            description: 'Advanced wound care dressing with antimicrobial properties',
-            clinicalBenefits: 'Increased healing rates, reduced infection risk',
-            adverseEvents: 'Minor skin irritation in some patients',
-            contraindications: 'Known allergies to adhesive materials',
-            riskAssessment: 'Low risk for intended use population'
-          });
-        } else {
-          resolve({
-            deviceName: 'Generic Medical Device',
-            manufacturer: 'Medical Manufacturing Co.',
-            description: 'General-purpose medical device',
-            regulatoryStatus: 'Pending'
-          });
+        if (extractionMode === 'comprehensive') {
+          return {
+            ...regulatoryData,
+            technicalSpecifications: {
+              dimensions: '12.5" x 8.3" x 3.2"',
+              weight: '2.4 kg',
+              display: '10.1" color touchscreen',
+              batteryLife: '8 hours',
+              connectivity: 'Wi-Fi, Bluetooth, Ethernet',
+              storageCapacity: '64 GB'
+            },
+            performance: {
+              ecgChannels: 12,
+              samplingRate: '250 Hz',
+              filterSettings: '0.5-40 Hz',
+              temperatureRange: '10-40°C',
+              alarmCategories: ['Physiological', 'Technical']
+            },
+            adverseEvents: [
+              'No serious adverse events reported',
+              'Minor skin irritation from electrodes (0.2%)'
+            ],
+            confidence: 0.92
+          };
         }
-      }, extractionTime);
-    });
-  }
-
-  /**
-   * Helper method to create an updated device profile from extracted data
-   */
-  _createUpdatedDeviceProfile(extractedData, deviceProfileId) {
-    return {
-      id: deviceProfileId || `profile-${Date.now()}`,
-      ...extractedData,
-      updatedAt: new Date().toISOString()
-    };
-  }
-
-  /**
-   * Helper method to guess document type based on filename
-   */
-  _guessDocumentType(filename, regulatoryContext) {
-    const lowercaseFilename = filename.toLowerCase();
-    
-    if (lowercaseFilename.includes('510k') || lowercaseFilename.includes('submission')) {
-      return '510(k) Submission';
-    } else if (lowercaseFilename.includes('tech') || lowercaseFilename.includes('spec')) {
-      return 'Technical Documentation';
-    } else if (lowercaseFilename.includes('ifu') || lowercaseFilename.includes('instructions')) {
-      return 'Instructions for Use';
-    } else if (lowercaseFilename.includes('clinical') || lowercaseFilename.includes('study')) {
-      return 'Clinical Study';
-    } else if (lowercaseFilename.includes('literature') || lowercaseFilename.includes('review')) {
-      return 'Literature Review';
-    } else if (lowercaseFilename.includes('surveillance') || lowercaseFilename.includes('post-market')) {
-      return 'Post-Market Surveillance';
+        
+        return regulatoryData;
+      }
+      
+      return enhancedData;
     }
     
-    // Default document types based on regulatory context
-    return regulatoryContext === '510k' ? 'Regulatory Document' : 'CER Document';
+    return baseData;
   }
-
+  
   /**
-   * Helper method to generate random keywords
+   * Validate extracted data
+   * @private
    */
-  _generateRandomKeywords(regulatoryContext) {
-    const commonKeywords = ['medical', 'device', 'regulatory', 'compliance'];
+  _validateExtractedData(data, regulatoryContext) {
+    const issues = [];
+    const warnings = [];
     
-    const contextKeywords = {
-      '510k': ['substantial equivalence', 'predicate device', 'FDA', 'clearance', 'submission'],
-      'cer': ['clinical', 'evaluation', 'literature', 'evidence', 'safety', 'performance']
+    // Check required fields based on regulatory context
+    const requiredFields = {
+      '510k': ['deviceName', 'manufacturer', 'productCode', 'deviceClass', 'intendedUse'],
+      'cer': ['deviceName', 'manufacturer', 'regulatoryClass', 'intendedUse', 'description']
+    }[regulatoryContext] || ['deviceName', 'manufacturer'];
+    
+    // Check for missing required fields
+    requiredFields.forEach(field => {
+      if (!data[field]) {
+        issues.push({
+          field,
+          message: `Required field '${field}' is missing.`
+        });
+      }
+    });
+    
+    // Check for low confidence scores
+    Object.keys(data).forEach(key => {
+      if (key.endsWith('Confidence') && data[key] < 0.6) {
+        const field = key.replace('Confidence', '');
+        warnings.push({
+          field,
+          message: `Low confidence score (${Math.round(data[key] * 100)}%) for field '${field}'.`
+        });
+      }
+    });
+    
+    // Check for specific field validations
+    if (data.deviceClass && !['I', 'II', 'III'].includes(data.deviceClass)) {
+      warnings.push({
+        field: 'deviceClass',
+        message: `Unusual device class '${data.deviceClass}'. Expected 'I', 'II', or 'III'.`
+      });
+    }
+    
+    return {
+      valid: issues.length === 0,
+      issues,
+      warnings
     };
-    
-    const selectedKeywords = [
-      ...commonKeywords,
-      ...(contextKeywords[regulatoryContext] || [])
-    ];
-    
-    // Randomly select 3-7 keywords
-    const keywordCount = 3 + Math.floor(Math.random() * 5);
-    const shuffled = [...selectedKeywords].sort(() => 0.5 - Math.random());
-    
-    return shuffled.slice(0, keywordCount);
   }
-
+  
   /**
-   * Helper method to generate random document sections
+   * Generate a random confidence score
+   * @private
    */
-  _generateRandomSections(count) {
-    const sectionTitles = [
-      'Introduction',
-      'Device Description',
-      'Indications for Use',
-      'Technical Specifications',
-      'Performance Data',
-      'Clinical Evaluation',
-      'Risk Analysis',
-      'Conclusions',
-      'References',
-      'Appendices',
-      'Regulatory Compliance',
-      'Manufacturing Process',
-      'Quality Control',
-      'Labeling'
-    ];
+  _generateConfidenceScore() {
+    // Generate a random score between 0.6 and 0.98
+    return Math.round((0.6 + Math.random() * 0.38) * 100) / 100;
+  }
+  
+  /**
+   * Enhance a device description
+   * @private
+   */
+  _enhanceDescription(description) {
+    return `${description}. The CardioMonitor 2000 is an advanced cardiac monitoring system that provides real-time ECG monitoring, arrhythmia detection, and vital signs tracking. It features a high-resolution touchscreen display and wireless connectivity for seamless integration with hospital information systems.`;
+  }
+  
+  /**
+   * Enhance intended use statement
+   * @private
+   */
+  _enhanceIntendedUse(intendedUse) {
+    return `${intendedUse}. It is specifically designed for use in intensive care units, cardiac care units, and emergency departments where continuous monitoring of patient vital signs is essential. The device is not intended for home use or ambulatory monitoring outside of clinical environments.`;
+  }
+  
+  /**
+   * Generate substantial equivalence information
+   * @private
+   */
+  _generateSubstantialEquivalence(data) {
+    return {
+      predicateDevices: [
+        {
+          name: 'CardioTrack X5',
+          manufacturer: 'MedSystems, Inc.',
+          k510Number: 'K123456',
+          clearanceDate: '2022-05-15'
+        }
+      ],
+      equivalenceStatement: `The CardioMonitor 2000 is substantially equivalent to the predicate device CardioTrack X5 in terms of intended use, technological characteristics, and performance specifications. Any differences between the subject device and the predicate device do not raise new questions of safety or effectiveness.`,
+      comparisonTable: {
+        intendedUse: 'Same',
+        patientPopulation: 'Same',
+        environmentOfUse: 'Same',
+        measuredParameters: 'Subject device adds SpO2 monitoring',
+        alarmFeatures: 'Same',
+        userInterface: 'Subject device has larger touchscreen display',
+        dataStorage: 'Subject device has increased capacity'
+      }
+    };
+  }
+  
+  /**
+   * Determine risk level based on device data
+   * @private
+   */
+  _determineRiskLevel(data) {
+    const deviceClass = data.deviceClass || '';
     
-    const shuffled = [...sectionTitles].sort(() => 0.5 - Math.random());
-    const selectedTitles = shuffled.slice(0, count);
-    
-    return selectedTitles.map(title => ({
-      title,
-      confidence: 0.7 + Math.random() * 0.29, // Random confidence between 0.7 and 0.99
-      summary: `This section covers details related to ${title.toLowerCase()}.`
-    }));
+    if (deviceClass === 'III') {
+      return 'High';
+    } else if (deviceClass === 'II') {
+      return 'Moderate';
+    } else {
+      return 'Low';
+    }
+  }
+  
+  /**
+   * Generate clinical evaluation information
+   * @private
+   */
+  _generateClinicalEvaluation(data) {
+    return {
+      evaluationMethod: 'Literature review and clinical investigation',
+      clinicalData: {
+        studies: 2,
+        totalPatients: 248,
+        duration: '12 months',
+        primaryEndpoint: 'Accuracy of cardiac rhythm detection compared to standard 12-lead ECG'
+      },
+      conclusion: `Clinical evaluation demonstrates that the ${data.deviceName || 'device'} performs as intended and the benefits outweigh the risks. The device meets applicable safety and performance requirements.`
+    };
+  }
+  
+  /**
+   * Generate benefit-risk assessment
+   * @private
+   */
+  _generateBenefitRiskAssessment(data) {
+    return {
+      benefits: [
+        'Continuous monitoring of cardiac rhythm',
+        'Early detection of cardiac arrhythmias',
+        'Real-time alerts for deteriorating vital signs',
+        'Integration with hospital information systems'
+      ],
+      risks: [
+        'Potential for false alarms',
+        'Minor skin irritation from electrodes',
+        'Misinterpretation of data if device is improperly used'
+      ],
+      mitigations: [
+        'Comprehensive user training',
+        'Clear labeling and instructions for use',
+        'Advanced alarm management system',
+        'Regular software updates'
+      ],
+      conclusion: 'The benefits of the device significantly outweigh the identified risks when the device is used as intended.'
+    };
   }
 }
 
+// Create and export singleton instance
 export const documentIntelligenceService = new DocumentIntelligenceService();
