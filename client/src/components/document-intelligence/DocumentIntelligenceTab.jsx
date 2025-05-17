@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,18 @@ import { Brain, FileText, Microscope, ExternalLink, AlertTriangle } from 'lucide
 import DocumentUploader from './DocumentUploader';
 import DocumentAnalyzer from './DocumentAnalyzer';
 import DocumentIntakeForm from './DocumentIntakeForm';
+
+// Create a portal for the document intelligence UI to prevent modal conflicts
+function createPortalRoot() {
+  // Check if we already created one
+  let portalRoot = document.getElementById('document-intelligence-portal');
+  if (!portalRoot) {
+    portalRoot = document.createElement('div');
+    portalRoot.id = 'document-intelligence-portal';
+    document.body.appendChild(portalRoot);
+  }
+  return portalRoot;
+}
 
 /**
  * Document Intelligence Tab Component
