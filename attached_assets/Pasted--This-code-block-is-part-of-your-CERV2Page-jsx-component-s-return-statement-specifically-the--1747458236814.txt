@@ -1,0 +1,84 @@
+// This code block is part of your CERV2Page.jsx component's return statement,
+// specifically the section that renders when activeTab === 'document-intelligence'.
+
+// Ensure React, lazy, Suspense, and your icons/Button components are imported at the top of CERV2Page.jsx
+// import React, { useState, useEffect, lazy, Suspense } from 'react';
+// import { Button } from '@/components/ui/button'; // Example path for Shadcn Button
+// import { Brain, X } from 'lucide-react'; // Example for lucide-react icons
+// const DocumentIntelligenceTab = lazy(() => import('../components/document-intelligence/DocumentIntelligenceTab'));
+
+// ... (inside your CERV2Page component's render logic)
+
+else if (activeTab === 'document-intelligence') {
+  // The lazy import for DocumentIntelligenceTab remains the same.
+  // Make sure DocumentIntelligenceTab is correctly imported via React.lazy
+  const DocumentIntelligenceTab = lazy(() => import('../components/document-intelligence/DocumentIntelligenceTab'));
+  
+  // The problematic direct state update `if (showProfileSelector) { setShowProfileSelector(false); }`
+  // has been REMOVED from here and is now handled by the useEffect hook shown above.
+
+  return (
+    <div 
+      className="fixed inset-0 bg-gray-600/70 backdrop-blur-md z-[9999] flex items-center justify-center p-4" // Increased z-index, added flex for centering
+      aria-modal="true" // ARIA: Indicates this is a modal dialog
+      role="dialog"     // ARIA: Role for the dialog
+      aria-labelledby="document-intelligence-title" // ARIA: Links to the title for screen readers
+    >
+      <div className="bg-white w-full max-w-6xl h-[calc(100vh-4rem)] rounded-xl shadow-2xl overflow-hidden flex flex-col"> {/* Adjusted sizing and added max-width */}
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 md:p-5 border-b shrink-0"> {/* Added shrink-0 */}
+          <div className="flex items-center gap-3">
+            {/* Replace with your actual Brain icon component */}
+            {typeof Brain === 'function' ? <Brain className="h-7 w-7 text-indigo-600" /> : <span role="img" aria-label="Brain icon" className="text-2xl">🧠</span>}
+            <h2 id="document-intelligence-title" className="text-lg md:text-xl font-semibold text-gray-800">Document Intelligence</h2> {/* ARIA: Title for the dialog */}
+          </div>
+          
+          {/* Replace with your actual Button and X icon components */}
+          {typeof Button === 'function' && typeof X === 'function' ? (
+            <Button 
+              variant="ghost" 
+              size="icon"
+              aria-label="Close Document Intelligence" // ARIA: Label for close button
+              onClick={() => setActiveTab('device')} // Or your default tab
+            >
+              <X className="h-5 w-5 text-gray-600 hover:text-gray-800" />
+            </Button>
+          ) : (
+            <button
+              type="button"
+              aria-label="Close Document Intelligence"
+              className="p-2 rounded-full hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500"
+              onClick={() => setActiveTab('device')} // Or your default tab
+            >
+              <span role="img" aria-label="Close" className="text-xl block">❌</span>
+            </button>
+          )}
+        </div>
+        
+        {/* Main content area */}
+        <div className="flex-1 p-4 md:p-6 overflow-y-auto"> {/* Ensure vertical scroll for content */}
+          <Suspense fallback={
+            <div className="flex items-center justify-center h-full">
+              <p className="text-gray-500 text-lg">Loading Document Intelligence Module...</p>
+              {/* You can add a spinner here if you have one */}
+            </div>
+          }>
+            <DocumentIntelligenceTab 
+              regulatoryContext={documentType} // Assuming documentType is a state/prop from CERV2Page
+              deviceProfile={deviceProfile}     // Assuming deviceProfile is a state/prop from CERV2Page
+              onDeviceProfileUpdate={(updatedProfile) => {
+                // Implement your update logic for the device profile here
+                console.log("Document Intelligence Tab updated profile:", updatedProfile);
+                // Example: setDeviceProfile(prev => ({ ...prev, ...updatedProfile }));
+              }}
+              // Pass the DocumentIntakeForm (id: document_intake_form_ui_v1) here if it's part of DocumentIntelligenceTab
+              // or if DocumentIntelligenceTab itself is that form.
+            />
+          </Suspense>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ... (rest of your CERV2Page.jsx render logic)
