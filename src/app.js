@@ -26,13 +26,13 @@ app.use('/api', lockRouter);
 // admin routes
 app.use('/api', adminRouter);
 
-// Serve client build in production
+// Serve frontend in production (after running npm run build)
 if (process.env.NODE_ENV === 'production') {
-  app.use(express.static('dist/public'));
-
+  app.use(express.static('frontend/dist'));
+  
   // Handle SPA routing for React Router
   app.get('*', (req, res) => {
-    res.sendFile('dist/public/index.html', { root: '.' });
+    res.sendFile('frontend/dist/index.html', { root: '.' });
   });
 }
 

@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import * as collaborationService from '../services/collaborationService';
 
 // Create a context for the Lumen AI Assistant
 const LumenAiAssistantContext = createContext({
@@ -11,8 +10,6 @@ const LumenAiAssistantContext = createContext({
   addMessage: () => {},
   clearMessages: () => {},
   setModuleContext: () => {},
-  createCollaborationTask: async () => {},
-  updateCollaborationTask: async () => {},
 });
 
 // Custom hook to use Lumen AI Assistant context
@@ -47,26 +44,6 @@ export const LumenAiAssistantProvider = ({ children }) => {
     }));
   }, []);
 
-  const createCollaborationTask = useCallback(async (taskData) => {
-    try {
-      const response = await collaborationService.createTask(taskData);
-      return response;
-    } catch (error) {
-      console.error('Error creating collaboration task:', error);
-      throw error;
-    }
-  }, []);
-
-  const updateCollaborationTask = useCallback(async (taskId, updates) => {
-    try {
-      const response = await collaborationService.updateTask(taskId, updates);
-      return response;
-    } catch (error) {
-      console.error('Error updating collaboration task:', error);
-      throw error;
-    }
-  }, []);
-
   return (
     <LumenAiAssistantContext.Provider
       value={{
@@ -78,8 +55,6 @@ export const LumenAiAssistantProvider = ({ children }) => {
         addMessage,
         clearMessages,
         setModuleContext,
-        createCollaborationTask,
-        updateCollaborationTask,
       }}
     >
       {children}

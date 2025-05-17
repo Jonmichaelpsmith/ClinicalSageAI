@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TrialSage Client Portal</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(to bottom, #ffffff 80%, #ffccd5 100%);
+      min-height: 100vh;
+    }
+    .gradient-button {
+      background: linear-gradient(135deg, #ff6b8b 0%, #ff4778 100%);
+    }
+    .module-card {
+      transition: all 0.3s ease;
+      border-left: 4px solid #ff4778;
+    }
+    .module-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    .container {
+      max-width: 1400px;
+    }
+    .logo {
+      height: 50px;
+    }
+    .hero {
+      background-color: #1a1a1a;
+      color: white;
+    }
+    .stat-card {
+      border-top: 3px solid #ff4778;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-md">
+      <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+        <div class="flex items-center">
+          <div class="text-2xl font-bold text-pink-600">TrialSage™</div>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative" id="notificationDropdown">
+            <button class="p-1 text-gray-500 hover:text-pink-600 focus:outline-none" onclick="toggleDropdown('notificationMenu')">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span class="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500"></span>
+            </button>
+            <div id="notificationMenu" class="absolute right-0 mt-2 w-80 bg-white rounded-md shadow-lg hidden z-10">
+              <div class="py-2 px-4 border-b border-gray-200">
+                <h3 class="text-sm font-semibold text-gray-700">Notifications</h3>
+              </div>
+              <div class="max-h-60 overflow-y-auto">
+                <a href="#" class="block px-4 py-3 hover:bg-gray-100">
+                  <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                      <span class="inline-block h-8 w-8 rounded-full bg-pink-100 text-pink-500 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                      </span>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-900">CSR update required</p>
+                      <p class="text-xs text-gray-500">ACME-2023-05 requires updates</p>
+                      <p class="text-xs text-gray-400 mt-1">10 minutes ago</p>
+                    </div>
+                  </div>
+                </a>
+                <a href="#" class="block px-4 py-3 hover:bg-gray-100">
+                  <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                      <span class="inline-block h-8 w-8 rounded-full bg-green-100 text-green-500 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                        </svg>
+                      </span>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-900">IND Form completed</p>
+                      <p class="text-xs text-gray-500">Form 1571 has been approved</p>
+                      <p class="text-xs text-gray-400 mt-1">2 hours ago</p>
+                    </div>
+                  </div>
+                </a>
+                <a href="#" class="block px-4 py-3 hover:bg-gray-100">
+                  <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                      <span class="inline-block h-8 w-8 rounded-full bg-blue-100 text-blue-500 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z" />
+                          <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z" />
+                        </svg>
+                      </span>
+                    </div>
+                    <div class="ml-3">
+                      <p class="text-sm font-medium text-gray-900">New comment</p>
+                      <p class="text-xs text-gray-500">Dr. Smith left a comment on Protocol X-5</p>
+                      <p class="text-xs text-gray-400 mt-1">1 day ago</p>
+                    </div>
+                  </div>
+                </a>
+              </div>
+              <div class="py-2 px-4 border-t border-gray-200 text-center">
+                <a href="#" class="text-xs font-medium text-pink-600 hover:text-pink-800">View all notifications</a>
+              </div>
+            </div>
+          </div>
+          
+          <div class="relative" id="userDropdown">
+            <button class="flex items-center space-x-2 focus:outline-none" onclick="toggleDropdown('userMenu')">
+              <div class="w-8 h-8 rounded-full bg-pink-100 flex items-center justify-center text-pink-600 font-semibold">A</div>
+              <span class="text-gray-700 font-medium">Admin</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </button>
+            <div id="userMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg hidden z-10">
+              <div class="py-1">
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Settings</a>
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Billing</a>
+                <a href="/" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100" onclick="logout()">Logout</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Secondary Navigation -->
+    <div class="bg-gray-100 border-b border-gray-200">
+      <div class="container mx-auto px-6 py-3">
+        <div class="flex justify-between items-center">
+          <div class="flex space-x-6">
+            <a href="#" class="text-pink-600 border-b-2 border-pink-600 px-1 py-2 font-medium">Dashboard</a>
+            <a href="#" class="text-gray-600 hover:text-pink-600 px-1 py-2 font-medium">Submissions</a>
+            <a href="#" class="text-gray-600 hover:text-pink-600 px-1 py-2 font-medium">Documents</a>
+            <a href="#" class="text-gray-600 hover:text-pink-600 px-1 py-2 font-medium">Trial Data</a>
+            <a href="#" class="text-gray-600 hover:text-pink-600 px-1 py-2 font-medium">Analytics</a>
+            <a href="#" class="text-gray-600 hover:text-pink-600 px-1 py-2 font-medium">Support</a>
+          </div>
+          <div>
+            <button class="gradient-button text-white px-4 py-2 rounded-md shadow-md hover:shadow-lg focus:outline-none">
+              + New Document
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+      <!-- Page Header -->
+      <div class="mb-8 flex flex-col md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 class="text-2xl font-bold text-gray-900">Client Portal Dashboard</h1>
+          <p class="mt-1 text-sm text-gray-600">Welcome to TrialSage™ - Your Regulatory Intelligence Hub</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex space-x-3">
+          <button class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
+            Export Data
+          </button>
+          <button class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
+            </svg>
+            Filter
+          </button>
+        </div>
+      </div>
+
+      <!-- Statistics Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-md p-6 stat-card">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Active Submissions</p>
+              <p class="text-2xl font-bold text-gray-900">7</p>
+            </div>
+            <div class="p-3 rounded-full bg-pink-100 text-pink-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+          </div>
+          <div class="mt-4">
+            <p class="text-sm text-green-600 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+              +2 from last month
+            </p>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6 stat-card">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Documents Completed</p>
+              <p class="text-2xl font-bold text-gray-900">42</p>
+            </div>
+            <div class="p-3 rounded-full bg-green-100 text-green-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+              </svg>
+            </div>
+          </div>
+          <div class="mt-4">
+            <p class="text-sm text-green-600 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+              +12 from last month
+            </p>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6 stat-card">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Clinical Trials</p>
+              <p class="text-2xl font-bold text-gray-900">15</p>
+            </div>
+            <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+              </svg>
+            </div>
+          </div>
+          <div class="mt-4">
+            <p class="text-sm text-gray-600 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" />
+              </svg>
+              No change from last month
+            </p>
+          </div>
+        </div>
+        <div class="bg-white rounded-lg shadow-md p-6 stat-card">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm font-medium text-gray-600">Compliance Score</p>
+              <p class="text-2xl font-bold text-gray-900">98%</p>
+            </div>
+            <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+          </div>
+          <div class="mt-4">
+            <p class="text-sm text-green-600 flex items-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+              +3% from last month
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Welcome Section - Hero area with dark background -->
+      <div class="hero rounded-lg shadow-lg p-8 mb-8">
+        <div class="md:flex md:items-center">
+          <div class="md:w-2/3">
+            <h2 class="text-2xl font-bold mb-4">Welcome to TrialSage™ Platform</h2>
+            <p class="mb-4">The regulatory and scientific central nervous system for your organization, powered by advanced AI and blockchain technology.</p>
+            <div class="flex space-x-4">
+              <button class="gradient-button text-white px-6 py-2 rounded-md shadow-md hover:shadow-lg focus:outline-none">
+                Explore Features
+              </button>
+              <button class="border border-white text-white px-6 py-2 rounded-md hover:bg-white hover:text-gray-900 focus:outline-none transition-colors">
+                Watch Tutorial
+              </button>
+            </div>
+          </div>
+          <div class="mt-6 md:mt-0 md:w-1/3 flex justify-center">
+            <div class="w-40 h-40 bg-white rounded-full flex items-center justify-center p-4">
+              <div class="text-pink-600 text-center">
+                <div class="text-5xl font-bold">AI</div>
+                <div class="text-sm mt-1">Powered</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-xl font-bold text-gray-900">Recent Activity</h2>
+          <a href="#" class="text-sm font-medium text-pink-600 hover:text-pink-800">View All</a>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+              <tr>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Document
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Type
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Status
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Updated
+                </th>
+                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  By
+                </th>
+                <th scope="col" class="relative px-6 py-3">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-8 w-8 text-pink-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">Study Protocol X-472</div>
+                      <div class="text-sm text-gray-500">Phase 2 Clinical Trial</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">Protocol</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                    Approved
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  Today, 10:23 AM
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">Dr. Jane Smith</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <a href="#" class="text-pink-600 hover:text-pink-900">View</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-8 w-8 text-blue-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">Form FDA 1571</div>
+                      <div class="text-sm text-gray-500">Investigational New Drug Application</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">IND Form</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                    In Review
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  Yesterday, 3:45 PM
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">Dr. John Doe</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <a href="#" class="text-pink-600 hover:text-pink-900">View</a>
+                </td>
+              </tr>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-8 w-8 text-purple-600">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <div class="ml-4">
+                      <div class="text-sm font-medium text-gray-900">Final CSR for Study ABC-123</div>
+                      <div class="text-sm text-gray-500">Clinical Study Report</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">CSR</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                    Published
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  Apr 23, 2025
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="text-sm text-gray-900">Sarah Johnson</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <a href="#" class="text-pink-600 hover:text-pink-900">View</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Platform Modules -->
+      <h2 class="text-xl font-bold text-gray-900 mb-4">TrialSage Platform Modules</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <!-- Module 1 -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden module-card">
+          <div class="p-6">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">ICH Wiz</h3>
+                <p class="text-sm text-gray-600 mb-4">Digital Compliance Coach</p>
+              </div>
+              <div class="p-2 rounded-full bg-pink-100 text-pink-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+              </div>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">AI-driven compliance assistance for your regulatory submissions, ensuring adherence to ICH guidelines.</p>
+            <a href="#" class="text-sm font-medium text-pink-600 hover:text-pink-800 flex items-center">
+              Access Module
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Module 2 -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden module-card">
+          <div class="p-6">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">IND Wizard™</h3>
+                <p class="text-sm text-gray-600 mb-4">Submission Builder</p>
+              </div>
+              <div class="p-2 rounded-full bg-blue-100 text-blue-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                </svg>
+              </div>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">Streamlined IND application process with smart templates and regulatory guidance built-in.</p>
+            <a href="#" class="text-sm font-medium text-pink-600 hover:text-pink-800 flex items-center">
+              Access Module
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Module 3 -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden module-card">
+          <div class="p-6">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">CSR Intelligence™</h3>
+                <p class="text-sm text-gray-600 mb-4">Report Automation</p>
+              </div>
+              <div class="p-2 rounded-full bg-green-100 text-green-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">AI-powered clinical study report generation and analysis tools for faster, more accurate reporting.</p>
+            <a href="#" class="text-sm font-medium text-pink-600 hover:text-pink-800 flex items-center">
+              Access Module
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Module 4 -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden module-card">
+          <div class="p-6">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">TrialSage Vault™</h3>
+                <p class="text-sm text-gray-600 mb-4">Document Management</p>
+              </div>
+              <div class="p-2 rounded-full bg-yellow-100 text-yellow-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+              </div>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">Secure, blockchain-verified document storage and management system with advanced version control.</p>
+            <a href="#" class="text-sm font-medium text-pink-600 hover:text-pink-800 flex items-center">
+              Access Module
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Module 5 -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden module-card">
+          <div class="p-6">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Study Architect™</h3>
+                <p class="text-sm text-gray-600 mb-4">Protocol Designer</p>
+              </div>
+              <div class="p-2 rounded-full bg-purple-100 text-purple-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" />
+                </svg>
+              </div>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">Intelligent protocol design tools with built-in best practices and collaborative editing features.</p>
+            <a href="#" class="text-sm font-medium text-pink-600 hover:text-pink-800 flex items-center">
+              Access Module
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Module 6 -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden module-card">
+          <div class="p-6">
+            <div class="flex justify-between items-start">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Analytics Module</h3>
+                <p class="text-sm text-gray-600 mb-4">Insights & Reporting</p>
+              </div>
+              <div class="p-2 rounded-full bg-indigo-100 text-indigo-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                </svg>
+              </div>
+            </div>
+            <p class="text-sm text-gray-500 mb-4">Comprehensive analytics and reporting tools to track submission progress and identify bottlenecks.</p>
+            <a href="#" class="text-sm font-medium text-pink-600 hover:text-pink-800 flex items-center">
+              Access Module
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-100 border-t border-gray-200 py-8">
+      <div class="container mx-auto px-6">
+        <div class="sm:flex sm:items-center sm:justify-between">
+          <div class="mb-4 sm:mb-0">
+            <h3 class="text-lg font-bold text-pink-600">TrialSage™</h3>
+            <p class="text-sm text-gray-600 mt-1">The Future of Regulatory Intelligence</p>
+          </div>
+          <div class="flex space-x-6">
+            <a href="#" class="text-gray-500 hover:text-pink-600">
+              <span class="sr-only">Support</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z" />
+              </svg>
+            </a>
+            <a href="#" class="text-gray-500 hover:text-pink-600">
+              <span class="sr-only">Documentation</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+              </svg>
+            </a>
+            <a href="#" class="text-gray-500 hover:text-pink-600">
+              <span class="sr-only">GitHub</span>
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="mt-8 border-t border-gray-200 pt-8 md:flex md:items-center md:justify-between">
+          <div class="flex space-x-6 md:order-2">
+            <a href="#" class="text-gray-400 hover:text-gray-500">
+              <span class="sr-only">Terms</span>
+              Terms of Service
+            </a>
+            <a href="#" class="text-gray-400 hover:text-gray-500">
+              <span class="sr-only">Privacy</span>
+              Privacy Policy
+            </a>
+            <a href="#" class="text-gray-400 hover:text-gray-500">
+              <span class="sr-only">Contact</span>
+              Contact Us
+            </a>
+          </div>
+          <p class="mt-8 text-base text-gray-400 md:mt-0 md:order-1">
+            &copy; 2025 Concept2Cures, Inc. All rights reserved.
+          </p>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    // Check authentication on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      checkAuth();
+    });
+
+    // Check if user is authenticated
+    function checkAuth() {
+      const isAuthenticated = localStorage.getItem('isAuthenticated');
+      
+      if (!isAuthenticated || isAuthenticated !== 'true') {
+        // Redirect to login if not authenticated
+        window.location.href = '/login';
+      } else {
+        // Log authentication state to console
+        console.log('Authentication state:', true);
+        
+        // Get user data
+        try {
+          const userData = JSON.parse(localStorage.getItem('user'));
+          
+          // Update UI with user info
+          if (userData) {
+            const userInitial = document.querySelector('.w-8.h-8.rounded-full');
+            const userName = document.querySelector('.text-gray-700.font-medium');
+            
+            if (userInitial && userData.name) {
+              userInitial.textContent = userData.name.charAt(0);
+            }
+            
+            if (userName && userData.name) {
+              userName.textContent = userData.name;
+            }
+          }
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+        }
+      }
+    }
+
+    // Toggle dropdown menus
+    function toggleDropdown(id) {
+      const dropdown = document.getElementById(id);
+      if (dropdown.classList.contains('hidden')) {
+        // Close all dropdowns
+        document.querySelectorAll('.absolute.right-0.mt-2').forEach(el => {
+          el.classList.add('hidden');
+        });
+        // Open this dropdown
+        dropdown.classList.remove('hidden');
+      } else {
+        dropdown.classList.add('hidden');
+      }
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#notificationDropdown') && !e.target.closest('#userDropdown')) {
+        document.querySelectorAll('.absolute.right-0.mt-2').forEach(el => {
+          el.classList.add('hidden');
+        });
+      }
+    });
+
+    // Logout function
+    function logout() {
+      // Clear authentication state
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('user');
+      
+      // Redirect to login page
+      window.location.href = '/login';
+    }
+
+    // Pre-warm server for any API calls
+    async function prewarmServer() {
+      console.log('Pre-warming server before authentication...');
+      try {
+        const response = await fetch('/', {
+          method: 'GET',
+          cache: 'no-cache'
+        });
+        console.log('Server warm-up response:', response.status);
+      } catch (error) {
+        console.warn('Server warmup error:', error);
+      }
+    }
+
+    // Call pre-warming on page load
+    prewarmServer();
+  </script>
+</body>
+</html>

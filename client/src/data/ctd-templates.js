@@ -53,12 +53,7 @@ const module1Templates = [
         { title: 'TABLE OF CONTENTS', content: 'Table of contents for the entire submission' },
         { title: 'LIST OF DOCUMENTS', content: 'Sequential listing of all documents included in the submission' }
       ]
-    },
-    fields: [
-      { name: 'applicantName', label: 'Applicant Name', type: 'text', required: true },
-      { name: 'productName', label: 'Product Name', type: 'text', required: true },
-      { name: 'submissionDate', label: 'Submission Date', type: 'text', required: true }
-    ]
+    }
   },
   {
     ...createTemplateBase(
@@ -90,12 +85,7 @@ const module1Templates = [
                   '[Contact Information]'
         }
       ]
-    },
-    fields: [
-      { name: 'applicantName', label: 'Applicant Name', type: 'text', required: true },
-      { name: 'authorityName', label: 'Regulatory Authority', type: 'text', required: true },
-      { name: 'productName', label: 'Product Name', type: 'text', required: true }
-    ]
+    }
   }
 ];
 
@@ -150,12 +140,7 @@ const module2Templates = [
           ]
         }
       ]
-    },
-    fields: [
-      { name: 'substanceSummary', label: 'Drug Substance Summary', type: 'textarea', required: true },
-      { name: 'productSummary', label: 'Drug Product Summary', type: 'textarea', required: true },
-      { name: 'regionalNotes', label: 'Regional Notes', type: 'textarea', required: false }
-    ]
+    }
   },
   {
     ...createTemplateBase(
@@ -186,12 +171,7 @@ const module2Templates = [
           ]
         }
       ]
-    },
-    fields: [
-      { name: 'testingStrategy', label: 'Testing Strategy Summary', type: 'textarea', required: true },
-      { name: 'keyFindings', label: 'Key Findings', type: 'textarea', required: true },
-      { name: 'conclusion', label: 'Overall Conclusion', type: 'textarea', required: true }
-    ]
+    }
   },
   {
     ...createTemplateBase(
@@ -212,7 +192,7 @@ const module2Templates = [
     ],
     structure: {
       sections: [
-        { title: 'CLINICAL OVERVIEW',
+        { title: 'CLINICAL OVERVIEW', 
           subsections: [
             { title: '2.5.1 Product Development Rationale' },
             { title: '2.5.2 Overview of Biopharmaceutics' },
@@ -224,12 +204,7 @@ const module2Templates = [
           ]
         }
       ]
-    },
-    fields: [
-      { name: 'developmentRationale', label: 'Development Rationale', type: 'textarea', required: true },
-      { name: 'efficacySummary', label: 'Efficacy Summary', type: 'textarea', required: true },
-      { name: 'safetySummary', label: 'Safety Summary', type: 'textarea', required: true }
-    ]
+    }
   }
 ];
 
@@ -306,12 +281,7 @@ const module3Templates = [
           ]
         }
       ]
-    },
-    fields: [
-      { name: 'substanceName', label: 'Substance Name', type: 'text', required: true },
-      { name: 'manufacturer', label: 'Manufacturer', type: 'text', required: true },
-      { name: 'stabilitySummary', label: 'Stability Summary', type: 'textarea', required: false }
-    ]
+    }
   },
   {
     ...createTemplateBase(
@@ -393,12 +363,7 @@ const module3Templates = [
           ]
         }
       ]
-    },
-    fields: [
-      { name: 'productName', label: 'Product Name', type: 'text', required: true },
-      { name: 'dosageForm', label: 'Dosage Form', type: 'text', required: true },
-      { name: 'manufacturingProcess', label: 'Manufacturing Process Summary', type: 'textarea', required: true }
-    ]
+    }
   }
 ];
 
@@ -418,11 +383,11 @@ const module4Templates = [
       { id: '4.2.1.3', title: 'Safety Pharmacology', required: true },
       { id: '4.2.1.4', title: 'Pharmacodynamic Drug Interactions', required: false }
     ],
-      structure: {
-        sections: [
-          {
-            title: 'PHARMACOLOGY STUDY REPORTS',
-            subsections: [
+    structure: {
+      sections: [
+        { 
+          title: 'PHARMACOLOGY STUDY REPORTS', 
+          subsections: [
             { title: '4.2.1.1 Primary Pharmacodynamics' },
             { title: '4.2.1.2 Secondary Pharmacodynamics' },
             { title: '4.2.1.3 Safety Pharmacology' },
@@ -430,11 +395,7 @@ const module4Templates = [
           ]
         }
       ]
-    },
-    fields: [
-      { name: 'studyIdentifiers', label: 'Study Identifiers', type: 'text', required: true },
-      { name: 'primaryFindings', label: 'Primary Findings', type: 'textarea', required: true }
-    ]
+    }
   },
   {
     ...createTemplateBase(
@@ -469,15 +430,9 @@ const module4Templates = [
               ]
             }
           ]
-          }
-        ]
-      }
-    },
-    fields: [
-      { name: 'species', label: 'Test Species', type: 'text', required: true },
-      { name: 'studyDuration', label: 'Study Duration', type: 'text', required: true },
-      { name: 'keyResults', label: 'Key Results', type: 'textarea', required: true }
-    ]
+        }
+      ]
+    }
   }
 ];
 
@@ -497,11 +452,11 @@ const module5Templates = [
       { id: '5.3.5.1.3', title: 'Study Report', required: true },
       { id: '5.3.5.1.4', title: 'Case Report Forms', required: false }
     ],
-      structure: {
-        sections: [
-          {
-            title: 'CONTROLLED CLINICAL STUDY REPORT',
-            subsections: [
+    structure: {
+      sections: [
+        { 
+          title: 'CONTROLLED CLINICAL STUDY REPORT', 
+          subsections: [
             { title: '1. Title Page' },
             { title: '2. Synopsis' },
             { title: '3. Table of Contents' },
@@ -521,12 +476,7 @@ const module5Templates = [
           ]
         }
       ]
-    },
-    fields: [
-      { name: 'protocolNumber', label: 'Protocol Number', type: 'text', required: true },
-      { name: 'indication', label: 'Indication', type: 'text', required: true },
-      { name: 'primaryEndpointResults', label: 'Primary Endpoint Results', type: 'textarea', required: true }
-    ]
+    }
   },
   {
     ...createTemplateBase(
@@ -542,10 +492,10 @@ const module5Templates = [
       { id: '5.3.1.1.3', title: 'Study Report', required: true },
       { id: '5.3.1.1.4', title: 'Bioanalytical Method Validation', required: true }
     ],
-      structure: {
-        sections: [
-          {
-            title: 'BIOAVAILABILITY STUDY REPORT',
+    structure: {
+      sections: [
+        { 
+          title: 'BIOAVAILABILITY STUDY REPORT', 
           subsections: [
             { title: '1. Title Page' },
             { title: '2. Synopsis' },
@@ -560,12 +510,7 @@ const module5Templates = [
           ]
         }
       ]
-    },
-    fields: [
-      { name: 'studyDesign', label: 'Study Design', type: 'textarea', required: true },
-      { name: 'numSubjects', label: 'Number of Subjects', type: 'text', required: true },
-      { name: 'resultsSummary', label: 'Results Summary', type: 'textarea', required: true }
-    ]
+    }
   },
   {
     ...createTemplateBase(
@@ -578,25 +523,21 @@ const module5Templates = [
     sections: [
       { id: '5.2.1', title: 'Tabular Listing', required: true }
     ],
-      structure: {
-        sections: [
-          {
-            title: 'TABULAR LISTING OF ALL CLINICAL STUDIES',
-            subsections: [
-              {
-                title: 'Table Format',
+    structure: {
+      sections: [
+        { 
+          title: 'TABULAR LISTING OF ALL CLINICAL STUDIES', 
+          subsections: [
+            { 
+              title: 'Table Format',
               content: `Study ID | Study Title | Study Design | Study Population | Treatment Groups | Dosage Regimen | Study Duration | Primary Endpoints | Study Status
 -----------------|------------|--------------|-----------------|------------------|-----------------|----------------|------------------|-------------
 [Study ID]       | [Title]    | [Design]     | [Population]    | [Groups]         | [Regimen]       | [Duration]     | [Endpoints]      | [Status]`
-              }
-            ]
-          }
-        ]
-      }
-    },
-    fields: [
-      { name: 'studyTable', label: 'Study Table', type: 'textarea', required: true }
-    ]
+            }
+          ]
+        }
+      ]
+    }
   }
 ];
 

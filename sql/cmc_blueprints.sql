@@ -68,9 +68,6 @@ CREATE TABLE IF NOT EXISTS cmc_ai_settings (
   content_style VARCHAR(20) DEFAULT 'FORMAL',
   citations_required BOOLEAN DEFAULT TRUE,
   reference_templates JSONB,
-  preferred_guidance JSONB,
-  region_priority JSONB,
-  terminology_overrides JSONB,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   updated_by UUID

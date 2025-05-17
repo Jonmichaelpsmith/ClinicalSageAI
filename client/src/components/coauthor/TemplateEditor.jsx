@@ -26,7 +26,6 @@ export default function TemplateEditor({
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [output, setOutput] = useState('');
-  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     // Initialize form values from initial values or empty strings
@@ -41,29 +40,9 @@ export default function TemplateEditor({
 
   const handleInputChange = (name, value) => {
     setValues(prev => ({ ...prev, [name]: value }));
-    setErrors(prev => {
-      const updated = { ...prev };
-      delete updated[name];
-      return updated;
-    });
   };
 
   const handleGenerate = async () => {
-    const newErrors = {};
-    if (template?.fields) {
-      template.fields.forEach(field => {
-        if (field.required && !values[field.name]?.trim()) {
-          newErrors[field.name] = `${field.label} is required`;
-        }
-      });
-    }
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    setErrors({});
     setLoading(true);
     setProgress(0);
     
@@ -180,9 +159,6 @@ Based on the provided information, this ${template.title.toLowerCase()} meets re
                   placeholder={`Enter ${field.label.toLowerCase()}...`}
                   disabled={loading}
                 />
-              )}
-              {errors[field.name] && (
-                <p className="text-sm text-red-500">{errors[field.name]}</p>
               )}
             </div>
           ))}

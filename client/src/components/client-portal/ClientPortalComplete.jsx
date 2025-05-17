@@ -52,7 +52,6 @@ import {
   ArrowUpRight,
   ChevronRight
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import securityService from '../../services/SecurityService';
 import { useModuleIntegration } from '../integration/ModuleIntegrationLayer';
 import { useToast } from '@/hooks/use-toast';
@@ -802,15 +801,10 @@ const ClientPortal = () => {
                     <Briefcase size={20} className="text-primary mr-2" />
                     Global Project Manager
                   </h2>
-                  <div className="flex items-center gap-2">
-                    <Link to="/projects" className="text-sm text-primary hover:underline flex items-center">
-                      View All Projects
-                      <ArrowUpRight className="ml-1 h-4 w-4" />
-                    </Link>
-                    <Button size="sm" variant="ghost" asChild>
-                      <Link to="/project-manager">Full Screen</Link>
-                    </Button>
-                  </div>
+                  <Link to="/projects" className="text-sm text-primary hover:underline flex items-center">
+                    View All Projects
+                    <ArrowUpRight className="ml-1 h-4 w-4" />
+                  </Link>
                 </div>
                 
                 {/* Project Manager Grid Component */}

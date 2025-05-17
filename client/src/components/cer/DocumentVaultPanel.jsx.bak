@@ -1,0 +1,841 @@
+import React, { useState, useEffect } from 'react';
+import { documentApiService } from '@/services/DocumentAPIService';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription
+} from '@/components/ui/dialog';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
+} from '@/components/ui/table';
+import {
+  FolderOpen,
+  Search,
+  UploadCloud,
+  Download,
+  FileText,
+  File,
+  FileLock2,
+  FileArchive,
+  Share2,
+  Trash2,
+  CalendarDays,
+  Info,
+  Grid3X3,
+  LayoutList,
+  User,
+  ChevronRight,
+  Folder,
+  ArrowLeft,
+  X,
+  FileBox,
+  Loader2
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+
+// Sample documents for demo purposes
+const sampleDocuments = [
+  {
+    id: '1',
+    name: 'Sample Clinical Evaluation Report',
+    type: 'cer',
+    category: 'Clinical Evaluation',
+    status: 'final',
+    description: 'Comprehensive CER for class II medical device following MEDDEV 2.7/1 Rev 4 guidance',
+    author: 'John Smith, MD',
+    tags: ['CER', 'MEDDEV', 'Final'],
+    dateCreated: '2025-02-15T12:00:00Z',
+    dateModified: '2025-05-01T09:30:00Z',
+    size: 4582912,
+    path: '/Clinical Evaluation/CERs',
+    filePath: '/attached_assets/CER REPORT EXAMPLE OUTPUT.pdf'
+  },
+  {
+    id: '2',
+    name: 'Literature Search Results',
+    type: 'literature',
+    category: 'Literature',
+    status: 'final',
+    description: 'Literature review of 45 papers from PubMed and Google Scholar for cardiac devices',
+    author: 'Emma Johnson, PhD',
+    tags: ['Literature', 'Research', 'PubMed'],
+    dateCreated: '2025-01-20T10:15:00Z',
+    dateModified: '2025-04-28T14:45:00Z',
+    size: 2345678,
+    path: '/Clinical Evaluation/Literature',
+    filePath: '/attached_assets/7.19.13.Miller-Clinical-Trials.pdf'
+  },
+  {
+    id: '3',
+    name: 'Risk Management Report',
+    type: 'risk',
+    category: 'Risk Management',
+    status: 'draft',
+    description: 'ISO 14971 compliant risk analysis and evaluation for the device',
+    author: 'Robert Chen',
+    tags: ['Risk', 'ISO 14971', 'Draft'],
+    dateCreated: '2025-03-05T09:00:00Z',
+    dateModified: '2025-05-10T11:20:00Z',
+    size: 1867234,
+    path: '/Risk Management',
+    filePath: '/attached_assets/AO_2508_2023_1-3.pdf'
+  },
+  {
+    id: '4',
+    name: '510(k) Summary',
+    type: '510k',
+    category: 'Regulatory',
+    status: 'final',
+    description: 'FDA 510(k) Summary document for submission',
+    author: 'Sarah Miller, RAC',
+    tags: ['510k', 'FDA', 'Submission'],
+    dateCreated: '2025-04-12T13:30:00Z',
+    dateModified: '2025-05-08T16:15:00Z',
+    size: 3156289,
+    path: '/510k/Submission',
+    filePath: '/attached_assets/449782ff-f6b4-4fc2-82e1-9f4740b8ec7e_23135_-_ayesha_siddiqui_v2.pdf'
+  },
+  {
+    id: '5',
+    name: 'Substantial Equivalence Report',
+    type: '510k',
+    category: 'Regulatory',
+    status: 'final',
+    description: 'Comparison to predicate devices demonstrating substantial equivalence',
+    author: 'Thomas Lee, MD',
+    tags: ['510k', 'FDA', 'Equivalence'],
+    dateCreated: '2025-03-28T11:45:00Z',
+    dateModified: '2025-05-05T10:10:00Z',
+    size: 2873456,
+    path: '/510k/Equivalence',
+    filePath: '/attached_assets/2022-JCS-MediaPack.pdf'
+  },
+  {
+    id: '6',
+    name: 'Test Report - Biocompatibility',
+    type: 'data',
+    category: 'Testing',
+    status: 'final',
+    description: 'Biocompatibility testing results per ISO 10993',
+    author: 'Lisa Wong, PhD',
+    tags: ['Testing', 'Biocompatibility', 'ISO 10993'],
+    dateCreated: '2025-02-08T14:20:00Z',
+    dateModified: '2025-04-15T09:30:00Z',
+    size: 5241869,
+    path: '/Testing/Biocompatibility',
+    filePath: '/attached_assets/ICER_Acute-Pain_Evidence-Report_For-Publication_020525.pdf'
+  },
+  {
+    id: '7',
+    name: 'Clinical Trial Protocol',
+    type: 'pms',
+    category: 'Clinical',
+    status: 'approved',
+    description: 'Protocol for post-market surveillance clinical study',
+    author: 'Michael Brown, MD',
+    tags: ['Clinical', 'Protocol', 'PMS'],
+    dateCreated: '2025-01-15T10:00:00Z',
+    dateModified: '2025-03-20T15:45:00Z',
+    size: 1958762,
+    path: '/Clinical/Protocols',
+    filePath: '/attached_assets/DNDi-Clinical-Trial-Protocol-BENDITA-V5.pdf'
+  },
+  {
+    id: '8',
+    name: 'Software Validation Report',
+    type: '510k',
+    category: 'Software',
+    status: 'final',
+    description: 'Software validation and verification documentation',
+    author: 'James Wilson',
+    tags: ['Software', 'Validation', '510k'],
+    dateCreated: '2025-02-25T09:15:00Z',
+    dateModified: '2025-04-10T14:30:00Z',
+    size: 3674125,
+    path: '/510k/Software',
+    filePath: '/attached_assets/48_161.pdf'
+  },
+  {
+    id: '9',
+    name: 'ICH Quality Implementation Report',
+    type: 'data',
+    category: 'Quality',
+    status: 'approved',
+    description: 'Implementation status of ICH quality guidelines',
+    author: 'David Garcia',
+    tags: ['ICH', 'Quality', 'Implementation'],
+    dateCreated: '2025-03-10T12:45:00Z',
+    dateModified: '2025-05-02T11:30:00Z',
+    size: 2154738,
+    path: '/Quality/Reports',
+    filePath: '/attached_assets/ICHImplementationPublicReport_2022_0107.pdf'
+  },
+  {
+    id: '10',
+    name: 'Post-Market Surveillance Plan',
+    type: 'pms',
+    category: 'PMS',
+    status: 'approved',
+    description: 'Post-market surveillance plan as required by MDR',
+    author: 'Jennifer Taylor',
+    tags: ['PMS', 'MDR', 'Surveillance'],
+    dateCreated: '2025-02-05T11:20:00Z',
+    dateModified: '2025-04-20T10:15:00Z',
+    size: 1432587,
+    path: '/PMS',
+    filePath: '/attached_assets/7_structure_and_content_of_clinical_study_reports.pdf'
+  }
+];
+
+// Sample folder structure for demo
+const folderStructure = [
+  {
+    id: 'folder-1',
+    name: 'Clinical Evaluation',
+    path: '/Clinical Evaluation',
+    children: [
+      {
+        id: 'folder-1-1',
+        name: 'CERs',
+        path: '/Clinical Evaluation/CERs',
+        children: []
+      },
+      {
+        id: 'folder-1-2',
+        name: 'Literature',
+        path: '/Clinical Evaluation/Literature',
+        children: []
+      }
+    ]
+  },
+  {
+    id: 'folder-2',
+    name: 'Risk Management',
+    path: '/Risk Management',
+    children: []
+  },
+  {
+    id: 'folder-3',
+    name: '510k',
+    path: '/510k',
+    children: [
+      {
+        id: 'folder-3-1',
+        name: 'Submission',
+        path: '/510k/Submission',
+        children: []
+      },
+      {
+        id: 'folder-3-2',
+        name: 'Equivalence',
+        path: '/510k/Equivalence',
+        children: []
+      },
+      {
+        id: 'folder-3-3',
+        name: 'Software',
+        path: '/510k/Software',
+        children: []
+      }
+    ]
+  },
+  {
+    id: 'folder-4',
+    name: 'Testing',
+    path: '/Testing',
+    children: [
+      {
+        id: 'folder-4-1',
+        name: 'Biocompatibility',
+        path: '/Testing/Biocompatibility',
+        children: []
+      }
+    ]
+  }
+];
+
+export default function DocumentVaultPanel({ 
+  documentType = 'all', // 'all', 'cer', '510k'
+  onDocumentSelect = null,
+  jobId = null,
+  position = 'left', // 'left', 'right', 'dialog'
+  onClose = null,
+  isOpen = false
+}) {
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentTab, setCurrentTab] = useState(documentType === 'cer' ? 'cer-documents' : documentType === '510k' ? '510k-documents' : 'all-documents');
+  const [viewMode, setViewMode] = useState('list');
+  const [showUploadDialog, setShowUploadDialog] = useState(false);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [showPdfViewerDialog, setShowPdfViewerDialog] = useState(false);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [documents, setDocuments] = useState(sampleDocuments);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [uploadFile, setUploadFile] = useState(null);
+  const [currentPath, setCurrentPath] = useState('/');
+  const [currentPdfUrl, setCurrentPdfUrl] = useState('');
+  
+  const [uploadMetadata, setUploadMetadata] = useState({
+    name: '',
+    type: documentType === 'cer' ? 'cer' : documentType === '510k' ? '510k' : 'data',
+    category: documentType === 'cer' ? 'Clinical Evaluation' : 'Regulatory',
+    status: 'draft',
+    description: '',
+    author: 'TrialSage AI',
+    tags: documentType === 'cer' ? ['CER'] : ['510k']
+  });
+  
+  // We'll define the filteredDocuments function before using it
+  
+  // Get current folder based on path
+  const currentFolders = currentPath === '/' 
+    ? folderStructure 
+    : folderStructure.flatMap(f => getAllSubfolders(f)).filter(f => f.path.startsWith(currentPath) && f.path !== currentPath && f.path.split('/').length === currentPath.split('/').length + 1);
+  
+  // Helper to get all subfolders
+  function getAllSubfolders(folder) {
+    const result = [folder];
+    if (folder.children && folder.children.length > 0) {
+      folder.children.forEach(child => {
+        result.push(...getAllSubfolders(child));
+      });
+    }
+    return result;
+  }
+  
+  // Handle file selection for upload
+  const handleFileChange = (e) => {
+    const selectedFile = e.target.files[0];
+    if (selectedFile) {
+      setUploadFile(selectedFile);
+      setUploadMetadata({
+        ...uploadMetadata,
+        name: selectedFile.name.split('.')[0], // Use filename as document name
+        fileSize: selectedFile.size,
+      });
+    }
+  };
+  
+  // Handle file upload
+  const handleUpload = async () => {
+    try {
+      if (!uploadFile) {
+        alert('Please select a file to upload');
+        return;
+      }
+      
+      const formData = new FormData();
+      formData.append('file', uploadFile);
+      formData.append('data', JSON.stringify(uploadMetadata));
+      
+      const response = await documentApiService.uploadDocument(formData);
+      
+      // Add new document to the list
+      setDocuments(prev => [response, ...prev]);
+      
+      // Reset form
+      setUploadFile(null);
+      setUploadMetadata({
+        name: '',
+        type: 'cer',
+        category: 'Clinical Evaluation',
+        status: 'draft',
+        description: '',
+        author: 'TrialSage AI',
+        tags: ['CER']
+      });
+      
+      // Close dialog
+      setShowUploadDialog(false);
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      alert('Failed to upload document. Please try again.');
+    }
+  };
+  
+  // Handle document download
+  const handleDownload = async (document) => {
+    try {
+      await documentApiService.downloadDocument(document.id, document.name);
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      alert('Failed to download document. Please try again.');
+    }
+  };
+  
+  // Handle document selection
+  const handleSelectDocument = (document) => {
+    setSelectedDocument(document);
+  };
+  
+  // Handle document sharing
+  const handleShare = (document) => {
+    setSelectedDocument(document);
+    setShowShareDialog(true);
+  };
+  
+  // Filter documents based on search query and current tab
+  const filteredDocuments = documents.filter(doc => {
+    const matchesSearch = searchQuery.trim() === '' ||
+      doc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (doc.description && doc.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (doc.tags && doc.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())));
+    
+    if (!matchesSearch) return false;
+    
+    if (currentTab === 'all-documents') return true;
+    if (currentTab === 'cer-documents') return doc.type === 'cer';
+    if (currentTab === 'literature') return doc.type === 'literature';
+    if (currentTab === 'data') return doc.type === 'data';
+    if (currentTab === 'approved') return doc.status === 'approved';
+    if (currentTab === 'drafts') return doc.status === 'draft';
+    
+    return true;
+  });
+  
+  // Document metrics
+  const documentMetrics = {
+    total: documents.length,
+    approved: documents.filter(doc => doc.status === 'approved').length,
+    draft: documents.filter(doc => doc.status === 'draft').length,
+    cer: documents.filter(doc => doc.type === 'cer').length,
+    literature: documents.filter(doc => doc.type === 'literature').length,
+    data: documents.filter(doc => doc.type === 'data').length,
+  };
+  
+  // Metrics for document dashboard
+  const documentMetrics = {
+    total: documents.length,
+    cer: documents.filter(d => d.type === 'cer').length,
+    fivetenk: documents.filter(d => d.type === '510k').length,
+    literature: documents.filter(d => d.type === 'literature').length,
+    final: documents.filter(d => d.status === 'final').length,
+    draft: documents.filter(d => d.status === 'draft').length,
+    approved: documents.filter(d => d.status === 'approved').length
+  };
+  
+  // Handle document open
+  const handleOpenDocument = (doc) => {
+    if (onDocumentSelect) {
+      onDocumentSelect(doc);
+    } else if (doc.filePath) {
+      // Open PDF viewer
+      setCurrentPdfUrl(doc.filePath);
+      setSelectedDocument(doc);
+      setShowPdfViewerDialog(true);
+    }
+  };
+  
+  // Handle folder navigation
+  const handleFolderClick = (folder) => {
+    setCurrentPath(folder.path);
+  };
+  
+  // Handle breadcrumb navigation
+  const handleBreadcrumbClick = (path) => {
+    setCurrentPath(path);
+  };
+  
+  // Generate breadcrumbs from current path
+  const getBreadcrumbs = () => {
+    const segments = currentPath.split('/').filter(Boolean);
+    const breadcrumbs = [{ name: 'Root', path: '/' }];
+    
+    let currentSegmentPath = '';
+    for (const segment of segments) {
+      currentSegmentPath += '/' + segment;
+      breadcrumbs.push({
+        name: segment,
+        path: currentSegmentPath
+      });
+    }
+    
+    return breadcrumbs;
+  };
+  
+  // Document type icon mapping
+  const getDocumentIcon = (type) => {
+    switch (type) {
+      case 'cer':
+        return <FileText className="h-5 w-5 text-blue-500" />;
+      case '510k':
+        return <FileText className="h-5 w-5 text-green-500" />;
+      case 'literature':
+        return <File className="h-5 w-5 text-amber-500" />;
+      case 'data':
+        return <FileArchive className="h-5 w-5 text-purple-500" />;
+      case 'risk':
+        return <FileLock2 className="h-5 w-5 text-red-500" />;
+      case 'pms':
+        return <FileText className="h-5 w-5 text-teal-500" />;
+      default:
+        return <File className="h-5 w-5" />;
+    }
+  };
+  
+  // Format date helper
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+  
+  // Format file size
+  const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-col gap-4 md:flex-row md:justify-between md:items-center">
+        <div>
+          <h2 className="text-2xl font-semibold tracking-tight">Document Vault</h2>
+          <p className="text-sm text-gray-500">Manage all your clinical evaluation reports and related documents</p>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button
+            onClick={() => setShowUploadDialog(true)}
+            className="gap-1 bg-blue-600 hover:bg-blue-700"
+          >
+            <UploadCloud className="h-4 w-4" />
+            Upload
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-1"
+          >
+            <FolderOpen className="h-4 w-4" />
+            New Folder
+          </Button>
+        </div>
+      </div>
+      
+      {/* Document metrics */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <Card>
+          <CardContent className="p-3 flex flex-col items-center justify-center">
+            <div className="text-3xl font-bold">{documentMetrics.total}</div>
+            <div className="text-xs text-gray-500">Total Documents</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 flex flex-col items-center justify-center">
+            <div className="text-3xl font-bold text-green-600">{documentMetrics.approved}</div>
+            <div className="text-xs text-gray-500">Approved</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 flex flex-col items-center justify-center">
+            <div className="text-3xl font-bold text-amber-600">{documentMetrics.draft}</div>
+            <div className="text-xs text-gray-500">Drafts</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 flex flex-col items-center justify-center">
+            <div className="text-3xl font-bold text-blue-600">{documentMetrics.cer}</div>
+            <div className="text-xs text-gray-500">CER Documents</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 flex flex-col items-center justify-center">
+            <div className="text-3xl font-bold text-green-600">{documentMetrics.literature}</div>
+            <div className="text-xs text-gray-500">Literature Reviews</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-3 flex flex-col items-center justify-center">
+            <div className="text-3xl font-bold text-amber-600">{documentMetrics.data}</div>
+            <div className="text-xs text-gray-500">Data Summaries</div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Search and filters */}
+      <div className="flex items-center space-x-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search documents..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+        <Button
+          variant={viewMode === 'list' ? 'default' : 'outline'}
+          size="icon"
+          onClick={() => setViewMode('list')}
+          className="h-9 w-9"
+        >
+          <LayoutList className="h-4 w-4" />
+        </Button>
+        <Button
+          variant={viewMode === 'grid' ? 'default' : 'outline'}
+          size="icon"
+          onClick={() => setViewMode('grid')}
+          className="h-9 w-9"
+        >
+          <Grid3X3 className="h-4 w-4" />
+        </Button>
+      </div>
+      
+      {/* Document list */}
+      <Card>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="flex justify-center items-center p-8">
+              <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full"></div>
+            </div>
+          ) : error ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <FileText className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="font-medium text-lg mb-2">Error Loading Documents</h3>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button onClick={() => window.location.reload()}>Retry</Button>
+            </div>
+          ) : filteredDocuments.length === 0 ? (
+            <div className="flex flex-col items-center justify-center p-8 text-center">
+              <FileText className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="font-medium text-lg mb-2">No Documents Found</h3>
+              <p className="text-muted-foreground mb-4">
+                {searchQuery ? 'Try adjusting your search criteria' : 'Upload your first document to get started'}
+              </p>
+              <Button onClick={() => setShowUploadDialog(true)}>Upload Document</Button>
+            </div>
+          ) : viewMode === 'list' ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Document</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Modified</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredDocuments.map((doc) => (
+                  <TableRow key={doc.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        {getDocumentIcon(doc.type)}
+                        <div>
+                          <div className="font-medium">{doc.name}</div>
+                          <div className="text-xs text-muted-foreground truncate max-w-[300px]">{doc.description}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell><Badge variant="outline">{doc.type}</Badge></TableCell>
+                    <TableCell>
+                      <Badge variant={doc.status === 'approved' ? 'success' : 'outline'}>
+                        {doc.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{formatDate(doc.dateModified || doc.modified_at)}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleSelectDocument(doc)}
+                        >
+                          <Info className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDownload(doc)}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleShare(doc)}
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-4">
+              {filteredDocuments.map((doc) => (
+                <Card key={doc.id} className="cursor-pointer hover:border-primary" onClick={() => handleSelectDocument(doc)}>
+                  <CardContent className="p-0">
+                    <div className="p-3 border-b flex items-center justify-between">
+                      {getDocumentIcon(doc.type)}
+                      <Badge variant={doc.status === 'approved' ? 'success' : 'outline'}>
+                        {doc.status}
+                      </Badge>
+                    </div>
+                    <div className="p-3">
+                      <h3 className="font-medium truncate">{doc.name}</h3>
+                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{doc.description}</p>
+                      <div className="flex items-center text-xs text-muted-foreground mt-2">
+                        <User className="h-3 w-3 mr-1" />
+                        <span className="truncate">{doc.author || 'Unknown'}</span>
+                        <span className="mx-1">•</span>
+                        <CalendarDays className="h-3 w-3 mr-1" />
+                        <span>{formatDate(doc.dateModified || doc.modified_at)}</span>
+                      </div>
+                    </div>
+                    <div className="p-2 border-t flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => { e.stopPropagation(); handleDownload(doc); }}
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8"
+                        onClick={(e) => { e.stopPropagation(); handleShare(doc); }}
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+      
+      {/* Upload Dialog */}
+      <Dialog open={showUploadDialog} onOpenChange={setShowUploadDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upload Document</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <label htmlFor="file">File</label>
+              <Input id="file" type="file" onChange={handleFileChange} />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="name">Document Name</label>
+              <Input
+                id="name"
+                value={uploadMetadata.name}
+                onChange={(e) => setUploadMetadata({ ...uploadMetadata, name: e.target.value })}
+              />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="description">Description</label>
+              <Input
+                id="description"
+                value={uploadMetadata.description}
+                onChange={(e) => setUploadMetadata({ ...uploadMetadata, description: e.target.value })}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <label htmlFor="type">Type</label>
+                <select
+                  id="type"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  value={uploadMetadata.type}
+                  onChange={(e) => setUploadMetadata({ ...uploadMetadata, type: e.target.value })}
+                >
+                  <option value="cer">CER</option>
+                  <option value="literature">Literature</option>
+                  <option value="data">Data</option>
+                  <option value="risk">Risk</option>
+                  <option value="pms">PMS</option>
+                </select>
+              </div>
+              <div className="grid gap-2">
+                <label htmlFor="status">Status</label>
+                <select
+                  id="status"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  value={uploadMetadata.status}
+                  onChange={(e) => setUploadMetadata({ ...uploadMetadata, status: e.target.value })}
+                >
+                  <option value="draft">Draft</option>
+                  <option value="approved">Approved</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowUploadDialog(false)}>Cancel</Button>
+            <Button onClick={handleUpload}>Upload</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Share Dialog */}
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Share Document</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {selectedDocument && (
+              <div className="flex items-center gap-2 p-2 border rounded-md">
+                {getDocumentIcon(selectedDocument.type)}
+                <div>
+                  <div className="font-medium">{selectedDocument.name}</div>
+                  <div className="text-sm text-muted-foreground">{selectedDocument.type} • {selectedDocument.status}</div>
+                </div>
+              </div>
+            )}
+            <div className="grid gap-2">
+              <label htmlFor="email">Share with Email</label>
+              <Input id="email" type="email" placeholder="Enter email address" />
+            </div>
+            <div className="grid gap-2">
+              <label htmlFor="permission">Permission</label>
+              <select
+                id="permission"
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="view">View only</option>
+                <option value="comment">Comment</option>
+                <option value="edit">Edit</option>
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowShareDialog(false)}>Cancel</Button>
+            <Button>Share</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
