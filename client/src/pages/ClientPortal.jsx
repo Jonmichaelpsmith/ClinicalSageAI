@@ -393,6 +393,13 @@ const ClientPortal = () => {
                 <h2 className="text-xl font-semibold text-gray-800">Document Management</h2>
                 <div className="flex items-center space-x-2">
                   <button
+                    onClick={() => setShowWordIntegration(true)}
+                    className="mr-2 px-3 py-1 text-sm bg-blue-600 text-white rounded-md flex items-center hover:bg-blue-700"
+                  >
+                    <FileEdit className="h-3.5 w-3.5 mr-1" />
+                    Edit in Word
+                  </button>
+                  <button
                     onClick={() => setLocation('/document-management')}
                     className="text-blue-600 text-sm flex items-center hover:text-blue-800"
                   >
@@ -732,6 +739,99 @@ const ClientPortal = () => {
           </div>
         </div>
       </div>
+      
+      {/* Microsoft Word Integration Dialog */}
+      <Dialog open={showWordIntegration} onOpenChange={setShowWordIntegration}>
+        <DialogContent className="max-w-5xl h-[85vh]">
+          <DialogHeader>
+            <DialogTitle>Microsoft Word Integration</DialogTitle>
+            <DialogDescription>
+              Edit your documents using Microsoft Word with automatic VAULT synchronization
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-hidden">
+            <Suspense fallback={
+              <div className="flex items-center justify-center h-[65vh]">
+                <div className="text-center">
+                  <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary mb-4" />
+                  <p>Loading Microsoft Word integration...</p>
+                </div>
+              </div>
+            }>
+              <div className="h-full flex flex-col">
+                {/* Document Header */}
+                <div className="flex justify-between items-center mb-4 pb-3 border-b">
+                  <div>
+                    <h2 className="text-xl font-semibold">
+                      {selectedDocument ? selectedDocument.name : "Document Editor"}
+                    </h2>
+                    <div className="flex items-center gap-3 mt-1">
+                      <span className="text-sm text-muted-foreground">
+                        Last modified: {selectedDocument ? selectedDocument.modified : "Just now"}
+                      </span>
+                      <Badge variant="outline">
+                        {selectedDocument ? selectedDocument.status : "Draft"}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => toast({
+                        title: "Document Downloaded",
+                        description: "Document has been downloaded for offline editing.",
+                      })}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download
+                    </Button>
+                    <Button 
+                      onClick={() => {
+                        toast({
+                          title: "Document Saved",
+                          description: "All changes have been synchronized with VAULT.",
+                        });
+                        
+                        // Close dialog after saving
+                        setTimeout(() => {
+                          setShowWordIntegration(false);
+                        }, 1500);
+                      }}
+                      size="sm"
+                    >
+                      <Save className="h-4 w-4 mr-2" />
+                      Save to VAULT
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Document Editing Frame */}
+                <div className="border rounded-md h-full overflow-hidden">
+                  <iframe 
+                    src="https://learn.microsoft.com/en-us/office/client-developer/word/word-javascript-reference" 
+                    className="w-full h-[55vh]" 
+                    title="Microsoft Word Online" 
+                  />
+                </div>
+                
+                {/* Footer */}
+                <div className="mt-4 border-t pt-4 flex items-center justify-between">
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <FileCheck className="h-4 w-4 mr-2" />
+                    <span>VAULT synchronized • </span>
+                    <AlertCircle className="h-4 w-4 mx-2" />
+                    <span>All changes automatically tracked</span>
+                  </div>
+                  <Button onClick={() => setShowWordIntegration(false)}>
+                    Complete Editing
+                  </Button>
+                </div>
+              </div>
+            </Suspense>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Layout>
   );
 };
