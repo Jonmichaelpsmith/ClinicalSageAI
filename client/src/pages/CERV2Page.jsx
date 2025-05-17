@@ -408,12 +408,23 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     saveState('showProfileSelector', showProfileSelector);
   }, [showProfileSelector]);
 
-  // Hide profile selector when navigating to Document Intelligence
+  // Manage other modals when the Document Intelligence tab is active
   useEffect(() => {
+    const originalBodyOverflow = document.body.style.overflow;
+
     if (activeTab === 'document-intelligence') {
-      setShowProfileSelector(false);
+      if (typeof setShowProfileSelector === 'function') {
+        setShowProfileSelector(false);
+      }
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = originalBodyOverflow;
     }
-  }, [activeTab]);
+
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+    };
+  }, [activeTab, deviceProfile, setShowProfileSelector]);
   const [compliance, setCompliance] = useState(null);
   const [draftStatus, setDraftStatus] = useState('in-progress');
   const [exportTimestamp, setExportTimestamp] = useState(null);
@@ -1540,7 +1551,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         return (
           <div className="space-y-4">
             {/* Show device profile selector when needed */}
-            {showProfileSelector && (
+            {showProfileSelector && activeTab !== 'document-intelligence' && (
               <div className="mb-4 p-4 border border-blue-100 rounded-lg bg-blue-50">
                 <h3 className="text-lg font-semibold mb-2">Select a Device Profile</h3>
                 <p className="mb-4 text-gray-600">Choose a pre-configured device profile to streamline your workflow:</p>
@@ -2109,7 +2120,7 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     // If 510k document type is selected, show integrated 510k content
     if (documentType === '510k') {
       // If no device profile is selected and profile selector is visible, show it
-      if (!deviceProfile && showProfileSelector) {
+      if (!deviceProfile && showProfileSelector && activeTab !== 'document-intelligence') {
         return (
           <DeviceProfileSelector
             isOpen={true}
