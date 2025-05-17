@@ -2402,12 +2402,8 @@ export default function CoAuthor() {
               <a href="/coauthor">eCTD Co-Author</a>
             </Button>
             <span className="text-slate-300">/</span>
-            <Button variant="ghost" size="sm" className="text-xs" asChild>
-              <a href="/cer">CER 2V Module</a>
-            </Button>
-            <span className="text-slate-300">/</span>
             <Button variant="ghost" size="sm" className="text-xs font-semibold text-purple-600" asChild>
-              <a href="/cerv2">CER 2V MAUD</a>
+              <a href="/cerv2">CER v2 Module</a>
             </Button>
             <span className="text-slate-300">/</span>
             <Button variant="ghost" size="sm" className="text-xs" asChild>
