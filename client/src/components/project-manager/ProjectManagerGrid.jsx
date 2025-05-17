@@ -3,13 +3,114 @@ import { ChevronRight, Clock, BarChart2, FileText, Database, Search, Beaker, Cli
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import useCollaboration from '@/hooks/useCollaboration';
+import RegulatoryProjectMap from '../../models/RegulatoryProjectMap';
 
 /**
  * ProjectManagerGrid Component
  * 
  * Displays a grid of projects with their status, progress, and relevant module information.
  */
-const ProjectManagerGrid = ({ projects = [] }) => {
+const ProjectCard = ({ project, tasks }) => {
+  const { tasks: fetchedTasks } = useCollaboration(
+    project.id,
+    project.module,
+    { loadOnMount: !tasks }
+  );
+
+  const projectTasks = tasks || fetchedTasks || [];
+
+  const nextAction = React.useMemo(() => {
+    if (!projectTasks.length) return null;
+    return [...projectTasks].sort(
+      (a, b) => new Date(a.dueDate) - new Date(b.dueDate)
+    )[0];
+  }, [projectTasks]);
+
+  const phaseName = React.useMemo(() => {
+    const type = RegulatoryProjectMap.getProjectType(project.type);
+    const phaseObj = type?.phases.find((p) => p.id === project.phase);
+    return phaseObj ? phaseObj.name : project.phase;
+  }, [project.type, project.phase]);
+
+  return (
+    <div
+      className="bg-white border rounded-lg shadow-sm hover:shadow transition-shadow p-4"
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div>
+          <div className="flex items-center">
+            {getModuleIcon(project.module)}
+            <h3 className="ml-2 font-medium text-gray-800">{project.name}</h3>
+          </div>
+          <div className="flex items-center mt-1 text-xs text-gray-500">
+            <Clock className="h-3.5 w-3.5 mr-1" />
+            <span>
+              Due: {new Date(project.dueDate).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              })}
+            </span>
+            <span className="mx-2">•</span>
+            <span>{getDaysRemaining(project.dueDate)} days remaining</span>
+          </div>
+        </div>
+        <Badge variant={getBadgeVariant(project.status)}>
+          {getStatusDisplay(project.status)}
+        </Badge>
+      </div>
+
+      <div className="text-xs text-gray-600 mb-2">
+        Phase: {phaseName || 'N/A'}
+      </div>
+
+      {nextAction && (
+        <div className="text-xs text-gray-600 mb-2">
+          Next: {nextAction.title} (due{' '}
+          {new Date(nextAction.dueDate).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric'
+          })})
+        </div>
+      )}
+
+      <div className="mb-4">
+        <div className="flex justify-between items-center text-xs mb-1">
+          <span>Progress</span>
+          <span>{project.progress}%</span>
+        </div>
+        <Progress value={project.progress} className="h-2" />
+      </div>
+
+      <div className="flex justify-between items-center">
+        <div className="flex items-center">
+          <div className="flex items-center space-x-1">
+            <Badge
+              variant="outline"
+              className={
+                project.priority === 'high'
+                  ? 'text-red-700 border-red-200 bg-red-50'
+                  : project.priority === 'medium'
+                  ? 'text-amber-700 border-amber-200 bg-amber-50'
+                  : 'text-green-700 border-green-200 bg-green-50'
+              }
+            >
+              {project.priority.charAt(0).toUpperCase() + project.priority.slice(1)}{' '}
+              Priority
+            </Badge>
+          </div>
+        </div>
+        <Button variant="ghost" size="sm" className="text-primary">
+          <span>View Details</span>
+          <ChevronRight className="ml-1 h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+const ProjectManagerGrid = ({ projects = [], tasksByProject = {} }) => {
   // Get appropriate icon based on module
   const getModuleIcon = (module) => {
     switch (module) {
@@ -93,65 +194,11 @@ const ProjectManagerGrid = ({ projects = [] }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {projects.map((project) => (
-        <div
+        <ProjectCard
           key={project.id}
-          className="bg-white border rounded-lg shadow-sm hover:shadow transition-shadow p-4"
-        >
-          <div className="flex items-start justify-between mb-3">
-            <div>
-              <div className="flex items-center">
-                {getModuleIcon(project.module)}
-                <h3 className="ml-2 font-medium text-gray-800">{project.name}</h3>
-              </div>
-              <div className="flex items-center mt-1 text-xs text-gray-500">
-                <Clock className="h-3.5 w-3.5 mr-1" />
-                <span>
-                  Due: {new Date(project.dueDate).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}
-                </span>
-                <span className="mx-2">•</span>
-                <span>{getDaysRemaining(project.dueDate)} days remaining</span>
-              </div>
-            </div>
-            <Badge variant={getBadgeVariant(project.status)}>
-              {getStatusDisplay(project.status)}
-            </Badge>
-          </div>
-
-          <div className="mb-4">
-            <div className="flex justify-between items-center text-xs mb-1">
-              <span>Progress</span>
-              <span>{project.progress}%</span>
-            </div>
-            <Progress value={project.progress} className="h-2" />
-          </div>
-
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="flex items-center space-x-1">
-                <Badge
-                  variant="outline"
-                  className={
-                    project.priority === 'high'
-                      ? 'text-red-700 border-red-200 bg-red-50'
-                      : project.priority === 'medium'
-                      ? 'text-amber-700 border-amber-200 bg-amber-50'
-                      : 'text-green-700 border-green-200 bg-green-50'
-                  }
-                >
-                  {project.priority.charAt(0).toUpperCase() + project.priority.slice(1)} Priority
-                </Badge>
-              </div>
-            </div>
-            <Button variant="ghost" size="sm" className="text-primary">
-              <span>View Details</span>
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
-          </div>
-        </div>
+          project={project}
+          tasks={tasksByProject[project.id]}
+        />
       ))}
     </div>
   );
