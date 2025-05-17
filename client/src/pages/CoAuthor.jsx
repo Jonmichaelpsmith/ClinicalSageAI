@@ -58,6 +58,7 @@ import * as aiService from '../services/aiService';
 const EnhancedDocumentEditor = lazy(() => import('../components/EnhancedDocumentEditor'));
 const Office365WordEmbed = lazy(() => import('../components/Office365WordEmbed'));
 const GoogleDocsEmbed = lazy(() => import('../components/GoogleDocsEmbed'));
+const MsWordPopupEditor = lazy(() => import('../components/MsWordPopupEditor'));
 import { 
   FileText, 
   Edit, 
@@ -3323,17 +3324,36 @@ export default function CoAuthor() {
                       }
                     }
                   >
-                    {authLoading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Authenticating...
-                      </>
-                    ) : (
-                      <>
-                        <ExternalLink className="h-4 w-4 mr-2" />
-                        Edit in Google Docs
-                      </>
-                    )}
+                  {authLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Authenticating...
+                    </>
+                  ) : (
+                    <>
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      Edit in Google Docs
+                    </>
+                  )}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-blue-200"
+                    onClick={() => {
+                      if (!selectedDocument) {
+                        toast({
+                          title: 'Select a Document',
+                          description: 'Please select a document to edit first.',
+                          variant: 'destructive',
+                        });
+                        return;
+                      }
+                      setMsWordPopupOpen(true);
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Edit in MS Word
                   </Button>
                   <Button size="sm" variant="outline" className="border-blue-200">
                     <Upload className="h-4 w-4 mr-2" />
@@ -4598,7 +4618,29 @@ export default function CoAuthor() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
+
+      <Suspense fallback={
+        <div className="py-20 flex flex-col items-center justify-center">
+          <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
+          <p>Loading Microsoft Word...</p>
+        </div>
+      }>
+        <MsWordPopupEditor
+          open={msWordPopupOpen}
+          onOpenChange={setMsWordPopupOpen}
+          initialContent={selectedDocument?.content || ''}
+          documentTitle={selectedDocument?.title || 'MS Word Document'}
+          onSave={(content) => {
+            console.log('MS Word content saved', content);
+            toast({
+              title: 'Document Saved',
+              description: 'Your changes have been saved from MS Word.',
+              variant: 'default',
+            });
+          }}
+        />
+      </Suspense>
+
       {/* Version History Dialog */}
       <Dialog open={showVersionHistory} onOpenChange={setShowVersionHistory}>
         <DialogContent className="sm:max-w-[650px]">
