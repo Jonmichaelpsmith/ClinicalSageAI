@@ -3,14 +3,21 @@ import { useToast } from '@/hooks/use-toast';
 import axios from 'axios';
 // Only import icons that are used in the initial render
 // Other icons will be imported dynamically as needed
-import { 
-  MessageSquare, 
+import {
+  MessageSquare,
   CheckSquare,
   PlayCircle,
   FileCheck,
   ChevronDown,
   Clock,
-  Info
+  Info,
+  Lightbulb,
+  CheckCircle,
+  AlertTriangle,
+  UserCheck,
+  X,
+  Video,
+  VideoOff
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
