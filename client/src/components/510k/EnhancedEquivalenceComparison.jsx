@@ -680,7 +680,7 @@ const EnhancedEquivalenceComparison = ({
                 </p>
                 <ul className="list-disc pl-5 space-y-1">
                   <li>The same intended use; and</li>
-                  <li>Either the same technological characteristics or different technological characteristics that don't raise different questions of safety and effectiveness.</li>
+                  <li>Either the same technological characteristics or different technological characteristics that do not raise different questions of safety and effectiveness.</li>
                 </ul>
                 <p className="mt-2 mb-2">
                   <strong>Equivalence thresholds:</strong>
