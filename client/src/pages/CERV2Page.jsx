@@ -697,32 +697,42 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
   };
 
   const handlePredicatesComplete = (data, error = null) => {
-    console.log('[CERV2 Workflow] Predicate completion handler called:', {
-      predicateCount: data?.length || 0,
-      error: error
-    });
-    
-    // Log the actual predicate data for debugging
-    console.log('[CERV2 Workflow] Predicate data received:', JSON.stringify(data));
-    
-    // Handle error case
-    if (error) {
-      console.error('[CERV2 Workflow] Error in predicate search:', error);
-      setPredicateSearchError(error);
-      toast({
-        title: "Predicate Search Error",
-        description: error || "An error occurred during predicate search.",
-        variant: "destructive",
-        duration: 3000
+    // CRITICAL FIX: Prevent React suspension errors by handling predicate completion more safely
+    try {
+      console.log('[CERV2 Workflow] Predicate completion handler called:', {
+        predicateCount: data?.length || 0,
+        error: error
       });
-      return;
-    }
-
-    // Basic validation
-    if (!data || data.length === 0) {
+      
+      // Handle error case first
+      if (error) {
+        console.error('[CERV2 Workflow] Error in predicate search:', error);
+        setPredicateSearchError(error);
+        toast({
+          title: "Predicate Search Error",
+          description: error || "An error occurred during predicate search.",
+          variant: "destructive",
+          duration: 3000
+        });
+        return;
+      }
+  
+      // Basic validation
+      if (!data || data.length === 0) {
+        toast({
+          title: "Missing Predicate Devices",
+          description: "Please select at least one predicate device before proceeding.",
+          variant: "destructive",
+          duration: 3000
+        });
+        return;
+      }
+    } catch (error) {
+      // Safety net to prevent React suspension
+      console.error('[CERV2 Workflow] Error in predicate completion handler:', error);
       toast({
-        title: "Missing Predicate Devices",
-        description: "Please select at least one predicate device before proceeding.",
+        title: "Processing Error",
+        description: "An error occurred while processing predicate devices. Please try again.",
         variant: "destructive",
         duration: 3000
       });
@@ -730,6 +740,14 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
     }
     
     try {
+      // First show feedback to the user
+      toast({
+        title: "Processing Predicate Devices",
+        description: "Updating workflow state...",
+        variant: "default",
+        duration: 3000
+      });
+      
       // 1. First update the device profile to include the predicate information
       const updatedDeviceProfile = {
         ...deviceProfile,
@@ -741,23 +759,33 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         }))
       };
       
-      // 2. Set all state variables synchronously for workflow transition
-      setPredicatesFound(true);
-      setIsPredicateStepCompleted(true); // CRITICAL FIX: Explicitly mark the predicate step as completed
+      // CRITICAL FIX: First set minimal state needed for UI responsiveness
       setPredicateSearchError(null); // Clear any previous errors
-      setPredicateDevices(data);
-      setDeviceProfile(updatedDeviceProfile);
       
-      // 3. Save state to localStorage for persistence - USING MULTIPLE METHODS FOR MAXIMUM RELIABILITY
-      saveState('predicatesFound', true);
-      saveState('isPredicateStepCompleted', true); // CRITICAL FIX: Save completion flag to localStorage
-      saveState('predicateDevices', data);
-      saveState('deviceProfile', updatedDeviceProfile);
+      // 2. Use setTimeout to prevent React suspension during state updates
+      setTimeout(() => {
+        try {
+          // Update state in a separate tick to prevent React suspension
+          setPredicatesFound(true);
+          setIsPredicateStepCompleted(true); 
+          setPredicateDevices(data);
+          setDeviceProfile(updatedDeviceProfile);
+          
+          // 3. Save state to localStorage for persistence
+          saveState('predicatesFound', true);
+          saveState('isPredicateStepCompleted', true);
+          saveState('predicateDevices', data);
+          saveState('deviceProfile', updatedDeviceProfile);
+          
+          // 4. EMERGENCY DIRECT FIX: Save directly to localStorage with multiple keys and formats
+          localStorage.setItem('510k_isPredicateStepCompleted', JSON.stringify(true));
+        } catch (innerError) {
+          console.error('[CERV2 Workflow] Error in state update:', innerError);
+        }
+      }, 50); // Short delay to prevent React suspension
       
-      // 4. EMERGENCY DIRECT FIX: Save directly to localStorage with multiple keys and formats
+      // Initial localStorage save attempt (synchronous)
       try {
-        // Try multiple storage formats to maximize chances of success
-        localStorage.setItem('510k_isPredicateStepCompleted', JSON.stringify(true));
         localStorage.setItem('isPredicateStepCompleted', JSON.stringify(true));
         localStorage.setItem('510k_predicatesFound', JSON.stringify(true));
         localStorage.setItem('510k_workflow_step2_completed', JSON.stringify(true));
@@ -770,26 +798,32 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         console.error('[CERV2 EMERGENCY FIX] Error saving additional completion flags:', storageError);
       }
       
-      // 4. Process literature if available (from another source)
-      // Get literature data from a different source since we changed the parameter structure
-      const storedLiteratureData = loadState('literatureData', []);
-      if (storedLiteratureData && storedLiteratureData.length > 0) {
-        setLiteratureResults(storedLiteratureData);
-        setSelectedLiterature(storedLiteratureData.filter(item => 
-          item.relevanceScore >= 0.8).slice(0, 5)
-        );
-      }
-      
-      // 4. Success notification
-      toast({
-        title: "Predicate Devices Selected",
-        description: `Found ${data.length} predicate devices for comparison.`,
-        variant: "success",
-        duration: 2000
-      });
-      
-      // 5. Critical workflow transition fix - direct and synchronous workflow navigation
-      console.log('[CERV2 Workflow] Directly transitioning to Equivalence step');
+      // Process literature after a delay to prevent React suspension
+      setTimeout(() => {
+        try {
+          // Process literature if available (from another source)
+          const storedLiteratureData = loadState('literatureData', []);
+          if (storedLiteratureData && storedLiteratureData.length > 0) {
+            setLiteratureResults(storedLiteratureData);
+            setSelectedLiterature(storedLiteratureData.filter(item => 
+              item.relevanceScore >= 0.8).slice(0, 5)
+            );
+          }
+          
+          // Success notification
+          toast({
+            title: "Predicate Devices Selected",
+            description: `Found ${data.length} predicate devices for comparison.`,
+            variant: "success",
+            duration: 2000
+          });
+          
+          // Workflow transition - notify user about next step
+          console.log('[CERV2 Workflow] Safely transitioning to Equivalence step using timeout');
+        } catch (innerError) {
+          console.error('[CERV2 Workflow] Error in literature processing:', innerError);
+        }
+      }, 100); // Slightly longer delay for UI transitions
       
       // Force direct state updates for workflow progression
       setActiveTab('equivalence');
