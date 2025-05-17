@@ -69,7 +69,7 @@ const ECTDCoAuthorDashboard = () => {
   const { toast } = useToast();
   
   // Mock data for templates
-  const recentTemplates = [
+  const moduleTemplates = [
     {
       id: 'temp-001',
       title: 'Module 3.2.P Drug Product',
@@ -169,7 +169,7 @@ const ECTDCoAuthorDashboard = () => {
     documentsWithIssues: 8
   };
   
-  const recentTemplates = [
+  const submissionTemplates = [
     {
       id: 'template-001',
       title: 'Clinical Study Report Template',
