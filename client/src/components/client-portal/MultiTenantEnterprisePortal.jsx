@@ -1364,11 +1364,7 @@ const MultiTenantEnterprisePortal = () => {
                   <CardContent>
                     {currentClient ? (
                       projects.length > 0 ? (
-                        <ProjectManagerGrid
-                          projects={projects}
-                          userId={currentClient?.id || 'user-1'}
-                          orgId={currentOrganization?.id || 'org-1'}
-                        />
+                        <ProjectManagerGrid projects={projects} />
                       ) : (
                         <div className="text-center py-8">
                           <Briefcase className="h-12 w-12 mx-auto text-gray-300" />

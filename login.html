@@ -7,9 +7,35 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/tailwind-built.css">
+  <script src="https://cdn.tailwindcss.com"></script>
   <script src="/js/resilience-service.js"></script>
   <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            trialsage: {
+              pink: '#FF1493',
+              lightpink: '#FFB6C1',
+              darkpink: '#C71585',
+              50: '#FFF0F6',
+              100: '#FFE3EE', 
+              200: '#FFC6DD',
+              300: '#FF99C0',
+              400: '#FF5CA3',
+              500: '#FF1493',
+              600: '#E60082',
+              700: '#C8006E',
+              800: '#A5005C',
+              900: '#89004C'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif']
+          }
+        }
+      }
+    }
     
     // Initialize resilience service
     let resilience;

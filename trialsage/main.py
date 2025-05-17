@@ -36,8 +36,7 @@ app.add_middleware(
 # Setup directories
 static_dir = Path("static")
 static_dir.mkdir(exist_ok=True)
-# Serve the modern client application instead of the old frontend
-frontend_dir = Path("client")
+frontend_dir = Path("frontend")
 
 # Mount static files directory
 app.mount("/static", StaticFiles(directory=str(static_dir)), name="static")
@@ -86,7 +85,7 @@ app.include_router(
     tags=["validation"]
 )
 
-# Root endpoint (serve client app)
+# Root endpoint (serve frontend)
 @app.get("/")
 async def read_root(request: Request):
     """Serve the frontend application"""

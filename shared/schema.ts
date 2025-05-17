@@ -1539,28 +1539,3 @@ export const documentVersionsRelations = relations(documentVersions, ({ one }) =
     references: [users.id],
   }),
 }));
-
-/**
- * Conversation Logs Table
- *
- * Stores chat messages exchanged within a project for auditing.
- */
-export const conversationLogs = pgTable('conversation_logs', {
-  id: serial('id').primaryKey(),
-  projectId: integer('project_id').references(() => projects.id),
-  userId: integer('user_id').references(() => users.id),
-  message: text('message').notNull(),
-  role: text('role').notNull(), // user, assistant, system
-  moduleType: text('module_type'),
-  timestamp: timestamp('timestamp').defaultNow().notNull(),
-});
-
-// Conversation Log Insert Schema
-export const insertConversationLogSchema = createInsertSchema(conversationLogs).omit({
-  id: true,
-  timestamp: true,
-});
-
-// Conversation Log Types
-export type ConversationLog = InferSelectModel<typeof conversationLogs>;
-export type InsertConversationLog = z.infer<typeof insertConversationLogSchema>;
