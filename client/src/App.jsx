@@ -68,6 +68,7 @@ const ModuleSectionEditor = lazy(() => import('./components/ModuleSectionEditor'
 const ValidationDashboard = lazy(() => import('./pages/ValidationDashboard'));
 
 const DocumentTemplates = lazy(() => import('./pages/DocumentTemplates'));
+const ProjectManagerPage = lazy(() => import('./pages/ProjectManagerPage'));
 const DocumentViewer = lazy(() => import('./pages/DocumentViewer'));
 
 // Regulatory-related pages (excluding Regulatory Submissions Hub)
@@ -280,6 +281,13 @@ function App() {
               <Route path="/signature" component={SignaturePage} /> {/* Digital Signature page route */}
               <Route path="/study-architect" component={StudyArchitectPage} />
               <Route path="/analytics" component={AnalyticsDashboard} />
+              <Route path="/project-manager">
+                {() => (
+                  <Suspense fallback={<LoadingPage />}>
+                    <ProjectManagerPage />
+                  </Suspense>
+                )}
+              </Route>
               <Route path="/regulatory-risk-dashboard" component={RegulatoryRiskDashboard} />
               <Route path="/regulatory-intelligence-hub" component={RegulatoryIntelligenceHub} />
               <Route path="/regulatory-dashboard" component={RegulatoryDashboard} />
