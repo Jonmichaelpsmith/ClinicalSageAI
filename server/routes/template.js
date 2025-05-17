@@ -58,6 +58,7 @@ router.get('/:templateId', async (req, res) => {
     const { templateId } = req.params;
     
     const template = await templateService.getTemplateById(templateId);
+    await templateService.incrementUsageCount(templateId);
     
     res.json({
       success: true,
@@ -199,11 +200,12 @@ router.post('/import', async (req, res) => {
 router.post('/:templateId/apply', async (req, res) => {
   try {
     const { templateId } = req.params;
-    
+
     console.log(`Applying template ${templateId} to document:`, JSON.stringify(req.body, null, 2));
-    
+
     // Get the template
     const template = await templateService.getTemplateById(templateId);
+    await templateService.incrementUsageCount(templateId);
     
     // Simple template application logic (can be extended for more complex scenarios)
     const document = req.body.document || {};
@@ -261,6 +263,28 @@ router.post('/:templateId/apply', async (req, res) => {
       success: false,
       error: error.message || 'Failed to apply template'
     });
+  }
+});
+
+// Get template version history
+router.get('/:templateId/versions', async (req, res) => {
+  try {
+    const versions = await templateService.getTemplateVersions(req.params.templateId);
+    res.json({ success: true, versions });
+  } catch (error) {
+    console.error('Error retrieving template versions:', error);
+    res.status(500).json({ success: false, error: 'Failed to retrieve versions' });
+  }
+});
+
+// Roll back to a specific version
+router.post('/:templateId/rollback/:versionId', async (req, res) => {
+  try {
+    const template = await templateService.rollbackTemplate(req.params.templateId, req.params.versionId);
+    res.json({ success: true, template, message: 'Template rolled back successfully' });
+  } catch (error) {
+    console.error('Error rolling back template:', error);
+    res.status(500).json({ success: false, error: error.message || 'Failed to roll back template' });
   }
 });
 

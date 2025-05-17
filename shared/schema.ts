@@ -1539,3 +1539,15 @@ export const documentVersionsRelations = relations(documentVersions, ({ one }) =
     references: [users.id],
   }),
 }));
+
+// Template version history table
+export const templateVersions = pgTable('template_versions', {
+  id: serial('id').primaryKey(),
+  templateId: integer('template_id').notNull(),
+  version: integer('version').notNull(),
+  data: json('data'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+});
+
+export type TemplateVersion = InferSelectModel<typeof templateVersions>;
+export type InsertTemplateVersion = typeof templateVersions.$inferInsert;
