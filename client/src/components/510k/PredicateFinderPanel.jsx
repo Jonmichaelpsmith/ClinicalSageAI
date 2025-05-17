@@ -464,8 +464,17 @@ const PredicateFinderPanel = ({
         }
       }
     } finally {
+      // CRITICAL FIX: Update both local and parent state about search completion
       setIsSearching(false);
       setSearched(true);
+      
+      // Inform parent component that searching has completed
+      if (onSearchStateChange) {
+        onSearchStateChange(false);
+      }
+      
+      // Remove navigation blocking
+      window.onbeforeunload = null;
     }
   };
   

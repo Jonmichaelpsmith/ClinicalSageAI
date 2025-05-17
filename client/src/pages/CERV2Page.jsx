@@ -825,17 +825,34 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         }
       }, 100); // Slightly longer delay for UI transitions
       
-      // Force direct state updates for workflow progression
-      setActiveTab('equivalence');
-      setWorkflowStep(3);
-      setWorkflowProgress(50); // Update progress to 50%
+      // CRITICAL FIX: Move workflow progression to setTimeout to prevent React suspension
+      setTimeout(() => {
+        try {
+          // Force direct state updates for workflow progression
+          setActiveTab('equivalence');
+          setWorkflowStep(3);
+          setWorkflowProgress(50); // Update progress to 50%
+          
+          // Save workflow state changes for persistence
+          saveState('activeTab', 'equivalence');
+          saveState('workflowStep', 3);
+          saveState('workflowProgress', 50);
+          
+          // Final success notification for workflow progression
+          toast({
+            title: "Ready for Equivalence Analysis",
+            description: "Predicate devices successfully selected.",
+            variant: "success",
+            duration: 3000
+          });
+          
+          console.log('[CERV2 Workflow] Workflow successfully moved to Equivalence Analysis step');
+        } catch (progressionError) {
+          console.error('[CERV2 Workflow] Error in workflow progression:', progressionError);
+        }
+      }, 150);
       
-      // 6. Save workflow state changes for persistence - using multiple methods for maximum reliability
-      saveState('activeTab', 'equivalence');
-      saveState('workflowStep', 3);
-      saveState('workflowProgress', 50);
-      
-      // Direct localStorage setting as fallback/redundancy
+      // Direct localStorage setting as fallback/redundancy (synchronous, but fast)
       try {
         localStorage.setItem('510k_activeTab', JSON.stringify('equivalence'));
         localStorage.setItem('510k_workflowStep', JSON.stringify(3));
@@ -845,15 +862,8 @@ export default function CERV2Page({ initialDocumentType, initialActiveTab }) {
         console.error('[CERV2 Workflow] Error saving direct workflow state to localStorage:', e);
       }
       
-      // Show success toast to notify user of transition
-      setTimeout(() => {
-        toast({
-          title: "Workflow Advanced",
-          description: "Successfully moved to Equivalence Builder step",
-          variant: "success",
-          duration: 2000
-        });
-      }, 800);
+      // CRITICAL FIX: Remove redundant toast to prevent React suspension
+      // (We already have a toast in the workflow progression setTimeout)
     } catch (error) {
       console.error('[CERV2 Workflow] Error during predicate selection completion:', error);
       toast({
